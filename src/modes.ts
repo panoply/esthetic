@@ -6,7 +6,9 @@ import {
   IStyleOptions,
   IJSONOptions,
   IScriptOptions
-} from './options';
+} from './types/options';
+
+const { assign } = Object;
 
 /**
  * Updates formatting options
@@ -14,8 +16,6 @@ import {
  * Accepts global rule object
  */
 export function options (options: IGlobalOptions) {
-
-  const { assign } = Object;
 
   assign(rules.markup, options.markup);
   assign(rules.style, options.style);
@@ -33,20 +33,26 @@ export function options (options: IGlobalOptions) {
  * - Liquid
  * - HTML + Liquid
  */
-export function markup (input: string, options?: IMarkupOptions): string {
+export function markup (input: string, options?: IMarkupOptions): Promise<string> {
 
-  if (options) Object.assign(rules.style, options);
+  if (options) assign(rules.markup, options);
   if (prettydiff.options.language !== 'html') prettydiff.options = rules.markup;
 
   prettydiff.options.source = input;
+
   const formatted = prettydiff();
-  Object.assign(rules.markup, prettydiff.options);
 
-  if (prettydiff.sparser.parseError.length) {
-    throw new Error(prettydiff.sparser.parseError);
-  }
+  assign(rules.markup, prettydiff.options);
 
-  return formatted;
+  return new Promise((resolve, reject) => {
+
+    if (prettydiff.sparser.parseError.length) {
+      return reject(prettydiff.sparser.parseError);
+    }
+
+    return resolve(formatted);
+
+  });
 
 }
 
@@ -62,22 +68,26 @@ export function markup (input: string, options?: IMarkupOptions): string {
  * - TypeScript
  * - TypeScript +  Liquid
  */
-export function script (input: string, options?: IScriptOptions): string {
+export function script (input: string, options?: IScriptOptions): Promise<string> {
 
-  if (options) Object.assign(rules.script, options);
+  if (options) assign(rules.script, options);
   if (prettydiff.options.language !== 'javascript') prettydiff.options = rules.script;
 
   prettydiff.options.source = input;
 
   const formatted = prettydiff();
 
-  Object.assign(rules.script, prettydiff.options);
+  assign(rules.script, prettydiff.options);
 
-  if (prettydiff.sparser.parseError.length) {
-    throw new Error(prettydiff.sparser.parseError);
-  }
+  return new Promise((resolve, reject) => {
 
-  return formatted;
+    if (prettydiff.sparser.parseError.length) {
+      return reject(prettydiff.sparser.parseError);
+    }
+
+    return resolve(formatted);
+
+  });
 
 }
 
@@ -93,22 +103,26 @@ export function script (input: string, options?: IScriptOptions): string {
  * - LESS
  * - LESS +  Liquid
  */
-export function style (input: string, options?: IStyleOptions): string {
+export function style (input: string, options?: IStyleOptions): Promise<string> {
 
-  if (options) Object.assign(rules.style, options);
+  if (options) assign(rules.style, options);
   if (prettydiff.options.language !== 'css') prettydiff.options = rules.style;
 
   prettydiff.options.source = input;
 
   const formatted = prettydiff();
 
-  Object.assign(rules.style, prettydiff.options);
+  assign(rules.style, prettydiff.options);
 
-  if (prettydiff.sparser.parseError.length) {
-    throw new Error(prettydiff.sparser.parseError);
-  }
+  return new Promise((resolve, reject) => {
 
-  return formatted;
+    if (prettydiff.sparser.parseError.length) {
+      return reject(prettydiff.sparser.parseError);
+    }
+
+    return resolve(formatted);
+
+  });
 
 }
 
@@ -119,21 +133,23 @@ export function style (input: string, options?: IStyleOptions): string {
  *
  * - JSON
  */
-export function json (input: string, options?: IJSONOptions): string {
+export function json (input: string, options?: IJSONOptions): Promise<string> {
 
-  if (options) Object.assign(rules.json, options);
+  if (options) assign(rules.json, options);
   if (prettydiff.options.language !== 'json') prettydiff.options = rules.json;
 
   prettydiff.options.source = input;
 
   const formatted = prettydiff();
 
-  Object.assign(rules.json, prettydiff.options);
+  return new Promise((resolve, reject) => {
 
-  if (prettydiff.sparser.parseError.length) {
-    throw new Error(prettydiff.sparser.parseError);
-  }
+    if (prettydiff.sparser.parseError.length) {
+      return reject(prettydiff.sparser.parseError);
+    }
 
-  return formatted;
+    return resolve(formatted);
+
+  });
 
 }

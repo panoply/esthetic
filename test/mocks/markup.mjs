@@ -43,7 +43,7 @@ export const markup_ignore_inline = `
 /**
  * Invalid Markup Mock data
  *
- * Error is is a missing comma character located at
+ * Error is a missing comma character located at
  * `</div> `because `{% endif %}` is missing
  */
 export const markup_invalid = `
