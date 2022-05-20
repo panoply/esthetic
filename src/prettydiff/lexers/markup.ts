@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import { sparser } from '../parser/parse';
+import { IRecord } from '../types/sparser';
 
 export default (function markup_init () {
 
@@ -8,8 +9,8 @@ export default (function markup_init () {
 
     let a = 0;
     let sgmlflag = 0;
-    let html = '';
     let ext = false;
+    let html = '';
 
     const { parse, options } = sparser;
     const { data } = parse;
@@ -34,37 +35,36 @@ export default (function markup_init () {
       , th: 'block'
       , thead: 'block'
       , tr: 'block'
-
     };
 
     // pads certain template tag delimiters with a space
     // lexer_markup_bracketSpace
-    function bracketSpace (input) {
+    function bracketSpace (input: string) {
+
       if (
         options.language !== 'html' &&
-          options.language !== 'xml' &&
-          options.language !== 'jsx'
+        options.language !== 'xml' &&
+        options.language !== 'jsx'
       ) {
-        const spaceStart = function lexer_markup_tag_spaceStart (start) {
-          return start.replace(/\s*$/, ' ');
-        };
-        const spaceEnd = function lexer_markup_tag_spaceStart (end) {
-          return end.replace(/^\s*/, ' ');
-        };
-        if ((/\{(=|#|\/|(%>)|(%\]))/).test(input) === true || (
-          /\}%(>|\])/).test(input) === true) {
-          return input;
-        }
+
+        const spaceStart = (start: string) => start.replace(/\s*$/, ' ');
+        const spaceEnd = (end: string) => end.replace(/^\s*/, ' ');
+
+        if ((/\{(=|#|\/|(%>)|(%\]))/).test(input) || (/\}%(>|\])/).test(input)) return input;
+
         input = input.replace(/\{((\{+)|%-?)\s*/g, spaceStart);
         input = input.replace(/\s*((\}\}+)|(-?%\}))/g, spaceEnd);
+
         return input;
+
       }
+
       return input;
     };
 
     // pushes a record into the parse table
     // lexer_markup_recordPush
-    function recordPush (target, record, structure) {
+    function recordPush (target, record: IRecord, structure) {
 
       if (target === data) {
         if (record.types.indexOf('end') > -1) {
@@ -74,9 +74,7 @@ export default (function markup_init () {
         }
       }
 
-      if (options.lexerOptions.markup.parseSpace === true) {
-        record.lines = 0;
-      }
+      if (options.lexerOptions.markup.parseSpace === true) record.lines = 0;
 
       parse.push(target, record, structure);
 
@@ -84,7 +82,7 @@ export default (function markup_init () {
 
     // Find the lowercase tag name of the provided token.
     // lexer_markup_tagName
-    function tagName (el) {
+    function tagName (el: string) {
 
       let space = 0;
       let name = '';
@@ -95,33 +93,32 @@ export default (function markup_init () {
       // other delimeter template languages. Instead we only want Liquid
       // delimiters. The previous expression match was ^((\{)((%-?)|\{-?)=?\s*)
       // but we instead just use the new one below:
-      const reg = (/^((\{|<)((%-?)|\{-?)=?\s*)/);
+      const regex = /^(\{[{%]-?\s*)/;
 
       if (typeof el !== 'string') return '';
 
-      space = el.replace(reg, '%').replace(/\s+/, ' ').indexOf(' ');
-      name = el.replace(reg, ' ');
-      name = (space < 0) ? name.slice(1, el.length - 1) : name.slice(1
-        , space);
+      space = el.replace(regex, '%').replace(/\s+/, ' ').indexOf(' ');
+      name = el.replace(regex, ' ');
+      name = (space < 0) ? name.slice(1, el.length - 1) : name.slice(1, space);
 
       if (html === 'html') name = name.toLowerCase();
 
       // HOT FIX
+      //
       // Liquid delimiters that did not contain a space were failing
       // to have their name matched and instead ignore by the beautificiation
       // process, for example:
       //
       // {{tag}} would match
       // {{tag-}} would not match
-      // {% entag%} would not match
+      // {% endtag%} would not match
       // {%else%} would not match
       //
       // We have fixed this accordingly, everything works now.
-      name = name.replace(/-?[%}]\}$/, '');
+      name = name.replace(/-?[%}]}$/, '');
 
-      if (name.indexOf('(') > 0) name = name.slice(0, name.indexOf('('));
-
-      if (name === '?xml?') return 'xml';
+      // if (name.indexOf('(') > 0) name = name.slice(0, name.indexOf('('));
+      // if (name === '?xml?') return 'xml';
 
       // console.log(name)
 
@@ -130,14 +127,15 @@ export default (function markup_init () {
 
     // A fix for HTML missing end tags
     // lexer_markup_fixHtmlEnd
-    function fixHtmlEnd (element, end) {
+    function fixHtmlEnd (element: string, end: boolean) {
 
       const tname = tagName(element);
+
       const record = {
         begin: parse.structure[parse.structure.length - 1][1]
         , ender: -1
         , lexer: 'markup'
-        , lines: (data.lines[parse.count] > 0) ? 1 : 0
+        , lines: data.lines[parse.count] > 0 ? 1 : 0
         , stack: parse.structure[parse.structure.length - 1][0]
         , token: `</${parse.structure[parse.structure.length - 1][0]}>`
         , types: 'end'
@@ -145,31 +143,23 @@ export default (function markup_init () {
 
       recordPush(data, record, '');
 
-      if (
-        htmlblocks[parse.structure[parse.structure.length - 1][0]] ===
-          'block' && (
-          (end === true && parse.structure.length > 1) ||
-            (end === false &&
-              `/${parse.structure[parse.structure.length - 1][0]}` !== tname
-            )
-        )
-      ) {
+      if (htmlblocks[parse.structure[parse.structure.length - 1][0]] === 'block' && (
+        (end === true && parse.structure.length > 1) ||
+        (end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)
+      )) {
 
         do {
+
           record.begin = parse.structure[parse.structure.length - 1][1];
           record.stack = parse.structure[parse.structure.length - 1][0];
-          record.token =
-              `</${parse.structure[parse.structure.length - 1][0]}>`;
+          record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
+
           recordPush(data, record, '');
-        } while (
-          htmlblocks[parse.structure[parse.structure.length - 1][0]] ===
-            'block' && (
-            (end === true && parse.structure.length > 1) ||
-              (end === false &&
-                `/${parse.structure[parse.structure.length - 1][0]}` !==
-                tname)
-          )
-        );
+
+        } while (htmlblocks[parse.structure[parse.structure.length - 1][0]] === 'block' && (
+          (end === true && parse.structure.length > 1) ||
+          (end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)
+        ));
       }
 
     };
@@ -264,17 +254,18 @@ export default (function markup_init () {
 
       // attribute name
       // lexer_markup_tag_arname
-      function arname (x) {
+      function arname (x: string) {
 
         const eq = x.indexOf('=');
 
-        if (
-          eq > 0 && (
-            (eq < x.indexOf('"') && x.indexOf('"') > 0) ||
-              (eq < x.indexOf("'") && x.indexOf("'") > 0)
-          )
-        ) {
-          return [ x.slice(0, eq), x.slice(eq + 1) ];
+        if (eq > 0 && (
+          (eq < x.indexOf('"') && x.indexOf('"') > 0) ||
+          (eq < x.indexOf("'") && x.indexOf("'") > 0)
+        )) {
+          return [
+            x.slice(0, eq),
+            x.slice(eq + 1)
+          ];
         }
 
         return [ x, '' ];
@@ -292,92 +283,89 @@ export default (function markup_init () {
         let store = [];
         let len = attstore.length;
 
-        const qc =
-            options.lexerOptions.markup.quoteConvert === undefined
-              ? 'none'
-              : options.lexerOptions.markup.quoteConvert;
+        const qc = options.lexerOptions.markup.quoteConvert === undefined
+          ? 'none'
+          : options.lexerOptions.markup.quoteConvert;
+
         const begin = parse.count;
         const stack = tname.replace(/\/$/, '');
         const syntax = "<{\"'=/";
-        const convertQ =
-            function lexer_markup_tag_attributeRecord_convertQ () {
-              if (
-                ignoreme === true ||
+
+        const convertQ = () => {
+          if (
+            ignoreme === true ||
                 qc === 'none' ||
                 record.types !== 'attribute' ||
                 (qc === 'single' && record.token.indexOf('"') < 0) ||
                 (qc === 'double' && record.token.indexOf("'") < 0)
-              ) {
-                recordPush(data, record, '');
-              } else {
-                let ee = 0;
-                let inner = false;
-                const chars = record.token.split('');
-                const eq = record.token.indexOf('=');
-                const len = chars.length - 1;
-                if (
-                  chars[eq + 1] !== '"' &&
+          ) {
+            recordPush(data, record, '');
+          } else {
+            let ee = 0;
+            let inner = false;
+            const chars = record.token.split('');
+            const eq = record.token.indexOf('=');
+            const len = chars.length - 1;
+            if (
+              chars[eq + 1] !== '"' &&
                   qc === 'single' &&
                   chars[chars.length - 1] !== '"'
-                ) {
-                  recordPush(data, record, '');
-                } else if (
-                  chars[eq + 1] !== "'" &&
+            ) {
+              recordPush(data, record, '');
+            } else if (
+              chars[eq + 1] !== "'" &&
                   qc === 'double' &&
                   chars[chars.length - 1] !== "'"
-                ) {
-                  recordPush(data, record, '');
-                } else {
-                  ee = eq + 2;
-                  if (qc === 'double') {
-                    if (record.token.slice(eq + 2, len).indexOf('"') > -1) {
-                      inner = true;
-                    }
-                    chars[eq + 1] = '"';
-                    chars[chars.length - 1] = '"';
-                  } else {
-                    if (record.token.slice(eq + 2, len).indexOf("'") > -1) {
-                      inner = true;
-                    }
-                    chars[eq + 1] = "'";
-                    chars[chars.length - 1] = "'";
-                  }
-                  if (inner === true) {
-                    do {
-                      if (chars[ee] === "'" && qc === 'single') {
-                        chars[ee] = '"';
-                      } else if (chars[ee] === '"' && qc === 'double') {
-                        chars[ee] = "'";
-                      }
-                      ee = ee + 1;
-                    } while (ee < len);
-                  }
-                  record.token = chars.join('');
-                  recordPush(data, record, '');
-                }
-              }
-            };
-        const templateAtt =
-            function lexer_markup_tag_attributeRecord_templateAtt (
-              sample
-              , token
             ) {
-              if (
-                sample.charAt(0) === '{' &&
-                '{%#@:/?^<+~='.indexOf(sample.charAt(1)) > -1
-              ) {
-                record.types = 'template_attribute';
-              } else if (sample.charAt(0) === '<') {
-                record.types = 'template_attribute';
+              recordPush(data, record, '');
+            } else {
+              ee = eq + 2;
+              if (qc === 'double') {
+                if (record.token.slice(eq + 2, len).indexOf('"') > -1) {
+                  inner = true;
+                }
+                chars[eq + 1] = '"';
+                chars[chars.length - 1] = '"';
               } else {
-                record.token = token;
-                convertQ();
-                return;
+                if (record.token.slice(eq + 2, len).indexOf("'") > -1) {
+                  inner = true;
+                }
+                chars[eq + 1] = "'";
+                chars[chars.length - 1] = "'";
               }
-              record.token = token;
-              convertQ();
-              record.types = 'attribute';
-            };
+              if (inner === true) {
+                do {
+                  if (chars[ee] === "'" && qc === 'single') {
+                    chars[ee] = '"';
+                  } else if (chars[ee] === '"' && qc === 'double') {
+                    chars[ee] = "'";
+                  }
+                  ee = ee + 1;
+                } while (ee < len);
+              }
+              record.token = chars.join('');
+              recordPush(data, record, '');
+            }
+          }
+        };
+
+        const templateAtt = (sample, token) => {
+          if (
+            sample.charAt(0) === '{' &&
+                '{%#@:/?^<+~='.indexOf(sample.charAt(1)) > -1
+          ) {
+            record.types = 'template_attribute';
+          } else if (sample.charAt(0) === '<') {
+            record.types = 'template_attribute';
+          } else {
+            record.token = token;
+            convertQ();
+            return;
+          }
+          record.token = token;
+          convertQ();
+          record.types = 'attribute';
+        };
         if (attstore.length < 1) {
           return;
         }
@@ -536,157 +524,152 @@ export default (function markup_init () {
       // for start tags or singleton tags just yet some types set the `preserve` flag,
       // which means to preserveLine internal white space The `nopush` flag is set when
       // parsed tags are to be ignored and forgotten
-      (function lexer_markup_tag_types () {
+      //
+      // HOTFIX
+      //
+      // Originally an IIFE
+      // (function lexer_markup_tag_types() {}()
+      //
+      // Let's tidy this all up a bit, make it more readable.
 
-        if (end === ']>') {
+      if (end === ']>') {
 
+        end = '>';
+        sgmlflag = sgmlflag - 1;
+        ltype = 'end';
+
+      } else if (end === '---') {
+
+        ltype = 'comment';
+        start = '---';
+
+      } else if (b[a] === '<') {
+
+        if (b[a + 1] === '/') {
+
+          ltype = b[a + 2] === '#' ? 'template_end' : 'end';
           end = '>';
-          sgmlflag = sgmlflag - 1;
-          ltype = 'end';
 
-        } else if (end === '---') {
+        } else if (b[a + 1] === '!') {
 
-          ltype = 'comment';
-          start = '---';
+          if (b[a + 2] === '-' && b[a + 3] === '-') {
 
-        } else if (b[a] === '<') {
-
-          if (b[a + 1] === '/') {
-            if (b[a + 2] === '#') {
-              ltype = 'template_end';
-            } else {
-              ltype = 'end';
-            }
-            end = '>';
-
-          } else if (b[a + 1] === '!') {
-            if (b[a + 2] === '-' && b[a + 3] === '-') {
-              if (b[a + 4] === '#') {
-                end = '-->';
-                ltype = 'template';
-              } else {
-                end = '-->';
-                ltype = 'comment';
-                start = '<!--';
-              }
-            } else if (b[a + 2] === '[' && b[a + 3] === 'C' && b[a +
-                  4] === 'D' && b[a + 5] === 'A' && b[a +
-                  6] === 'T' && b[a + 7] === 'A' && b[a + 8] === '[') {
-              end = ']]>';
-              ltype = 'cdata';
-              preserve = true;
-            } else {
-              end = '>';
-              sgmlflag = sgmlflag + 1;
-              ltype = 'sgml';
-            }
-          } else if (b[a + 1] === '?') {
-            end = '?>';
-            if (b[a + 2] === 'x' && b[a + 3] === 'm' && b[a + 4] ===
-                'l') {
-              ltype = 'xml';
-              simple = true;
-            } else {
-              preserve = true;
+            if (b[a + 4] === '#') {
+              end = '-->';
               ltype = 'template';
+            } else {
+              end = '-->';
+              ltype = 'comment';
+              start = '<!--';
             }
-          } else if (b[a + 1] === '%') {
+
+          } else if (
+            b[a + 2] === '[' &&
+            b[a + 3] === 'C' &&
+            b[a + 4] === 'D' &&
+            b[a + 5] === 'A' &&
+            b[a + 6] === 'T' &&
+            b[a + 7] === 'A' &&
+            b[a + 8] === '['
+          ) {
+
+            end = ']]>';
+            ltype = 'cdata';
             preserve = true;
 
-          } else if ((b[a + 1] === 'p' || b[a + 1] === 'P') && (b[a +
-                2] === 'r' || b[a + 2] === 'R') && (b[a +
-                3] === 'e' || b[a + 3] === 'E') && (b[a + 4] === '>' || (
-            /\s/).test(b[a + 4]) === true)) {
-            end = '</pre>';
-            preserve = true;
-            ltype = 'ignore';
-          } else if ((b[a + 1] === 'x' || b[a + 1] === 'X') && (b[a +
-                2] === 'm' || b[a + 2] === 'M') && (b[a +
-                3] === 'l' || b[a + 3] === 'L') && b[a + 4] === ':' && (b[
-            a + 5] === 't' || b[a + 5] === 'T') && (
-            b[a + 6] === 'e' || b[a + 6] === 'E') && (b[a + 7] ===
-                'x' || b[a + 7] === 'X') && (b[a + 8] ===
-                't' || b[a + 8] === 'T') && (b[a + 9] === '>' || (/\s/)
-            .test(b[a + 9]) === true)) {
-            end = '</xsl:text>';
-            preserve = true;
-            ltype = 'ignore';
-          } else if ((b[a + 1] === 'c' || b[a + 1] === 'C') && (b[a +
-                2] === 'f' || b[a + 2] === 'F') && (b[a +
-                3] === 'q' || b[a + 3] === 'Q') && (b[a + 4] === 'u' || b[
-            a + 4] === 'U') && (b[a + 5] === 'e' ||
-                b[a + 5] === 'E') && (b[a + 6] === 'r' || b[a + 6] ===
-                'R') && (b[a + 7] === 'y' || b[a + 7] ===
-                'Y') && (b[a + 8] === '>' || (/\s/).test(b[a + 8]) ===
-                true)) {
-            end = '</' + b.slice(a + 1, a + 8).join('') + '>';
-            preserve = true;
-            ltype = 'content_preserve';
-          } else if (b[a + 1] === '<') {
-            if (b[a + 2] === '<') {
-              end = '>>>';
-            } else {
-              end = '>>';
-            }
-            ltype = 'template';
           } else {
+
+            end = '>';
+            sgmlflag = sgmlflag + 1;
+            ltype = 'sgml';
+          }
+
+        } else if (b[a + 1] === '?') {
+
+          end = '?>';
+
+          if (
+            b[a + 2] === 'x' &&
+            b[a + 3] === 'm' &&
+            b[a + 4] === 'l'
+          ) {
+            ltype = 'xml';
             simple = true;
-            end = '>';
-          }
-        } else if (b[a] === '{') {
-          preserve = true;
-          if (options.language === 'jsx') {
-            ext = true;
-            earlyexit = true;
-            record.token = '{';
-            record.types = 'script_start';
-            recordPush(data, record, '');
-            parse.structure.push([ 'script', parse.count ]);
-            return;
-          }
-          if (b[a + 1] === '{') {
-            if (b[a + 2] === '{') {
-              end = '}}}';
-              ltype = 'template';
-            } else if (b[a + 2] === '#') {
-              end = '}}';
-              ltype = 'template_start';
-            } else if (b[a + 2] === '/') {
-              end = '}}';
-              ltype = 'template_end';
-            } else if (b[a + 2] === 'e' && b[a + 3] === 'n' && b[a +
-                  4] === 'd') {
-              end = '}}';
-              ltype = 'template_end';
-            } else if (b[a + 2] === 'e' && b[a + 3] === 'l' && b[a +
-                  4] === 's' && b[a + 5] === 'e') {
-              end = '}}';
-              ltype = 'template_else';
-            } else {
-              end = '}}';
-              ltype = 'template';
-            }
-          } else if (b[a + 1] === '%') {
-            end = '%}';
-            ltype = 'template';
           } else {
-            end = b[a + 1] + '}';
+            preserve = true;
             ltype = 'template';
           }
-        }
 
-        if (options.lexerOptions.markup.preserveAttribute === true) {
+        } else if (b[a + 1] === '%') {
+
           preserve = true;
+
+        } else if ((
+          b[a + 1] === 'p' || b[a + 1] === 'P'
+        ) && (
+          b[a + 2] === 'r' || b[a + 2] === 'R'
+        ) && (
+          b[a + 3] === 'e' || b[a + 3] === 'E'
+        ) && (
+          b[a + 4] === '>' || /\s/.test(b[a + 4])
+        )) {
+
+          end = '</pre>';
+          ltype = 'ignore';
+          preserve = true;
+
+        } else {
+
+          simple = true;
+          end = '>';
+
+        }
+      } else if (b[a] === '{') {
+
+        preserve = true;
+
+        if (options.language === 'jsx') {
+          ext = true;
+          earlyexit = true;
+          record.token = '{';
+          record.types = 'script_start';
+          parse.structure.push([ 'script', parse.count ]);
+          recordPush(data, record, '');
+          return;
         }
 
-      }());
+        // HOT FIX
+        //
+        // Removed the delimeter checks that would be used
+        // for languages outside of Liquid, ie: handlebars etc
+        if (b[a + 1] === '{') {
 
-      if (earlyexit === true) {
-        return;
+          end = '}}';
+          ltype = 'template';
+
+        } else if (b[a + 1] === '%') {
+
+          end = '%}';
+          ltype = 'template';
+
+        } else {
+
+          end = b[a + 1] + '}';
+          ltype = 'template';
+
+        }
       }
-      // This is the real tag lexer. Everything that follows is attribute handling and
+
+      if (options.lexerOptions.markup.preserveAttribute === true) preserve = true;
+
+      if (earlyexit === true) return;
+
+      // This is the real tag lexer.
+      // Everything that follows is attribute handling and
       // edge cases
       lastchar = end.charAt(end.length - 1);
+
+      // console.log(ltype, b[a] + b[a + 1] + b[a + 2] + b[a + 3]);
 
       if (ltype === 'comment' && b[a] === '<') {
 
@@ -744,125 +727,152 @@ export default (function markup_init () {
           }
           return true;
         };
+
         // attribute lexer
-        const attributeLexer = function lexer_markup_tag_attributeLexer (
-          quotes
-        ) {
+        const attributeLexer = function lexer_markup_tag_attributeLexer (quotes: boolean) {
+
+          let name: string[];
           let atty = '';
-          let name; let aa = 0;
+          let aa = 0;
           let bb = 0;
+
+          const ignoreattr = 'data-prettify-ignore';
+
           if (quotes === true) {
             atty = attribute.join('');
             name = arname(atty);
-            if (name[0] === 'data-parse-ignore' || name[0] ===
-                  'data-prettydiff-ignore') {
-              ignoreme = true;
-            }
             quote = '';
+
+            // HOT PATCH
+            //
+            // Replaced the attribute ignore logic for 'data-parse-ignore' to
+            // data-prettify-ignore and also removed 'data-prettydiff-ignore'
+            if (name[0] === ignoreattr) ignoreme = true;
+
           } else {
-            atty = attribute
-              .join('');
-            if (options.language !== 'jsx' || (options.language ===
-                    'jsx' && atty.charAt(atty.length - 1) !==
-                    '}')) {
+
+            atty = attribute.join('');
+
+            if (options.language !== 'jsx' || (
+              options.language === 'jsx' &&
+              atty.charAt(atty.length - 1) !== '}'
+            )) {
               atty = atty.replace(/\s+/g, ' ');
             }
+
             name = arname(atty);
-            if (name[0] === 'data-parse-ignore' || name[0] ===
-                  'data-prettydiff-ignore') {
-              ignoreme = true;
-            }
-            if (options.language === 'jsx' && attribute[0] === '{' &&
-                  attribute[attribute.length - 1] === '}') {
+
+            if (name[0] === ignoreattr) ignoreme = true;
+
+            if (
+              options.language === 'jsx' &&
+              attribute[0] === '{' &&
+              attribute[attribute.length - 1] === '}'
+            ) {
               jsxcount = 0;
             }
           }
-          if (atty.slice(0, 2) === '{%') {
-            nosort = true;
-          }
-          atty = atty
-            .replace(/^\u0020/, '')
-            .replace(/\u0020$/, '');
-          attribute = atty
-            .replace(/\r\n/g, '\n')
-            .split('\n');
+
+          if (atty.slice(0, 2) === '{%') nosort = true;
+
+          atty = atty.replace(/^\u0020/, '').replace(/\u0020$/, '');
+          attribute = atty.replace(/\r\n/g, '\n').split('\n');
           bb = attribute.length;
+
           if (aa < bb) {
             do {
               attribute[aa] = attribute[aa].replace(/(\s+)$/, '');
               aa = aa + 1;
             } while (aa < bb);
           }
-          if (options.crlf === true) {
-            atty = attribute.join('\r\n');
-          } else {
-            atty = attribute.join('\n');
-          }
+
+          atty = attribute.join(options.crlf === true ? '\r\n' : '\n');
           atty = bracketSpace(atty);
+
           if (atty === '=') {
-            attstore[attstore.length - 1][0] =
-                  `${attstore[attstore.length - 1][0]}=`;
-          } else if (atty.charAt(0) === '=' && attstore.length > 0 &&
-                attstore[attstore.length - 1][0].indexOf(
-                  '='
-                ) < 0) {
+
+            attstore[attstore.length - 1][0] = `${attstore[attstore.length - 1][0]}=`;
+
+          } else if (
+            atty.charAt(0) === '=' &&
+            attstore.length > 0 &&
+            attstore[attstore.length - 1][0].indexOf('=') < 0
+          ) {
+
             // if an attribute starts with a `=` then adjoin it to the last attribute
-            attstore[attstore.length - 1][0] = attstore[attstore
-              .length - 1][0] + atty;
-          } else if (atty.charAt(0) !== '=' && attstore.length > 0 &&
-                attstore[attstore.length - 1][0].indexOf(
-                  '='
-                ) === attstore[attstore.length - 1][0].length - 1) {
+            attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
+
+          } else if (
+            atty.charAt(0) !== '=' &&
+            attstore.length > 0 &&
+            attstore[attstore.length - 1][0].indexOf('=') ===
+            attstore[attstore.length - 1][0].length - 1
+          ) {
+
             // if an attribute follows an attribute ending with `=` then adjoin it to the
             // last attribute
-            attstore[attstore.length - 1][0] = attstore[attstore
-              .length - 1][0] + atty;
+            attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
+
           } else if (atty !== '' && atty !== ' ') {
+
             attstore.push([ atty, lines ]);
+
           }
-          if (attstore.length > 0 && attstore[attstore.length - 1][0]
-            .indexOf('=\u201c') > 0) {
-            sparser.parseError =
-                  `Quote looking character (\u201c, &#x201c) used instead of actual quotes on line number ${parse.lineNumber}`;
-          } else if (attstore.length > 0 && attstore[attstore.length -
-                  1][0].indexOf('=\u201d') > 0) {
-            sparser.parseError =
-                  `Quote looking character (\u201d, &#x201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+
+          if (
+            attstore.length > 0 &&
+            attstore[attstore.length - 1][0].indexOf('=\u201c') > 0
+          ) {
+            sparser.parseError = `Quote looking character (\u201c, &#x201c) used instead of actual quotes on line number ${parse.lineNumber}`;
+          } else if (
+            attstore.length > 0 &&
+            attstore[attstore.length - 1][0].indexOf('=\u201d') > 0
+          ) {
+            sparser.parseError = `Quote looking character (\u201d, &#x201d) used instead of actual quotes on line number ${parse.lineNumber}`;
           }
+
           attribute = [];
-          lines = (b[a] === '\n')
-            ? 2
-            : 1;
+          lines = b[a] === '\n' ? 2 : 1;
+
         };
+
         do {
+
           if (b[a] === '\n') {
             lines = lines + 1;
             parse.lineNumber = parse.lineNumber + 1;
           }
-          if (preserve === true || (((/\s/).test(b[a]) === false &&
-                quote !== '}') || quote === '}')) {
+
+          if (preserve === true || ((
+            /\s/.test(b[a]) === false && quote !== '}'
+          ) ||
+            quote === '}'
+          )) {
+
             lex.push(b[a]);
+
             if (lex[0] === '<' && lex[1] === '>' && end === '>') {
               record.token = '<>';
               record.types = 'start';
               recordPush(data, record, '(empty)');
               return;
             }
-            if (lex[0] === '<' && lex[1] === '/' && lex[2] === '>' &&
-                end === '>') {
+
+            if (lex[0] === '<' && lex[1] === '/' && lex[2] === '>' && end === '>') {
               record.token = '</>';
               record.types = 'end';
               recordPush(data, record, '');
               return;
             }
           }
-          if (ltype === 'cdata' && b[a] === '>' && b[a - 1] === ']' && b[
-            a - 2] !== ']') {
-            sparser.parseError =
-                `CDATA tag ${lex.join('')} is not properly terminated with ]]>`;
+
+          if (ltype === 'cdata' && b[a] === '>' && b[a - 1] === ']' && b[a - 2] !== ']') {
+            sparser.parseError = `CDATA tag ${lex.join('')} not properly terminated with ]]>`;
             break;
           }
+
           if (ltype === 'comment') {
+
             quote = '';
 
             // comments must ignore fancy encapsulations and attribute parsing
@@ -875,25 +885,27 @@ export default (function markup_init () {
               if (e > -1) {
                 do {
                   f = f - 1;
-                  if (lex[f] !== end.charAt(e)) {
-                    break;
-                  }
+                  if (lex[f] !== end.charAt(e)) break;
                   e = e - 1;
                 } while (e > -1);
               }
 
               if (e < 0) {
+
                 if (end === 'endcomment') {
 
                   f = f - 1;
 
-                  if ((/\s/).test(lex[f]) === true) {
-                    do {
-                      f = f - 1;
-                    } while (f > 0 && (/\s/).test(lex[f]) === true);
-                  }
+                  if (/\s/.test(lex[f])) do { f = f - 1; } while (f > 0 && /\s/.test(lex[f]));
 
-                  if (lex[f - 2] === '{' && lex[f - 1] === '%') {
+                  // HOT FIX
+                  //
+                  // Handle whitespace dash delimeters, previously end and lastchar
+                  // values would skip assignment when comment has a whitespace dash.
+                  if (
+                    (lex[f - 2] === '{' || lex[f - 1] === '{') &&
+                    (lex[f - 1] === '%' || lex[f] === '%')
+                  ) {
                     end = '%}';
                     lastchar = '}';
                   }
@@ -1010,38 +1022,38 @@ export default (function markup_init () {
                       }
 
                       // HOTFIX
-
+                      //
                       // When options is unformatter=true liquid attributes
                       // were being replaced in an incorrect manner, essentially,
                       // wreaking total fucking havoc. If preserveLine is set to false,
-                      // then this control condition can pass, this code base is absolute
-                      // chaos, so I have little clue what this condition does, but it seems
-                      // to fix this issue and actually preserveLine attributes.
+                      // then this control condition can pass, this code base can sometimes
+                      // be a beautiful chaos, so I have little clue what this condition does,
+                      // but it seems to fix this issue and actually preserveLine attributes.
 
                       if (
                         preserve === false &&
-                          (
-                            /^=?("|')?((\{(\{|%|#|@|:|\/|\?|\^|<|\+|~|=))|(\[%)|<)/
-                          )
-                            .test(
-                              b[a] + b[a + 1] + b[a + 2] + b[a + 3]
-                            ) === true) {
+                        /^=?["']?({[{%])/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])
+                      ) {
 
                         attribute.pop();
 
-                        if (b[a] !== '=' && attribute.length > 0) {
-                          attributeLexer(false);
-                        }
+                        if (b[a] !== '=' && attribute.length > 0) attributeLexer(false);
 
                         quote = '';
 
                         do {
+
                           attribute.push(b[a]);
+
                           if (b[a] === dustatt[dustatt.length - 1]) {
+
                             dustatt.pop();
+
                             if (b[a] === '}' && b[a + 1] === '}') {
+
                               attribute.push('}');
                               a = a + 1;
+
                               if (b[a + 1] === '}') {
                                 attribute.push('}');
                                 a = a + 1;
@@ -1067,7 +1079,9 @@ export default (function markup_init () {
                               dustatt[dustatt.length - 1] !== ']') {
                             dustatt.push(']');
                           }
+
                           a = a + 1;
+
                         } while (a < c);
 
                       } else if (b[a] === '{' && b[a - 1] === '=' &&
@@ -1102,6 +1116,7 @@ export default (function markup_init () {
                       } else if (lex[0] !== '{' && b[a] === '{' && (b[a +
                             1] === '{' || b[a + 1] === '%' || b[a +
                             1] === '@' || b[a + 1] === '#')) {
+
                         // opening embedded template expression
                         if (b[a + 1] === '{') {
                           if (b[a + 2] === '{') {
@@ -1359,21 +1374,15 @@ export default (function markup_init () {
                   break;
                 }
 
-                if (
-                  lex[0] === '{' &&
-                    lex[1] === '%' && (
-                    (lex[2] === '-' && (
-                      lex.join('').replace(/\s+/g, '') ===
-                        '{%-comment-%}' ||
-                        lex.join('').replace(/\s+/g, '') ===
-                        '{%-comment%}'
-                    )) || (
-                      lex.join('').replace(/\s+/g, '') ===
-                        '{%comment%}' ||
-                        lex.join('').replace(/\s+/g, '') === '{%comment-%}'
-                    )
+                if (lex[0] === '{' && lex[1] === '%' && ((
+                  lex[2] === '-' && (
+                    lex.join('').replace(/\s+/g, '') === '{%-comment-%}' ||
+                    lex.join('').replace(/\s+/g, '') === '{%-comment%}'
                   )
-                ) {
+                ) || (
+                  lex.join('').replace(/\s+/g, '') === '{%comment%}' ||
+                  lex.join('').replace(/\s+/g, '') === '{%comment-%}'
+                ))) {
 
                   end = 'endcomment';
                   lastchar = 't';
@@ -1385,28 +1394,23 @@ export default (function markup_init () {
                   // if current character matches the last character of the tag ending sequence
                   f = lex.length;
                   e = end.length - 1;
+
                   if (e > -1) {
                     do {
                       f = f - 1;
-                      if (lex[f] !== end.charAt(e)) {
-                        break;
-                      }
+                      if (lex[f] !== end.charAt(e)) break;
                       e = e - 1;
                     } while (e > -1);
                   }
-                  if (e < 0) {
-                    break;
-                  }
+
+                  if (e < 0) break;
+
                 }
               }
-            } else if (
-              b[a] === quote.charAt(quote.length - 1) && (
-                (
-                  options.language === 'jsx' &&
-                    end === '}' && (b[a - 1] !== '\\' || slashy() === false)
-                ) || options.language !== 'jsx' || end !== '}'
-              )
-            ) {
+            } else if (b[a] === quote.charAt(quote.length - 1) && ((
+              options.language === 'jsx' &&
+                end === '}' && (b[a - 1] !== '\\' || slashy() === false)
+            ) || options.language !== 'jsx' || end !== '}')) {
 
               // find the closing quote or embedded template expression
               f = 0;
@@ -1501,6 +1505,7 @@ export default (function markup_init () {
           return;
         }
       }
+
       record.token = element;
       record.types = ltype;
       tname = tagName(element);
@@ -1510,19 +1515,23 @@ export default (function markup_init () {
       }
 
       // a quick hack to inject records for a type of template comments
-      if (tname === 'comment' && element.slice(0, 2) === '{%') {
+      if (
+        tname === 'comment' &&
+        element.charCodeAt(0) === 123 &&
+        element.charCodeAt(1) === 37
+      ) {
 
         let linesStart = 0;
         let linesEnd = 0;
 
         // lexer_markup_tag_lineFindStart
-        function lineFindStart (spaces) {
+        function lineFindStart (spaces: string) {
           linesStart = spaces === '' ? 0 : spaces.split('\n').length;
           return '';
         };
 
         // lexer_markup_tag_lineFindEnd
-        function lineFindEnd (spaces) {
+        function lineFindEnd (spaces: string) {
           linesEnd = spaces === '' ? 0 : spaces.split('\n').length;
           return '';
         };
@@ -1538,21 +1547,21 @@ export default (function markup_init () {
         // This fix applies logic so when a delimited is detected, it will
         // either apply matchers or not apply at all.
 
-        const hasDelimiter = element.charAt(2) === '-';
+        const hasDelimiter = element.charCodeAt(3) === 45;
 
         element = element
           .replace(/^(\s*{%-?\s*comment\s*-?%})/, '')
-          .replace(/({%-?\s*endcomment\s*-?%}\s*)$/, '');
+          .replace(/(\s*{%-?\s*endcomment\s*-?%}\s*)$/, '');
 
-        record.token = hasDelimiter
-          ? '{%- comment -%}'
-          : '{% comment %}';
+        record.token = hasDelimiter ? '{%- comment -%}' : '{% comment %}';
 
         recordPush(data, record, 'comment');
 
         record.begin = parse.count;
-        element = element.replace(/^\s*/, lineFindStart);
-        element = element.replace(/\s*$/, lineFindEnd);
+
+        element = element.replace(/^\s/, lineFindStart);
+        element = element.replace(/\s$/, lineFindEnd);
+
         record.lines = linesStart;
         record.stack = 'comment';
         record.token = element;
@@ -1560,12 +1569,10 @@ export default (function markup_init () {
 
         recordPush(data, record, '');
 
-        record.token = hasDelimiter
-          ? '{%- endcomment -%}'
-          : '{% endcomment %}';
-
+        record.token = hasDelimiter ? '{%- endcomment -%}' : '{% endcomment %}';
         record.lines = linesEnd;
         record.types = 'template_end';
+
         recordPush(data, record, '');
 
         return;
