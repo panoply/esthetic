@@ -32,7 +32,7 @@ interface option {
   }
 }
 
-interface record {
+export interface IRecord {
   begin: number;
   ender: number;
   lexer: string;
@@ -52,7 +52,7 @@ interface splice {
   data: Parsed;
   howmany: number;
   index: number;
-  record?: record;
+  record?: IRecord;
 }
 
 interface wrapConfig {
@@ -82,8 +82,8 @@ export interface Parse {
   lineNumber: number;
   linesSpace: number;
   objectSort(data: Parsed): void;
-  pop(data: Parsed): record;
-  push(data: Parsed, record: record, structure: string): void;
+  pop(data: Parsed): IRecord;
+  push(data: Parsed, record: IRecord, structure: string): void;
   references: string[][];
   safeSort(array: any[], operation: string, recursive: boolean): any[];
   sortCorrection(start:number, end:number): void;
