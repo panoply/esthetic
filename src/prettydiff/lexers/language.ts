@@ -42,10 +42,9 @@ export default (function language_init () {
     nameproper (input) {
 
       const langmap = {
-        handlebars: 'Handlebars Template'
-        , javascript: 'JavaScript'
+        javascript: 'JavaScript'
         , jsp: 'JSTL (JSP)'
-        , jsx: 'React JSX'
+        , jsx: 'JSX'
         , liquid: 'Liquid Template'
         , markup: 'markup'
         , scss: 'SCSS'
