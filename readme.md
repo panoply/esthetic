@@ -18,15 +18,15 @@ Prettify supports beautification of Liquid together with several other languages
 
 # Install
 
-This module is used by the [Liquify IDE](https://liquify.dev) extension. The project is available on the public NPM registry and can be consumed by individuals and used by any project which is not maintained, created or shipped under and/or by the Shopify organization, its company and/or employees of Shopify. Everyone else is free to use as they wish.
+This module is used by the [Liquify IDE](https://liquify.dev) extension. The project is available on the public NPM registry and can be consumed by individuals and used by any project which is not maintained, created or shipped by the Shopify organization, its company and/or employees of the platform. Everyone else is free to use as they wish.
 
 ```cli
-<pnpm|npm|yarn> i @liquify/prettify --save-dev
+<pnpm add @liquify/prettify --save-dev
 ```
 
 # Usage
 
-The tool provides beautification rules for multiple languages. Each supported language exposes different formatting options. The export accepts a `string` type and second (optional) rules object. There are different modes available, each mode is representative of a single language or multiple languages.
+The tool provides beautification rules for multiple languages that are infusing Liquid. Each supported language exposes different formatting options. The export accepts a `string` type and second (optional) rules object. There are different modes available, each mode is representative of a single language or multiple languages.
 
 - markup
 - style
@@ -44,7 +44,7 @@ An optional class instance is available which accepts a global rule-set. Each be
 The instance exposes the same methods provided by the language specifics export. The difference being that you cannot pass options to the specifics. This approach also provides an additional `rules()` method which can be used to update the globals we supplied the instance.
 
 ```typescript
-import * prettify from "@liquify/prettify";
+import * as prettify from "@liquify/prettify";
 
 // Update Rules
 prettify.options(rules: options, rules?: {
@@ -102,20 +102,21 @@ yaml(source: string, rules?: object): Promise<string>
 
 Each method returns a promise, so when formatting fails or a parse error occurs, `.catch()` is invoked. The error returns an object. The object contains the provided input (`source`) and the error message.
 
+<!-- prettier-ignore -->
 ```typescript
-import * as prettify from "@liquify/prettify";
+import * as prettify from '@liquify/prettify';
 
-const code = "{% if x %} {{ x }} {%- endif -%}";
+const code = '{% if x %} {{ x }} {% endif %}';
 
-prettify
-  .markup(code)
-  .then((formatted) => console.log(formatted))
-  .catch((error) => {
-    console.error(error);
+prettify.markup(code).then(formatted => console.log(formatted)).catch(error => {
 
-    // Return the original input
-    return code;
-  });
+  // Print the PrettyDiff error
+  console.error(error);
+
+  // Return the original input
+  return code;
+
+});
 ```
 
 ### Options
@@ -128,7 +129,7 @@ Prettify uses a custom set of beautification rules (options). Though input is fo
     newlineEnd: true,
     selfCloseSpace: false,
     indentLevel: 0,
-    preserveLines: 3,
+    preserveLine: 3,
     indentSize: 2,
     wrap: 80,
     preserveComment: true,
@@ -332,7 +333,6 @@ You can disable Prettify from formatting a file by placing an inline control com
     <li>The entire file will not be formatted</li>
   </ul>
 </div>
-
 ```
 
 # Inline Formatting
@@ -365,7 +365,7 @@ Prettify provides inline formatting support via comments. Inline formatting adop
 
 ### Example
 
-Using HTML comments
+Using inline HTML comments to apply formatting on a specific block of code:
 
 <!-- prettier-ignore -->
 ```html
