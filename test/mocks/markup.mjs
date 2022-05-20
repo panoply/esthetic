@@ -38,6 +38,51 @@ export const markup_ignore_inline = `
 </li>
 </ul>
 
+<!-- @prettify ignore:start -->
+{%if customer.name == "xxx" %} THIS WILL BE IGNORED AND NOT FORMATTED
+{% elsif customer.name == "xx" %}
+The lines and spacing will be preserver {% else %}Hi Stranger!         {% endif %}
+<!-- @prettify ignore:end -->
+
+Formatting is applied:
+
+<div>
+<ul>
+<li>one</li>
+<li>two</li>
+</ul>
+</div>
+
+
+Lets test Liquid comment ignores
+
+{% comment -%}example{%- endcomment -%}
+
+{%- comment -%}
+example
+{%- endcomment -%}
+
+<div>
+<ul>
+<li>one</li>
+<li>two</li>
+</ul>
+</div>
+
+
+{% comment %} two {% endcomment %}
+
+
+<div class="bar"> <div>foo </div></div>
+
+
+<div>
+<ul>
+<li>one</li>
+<li>two</li>
+</ul>
+</div>
+
 `;
 
 /**
