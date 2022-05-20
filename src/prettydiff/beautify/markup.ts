@@ -267,6 +267,7 @@ export default (function beautify_markup_init () {
           if (data.types[a] === 'content' && options.preserveText === false) {
 
             let countx = 0;
+
             const chars = data.token[a].replace(/\s+/g, ' ').split(' ');
 
             do {
@@ -676,12 +677,10 @@ export default (function beautify_markup_init () {
           } else if (data.types[a] === 'comment') {
 
             if (comstart < 0) comstart = a;
-            if (
-              data.types[a + 1] !== 'comment' || (
-                a > 0 &&
-                data.types[a - 1].indexOf('end') > -1
-              )
-            ) comment();
+
+            if (data.types[a + 1] !== 'comment' || (
+              a > 0 && data.types[a - 1].indexOf('end') > -1
+            )) comment();
 
           } else if (data.types[a] !== 'comment') {
 
@@ -715,18 +714,14 @@ export default (function beautify_markup_init () {
                 level.push(-10);
               }
 
-            } else if (
-              (
-                options.forceIndent === false || (
-                  options.forceIndent === true &&
-                  data.types[next] === 'script_start'
-                )
-              ) && (
-                data.types[a] === 'content' ||
-                    data.types[a] === 'singleton' ||
-                    data.types[a] === 'template'
-              )
-            ) {
+            } else if ((options.forceIndent === false || (
+              options.forceIndent === true &&
+              data.types[next] === 'script_start'
+            )) && (
+              data.types[a] === 'content' ||
+              data.types[a] === 'singleton' ||
+              data.types[a] === 'template'
+            )) {
 
               count = count + data.token[a].length;
 
@@ -808,7 +803,7 @@ export default (function beautify_markup_init () {
               } else if (
                 data.lines[next] === 0 && (
                   data.types[next] === 'content' ||
-                    data.types[next] === 'singleton' || (
+                  data.types[next] === 'singleton' || (
                     data.types[a] === 'start' &&
                     data.types[next] === 'template'
                   )
