@@ -70,7 +70,7 @@ export interface IStyleOptions extends SharedOptions {
    *
    * @default false
    */
-  objectSort: boolean
+  objectSort?: boolean
 
   /**
    * **Enabled**
@@ -113,7 +113,7 @@ export interface IStyleOptions extends SharedOptions {
    * (Allman style indentation).
    *
    */
-  braceAllman: boolean,
+  braceAllman?: boolean,
 
   /**
    * This will create a newline before and after objects values, for example:
@@ -147,7 +147,7 @@ export interface IStyleOptions extends SharedOptions {
    *
    * @default false
    */
-  classPadding: boolean,
+  classPadding?: boolean,
 
   /**
    * This will eliminate leading zeros from numbers expressed
@@ -179,7 +179,7 @@ export interface IStyleOptions extends SharedOptions {
    *
    * @default false
    */
-  noLeadZero: boolean;
+  noLeadZero?: boolean;
 
   /**
    * **Description**
@@ -197,5 +197,5 @@ export interface IStyleOptions extends SharedOptions {
    *
    * @default 'none'
    */
-  quoteConvert: 'double' | 'single' | 'none'
+  quoteConvert?: 'double' | 'single' | 'none'
 }
