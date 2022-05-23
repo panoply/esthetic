@@ -4,10 +4,14 @@ import { sparser } from './sparser';
 
 const parse: Parse = {
 
-  // Stores the final index location of the data arrays
+  /**
+   * Stores the final index location of the data arrays
+   */
   count: -1,
 
-  // Stores the various data arrays of the parse table
+  /**
+   * Stores the various data arrays of the parse table
+   */
   data: {
     begin: []
     , ender: []
@@ -18,7 +22,9 @@ const parse: Parse = {
     , types: []
   },
 
-  // Stores the name of the data arrays.  This is used for internal automation
+  /**
+   *  Stores the name of the data arrays.  This is used for internal automation
+   */
   datanames: [
     'begin'
     , 'ender'
@@ -67,16 +73,18 @@ const parse: Parse = {
     let keyend = 0;
     let keylen = 0;
     const global = (
-      data.lexer[cc] === 'style' &&
-      parse.structure[parse.structure.length - 1][0] === 'global'
+      data.lexer[cc] === 'style'
+      && parse.structure[parse.structure.length - 1][0] === 'global'
     );
 
     const keys = [];
     const length = parse.count;
     const begin = dd;
     const style = data.lexer[cc] === 'style';
-    const delim = style === true ? [ ';', 'separator' ] : [ ','
-      , 'separator' ];
+    const delim = style === true
+      ? [ ';', 'separator' ]
+      : [ ',', 'separator' ];
+
     const lines = parse.linesSpace;
     const stack = global === true
       ? 'global'
@@ -121,14 +129,14 @@ const parse: Parse = {
           if (data.types[xx] === 'selector') return 1;
 
           if (
-            data.types[xx] === 'property' &&
-            data.types[yy] !== 'variable'
+            data.types[xx] === 'property'
+            && data.types[yy] !== 'variable'
           ) return -1;
 
           if (
-            data.types[xx] === 'mixin' &&
-            data.types[yy] !== 'property' &&
-            data.types[yy] !== 'variable'
+            data.types[xx] === 'mixin'
+            && data.types[yy] !== 'property'
+            && data.types[yy] !== 'variable'
           ) return -1;
         }
 
@@ -156,10 +164,10 @@ const parse: Parse = {
 
       if (
         data.begin[cc] === dd || (
-          global === true &&
-          cc < behind &&
-          data.token[cc] === '}' &&
-          data.begin[data.begin[cc]] === -1
+          global === true
+          && cc < behind
+          && data.token[cc] === '}'
+          && data.begin[data.begin[cc]] === -1
         )
       ) {
 
@@ -167,9 +175,9 @@ const parse: Parse = {
 
         if (
           data.token[cc] === delim[0] || (
-            style === true &&
-            data.token[cc] === '}' &&
-            data.token[cc + 1] !== ';'
+            style === true
+            && data.token[cc] === '}'
+            && data.token[cc + 1] !== ';'
           )
         ) {
 
@@ -177,8 +185,8 @@ const parse: Parse = {
           front = cc + 1;
 
         } else if (
-          style === true &&
-          data.token[cc - 1] === '}'
+          style === true
+          && data.token[cc - 1] === '}'
         ) {
 
           commaTest = true;
@@ -188,9 +196,7 @@ const parse: Parse = {
         if (front === 0 && data.types[0] === 'comment') {
 
           // keep top comments at the top
-          do {
-            front = front + 1;
-          } while (data.types[front] === 'comment');
+          do { front = front + 1; } while (data.types[front] === 'comment');
 
         } else if (data.types[front] === 'comment' && data.lines[front] <
           2) {
@@ -203,8 +209,8 @@ const parse: Parse = {
         if (
           commaTest === true && (
             data.token[cc] === delim[0] || (
-              style === true &&
-              data.token[cc - 1] === '}'
+              style === true
+              && data.token[cc - 1] === '}'
             )
           ) && front <= behind
         ) {
@@ -289,11 +295,11 @@ const parse: Parse = {
           ee = keys[dd][0];
 
           if (
-            style === true &&
-            data.types[keyend - 1] !== 'end' &&
-            data.types[keyend] === 'comment' &&
-            data.types[keyend + 1] !== 'comment' &&
-            dd < keylen - 1
+            style === true
+            && data.types[keyend - 1] !== 'end'
+            && data.types[keyend] === 'comment'
+            && data.types[keyend + 1] !== 'comment'
+            && dd < keylen - 1
           ) {
 
             // missing a terminal comment causes many problems
@@ -305,12 +311,12 @@ const parse: Parse = {
             do {
 
               if (
-                style === false &&
-                dd === keylen - 1 &&
-                ee === keyend - 2 &&
-                data.token[ee] === ',' &&
-                data.lexer[ee] === 'script' &&
-                data.types[ee + 1] === 'comment'
+                style === false
+                && dd === keylen - 1
+                && ee === keyend - 2
+                && data.token[ee] === ','
+                && data.lexer[ee] === 'script'
+                && data.types[ee + 1] === 'comment'
               ) {
 
                 // Do not include terminal commas that are followed by a comment
@@ -345,8 +351,8 @@ const parse: Parse = {
                 commaTest = true;
 
               } else if (
-                data.token[ee] !== delim[0] &&
-                data.types[ee] !== 'comment'
+                data.token[ee] !== delim[0]
+                && data.types[ee] !== 'comment'
               ) {
 
                 commaTest = false;
@@ -360,8 +366,8 @@ const parse: Parse = {
 
           // Injecting the list delimiter
           if (
-            commaTest === false &&
-            store.token[store.token.length - 1] !== 'x;' && (
+            commaTest === false
+            && store.token[store.token.length - 1] !== 'x;' && (
               style === true ||
               dd < keylen - 1
             )
@@ -444,14 +450,13 @@ const parse: Parse = {
 
       if (
         (
-          data.lexer[a] === 'markup' &&
-          sparser.options.lexerOptions.markup.tagSort === true
+          data.lexer[a] === 'markup'
+          && sparser.options.lexerOptions.markup.tagSort === true
         ) || (
           (
             data.lexer[a] === 'script' ||
             data.lexer[a] === 'style'
-          ) && sparser.options.lexerOptions[data.lexer[a]].objectSort ===
-          true
+          ) && sparser.options.lexerOptions[data.lexer[a]].objectSort === true
         )
       ) {
 
@@ -466,9 +471,9 @@ const parse: Parse = {
 
         if (
           data.begin[a] === begin || (
-            data.begin[data.begin[a]] === begin &&
-            data.types[a].indexOf('attribute') > -1 &&
-            data.types[a].indexOf('attribute_end') < 0
+            data.begin[data.begin[a]] === begin
+            && data.types[a].indexOf('attribute') > -1
+            && data.types[a].indexOf('attribute_end') < 0
           )
         ) {
 
@@ -486,9 +491,7 @@ const parse: Parse = {
     };
 
     // parse_push_datanames
-    parse.datanames.forEach(value => {
-      data[value].push(record[value]);
-    });
+    parse.datanames.forEach(value => data[value].push(record[value]));
 
     if (data === parse.data) {
 
@@ -497,8 +500,9 @@ const parse: Parse = {
 
       if (record.lexer !== 'style') {
         if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, '') === '') {
-          structure = record.types === 'else' ? 'else' : structure =
-            record.token;
+          structure = record.types === 'else'
+            ? 'else'
+            : structure = record.token;
         }
       }
 
@@ -828,20 +832,20 @@ const parse: Parse = {
     // This first loop solves for the begin values
     do {
 
-      if (a > 0 &&
-        data.types[a].indexOf('attribute') > -1 &&
-        data.types[a].indexOf('end') < 0 &&
-        data.types[a - 1].indexOf('start') < 0 &&
-        data.types[a - 1].indexOf('attribute') < 0 &&
-        data.lexer[a] === 'markup') {
+      if (a > 0
+        && data.types[a].indexOf('attribute') > -1
+        && data.types[a].indexOf('end') < 0
+        && data.types[a - 1].indexOf('start') < 0
+        && data.types[a - 1].indexOf('attribute') < 0
+        && data.lexer[a] === 'markup') {
         structure.push(a - 1);
       }
 
-      if (a > 0 &&
-        data.types[a - 1].indexOf('attribute') > -1 &&
-        data.types[a].indexOf('attribute') < 0 &&
-        data.lexer[structure[structure.length - 1]] === 'markup' &&
-        data.types[structure[structure.length - 1]].indexOf('start') < 0
+      if (a > 0
+        && data.types[a - 1].indexOf('attribute') > -1
+        && data.types[a].indexOf('attribute') < 0
+        && data.lexer[structure[structure.length - 1]] === 'markup'
+        && data.types[structure[structure.length - 1]].indexOf('start') < 0
       ) {
         structure.pop();
       }
@@ -1018,8 +1022,10 @@ const parse: Parse = {
       if (/^\s+$/.test(lines[b + 1]) === true || lines[b + 1] === '') {
         do {
           b = b + 1;
-        } while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b +
-            1] === ''));
+        } while (
+          b < len
+          && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === '')
+        );
       }
 
       if (b < len - 1) second.push('');
@@ -1031,14 +1037,12 @@ const parse: Parse = {
       build.push(config.chars[a]);
 
       if (config.chars[a] === '\n') {
-        parse.lineNumber = parse.lineNumber +
-        1;
+        parse.lineNumber = parse.lineNumber + 1;
       }
 
       if (
-        config.chars[a] === term &&
-        config.chars.slice(a - terml, a + 1).join('') === config
-          .terminator
+        config.chars[a] === term
+        && config.chars.slice(a - terml, a + 1).join('') === config.terminator
       ) break;
 
       a = a + 1;
@@ -1059,8 +1063,8 @@ const parse: Parse = {
 
       } while (a < config.end && (
         config.chars[a - 1] !== 'd' || (
-          config.chars[a - 1] === 'd' &&
-            build.slice(build.length - 10).join('') !== 'ignore:end'
+          config.chars[a - 1] === 'd'
+          && build.slice(build.length - 10).join('') !== 'ignore:end'
         )
       ));
 
@@ -1071,17 +1075,17 @@ const parse: Parse = {
       do {
 
         if (
-          config.opening === '/*' &&
-          config.chars[b - 1] === '/' && (
+          config.opening === '/*'
+          && config.chars[b - 1] === '/' && (
             config.chars[b] === '*' ||
             config.chars[b] === '/'
           )
         ) break; // for script
 
         if (
-          config.opening !== '/*' &&
-          config.chars[b] === term &&
-          config.chars.slice(b - terml, b + 1).join('') === config.opening
+          config.opening !== '/*'
+          && config.chars[b] === term
+          && config.chars.slice(b - terml, b + 1).join('') === config.opening
         ) break; // for markup
 
         b = b - 1;
@@ -1105,8 +1109,8 @@ const parse: Parse = {
 
           if (termination === '\n' && config.chars[a + 1] === '\n') break;
           if (
-            config.chars[a] === term &&
-            config.chars.slice(a - terml, a + 1).join('') === termination
+            config.chars[a] === term
+            && config.chars.slice(a - terml, a + 1).join('') === termination
           ) break;
 
           a = a + 1;
@@ -1124,14 +1128,14 @@ const parse: Parse = {
     if (
       a === config.end ||
       wrap < 1 || (
-        output.length <= wrap &&
-        output.indexOf('\n') < 0
+        output.length <= wrap
+        && output.indexOf('\n') < 0
       ) ||
       sparser.options.preserveComment === true || (
-        config.opening === '/*' &&
-        output.indexOf('\n') > 0 &&
-        output.replace('\n', '').indexOf('\n') > 0 &&
-        (/\n(?!(\s*\*))/).test(output) === false
+        config.opening === '/*'
+        && output.indexOf('\n') > 0
+        && output.replace('\n', '').indexOf('\n') > 0
+        && (/\n(?!(\s*\*))/).test(output) === false
       )
     ) {
       return [ output, a ];
@@ -1139,22 +1143,26 @@ const parse: Parse = {
 
     b = config.start;
 
-    if (b > 0 && config.chars[b - 1] !== '\n' && (/\s/).test(config.chars[
-      b - 1])) {
+    if (
+      b > 0
+      && config.chars[b - 1] !== '\n'
+      && (/\s/).test(config.chars[b - 1])
+    ) {
+
       do {
         b = b - 1;
       } while (
-        b > 0 &&
-        config.chars[b - 1] !== '\n' &&
-        (/\s/).test(config.chars[b - 1]) === true
+        b > 0
+        && config.chars[b - 1] !== '\n'
+        && (/\s/).test(config.chars[b - 1]) === true
       );
     }
 
     space = config.chars.slice(b, config.start).join('');
+
     const spaceLine = new RegExp(`\n${space}`, 'g');
-    lines = output.replace(/\r\n/g, '\n').replace(spaceLine, '\n').split(
-      '\n'
-    );
+
+    lines = output.replace(/\r\n/g, '\n').replace(spaceLine, '\n').split('\n');
     len = lines.length;
     lines[0] = lines[0].replace(regStart, '');
     lines[len - 1] = lines[len - 1].replace(regEnd, '');
@@ -1183,8 +1191,8 @@ const parse: Parse = {
         second.push(lines[b]);
 
       } else if (
-        lines[b].replace(/^\s+/, '').length > wrap &&
-        lines[b].replace(/^\s+/, '').indexOf(' ') > wrap
+        lines[b].replace(/^\s+/, '').length > wrap
+        && lines[b].replace(/^\s+/, '').indexOf(' ') > wrap
       ) {
 
         lines[b] = lines[b].replace(/^\s+/, '');
@@ -1195,10 +1203,7 @@ const parse: Parse = {
 
       } else {
 
-        lines[b] = (
-          config.opening === '/*' &&
-          lines[b].indexOf('/*') !== 0
-        ) ? `   ${
+        lines[b] = (config.opening === '/*' && lines[b].indexOf('/*') !== 0) ? `   ${
           lines[b]
             .replace(/^\s+/, '')
             .replace(/\s+$/, '')
@@ -1224,18 +1229,18 @@ const parse: Parse = {
           } while (c > 0);
 
           if (
-            lines[b].slice(0, 4) !== '    ' &&
-            (/^\s*(\*|-)\s/).test(lines[b]) === true &&
-            (/^\s*(\*|-)\s/).test(lines[b + 1]) === false
+            lines[b].slice(0, 4) !== '    '
+            && (/^\s*(\*|-)\s/).test(lines[b]) === true
+            && (/^\s*(\*|-)\s/).test(lines[b + 1]) === false
           ) {
 
             lines.splice(b + 1, 0, '* ');
           }
 
           if (
-            lines[b].slice(0, 4) !== '    ' &&
-            (/^\s*\d+\.\s/).test(lines[b]) === true &&
-            (/^\s*\d+\.\s/).test(lines[b + 1]) === false) {
+            lines[b].slice(0, 4) !== '    '
+            && (/^\s*\d+\.\s/).test(lines[b]) === true
+            && (/^\s*\d+\.\s/).test(lines[b + 1]) === false) {
 
             lines.splice(b + 1, 0, '1. ');
           }
@@ -1263,8 +1268,8 @@ const parse: Parse = {
             b = b - 1;
 
           } else if (
-            lines[b + 1].slice(0, 4) !== '    ' &&
-            (/^\s*(\*|-)\s/).test(lines[b + 1]) === true
+            lines[b + 1].slice(0, 4) !== '    '
+            && (/^\s*(\*|-)\s/).test(lines[b + 1]) === true
           ) {
 
             second.push(lines[b].slice(0, c));
@@ -1273,8 +1278,8 @@ const parse: Parse = {
             b = b - 1;
 
           } else if (
-            lines[b + 1].slice(0, 4) !== '    ' &&
-            (/^\s*\d+\.\s/).test(lines[b + 1]) === true
+            lines[b + 1].slice(0, 4) !== '    '
+            && (/^\s*\d+\.\s/).test(lines[b + 1]) === true
           ) {
 
             second.push(lines[b].slice(0, c));
@@ -1304,10 +1309,10 @@ const parse: Parse = {
           }
 
           if (
-            emptyLine === false &&
-            bulletLine === false &&
-            numberLine === false &&
-            bigLine === false
+            emptyLine === false
+            && bulletLine === false
+            && numberLine === false
+            && bigLine === false
           ) {
             lines[b] = lines[b].slice(0, c);
           }
@@ -1315,11 +1320,11 @@ const parse: Parse = {
         } else if (
           lines[b + 1] !== undefined && (
             (
-              lines[b].length + bline.indexOf(' ') > wrap &&
-              bline.indexOf(' ') > 0
+              lines[b].length + bline.indexOf(' ') > wrap
+              && bline.indexOf(' ') > 0
             ) || (
-              lines[b].length + bline.length > wrap &&
-              bline.indexOf(' ') < 0
+              lines[b].length + bline.length > wrap
+              && bline.indexOf(' ') < 0
             )
           )
         ) {
@@ -1328,11 +1333,11 @@ const parse: Parse = {
           b = b + 1;
 
         } else if (
-          lines[b + 1] !== undefined &&
-          (/^\s+$/).test(lines[b + 1]) === false &&
-          lines[b + 1] !== '' &&
-          lines[b + 1].slice(0, 4) !== '    ' &&
-          (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
+          lines[b + 1] !== undefined
+          && (/^\s+$/).test(lines[b + 1]) === false
+          && lines[b + 1] !== ''
+          && lines[b + 1].slice(0, 4) !== '    '
+          && (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
         ) {
           lines[b + 1] = `${lines[b]} ${lines[b + 1]}`;
           emptyLine = true;
@@ -1349,11 +1354,11 @@ const parse: Parse = {
             false) {
 
             if (
-              b < len - 1 &&
-              lines[b + 1] !== '' &&
-              (/^\s+$/).test(lines[b]) === false &&
-              lines[b + 1].slice(0, 4) !== '    ' &&
-              (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
+              b < len - 1
+              && lines[b + 1] !== ''
+              && (/^\s+$/).test(lines[b]) === false
+              && lines[b + 1].slice(0, 4) !== '    '
+              && (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
 
             ) {
 
@@ -1394,19 +1399,18 @@ const parse: Parse = {
 
     if (second.length > 0) {
 
-      if (second[second.length - 1].length > wrap - (config.terminator
-        .length + 1)) {
+      if (second[second.length - 1].length > wrap - (config.terminator.length + 1)) {
         second.push(config.terminator);
       } else {
-        second[second.length - 1] =
-          `${second[second.length - 1]} ${config.terminator}`;
+
+        // second.push('\r', config.terminator);
+        second[second.length - 1] = `${second[second.length - 1]} ${config.terminator}`;
       }
 
       output = second.join(lf);
 
     } else {
-      lines[lines.length - 1] = lines[lines.length - 1] + config
-        .terminator;
+      lines[lines.length - 1] = lines[lines.length - 1] + config.terminator;
       output = lines.join(lf);
     }
 
@@ -1449,9 +1453,9 @@ const parse: Parse = {
         line = build.join('');
 
         if (
-          (/^\/\/ (\*|-|(\d+\.))/).test(line) === false &&
-          line.slice(0, 6) !== '//    ' &&
-          (/^\/\/\s*$/).test(line) === false
+          (/^\/\/ (\*|-|(\d+\.))/).test(line) === false
+          && line.slice(0, 6) !== '//    '
+          && (/^\/\/\s*$/).test(line) === false
         ) {
           output =
             `${output} ${line.replace(/(^\/\/\s*)/, '').replace(/\s+$/, '')}`;
@@ -1550,8 +1554,8 @@ const parse: Parse = {
         a = a + 1;
       } while (a < config.end && (
         config.chars[a - 1] !== 'd' || (
-          config.chars[a - 1] === 'd' &&
-            build.slice(build.length - 16).join('') !== 'parse-ignore-end'
+          config.chars[a - 1] === 'd'
+            && build.slice(build.length - 16).join('') !== 'parse-ignore-end'
         )
       ));
 
@@ -1596,8 +1600,7 @@ const parse: Parse = {
 
     output = output.replace(/(\/\/\s*)/, '// ');
 
-    if (wrap < 1 || (a === config.end - 1 && parse.data.begin[parse
-      .count] < 1)) {
+    if (wrap < 1 || (a === config.end - 1 && parse.data.begin[parse.count] < 1)) {
       return [ output, a ];
     }
 
