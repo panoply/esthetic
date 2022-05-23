@@ -27,6 +27,17 @@ export default (function beautify_markup_init () {
     let count = 0;
     let indent = (isNaN(options.indentLevel) === true) ? 0 : Number(options.indentLevel);
 
+    const type = {
+      is: (index: number, name: string) => data.types[index] === name,
+      not: (index: number, name: string) => data.types[index] !== name,
+      idx: (index: number, name: string) => data.types[index].indexOf(name)
+    };
+
+    const token = {
+      is: (index: number, tag: string) => data.token[index] === tag,
+      not: (index: number, tag: string) => data.token[index] !== tag
+    };
+
     const levels = (() => {
 
       const level = (prettydiff.start > 0)
@@ -38,35 +49,24 @@ export default (function beautify_markup_init () {
         let x = a + 1;
         let y = 0;
 
-        if (data.types[x] === undefined) return x - 1;
-
-        if (
-          data.types[x] === 'comment' ||
-          (
-            a < c - 1 &&
-            data.types[x].indexOf('attribute') > -1
-          )
-        ) {
+        if (type.is(x, undefined)) return x - 1;
+        if (type.is(x, 'comment') || (a < c - 1 && type.idx(x, 'attribute') > -1)) {
 
           do {
-            if (data.types[x] === 'jsx_attribute_start') {
+
+            if (type.is(x, 'jsx_attribute_start')) {
 
               y = x;
 
               do {
 
-                if (
-                  data.types[x] === 'jsx_attribute_end' &&
-                  data.begin[x] === y
-                ) break;
+                if (type.is(x, 'jsx_attribute_end') && data.begin[x] === y) break;
 
                 x = x + 1;
 
               } while (x < c);
 
-            } else if (data.types[x] !== 'comment' && data.types[x].indexOf('attribute') < 0) {
-              return x;
-            }
+            } else if (type.not(x, 'comment') && type.idx(x, 'attribute') < 0) return x;
 
             x = x + 1;
 
@@ -74,6 +74,7 @@ export default (function beautify_markup_init () {
         }
 
         return x;
+
       };
 
       function anchorList () {
@@ -84,19 +85,24 @@ export default (function beautify_markup_init () {
 
         // Verify list is only a link list
         // before making changes
+        //
         do {
 
           aa = aa - 1;
 
           if (
-            data.token[aa] === '</li>' &&
-            data.begin[data.begin[aa]] === stop &&
-            data.token[aa - 1] === '</a>' &&
-            data.begin[aa - 1] === data.begin[aa] + 1
+            token.is(aa, '</li>')
+            && token.is(aa - 1, '</a>')
+            && data.begin[data.begin[aa]] === stop
+            && data.begin[aa - 1] === data.begin[aa] + 1
           ) {
+
             aa = data.begin[aa];
+
           } else {
+
             return;
+
           }
 
         } while (aa > stop + 1);
@@ -108,9 +114,9 @@ export default (function beautify_markup_init () {
 
           aa = aa - 1;
 
-          if (data.types[aa + 1] === 'attribute') {
+          if (type.is(aa + 1, 'attribute')) {
             level[aa] = -10;
-          } else if (data.token[aa] !== '</li>') {
+          } else if (token.not(aa, '</li>')) {
             level[aa] = -20;
           }
 
@@ -118,29 +124,43 @@ export default (function beautify_markup_init () {
 
       };
 
+      /**
+       * HTML / Liquid Comment Identation for markup
+       * and template tags.
+       */
       function comment () {
 
         let x = a;
         let test = false;
 
         if (data.lines[a + 1] === 0 && options.forceIndent === false) {
+
           do {
+
             if (data.lines[x] > 0) {
               test = true;
               break;
             }
+
             x = x - 1;
+
           } while (x > comstart);
+
           x = a;
+
         } else {
           test = true;
         }
 
-        // the first condition applies indentation while the else block does not
+        // The first condition applies indentation
+        // while the else block does not.
+        //
         if (test === true) {
 
-          const ind = (data.types[next] === 'end' || data.types[next] === 'template_end')
-            ? indent + 1
+          const ind = (
+            type.is(next, 'end') ||
+            type.is(next, 'template_end')
+          ) ? indent + 1
             : indent;
 
           do {
@@ -148,14 +168,18 @@ export default (function beautify_markup_init () {
             x = x - 1;
           } while (x > comstart);
 
-          // correction so that a following end tag is not indented 1 too much
+          // Indent correction so that a following end tag
+          // is not indented 1 too much
+          //
           if (ind === indent + 1) level[a] = indent;
 
-          // indentation must be applied to the tag preceeding the comment
+          // Indentation must be applied to the tag
+          // preceeding the comment
+          //
           if (
-            data.types[x] === 'attribute' ||
-            data.types[x] === 'template_attribute' ||
-            data.types[x] === 'jsx_attribute_start'
+            type.is(x, 'attribute') ||
+            type.is(x, 'template_attribute') ||
+            type.is(x, 'jsx_attribute_start')
           ) {
             level[data.begin[x]] = ind;
           } else {
@@ -170,6 +194,7 @@ export default (function beautify_markup_init () {
           } while (x > comstart);
 
           level[x] = -20;
+
         }
 
         comstart = -1;
@@ -185,34 +210,34 @@ export default (function beautify_markup_init () {
           return;
         }
 
-        if (
-          next < c && (
-            data.types[next].indexOf('end') > -1 ||
-            data.types[next].indexOf('start') > -1
-          ) && data.lines[next] > 0
+        if (next < c
+          && (type.idx(next, 'end') > -1 || type.idx(next, 'start') > -1)
+          && data.lines[next] > 0
         ) {
 
           level.push(indent);
           ind = ind + 1;
 
           if (
-            data.types[a] === 'singleton' &&
-            a > 0 && data.types[a - 1].indexOf('attribute') > -1 &&
-            data.types[data.begin[a - 1]] === 'singleton'
+            data.types[a] === 'singleton'
+            && a > 0
+            && type.idx(a - 1, 'attribute') > -1
+            && type.is(data.begin[a - 1], 'singleton')
           ) {
 
-            if (
-              data.begin[a] < 0 || (
-                data.types[data.begin[a - 1]] === 'singleton' &&
-                data.begin[data.ender[a] - 1] !== a)) {
+            if (data.begin[a] < 0 || (
+              type.is(data.begin[a - 1], 'singleton')
+              && data.begin[data.ender[a] - 1] !== a
+            )) {
               level[a - 1] = indent;
             } else {
               level[a - 1] = indent + 1;
             }
           }
         } else if (
-          data.types[a] === 'singleton' && a > 0 &&
-          data.types[a - 1].indexOf('attribute') > -1
+          a > 0
+          && type.is(a, 'singleton')
+          && type.idx(a - 1, 'attribute') > -1
         ) {
 
           level[a - 1] = indent;
@@ -222,40 +247,43 @@ export default (function beautify_markup_init () {
         } else if (data.lines[next] === 0) {
 
           level.push(-20);
-        } else if (
+
+        } else if ((options.wrap === 0 || (
+          a < c - 2
+          && type.idx(a + 2, 'attribute') > -1
+          && (
+            data.token[a].length
+            + data.token[a + 1].length
+            + data.token[a + 2].length
+            + 1
+          ) > options.wrap) || (
           (
-            options.wrap === 0 || (
-              a < c - 2 &&
-              data.token[a].length +
-              data.token[a + 1].length +
-              data.token[a + 2].length + 1 > options.wrap &&
-              data.types[a + 2].indexOf('attribute') > -1) || (
-              data.token[a].length +
-              data.token[a + 1].length > options.wrap
-            )
-          ) && (
-            data.types[a + 1] === 'singleton' ||
-            data.types[a + 1] === 'template'
-          )
-        ) {
+            data.token[a].length
+            + data.token[a + 1].length
+          ) > options.wrap
+        )) && (
+          type.is(a + 1, 'singleton') ||
+          type.is(a + 1, 'template')
+        )) {
 
           // Wrap if
-          // * options.wrap is 0
-          // * next token is singleton with an attribute and exceeds wrap
-          // * next token is template or singleton and exceeds wrap
+          // 1. options.wrap is 0
+          // 2. next token is singleton with an attribute and exceeds wrap
+          // 3. next token is template or singleton and exceeds wrap
+          //
           level.push(indent);
 
         } else {
-
           count = count + 1;
           level.push(-10);
         }
 
         if (
-          a > 0 &&
-          data.types[a - 1].indexOf('attribute') > -1 &&
-          data.lines[a] < 1
+          a > 0
+          && type.idx(a - 1, 'attribute') > -1
+          && data.lines[a] < 1
         ) {
+
           level[a - 1] = -20;
         }
 
@@ -264,7 +292,7 @@ export default (function beautify_markup_init () {
           let d = a;
           let e = Math.max(data.begin[a], 0);
 
-          if (data.types[a] === 'content' && options.preserveText === false) {
+          if (type.is(a, 'content') && options.preserveText === false) {
 
             let countx = 0;
 
@@ -328,21 +356,16 @@ export default (function beautify_markup_init () {
                 return;
               }
 
-              if (
-                (
-                  data.types[d] !== 'attribute' || (
-                    data.types[d] === 'attribute' &&
-                    data.types[d + 1] !== 'attribute'
-                  )
-                ) &&
-                data.lines[d + 1] > 0
-              ) {
+              if (data.lines[d + 1] > 0 && (
+                type.not(d, 'attribute') ||
+                (type.is(d, 'attribute') && type.is(d + 1, 'attribute'))
+              )) {
 
                 if (
-                  data.types[d] !== 'singleton' || (
-                    data.types[d] === 'singleton' &&
-                    data.types[d + 1] !== 'attribute')
+                  type.not(d, 'singleton') ||
+                  (type.is(d, 'attribute') && type.is(d + 1, 'attribute'))
                 ) {
+
                   count = data.token[a].length;
                   if (data.lines[a + 1] > 0) count = count + 1;
                   break;
@@ -364,10 +387,10 @@ export default (function beautify_markup_init () {
         do {
 
           if (
-            data.lexer[a + 1] === lexer &&
-            data.begin[a + 1] < skip &&
-            data.types[a + 1] !== 'start' &&
-            data.types[a + 1] !== 'singleton'
+            data.lexer[a + 1] === lexer
+            && data.begin[a + 1] < skip
+            && type.not(a + 1, 'start')
+            && type.not(a + 1, 'singleton')
           ) break;
 
           level.push(0);
@@ -381,8 +404,8 @@ export default (function beautify_markup_init () {
         next = nextIndex();
 
         if (
-          data.lexer[next] === lexer &&
-          data.stack[a].indexOf('attribute') < 0 && (
+          data.lexer[next] === lexer
+          && data.stack[a].indexOf('attribute') < 0 && (
             data.types[next] === 'end' ||
             data.types[next] === 'template_end'
           )
@@ -423,20 +446,19 @@ export default (function beautify_markup_init () {
 
         };
 
+        let plural = false;
         let y = a;
         let len = data.token[parent].length + 1;
-        let plural = false;
+        let lev = (() => {
 
-        let lev = (function () {
-
-          if (data.types[a].indexOf('start') > 0) {
+          if (type.idx(a, 'start') > 0) {
 
             let x = a;
 
             do {
 
               if (data.types[x].indexOf('end') > 0 && data.begin[x] === a) {
-                if (x < c - 1 && data.types[x + 1].indexOf('attribute') > -1) {
+                if (x < c - 1 && type.idx(x + 1, 'attribute') > -1) {
                   plural = true;
                   break;
                 }
@@ -446,25 +468,27 @@ export default (function beautify_markup_init () {
 
             } while (x < c);
 
-          } else if (a < c - 1 && data.types[a + 1].indexOf('attribute') > -1) {
+          } else if (a < c - 1 && type.idx(a + 1, 'attribute') > -1) {
             plural = true;
           }
 
-          if (data.types[parent] === 'singleton') return indent + 1;
+          if (type.is(parent, 'singleton')) return indent + 1;
 
-          if (data.types[next] === 'end' || data.types[next] === 'template_end') {
-            return data.types[parent] === 'singleton'
+          if (type.is(next, 'end') || type.is(parent, 'template_end')) {
+
+            return type.is(parent, 'singleton')
               ? indent + 2
               : indent + 1;
           }
 
           return indent;
 
-        }());
+        })();
 
-        let earlyexit = false;
+        const earlyexit = false;
         let attStart = false;
-        if (plural === false && data.types[a] === 'comment_attribute') {
+
+        if (plural === false && type.is(a, 'comment_attribute')) {
 
           // lev must be indent unless the "next" type is end then its indent + 1
           level.push(indent);
@@ -480,20 +504,40 @@ export default (function beautify_markup_init () {
 
         if (lev < 1) lev = 1;
 
-        // first, set levels and determine if there are template attributes
+        // First, set levels and determine if there
+        // are template attributes. When we have template
+        // attributes we handle them in a similar manner
+        // as HTML attributes, with only slight differences.
+        //
         do {
 
           count = count + data.token[a].length + 1;
 
-          if (data.types[a].indexOf('attribute') > 0) {
+          if (type.idx(a, 'attribute') > 0) {
 
-            if (data.types[a] === 'comment_attribute') {
+            // HOT PATCH
+            //
+            // Template attribute values will not be placed
+            // on newlines, and correctly spaced.
+            //
+            // NOTE: -10 equals single line space
+            // NOTE: -20 removes spacing
+            //
+            if (type.is(a, 'template_attribute')) {
+
+              len = len + data.token[a].length + 1;
+
+              level.push(options.forceAttribute ? lev : -10);
+
+            } else if (type.is(a, 'comment_attribute')) {
+
               level.push(lev);
-            } else if (data.types[a].indexOf('start') > 0) {
+
+            } else if (type.idx(a, 'start') > 0) {
 
               attStart = true;
 
-              if (a < c - 2 && data.types[a + 2].indexOf('attribute') > 0) {
+              if (a < c - 2 && type.idx(a + 2, 'attribute') > 0) {
 
                 level.push(-20);
 
@@ -514,7 +558,7 @@ export default (function beautify_markup_init () {
                 }
               }
 
-            } else if (data.types[a].indexOf('end') > 0) {
+            } else if (type.idx(a, 'end') > 0) {
 
               if (level[a - 1] !== -20) {
                 level[a - 1] = level[data.begin[a]] - 1;
@@ -530,41 +574,56 @@ export default (function beautify_markup_init () {
               level.push(lev);
             }
 
-            earlyexit = true;
+            // earlyexit = true;
 
-          } else if (data.types[a] === 'attribute') {
-
-            len = len + data.token[a].length + 1;
-
-            // const outputDelim = /{{-?\s*/
-
-            // start delim
-            // const startDelim = /{%-?\s*/;
-
-            // end delim
-            // const endDelim = /{%-?\s*end/;
-
-            // any delim
-            // const anyDelim = /{%-?\s*(?:end)?/;
+          } else if (type.is(a, 'attribute')) {
 
             len = len + data.token[a].length + 1;
 
-            if (options.preserveAttribute === true) {
+            if (options.preserveAttribute) {
+
               level.push(-10);
-            } else if (
-              options.forceAttribute === true ||
-              attStart === true || (
-                a < c - 1 &&
-                data.types[a + 1] !== 'template_attribute' &&
-                data.types[a + 1].indexOf('attribute') > 0
-              )
-            ) {
-              level.push(lev);
+
+            } else if (options.forceAttribute || attStart || (
+              a < c - 1
+              && type.is(a + 1, 'template_attribute')
+              && type.idx(a + 1, 'attribute') > 0
+            )) {
+
+              // HOT PATCH
+              //
+              // This series of checks will ensure that Liquid
+              // tags surrounded by html attributes are not preserved
+              // for example:
+              //
+              // <div data-{{ tag }}-attr="x"></div>
+              //
+              // We check the previous token, current token and next
+              // token to determine whether or not we have this formation.
+              //
+              if ((
+                (/-$/).test(data.token[a - 1])
+                && (/^-/).test(data.token[a + 1])
+                && (/^{[{%]-?/).test(data.token[a])
+                && (/[%}]}$/).test(data.token[a])
+              ) || (
+                (/-$/).test(data.token[a])
+                && (/^-/).test(data.token[a + 2])
+                && (/^{[{%]-?/).test(data.token[a + 1])
+                && (/[%}]}$/).test(data.token[a + 1])
+              )) {
+                level.push(-20);
+              } else {
+                level.push(-10);
+              }
+
             } else {
+
               level.push(-10);
             }
 
           } else if (data.begin[a] < parent + 1) {
+
             break;
           }
 
@@ -575,11 +634,11 @@ export default (function beautify_markup_init () {
         a = a - 1;
 
         if (
-          level[a - 1] > 0 &&
-          data.types[a].indexOf('end') > 0 &&
-          data.types[a].indexOf('attribute') > 0 &&
-          data.types[parent] !== 'singleton' &&
-          plural === true
+          level[a - 1] > 0
+          && type.idx(a, 'end') > 0
+          && type.idx(a, 'attribute') > 0
+          && !type.is(a, 'singleton')
+          && plural
         ) {
 
           level[a - 1] = level[a - 1] - 1;
@@ -589,9 +648,9 @@ export default (function beautify_markup_init () {
         if (level[a] !== -20) {
 
           if (
-            options.language === 'jsx' &&
-            data.types[parent].indexOf('start') > -1 &&
-            data.types[a + 1] === 'script_start'
+            options.language === 'jsx'
+            && type.idx(parent, 'start') > -1
+            && type.is(a + 1, 'script_start')
           ) {
             level[a] = lev;
           } else {
@@ -618,19 +677,19 @@ export default (function beautify_markup_init () {
 
         y = a;
 
-        // second, ensure tag contains more than one attribute
-
+        // Second, Ensure tag contains more than one attribute
+        //
         if (y > parent + 1) {
 
-          // finally, indent attributes if tag length exceeds the wrap limit
-          if (options.selfCloseSpace === false) {
-            len = len - 1;
-          }
+          // Finally, indent attributes if tag length exceeds
+          // the wrap limit
+          //
+          if (options.selfCloseSpace === false) len = len - 1;
 
           if (
-            len > options.wrap &&
-            options.wrap > 0 &&
-            options.forceAttribute === false
+            len > options.wrap
+            && options.wrap > 0
+            && options.forceAttribute === false
           ) {
 
             count = data.token[a].length;
@@ -638,75 +697,83 @@ export default (function beautify_markup_init () {
             do {
 
               if (
-                data.token[y].length > options.wrap &&
-                (/\s/).test(data.token[y]) === true) {
+                data.token[y].length > options.wrap
+                && (/\s/).test(data.token[y]) === true) {
                 wrap(y);
               }
 
               y = y - 1;
+
               level[y] = lev;
 
             } while (y > parent);
 
           }
         } else if (
-          data.types[a] === 'attribute' &&
-          options.wrap > 0 &&
-          data.token[a].length > options.wrap &&
-          (/\s/).test(data.token[a]) === true
+          type.is(a, 'attribute')
+          && options.wrap > 0
+          && data.token[a].length > options.wrap
+          && (/\s/).test(data.token[a]) === true
         ) {
+
           wrap(a);
         }
 
       };
 
-      // data.lines -> space before token
-      // level -> space after token
+      // Ensure correct spacing is applied
+      //
+      // NOTE: data.lines -> space before token
+      // NOTE: level -> space after token
+      //
       do {
 
         if (data.lexer[a] === lexer) {
 
-          if (data.token[a].toLowerCase().indexOf('<!doctype') === 0) {
-            level[a - 1] = indent;
-          }
+          if (data.token[a].toLowerCase().indexOf('<!doctype') === 0) level[a - 1] = indent;
 
           if (data.types[a].indexOf('attribute') > -1) {
 
             attribute();
 
-          } else if (data.types[a] === 'comment') {
+          } else if (type.is(a, 'comment')) {
 
             if (comstart < 0) comstart = a;
+            if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) comment();
 
-            if (data.types[a + 1] !== 'comment' || (
-              a > 0 && data.types[a - 1].indexOf('end') > -1
-            )) comment();
-
-          } else if (data.types[a] !== 'comment') {
+          } else if (type.not(a, 'comment')) {
 
             next = nextIndex();
 
-            if (data.types[next] === 'end' || data.types[next] === 'template_end') {
+            if (type.is(next, 'end') || type.is(next, 'template_end')) {
 
-              // NOTE
               // When tags are expressed on a single line
               // and the content of those tags contain no whitespace
               // then the single line expression is respected.
-              // It's here where we need to fix or adjust that logc
+              // It's here where we need to fix or adjust that logic
+              //
               indent = indent - 1;
 
-              if (
-                data.types[next] === 'template_end' &&
-                data.types[data.begin[next] + 1] === 'template_else'
-              ) {
+              if (type.is(next, 'template_end') && type.is(data.begin[next] + 1, 'template_else')) {
                 indent = indent - 1;
               }
 
-              if (data.token[a] === '</ol>' || data.token[a] === '</ul>') anchorList();
+              // HOT PATCH
+              //
+              // Support <dl></dl> anchor list tags,
+              // previously only ol and ul were supported
+              //
+              if (
+                token.is(a, '</ol>') ||
+                token.is(a, '</ul>') ||
+                token.is(a, '</dl>')
+              ) {
 
+                anchorList();
+              }
             }
 
-            if (data.types[a] === 'script_end' && data.types[a + 1] === 'end') {
+            if (type.is(a, 'script_end') && type.is(a + 1, 'end')) {
 
               if (data.lines[a + 1] < 1) {
                 level.push(-20);
@@ -714,40 +781,34 @@ export default (function beautify_markup_init () {
                 level.push(-10);
               }
 
-            } else if ((options.forceIndent === false || (
-              options.forceIndent === true &&
-              data.types[next] === 'script_start'
-            )) && (
-              data.types[a] === 'content' ||
-              data.types[a] === 'singleton' ||
-              data.types[a] === 'template'
+            } else if ((options.forceIndent === false ||
+              (options.forceIndent && type.is(next, 'script_start'))
+            ) && (
+              type.is(a, 'content') ||
+              type.is(a, 'singleton') ||
+              type.is(a, 'template')
             )) {
 
               count = count + data.token[a].length;
 
-              if (data.lines[next] > 0 && data.types[next] === 'script_start') {
+              if (data.lines[next] > 0 && type.is(next, 'script_start')) {
+
                 level.push(-10);
-              } else if (
-                options.wrap > 0 && (
-                  data.types[a].indexOf('template') < 0 || (
-                    next < c &&
-                    data.types[a].indexOf('template') > -1 &&
-                    data.types[next].indexOf('template') < 0
-                  )
-                )
-              ) {
+
+              } else if (options.wrap > 0 && (
+                type.idx(a, 'template') < 0 ||
+                (next < c && type.idx(a, 'template') > -1 && type.idx(a, 'template') < 0)
+              )) {
 
                 content();
 
-              } else if (
-                next < c && (
-                  data.types[next].indexOf('end') > -1 ||
-                  data.types[next].indexOf('start') > -1
-                ) && (
-                  data.lines[next] > 0 ||
-                  data.types[next].indexOf('template_') > -1
-                )
-              ) {
+              } else if (next < c && (
+                type.idx(next, 'end') > -1 ||
+                type.idx(next, 'start') > -1
+              ) && (
+                data.lines[next] > 0 ||
+                type.idx(a, 'template_') > -1
+              )) {
 
                 level.push(indent);
 
@@ -761,15 +822,15 @@ export default (function beautify_markup_init () {
 
               }
 
-            } else if (data.types[a] === 'start' || data.types[a] === 'template_start') {
+            } else if (type.is(a, 'start') || type.is(a, 'template_start')) {
 
               indent = indent + 1;
 
-              if (data.types[a] === 'template_start' && data.types[a + 1] === 'template_else') {
+              if (type.is(a, 'template_start') && type.is(a + 1, 'template_else')) {
                 indent = indent + 1;
               }
 
-              if (options.language === 'jsx' && data.token[a + 1] === '{') {
+              if (options.language === 'jsx' && token.is(a + 1, '{')) {
 
                 if (data.lines[a + 1] === 0) {
                   level.push(-20);
@@ -777,13 +838,11 @@ export default (function beautify_markup_init () {
                   level.push(-10);
                 }
 
-              } else if (data.types[a] === 'start' && data.types[
-                next] === 'end') {
+              } else if (type.is(a, 'start') && type.is(next, 'end')) {
 
                 level.push(-20);
 
-              } else if (data.types[a] === 'start' && data.types[
-                next] === 'script_start') {
+              } else if (type.is(a, 'start') && type.is(next, 'script_start')) {
 
                 level.push(-10);
 
@@ -791,45 +850,36 @@ export default (function beautify_markup_init () {
 
                 level.push(indent);
 
-              } else if (
-                data.types[a] === 'template_start' &&
-                data.types[next] === 'template_end'
-              ) {
+              } else if (type.is(a, 'template_start') && type.is(next, 'template_end')) {
 
-                // NOTE FOR NIK
-                // ENSURES SINGLE LINE WHEN EMPTY TAGS
+                // Applied a single line when tag is empty
+                //
                 level.push(-20);
 
-              } else if (
-                data.lines[next] === 0 && (
-                  data.types[next] === 'content' ||
-                  data.types[next] === 'singleton' || (
-                    data.types[a] === 'start' &&
-                    data.types[next] === 'template'
-                  )
-                )
-              ) {
+              } else if (data.lines[next] === 0 && (
+                type.is(next, 'content') ||
+                type.is(next, 'singleton') ||
+                (type.is(next, 'start') && type.is(next, 'template'))
+              )) {
+
                 level.push(-20);
               } else {
                 level.push(indent);
               }
-            } else if (
-              options.forceIndent === false &&
-                data.lines[next] === 0 && (
-                data.types[next] === 'content' ||
-                data.types[next] === 'singleton'
-              )
-            ) {
+            } else if (options.forceIndent === false && data.lines[next] === 0 && (
+              type.is(next, 'content') ||
+              type.is(next, 'singleton')
+            )) {
 
               level.push(-20);
 
-            } else if (data.types[a + 2] === 'script_end') {
+            } else if (type.is(a + 2, 'script_end')) {
 
               level.push(-20);
 
-            } else if (data.types[a] === 'template_else') {
+            } else if (type.is(a, 'template_else')) {
 
-              if (data.types[next] === 'template_end') {
+              if (type.is(next, 'template_end')) {
                 level[a - 1] = indent + 1;
               } else {
                 level[a - 1] = indent - 1;
@@ -844,10 +894,10 @@ export default (function beautify_markup_init () {
           }
 
           if (
-            data.types[a] !== 'content' &&
-            data.types[a] !== 'singleton' &&
-            data.types[a] !== 'template' &&
-            data.types[a] !== 'attribute'
+            type.not(a, 'content')
+            && type.not(a, 'singleton')
+            && type.not(a, 'template')
+            && type.not(a, 'attribute')
           ) {
             count = 0;
           }
@@ -869,9 +919,7 @@ export default (function beautify_markup_init () {
     return (function () {
 
       const build = [];
-
-      // beautify_markup_apply_tab
-      const ind = (function markupApplyTab () {
+      const ind = (() => {
 
         const indy = [ options.indentChar ];
         const size = options.indentSize - 1;
@@ -887,7 +935,7 @@ export default (function beautify_markup_init () {
 
         return indy.join('');
 
-      }());
+      })();
 
       /* -------------------------------------------- */
       /* MARKUP APPLY SCOPES                          */
@@ -897,9 +945,12 @@ export default (function beautify_markup_init () {
       let external = '';
       let lastLevel = options.indentLevel;
 
-      // beautify_markup_apply_nl
-      // a new line character plus the correct amount of identation for
-      // the given line of code
+      /**
+       * Applies a new line character plus the correct
+       * amount of identation for the given line of code
+       * ---
+       * Original: beautify_markup_apply_nl
+       */
       function newline (tabs: number) {
 
         const linesout = [];
@@ -936,32 +987,37 @@ export default (function beautify_markup_init () {
         const line = data.lines[a + 1];
 
         const lev = ((levels[a - 1] > -1)
-          ? (data.types[a] === 'attribute')
+          ? type.is(a, 'attribute')
             ? levels[a - 1] + 1
             : levels[a - 1]
-          : (function () {
+          : (() => {
 
-            let bb = a - 1;
-            let start = (bb > -1 && data.types[bb].indexOf('start') > -1);
+            let bb = a + 1;
+            let start = (bb > -1 && type.idx(bb, 'start') > -1);
 
-            if (levels[a] > -1 && data.types[a] === 'attribute') return levels[a] + 1;
+            if (levels[a] > -1 && type.is(a, 'attribute')) return levels[a] + 1;
 
             do {
 
               bb = bb - 1;
 
               if (levels[bb] > -1) {
-                if (data.types[a] === 'content' && start === false) return levels[bb];
-                return levels[bb] + 1;
+                if (type.is(a, 'content') && start === false) {
+                  return levels[bb];
+                } else {
+                  return levels[bb] + 1;
+                }
               }
 
-              if (data.types[bb].indexOf('start') > -1) start = true;
+              console.log(a);
+
+              if (type.idx(bb, 'start') > -1) start = true;
 
             } while (bb > 0);
 
             return 1;
 
-          }())
+          })()
         );
 
         data.lines[a + 1] = 0;
@@ -1003,27 +1059,19 @@ export default (function beautify_markup_init () {
 
         do {
 
-          if (
-            data.types[y] === 'jsx_attribute_end' &&
-            data.begin[data.begin[y]] === a
-          ) {
+          if (type.is(y, 'jsx_attribute_end') && data.begin[data.begin[y]] === a) {
 
             jsx = false;
 
           } else if (data.begin[y] === a) {
 
-            if (data.types[y] === 'jsx_attribute_start') {
+            if (type.is(y, 'jsx_attribute_start')) {
               jsx = true;
-            } else if (data.types[y].indexOf('attribute') < 0 && jsx === false) {
+            } else if (type.idx(y, 'attribute') < 0 && jsx === false) {
               break;
             }
 
-          } else if (
-            jsx === false && (
-              data.begin[y] < a ||
-              data.types[y].indexOf('attribute') < 0
-            )
-          ) {
+          } else if (jsx === false && (data.begin[y] < a || type.idx(y, 'attribute') < 0)) {
             break;
           }
 
@@ -1031,7 +1079,7 @@ export default (function beautify_markup_init () {
 
         } while (y < c);
 
-        if (data.types[y - 1] === 'comment_attribute') space = newline(levels[y - 2] - 1);
+        if (type.is(y - 1, 'comment_attribute')) space = newline(levels[y - 2] - 1);
 
         data.token[y - 1] = data.token[y - 1] + space + end[0];
 
@@ -1040,31 +1088,28 @@ export default (function beautify_markup_init () {
       do {
 
         if (data.lexer[a] === lexer || prettydiff.beautify[data.lexer[a]] === undefined) {
-          if (
-            (
-              data.types[a] === 'start' ||
-              data.types[a] === 'singleton' ||
-              data.types[a] === 'xml' ||
-              data.types[a] === 'sgml'
-            ) &&
-            data.types[a].indexOf('attribute') < 0 &&
-            a < c - 1 && data.types[a + 1] !== undefined &&
-            data.types[a + 1].indexOf('attribute') > -1
+
+          if ((
+            type.is(a, 'start') ||
+            type.is(a, 'singleton') ||
+            type.is(a, 'xml') ||
+            type.is(a, 'sgml')
+          ) && type.idx(a, 'attribute') < 0
+            && a < c - 1
+            && data.types[a + 1] !== undefined
+            && type.idx(a + 1, 'attribute') > -1
           ) {
+
             attributeEnd();
+
           }
 
-          if (
-            data.token[a] !== undefined &&
-            data.token[a].indexOf(lf) > 0 && (
-              (
-                data.types[a] === 'content' &&
-                options.preserveText === false
-              ) ||
-              data.types[a] === 'comment' ||
-              data.types[a] === 'attribute'
-            )
-          ) {
+          if (token.not(a, undefined) && data.token[a].indexOf(lf) > 0 && ((
+            type.is(a, 'content') && options.preserveText === false
+          ) ||
+            type.is(a, 'comment') ||
+            type.is(a, 'attribute')
+          )) {
 
             multiline();
 
@@ -1082,7 +1127,7 @@ export default (function beautify_markup_init () {
 
         } else {
 
-          if (externalIndex[a] === a && data.types[a] !== 'reference') {
+          if (externalIndex[a] === a && type.not(a, 'reference')) {
             build.push(data.token[a]);
           } else {
 
