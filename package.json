@@ -38,15 +38,30 @@
       "@liquify/eslint-config"
     ],
     "rules": {
-      "no-unmodified-loop-condition": "off"
+      "no-unmodified-loop-condition": "off",
+      "operator-linebreak": [
+        "error",
+        "after",
+        {
+          "overrides": {
+            "?": "before",
+            ":": "before",
+            "&&": "before",
+            "||": "after",
+            "+": "before"
+          }
+        }
+      ]
     }
   },
   "devDependencies": {
-    "ava": "^4.1.0",
+    "@liquify/test-utils": "workspace:*",
+    "ava": "^4.2.0",
     "chalk": "^5.0.1",
+    "dedent": "^0.7.0",
     "esm": "^3.2.25"
   },
   "dependencies": {
-    "prettier": "^2.5.1"
+    "prettier": "^2.6.2"
   }
 }
