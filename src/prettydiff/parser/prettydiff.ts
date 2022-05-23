@@ -13,7 +13,7 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
 
     const ops = prettydiff.sparser.options;
 
-    const sindex = options.source.search(/((\/(\*|\/))|<!--*)\s*@prettify\s+format:/);
+    const sindex = options.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--*)\s*@prettify\s+format:/);
     const dindex = options.diff.search(/((\/(\*|\/))|<!--*)\s*@prettify\s+format:/);
     let a = 0;
     let b = 0;
@@ -29,7 +29,8 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
     //
     // * The prettydiff comment is only accepted if it  occurs before non-comments (near top)
     // * The options.source is the priority material for reading the comment
-    // * The prettydiff comment will be processed from options.diff only if it present there, // missing from options.source, and options.mode is diff
+    // * The prettydiff comment will be processed from options.diff only if it present there,
+    // missing from options.source, and options.mode is diff
     //
     // - Examples:
     //
@@ -49,12 +50,10 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
     // * the delimiter separating name and value is either ":" or "=" characters
 
     if ((
-      sindex > -1 && (
-        sindex === 0 ||
-            "\"':".indexOf(options.source.charAt(sindex - 1)) < 0)
+      sindex > -1 && (sindex === 0 || "\"':".indexOf(options.source.charAt(sindex - 1)) < 0)
     ) || (
-      options.mode === 'diff' &&
-          dindex > -1 && (
+      options.mode === 'diff'
+          && dindex > -1 && (
         dindex === 0 ||
             "\"':".indexOf(options.diff.charAt(dindex - 1)) < 0
       )
@@ -163,9 +162,9 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
                   ops.length > 0 && (
                     item === ':' ||
                       item === '='
-                  ) &&
-                    ops[ops.length - 1].indexOf('=') < 0 &&
-                    ops[ops.length - 1].indexOf(':') < 0
+                  )
+                    && ops[ops.length - 1].indexOf('=') < 0
+                    && ops[ops.length - 1].indexOf(':') < 0
                 ) {
 
                   // For cases where white space is between option name and
@@ -198,8 +197,7 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
               }
             }
 
-            if (comment === '<!--' && source.slice(a - 2, a + 1) ===
-                '-->') break;
+            if (comment === '<!--' && source.slice(a - 2, a + 1) === '-->') break;
             if (comment === '//' && source.charAt(a) === '\n') break;
             if (comment === '/\u002a' && source.slice(a - 1, a + 1) ===
                 '\u002a/') {
@@ -262,8 +260,8 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
             ];
 
           } else if (
-            prettydiff.api.optionDef[ops[a]] !== undefined &&
-              prettydiff.api.optionDef[ops[a]].type === 'boolean'
+            prettydiff.api.optionDef[ops[a]] !== undefined
+              && prettydiff.api.optionDef[ops[a]].type === 'boolean'
           ) {
             options[ops[a]] = true;
           }
@@ -282,8 +280,8 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
             }
 
             if (
-              prettydiff.api.optionDef[op[0]].type === 'number' &&
-                isNaN(Number(op[1])) === false
+              prettydiff.api.optionDef[op[0]].type === 'number'
+                && isNaN(Number(op[1])) === false
             ) {
 
               options[op[0]] = Number(op[1]);
@@ -517,9 +515,9 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
 
             if (
               keys[a] !== 'parseSpace' || (
-                options.mode === 'parse' &&
-                  keys[a] === 'parseSpace' &&
-                  options[keys[a]] === true
+                options.mode === 'parse'
+                  && keys[a] === 'parseSpace'
+                  && options[keys[a]] === true
               )
             ) {
               ops.lexerOptions[def[keys[a]].lexer[b]][keys[a]] =
