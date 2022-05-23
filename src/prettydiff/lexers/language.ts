@@ -27,16 +27,13 @@ export default (function language_init () {
         , xhtml: 'markup'
         , xml: 'markup'
       };
-      if (typeof input !== 'string') {
-        return 'script';
-      }
-      if (input.indexOf('html') > -1) {
-        return 'markup';
-      }
-      if (langmap[input] === undefined) {
-        return 'script';
-      }
+
+      if (typeof input !== 'string') return 'script';
+      if (input.indexOf('html') > -1) return 'markup';
+      if (langmap[input] === undefined) return 'script';
+
       return langmap[input];
+
     },
 
     nameproper (input) {
