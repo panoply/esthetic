@@ -4,10 +4,10 @@ import { IStyleOptions } from './style';
 import { IJSONOptions } from './json';
 
 interface IGlobalOptions {
-  markup: IMarkupOptions,
-  style: IStyleOptions,
-  script: IScriptOptions,
-  json: IJSONOptions
+  markup?: IMarkupOptions,
+  style?: IStyleOptions,
+  script?: IScriptOptions,
+  json?: IJSONOptions
 }
 
 export { IGlobalOptions, IJSONOptions, IMarkupOptions, IStyleOptions, IScriptOptions };

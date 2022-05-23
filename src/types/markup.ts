@@ -65,7 +65,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  attributeSort: boolean
+  attributeSort?: boolean
 
   /**
    * Define a sort list from which attributes should be arranged
@@ -80,7 +80,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default ''
    */
-  attributeSortList: string[]
+  attributeSortList?: string[]
 
   /**
    * **Description**
@@ -89,7 +89,33 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  commentNewline: boolean
+  commentNewline?: boolean
+
+  /**
+   * **Description**
+   *
+   * Whether or not delimiter characters should apply
+   * a single space at the start and end point. For example:
+   *
+   * ---
+   *
+   * **Before**
+   *
+   * ```liquid
+   * {{foo}}
+   * {%if x%}{%endif%}
+   * ```
+   *
+   * **After**
+   *
+   * ```liquid
+   * {{ foo }}
+   * {% if x %}{% endif %}
+   * ```
+   *
+   * @default false
+   */
+  delimiterSpacing?: boolean
 
   /**
    * **Description**
@@ -99,7 +125,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  commentIndent: boolean
+  commentIndent?: boolean
 
   /**
    * **Description**
@@ -108,7 +134,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  selfCloseSpace: boolean,
+  selfCloseSpace?: boolean,
 
   /**
    * **Description**
@@ -117,7 +143,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default true
    */
-  preserveComment: boolean,
+  preserveComment?: boolean,
 
   /**
    * **Description**
@@ -127,7 +153,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  preserveText: boolean,
+  preserveText?: boolean,
 
   /**
    * **Description**
@@ -136,7 +162,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  attemptCorrection: boolean
+  attemptCorrection?: boolean
 
   /**
    * **Description**
@@ -145,7 +171,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  forceAttribute: boolean
+  forceAttribute?: boolean
 
   /**
    * **Description**
@@ -155,7 +181,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  forceIndent: boolean
+  forceIndent?: boolean
 
   /**
    * **Description**
@@ -173,7 +199,7 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default 'none'
    */
-  quoteConvert: 'double' | 'single' | 'none'
+  quoteConvert?: 'double' | 'single' | 'none'
 
   /**
    * **Description**
@@ -184,6 +210,6 @@ export interface IMarkupOptions extends SharedOptions {
    *
    * @default false
    */
-  preserveAttributes: boolean
+  preserveAttributes?: boolean
 
 }

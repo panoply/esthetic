@@ -6,7 +6,7 @@ export interface SharedOptions {
    * Defaults this to `4` but we overwrite to `2` or assign the vscode workspace
    * editor options.
    */
-  indentSize: number,
+  indentSize?: number,
 
   /**
    * **Description**
@@ -17,7 +17,7 @@ export interface SharedOptions {
    *
    * @default 0
    */
-  indentLevel: number,
+  indentLevel?: number,
 
   /**
    * **Description**
@@ -27,7 +27,7 @@ export interface SharedOptions {
    *
    * @default 0
    */
-  wrap: number
+  wrap?: number
 
   /**
    * **Description**
@@ -36,7 +36,7 @@ export interface SharedOptions {
    *
    * @default 2
    */
-  preserveLine: number,
+  preserveLine?: number,
 
   /**
    * **PrettyDiff**: `new_line`
@@ -53,7 +53,7 @@ export interface SharedOptions {
    *
    * @default false
    */
-  endNewline: boolean
+  endNewline?: boolean
 }
 
 export interface SharedEnforced {

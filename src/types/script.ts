@@ -26,14 +26,14 @@ export interface IScriptOptions extends SharedOptions {
    * precedence over conflicting features. Use of this option is
    * a possible security/stability risk.
    */
-  noSemicolon: boolean,
+  noSemicolon?: boolean,
 
   /**
    * **Description**
    *
    * Automatically correct some sloppiness in code
    */
-  attemptCorrection: boolean
+  attemptCorrection?: boolean
 
   /**
    * **Former Rule**
@@ -53,7 +53,7 @@ export interface IScriptOptions extends SharedOptions {
    * - `none` Ignore this option
    *
    */
-  endComma: 'none' | 'always' | 'never'
+  endComma?: 'none' | 'always' | 'never'
 
   /**
    * **Description**
@@ -76,7 +76,7 @@ export interface IScriptOptions extends SharedOptions {
    * `none`
    * > Ignores this option
    */
-  braceStyle: 'none' | 'collapse' | 'collapse-preserve-inline' | 'expand',
+  braceStyle?: 'none' | 'collapse' | 'collapse-preserve-inline' | 'expand',
 
    /**
    * This option will alphabetically sort object properties in JSON objects.
@@ -88,7 +88,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default false
    */
-  objectSort: boolean
+  objectSort?: boolean
 
   /**
    * This option will determine how arrays cotained on objects will
@@ -147,7 +147,7 @@ export interface IScriptOptions extends SharedOptions {
    * (Allman style indentation).
    *
    */
-  braceAllman: boolean,
+  braceAllman?: boolean,
 
   /**
    * This will create a newline before and after objects values, for example:
@@ -196,7 +196,7 @@ export interface IScriptOptions extends SharedOptions {
    * and before closing curly braces.
    *
    */
-  bracePadding: boolean,
+  bracePadding?: boolean,
 
   /**
    * Controls how arrays on objects are formatted.
@@ -221,7 +221,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default 'default'
    */
-  arrayFormat: 'default' | 'indent' | 'inline',
+  arrayFormat?: 'default' | 'indent' | 'inline',
 
   /**
    * Controls how arrays on objects are formatted. We will exclude
@@ -247,7 +247,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default 'default'
    */
-  objectIndent: 'default' | 'indent',
+  objectIndent?: 'default' | 'indent',
 
   /**
    * **Description**
@@ -256,7 +256,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default false
    */
-  commentNewline: boolean
+  commentNewline?: boolean
 
   /**
    * **Description**
@@ -266,7 +266,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default false
    */
-  commentIndent: boolean
+  commentIndent?: boolean
 
   /**
    * **Description**
@@ -275,7 +275,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default true
    */
-  preserveComment: boolean,
+  preserveComment?: boolean,
 
   /**
    * **Description**
@@ -285,7 +285,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default false
    */
-  preserveText: boolean,
+  preserveText?: boolean,
 
   /**
    * **Description**
@@ -295,7 +295,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default false
    */
-  braceNewline: boolean,
+  braceNewline?: boolean,
 
   /**
    * **Description**
@@ -304,7 +304,7 @@ export interface IScriptOptions extends SharedOptions {
    * from its statement should be followed by a space instead of indentation,
    * thereby keeping the case on a single line of code.
    */
-  caseSpace: boolean,
+  caseSpace?: boolean,
 
   /**
    * **Description**
@@ -312,21 +312,21 @@ export interface IScriptOptions extends SharedOptions {
    * If else_line is true then the keyword 'else' is
    * forced onto a new line.
    */
-  elseNewline: boolean,
+  elseNewline?: boolean,
 
   /**
    * **Description**
    *
    * If a space should follow a JavaScript function name.
    */
-  functionNameSpace: boolean,
+  functionNameSpace?: boolean,
 
   /**
    * **Description**
    *
    * Inserts a space following the function keyword for anonymous functions.
    */
-  functionSpace: boolean,
+  functionSpace?: boolean,
 
   /**
    * **Description**
@@ -335,14 +335,14 @@ export interface IScriptOptions extends SharedOptions {
    * separate lines. A negative value disables this option. A value of 0
    * ensures method chainsare never broken.
    */
-  methodChain: number,
+  methodChain?: number,
 
   /**
    * **Description**
    *
    * If destructured lists in script should never be flattend.
    */
-  neverFlatten: boolean,
+  neverFlatten?: boolean,
 
   /**
    * **Description**
@@ -351,7 +351,7 @@ export interface IScriptOptions extends SharedOptions {
    * from its statement should be followed by a space instead of indentation,
    * thereby keeping the case on a single line of code.
    */
-  noCaseIndent: boolean,
+  noCaseIndent?: boolean,
 
   /**
    * **Description**
@@ -360,14 +360,14 @@ export interface IScriptOptions extends SharedOptions {
    * that immediately precede any white space containing a new line character
    * will be removed so as to eliminate some differences from the code comparison.
    */
-  semicolon: boolean,
+  semicolon?: boolean,
 
   /**
    * **Description**
    *
    * If ternary operators in JavaScript `?` and `:` should remain on the same line.
    */
-  ternaryLine: boolean,
+  ternaryLine?: boolean,
 
   /**
    * **Description**
@@ -376,7 +376,7 @@ export interface IScriptOptions extends SharedOptions {
    * comma separated list or if variables in a list should be separated.
    * each — Ensurce each reference is a single declaration statement.
    */
-  variableList: 'none',
+  variableList?: 'none',
 
   /**
    * **Description**
@@ -384,7 +384,7 @@ export interface IScriptOptions extends SharedOptions {
    * If lists of assignments and properties should be vertically aligned
    */
 
-  vertical: boolean,
+  vertical?: boolean,
   /**
    * **Description**
    *
@@ -401,5 +401,5 @@ export interface IScriptOptions extends SharedOptions {
    *
    * @default 'none'
    */
-  quoteConvert: 'double' | 'single' | 'none'
+  quoteConvert?: 'double' | 'single' | 'none'
 }

@@ -134,7 +134,7 @@ export interface IJSONOptions extends SharedOptions {
    *
    * @default false
    */
-  objectSort: boolean
+  objectSort?: boolean
 
   /**
    * This option will determine how arrays cotained on objects will
@@ -193,7 +193,7 @@ export interface IJSONOptions extends SharedOptions {
    * (Allman style indentation).
    *
    */
-  braceAllman: boolean,
+  braceAllman?: boolean,
 
   /**
    * This will create a newline before and after objects values, for example:
@@ -242,7 +242,7 @@ export interface IJSONOptions extends SharedOptions {
    * and before closing curly braces.
    *
    */
-  bracePadding: boolean,
+  bracePadding?: boolean,
 
   /**
    * Controls how arrays on objects are formatted.
@@ -267,7 +267,7 @@ export interface IJSONOptions extends SharedOptions {
    *
    * @default 'default'
    */
-  arrayFormat: 'default' | 'indent' | 'inline',
+  arrayFormat?: 'default' | 'indent' | 'inline',
 
   /**
    * Controls how arrays on objects are formatted. We will exclude
@@ -293,5 +293,5 @@ export interface IJSONOptions extends SharedOptions {
    *
    * @default 'default'
    */
-  objectIndent: 'default' | 'indent',
+  objectIndent?: 'default' | 'indent',
 }
