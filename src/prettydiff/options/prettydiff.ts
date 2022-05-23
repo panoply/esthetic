@@ -24,8 +24,8 @@ export default (function options_init () {
     , braceNewline: {
       api: 'any'
       , default: false
-      , definition: 'If true an empty line will be inserted after opening curly braceAllman and before clo' +
-          'sing curly braceAllman.'
+      , definition: 'If true an empty line will be inserted after opening curly braceAllman and before clo'
+          + 'sing curly braceAllman.'
       , label: 'Brace Lines'
       , lexer: 'script'
       , mode: 'beautify'
@@ -34,9 +34,9 @@ export default (function options_init () {
     , bracePadding: {
       api: 'any'
       , default: false
-      , definition: 'Inserts a space after the start of a container and before the end of the contain' +
-          'er if the contents of that container are not indented; such as: conditions, func' +
-          'tion arguments, and escaped sequences of template strings.'
+      , definition: 'Inserts a space after the start of a container and before the end of the contain'
+          + 'er if the contents of that container are not indented; such as: conditions, func'
+          + 'tion arguments, and escaped sequences of template strings.'
       , label: 'Brace Padding'
       , lexer: 'script'
       , mode: 'beautify'
@@ -53,16 +53,16 @@ export default (function options_init () {
       , values: {
         collapse: "Sets options.objectIndent to 'indent' and options.neverflatten to true."
         , 'collapse-preserve-inline': "Sets options.bracepadding to true and options.objectIndent to 'inline'."
-        , expand: "Sets options.braceAllman to true, options.objectIndent to 'indent', and options.never" +
-            'flatten to true.'
+        , expand: "Sets options.braceAllman to true, options.objectIndent to 'indent', and options.never"
+            + 'flatten to true.'
         , none: 'Ignores this option'
       }
     }
     , braceAllman: {
       api: 'any'
       , default: false
-      , definition: 'Determines if opening curly braceAllman will exist on the same line as their conditio' +
-          'n or be forced onto a new line. (Allman style indentation).'
+      , definition: 'Determines if opening curly braceAllman will exist on the same line as their conditio'
+          + 'n or be forced onto a new line. (Allman style indentation).'
       , label: 'Style of Indent'
       , lexer: 'script'
       , mode: 'beautify'
@@ -89,8 +89,8 @@ export default (function options_init () {
     , comments: {
       api: 'any'
       , default: false
-      , definition: 'This will determine whether comments should always start at position 0 of each l' +
-          'ine or if comments should be indented according to the code.'
+      , definition: 'This will determine whether comments should always start at position 0 of each l'
+          + 'ine or if comments should be indented according to the code.'
       , label: 'Indent Comments'
       , lexer: 'any'
       , mode: 'beautify'
@@ -99,8 +99,8 @@ export default (function options_init () {
     , compressCSS: {
       api: 'any'
       , default: false
-      , definition: 'If CSS should be beautified in a style where the properties and values are minif' +
-          'ed for faster reading of selectors.'
+      , definition: 'If CSS should be beautified in a style where the properties and values are minif'
+          + 'ed for faster reading of selectors.'
       , label: 'Compressed CSS'
       , lexer: 'style'
       , mode: 'beautify'
@@ -118,8 +118,8 @@ export default (function options_init () {
     , content: {
       api: 'any'
       , default: false
-      , definition: "This will normalize all string content to 'text' so as to eliminate some differe" +
-          'nces from the output.'
+      , definition: "This will normalize all string content to 'text' so as to eliminate some differe"
+          + 'nces from the output.'
       , label: 'Ignore Content'
       , lexer: 'any'
       , mode: 'diff'
@@ -137,8 +137,8 @@ export default (function options_init () {
     , crlf: {
       api: 'any'
       , default: false
-      , definition: 'If line termination should be Windows (CRLF) format.  Unix (LF) format is the de' +
-          'fault.'
+      , definition: 'If line termination should be Windows (CRLF) format.  Unix (LF) format is the de'
+          + 'fault.'
       , label: 'Line Termination'
       , lexer: 'any'
       , mode: 'any'
@@ -156,8 +156,8 @@ export default (function options_init () {
     , diff: {
       api: 'any'
       , default: ''
-      , definition: "The code sample to be compared to 'source' option.  This is required if mode is " +
-          "'" + "diff'."
+      , definition: "The code sample to be compared to 'source' option.  This is required if mode is "
+          + "'" + "diff'."
       , label: 'Code to Compare'
       , lexer: 'any'
       , mode: 'diff'
@@ -175,8 +175,8 @@ export default (function options_init () {
     , endComma: {
       api: 'any'
       , default: 'never'
-      , definition: 'If there should be a trailing comma in arrays and objects. Value "multiline" o' +
-          'nly applies to modes beautify and diff.'
+      , definition: 'If there should be a trailing comma in arrays and objects. Value "multiline" o'
+          + 'nly applies to modes beautify and diff.'
       , label: 'Trailing Comma'
       , lexer: 'script'
       , mode: 'beautify'
@@ -190,8 +190,8 @@ export default (function options_init () {
     , endQuietly: {
       api: 'node'
       , default: 'default'
-      , definition: 'A node only option to determine if terminal summary data should be logged to the' +
-          ' console.'
+      , definition: 'A node only option to determine if terminal summary data should be logged to the'
+          + ' console.'
       , label: 'Log Summary to Console'
       , lexer: 'any'
       , mode: 'any'
@@ -214,8 +214,8 @@ export default (function options_init () {
     , forceIndent: {
       api: 'any'
       , default: false
-      , definition: 'Will force indentation upon all content and tags without regard for the creation' +
-          ' of new text nodes.'
+      , definition: 'Will force indentation upon all content and tags without regard for the creation'
+          + ' of new text nodes.'
       , label: 'Force Indentation of All Content'
       , lexer: 'markup'
       , mode: 'beautify'
@@ -224,8 +224,8 @@ export default (function options_init () {
     , arrayFormat: {
       api: 'any'
       , default: 'default'
-      , definition: 'Determines if all array indexes should be indented, never indented, or left to t' +
-          'he default.'
+      , definition: 'Determines if all array indexes should be indented, never indented, or left to t'
+          + 'he default.'
       , label: 'Formatting Arrays'
       , lexer: 'script'
       , mode: 'beautify'
@@ -239,8 +239,8 @@ export default (function options_init () {
     , objectIndent: {
       api: 'any'
       , default: 'default'
-      , definition: 'Determines if all object keys should be indented, never indented, or left to the' +
-          ' default.'
+      , definition: 'Determines if all object keys should be indented, never indented, or left to the'
+          + ' default.'
       , label: 'Formatting Objects'
       , lexer: 'script'
       , mode: 'beautify'
@@ -263,8 +263,8 @@ export default (function options_init () {
     , help: {
       api: 'node'
       , default: 80
-      , definition: 'A node only option to print documentation to the console. The value determines w' +
-          'here to wrap text.'
+      , definition: 'A node only option to print documentation to the console. The value determines w'
+          + 'here to wrap text.'
       , label: 'Help Wrapping Limit'
       , lexer: 'any'
       , mode: 'any'
@@ -273,8 +273,8 @@ export default (function options_init () {
     , indentChar: {
       api: 'any'
       , default: ' '
-      , definition: 'The string characters to comprise a single indentation. Any string combination i' +
-          's accepted.'
+      , definition: 'The string characters to comprise a single indentation. Any string combination i'
+          + 's accepted.'
       , label: 'Indentation Characters'
       , lexer: 'any'
       , mode: 'beautify'
@@ -283,8 +283,8 @@ export default (function options_init () {
     , indentLevel: {
       api: 'any'
       , default: 0
-      , definition: 'How much indentation padding should be applied to beautification? This option is' +
-          ' internally used for code that requires switching between libraries.'
+      , definition: 'How much indentation padding should be applied to beautification? This option is'
+          + ' internally used for code that requires switching between libraries.'
       , label: 'Indentation Padding'
       , lexer: 'any'
       , mode: 'beautify'
@@ -311,8 +311,8 @@ export default (function options_init () {
     , languageDefault: {
       api: 'any'
       , default: 'text'
-      , definition: "The fallback option if option 'lang' is set to 'auto' and a language cannot be d" +
-          'etected.'
+      , definition: "The fallback option if option 'lang' is set to 'auto' and a language cannot be d"
+          + 'etected.'
       , label: 'Language Auto-Detection Default'
       , lexer: 'any'
       , mode: 'any'
@@ -321,8 +321,8 @@ export default (function options_init () {
     , languageName: {
       api: 'any'
       , default: 'JavaScript'
-      , definition: "The formatted proper name of the code sample's language for use in reports read " +
-          'by people.'
+      , definition: "The formatted proper name of the code sample's language for use in reports read "
+          + 'by people.'
       , label: "Formatted Name of the Code's Language"
       , lexer: 'any'
       , mode: 'any'
@@ -331,9 +331,9 @@ export default (function options_init () {
     , lexer: {
       api: 'any'
       , default: 'auto'
-      , definition: 'This option determines which sets of rules to use in the language parser. If opt' +
-          "ion 'language' has a value of 'auto', which is the default value, this option is" +
-          " ignored. The value 'text' is converted to 'auto' if options 'mode' is not 'diff'. Value 'text' allows literal comparisons."
+      , definition: 'This option determines which sets of rules to use in the language parser. If opt'
+          + "ion 'language' has a value of 'auto', which is the default value, this option is"
+          + " ignored. The value 'text' is converted to 'auto' if options 'mode' is not 'diff'. Value 'text' allows literal comparisons."
       , label: 'Parsing Lexer'
       , lexer: 'any'
       , mode: 'any'
@@ -348,9 +348,9 @@ export default (function options_init () {
     , methodChain: {
       api: 'any'
       , default: 3
-      , definition: 'When to break consecutively chained methods and properties onto separate lines. ' +
-          'A negative value disables this option. A value of 0 ensures method chains are ne' +
-          'ver broken.'
+      , definition: 'When to break consecutively chained methods and properties onto separate lines. '
+          + 'A negative value disables this option. A value of 0 ensures method chains are ne'
+          + 'ver broken.'
       , label: 'Method Chains'
       , lexer: 'script'
       , mode: 'beautify'
@@ -367,8 +367,8 @@ export default (function options_init () {
       , values: {
         beautify: 'beautifies code and returns a string'
         , diff: 'returns either command line list of differences or an HTML report'
-        , parse: "using option 'parseFormat' returns an object with shallow arrays, a multidimensi" +
-            'onal array, or an HTML report'
+        , parse: "using option 'parseFormat' returns an object with shallow arrays, a multidimensi"
+            + 'onal array, or an HTML report'
       }
     }
     , neverFlatten: {
@@ -392,8 +392,8 @@ export default (function options_init () {
     , noCaseIndent: {
       api: 'any'
       , default: false
-      , definition: 'If a case statement should receive the same indentation as the containing switch' +
-          ' block.'
+      , definition: 'If a case statement should receive the same indentation as the containing switch'
+          + ' block.'
       , label: 'Case Indentation'
       , lexer: 'script'
       , mode: 'beautify'
@@ -402,8 +402,8 @@ export default (function options_init () {
     , noLeadZero: {
       api: 'any'
       , default: false
-      , definition: 'Whether leading 0s in CSS values immediately preceding a decimal should be remo' +
-          'ved or prevented.'
+      , definition: 'Whether leading 0s in CSS values immediately preceding a decimal should be remo'
+          + 'ved or prevented.'
       , label: 'Leading 0s'
       , lexer: 'style'
       , mode: 'any'
@@ -445,11 +445,11 @@ export default (function options_init () {
       , mode: 'parse'
       , type: 'string'
       , values: {
-        htmltable: "generates the 'table' type output for the DOM but escapes the HTML tags for rend" +
-            'ering as HTML code in a HTML tool'
+        htmltable: "generates the 'table' type output for the DOM but escapes the HTML tags for rend"
+            + 'ering as HTML code in a HTML tool'
         , parallel: 'returns an object containing series of parallel arrays'
-        , sequential: 'returns an array where each index is a child object containing the parsed token' +
-            ' and all descriptive data'
+        , sequential: 'returns an array where each index is a child object containing the parsed token'
+            + ' and all descriptive data'
         , table: 'generates a colorful grid of output for either the dom or command line interface'
       }
     }
@@ -483,8 +483,8 @@ export default (function options_init () {
     , preserveText: {
       api: 'any'
       , default: false
-      , definition: 'If text in the provided markup code should be preserved exactly as provided. Thi' +
-          's option eliminates beautification and wrapping of text content.'
+      , definition: 'If text in the provided markup code should be preserved exactly as provided. Thi'
+          + 's option eliminates beautification and wrapping of text content.'
       , label: 'Preserve Markup Text White Space'
       , lexer: 'markup'
       , mode: 'any'
@@ -493,9 +493,9 @@ export default (function options_init () {
     , quote: {
       api: 'any'
       , default: false
-      , definition: "If true and mode is 'diff' then all single quote characters will be replaced by " +
-          'double quote characters in both the source and diff file input so as to eliminat' +
-          'e some differences from the diff report HTML output.'
+      , definition: "If true and mode is 'diff' then all single quote characters will be replaced by "
+          + 'double quote characters in both the source and diff file input so as to eliminat'
+          + 'e some differences from the diff report HTML output.'
       , label: 'Normalize Quotes'
       , lexer: 'any'
       , mode: 'diff'
@@ -504,8 +504,8 @@ export default (function options_init () {
     , quoteConvert: {
       api: 'any'
       , default: 'none'
-      , definition: 'If the quotes of script strings or markup attributes should be converted to sing' +
-          'le quotes or double quotes.'
+      , definition: 'If the quotes of script strings or markup attributes should be converted to sing'
+          + 'le quotes or double quotes.'
       , label: 'Indent Size'
       , lexer: 'any'
       , mode: 'any'
@@ -528,9 +528,9 @@ export default (function options_init () {
     , semicolon: {
       api: 'any'
       , default: false
-      , definition: "If true and mode is 'diff' and lang is 'javascript' all semicolon characters tha" +
-          't immediately precede any white space containing a new line character will be re' +
-          'moved so as to eliminate some differences from the code comparison.'
+      , definition: "If true and mode is 'diff' and lang is 'javascript' all semicolon characters tha"
+          + 't immediately precede any white space containing a new line character will be re'
+          + 'moved so as to eliminate some differences from the code comparison.'
       , label: 'Indent Size'
       , lexer: 'script'
       , mode: 'diff'
@@ -539,8 +539,8 @@ export default (function options_init () {
     , source: {
       api: 'any'
       , default: ''
-      , definition: 'The source code or location for interpretation. This option is required for all ' +
-          'modes.'
+      , definition: 'The source code or location for interpretation. This option is required for all '
+          + 'modes.'
       , label: 'Source Sample'
       , lexer: 'any'
       , mode: 'any'
@@ -567,8 +567,8 @@ export default (function options_init () {
     , styleguide: {
       api: 'any'
       , default: 'none'
-      , definition: 'Provides a collection of option presets to easily conform to popular JavaScript ' +
-          'style guides.'
+      , definition: 'Provides a collection of option presets to easily conform to popular JavaScript '
+          + 'style guides.'
       , label: 'Script Styleguide'
       , lexer: 'script'
       , mode: 'beautify'
@@ -590,8 +590,8 @@ export default (function options_init () {
     , tagMerge: {
       api: 'any'
       , default: false
-      , definition: 'Allows immediately adjacement start and end markup tags of the same name to be c' +
-          'ombined into a single self-closing tag.'
+      , definition: 'Allows immediately adjacement start and end markup tags of the same name to be c'
+          + 'ombined into a single self-closing tag.'
       , label: 'Merge Adjacent Start and End tags'
       , lexer: 'markup'
       , mode: 'any'
@@ -627,8 +627,8 @@ export default (function options_init () {
     , variableList: {
       api: 'any'
       , default: 'none'
-      , definition: 'If consecutive JavaScript variables should be merged into a comma separated list' +
-          ' or if variables in a list should be separated.'
+      , definition: 'If consecutive JavaScript variables should be merged into a comma separated list'
+          + ' or if variables in a list should be separated.'
       , label: 'Variable Declaration Lists'
       , lexer: 'script'
       , mode: 'any'
@@ -651,8 +651,8 @@ export default (function options_init () {
     , vertical: {
       api: 'any'
       , default: false
-      , definition: 'If lists of assignments and properties should be vertically aligned. This option' +
-          ' is not used with the markup lexer.'
+      , definition: 'If lists of assignments and properties should be vertically aligned. This option'
+          + ' is not used with the markup lexer.'
       , label: 'Vertical Alignment'
       , lexer: 'any'
       , mode: 'beautify'
@@ -661,8 +661,8 @@ export default (function options_init () {
     , wrap: {
       api: 'any'
       , default: 0
-      , definition: 'Character width limit before applying word wrap. A 0 value disables this option.' +
-          ' A negative value concatenates script strings.'
+      , definition: 'Character width limit before applying word wrap. A 0 value disables this option.'
+          + ' A negative value concatenates script strings.'
       , label: 'Wrap'
       , lexer: 'any'
       , mode: 'any'
