@@ -34,7 +34,29 @@ export default rollup(
               targets: 'package/*'
             }
           ),
-          plugin.esbuild()
+          plugin.esbuild(),
+          plugin.copy(
+            {
+              targets: [
+               {
+                  src: 'src/types/options.ts',
+                  dest: 'types',
+                  rename: 'index.d.ts'
+                },
+                {
+                  src: [
+                    'src/types/shared.ts',
+                    'src/types/markup.ts',
+                    'src/types/json.ts',
+                    'src/types/script.ts',
+                    'src/types/style.ts'
+                  ],
+                  dest: 'types',
+                  rename: name => `${name}.d.ts`
+                }
+              ]
+            }
+          )
         ]
       )(
         [
