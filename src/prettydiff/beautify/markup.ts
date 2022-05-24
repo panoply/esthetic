@@ -1,42 +1,137 @@
 import { prettydiff } from '../parser/prettydiff';
 import { PrettyDiffOptions } from '../../types/prettydiff';
+import { cc } from '../shared/enums';
+import { isLiquid } from '../shared/utils';
 
-export default (function beautify_markup_init () {
+export default (() => {
 
-  function markup (options: PrettyDiffOptions) {
+  /* -------------------------------------------- */
+  /* MARKUP BEAUTIFICATION                        */
+  /* -------------------------------------------- */
+
+  prettydiff.beautify.markup = function markup (options: PrettyDiffOptions) {
 
     /* -------------------------------------------- */
     /* CONSTANTS                                    */
     /* -------------------------------------------- */
 
-    const externalIndex = {};
+    /**
+     * Type token helper utilities for querying
+     * the `data.types` (options.parsed) AST tree.
+     */
+    const type = Object.create(null);
+
+    /**
+     * Token helper utilities for querying
+     * the `data.token` (options.parsed) AST tree.
+     */
+    const token = Object.create(null);
+
+    /**
+     * External Lexer reference  when dealing with
+     * markup elements that require external handling.
+     * ie: `<script>` tags etc etc.
+     */
+    const externalIndex = Object.create(null);
+
+    /**
+     * The name of the lexer used
+     */
     const lexer = 'markup';
+
+    /**
+     * Reference to `options.parsed`
+     */
     const data = options.parsed;
+
+    /**
+     * Carriage return / Line Feed
+     */
     const lf = options.crlf === true ? '\r\n' : '\n';
+
+    /**
+     * Source count. This holds reference to data token
+     * length or the source length.
+     */
     const c = (prettydiff.end < 1 || prettydiff.end > data.token.length)
       ? data.token.length
       : prettydiff.end + 1;
 
     /* -------------------------------------------- */
+    /* UTILITIES                                    */
+    /* -------------------------------------------- */
+
+    /**
+     * Check whether the token type at specific index
+     * equals the provided name. Returns a truthy.
+     *
+     * > Use `type.not()` for false comparisons.
+     */
+    type.is = (index: number, name: string) => data.types[index] === name;
+
+    /**
+     * Check whether the token type at specific index
+     * does not equal the provided name. Returns a truthy.
+     *
+     * > Use `type.is()` for true comparisons.
+     */
+    type.not = (index: number, name: string) => data.types[index] !== name;
+
+    /**
+     * Returns the `indexOf` a `data.types` name. This
+     * is used rather frequently to determine the token
+     * type we are dealing with.
+     */
+    type.idx = (index: number, name: string) => data.types[index].indexOf(name);
+
+    /**
+     * Check whether the token equals the provided tag.
+     * Returns a truthy.
+     *
+     * > Use `token.not()` for false comparisons.
+     */
+    token.is = (index: number, tag: string) => data.token[index] === tag;
+
+    /**
+     * Check whether the token does not equals the
+     * provided tag. Returns a truthy.
+     *
+     * > Use `token.is()` for false comparisons.
+     */
+    token.not = (index: number, tag: string) => data.token[index] !== tag;
+
+    /* -------------------------------------------- */
     /* LOCAL SCOPES                                 */
     /* -------------------------------------------- */
 
+    /**
+     * Holds the current index position.
+     */
     let a = prettydiff.start;
+
+    /**
+     * Comment starting positions
+     */
     let comstart = -1;
+
+    /**
+     * Next token reference index
+     */
     let next = 0;
+
+    /**
+     * Count reference (unsure what this holds)
+     */
     let count = 0;
+
+    /**
+     * Indentation level
+     */
     let indent = (isNaN(options.indentLevel) === true) ? 0 : Number(options.indentLevel);
 
-    const type = {
-      is: (index: number, name: string) => data.types[index] === name,
-      not: (index: number, name: string) => data.types[index] !== name,
-      idx: (index: number, name: string) => data.types[index].indexOf(name)
-    };
-
-    const token = {
-      is: (index: number, tag: string) => data.token[index] === tag,
-      not: (index: number, tag: string) => data.token[index] !== tag
-    };
+    /* -------------------------------------------- */
+    /* FUNCTIONS                                    */
+    /* -------------------------------------------- */
 
     const levels = (() => {
 
@@ -158,9 +253,10 @@ export default (function beautify_markup_init () {
         if (test === true) {
 
           const ind = (
+            type.is(next, 'comment') ||
             type.is(next, 'end') ||
             type.is(next, 'template_end')
-          ) ? indent + 1
+          ) ? indent
             : indent;
 
           do {
@@ -416,12 +512,25 @@ export default (function beautify_markup_init () {
 
       function attribute () {
 
+        /* -------------------------------------------- */
+        /* CONSTANTS                                    */
+        /* -------------------------------------------- */
+
+        /**
+         * The parent node
+         */
         const parent = a - 1;
 
+        /**
+         * This function is responsible for wrapping
+         * applied to attributes.
+         */
         function wrap (index: number) {
 
           const item = data.token[index].replace(/\s+/g, ' ').split(' ');
           const ilen = item.length;
+
+          console.log('TOKEN WRAP', data.token[index]);
 
           let bb = 1;
           let acount = item[0].length;
@@ -446,9 +555,38 @@ export default (function beautify_markup_init () {
 
         };
 
-        let plural = false;
+        /* -------------------------------------------- */
+        /* LOCAL SCOPES                                 */
+        /* -------------------------------------------- */
+
+        /**
+         * References `a` position.
+         */
         let y = a;
+
+        /**
+         * Plural
+         */
+        let plural = false;
+
+        /**
+         * Whether or not the exit the walk early
+         */
+        let earlyexit = false; // eslint-disable-line prefer-const
+
+        /**
+         * Whether or not the attribute is a start type
+         */
+        let attStart = false;
+
+        /**
+         * The token length
+         */
         let len = data.token[parent].length + 1;
+
+        /**
+         * The level to be applied to identation
+         */
         let lev = (() => {
 
           if (type.idx(a, 'start') > 0) {
@@ -469,7 +607,9 @@ export default (function beautify_markup_init () {
             } while (x < c);
 
           } else if (a < c - 1 && type.idx(a + 1, 'attribute') > -1) {
+
             plural = true;
+
           }
 
           if (type.is(parent, 'singleton')) return indent + 1;
@@ -485,9 +625,6 @@ export default (function beautify_markup_init () {
 
         })();
 
-        const earlyexit = false;
-        let attStart = false;
-
         if (plural === false && type.is(a, 'comment_attribute')) {
 
           // lev must be indent unless the "next" type is end then its indent + 1
@@ -502,6 +639,10 @@ export default (function beautify_markup_init () {
           return;
         }
 
+        /* -------------------------------------------- */
+        /* BEGIN WALK                                   */
+        /* -------------------------------------------- */
+
         if (lev < 1) lev = 1;
 
         // First, set levels and determine if there
@@ -512,22 +653,78 @@ export default (function beautify_markup_init () {
         do {
 
           count = count + data.token[a].length + 1;
+          len = len + data.token[a].length + 1;
 
           if (type.idx(a, 'attribute') > 0) {
 
-            // HOT PATCH
+            // Template attribute
             //
-            // Template attribute values will not be placed
-            // on newlines, and correctly spaced.
+            // Lets first handle template (liquid attributes). The lexer has already given us
+            // context for them, we merely need to figure out the structures and app
+            // beautification accordingly.
             //
-            // NOTE: -10 equals single line space
-            // NOTE: -20 removes spacing
+            // NOTES:
+            //
+            // -10 equals single line space
+            // -20 removes spacing
+            // lev applied identation
             //
             if (type.is(a, 'template_attribute')) {
 
-              len = len + data.token[a].length + 1;
+              // len = len + data.token[a].length + 1;
 
-              level.push(options.forceAttribute ? lev : -10);
+              // This condition is used to determine if a Liquid attribute sibling token
+              // is appended with a - dash character, for example:
+              //
+              // <div data-{{ x }}-x="*"></div>
+              // <div {% unless x -%}{{ x }}{%- endunless -%}></div>
+
+              // Explained:
+              //
+              // Reference (a) is within "{{ x }}" and we will  check the prev token for
+              // "data-" and ensure that the attribute does not apply identation.
+              //
+              if (
+                (/^({[{%]|[=-])/.test(data.token[a + 1]) || /^({[{%]|[=-])/.test(data.token[a - 1]))
+                && (data.token[a].charCodeAt(1) === cc.PER || data.token[a].charCodeAt(1) === cc.LCB
+                )
+              ) {
+
+                if (options.forceAttribute) {
+
+                  // Previous sibling ends with a dash character, eg: <div data-^
+                  // We want to prevent forcing it onto a newline
+                  //
+                  if (
+                    data.token[a - 1].charCodeAt(data.token[a - 1].length - 1) === cc.DSH ||
+                    /^({[{%]|[=-])/.test(data.token[a + 1])
+                  ) {
+                    level.push(-20);
+                  } else {
+                    level.push(lev);
+                  }
+                } else {
+                  if (type.not(a + 1, 'attribute') && type.not(a + 1, 'template_attribute')) {
+                    level.push(-10);
+                  } else {
+                    level.push(-20);
+                  }
+                }
+
+                // len = len + data.token[a].length + 1;
+
+                // if (data.token[a].charCodeAt(1) === cc.DSH) level[a] = level[data.begin[a]] - 1;
+                // console.log(data.token[a]);
+
+              } else {
+
+                level.push(-10);
+
+                // level.push(lev);
+
+                // len = len + data.token[a].length + 1;
+
+              }
 
             } else if (type.is(a, 'comment_attribute')) {
 
@@ -574,14 +771,35 @@ export default (function beautify_markup_init () {
               level.push(lev);
             }
 
-            // earlyexit = true;
+            earlyexit = true;
 
           } else if (type.is(a, 'attribute')) {
 
-            len = len + data.token[a].length + 1;
+            // The current token is a liquid tag or object
+            // and is being used as a HTML atrribute definition
+            //
+            // For example:
+            //
+            // * <div {% if x %}..{% endif %}></div>
+            // * <div {{ x }}></div>
+            //
+            if (isLiquid(data.token[a], 1)) {
+
+              // len = len + data.token[a].length + 1;
+              a = a + 1;
+              externalIndex[a] = a;
+            }
 
             if (options.preserveAttribute) {
 
+              level.push(-10);
+
+            } else if (
+              data.token[a][data.token[a].length - 1] === '"' ||
+              data.token[a][data.token[a].length - 1] === "'"
+            ) {
+
+              // level[a] = level[data.begin[a]]  1;
               level.push(-10);
 
             } else if (options.forceAttribute || attStart || (
@@ -590,36 +808,21 @@ export default (function beautify_markup_init () {
               && type.idx(a + 1, 'attribute') > 0
             )) {
 
-              // HOT PATCH
-              //
-              // This series of checks will ensure that Liquid
-              // tags surrounded by html attributes are not preserved
-              // for example:
-              //
               // <div data-{{ tag }}-attr="x"></div>
-              //
-              // We check the previous token, current token and next
-              // token to determine whether or not we have this formation.
-              //
-              if ((
-                (/-$/).test(data.token[a - 1])
-                && (/^-/).test(data.token[a + 1])
-                && (/^{[{%]-?/).test(data.token[a])
-                && (/[%}]}$/).test(data.token[a])
-              ) || (
-                (/-$/).test(data.token[a])
-                && (/^-/).test(data.token[a + 2])
-                && (/^{[{%]-?/).test(data.token[a + 1])
-                && (/[%}]}$/).test(data.token[a + 1])
-              )) {
-                level.push(-20);
-              } else {
-                level.push(-10);
-              }
+              // we are at data-
+              if (data.token[a][data.token[a].length - 1] === '-' && isLiquid(data.token[a + 1], 1)) {
 
+                level.push(-20);
+
+              } else {
+
+                level.push(-20);
+
+              }
             } else {
 
-              level.push(-10);
+              level.push((options.forceAttribute || attStart) ? lev : -20);
+
             }
 
           } else if (data.begin[a] < parent + 1) {
@@ -630,6 +833,10 @@ export default (function beautify_markup_init () {
           a = a + 1;
 
         } while (a < c);
+
+        /* -------------------------------------------- */
+        /* APPLY ATTRIBUTE INDENTATION                  */
+        /* -------------------------------------------- */
 
         a = a - 1;
 
@@ -646,7 +853,6 @@ export default (function beautify_markup_init () {
         }
 
         if (level[a] !== -20) {
-
           if (
             options.language === 'jsx'
             && type.idx(parent, 'start') > -1
@@ -655,6 +861,7 @@ export default (function beautify_markup_init () {
             level[a] = lev;
           } else {
             level[a] = level[parent];
+
           }
         }
 
@@ -666,8 +873,8 @@ export default (function beautify_markup_init () {
         }
 
         if (
-          earlyexit === true ||
-          options.preserveAttribute === true ||
+          earlyexit === null ||
+          options.preserveAttributes === true ||
           data.token[parent] === '<%xml%>' ||
           data.token[parent] === '<?xml?>'
         ) {
@@ -696,11 +903,7 @@ export default (function beautify_markup_init () {
 
             do {
 
-              if (
-                data.token[y].length > options.wrap
-                && (/\s/).test(data.token[y]) === true) {
-                wrap(y);
-              }
+              if (data.token[y].length > options.wrap && (/\s/).test(data.token[y])) wrap(y);
 
               y = y - 1;
 
@@ -713,13 +916,17 @@ export default (function beautify_markup_init () {
           type.is(a, 'attribute')
           && options.wrap > 0
           && data.token[a].length > options.wrap
-          && (/\s/).test(data.token[a]) === true
+          && (/\s/).test(data.token[a])
         ) {
 
           wrap(a);
         }
 
       };
+
+      /* -------------------------------------------- */
+      /* SPACING AND INDENTATION                      */
+      /* -------------------------------------------- */
 
       // Ensure correct spacing is applied
       //
@@ -916,7 +1123,7 @@ export default (function beautify_markup_init () {
     })();
 
     //  beautify_markup_apply
-    return (function () {
+    return (() => {
 
       const build = [];
       const ind = (() => {
@@ -992,7 +1199,7 @@ export default (function beautify_markup_init () {
             : levels[a - 1]
           : (() => {
 
-            let bb = a + 1;
+            let bb = a - 1; // add + 1 for inline comment formats
             let start = (bb > -1 && type.idx(bb, 'start') > -1);
 
             if (levels[a] > -1 && type.is(a, 'attribute')) return levels[a] + 1;
@@ -1101,7 +1308,6 @@ export default (function beautify_markup_init () {
           ) {
 
             attributeEnd();
-
           }
 
           if (token.not(a, undefined) && data.token[a].indexOf(lf) > 0 && ((
@@ -1158,10 +1364,8 @@ export default (function beautify_markup_init () {
 
       return build.join('');
 
-    }());
+    })();
 
-  }
+  };
 
-  prettydiff.beautify.markup = markup;
-
-}());
+})();

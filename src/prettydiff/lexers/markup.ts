@@ -1,18 +1,135 @@
-// @ts-nocheck
 
 import { sparser } from '../parser/parse';
-import { IRecord } from '../types/sparser';
+import { IRecord, Parsed, HTMLBlocks, HTMLVoids } from '../../types/sparser';
+import { cc } from '../shared/enums';
 
-export default (function () {
+export default (() => {
 
-  function markup (source: string) {
+  /* -------------------------------------------- */
+  /* STATICS                                      */
+  /* -------------------------------------------- */
 
+  /**
+   * HTML Block reference map
+   *
+   * > We omit the prototype because we live in a society, we are not animals.
+   */
+  const blocks: { [K in HTMLBlocks]: 'block' } = Object.create(null); // eslint-disable-line
+
+  blocks.body = 'block';
+  blocks.colgroup = 'block';
+  blocks.dd = 'block';
+  blocks.dt = 'block';
+  blocks.head = 'block';
+  blocks.html = 'block';
+  blocks.li = 'block';
+  blocks.option = 'block';
+  blocks.p = 'block';
+  blocks.tbody = 'block';
+  blocks.td = 'block';
+  blocks.tfoot = 'block';
+  blocks.th = 'block';
+  blocks.thead = 'block';
+  blocks.tr = 'block';
+
+  /**
+   * HTML Void reference map
+   *
+   * > We omit the prototype because we live in a society, we are not animals.
+   */
+  const voids: { [K in HTMLVoids]: 'singleton' } = Object.create(null); // eslint-disable-line
+
+  voids.area = 'singleton';
+  voids.base = 'singleton';
+  voids.basefont = 'singleton';
+  voids.br = 'singleton';
+  voids.col = 'singleton';
+  voids.embed = 'singleton';
+  voids.eventsource = 'singleton';
+  voids.frame = 'singleton';
+  voids.hr = 'singleton';
+  voids.image = 'singleton';
+  voids.img = 'singleton';
+  voids.input = 'singleton';
+  voids.isindex = 'singleton';
+  voids.keygen = 'singleton';
+  voids.link = 'singleton';
+  voids.meta = 'singleton';
+  voids.param = 'singleton';
+  voids.progress = 'singleton';
+  voids.source = 'singleton';
+  voids.wbr = 'singleton';
+
+  /* -------------------------------------------- */
+  /* LEXER                                        */
+  /* -------------------------------------------- */
+
+  /**
+   * Markup Lexer
+   *
+   * Used to parse markup languages. This used to be used for multiple
+   * template languages in Sparser but has been refactored to solely
+   * focus and support the following language only:
+   *
+   * - HTML
+   * - XML
+   * - JSX
+   * - SGML
+   * - Liquid.
+   */
+  sparser.lexers.markup = function markup (source: string) {
+
+    /**
+     * Deconstructed options from sparser
+     */
     const { parse, options } = sparser;
+
+    /**
+     * Lexer Options
+     */
     const { lexerOptions } = options;
+
+    /**
+     * Parse data reference
+     */
     const { data } = parse;
+
+    /**
+     * Deconstruct some preset options
+     */
     const { attributeSortList } = lexerOptions.markup;
+
+    /**
+     * Attribute sorting list length
+     */
     const asl = attributeSortList.length;
-    const count = { end: 0, index: -1, start: 0 };
+
+    /**
+     * Count reference to be assigned to the
+     * generated tree.
+     *
+     * > We omit the prototype because we live in a society, we are not animals.
+     */
+    const count: { end: number; start: number; index: number } = Object.create(null);
+    count.end = 0;
+    count.index = -1;
+    count.start = 0;
+
+    /**
+     * The document source as an array list,
+     * ie: source.split('')
+     */
+    const b = source.split('');
+
+    /**
+     * The length of the document source,
+     * ie: number of characters
+     */
+    const c = b.length;
+
+    /* -------------------------------------------- */
+    /* LEXICAL SCOPES                               */
+    /* -------------------------------------------- */
 
     /**
      * Advancement reference
@@ -34,35 +151,62 @@ export default (function () {
      */
     let html = '';
 
-    /**
-     * The document source as an array list,
-     * ie: source.split('')
-     */
-    const b = source.split('');
+    /* -------------------------------------------- */
+    /* FUNCTIONS                                    */
+    /* -------------------------------------------- */
 
     /**
-     * The length of the document source,
-     * ie: number of characters
+     * Checks where the provided string contains Liquid
+     * delimiters. Optionally accepts a `where` parameter
+     * which allows for checking start, end, both or containment.
+     *
+     * Where Parameter
+     *
+     * - `1` Check starting delimiters, eg: `{{`, `%}`
+     * - `2` Check ending delimiters, eg: `}}`, `%}`
+     * - `3` Check starting and ending delimiters
+     * - `4` Check if input contains starting delimiters
+     * - `5` Check if input contains starting and ending delimiters
      */
-    const c = b.length;
+    function isLiquid (input: string, direction: 1 | 2 | 3 | 4 | 5): boolean {
 
-    const htmlblocks = {
-      body: 'block'
-      , colgroup: 'block'
-      , dd: 'block'
-      , dt: 'block'
-      , head: 'block'
-      , html: 'block'
-      , li: 'block'
-      , option: 'block'
-      , p: 'block'
-      , tbody: 'block'
-      , td: 'block'
-      , tfoot: 'block'
-      , th: 'block'
-      , thead: 'block'
-      , tr: 'block'
-    };
+      if (direction === 1) {
+        return input.charCodeAt(0) === cc.LCB && (
+          input.charCodeAt(1) === cc.PER ||
+          input.charCodeAt(1) === cc.LCB
+        );
+      } else if (direction === 2) {
+        return (
+          input.charCodeAt(input.length - 1) === cc.RCB && (
+            input.charCodeAt(input.length - 2) === cc.PER ||
+            input.charCodeAt(input.length - 2) === cc.RCB
+          )
+        );
+
+      } else if (direction === 3) {
+        return (
+          input.charCodeAt(0) === cc.LCB && (
+            input.charCodeAt(1) === cc.PER ||
+            input.charCodeAt(1) === cc.LCB
+          )
+        ) && (
+          input.charCodeAt(input.length - 1) === cc.RCB && (
+            input.charCodeAt(input.length - 2) === cc.PER ||
+            input.charCodeAt(input.length - 2) === cc.RCB
+          )
+        );
+
+      } else if (direction === 4) {
+
+        return /{[{%}]/.test(input);
+
+      } else if (direction === 5) {
+
+        return (/{[{%]/.test(input) && /[%}]}/.test(input));
+
+      }
+
+    }
 
     /**
      * Pads template tag delimters with a space. This function
@@ -103,7 +247,7 @@ export default (function () {
      * ---
      * Original: lexer_markup_recordPush
      */
-    function recordPush (target: IRecord, record: IRecord, structure: string) {
+    function recordPush (target: Parsed, record: IRecord, structure: string) {
 
       if (target === data) {
         if (record.types.indexOf('end') > -1) {
@@ -127,75 +271,98 @@ export default (function () {
      */
     function tagName (tag: string) {
 
+      /**
+       * The index of the whitespace character
+       */
       let space = 0;
+
+      /**
+       * The actual tag name
+       */
       let name = '';
 
-      // HOT FIX
-      //
-      // We eliminate the possibility of Ruby ERB to be matched or
-      // other delimeter template languages. Instead we only want Liquid
-      // delimiters. The previous expression match was ^((\{)((%-?)|\{-?)=?\s*)
-      // but we instead just use the new one below:
+      /**
+       * Delimeter expression match
+       *
+       * ----
+       *
+       * @prettify
+       *
+       * We eliminate the possibility of Ruby ERB to be matched or
+       * other delimeter template languages. Instead we only want Liquid
+       * delimiters.
+       */
       const regex = /^({[{%]-?\s*)/;
 
       if (typeof tag !== 'string') return '';
 
-      space = tag
-        .replace(regex, '%')
-        .replace(/\s+/, ' ')
-        .indexOf(' ');
-
+      space = tag.replace(regex, '%').replace(/\s+/, ' ').indexOf(' ');
       name = tag.replace(regex, ' ');
-      name = space < 0
-        ? name.slice(1, tag.length - 1)
-        : name.slice(1, space);
+      name = space < 0 ? name.slice(1, tag.length - 1) : name.slice(1, space);
 
       if (html === 'html') name = name.toLowerCase();
 
-      // HOT FIX
-      //
-      // Liquid delimiters that did not contain a space were failing
-      // to have their name matched and instead ignore by the beautificiation
-      // process, for example:
-      //
-      // {{tag}} would match
-      // {{tag-}} would not match
-      // {% endtag%} would not match
-      // {%else%} would not match
-      //
-      // We have fixed this accordingly, everything works now.
+      /**
+       * @pettify
+       *
+       * PRETTIFY PATCH
+       *
+       * Liquid delimiters that did not contain a space were failing
+       * to have their name matched and instead ignore by the beautificiation
+       * process, for example:
+       *
+       * {{tag}} would match
+       * {{tag-}} would not match
+       * {% endtag%} would not match
+       * {%else%} would not match
+       */
       name = name.replace(/-?[%}]}$/, '');
 
-      // if (name.indexOf('(') > 0) name = name.slice(0, name.indexOf('('));
-      // if (name === '?xml?') return 'xml';
-
-      // console.log(name)
+      if (name.indexOf('(') > 0) name = name.slice(0, name.indexOf('('));
+      if (name === '?xml?') return 'xml';
 
       return name;
+
     };
 
-    // A fix for HTML missing end tags
-    // lexer_markup_fixHtmlEnd
     /**
-     * A fix for HTML missing end tags
+     * Utility function fixer for HTML missing end tags
+     *
+     * ---
+     * Original: lexer_markup_fixHtmlEnd
      */
     function fixHtmlEnd (element: string, end: boolean) {
 
+      /* -------------------------------------------- */
+      /* CONSTANTS                                    */
+      /* -------------------------------------------- */
+
+      /**
+       * The tag name
+       */
       const tname = tagName(element);
 
-      const record = {
-        begin: parse.structure[parse.structure.length - 1][1]
-        , ender: -1
-        , lexer: 'markup'
-        , lines: data.lines[parse.count] > 0 ? 1 : 0
-        , stack: parse.structure[parse.structure.length - 1][0]
-        , token: `</${parse.structure[parse.structure.length - 1][0]}>`
-        , types: 'end'
-      };
+      /**
+       * Parse record - This is generated as a drop-in as
+       * this function is a fix utility that borders "linting"
+       */
+      const record: IRecord = Object.create(null); // fuck the prototype
+
+      record.begin = parse.structure[parse.structure.length - 1][1];
+      record.ender = -1;
+      record.lexer = 'markup';
+      record.lines = data.lines[parse.count] > 0 ? 1 : 0;
+      record.stack = parse.structure[parse.structure.length - 1][0];
+      record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
+      record.types = 'end';
+
+      /* -------------------------------------------- */
+      /* BEGIN                                        */
+      /* -------------------------------------------- */
 
       recordPush(data, record, '');
 
-      if (htmlblocks[parse.structure[parse.structure.length - 1][0]] === 'block' && (
+      if (blocks[parse.structure[parse.structure.length - 1][0]] === 'block' && (
         (end === true && parse.structure.length > 1) ||
         (end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)
       )) {
@@ -208,7 +375,7 @@ export default (function () {
 
           recordPush(data, record, '');
 
-        } while (htmlblocks[parse.structure[parse.structure.length - 1][0]] === 'block' && (
+        } while (blocks[parse.structure[parse.structure.length - 1][0]] === 'block' && (
           (end === true && parse.structure.length > 1) ||
           (end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)
         ));
@@ -217,63 +384,150 @@ export default (function () {
     };
 
     /**
-     * Parses tags, attributes, and template elements
+     * Parses tags, attributes, and template elements.
+     * Markup is two smaller lexers that work together:
+     *
+     * 1. tag - evaluates markup (ie: HTML)
+     * 2. template tags - (ie: Liquid)
+     * 3. content - evaluates text content and code for external lexers
+     *
+     * Type Definitions:
+     *
+     * ```none
+     * START       END     TYPE
+     *
+     * <![CDATA[   ]]>     cdata
+     * <!--        -->     comment
+     * <!--[if     -->     conditional
+     * text       text     content
+     * <\/          >      end
+     * <pre      </pre>    ignore (html only)
+     * text       text     script
+     * <!          >       sgml
+     * <          />       singleton
+     * <           >       start
+     * text       text     style
+     * {{          }}      template
+     * {%          %}      template
+     * {{          }}      template_end
+     * <?xml       ?>      xml
+     *
+     * ```
      */
     function tag (end: string) {
 
-      // Markup is two smaller lexers that work together:
-      // tag - evaluates markup and
-      // template tags content - evaluates text content and code for external lexers
-      //
-      // type definitions:
-      //
-      // * start      end     type
-      // * <![CDATA[   ]]>    cdata
-      // * <!--       -->     comment
-      // * <!--[if    -->     conditional
-      // * text       text    content
-      // * </         >       end
-      // * <pre       </pre>  ignore (html only)
-      // * text       text    script
-      // * <!         >       sgml
-      // * <          />      singleton
-      // * <          >       start
-      // * text       text    style
-      // * {{         }}      template
-      // * {%         %}      template
-      // * {{         }}      template_end
-      // * <?xml      ?>      xml
+      /* -------------------------------------------- */
+      /* CONSTANTS                                    */
+      /* -------------------------------------------- */
 
+      const record: IRecord = Object.create(null); // fuck the prototype
+      record.begin = parse.structure[parse.structure.length - 1][1];
+      record.ender = -1;
+      record.lexer = 'markup';
+      record.lines = parse.linesSpace;
+      record.stack = parse.structure[parse.structure.length - 1][0];
+      record.token = '';
+      record.types = '' as any;
+
+      /* -------------------------------------------- */
+      /* LOCAL SCOPES                                 */
+      /* -------------------------------------------- */
+
+      /**
+       * Ignore count
+       */
       let igcount = 0;
+
+      /**
+       * The element string reference
+       */
       let element = '';
+
+      /**
+       * The last known character of a token
+       */
       let lastchar = '';
+
+      /**
+       * Lexer Type, ie: `start`, `template` etc etc
+       */
       let ltype = '';
+
+      /**
+       * Tag Name
+       */
       let tname = '';
+
+      /**
+       * Starting delimeter token, ie: `{{` or `<` etc etc.
+       */
       let start = '';
+
+      /**
+       * Whether or not to pass to cheat functions.
+       */
       let cheat = false;
+
+      /**
+       * Whether or not to exit eary from walk
+       */
       let earlyexit = false;
+
+      /**
+       * Ignored reference to skip lexing certain sources
+       */
       let ignoreme = false;
+
+      /**
+       * Whether or not JavaScript comment exists
+       */
       let jscom = false;
+
+      /**
+       * Whether or not attribute sorting should be applied
+       */
       let nosort = false;
+
+      /**
+       * Whether or not the contents of the toke should be preserved
+       */
       let preserve = false;
+
+      /**
+       * Infers a simple lex to be applied, typically used on easy taga
+       */
       let simple = false;
+
+      /**
+       * Whether or not the tag is a singleton type, eg: `<meta>`
+       */
       let singleton = false;
-      let attstore = [];
+
+      /**
+       * Attribute store reference
+       */
+      let attstore: [string, number][] = [];
+
+      /**
+       * Comment related reference (unsure of its use)
+       */
       let comm = [ '', 0 ];
 
-      const record = {
-        begin: parse.structure[parse.structure.length - 1][1]
-        , ender: -1
-        , lexer: 'markup'
-        , lines: parse.linesSpace
-        , stack: parse.structure[parse.structure.length - 1][0]
-        , token: ''
-        , types: ''
-      };
+      /* -------------------------------------------- */
+      /* FUNCTIONS                                    */
+      /* -------------------------------------------- */
 
-      // attribute name
-      // lexer_markup_tag_arname
-      function arname (x: string) {
+      /**
+       * Returns the markup attribute name reference and
+       * its value reference. This is determined by an `=`
+       * character and quotation character separator, the
+       * return type is an array, where index `0` is attr
+       * name and index `1` is attribute value.
+       *
+       * > When a _void_ attribute exists an empty string
+       * is returned for index `1`.
+       */
+      function attributeName (x: string) {
 
         const eq = x.indexOf('=');
 
@@ -288,28 +542,79 @@ export default (function () {
         }
 
         return [ x, '' ];
+
       };
 
       // attribute parser
       // lexer_markup_tag_attributeRecord
       function attributeRecord () {
 
-        let ind = 0;
+        /* -------------------------------------------- */
+        /* CONSTANTS                                    */
+        /* -------------------------------------------- */
+
+        /**
+         * The index of data record in the tree
+         */
+        const begin = parse.count;
+
+        /**
+         * The tag name, ie: `tname`
+         */
+        const stack = tname.replace(/\/$/, '');
+
+        /**
+         * Type of quotation character to convert
+         */
+        const qc = lexerOptions.markup.quoteConvert;
+
+        /* -------------------------------------------- */
+        /* LOCAL SCOPES                                 */
+        /* -------------------------------------------- */
+
+        /**
+         * The current index of the attribute
+         */
+        let idx = 0;
+
+        /**
+         * Equals `=` operator index in the token
+         */
         let eq = 0;
+
+        /**
+         * Double quotation `"` index in the token
+         */
         let dq = 0;
+
+        /**
+         * Single quotation `'` index in the token
+         */
         let sq = 0;
-        let slice = '';
+
+        /**
+         * The attribute name
+         */
         let name = '';
+
+        /**
+         * The attribute value
+         */
+        let value = '';
+
+        /**
+         * Store reference (unsure what this is used for)
+         */
         let store = [];
+
+        /**
+         * The amount of attributes in the store
+         */
         let len = attstore.length;
 
-        const qc = lexerOptions.markup.quoteConvert === undefined
-          ? 'none'
-          : lexerOptions.markup.quoteConvert;
-
-        const begin = parse.count;
-        const stack = tname.replace(/\/$/, '');
-        const syntax = "<{\"'=/";
+        /* -------------------------------------------- */
+        /* FUNCTIONS                                    */
+        /* -------------------------------------------- */
 
         /**
          * Converts quotation characters
@@ -323,6 +628,8 @@ export default (function () {
             (qc === 'single' && record.token.indexOf('"') < 0) ||
             (qc === 'double' && record.token.indexOf("'") < 0)
           ) {
+
+            // console.log(record);
 
             recordPush(data, record, '');
 
@@ -344,8 +651,8 @@ export default (function () {
               recordPush(data, record, '');
 
             } else if (
-              chars[eq + 1] !== "'"
-              && chars[chars.length - 1] !== "'"
+              chars[eq + 1].charCodeAt(0) !== cc.SQO
+              && chars[chars.length - 1].charCodeAt(0) !== cc.SQO
               && qc === 'double'
             ) {
 
@@ -402,6 +709,10 @@ export default (function () {
           record.types = 'attribute';
         };
 
+        /* -------------------------------------------- */
+        /* BEGIN                                        */
+        /* -------------------------------------------- */
+
         if (attstore.length < 1) return;
 
         // fix for singleton tags, since "/" at the end of the tag is not an attribute
@@ -434,7 +745,7 @@ export default (function () {
 
         // sort the attributes
         if (
-          (lexerOptions.markup.attributeSort === true || lexerOptions.markup.tagSort === true)
+          (lexerOptions.markup.attributeSort === true)
           && options.language !== 'jsx'
           && jscom === false
           && nosort === false
@@ -488,24 +799,24 @@ export default (function () {
 
         store = [];
 
-        if (ind < len) {
+        if (idx < len) {
 
           do {
 
-            if (attstore[ind] === undefined) break;
+            if (attstore[idx] === undefined) break;
 
-            attstore[ind][0] = attstore[ind][0].replace(/\s+$/, '');
+            attstore[idx][0] = attstore[idx][0].replace(/\s+$/, '');
 
-            record.lines = attstore[ind][1];
+            record.lines = attstore[idx][1];
 
-            eq = attstore[ind][0].indexOf('=');
-            dq = attstore[ind][0].indexOf('"');
-            sq = attstore[ind][0].indexOf("'");
+            eq = attstore[idx][0].indexOf('=');
+            dq = attstore[idx][0].indexOf('"');
+            sq = attstore[idx][0].indexOf("'");
 
-            if (/^\/(\/|\*)/.test(attstore[ind][0]) && options.language === 'jsx') {
+            if (/^\/(\/|\*)/.test(attstore[idx][0]) && options.language === 'jsx') {
 
               record.types = 'comment_attribute';
-              record.token = attstore[ind][0];
+              record.token = attstore[idx][0];
               convertq();
 
             } else if (eq < 0) {
@@ -513,43 +824,54 @@ export default (function () {
               // in most markup languages an attribute without an expressed value has its name
               // as its string value
 
-              if (
-                html === 'html'
-                && attstore[ind][0].charAt(0) !== '#'
-                && '[{('.indexOf(attstore[ind][0].charAt(0)) < 0
-              ) {
-                record.token = attstore[ind][0].toLowerCase();
-              } else {
-                record.token = attstore[ind][0];
-              }
+              // Lets look for a template tag
+              // The 2nd character should be a percentage %
+              //
+              if (isLiquid(attstore[idx][0], 3) || isLiquid(attstore[idx][0], 5)) {
 
-              convertq();
+                record.types = 'template_attribute';
+                record.token = attstore[idx][0];
+
+                // console.log('ATTR', attstore[idx][0]);
+                convertq();
+
+              } else {
+
+                record.types = 'attribute';
+                record.token = '#[{('.indexOf(attstore[idx][0].charAt(0)) < 0
+                  ? attstore[idx][0].toLowerCase()
+                  : record.token = attstore[idx][0];
+
+                convertq();
+              }
 
             } else {
 
               // separates out the attribute name from its value
-              name = attstore[ind][0].slice(0, eq);
-              slice = attstore[ind][0].slice(eq + 1);
+              name = attstore[idx][0].slice(0, eq);
+              value = attstore[idx][0].slice(eq + 1);
 
-              if (syntax.indexOf(slice.charAt(0)) < 0) slice = '"' + slice + '"';
+              if (options.attemptCorrection) {
+                if ('<{"\'='.indexOf(value.charAt(0)) < 0) value = '"' + value + '"';
+              }
 
-              if (options.language === 'jsx' && /^\s*\{/.test(slice)) {
+              if (options.language === 'jsx' && /^\s*\{/.test(value)) {
 
                 record.token = name + '={';
                 record.types = 'jsx_attribute_start';
 
                 recordPush(data, record, 'jsx_attribute');
 
-                sparser.lexers.script(slice.slice(1, slice.length - 1));
+                sparser.lexers.script(value.slice(1, value.length - 1));
                 record.begin = parse.count;
 
-                if (/\s\}$/.test(slice)) {
+                if (/\s\}$/.test(value)) {
 
-                  slice = slice.slice(0, slice.length - 1);
-                  slice = /\s+$/.exec(slice)[0];
+                  value = value.slice(0, value.length - 1);
+                  value = /\s+$/.exec(value)[0];
 
-                  if (slice.indexOf('\n') < 0) record.lines = 1;
-                  else record.lines = slice.split('\n').length;
+                  if (value.indexOf('\n') < 0) record.lines = 1;
+                  else record.lines = value.split('\n').length;
 
                 } else {
                   record.lines = 0;
@@ -566,48 +888,63 @@ export default (function () {
                 record.begin = begin;
                 record.stack = stack;
 
+              } else if (isLiquid(name, 5)) {
+
+                name = name + '=' + value;
+
+                templateattrs(
+                  value.replace(/^(["'])/, '').slice(0, 2),
+                  name.replace(/(\s+)$/, '')
+                );
+
               } else {
-                name = name + '=' + slice;
-                templateattrs(slice.replace(/^(["'])/, '').slice(0, 2), name.replace(/(\s+)$/, ''));
+
+                record.types = 'attribute';
+                record.token = '#[{('.indexOf(attstore[idx][0].charAt(0)) < 0
+                  ? attstore[idx][0].toLowerCase()
+                  : record.token = attstore[idx][0];
+
+                convertq();
               }
             }
 
-            ind = ind + 1;
+            idx = idx + 1;
 
-          } while (ind < len);
+          } while (idx < len);
         }
 
         if (store.length > 0) {
           record.token = store.join(' ');
           convertq();
         }
+
       };
 
       ext = false;
 
-      // This complex series of conditions determines an elements delimiters look to
-      // the types being pushed to quickly reason about the logic no type is pushed
-      // for start tags or singleton tags just yet some types set the `preserve` flag,
-      // which means to preserveLine internal white space The `nopush` flag is set when
-      // parsed tags are to be ignored and forgotten
-      //
-      // HOTFIX
-      //
-      // Originally an IIFE
-      // (function lexer_markup_tag_types() {}()
-      //
-      // Let's tidy this all up a bit, make it more readable.
+      /* -------------------------------------------- */
+      /* DELIMITER PARSE                              */
+      /* -------------------------------------------- */
 
-      if (end === ']>') {
+      /**
+       * DELIMITERS
+       *
+       * This complex series of conditions determines an elements delimiters look to
+       * the types being pushed to quickly reason about the logic no type is pushed
+       * for start tags or singleton tags just yet some types set the `preserve` flag,
+       * which means to preserveLine internal white space The `nopush` flag is set when
+       * parsed tags are to be ignored and forgotten
+       *
+       * ---
+       * @prettify
+       *
+       * The vast majoirty of delimiter checks were purged, we only want those relative
+       * to Prettify.
+       */
+      if (end === '---') {
 
-        end = '>';
-        sgmlflag = sgmlflag - 1;
-        ltype = 'end';
-
-      } else if (end === '---') {
-
-        ltype = 'comment';
         start = '---';
+        ltype = 'comment';
 
       } else if (b[a] === '<') {
 
@@ -619,9 +956,11 @@ export default (function () {
         } else if (b[a + 1] === '!') {
 
           if (b[a + 2] === '-' && b[a + 3] === '-') {
+
             end = '-->';
             ltype = 'comment';
             start = '<!--';
+
           } else if (
             b[a + 2] === '['
             && b[a + 3] === 'C'
@@ -636,11 +975,6 @@ export default (function () {
             ltype = 'cdata';
             preserve = true;
 
-          } else {
-
-            end = '>';
-            sgmlflag = sgmlflag + 1;
-            ltype = 'sgml';
           }
 
         } else if (b[a + 1] === '?') {
@@ -685,8 +1019,6 @@ export default (function () {
         }
       } else if (b[a] === '{') {
 
-        preserve = true;
-
         if (options.language === 'jsx') {
           ext = true;
           earlyexit = true;
@@ -697,11 +1029,6 @@ export default (function () {
           return;
         }
 
-        // HOT PATCH
-        //
-        // Removed the delimeter checks that would be used
-        // for languages outside of Liquid, ie: handlebars etc
-        //
         if (b[a + 1] === '{') {
 
           end = '}}';
@@ -711,52 +1038,73 @@ export default (function () {
 
           ltype = 'template';
 
-          // Right Curly Brace: }
-          // Peek ahead from the current position
-          // and look for a closing delimeter
-          //
+          /**
+           * `}` - The index of the next Right Curly brace
+           */
           const rcb = b.indexOf('}', a + 2);
 
-          // Ensure we have a closing delimiter
-          // Character code 37 is a % character, ie: %}
-          //
-          if (b[rcb - 1].charCodeAt(0) === 37) {
+          /**
+           * Liquid Comment
+           *
+           * Lets ensure that we have a closing delimiter
+           * character before moving ahead, eg: `%}` and
+           * then we will look for comment keywords.
+           */
+          if (b[rcb - 1].charCodeAt(0) === cc.PER) {
 
-            let tag = b.slice(a + 2, rcb - 1).join('');
+            let t = b.slice(a + 2, rcb - 1).join('');
 
-            // const tag = b.slice(a + 2, rcb - 1).join('');
-
-            if (tag.charCodeAt(0) === 45) {
+            // Lets make sure we do not interfere with dash delimiters
+            //
+            if (t.charCodeAt(0) === cc.DSH) {
               start = '{%-';
-              tag = tag.slice(1);
+              t = t.slice(1).trimStart();
             } else {
               start = '{%';
+              t = t.trimStart();
             }
 
-            if (tag.charCodeAt(tag.length - 1) === 45) {
+            // Same as above but for closing delimiters
+            //
+            if (t.charCodeAt(t.length - 1) === cc.DSH) {
               end = '-%}';
-              tag = tag.slice(0, tag.length - 2).trim();
+              t = t.slice(0, t.length - 1).trimEnd();
             } else {
               end = '%}';
-              tag = tag.trim();
+              t = t.trimEnd();
             }
 
-            if (tag.startsWith('comment')) {
+            // Lets look for the comment keyword before proceeding,
+            // We are skipping ahead from the normal parse here.
+            //
+            if (t === 'comment') {
 
-              ltype = 'comment';
-
+              /**
+               * `{%` The index of the next known closing delimiter
+               * starting from the last `rcb` index position.
+               */
               const idx1 = source.indexOf('{%', rcb);
-              let idx2 = idx1;
-              if (b[idx1 + 1].charCodeAt(0) === 45) {
-                idx2 = idx1 + 1;
-              }
 
+              //  Lets reference this index
+              //
+              let idx2 = idx1;
+
+              // Lets make sure to consume and whitespace dash
+              // characters that might be defined
+              //
+              if (b[idx1 + 1].charCodeAt(0) === cc.DSH) idx2 = idx1 + 1;
+
+              // Lets now look the starting index of the `endcomment` keyword
+              //
               idx2 = source.indexOf('endcomment', idx2);
 
               if (idx2 > 0) {
+
                 idx2 = b.indexOf('}', idx2);
-                if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === 37) {
-                  tag = b.slice(a, idx2).join('');
+
+                if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
+                  preserve = true;
+                  ltype = 'comment';
                   start = b.slice(a, rcb + 1).join('');
                   end = b.slice(idx1, idx2 + 1).join('');
                 }
@@ -777,7 +1125,7 @@ export default (function () {
         }
       }
 
-      if (options.lexerOptions.markup.preserveAttribute === true) preserve = true;
+      if (options.lexerOptions.markup.preserveAttributes === true) preserve = true;
 
       if (earlyexit === true) return;
 
@@ -793,32 +1141,16 @@ export default (function () {
       if (ltype === 'comment' && (b[a] === '<' || (b[a] === '{' && b[a + 1] === '%'))) {
 
         comm = parse.wrapCommentBlock({
-          chars: b
-          , end: c
-          , lexer: 'markup'
-          , opening: start
-          , start: a
-          , terminator: end
+          chars: b,
+          end: c,
+          lexer: 'markup',
+          opening: start,
+          start: a,
+          terminator: end
         });
 
         element = comm[0] as string;
-
         a = comm[1] as number;
-
-        // console.log('in c', element);
-        // HOT PATCH
-        // Prettify ignore comment syntax edits
-        //
-        const cignore = element.replace(start, '').replace(/(^\s*)/, '');
-        const cikeyword = cignore.lastIndexOf('@prettify');
-        const cistart = cignore.indexOf('ignore:start', cikeyword);
-
-        if (cikeyword === 0 && cistart === 0) {
-          record.token = element;
-          record.types = 'ignore';
-          recordPush(data, record, '');
-          return;
-        }
 
       } else if (a < c) {
 
@@ -869,7 +1201,7 @@ export default (function () {
           if (quotes === true) {
 
             atty = attribute.join('');
-            name = arname(atty);
+            name = attributeName(atty);
             quote = '';
 
             // HOT PATCH
@@ -889,7 +1221,7 @@ export default (function () {
               atty = atty.replace(/\s+/g, ' ');
             }
 
-            name = arname(atty);
+            name = attributeName(atty);
 
             if (name[0] === ignoreattr) ignoreme = true;
 
@@ -934,8 +1266,7 @@ export default (function () {
           } else if (
             atty.charAt(0) !== '='
             && attstore.length > 0
-            && attstore[attstore.length - 1][0].indexOf('=') ===
-            attstore[attstore.length - 1][0].length - 1
+            && attstore[attstore.length - 1][0].indexOf('=') === attstore[attstore.length - 1][0].length - 1
           ) {
 
             // if an attribute follows an attribute ending with `=` then adjoin it to the
@@ -1020,31 +1351,8 @@ export default (function () {
                 } while (e > -1);
               }
 
-              if (e < 0) {
+              if (e < 0) break;
 
-                if (end === 'endcomment') {
-
-                  f = f - 1;
-
-                  if (/\s/.test(lex[f])) do { f = f - 1; } while (f > 0 && /\s/.test(lex[f]));
-
-                  // HOT PATCH
-                  //
-                  // Handle whitespace dash delimeters, previously end and lastchar
-                  // values would skip assignment when comment has a whitespace dash.
-                  //
-                  if (lex[f - 1] === '{' && lex[f] === '%') {
-                    end = '%}';
-                    lastchar = '}';
-                  } else if (lex[f - 2] === '{' && lex[f - 1] === '%' && lex[f] === '-') {
-                    end = '%}';
-                    lastchar = '}';
-                  }
-
-                } else {
-                  break;
-                }
-              }
             }
           } else {
 
@@ -1074,10 +1382,6 @@ export default (function () {
                   }
                 }
 
-                if (b[a] !== '>' && b[a + 1] === '<') {
-                  sparser.parseError = `SGML tag ${lex.join('')} missing termination: '[' or '>'`;
-                  break;
-                }
               }
 
               if (options.language === 'jsx') {
@@ -1086,12 +1390,6 @@ export default (function () {
                 } else if (b[a] === '}') {
                   jsxcount = jsxcount - 1;
                 }
-              }
-
-              if (data.types[parse.count] === 'sgml' && b[a] === '[' && lex.length > 4) {
-                data.types[parse.count] = 'template_start';
-                count.start = count.start + 1;
-                break;
               }
 
               if (
@@ -1122,8 +1420,7 @@ export default (function () {
                     if (b[a] === '\n') {
                       parse.lineNumber = parse.lineNumber + 1;
                     }
-                    if (options.lexerOptions.markup.preserveAttribute ===
-                        true) {
+                    if (options.lexerOptions.markup.preserveAttributes === true) {
                       lex.push(b[a]);
                     } else {
                       attribute.push(b[a]);
@@ -1364,7 +1661,7 @@ export default (function () {
                             quote = '';
                             element = attribute.join('');
 
-                            if (options.lexerOptions.markup.preserveAttribute === false) {
+                            if (options.lexerOptions.markup.preserveAttributes === false) {
 
                               if (options.language === 'jsx') {
                                 if ((/^(\s*)$/).test(element) === false) {
@@ -1579,54 +1876,36 @@ export default (function () {
                       a = a - 1;
                     } while ((/\s/).test(lex[lex.length - 1]) === true);
                   }
+
                   break;
                 }
 
-                if (
-                  lex[0] === '{'
-                  && lex[1] === '%'
-                  && /{%-?comment-?%}/.test(lex.join('').replace(/\s+/g, ''))
-                ) {
+                // if current character matches the last character of the tag ending sequence
+                f = lex.length;
+                e = end.length - 1;
 
-                  end = 'endcomment';
-                  lastchar = 't';
-                  preserve = true;
-                  ltype = 'comment';
-
-                } else {
-
-                  // if current character matches the last character of the tag ending sequence
-                  f = lex.length;
-                  e = end.length - 1;
-
-                  if (e > -1) {
-                    do {
-                      f = f - 1;
-                      if (lex[f] !== end.charAt(e)) break;
-                      e = e - 1;
-                    } while (e > -1);
-                  }
-
-                  if (e < 0) break;
-
+                if (e > -1) {
+                  do {
+                    f = f - 1;
+                    if (lex[f] !== end.charAt(e)) break;
+                    e = e - 1;
+                  } while (e > -1);
                 }
+
+                if (e < 0) break;
+
               }
-            } else if (
-              b[a] === quote.charAt(quote.length - 1)
-              && ((
-                options.language === 'jsx'
-                && end === '}'
-                && (
-                  b[a - 1] !== '\\' ||
-                  slashy() === false
-                )) ||
-                options.language !== 'jsx' ||
-                end !== '}'
-              )
-            ) {
+            } else if (b[a] === quote.charAt(quote.length - 1) && ((
+              options.language === 'jsx'
+              && end === '}'
+              && (b[a - 1] !== '\\' || slashy() === false)) ||
+              options.language !== 'jsx' ||
+              end !== '}'
+            )) {
 
               // find the closing quote or embedded template expression
               f = 0;
+
               if (lex.length > 1) {
                 tname = lex[1] + lex[2];
                 tname = tname.toLowerCase();
@@ -1646,7 +1925,9 @@ export default (function () {
 
             }
           }
+
           a = a + 1;
+
         } while (a < c);
 
         // a correction to incomplete template tags that use multiple angle braceAllman
@@ -1726,7 +2007,7 @@ export default (function () {
       }
 
       record.token = element;
-      record.types = ltype;
+      record.types = ltype as any;
       tname = tagName(element);
 
       if (preserve === false && options.language !== 'jsx') {
@@ -1734,75 +2015,15 @@ export default (function () {
       }
 
       // a quick hack to inject records for a type of template comments
-      if (
-        tname === 'comment'
-        && element.charCodeAt(0) === 123
-        && element.charCodeAt(1) === 37
-      ) {
+      if (tname === 'comment' && isLiquid(element, 2)) {
 
         record.begin = parse.structure[parse.structure.length - 1][1];
-        record.ender = parse.count + 2;
+        // record.ender = parse.count + 3;
         record.stack = parse.structure[parse.structure.length - 1][0];
         record.types = 'comment';
-
-        let linesStart = 0;
-        let linesEnd = 0;
-
-        // lexer_markup_tag_lineFindStart
-        function lineFindStart (spaces: string) {
-          linesStart = spaces === '' ? 0 : spaces.split('\n').length;
-          return '';
-        };
-
-        // lexer_markup_tag_lineFindEnd
-        function lineFindEnd (spaces: string) {
-          linesEnd = spaces === '' ? 0 : spaces.split('\n').length;
-          return '';
-        };
-
-        element = element.replace(/^\s/, lineFindStart).replace(/\s$/, lineFindEnd);
-
-        record.lines = linesStart;
         record.token = element;
 
         recordPush(data, record, '');
-
-        return;
-        record.lines = linesEnd;
-
-        // HOTFIX
-        // When comments contained only a single trim delimiter on either
-        // the right or left side, new tokens were being generated.
-        // This fix applies logic so when a delimited is detected, it will
-        // either apply matchers or not apply at all.
-
-        const hasDelimiter = element.charCodeAt(3) === 45;
-
-        // element = element
-        //  .replace(/^(\s*{%-?\s*comment\s*-?%})/, '')
-        // .replace(/({%-?\s*endcomment\s*-?%}\s*)$/, '');
-
-        // record.token = hasDelimiter ? '{%- comment -%}' : '{% comment %}';
-
-        // recordPush(data, record, 'comment');
-
-        // record.begin = parse.count;
-
-        // element = element.replace(/^\s/, lineFindStart);
-        // element = element.replace(/\s$/, lineFindEnd);
-
-        // record.lines = linesStart;
-        // record.stack = 'comment';
-        // record.token = element;
-        // record.types = 'comment';
-
-        // recordPush(data, record, '');
-
-        // record.token = hasDelimiter ? '{%- endcomment -%}' : '{% endcomment %}';
-        // record.lines = linesEnd;
-        // record.types = 'template_end';
-
-        // recordPush(data, record, '');
 
         return;
 
@@ -1832,147 +2053,122 @@ export default (function () {
       cheat = (function lexer_markup_tag_cheat () {
 
         const ender = (/(\/>)$/);
-        const htmlsings = {
-          area: 'singleton'
-          , base: 'singleton'
-          , basefont: 'singleton'
-          , br: 'singleton'
-          , col: 'singleton'
-          , embed: 'singleton'
-          , eventsource: 'singleton'
-          , frame: 'singleton'
-          , hr: 'singleton'
-          , image: 'singleton'
-          , img: 'singleton'
-          , input: 'singleton'
-          , isindex: 'singleton'
-          , keygen: 'singleton'
-          , link: 'singleton'
-          , meta: 'singleton'
-          , param: 'singleton'
-          , progress: 'singleton'
-          , source: 'singleton'
-          , wbr: 'singleton'
-        };
-        const peertest = function lexer_markup_tag_cheat_peertest (name
-          , item) {
-          if (htmlblocks[name] === undefined) {
-            return false;
-          }
+
+        const peertest = function lexer_markup_tag_cheat_peertest (name, item) {
+
+          if (blocks[name] === undefined) return false;
           if (name === item) return true;
           if (name === 'dd' && item === 'dt') return true;
           if (name === 'dt' && item === 'dd') return true;
           if (name === 'td' && item === 'th') return true;
           if (name === 'th' && item === 'td') return true;
-          if (
-            name === 'colgroup' && (
-              item === 'tbody' ||
-                  item === 'tfoot' ||
-                  item === 'thead' ||
-                  item === 'tr'
-            )
-          ) return true;
 
-          if (
-            name === 'tbody' && (
-              item === 'colgroup' ||
-                  item === 'tfoot' ||
-                  item === 'thead'
-            )
-          ) return true;
+          if (name === 'colgroup' && (
+            item === 'tbody' ||
+            item === 'tfoot' ||
+            item === 'thead' ||
+            item === 'tr'
+          )) return true;
 
-          if (
-            name === 'tfoot' && (
-              item === 'colgroup' ||
-                  item === 'tbody' ||
-                  item === 'thead'
-            )
-          ) return true;
+          if (name === 'tbody' && (
+            item === 'colgroup' ||
+            item === 'tfoot' ||
+            item === 'thead'
+          )) return true;
 
-          if (
-            name === 'thead' && (
-              item === 'colgroup' ||
-                  item === 'tbody' ||
-                  item === 'tfoot'
-            )
-          ) return true;
+          if (name === 'tfoot' && (
+            item === 'colgroup' ||
+            item === 'tbody' ||
+            item === 'thead'
+          )) return true;
+
+          if (name === 'thead' && (
+            item === 'colgroup' ||
+            item === 'tbody' ||
+            item === 'tfoot'
+          )) return true;
 
           if (name === 'tr' && item === 'colgroup') return true;
 
           return false;
         };
+
         const addHtmlEnd = function (count) {
+
           record.lines = (data.lines[parse.count] > 0) ? 1 : 0;
-          record.token =
-                `</${parse.structure[parse.structure.length - 1][0]}>`;
+          record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
           record.types = 'end';
+
           recordPush(data, record, '');
+
           if (count > 0) {
             do {
-              record.begin = parse.structure[parse.structure
-                .length - 1][1];
-              record.stack = parse.structure[parse.structure
-                .length - 1][0];
-              record.token =
-                    `</${parse.structure[parse.structure.length - 1][0]}>`;
+              record.begin = parse.structure[parse.structure.length - 1][1];
+              record.stack = parse.structure[parse.structure.length - 1][0];
+              record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
               recordPush(data, record, '');
               count = count - 1;
             } while (count > 0);
           }
+
           record.begin = parse.structure[parse.structure.length - 1][1];
           record.lines = parse.linesSpace;
           record.stack = parse.structure[parse.structure.length - 1][0];
           record.token = element;
           record.types = 'end';
           data.lines[parse.count - 1] = 0;
+
         };
 
         // determine if the current end tag is actually part of an HTML singleton
         if (ltype === 'end') {
+
           const lastToken = data.token[parse.count];
-          if (data.types[parse.count - 1] === 'singleton' && lastToken
-            .charAt(lastToken.length - 2) !== '/'
-              && '/' + tagName(lastToken) === tname) {
+
+          if (
+            data.types[parse.count - 1] === 'singleton'
+            && lastToken.charAt(lastToken.length - 2) !== '/'
+            && '/' + tagName(lastToken) === tname
+          ) {
             data.types[parse.count - 1] = 'start';
           } else if (
             tname !== '/span'
-              && tname !== '/div'
-              && tname !== '/script'
-              && options.lexerOptions.markup.tagMerge === true && (
-              html !== 'html' || (
-                html === 'html'
-                  && tname !== '/li'
-              )
-            )
+            && tname !== '/div'
+            && tname !== '/script'
+            && options.lexerOptions.markup.tagMerge === true
+            && (html !== 'html' || (html === 'html' && tname !== '/li'))
           ) {
 
             if (
-              tname === '/' + tagName(data.token[parse.count])
-                && data.types[parse.count] === 'start'
+              (tname === '/' + tagName(data.token[parse.count]))
+              && data.types[parse.count] === 'start'
             ) {
+
               parse.structure.pop();
-              data.token[parse.count] = data.token[parse.count]
-                .replace(/>$/, '/>');
+              data.token[parse.count] = data.token[parse.count].replace(/>$/, '/>');
               data.types[parse.count] = 'singleton';
+
               singleton = true;
+
               count.start = count.start - 1;
+
               return false;
             }
 
             if (
-              tname === '/' + tagName(data.token[data.begin[parse
-                .count]])
-                && data.types[parse.count].indexOf('attribute') > -1
-                && data.types[data.begin[parse.count]] === 'start'
+              tname === '/' + tagName(data.token[data.begin[parse.count]])
+              && data.types[parse.count].indexOf('attribute') > -1
+              && data.types[data.begin[parse.count]] === 'start'
             ) {
 
-              parse.structure.pop();
-              data.token[data.begin[parse.count]] = data
-                .token[data.begin[parse.count]]
-                .replace(/>$/, '/>');
+              const idx = data.begin[parse.count];
 
+              parse.structure.pop();
+              data.token[idx] = data.token[idx].replace(/>$/, '/>');
               data.types[data.begin[parse.count]] = 'singleton';
+
               singleton = true;
+
               count.start = count.start - 1;
 
               return false;
@@ -1989,27 +2185,31 @@ export default (function () {
               && element.charAt(1) !== '!'
               && element.charAt(1) !== '?' && (
               parse.count < 0 ||
-                data.types[parse.count].indexOf('template') < 0
+              data.types[parse.count].indexOf('template') < 0
             )
           ) {
+
             element = element.toLowerCase();
           }
+
           if (
-            htmlblocks[parse.structure[parse.structure.length - 1][
-              0
-            ]] === 'block' && peertest(tname.slice(1)
-              , parse.structure[parse.structure.length - 2][0]) ===
-              true) {
+            blocks[parse.structure[parse.structure.length - 1][0]] === 'block'
+            && peertest(
+              tname.slice(1),
+              parse.structure[parse.structure.length - 2][0]
+            ) === true
+          ) {
+
             // looks for HTML tags missing an ending pair when encountering an ending tag for a parent node
             addHtmlEnd(0);
           } else if (parse.structure.length > 3
-              && htmlblocks[parse.structure[parse.structure.length - 1][
+              && blocks[parse.structure[parse.structure.length - 1][
                 0
               ]] === 'block'
-              && htmlblocks[parse.structure[parse.structure.length - 2][
+              && blocks[parse.structure[parse.structure.length - 2][
                 0
               ]] === 'block'
-              && htmlblocks[parse.structure[parse.structure.length - 3][
+              && blocks[parse.structure[parse.structure.length - 3][
                 0
               ]] === 'block'
               && peertest(tname, parse.structure[parse.structure.length -
@@ -2017,10 +2217,10 @@ export default (function () {
             // looks for consecutive missing end tags
             addHtmlEnd(3);
           } else if (parse.structure.length > 2
-              && htmlblocks[parse.structure[parse.structure.length - 1][
+              && blocks[parse.structure[parse.structure.length - 1][
                 0
               ]] === 'block'
-              && htmlblocks[parse.structure[parse.structure.length - 2][
+              && blocks[parse.structure[parse.structure.length - 2][
                 0
               ]] === 'block'
               && peertest(tname, parse.structure[parse.structure.length -
@@ -2029,7 +2229,7 @@ export default (function () {
             addHtmlEnd(2);
           } else if (
             parse.structure.length > 1
-            && htmlblocks[parse.structure[parse.structure.length - 1][0]] === 'block'
+            && blocks[parse.structure[parse.structure.length - 1][0]] === 'block'
             && peertest(tname, parse.structure[parse.structure.length - 2][0]) === true
           ) {
 
@@ -2040,7 +2240,7 @@ export default (function () {
             .length - 1][0]) === true) {
             // certain tags cannot contain other certain tags if such tags are peers
             addHtmlEnd(0);
-          } else if (tname.charAt(0) === '/' && htmlblocks[parse
+          } else if (tname.charAt(0) === '/' && blocks[parse
             .structure[parse.structure.length - 1][0]] ===
               'block' && parse.structure[parse.structure.length - 1][
             0
@@ -2057,7 +2257,7 @@ export default (function () {
           }
 
           // inserts a trailing slash into singleton tags if they do not already have it
-          if (htmlsings[tname] === 'singleton') {
+          if (voids[tname] === 'singleton') {
             if (options.attemptCorrection === true && ender.test(element) === false) {
               element = element.slice(0, element.length - 1) + ' />';
             }
@@ -2085,7 +2285,7 @@ export default (function () {
 
         if (len > -1) {
           do {
-            attr = arname(attstore[len][0]);
+            attr = attributeName(attstore[len][0]);
             if (attr[0] === 'type') {
               attValue = attr[1];
               if (attValue.charAt(0) === '"' || attValue.charAt(0) ===
@@ -2233,19 +2433,13 @@ export default (function () {
                   tags[0] !== '{'
                     && b[a] === '{' && (
                     b[a + 1] === '{' ||
-                      b[a + 1] === '%' ||
-                      b[a + 1] === '@' ||
-                      b[a + 1] === '#'
+                    b[a + 1] === '%'
                   )
                 ) {
 
                   if (b[a + 1] === '{') {
 
-                    if (b[a + 2] === '{') {
-                      delim = '}}}';
-                    } else {
-                      delim = '}}';
-                    }
+                    delim = '}}';
 
                   } else {
 
@@ -2329,22 +2523,18 @@ export default (function () {
           ];
 
           if (
-            (
-              tname === 'case' ||
-                tname === 'default'
-            ) && (
-              parse.structure[parse.structure.length - 1][0] ===
-                'switch' ||
-                parse.structure[parse.structure.length - 1][0] === 'case'
+            (tname === 'case' || tname === 'default') && (
+              parse.structure[parse.structure.length - 1][0] === 'switch' ||
+              parse.structure[parse.structure.length - 1][0] === 'case'
             )
           ) {
             record.types = 'template_else';
           } else if (
             tname === 'else' ||
-              tname === 'elseif' ||
-              tname === 'when' ||
-              tname === 'elif' ||
-              tname === 'elsif'
+            tname === 'elseif' ||
+            tname === 'when' ||
+            tname === 'elif' ||
+            tname === 'elsif'
           ) {
             record.types = 'template_else';
           } else {
@@ -3065,71 +3255,88 @@ export default (function () {
 
     // trim the attributeSortList values
     if (asl > 0) {
+
       do {
-        attributeSortList[a] = attributeSortList[a].replace(/^\s+/, '')
-          .replace(/\s+$/, '');
+
+        attributeSortList[a] = attributeSortList[a].replace(/^\s+/, '').replace(/\s+$/, '');
         a = a + 1;
+
       } while (a < asl);
+
       a = 0;
+
     }
 
     if (options.language === 'html') html = 'html';
 
     do {
-      if ((/\s/).test(b[a]) === true) {
+
+      if ((/\s/).test(b[a])) {
 
         if (
           options.lexerOptions.markup.parseSpace === true || (
             data.types[parse.count] === 'template_start'
-              && parse.structure[parse.structure.length - 1][0] === 'comment'
+            && parse.structure[parse.structure.length - 1][0] === 'comment'
           )
         ) {
+
           content();
+
         } else {
-          a = parse.spacer({
-            array: b
-            , end: c
-            , index: a
-          });
+
+          a = parse.spacer({ array: b, end: c, index: a });
         }
+
       } else if (ext) {
+
         content();
+
       } else if (b[a] === '<') {
+
         tag('');
+
       } else if (b[a] === '[' && b[a + 1] === '%') {
+
         tag('%]');
+
       } else if (
         b[a] === '{' && (
           options.language === 'jsx' ||
-            b[a + 1] === '{' ||
-            b[a + 1] === '%'
+          b[a + 1] === '{' ||
+          b[a + 1] === '%'
         )
       ) {
+
         tag('');
+
       } else if (b[a] === ']' && sgmlflag > 0) {
+
         tag(']>');
+
       } else if (
-        options.language === 'jekyll'
-          && b[a] === '-'
-          && b[a + 1] === '-'
-          && b[a + 2] === '-'
+        b[a] === '-'
+        && b[a + 1] === '-'
+        && b[a + 2] === '-'
       ) {
+
         tag('---');
+
       } else {
         content();
       }
+
       a = a + 1;
+
     } while (a < c);
 
     if (
       data.token[parse.count].charAt(0) !== '/'
-        && htmlblocks[parse.structure[parse.structure.length - 1][0]] === 'block'
+      && blocks[parse.structure[parse.structure.length - 1][0]] === 'block'
     ) {
       fixHtmlEnd(data.token[parse.count], true);
     }
 
     if (count.end !== count.start && sparser.parseError === '') {
-
       if (count.end > count.start) {
         const x = count.end - count.start;
         const plural = (x === 1) ? '' : 's';
@@ -3140,10 +3347,9 @@ export default (function () {
         sparser.parseError = `${x} more start type${plural} than end types.`;
       }
     }
+
     return data;
+
   };
 
-  // @ts-ignore
-  sparser.lexers.markup = markup;
-
-}());
+})();
