@@ -51,7 +51,7 @@ Prettify exposes direct access to methods on the export and can be used when you
 Take the following (markup) code. This example is doing everything wrong. You'd actually be surprised how many folks would commit code like this when working with Liquid. This is actually because it's novice appealing in nature.
 
 <!-- prettier-ignore -->
-```html
+```liquid
 
 <div id="x"
   class
@@ -70,10 +70,10 @@ id{%- endif %}="prepended"
 I am using Prettify! </div></div>
 ```
 
-The above code is some wild stuff. It is using Liquid to output HTML attributes (conditionally), it is using output tags as attributes/values and infuses tags between attributes definitions. Prettify is able to handle this and can quickly reason about what and how the intended structure should be output. The above would format as follows:
+The above code is some wild stuff. It is using Liquid to output HTML attributes (conditionally), it is using output tags as attributes/values and infuses tags between attribute definitions. Prettify is able to handle this and can quickly reason about what and how the intended structure should be output. The above would format as follows:
 
 <!-- prettier-ignore -->
-```html
+```liquid
 
 <div
   id="x"
@@ -94,7 +94,7 @@ The above code is some wild stuff. It is using Liquid to output HTML attributes 
 </div>
 ```
 
-As you can see, the fucking insanity has been reasoned with. Code is beautified and structure is applied. Prettify even handles infusion within attributes and understands the intention the developer.
+As you can see, the utter fucking insanity has been reasoned with. Code is beautified and structure is applied. Prettify even handles infusion within attributes and understands the intention of the developer.
 
 ### Input
 
