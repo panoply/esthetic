@@ -2,7 +2,7 @@
 
 # @liquify/prettify
 
-Liquid Language formatting support that provides beatification/diffing features in languages that couple with Liquid. Prettify leverages the [Sparser](https://github.com/unibeautify/sparser) lexing engine and its parse approach has been adapted from the distributed source code of [PrettyDiff](https://github.com/prettydiff/prettydiff). In addition, Prettify streamlines input to [Prettier](https://prettier.io/) when dealing with some embedded code regions (like frontmatter) or for handling languages like markdown.
+Liquid Language formatting support that provides beatification capabilities in various languages that are coupled with Liquid. Prettify leverages the [Sparser](https://github.com/unibeautify/sparser) lexing engine and its parse approach has been adapted from the distributed source code of [PrettyDiff](https://github.com/prettydiff/prettydiff). In addition, Prettify streamlines some input to [Prettier](https://prettier.io/) when dealing with embedded code regions (like frontmatter) or for handling languages like markdown.
 
 ### Supported Languages
 
@@ -11,7 +11,7 @@ Prettify supports beautification of Liquid together with several other languages
 - Liquid + HTML.
 - Liquid + CSS, SCSS and LESS
 - Liquid + JavaScript and TypeScript
-- Liquid + JSX
+- Liquid + JSX and TSX
 - Markdown + Frontmatter
 - JSON (No Liquid)
 - YAML (No Liquid)
@@ -21,7 +21,7 @@ Prettify supports beautification of Liquid together with several other languages
 This module is used by the [Liquify IDE](https://liquify.dev) extension. The project is available on the public NPM registry and can be consumed by individuals and used by any project which is not maintained, created or shipped by the Shopify organization, its company and/or employees of the platform. Everyone else is free to use as they wish.
 
 ```cli
-<pnpm add @liquify/prettify --save-dev
+pnpm add @liquify/prettify --save-dev
 ```
 
 # Usage
@@ -32,81 +32,127 @@ The tool provides beautification rules for multiple languages that are infusing 
 - style
 - script
 - json
+
+### Coming Soon
+
 - yaml
 - markdown
 
-Keeping the PrettyDiff logic, 3 lexer modes are supplied (`markup`, `style` and `script`) each mode can be used to beautify languages within a matching nexus. The `json` and `yaml` modes are used to beautify single languages only. JSON and Yaml are data languages and these modes do not handle Liquid contained within their syntax whereas `markup`, `style` and `script` do.
+Keeping the PrettyDiff logic, 3 lexer modes are supplied (`markup`, `style` and `script`) each mode can be used to beautify languages within a matching nexus.
 
-### Language Instance
+> The `json` and `yaml` modes are used to beautify single languages only. JSON and Yaml are data languages and these modes do not handle Liquid contained within their syntax (yet).
 
-An optional class instance is available which accepts a global rule-set. Each beautification method will use the pre-defined options provided via the instance. This approach is how formatting is applied within [Liquify](https://liquify.dev) as it allows us to deal with multiple languages and ensures embedded regions will be formatted using rules defined within the [.liquidrc](#) configuration file.
+# Formatting
 
-The instance exposes the same methods provided by the language specifics export. The difference being that you cannot pass options to the specifics. This approach also provides an additional `rules()` method which can be used to update the globals we supplied the instance.
+Prettify exposes direct access to methods on the export and can be used when you require per-language beautification. Passing a string and an optional set of beautification options to a language mode. Though Prettify uses PrettyDiff and Sparser internally, it is important to note that both the lexers and parsers have been largely refactored. As such, Prettify operates rather effectively and can interpret otherwise unpredictable or chaotic code:
+
+### Example
+
+Take the following (markup) code. This example is doing everything wrong. You'd actually be surprised how many folks would commit code like this when working with Liquid. This is actually because it's novice appealing in nature.
+
+<!-- prettier-ignore -->
+```html
+
+<div id="x"
+  class
+="xxx xxx xxx"   data-
+{% if x %} {{ x }}
+         {%- else -%}foo{%- endif %}-id   ="within"
+  aria-x =  "foo">
+
+Hello world!
+
+<div {{ attr }}="example"   {% if xx -%}data-{{ xx }}{%- else -%}
+id{%- endif %}="prepended"
+   aria-x="foo"           class={{ no_quotations }}
+>
+
+I am using Prettify! </div></div>
+```
+
+The above code is some wild stuff. It is using Liquid to output HTML attributes (conditionally), it is using output tags as attributes/values and infuses tags between attributes definitions. Prettify is able to handle this and can quickly reason about what and how the intended structure should be output. The above would format as follows:
+
+<!-- prettier-ignore -->
+```html
+
+<div
+  id="x"
+  class="xxx xxx xxx"
+  data-{% if x %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx"
+  aria-x="foo">
+
+  Hello world!
+
+  <div
+    {{ attr }}="example"
+    {% if xx -%}data-{{ xx }}{%- else -%}id="xxx"{%- endif %}
+    aria-x="foo"
+    class="{{ no_quotations }}">
+
+    I am using Prettify!
+    </div>
+</div>
+```
+
+As you can see, the fucking insanity has been reasoned with. Code is beautified and structure is applied. Prettify even handles infusion within attributes and understands the intention the developer.
+
+### Input
 
 ```typescript
 import * as prettify from "@liquify/prettify";
 
-// Update Rules
-prettify.options(rules: options, rules?: {
-  markup?: IMarkupRules,
-  style?: IStyleRules,
-  script?: IScriptRules,
-  json?: IJsonRules,
-  yaml?: IYamlRules
-}): void
-
 // Markup = HTML
-prettify.markup(source: string): Promise<string>
+prettify.markup(source: string, rules?: object): Promise<string>
 
 // Style = CSS, SCSS or LESS
-prettify.style(source: string): Promise<string>
+prettify.style(source: string, rules?: object): Promise<string>
 
 // Script = JavaScript, TypeScript or JSX
-prettify.script(source: string): Promise<string>
-
-// JSON
-prettify.json(source: string): Promise<string>
-
-// YAML
-prettify.yaml(source: string): Promise<string>
-
+prettify.script(source: string, rules?: object): Promise<string>
 ```
 
-### Language Specific
-
-Prettify exposes direct access to methods on the export and can be used when you require per-language beautification. Passing a string and an optional set of beautification options to a language mode.
-
-> This approach will apply defaults to embedded regions when using `markup` lexer mode. If you need control of how contents of embedded regions are formatted within markup, use a language instance instead.
+Additional `options` method for controlling how internal regions should format when needing control of how contents of embedded regions are beautified within markup:
 
 ```typescript
-import { markup, style, script, json, yaml } from "@liquify/prettify";
+import * as prettify from "@liquify/prettify";
 
-// Markup = HTML
-markup(source: string, rules?: object): Promise<string>
+// Addition Method
+prettify.options(rules: options, rules?: {
+  markup?: MarkupRules,
+  style?: StyleRules,
+  script?: ScriptRules,
+  json?: JsonRules, // NOT YET AVAILABLE
+  yaml?: YamlRules // NOT YET AVAILABLE
+}): void
+```
 
-// Style = CSS, SCSS or LESS
-style(source: string, rules?: object): Promise<string>
+### Output
 
-// Script = JavaScript, TypeScript or JSX
-script(source: string, rules?: object): Promise<string>
+<!-- prettier-ignore -->
+```typescript
+import * as prettify from '@liquify/prettify';
 
-// JSON
-json(source: string, rules?: object): Promise<string>
+const code = '<div id="x" class="foo">{% if x %} {{ x }} {% endif %}</div>';
 
-// YAML
-yaml(source: string, rules?: object): Promise<string>
+prettify.markup(code).then(formatted => {
 
+  console.log(formatted)
+
+})
 ```
 
 ### Parse Errors
 
 Each method returns a promise, so when formatting fails or a parse error occurs, `.catch()` is invoked. The error returns an object. The object contains the provided input (`source`) and the error message.
 
+> It's important to note that Liquify and Prettify are using different Parsers. The Liquify parser constructs an AST that provides diagnostic capabilities (ie: linting), so the errors of these tools will differ dramatically. Liquify will give you far more context opposed to Prettify.
+
 <!-- prettier-ignore -->
 ```typescript
 import * as prettify from '@liquify/prettify';
 
-const code = '{% if x %} {{ x }} {% endif %}';
+// Invalid code
+const code = '{% if x %} {{ x }} {% endunless %}';
 
 prettify.markup(code).then(formatted => console.log(formatted)).catch(error => {
 
@@ -119,65 +165,74 @@ prettify.markup(code).then(formatted => console.log(formatted)).catch(error => {
 });
 ```
 
-### Options
+# Options
 
 Prettify uses a custom set of beautification rules (options). Though input is forwarded to Prettier and internally uses PrettyDiff, options names differ as its combining these 2 tools to generate the output. If you are formatting on a per-language basis, you can simply provide options as a second parameter, but if you are dealing with multiple languages you can preset formatting options.
 
 ```typescript
 {
   markup: {
-    newlineEnd: true,
-    selfCloseSpace: false,
-    indentLevel: 0,
-    preserveLine: 3,
-    indentSize: 2,
-    wrap: 80,
-    preserveComment: true,
-    commentNewline: false,
-    commentIndent: false,
-    preserveText: false,
     attemptCorrection: false,
+    attributeGlue: true,
     attributeSort: false,
     attributeSortList: [],
+    commentNewline: false,
+    commentIndent: false,
+    crlf: false,
+    delimiterSpacing: false,
     forceAttribute: false,
     forceIndent: false,
+    indentLevel: 0,
+    indentSize: 2,
+    indentChar: ' ',
+    newlineEnd: true,
+    selfCloseSpace: false,
+    preserveAttributes: false,
+    preserveComment: true,
+    preserveLine: 3,
+    preserveText: false,
     quoteConvert: 'double',
-    preserveAttributes: false
+    wrap: 0
   },
   style: {
-    wrap: 80,
-    newLine: true,
-    newlineEnd: true,
-    indentSize: 2,
-    indentLevel: 0,
-    preserveLines: 3,
-    selectorList: false,
-    propertySort: false,
+    attemptCorrection: false,
     bracesAllman: false,
     classPadding: false,
+    crlf: false,
+    indentChar: ' ',
+    indentLevel: 0,
+    indentSize: 2,
+    preserveLines: 3,
+    propertySort: false,
+    newLine: true,
+    newlineEnd: true,
     noLeadZero: false,
+    selectorList: false,
     quoteConvert: 'single',
+    wrap: 0
   },
   script: {
+    attemptCorrection: false,
     braceNewline: false,
     bracePadding: false,
     braceStyle: 'none',
     braceAllman: false,
     caseSpace: false,
+    crlf: false,
     commentNewline: false,
     commentIndent: false,
-    attemptCorrection: false,
+    endNewline: true,
     elseNewline: false,
     endComma: 'never',
     arrayFormat: 'default',
     objectIndent: 'default',
     functionNameSpace: true,
     functionSpace: true,
+    indentChar: ' ',
     indentLevel: 0,
     indentSize: 2,
     methodChain: false,
     neverFlatten: false,
-    endNewline: true,
     noCaseIndent: false,
     noSemicolon: false,
     objectSort: false,
@@ -191,16 +246,16 @@ Prettify uses a custom set of beautification rules (options). Though input is fo
     wrap: 0
   },
   json: {
-    wrap: 80,
-    newLineEnd: true,
-    indentSize: 2,
-    indentLevel: 0,
-    preserveLines: 3,
-    objectSort: false,
-    objectArrays: 'default',
+    arrayFormat: 'default',
     bracesAllman: false,
     bracePadding: false,
-    arrayFormat: 'default',
+    indentSize: 2,
+    indentLevel: 0,
+    newLineEnd: true,
+    objectSort: false,
+    objectArrays: 'default',
+    preserveLines: 3,
+    wrap: 0
   }
 }
 ```
@@ -211,23 +266,27 @@ Refer to the [typings](#) declaration file for description.
 
 ```ts
 {
-  wrap: 80,
-  newlineEnd: true,
-  selfCloseSpace: false,
-  indentSize: 2,
-  indentLevel: 0,
-  preserveLines: 3,
-  preserveComment: true,
-  commentNewline: false,
-  commentIndent: false,
-  preserveText: false,
   attemptCorrection: false,
+  attributeGlue: true,
   attributeSort: false,
   attributeSortList: [],
+  commentNewline: false,
+  commentIndent: false,
+  crlf: false,
+  delimiterSpacing: false,
   forceAttribute: false,
   forceIndent: false,
+  indentLevel: 0,
+  indentSize: 2,
+  indentChar: ' ',
+  newlineEnd: true,
+  selfCloseSpace: false,
+  preserveAttributes: false,
+  preserveComment: true,
+  preserveLine: 3,
+  preserveText: false,
   quoteConvert: 'double',
-  preserveAttributes: false
+  wrap: 0
 }
 ```
 
@@ -237,18 +296,21 @@ Refer to the [typings](#) declaration file for description.
 
 ```ts
 {
-  wrap: 80,
-  newLine: true,
-  newlineEnd: true,
-  indentSize: 2,
-  indentLevel: 0,
-  preserveLines: 3,
-  selectorList: false,
-  propertySort: false,
+  attemptCorrection: false,
   bracesAllman: false,
   classPadding: false,
+  crlf: false,
+  indentChar: ' ',
+  indentLevel: 0,
+  indentSize: 2,
+  preserveLines: 3,
+  propertySort: false,
+  newLine: true,
+  newlineEnd: true,
   noLeadZero: false,
+  selectorList: false,
   quoteConvert: 'single',
+  wrap: 0
 }
 ```
 
@@ -258,16 +320,16 @@ Refer to the [typings](#) declaration file for description.
 
 ```ts
 {
-  wrap: 80,
-  newLineEnd: true,
-  indentSize: 2,
-  indentLevel: 0,
-  preserveLines: 3,
-  objectSort: false,
-  objectArrays: 'default',
+  arrayFormat: 'default',
   bracesAllman: false,
   bracePadding: false,
-  arrayFormat: 'default',
+  indentSize: 2,
+  indentLevel: 0,
+  newLineEnd: true,
+  objectSort: false,
+  objectArrays: 'default',
+  preserveLines: 3,
+  wrap: 0
 }
 ```
 
@@ -277,25 +339,27 @@ Refer to the [typings](#) declaration file for description.
 
 ```ts
 {
+  attemptCorrection: false,
   braceNewline: false,
   bracePadding: false,
   braceStyle: 'none',
   braceAllman: false,
   caseSpace: false,
+  crlf: false,
   commentNewline: false,
   commentIndent: false,
-  attemptCorrection: false,
+  endNewline: true,
   elseNewline: false,
   endComma: 'never',
   arrayFormat: 'default',
   objectIndent: 'default',
   functionNameSpace: true,
   functionSpace: true,
+  indentChar: ' ',
   indentLevel: 0,
   indentSize: 2,
   methodChain: false,
   neverFlatten: false,
-  endNewline: true,
   noCaseIndent: false,
   noSemicolon: false,
   objectSort: false,
@@ -315,11 +379,9 @@ Refer to the [typings](#) declaration file for description.
 Inline control is supported and can be applied by referencing the `@prettify` keyword in a comment followed by the operation. There are 3 operations available, `disable`, `format` and `ignore` each of which can be expressed as follows:
 
 - `@prettify disable`
-- `@prettify format:file {}`
-- `@prettify format:start {}`
-- `@prettify format:end`
 - `@prettify ignore:start`
 - `@prettify ignore:end`
+- `@prettify format: ...`
 
 ### Disable Prettify
 
@@ -337,53 +399,32 @@ You can disable Prettify from formatting a file by placing an inline control com
 
 # Inline Formatting
 
-Prettify provides inline formatting support via comments. Inline formatting adopts a similar approach used in linters and other projects. The difference is how inline formats are expressed. You can direct Prettify to format a specific block or region of code by encapsulating it between 2 comment blocks or you can define formatting option to be applied to an entire file.
+Prettify provides inline formatting support via comments. Inline formatting adopts a similar approach used in linters and other projects. The difference is how inline formats are expressed. You can direct Prettify to be apply formatting rules to an entire file by annotation the top of the document with an inline format comment.
 
 ### HTML Comments
 
-- `<!-- @prettify format:file {} -->`
-- `<!-- @prettify format:start {} -->`
-- `<!-- @prettify format:end -->`
+```html
+<!-- @prettify format: forceAttribute: true, indentLevel: 4 -->
+```
 
 ### CSS, SCSS or LESS Comments
 
-- `/* @prettify format:file {} */`
-- `/* @prettify format:start {} */`
-- `/* @prettify format:end */`
+```css
+/* @prettify format: forceAttribute: true, indentLevel: 4 */
+```
 
 ### JavaScript, TypeScript Comments
 
-- `// @prettify: format:file {}`
-- `// @prettify: format:start {}`
-- `// @prettify: format:end`
+```javascript
+// @prettify format: forceAttribute: true, indentLevel: 4
+```
 
 ### Liquid Comments
 
-- `{% comment %} @prettify: format: {} {% endcomment %}`
-- `{% comment %} @prettify: format:start {} {% endcomment %}`
-- `{% comment %} @prettify: format:end {% endcomment %}`
-
-### Example
-
-Using inline HTML comments to apply formatting on a specific block of code:
-
-<!-- prettier-ignore -->
-```html
-
-<!-- @prettify: format:start {
-  "attributeSort": true,
-  "attributeSortList": ["class", "id", "data-attr"],
-  "forceAttribute": true,
-} -->
-
-<div
- class="a"
- id="b"
- data-attr="c">
- {{ some.tag }}
-</div>
-
-<!-- @prettify: format:end -->
+```liquid
+{% comment %}
+  @prettify format: forceAttribute: true, indentLevel: 4
+{% endcomment %}
 ```
 
 # Ignoring Code
