@@ -626,7 +626,6 @@ prettydiff.api = {};
 prettydiff.beautify = {};
 prettydiff.end = 0;
 prettydiff.iterator = 0;
-
 prettydiff.meta = {
   error: ''
   , lang: [ '', '', '' ]
@@ -696,7 +695,7 @@ prettydiff.options = {
   , tagMerge: false
   , tagSort: false
   , ternaryLine: false
-  , preserveAttribute: false
+  , preserveAttributes: false
   , variableList: 'none'
   , version: false
   , vertical: false

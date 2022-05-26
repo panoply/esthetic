@@ -1,7 +1,8 @@
 
 import { sparser } from '../parser/parse';
-import { IRecord, Parsed, HTMLBlocks, HTMLVoids } from '../../types/sparser';
+import { IRecord, Parsed, HTMLBlocks, HTMLVoids, Types } from '../../types/sparser';
 import { cc } from '../shared/enums';
+import { isLiquidOutputTag } from '../shared/utils';
 
 export default (() => {
 
@@ -249,6 +250,7 @@ export default (() => {
      */
     function recordPush (target: Parsed, record: IRecord, structure: string) {
 
+      // console.log(target);
       if (target === data) {
         if (record.types.indexOf('end') > -1) {
           count.end = count.end + 1;
@@ -451,7 +453,7 @@ export default (() => {
       /**
        * Lexer Type, ie: `start`, `template` etc etc
        */
-      let ltype = '';
+      let ltype: Types = '' as Types;
 
       /**
        * Tag Name
@@ -699,6 +701,7 @@ export default (() => {
           } else if (sample.charAt(0) === '<') {
             record.types = 'template_attribute';
           } else {
+
             record.token = token;
             convertq();
             return;
@@ -914,6 +917,7 @@ export default (() => {
         }
 
         if (store.length > 0) {
+
           record.token = store.join(' ');
           convertq();
         }
@@ -1030,12 +1034,14 @@ export default (() => {
         }
 
         if (b[a + 1] === '{') {
-
+          preserve = true;
           end = '}}';
           ltype = 'template';
 
         } else if (b[a + 1] === '%') {
 
+          preserve = true; // Required for  lexer
+          end = '%}';
           ltype = 'template';
 
           /**
@@ -1112,13 +1118,14 @@ export default (() => {
             }
 
           } else {
-
+            preserve = true;
             end = '%}';
+            ltype = 'template';
 
           }
 
         } else {
-
+          preserve = true;
           end = b[a + 1] + '}';
           ltype = 'template';
 
@@ -1454,6 +1461,7 @@ export default (() => {
                           attribute[attribute.length - 1] === '/' ||
                           (attribute[attribute.length - 1] === '?' && ltype === 'xml')
                         ) {
+
                           attribute.pop();
                           if (preserve === true) lex.pop();
                           a = a - 1;
@@ -1664,6 +1672,7 @@ export default (() => {
                             if (options.lexerOptions.markup.preserveAttributes === false) {
 
                               if (options.language === 'jsx') {
+
                                 if ((/^(\s*)$/).test(element) === false) {
                                   attstore.push([ element, lines ]);
                                 }
@@ -1777,7 +1786,7 @@ export default (() => {
 
                   } while (a < c);
                 }
-              } else if (end !== '%>' && end !== '\n' && (b[a] === '"' || b[a] === "'")) {
+              } else if (end !== '\n' && (b[a] === '"' || b[a] === "'")) {
 
                 // opening quote
                 quote = b[a];
@@ -1802,25 +1811,42 @@ export default (() => {
                 && (b[a + 1] === '{' || b[a + 1] === '%')
               ) {
 
-                // Opening embedded template expression
                 if (b[a + 1] === '{') {
-
-                  quote = '}}';
-
+                  if (b[a + 2] === '{') {
+                    quote = '}}}';
+                  } else {
+                    quote = '}}';
+                  }
+                } else if (options.language === 'dustjs') {
+                  if (attribute.length < 1 && (attstore.length < 1 || (/\s/).test(b[a - 1]) === true)) {
+                    lex.pop();
+                    do {
+                      if (b[a] === '\n') {
+                        lines = lines + 1;
+                      }
+                      attribute.push(b[a]);
+                      a = a + 1;
+                    } while (a < c && b[a] !== '}');
+                    attribute.push('}');
+                    attstore.push([ attribute.join(''), lines ]);
+                    attribute = [];
+                    lines = 1;
+                  } else {
+                    quote = '}';
+                  }
                 } else {
 
                   quote = b[a + 1] + '}';
-
-                  if (attribute.length < 1 && (attstore.length < 1 || /\s/.test(b[a - 1]))) {
+                  if (attribute.length < 1 && (attstore.length < 1 || (/\s/).test(b[a - 1]) === true)) {
 
                     lex.pop();
-
                     do {
-                      if (b[a] === '\n') lines = lines + 1;
+                      if (b[a] === '\n') {
+                        lines = lines + 1;
+                      }
                       attribute.push(b[a]);
                       a = a + 1;
                     } while (a < c && b[a - 1] + b[a] !== quote);
-
                     attribute.push('}');
                     attstore.push([ attribute.join(''), lines ]);
                     attribute = [];
@@ -1828,8 +1854,9 @@ export default (() => {
                     quote = '';
                   }
                 }
-
-                if (quote === end) quote = '';
+                if (quote === end) {
+                  quote = '';
+                }
 
               } else if (
                 (simple === true || ltype === 'sgml')
@@ -2018,7 +2045,7 @@ export default (() => {
       if (tname === 'comment' && isLiquid(element, 2)) {
 
         record.begin = parse.structure[parse.structure.length - 1][1];
-        // record.ender = parse.count + 3;
+        record.ender = parse.count + 3;
         record.stack = parse.structure[parse.structure.length - 1][0];
         record.types = 'comment';
         record.token = element;
@@ -2373,13 +2400,12 @@ export default (() => {
           && ltype !== 'xml'
           && ltype !== 'sgml'
       ) {
-        if (cheat === true || element.slice(element.length - 2) ===
-            '/>') {
+        if (cheat === true || element.slice(element.length - 2) === '/>') {
           ltype = 'singleton';
         } else {
           ltype = 'start';
         }
-        record.types = ltype;
+        record.types = ltype as Types;
       }
       // additional logic is required to find the end of a tag with the attribute
       // data-parse-ignore
@@ -2487,6 +2513,7 @@ export default (() => {
             } while (a < c);
           }
         }
+
         element = element + tags.join('');
         element = element.replace('>', ` ${atstring.join(' ')}>`);
         record.token = element;
@@ -2531,9 +2558,7 @@ export default (() => {
             record.types = 'template_else';
           } else if (
             tname === 'else' ||
-            tname === 'elseif' ||
             tname === 'when' ||
-            tname === 'elif' ||
             tname === 'elsif'
           ) {
             record.types = 'template_else';
@@ -2558,70 +2583,67 @@ export default (() => {
 
           }
 
-        } else if (
-          element.slice(0, 2) === '{{'
-            && element.charAt(3) !== '{'
-        ) {
-
-          if ((/^(\{\{\s*-?\s*end\s*-?\s*\}\})$/).test(element)) {
-            record.types = 'template_end';
-          } else if (
-            tname === 'define' ||
-              tname === 'form' ||
-              tname === 'if' ||
-              tname === 'range' ||
-              tname === 'with'
-          ) {
-            record.types = 'template_start';
-          }
-
         } else if (record.types === 'template') {
-          if (element.indexOf('else') > 2) {
-            record.types = 'template_else';
+
+          if (isLiquidOutputTag(element)) {
+            const pos: number = element.indexOf(options.crlf ? '\r\n' : '\n');
+            if (pos > 0) {
+              record.token = record.token.replace(/^\s+/gm, '');
+            }
           }
+
+          if (element.indexOf('else') > 2) record.types = 'template_else';
+
         }
-        if (record.types === 'template_start' || record.types ===
-            'template_else') {
+        if (record.types === 'template_start' || record.types === 'template_else') {
           if (tname === '' || tname === '%') {
-            tname = tname + element.slice(1).replace(tname, '').replace(
-              /^\s+/, ''
-            );
+            tname = tname + element.slice(1).replace(tname, '').replace(/^\s+/, '');
             tname = tname.slice(0, tname.indexOf('(')).replace(/\s+/, '');
           }
         }
       }
 
       // identify script and style hidden within a CDATA escape
-      if (ltype === 'cdata' && (record.stack === 'script' || record
-        .stack === 'style')) {
+      if (ltype === 'cdata' && (record.stack === 'script' || record.stack === 'style')) {
+
         let counta = parse.count;
         let countb = parse.count;
+
         const stack = record.stack;
+
         if (data.types[countb] === 'attribute') {
           do {
             counta = counta - 1;
             countb = countb - 1;
           } while (data.types[countb] === 'attribute' && countb > -1);
         }
+
         record.begin = counta;
-        element = element
-          .replace(/^(\s*<!\[cdata\[)/i, '')
-          .replace(/(\]\]>\s*)$/, '');
         record.token = '<![CDATA[';
         record.types = 'cdata_start';
+
+        element = element.replace(/^(\s*<!\[cdata\[)/i, '').replace(/(\]\]>\s*)$/, '');
+
         recordPush(data, record, '');
+
         parse.structure.push([ 'cdata', parse.count ]);
+
         if (stack === 'script') {
           sparser.lexers.script(element);
         } else {
           sparser.lexers.style(element);
         }
+
         record.begin = parse.structure[parse.structure.length - 1][1];
         record.token = ']]>';
         record.types = 'cdata_end';
+
         recordPush(data, record, '');
+
         parse.structure.pop();
+
       } else {
+
         recordPush(data, record, tname);
       }
 
@@ -2629,37 +2651,43 @@ export default (() => {
 
       // inserts a script space in anticipation of word wrap since JSX has unique white space rules
       if (options.wrap > 0 && options.language === 'jsx') {
+
         let current_length = 0;
         let bb = parse.count;
         let cc = 0;
+
         if (data.types[bb].indexOf('attribute') > -1) {
+
           do {
             current_length = current_length + data.token[bb].length + 1;
             bb = bb - 1;
-          } while (data.lexer[bb] !== 'markup' || data.types[bb].indexOf(
-            'attribute'
-          ) > -1);
-          if (data.lines[bb] === 1) {
-            current_length = current_length + data.token[bb].length + 1;
-          }
+          } while (data.lexer[bb] !== 'markup' || data.types[bb].indexOf('attribute') > -1);
+
+          if (data.lines[bb] === 1) current_length = current_length + data.token[bb].length + 1;
+
         } else if (data.lines[bb] === 1) {
+
           current_length = data.token[bb].length + 1;
         }
+
         cc = bb - 1;
+
         if (current_length > 0 && data.types[cc] !== 'script_end') {
+
           if (data.types[cc].indexOf('attribute') > -1) {
             do {
               current_length = current_length + data.token[cc].length + 1;
               cc = cc - 1;
-            } while (data.lexer[cc] !== 'markup' || data.types[cc]
-              .indexOf('attribute') > -1);
-            if (data.lines[cc] === 1) {
-              current_length = current_length + data.token[cc].length + 1;
-            }
+            } while (data.lexer[cc] !== 'markup' || data.types[cc].indexOf('attribute') > -1);
+
+            if (data.lines[cc] === 1) current_length = current_length + data.token[cc].length + 1;
+
           } else if (data.lines[cc] === 1) {
             current_length = data.token[cc].length + 1;
           }
+
           if (current_length > options.wrap && data.lines[bb] === 1) {
+
             record.begin = data.begin[bb];
             record.ender = bb + 2;
             record.lexer = data.lexer[bb];
@@ -2667,39 +2695,49 @@ export default (() => {
             record.stack = data.stack[bb];
             record.token = '{';
             record.types = 'script_start';
+
             parse.splice({
               data: data
               , howmany: 0
               , index: bb
               , record: record
             });
+
             record.begin = bb;
             record.lexer = 'script';
             record.lines = 0;
             record.stack = 'script';
+
             if (options.quoteConvert === 'single') {
               record.token = "' '";
             } else {
               record.token = '" "';
             }
+
             record.types = 'string';
+
             parse.splice({
               data: data
               , howmany: 0
               , index: bb + 1
               , record: record
             });
+
             record.lexer = 'markup';
             record.token = '}';
             record.types = 'script_end';
+
             parse.splice({
               data: data
               , howmany: 0
               , index: bb + 2
               , record: record
             });
+
             data.ender[bb + 3] = data.ender[bb + 3] + 3;
+
             bb = bb + 4;
+
             do {
               data.begin[bb] = data.begin[bb] + 3;
               data.ender[bb] = data.ender[bb] + 3;
@@ -2716,147 +2754,177 @@ export default (() => {
           && tname !== '/script'
           && tname !== '/style'
       ) {
+
         let bb = 0;
         let d = 0;
         let startStore = 0;
         let jsxatt = false;
+
         const children = [];
-        const store = {
-          begin: []
-          , ender: []
-          , lexer: []
-          , lines: []
-          , stack: []
-          , token: []
-          , types: []
-        };
-        const storeRecord = function lexer_markup_tagSorttag_storeRecord (
-          index
-        ) {
-          const output = {
-            begin: data.begin[index]
-            , ender: data.ender[index]
-            , lexer: data.lexer[index]
-            , lines: data.lines[index]
-            , stack: data.stack[index]
-            , token: data.token[index]
-            , types: data.types[index]
-          };
+        const store = Object.create(null);
+
+        store.begin = [];
+        store.ender = [];
+        store.lexer = [];
+        store.lines = [];
+        store.stack = [];
+        store.token = [];
+        store.types = [];
+
+        function storeRecord (index: number) {
+
+          const output = Object.create(null);
+
+          output.begin = data.begin[index];
+          output.ender = data.ender[index];
+          output.lexer = data.lexer[index];
+          output.lines = data.lines[index];
+          output.stack = data.stack[index];
+          output.token = data.token[index];
+          output.types = data.types[index];
+
           return output;
         };
-        const childsort = function lexer_markup_tagSorttag_childsort (a, b) {
-          if (data.token[a[0]] > data.token[b[0]]) {
-            return -1;
-          }
-          return 1;
-        };
+
+        function childsort (a: number, b: number) {
+
+          return (data.token[a[0]] > data.token[b[0]])
+            ? -1
+            : 1;
+        }
+
         bb = parse.count - 1;
+
         if (bb > -1) {
+
           let endStore = 0;
+
           do {
             if (data.types[bb] === 'start') {
               d = d - 1;
+
               if (d < 0) {
+
                 startStore = bb + 1;
-                if (data.types[startStore] === 'attribute' || data.types[
-                  startStore] === 'jsx_attribute_start') {
+
+                if (data.types[startStore] === 'attribute' || data.types[startStore] === 'jsx_attribute_start') {
+
                   jsxatt = false;
+
                   do {
+
                     startStore = startStore + 1;
-                    if (jsxatt === false && data.types[startStore] !==
-                        'attribute') {
-                      break;
-                    }
-                    if (data.types[startStore] ===
-                        'jsx_attribute_start') {
+
+                    if (jsxatt === false && data.types[startStore] !== 'attribute') break;
+                    if (data.types[startStore] === 'jsx_attribute_start') {
                       jsxatt = true;
-                    } else if (data.types[startStore] ===
-                        'jsx_attribute_end') {
+                    } else if (data.types[startStore] === 'jsx_attribute_end') {
                       jsxatt = false;
                     }
+
                   } while (startStore < c);
                 }
+
                 break;
               }
             } else if (data.types[bb] === 'end') {
               d = d + 1;
-              if (d === 1) {
-                endStore = bb;
-              }
+              if (d === 1) endStore = bb;
             }
+
             if (d === 0) {
               if (data.types[bb] === 'start') {
+
                 children.push([ bb, endStore ]);
+
               } else {
-                if (data.types[bb] === 'singleton' && (data.types[bb
-                      + 1] === 'attribute' || data.types[bb
-                      + 1] === 'jsx_attribute_start')) {
+                if (data.types[bb] === 'singleton' && (
+                  data.types[bb + 1] === 'attribute' ||
+                  data.types[bb + 1] === 'jsx_attribute_start')
+                ) {
+
                   let cc = bb + 1;
                   jsxatt = false;
+
                   do {
+
                     if (data.types[cc] === 'jsx_attribute_start') {
                       jsxatt = true;
                     } else if (data.types[cc] === 'jsx_attribute_end') {
                       jsxatt = false;
                     }
-                    if (jsxatt === false && data.types[cc + 1] !==
-                        'attribute' && data.types[cc + 1] !==
-                        'jsx_attribute_start') {
-                      break;
-                    }
+
+                    if (jsxatt === false
+                      && data.types[cc + 1] !== 'attribute'
+                      && data.types[cc + 1] !== 'jsx_attribute_start') break;
+
                     cc = cc + 1;
+
                   } while (cc < parse.count);
+
                   children.push([ bb, cc ]);
-                } else if (data.types[bb] !== 'attribute' && data.types[
-                  bb] !== 'jsx_attribute_start') {
+
+                } else if (data.types[bb] !== 'attribute' && data.types[bb] !== 'jsx_attribute_start') {
+
                   children.push([ bb, bb ]);
                 }
               }
             }
+
             bb = bb - 1;
+
           } while (bb > -1);
         }
-        if (children.length < 2) {
-          return;
-        }
+
+        if (children.length < 2) return;
+
         children.sort(childsort);
+
         bb = children.length - 1;
+
         if (bb > -1) {
           do {
+
             recordPush(store, storeRecord(children[bb][0]), '');
+
             if (children[bb][0] !== children[bb][1]) {
+
               d = children[bb][0] + 1;
+
               if (d < children[bb][1]) {
                 do {
                   recordPush(store, storeRecord(d), '');
                   d = d + 1;
                 } while (d < children[bb][1]);
               }
+
               recordPush(store, storeRecord(children[bb][1]), '');
             }
+
             bb = bb - 1;
+
           } while (bb > -1);
         }
-        const endData = {
-          begin: data.begin.pop()
-          , ender: data.ender.pop()
-          , lexer: data.lexer.pop()
-          , lines: data.lines.pop()
-          , stack: data.stack.pop()
-          , token: data.token.pop()
-          , types: data.types.pop()
-        };
-        (function lexer_markup_tagSorttag_slice () {
-          parse.datanames.forEach(
-            function lexer_markup_tagSorttag_slice_datanames (value) {
-              data[value] = data[value].slice(0, startStore);
-            }
-          );
-        }());
+
+        const endData = Object.create(null);
+
+        endData.begin = data.begin.pop();
+        endData.ender = data.ender.pop();
+        endData.lexer = data.lexer.pop();
+        endData.lines = data.lines.pop();
+        endData.stack = data.stack.pop();
+        endData.token = data.token.pop();
+        endData.types = data.types.pop();
+
+        // lexer_markup_tagSorttag_slice_datanames
+        for (const value of parse.datanames) data[value] = data[value].slice(0, startStore);
+
         parse.concat(data, store);
         count.end = count.end - 1;
+
         recordPush(data, endData, '');
       }
+
       parse.linesSpace = 0;
     }
 
@@ -2880,6 +2948,7 @@ export default (() => {
             && data.token[parse.count].indexOf('<![') < 0 && data.token[parse
         .count].charAt(data.token[parse.count]
         .length - 1) === '[');
+
       const record = {
         begin: parse.structure[parse.structure.length - 1][1]
         , ender: -1
@@ -3110,6 +3179,7 @@ export default (() => {
             ) {
               ltoke = lex.join('');
             } else {
+
               ltoke = lex.join('').replace(/\s+$/, '');
             }
 
@@ -3200,6 +3270,7 @@ export default (() => {
                   ? (/\s+$/).exec(ltoke)[0]
                   : '';
               }
+
               ltoke = ltoke.replace(/^\s+/, '').replace(/\s+$/, '')
                 .replace(/\s+/g, ' ');
               do {
@@ -3240,6 +3311,7 @@ export default (() => {
           }
         } else if (a !== now || (a === now && ext === false)) {
           // regular content at the end of the supplied source
+
           ltoke = lex.join('').replace(/\s+$/, '');
           liner = 0;
           // this condition prevents adding content that was just added in the loop above
@@ -3333,6 +3405,7 @@ export default (() => {
       data.token[parse.count].charAt(0) !== '/'
       && blocks[parse.structure[parse.structure.length - 1][0]] === 'block'
     ) {
+
       fixHtmlEnd(data.token[parse.count], true);
     }
 

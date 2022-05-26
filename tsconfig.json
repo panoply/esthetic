@@ -1,12 +1,44 @@
 {
   "extends": "@liquify/tsconfig",
   "exclude": ["node_modules/**", "package", "test"],
-  "include": ["src/index.ts"],
+  "include": ["src"],
   "compilerOptions": {
     "incremental": false,
     "declaration": true,
     "removeComments": false,
     "emitDeclarationOnly": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "prettydiff": ["src/prettydifff/index.ts"],
+      "prettydiff/*": [
+        "src/prettydifff/parser/*.ts",
+        "./src/prettydifff/shared/*.ts"
+      ],
+      "prettydiff/markup": [
+        "./src/prettydifff/beautify/style.ts"
+      ],
+      "prettydiff/script": [
+        "./src/prettydifff/beautify/script.ts"
+      ],
+      "prettydiff/style": [
+        "./src/prettydifff/beautify/style.ts"
+      ],
+      "sparser/markup": [
+        "./src/prettydifff/lexers/markup.ts"
+      ],
+      "sparser/script": [
+        "./src/prettydifff/lexers/script.ts"
+      ],
+      "sparser/style": [
+        "./src/prettydifff/lexers/style.ts"
+      ],
+      "types/*": ["./src/types/*.ts"],
+      "types/sparser": [
+        "./src/types/prettydifff/types/sparser.ts"
+      ],
+      "types/prettydiff": [
+        "./src/prettydifff/types/prettydiff.d.ts"
+      ]
+    }
   }
 }

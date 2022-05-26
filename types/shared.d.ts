@@ -54,6 +54,16 @@ export interface SharedOptions {
    * @default false
    */
   endNewline?: boolean
+  /**
+   * If line termination should be Windows (CRLF) format.
+   * Unix (LF) format is the default.
+   */
+  crlf?: boolean,
+  /**
+   * The string characters to comprise a single indentation.
+   * Any string combination is accepted
+   */
+  indentChar?: string,
 }
 
 export interface SharedEnforced {

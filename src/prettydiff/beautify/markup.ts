@@ -1,7 +1,7 @@
 import { prettydiff } from '../parser/prettydiff';
 import { PrettyDiffOptions } from '../../types/prettydiff';
 import { cc } from '../shared/enums';
-import { isLiquid } from '../shared/utils';
+import { isLiquidElseTag, isLiquidEndTag, isLiquidOutputTag, isLiquidStartTag } from '../shared/utils';
 
 export default (() => {
 
@@ -56,6 +56,11 @@ export default (() => {
     const c = (prettydiff.end < 1 || prettydiff.end > data.token.length)
       ? data.token.length
       : prettydiff.end + 1;
+
+    /**
+     * Liquid Attribute Tracking
+     */
+    const lqa: number[][] = [];
 
     /* -------------------------------------------- */
     /* UTILITIES                                    */
@@ -127,7 +132,7 @@ export default (() => {
     /**
      * Indentation level
      */
-    let indent = (isNaN(options.indentLevel) === true) ? 0 : Number(options.indentLevel);
+    let indent = isNaN(options.indentLevel) ? 0 : Number(options.indentLevel);
 
     /* -------------------------------------------- */
     /* FUNCTIONS                                    */
@@ -474,6 +479,7 @@ export default (() => {
 
           }
         }
+
       };
 
       function external () {
@@ -529,8 +535,6 @@ export default (() => {
 
           const item = data.token[index].replace(/\s+/g, ' ').split(' ');
           const ilen = item.length;
-
-          console.log('TOKEN WRAP', data.token[index]);
 
           let bb = 1;
           let acount = item[0].length;
@@ -612,14 +616,12 @@ export default (() => {
 
           }
 
-          if (type.is(parent, 'singleton')) return indent + 1;
-
-          if (type.is(next, 'end') || type.is(parent, 'template_end')) {
-
-            return type.is(parent, 'singleton')
-              ? indent + 2
-              : indent + 1;
+          if (type.is(next, 'end') || type.is(next, 'template_end')) {
+            if (type.is(parent, 'singleton')) return indent + 2;
+            return indent + 1;
           }
+
+          if (type.is(parent, 'singleton')) return indent + 1;
 
           return indent;
 
@@ -650,94 +652,45 @@ export default (() => {
         // attributes we handle them in a similar manner
         // as HTML attributes, with only slight differences.
         //
+        // first, set levels and determine if there are template attributes
         do {
 
           count = count + data.token[a].length + 1;
-          len = len + data.token[a].length + 1;
 
-          if (type.idx(a, 'attribute') > 0) {
+          if (data.types[a].indexOf('attribute') > 0) {
 
-            // Template attribute
-            //
-            // Lets first handle template (liquid attributes). The lexer has already given us
-            // context for them, we merely need to figure out the structures and app
-            // beautification accordingly.
-            //
-            // NOTES:
-            //
-            // -10 equals single line space
-            // -20 removes spacing
-            // lev applied identation
-            //
             if (type.is(a, 'template_attribute')) {
 
-              // len = len + data.token[a].length + 1;
+              level.push(-10);
 
-              // This condition is used to determine if a Liquid attribute sibling token
-              // is appended with a - dash character, for example:
-              //
-              // <div data-{{ x }}-x="*"></div>
-              // <div {% unless x -%}{{ x }}{%- endunless -%}></div>
+              if (isLiquidStartTag(data.token[a])) {
 
-              // Explained:
-              //
-              // Reference (a) is within "{{ x }}" and we will  check the prev token for
-              // "data-" and ensure that the attribute does not apply identation.
-              //
-              if (
-                (/^({[{%]|[=-])/.test(data.token[a + 1]) || /^({[{%]|[=-])/.test(data.token[a - 1]))
-                && (data.token[a].charCodeAt(1) === cc.PER || data.token[a].charCodeAt(1) === cc.LCB
-                )
-              ) {
+                level[a] = -20;
 
-                if (options.forceAttribute) {
+              } else if (isLiquidElseTag(data.token[a])) {
 
-                  // Previous sibling ends with a dash character, eg: <div data-^
-                  // We want to prevent forcing it onto a newline
-                  //
-                  if (
-                    data.token[a - 1].charCodeAt(data.token[a - 1].length - 1) === cc.DSH ||
-                    /^({[{%]|[=-])/.test(data.token[a + 1])
-                  ) {
-                    level.push(-20);
-                  } else {
-                    level.push(lev);
-                  }
-                } else {
-                  if (type.not(a + 1, 'attribute') && type.not(a + 1, 'template_attribute')) {
-                    level.push(-10);
-                  } else {
-                    level.push(-20);
-                  }
-                }
+                level[a - 1] = -20;
 
-                // len = len + data.token[a].length + 1;
+              } else if (isLiquidOutputTag(data.token[a])) {
 
-                // if (data.token[a].charCodeAt(1) === cc.DSH) level[a] = level[data.begin[a]] - 1;
-                // console.log(data.token[a]);
+                if (type.is(a + 1, 'attribute') && type.is(a + 1, 'template_attribute')) level[a] = -20;
 
               } else {
 
-                level.push(-10);
-
-                // level.push(lev);
-
-                // len = len + data.token[a].length + 1;
-
+                level[a - 1] = -20;
               }
 
-            } else if (type.is(a, 'comment_attribute')) {
+            } else if (data.types[a] === 'comment_attribute') {
 
               level.push(lev);
 
-            } else if (type.idx(a, 'start') > 0) {
+            } else if (data.types[a].indexOf('start') > 0) {
 
               attStart = true;
 
               if (a < c - 2 && type.idx(a + 2, 'attribute') > 0) {
 
                 level.push(-20);
-
                 a = a + 1;
                 externalIndex[a] = a;
 
@@ -753,13 +706,12 @@ export default (() => {
                   a = a + 1;
                   external();
                 }
+
               }
 
-            } else if (type.idx(a, 'end') > 0) {
+            } else if (data.types[a].indexOf('end') > 0) {
 
-              if (level[a - 1] !== -20) {
-                level[a - 1] = level[data.begin[a]] - 1;
-              }
+              if (level[a - 1] !== -20) level[a - 1] = level[data.begin[a]] - 1;
 
               if (data.lexer[a + 1] !== lexer) {
                 level.push(-20);
@@ -768,65 +720,57 @@ export default (() => {
               }
 
             } else {
+
               level.push(lev);
             }
 
             earlyexit = true;
 
-          } else if (type.is(a, 'attribute')) {
+          } else if (data.types[a] === 'attribute') {
 
-            // The current token is a liquid tag or object
-            // and is being used as a HTML atrribute definition
-            //
-            // For example:
-            //
-            // * <div {% if x %}..{% endif %}></div>
-            // * <div {{ x }}></div>
-            //
-            if (isLiquid(data.token[a], 1)) {
+            len = len + data.token[a].length + 1;
 
-              // len = len + data.token[a].length + 1;
-              a = a + 1;
-              externalIndex[a] = a;
-            }
-
-            if (options.preserveAttribute) {
+            if (options.preserveAttributes === true) {
 
               level.push(-10);
 
             } else if (
-              data.token[a][data.token[a].length - 1] === '"' ||
-              data.token[a][data.token[a].length - 1] === "'"
+              options.forceAttribute === true ||
+              attStart === true || (
+                a < c - 1 && type.not(a + 1, 'template_attribute')
+                && type.idx(a + 1, 'attribute') > 0
+              )
             ) {
 
-              // level[a] = level[data.begin[a]]  1;
-              level.push(-10);
+              level.push(lev);
 
-            } else if (options.forceAttribute || attStart || (
-              a < c - 1
-              && type.is(a + 1, 'template_attribute')
-              && type.idx(a + 1, 'attribute') > 0
-            )) {
-
-              // <div data-{{ tag }}-attr="x"></div>
-              // we are at data-
-              if (data.token[a][data.token[a].length - 1] === '-' && isLiquid(data.token[a + 1], 1)) {
-
-                level.push(-20);
-
-              } else {
-
-                level.push(-20);
-
-              }
             } else {
 
-              level.push((options.forceAttribute || attStart) ? lev : -20);
+              level.push(-10);
+
+              if ((
+                data.token[a].charCodeAt(data.token[a].length - 1) === cc.DSH ||
+                data.token[a].charCodeAt(data.token[a].length - 1) === cc.EQS
+              )) {
+
+                level[a] = -20;
+
+              } else if ((
+                data.token[a].charCodeAt(0) === cc.DSH ||
+                data.token[a].charCodeAt(0) === cc.EQS
+              )) {
+
+                level[a - 1] = -20;
+
+              } else if (isLiquidEndTag(data.token[a + 1])) {
+
+                level[a] = -20;
+
+              }
 
             }
 
           } else if (data.begin[a] < parent + 1) {
-
             break;
           }
 
@@ -834,9 +778,7 @@ export default (() => {
 
         } while (a < c);
 
-        /* -------------------------------------------- */
-        /* APPLY ATTRIBUTE INDENTATION                  */
-        /* -------------------------------------------- */
+        console.log(lqa);
 
         a = a - 1;
 
@@ -844,15 +786,14 @@ export default (() => {
           level[a - 1] > 0
           && type.idx(a, 'end') > 0
           && type.idx(a, 'attribute') > 0
-          && !type.is(a, 'singleton')
-          && plural
+          && type.not(parent, 'singleton')
+          && plural === true
         ) {
-
           level[a - 1] = level[a - 1] - 1;
-
         }
 
         if (level[a] !== -20) {
+
           if (
             options.language === 'jsx'
             && type.idx(parent, 'start') > -1
@@ -861,7 +802,6 @@ export default (() => {
             level[a] = lev;
           } else {
             level[a] = level[parent];
-
           }
         }
 
@@ -873,10 +813,10 @@ export default (() => {
         }
 
         if (
-          earlyexit === null ||
+          earlyexit === true ||
           options.preserveAttributes === true ||
-          data.token[parent] === '<%xml%>' ||
-          data.token[parent] === '<?xml?>'
+          token.is(parent, '<%xml%>') ||
+          token.is(parent, '<?xml?>')
         ) {
           count = 0;
           return;
@@ -884,13 +824,10 @@ export default (() => {
 
         y = a;
 
-        // Second, Ensure tag contains more than one attribute
-        //
+        // second, ensure tag contains more than one attribute
         if (y > parent + 1) {
 
-          // Finally, indent attributes if tag length exceeds
-          // the wrap limit
-          //
+          // finally, indent attributes if tag length exceeds the wrap limit
           if (options.selfCloseSpace === false) len = len - 1;
 
           if (
@@ -906,22 +843,20 @@ export default (() => {
               if (data.token[y].length > options.wrap && (/\s/).test(data.token[y])) wrap(y);
 
               y = y - 1;
-
               level[y] = lev;
 
             } while (y > parent);
-
           }
         } else if (
-          type.is(a, 'attribute')
-          && options.wrap > 0
+          options.wrap > 0
+          && data.types[a] === 'attribute'
           && data.token[a].length > options.wrap
-          && (/\s/).test(data.token[a])
+          && (/\s/).test(data.token[a]) === true
         ) {
 
           wrap(a);
-        }
 
+        }
       };
 
       /* -------------------------------------------- */
@@ -939,26 +874,22 @@ export default (() => {
 
           if (data.token[a].toLowerCase().indexOf('<!doctype') === 0) level[a - 1] = indent;
 
-          if (data.types[a].indexOf('attribute') > -1) {
+          else if (data.types[a].indexOf('attribute') > -1) {
 
             attribute();
 
           } else if (type.is(a, 'comment')) {
 
             if (comstart < 0) comstart = a;
-            if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) comment();
-
+            if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) {
+              comment();
+            }
           } else if (type.not(a, 'comment')) {
 
             next = nextIndex();
 
             if (type.is(next, 'end') || type.is(next, 'template_end')) {
 
-              // When tags are expressed on a single line
-              // and the content of those tags contain no whitespace
-              // then the single line expression is respected.
-              // It's here where we need to fix or adjust that logic
-              //
               indent = indent - 1;
 
               if (type.is(next, 'template_end') && type.is(data.begin[next] + 1, 'template_else')) {
@@ -998,7 +929,41 @@ export default (() => {
 
               count = count + data.token[a].length;
 
-              if (data.lines[next] > 0 && type.is(next, 'script_start')) {
+              if (type.is(a, 'template') && isLiquidOutputTag(data.token[a])) {
+
+                level.push(indent);
+
+                const pos: number = data.token[a].indexOf(lf);
+
+                if (pos > 0) {
+
+                  const linez = (level[a - 1] * options.indentSize) + (
+                    data.token[a].charCodeAt(2) === cc.DSH
+                      ? options.indentSize
+                      : options.indentSize - 1
+                  );
+
+                  console.log(
+                    linez
+
+                  );
+                  const linesout = [];
+
+                  let iidx = 0;
+
+                  do {
+
+                    linesout.push(' ');
+                    iidx = iidx + 1;
+
+                  } while (iidx < linez);
+
+                  data.token[a] = data.token[a].replace(/\n/g, (n) => {
+                    return n + linesout.join('');
+                  });
+
+                }
+              } else if (data.lines[next] > 0 && type.is(next, 'script_start')) {
 
                 level.push(-10);
 
@@ -1070,8 +1035,10 @@ export default (() => {
               )) {
 
                 level.push(-20);
+
               } else {
                 level.push(indent);
+
               }
             } else if (options.forceIndent === false && data.lines[next] === 0 && (
               type.is(next, 'content') ||
@@ -1216,8 +1183,6 @@ export default (() => {
                 }
               }
 
-              console.log(a);
-
               if (type.idx(bb, 'start') > -1) start = true;
 
             } while (bb > 0);
@@ -1236,6 +1201,7 @@ export default (() => {
           build.push(lines[aa]);
           build.push(newline(lev));
           aa = aa + 1;
+
         } while (aa < len);
 
         data.lines[a + 1] = line;
@@ -1246,6 +1212,7 @@ export default (() => {
         } else if (levels[a] > -1) {
           build.push(newline(levels[a]));
         }
+
       };
 
       function attributeEnd () {
@@ -1290,6 +1257,11 @@ export default (() => {
 
         data.token[y - 1] = data.token[y - 1] + space + end[0];
 
+        // PATCH
+        //
+        // Fixes attributes being forced when proceeded by a comment
+        if (type.is(y, 'comment') && data.lines[a + 1] < 2) levels[a] = -10;
+
       };
 
       do {
@@ -1329,6 +1301,7 @@ export default (() => {
               lastLevel = levels[a];
               build.push(newline(levels[a]));
             }
+
           }
 
         } else {

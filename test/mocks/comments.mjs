@@ -12,13 +12,32 @@ export const liquid_comment_formatting = `
 <p> The below comment should be untouched as
 there is no space characters.</p>
 
-<div class="foo">
-{%-comment -%} one{%- endcomment -%}
-</div>
+{% comment %}example{% endcomment %}
+{%comment%}example{%endcomment%}
+{%- comment %}example{% endcomment %}
+{% comment -%}example{% endcomment %}
+{%- comment -%}example{% endcomment %}
+{%-comment-%}example{%endcomment%}
+{%-comment-%}example{%-endcomment-%}
+{%-comment-%}example {%-endcomment-%}
 
-{% comment %} two {% endcomment %}
+{{foo}}
 
+{%for i in bar%}
+{%
+  endfor
+  %}
 
-<div class="bar"> <div>foo </div></div>
+<h1>Testing indented comments</h1>.
+<p>The below comment should be indented onto a newline</p>{%- comment -%} example {%- endcomment -%}
 
+{% comment %} example {% endcomment %}
+
+{%-comment-%} example{%-endcomment-%}
+
+{%- comment -%}
+  example {%- endcomment -%}
+
+{%- comment -%} example
+{%- endcomment -%}
 `;

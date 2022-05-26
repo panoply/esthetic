@@ -1,4 +1,9 @@
 import { Sparser, Language, OptionDef, Parsed } from './sparser';
+import { IMarkupOptions, IScriptOptions, IStyleOptions } from '../types/options';
+export type ValueOf<
+  ObjectType,
+  ValueType extends keyof ObjectType = keyof ObjectType
+> = ObjectType[ValueType];
 
 export interface MappedRules {
   arrayFormat: 'format_array',
@@ -58,14 +63,15 @@ export interface Meta {
 }
 
 export interface PDLanguage {
-    auto(sample:string, defaultLang:string): string[];
-    nameproper(input:string): string;
-    setlexer(input:string):string;
+  auto(sample:string, defaultLang:string): string[];
+  nameproper(input:string): string;
+  setlexer(input:string):string;
 }
 
 export interface PrettyDiffOptions {
   arrayFormat?: 'default' | 'indent' | 'inline',
   attemptCorrection?: boolean,
+  attributeGlue?: boolean;
   attributeSort?: boolean,
   attributeSortList?: string[],
   braceAllman?: boolean,
@@ -90,13 +96,13 @@ export interface PrettyDiffOptions {
   indentChar?: ' ' | '\u0009',
   indentSize?: number,
   languageName?: string,
-  language?: 'auto' | 'html' | 'css' | 'javascript' | 'typescript' | 'json' | 'text' | 'jsx',
+  language?: 'auto' | 'html' | 'css' | 'javascript' | 'typescript' | 'json' | 'text' | 'jsx' | string,
   languageDefault?: string,
-  lexer?: 'auto' | 'markup' | 'style' | 'script' | 'text',
+  lexer?: 'auto' | 'markup' | 'style' | 'script' | 'text' | string,
   lexerOptions?: {
-    markup?: object,
-    script?: object,
-    style?: object
+    markup?: IMarkupOptions,
+    script?: IStyleOptions,
+    style?: IScriptOptions
   },
   mode?: 'beautify' | 'diff' | 'parse'
   methodChain?: number,
@@ -105,7 +111,7 @@ export interface PrettyDiffOptions {
   noLeadZero?: boolean,
   noSemicolon?: boolean,
   objectIndent?: 'default' | 'indent' | 'inline',
-  preserveAttribute?: boolean,
+  preserveAttributes?: boolean,
   preserveComment?: boolean,
   preserveLine?: number,
   preserveText?: boolean,

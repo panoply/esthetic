@@ -125,20 +125,19 @@ export interface JSONEnforced extends SharedEnforced {
 
 export interface IJSONOptions extends SharedOptions {
   /**
+   * **Default:** `false`
+   *
    * This option will alphabetically sort object properties in JSON objects.
-   *
-   * ---
-   * **Description**
-   *
-   * Sorts markup attributes and properties by key name in script and style
-   *
-   * @default false
    */
   objectSort?: boolean
 
   /**
+   * **Default:** `true`
+   *
    * This option will determine how arrays cotained on objects will
-   * be formatted.
+   * be formatted. If opening curly braces should exist on the same
+   * line as their condition or be forced onto a new line.
+   * (Allman style indentation).
    *
    * ---
    *
@@ -183,20 +182,14 @@ export interface IJSONOptions extends SharedOptions {
    *    ]
    * }
    * ```
-   *
-   * ---
-   *
-   * **Description**
-   *
-   * Determines if opening curly braces will exist on
-   * the same line as their condition or be forced onto a new line.
-   * (Allman style indentation).
-   *
    */
   braceAllman?: boolean,
 
   /**
-   * This will create a newline before and after objects values, for example:
+   * **Default:** `false`
+   *
+   * If true an empty line will be inserted after opening curly braces
+   * and before closing curly braces.
    *
    * ---
    *
@@ -233,31 +226,20 @@ export interface IJSONOptions extends SharedOptions {
    *   }
    * }
    * ```
-   *
-   * ---
-   *
-   * **Description**
-   *
-   * If true an empty line will be inserted after opening curly braces
-   * and before closing curly braces.
-   *
    */
   bracePadding?: boolean,
 
   /**
-   * Controls how arrays on objects are formatted.
+   * **Default:** `default`
    *
-   * ---
-   *
-   * **Description**
-   *
-   * Determines if all array indexes should be indented, never indented,
-   * or left to the default._
+   * Controls how arrays on objects are formatted. This rules will
+   * determines if all array indexes should be indented, never indented,
+   * or left to the default.
    *
    * **Options**
    *
    * - `default`
-   *  Default formatting (**Selected**)
+   *  Default formatting (default)
    *
    * - `indent`
    *  "Always indent each index of an array
@@ -270,28 +252,19 @@ export interface IJSONOptions extends SharedOptions {
   arrayFormat?: 'default' | 'indent' | 'inline',
 
   /**
+   * **Default:** `default`
+   *
    * Controls how arrays on objects are formatted. We will exclude
-   * the `inline` option to prevent unreadable objects.
-   *
-   * ---
-   *
-   * **Description**
-   *
-   * Determines if all object keys should be indented, never indented,
-   * or left to the default._
+   * the `inline` option to prevent unreadable objects. If all object
+   * keys should be indented, never indented, or left to the default.
    *
    * **Options**
    *
-   * > `default` (**Selected**)
+   * > `default` (default)
    *  Default formatting
    *
    * > `indent`
    *  "Always indent each index of an array
-   *
-   * > `inline` (**Disabled**)
-   *  Ensure all array indexes appear on a single line
-   *
-   * @default 'default'
    */
   objectIndent?: 'default' | 'indent',
 }

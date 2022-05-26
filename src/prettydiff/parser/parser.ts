@@ -3,23 +3,18 @@ import { sparser } from './sparser';
 
 function parser () {
 
-  const langstore = [
-    sparser.options.language,
-    sparser.options.lexer
-  ];
+  const langstore = [ sparser.options.language, sparser.options.lexer ];
 
   parse.count = -1;
   parse.linesSpace = 0;
   parse.lineNumber = 1;
-  parse.data = {
-    begin: [],
-    ender: [],
-    lexer: [],
-    lines: [],
-    stack: [],
-    token: [],
-    types: []
-  };
+  parse.data.begin = [];
+  parse.data.ender = [];
+  parse.data.lexer = [];
+  parse.data.lines = [];
+  parse.data.stack = [];
+  parse.data.token = [];
+  parse.data.types = [];
 
   parse.datanames = [
     'begin',
@@ -40,8 +35,6 @@ function parser () {
   };
 
   if (sparser.options.language === 'auto' || sparser.options.lexer === 'auto') {
-
-    // @ts-ignore
     const lang = sparser.libs.language.auto(sparser.options.source, 'javascript');
     if (sparser.options.language === 'auto') sparser.options.language = lang[0];
     if (sparser.options.lexer === 'auto') sparser.options.lexer = lang[1];
@@ -53,13 +46,11 @@ function parser () {
     parse.references = [ [] ];
 
     sparser.parseError = '';
-
-    // @ts-ignore
     sparser.options.lexerOptions = sparser.options.lexerOptions || {};
 
-    Object.keys(sparser.lexers).forEach((value) => {
-      sparser.options.lexerOptions[value] = sparser.options.lexerOptions[value] || {};
-    });
+    for (const lexer of Object.keys(sparser.lexers)) {
+      sparser.options.lexerOptions[lexer] = sparser.options.lexerOptions[lexer] || {};
+    }
 
     // This line parses the code using a lexer file
     sparser.lexers[sparser.options.lexer](`${sparser.options.source} `);
@@ -71,7 +62,7 @@ function parser () {
   }
 
   // validate that all the data arrays are the same length
-  (function () {
+  {
 
     let a = 0;
     let b = 0;
@@ -98,12 +89,13 @@ function parser () {
 
     } while (a < c - 1);
 
-  })();
+  }
 
   // Fix begin values.
   // They must be reconsidered after reordering from object sort
   if (
-    parse.data.begin.length > 0 && (
+    parse.data.begin.length > 0
+    && (
       sparser.options.lexerOptions[sparser.options.lexer].objectSort === true ||
       sparser.options.lexerOptions.markup.tagSort === true
     )
@@ -112,7 +104,9 @@ function parser () {
   }
 
   if (sparser.options.format === 'minimal') {
+
     let a = 0;
+
     const data = [];
     const len = parse.count + 1;
 
@@ -128,6 +122,7 @@ function parser () {
       ]);
 
       a = a + 1;
+
     } while (a < len);
 
     return data;
@@ -161,12 +156,12 @@ function parser () {
 
   if (sparser.options.format === 'testprep') {
 
-    let a = 0;
+    if (sparser.parseError !== '') return sparser.parseError;
 
     const data = [];
     const len = parse.count + 1;
 
-    if (sparser.parseError !== '') return sparser.parseError;
+    let a = 0;
 
     do {
 

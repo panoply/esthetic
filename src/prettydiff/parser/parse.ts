@@ -1,69 +1,37 @@
 /* eslint no-unmodified-loop-condition: "off" */
-import { Parse } from '../../types/sparser';
+import { Parse, Types, IRecord } from '../../types/sparser';
 import { sparser } from './sparser';
 
-const parse: Parse = {
+export { sparser };
 
-  /**
-   * Stores the final index location of the data arrays
-   */
-  count: -1,
+export const parse = (() => {
 
-  /**
-   * Stores the various data arrays of the parse table
-   */
-  data: {
-    begin: []
-    , ender: []
-    , lexer: []
-    , lines: []
-    , stack: []
-    , token: []
-    , types: []
-  },
+  const parser: Parse = Object.create(null);
 
-  /**
-   *  Stores the name of the data arrays.  This is used for internal automation
-   */
-  datanames: [
-    'begin'
-    , 'ender'
-    , 'lexer'
-    , 'lines'
-    , 'stack'
-    , 'token'
-    , 'types'
-  ],
+  parser.data = Object.create(null);
+  parser.data.begin = [];
+  parser.data.ender = [];
+  parser.data.lexer = [];
+  parser.data.lines = [];
+  parser.data.stack = [];
+  parser.data.token = [];
+  parser.data.types = [];
+  parser.references = [ [] ];
+  parser.structure = [ [ 'global', -1 ] ];
+  parser.datanames = [ 'begin', 'ender', 'lexer', 'lines', 'stack', 'token', 'types' ];
+  parser.count = -1;
+  parser.lineNumber = 1;
+  parser.linesSpace = 0;
 
-  // Stores the current line number from the input string for logging parse errors
-  lineNumber: 1,
+  parser.concat = function (data, array) {
+    for (const v of parser.datanames) data[v] = data[v].concat(array[v]);
+    if (data === parser.data) parser.count = data.token.length - 1;
+  };
 
-  // Stores the 'lines' value before the next token
-  linesSpace: 0,
+  parser.objectSort = function (data) {
 
-  // Stores the declared variable names for the script lexer.  This must be stored outside the script lexer since some languages recursive use of the script lexer
-  references: [
-    []
-  ],
-
-  // Stores the stack and begin values by stacking depth
-  structure: [
-    [ 'global', -1 ]
-  ],
-
-  // An extension of Array.prototype.concat
-  // to work across the data structure.
-  // This is an expensive operation.
-  concat (data, array) {
-    for (const v of parse.datanames) data[v] = data[v].concat(array[v]);
-    if (data === parse.data) parse.count = data.token.length - 1;
-  },
-
-  // The function that sorts object properties
-  objectSort (data) {
-
-    let cc = parse.count;
-    let dd = parse.structure[parse.structure.length - 1][1];
+    let cc = parser.count;
+    let dd = parser.structure[parser.structure.length - 1][1];
     let ee = 0;
     let ff = 0;
     let gg = 0;
@@ -74,21 +42,21 @@ const parse: Parse = {
     let keylen = 0;
     const global = (
       data.lexer[cc] === 'style'
-      && parse.structure[parse.structure.length - 1][0] === 'global'
+      && parser.structure[parser.structure.length - 1][0] === 'global'
     );
 
     const keys = [];
-    const length = parse.count;
+    const length = parser.count;
     const begin = dd;
     const style = data.lexer[cc] === 'style';
     const delim = style === true
       ? [ ';', 'separator' ]
       : [ ',', 'separator' ];
 
-    const lines = parse.linesSpace;
+    const lines = parser.linesSpace;
     const stack = global === true
       ? 'global'
-      : parse.structure[parse.structure.length - 1][0];
+      : parser.structure[parser.structure.length - 1][0];
 
     function sort (x, y) {
 
@@ -324,7 +292,7 @@ const parse: Parse = {
 
               } else {
 
-                parse.push(
+                parser.push(
                   store, {
                     begin: data.begin[ee]
                     , ender: data.begin[ee]
@@ -383,18 +351,18 @@ const parse: Parse = {
 
             ee = ee + 1;
 
-            parse.splice({
+            parser.splice({
               data: store
               , howmany: 0
               , index: ee
               , record: {
                 begin: begin
-                , ender: parse.count
+                , ender: parser.count
                 , lexer: store.lexer[ee - 1]
                 , lines: 0
                 , stack: stack
                 , token: delim[0]
-                , types: delim[1]
+                , types: delim[1] as Types
               }
             });
 
@@ -406,45 +374,43 @@ const parse: Parse = {
 
         } while (dd < keylen);
 
-        parse.splice({
+        parser.splice({
           data: data
           , howmany: ff
           , index: cc + 1
         });
 
-        parse.linesSpace = lines;
-        parse.concat(data, store);
+        parser.linesSpace = lines;
+        parser.concat(data, store);
 
       }
     }
 
-  },
+  };
 
-  // An extension of Array.prototype.pop to work
-  // across the data structure
-  pop (data) {
+  parser.pop = function (data) {
 
-    const output = {
-      begin: data.begin.pop()
-      , ender: data.ender.pop()
-      , lexer: data.lexer.pop()
-      , lines: data.lines.pop()
-      , stack: data.stack.pop()
-      , token: data.token.pop()
-      , types: data.types.pop()
-    };
+    const output: IRecord = Object.create(null);
 
-    if (data === parse.data) parse.count = parse.count - 1;
+    output.begin = data.begin.pop();
+    output.ender = data.ender.pop();
+    output.lexer = data.lexer.pop();
+    output.lines = data.lines.pop();
+    output.stack = data.stack.pop();
+    output.token = data.token.pop();
+    output.types = data.types.pop();
+
+    if (data === parser.data) parser.count = parser.count - 1;
+
     return output;
-  },
 
-  // An extension of Array.prototype.push to work
-  // across the data structure
-  push (data, record, structure) {
+  };
+
+  parser.push = function (data, record, structure) {
 
     function ender () {
 
-      let a = parse.count;
+      let a = parser.count;
 
       const begin = data.begin[a];
 
@@ -463,7 +429,7 @@ const parse: Parse = {
         // Sorting can result in a token whose begin value is greater than either
         // Its current index or the index of the end token, which results in
         // an endless loop. These end values are addressed at the end of
-        // the "parser" function with parse.sortCorrection
+        // the "parser" function with parser.sortCorrection
         return;
       }
 
@@ -477,7 +443,7 @@ const parse: Parse = {
           )
         ) {
 
-          data.ender[a] = parse.count;
+          data.ender[a] = parser.count;
         } else {
 
           a = data.begin[a];
@@ -487,16 +453,16 @@ const parse: Parse = {
 
       } while (a > begin);
 
-      if (a > -1) data.ender[a] = parse.count;
+      if (a > -1) data.ender[a] = parser.count;
     };
 
     // parse_push_datanames
-    parse.datanames.forEach(value => data[value].push(record[value]));
+    parser.datanames.forEach(value => data[value].push(record[value]));
 
-    if (data === parse.data) {
+    if (data === parser.data) {
 
-      parse.count = parse.count + 1;
-      parse.linesSpace = 0;
+      parser.count = parser.count + 1;
+      parser.linesSpace = 0;
 
       if (record.lexer !== 'style') {
         if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, '') === '') {
@@ -509,7 +475,7 @@ const parse: Parse = {
       if (record.types === 'start' || record.types.indexOf('_start') >
         0) {
 
-        parse.structure.push([ structure, parse.count ]);
+        parser.structure.push([ structure, parser.count ]);
 
       } else if (record.types === 'end' || record.types.indexOf('_end') >
         0) {
@@ -520,33 +486,33 @@ const parse: Parse = {
 
         let case_ender = 0;
 
-        if (parse.structure.length > 2 && (
-          data.types[parse.structure[parse.structure.length - 1][1]] === 'else' ||
-          data.types[parse.structure[parse.structure.length - 1][1]].indexOf('_else') > 0
+        if (parser.structure.length > 2 && (
+          data.types[parser.structure[parser.structure.length - 1][1]] === 'else' ||
+          data.types[parser.structure[parser.structure.length - 1][1]].indexOf('_else') > 0
         ) && (
-          data.types[parse.structure[parse.structure.length - 2][1]] === 'start' ||
-          data.types[parse.structure[parse.structure.length - 2][1]].indexOf('_start') > 0
+          data.types[parser.structure[parser.structure.length - 2][1]] === 'start' ||
+            data.types[parser.structure[parser.structure.length - 2][1]].indexOf('_start') > 0
         ) && (
-          data.types[parse.structure[parse.structure.length - 2][1] + 1] === 'else' ||
-          data.types[parse.structure[parse.structure.length - 2][1] + 1].indexOf('_else') > 0
+          data.types[parser.structure[parser.structure.length - 2][1] + 1] === 'else' ||
+            data.types[parser.structure[parser.structure.length - 2][1] + 1].indexOf('_else') > 0
         )) {
 
-          parse.structure.pop();
-          data.begin[parse.count] = parse.structure[parse.structure.length - 1][1];
-          data.stack[parse.count] = parse.structure[parse.structure.length - 1][0];
-          data.ender[parse.count - 1] = parse.count;
-          case_ender = data.ender[data.begin[parse.count] + 1];
+          parser.structure.pop();
+          data.begin[parser.count] = parser.structure[parser.structure.length - 1][1];
+          data.stack[parser.count] = parser.structure[parser.structure.length - 1][0];
+          data.ender[parser.count - 1] = parser.count;
+          case_ender = data.ender[data.begin[parser.count] + 1];
 
         }
 
         ender();
 
         if (case_ender > 0) {
-          data.ender[data.begin[parse.count] + 1] =
-          case_ender;
+          data.ender[data.begin[parser.count] + 1] =
+            case_ender;
         }
 
-        parse.structure.pop();
+        parser.structure.pop();
 
       } else if (
         record.types === 'else' ||
@@ -555,33 +521,31 @@ const parse: Parse = {
 
         if (structure === '') structure = 'else';
         if (
-          parse.count > 0 && (
-            data.types[parse.count - 1] === 'start' ||
-            data.types[parse.count - 1].indexOf('_start') > 0
+          parser.count > 0 && (
+            data.types[parser.count - 1] === 'start' ||
+            data.types[parser.count - 1].indexOf('_start') > 0
           )
         ) {
 
-          parse.structure.push([ structure, parse.count ]);
+          parser.structure.push([ structure, parser.count ]);
         } else {
 
           ender();
 
           if (structure === '') {
-            parse.structure[parse.structure.length - 1] = [ 'else', parse
+            parser.structure[parser.structure.length - 1] = [ 'else', parse
               .count ];
           } else {
-            parse.structure[parse.structure.length - 1] = [ structure
-              , parse.count ];
+            parser.structure[parser.structure.length - 1] = [ structure
+              , parser.count ];
           }
 
         }
       }
     }
-  },
+  };
 
-  // A custom sort tool that is a bit more intelligent and
-  // multidimensional than Array.prototype.sort
-  safeSort (array, operation, recursive) {
+  parser.safeSort = function (array, operation, recursive) {
 
     // parse_safeSort_extref
     // worthless function for backwards compatibility with older versions of V8 node.
@@ -815,19 +779,17 @@ const parse: Parse = {
 
     return ascend(array);
 
-  },
+  };
 
-  // This functionality provides corrections to the
-  // "begin" and "ender" values after use of objectSort
-  sortCorrection (start, end) {
+  parser.sortCorrection = function (start, end) {
 
     let a = start;
     let endslen = -1;
 
-    const data = parse.data;
+    const data = parser.data;
     const ends = [];
-    const structure = (parse.structure.length < 2) ? [ -1 ] : [ parse
-      .structure[parse.structure.length - 2][1] ];
+    const structure = (parser.structure.length < 2) ? [ -1 ] : [ parse
+      .structure[parser.structure.length - 2][1] ];
 
     // This first loop solves for the begin values
     do {
@@ -893,21 +855,19 @@ const parse: Parse = {
       }
 
     } while (a > start);
-  },
+  };
 
-  // A simple tool to take note of whitespace between tokens
-  // parseSpacer
-  spacer (args) {
+  parser.spacer = function (args) {
 
     // * array - the characters to scan
     // * index - the index to start scanning from
     // * end   - the length of the array, to break the loop
-    parse.linesSpace = 1;
+    parser.linesSpace = 1;
 
     do {
       if (args.array[args.index] === '\n') {
-        parse.linesSpace = parse.linesSpace + 1;
-        parse.lineNumber = parse.lineNumber + 1;
+        parser.linesSpace = parser.linesSpace + 1;
+        parser.lineNumber = parser.lineNumber + 1;
       }
 
       if ((/\s/).test(args.array[args.index + 1]) === false) break;
@@ -918,66 +878,9 @@ const parse: Parse = {
 
     return args.index;
 
-  },
+  };
 
-  // An extension of Array.prototype.splice to work across
-  // the data structure
-  splice (spliceData) {
-
-    const finalItem = [
-      parse.data.begin[parse.count]
-      , parse.data.token[parse.count]
-    ];
-
-    // * data    - The data object to alter
-    // * howmany - How many indexes to remove
-    // * index   - The index where to start
-    // * record  - A new record to insert
-    if (spliceData.record !== undefined && spliceData.record.token !==
-      '') {
-
-      // parse_splice_datanames
-      parse.datanames.forEach((value) => {
-        spliceData.data[value].splice(
-          spliceData.index
-          , spliceData.howmany
-          , spliceData.record[value]
-        );
-      });
-
-      if (spliceData.data === parse.data) {
-
-        parse.count = (parse.count - spliceData.howmany) + 1;
-
-        if (
-          finalItem[0] !== parse.data.begin[parse.count] ||
-          finalItem[1] !== parse.data.token[parse.count]
-        ) {
-          parse.linesSpace = 0;
-        }
-      }
-
-      return;
-    }
-
-    // parse_splice_datanames
-    parse.datanames.forEach((value) => {
-      spliceData.data[value].splice(
-        spliceData.index
-        , spliceData.howmany
-      );
-    });
-
-    if (spliceData.data === parse.data) {
-      parse.count = parse.count - spliceData.howmany;
-      parse.linesSpace = 0;
-    }
-
-  },
-
-  // Parsing block comments and simultaneously applying word wrap
-  // parse_wrapCommentBlock
-  wrapCommentBlock (config) {
+  parser.wrapCommentBlock = function (config) {
 
     let a = config.start;
     let b = 0;
@@ -1002,30 +905,19 @@ const parse: Parse = {
     const lf = (sparser.options.crlf === true) ? '\r\n' : '\n';
     const regEsc = (/(\/|\\|\||\*|\[|\]|\{|\})/g);
 
-    const regEnd = new RegExp(
-      `\\s*${config.terminator.replace(regEsc, sanitize)}$`
-    );
+    const regEnd = new RegExp(`\\s*${config.terminator.replace(regEsc, sanitize)}$`);
 
-    const regIgnore = new RegExp(
-      `^(${config.opening.replace(regEsc, sanitize)}\\s*@prettify\\s*ignore:start)`
-    );
+    const regIgnore = new RegExp(`^(${config.opening.replace(regEsc, sanitize)}\\s*@prettify\\s*ignore:start)`);
 
-    const regStart = new RegExp(
-      `(${config.opening.replace(regEsc, sanitize)}\\s*)`
-    );
+    const regStart = new RegExp(`(${config.opening.replace(regEsc, sanitize)}\\s*)`);
 
     const wrap = sparser.options.wrap;
 
     // parse_wrapCommentBlock_emptyLines
     function emptyLines () {
 
-      if (/^\s+$/.test(lines[b + 1]) === true || lines[b + 1] === '') {
-        do {
-          b = b + 1;
-        } while (
-          b < len
-          && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === '')
-        );
+      if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === '') {
+        do { b = b + 1; } while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === ''));
       }
 
       if (b < len - 1) second.push('');
@@ -1036,9 +928,7 @@ const parse: Parse = {
 
       build.push(config.chars[a]);
 
-      if (config.chars[a] === '\n') {
-        parse.lineNumber = parse.lineNumber + 1;
-      }
+      if (config.chars[a] === '\n') parser.lineNumber = parser.lineNumber + 1;
 
       if (
         config.chars[a] === term
@@ -1127,10 +1017,8 @@ const parse: Parse = {
 
     if (
       a === config.end ||
-      wrap < 1 || (
-        output.length <= wrap
-        && output.indexOf('\n') < 0
-      ) ||
+      wrap < 1 ||
+      (output.length <= wrap && output.indexOf('\n') < 0) ||
       sparser.options.preserveComment === true || (
         config.opening === '/*'
         && output.indexOf('\n') > 0
@@ -1138,24 +1026,17 @@ const parse: Parse = {
         && (/\n(?!(\s*\*))/).test(output) === false
       )
     ) {
+
       return [ output, a ];
     }
 
     b = config.start;
 
-    if (
-      b > 0
-      && config.chars[b - 1] !== '\n'
-      && (/\s/).test(config.chars[b - 1])
-    ) {
+    if (b > 0 && config.chars[b - 1] !== '\n' && (/\s/).test(config.chars[b - 1])) {
 
       do {
         b = b - 1;
-      } while (
-        b > 0
-        && config.chars[b - 1] !== '\n'
-        && (/\s/).test(config.chars[b - 1]) === true
-      );
+      } while (b > 0 && config.chars[b - 1] !== '\n' && (/\s/).test(config.chars[b - 1]));
     }
 
     space = config.chars.slice(b, config.start).join('');
@@ -1203,19 +1084,14 @@ const parse: Parse = {
 
       } else {
 
-        lines[b] = (config.opening === '/*' && lines[b].indexOf('/*') !== 0) ? `   ${
-          lines[b]
-            .replace(/^\s+/, '')
-            .replace(/\s+$/, '')
-            .replace(/\s+/g, ' ')
-        }` : `${
-          lines[b]
-            .replace(/^\s+/, '')
-            .replace(/\s+$/, '')
-            .replace(/\s+/g, ' ')
-        }`;
+        lines[b] = (config.opening === '/*' && lines[b].indexOf('/*') !== 0)
+          ? `   ${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`
+          : `${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`;
 
-        twrap = (b < 1) ? wrap - (config.opening.length + 1) : wrap;
+        twrap = (b < 1)
+          ? wrap - (config.opening.length + 1)
+          : wrap;
+
         c = lines[b].length;
         d = lines[b].replace(/^\s+/, '').indexOf(' ');
 
@@ -1339,19 +1215,20 @@ const parse: Parse = {
           && lines[b + 1].slice(0, 4) !== '    '
           && (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
         ) {
+
+          // LIQUID COMMENT ARE AUGMENTED HERE
+
           lines[b + 1] = `${lines[b]} ${lines[b + 1]}`;
           emptyLine = true;
         }
 
-        if (bigLine === false && bulletLine === false && numberLine ===
-          false) {
+        if (bigLine === false && bulletLine === false && numberLine === false) {
 
           if (emptyLine === true) {
 
             emptyLine = false;
 
-          } else if ((/^\s*(\*|-|(\d+\.))\s*$/).test(lines[b]) ===
-            false) {
+          } else if ((/^\s*(\*|-|(\d+\.))\s*$/).test(lines[b]) === false) {
 
             if (
               b < len - 1
@@ -1368,21 +1245,18 @@ const parse: Parse = {
               b = b - 1;
 
             } else {
-              if (config.opening === '/*' && lines[b].indexOf('/*') !==
-                0) {
-                second.push(`   ${
-                  lines[b]
-                    .replace(/^\s+/, '')
-                    .replace(/\s+$/, '')
-                    .replace(/\s+/g, ' ')
-                }`);
+              if (config.opening === '/*' && lines[b].indexOf('/*') !== 0) {
+                second.push(`   ${lines[b]
+                  .replace(/^\s+/, '')
+                  .replace(/\s+$/, '')
+                  .replace(/\s+/g, ' ')
+                  }`);
               } else {
-                second.push(`${
-                  lines[b]
-                    .replace(/^\s+/, '')
-                    .replace(/\s+$/, '')
-                    .replace(/\s+/g, ' ')
-                }`);
+                second.push(`${lines[b]
+                  .replace(/^\s+/, '')
+                  .replace(/\s+$/, '')
+                  .replace(/\s+/g, ' ')
+                  }`);
               }
             }
           }
@@ -1403,8 +1277,8 @@ const parse: Parse = {
         second.push(config.terminator);
       } else {
 
-        // second.push('\r', config.terminator);
-        second[second.length - 1] = `${second[second.length - 1]} ${config.terminator}`;
+        second.push(config.terminator);
+        // second[second.length - 1] = `${second[second.length - 1]} ${config.terminator}`;
       }
 
       output = second.join(lf);
@@ -1416,11 +1290,61 @@ const parse: Parse = {
 
     return [ output, a ];
 
-  },
+  };
 
-  // Parsing line comments and simultaneously applying word wrap
-  // parse_wrapCommentLine
-  wrapCommentLine (config) {
+  parser.splice = function (spliceData) {
+
+    const finalItem = [
+      parser.data.begin[parser.count]
+      , parser.data.token[parser.count]
+    ];
+
+    // * data    - The data object to alter
+    // * howmany - How many indexes to remove
+    // * index   - The index where to start
+    // * record  - A new record to insert
+    if (spliceData.record !== undefined && spliceData.record.token !== '') {
+
+      // parse_splice_datanames
+      parser.datanames.forEach((value) => {
+        spliceData.data[value].splice(
+          spliceData.index
+          , spliceData.howmany
+          , spliceData.record[value]
+        );
+      });
+
+      if (spliceData.data === parser.data) {
+
+        parser.count = (parser.count - spliceData.howmany) + 1;
+
+        if (
+          finalItem[0] !== parser.data.begin[parser.count] ||
+          finalItem[1] !== parser.data.token[parser.count]
+        ) {
+          parser.linesSpace = 0;
+        }
+      }
+
+      return;
+    }
+
+    // parse_splice_datanames
+    parser.datanames.forEach((value) => {
+      spliceData.data[value].splice(
+        spliceData.index
+        , spliceData.howmany
+      );
+    });
+
+    if (spliceData.data === parser.data) {
+      parser.count = parser.count - spliceData.howmany;
+      parser.linesSpace = 0;
+    }
+
+  };
+
+  parser.wrapCommentLine = function (config) {
 
     let a = config.start;
     let b = 0;
@@ -1468,27 +1392,26 @@ const parse: Parse = {
 
     const wordWrap = function parse_wrapCommentLine_wordWrap () {
 
+      const lines = [];
+      const record = Object.create(null);
+
+      record.ender = -1;
+      record.types = 'comment';
+      record.lexer = config.lexer;
+      record.lines = parser.linesSpace;
+
+      if (parser.count > -1) {
+        record.begin = parser.structure[parser.structure.length - 1][1];
+        record.stack = parser.structure[parser.structure.length - 1][0];
+        record.token = parser.data.token[parser.count];
+      } else {
+        record.begin = -1;
+        record.stack = 'global';
+        record.token = '';
+      };
+
       let c = 0;
       let d = 0;
-
-      const lines = [];
-      const record = (parse.count > -1) ? {
-        begin: parse.structure[parse.structure.length - 1][1]
-        , ender: -1
-        , lexer: config.lexer
-        , lines: parse.linesSpace
-        , stack: parse.structure[parse.structure.length - 1][0]
-        , token: parse.data.token[parse.count]
-        , types: 'comment'
-      } : {
-        begin: -1
-        , ender: -1
-        , lexer: config.lexer
-        , lines: parse.linesSpace
-        , stack: 'global'
-        , token: ''
-        , types: 'comment'
-      };
 
       output = output.replace(/\s+/g, ' ').replace(/\s+$/, '');
       d = output.length;
@@ -1521,9 +1444,9 @@ const parse: Parse = {
 
       do {
         record.token = lines[c];
-        parse.push(parse.data, record, '');
+        parser.push(parser.data, record, '');
         record.lines = 2;
-        parse.linesSpace = 2;
+        parser.linesSpace = 2;
         c = c + 1;
       } while (c < d);
 
@@ -1552,11 +1475,9 @@ const parse: Parse = {
       do {
         build.push(config.chars[a]);
         a = a + 1;
-      } while (a < config.end && (
-        config.chars[a - 1] !== 'd' || (
-          config.chars[a - 1] === 'd'
-            && build.slice(build.length - 16).join('') !== 'parse-ignore-end'
-        )
+      } while (a < config.end && (config.chars[a - 1] !== 'd' || (
+        config.chars[a - 1] === 'd'
+        && build.slice(build.length - 16).join('') !== 'parse-ignore-end')
       ));
 
       b = a;
@@ -1564,7 +1485,7 @@ const parse: Parse = {
       // eslint-disable-next-line
       do {} while (b > config.start && config.chars[b - 1] === '/' && (
         config.chars[b] === '*' ||
-          config.chars[b] === '/'
+        config.chars[b] === '/'
       ));
 
       if (config.chars[b] === '*') termination = '\u002a/';
@@ -1578,7 +1499,7 @@ const parse: Parse = {
           termination === '\n' || (
             termination === '\u002a/' && (
               config.chars[a - 1] !== '*' ||
-                config.chars[a] !== '/'
+              config.chars[a] !== '/'
             )
           )
         ));
@@ -1600,7 +1521,7 @@ const parse: Parse = {
 
     output = output.replace(/(\/\/\s*)/, '// ');
 
-    if (wrap < 1 || (a === config.end - 1 && parse.data.begin[parse.count] < 1)) {
+    if (wrap < 1 || (a === config.end - 1 && parser.data.begin[parser.count] < 1)) {
       return [ output, a ];
     }
 
@@ -1609,8 +1530,9 @@ const parse: Parse = {
     wordWrap();
 
     return [ output, a ];
-  }
 
-};
+  };
 
-export { parse, sparser };
+  return parser;
+
+})();

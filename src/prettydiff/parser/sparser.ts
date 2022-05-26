@@ -1,5 +1,6 @@
+import { Sparser } from '../../types/sparser';
 
-export const sparser = {
+export const sparser: Sparser = {
   lexers: {},
   libs: {},
   options: {
@@ -12,7 +13,7 @@ export const sparser = {
         , quoteConvert: 'none'
         , tagMerge: false
         , tagSort: false
-        , preserveAttribute: false
+        , preserveAttributes: false
       }
       , script: {
         endComma: 'none'
