@@ -917,7 +917,11 @@ export const parse = (() => {
     function emptyLines () {
 
       if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === '') {
-        do { b = b + 1; } while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === ''));
+        do {
+
+          b = b + 1;
+
+        } while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === ''));
       }
 
       if (b < len - 1) second.push('');
@@ -926,20 +930,27 @@ export const parse = (() => {
 
     do {
 
-      build.push(config.chars[a]);
+      if (config.chars[a] === '\n') {
+        parser.lineNumber = parser.lineNumber + 1;
+        // console.log(output);
+      }
 
-      if (config.chars[a] === '\n') parser.lineNumber = parser.lineNumber + 1;
+      build.push(config.chars[a]);
 
       if (
         config.chars[a] === term
         && config.chars.slice(a - terml, a + 1).join('') === config.terminator
-      ) break;
+      ) {
+        break;
+      }
 
       a = a + 1;
 
     } while (a < config.end);
 
     output = build.join('');
+
+    // console.log(output);
 
     if (regIgnore.test(output) === true) {
 
@@ -1067,6 +1078,8 @@ export const parse = (() => {
 
         emptyLines();
 
+        // console.log(bline);
+
       } else if (lines[b].slice(0, 4) === '    ') {
 
         second.push(lines[b]);
@@ -1084,7 +1097,10 @@ export const parse = (() => {
 
       } else {
 
-        lines[b] = (config.opening === '/*' && lines[b].indexOf('/*') !== 0)
+        lines[b] = (
+          config.opening === '/*'
+          && lines[b].indexOf('/*') !== 0
+        )
           ? `   ${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`
           : `${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`;
 
@@ -1206,6 +1222,7 @@ export const parse = (() => {
         ) {
 
           second.push(lines[b]);
+
           b = b + 1;
 
         } else if (
@@ -1217,6 +1234,8 @@ export const parse = (() => {
         ) {
 
           // LIQUID COMMENT ARE AUGMENTED HERE
+
+          // console.log(lines);
 
           lines[b + 1] = `${lines[b]} ${lines[b + 1]}`;
           emptyLine = true;
@@ -1287,7 +1306,7 @@ export const parse = (() => {
       lines[lines.length - 1] = lines[lines.length - 1] + config.terminator;
       output = lines.join(lf);
     }
-
+    // console.log(output);
     return [ output, a ];
 
   };
