@@ -57,11 +57,6 @@ export default (() => {
       ? data.token.length
       : prettydiff.end + 1;
 
-    /**
-     * Liquid Attribute Tracking
-     */
-    const lqa: number[][] = [];
-
     /* -------------------------------------------- */
     /* UTILITIES                                    */
     /* -------------------------------------------- */
@@ -261,8 +256,10 @@ export default (() => {
             type.is(next, 'comment') ||
             type.is(next, 'end') ||
             type.is(next, 'template_end')
-          ) ? indent
+          ) ? indent + 1
             : indent;
+
+          // console.log(data.token[a]);
 
           do {
             level.push(ind);
@@ -282,6 +279,7 @@ export default (() => {
             type.is(x, 'template_attribute') ||
             type.is(x, 'jsx_attribute_start')
           ) {
+
             level[data.begin[x]] = ind;
           } else {
             level[x] = ind;
@@ -657,6 +655,8 @@ export default (() => {
 
           count = count + data.token[a].length + 1;
 
+          // console.log(a);
+
           if (data.types[a].indexOf('attribute') > 0) {
 
             if (type.is(a, 'template_attribute')) {
@@ -879,6 +879,7 @@ export default (() => {
           } else if (type.is(a, 'comment')) {
 
             if (comstart < 0) comstart = a;
+
             if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) {
               comment();
             }
@@ -1147,13 +1148,18 @@ export default (() => {
         }
 
         return linesout.join('');
+
       };
 
       // beautify_markup_apply_multilin
       function multiline () {
 
-        const lines = data.token[a].split(lf);
+        let lines = data.token[a].split(lf);
         const line = data.lines[a + 1];
+
+        if (type.is(a, 'comment')) {
+          lines = lines.map(l => l.trimLeft());
+        }
 
         const lev = ((levels[a - 1] > -1)
           ? type.is(a, 'attribute')
@@ -1193,19 +1199,44 @@ export default (() => {
         const len = lines.length - 1;
 
         do {
-          build.push(lines[aa]);
-          build.push(newline(lev));
+
+          console.log(
+            build.length,
+            [
+
+              JSON.stringify(lines[aa])
+
+            ]
+          );
+
+          if (lines[aa] !== '') {
+            if (lines[aa + 1].trimStart() !== '') {
+              build.push(lines[aa], newline(lev));
+            } else {
+              build.push(lines[aa], '\n');
+            }
+          } else {
+            if (lines[aa + 1].trimStart() === '') {
+              build.push('\n');
+            } else {
+              build.push(newline(lev));
+            }
+          }
+
           aa = aa + 1;
 
         } while (aa < len);
 
         data.lines[a + 1] = line;
+
         build.push(lines[len]);
 
         if (levels[a] === -10) {
           build.push(' ');
+
         } else if (levels[a] > -1) {
-          build.push(newline(levels[a]));
+          const p = newline(levels[a]);
+          build.push(p);
         }
 
       };
@@ -1303,6 +1334,7 @@ export default (() => {
 
           if (externalIndex[a] === a && type.not(a, 'reference')) {
             build.push(data.token[a]);
+
           } else {
 
             options.indentLevel = lastLevel;
@@ -1330,6 +1362,7 @@ export default (() => {
 
       if (build[0] === lf || build[0] === ' ') build[0] = '';
 
+      // console.log('TOKE', build);
       return build.join('');
 
     })();

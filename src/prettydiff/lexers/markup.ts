@@ -1109,10 +1109,11 @@ export default (() => {
                 idx2 = b.indexOf('}', idx2);
 
                 if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
-                  preserve = true;
+
                   ltype = 'comment';
                   start = b.slice(a, rcb + 1).join('');
                   end = b.slice(idx1, idx2 + 1).join('');
+
                 }
               }
             }
@@ -2044,12 +2045,53 @@ export default (() => {
       // a quick hack to inject records for a type of template comments
       if (tname === 'comment' && isLiquid(element, 2)) {
 
+        let linesStart:number = 0;
+        let linesEnd: number = 0;
+
+        const lineFindStart = function lexer_markup_tag_lineFindStart (spaces:string):string {
+          if (spaces === '') {
+            linesStart = 0;
+          } else {
+            linesStart = spaces.split('\n').length;
+          }
+          return '';
+        };
+        const lineFindEnd = function lexer_markup_tag_lineFindEnd (spaces:string):string {
+          if (spaces === '') {
+            linesEnd = 0;
+          } else {
+            linesEnd = spaces.split('\n').length;
+          }
+          return '';
+        };
+
+        const open = element.slice(0, element.indexOf('%}') + 2);
+        const comm = element.slice(element.indexOf('%}') + 2, element.lastIndexOf('{%'));
+        const end = element.slice(element.lastIndexOf('{%'));
+
         record.begin = parse.structure[parse.structure.length - 1][1];
         record.ender = parse.count + 3;
         record.stack = parse.structure[parse.structure.length - 1][0];
-        record.types = 'comment';
-        record.token = element;
+        record.types = 'template_start';
+        record.token = open;
+        recordPush(data, record, 'comment');
 
+        record.begin = parse.count;
+
+        element = comm.replace(/^\s*/, lineFindStart);
+        element = element.replace(/\s*$/, lineFindEnd);
+
+        record.lines = linesStart;
+        record.stack = 'comment';
+        record.token = element;
+        record.types = 'comment';
+
+        recordPush(data, record, '');
+
+        record.types = 'template_end';
+        record.stack = 'comment';
+        record.lines = linesEnd;
+        record.token = end;
         recordPush(data, record, '');
 
         return;
@@ -2424,9 +2466,7 @@ export default (() => {
           ltype = 'singleton';
         } else {
 
-          attstore.forEach(function lexer_markup_tag_atstore (value) {
-            atstring.push(value[0]);
-          });
+          attstore.forEach((value) => atstring.push(value[0]));
 
           preserve = true;
           ltype = 'ignore';
@@ -2517,7 +2557,7 @@ export default (() => {
         element = element + tags.join('');
         element = element.replace('>', ` ${atstring.join(' ')}>`);
         record.token = element;
-        record.types = 'content-ignore';
+        record.types = 'content-ignore' as any;
         attstore = [];
 
       }
@@ -2923,67 +2963,78 @@ export default (() => {
 
     // parses everything other than markup tags
     function content () {
-      const lex = [];
-      let ltoke = '';
-      const jsxbrace = (data.token[parse.count] === '{');
-      let liner = parse.linesSpace;
-      const now = a;
-      const name = (ext === true)
-        ? (jsxbrace === true)
-          ? 'script'
-          : (parse.structure[parse.structure.length - 1][1] > -1)
-            ? tagName(data.token[parse.structure[parse.structure.length - 1][1]]
-              .toLowerCase())
-            : tagName(data.token[data.begin[parse.count]].toLowerCase())
-        : '';
-      const square = (data.types[parse.count] === 'template_start' && data
-        .token[parse.count].indexOf('<!') === 0
-            && data.token[parse.count].indexOf('<![') < 0 && data.token[parse
-        .count].charAt(data.token[parse.count]
-        .length - 1) === '[');
 
-      const record = {
-        begin: parse.structure[parse.structure.length - 1][1]
-        , ender: -1
-        , lexer: 'markup'
-        , lines: liner
-        , stack: parse.structure[parse.structure.length - 1][0]
-        , token: ''
-        , types: 'content'
-      };
-      const esctest = function lexer_markup_content_esctest () {
+      let ltoke = '';
+      let liner = parse.linesSpace;
+
+      const lex = [];
+      const jsxbrace = (data.token[parse.count] === '{');
+      const now = a;
+
+      const name = (ext === true) ? (jsxbrace === true)
+        ? 'script'
+        : (parse.structure[parse.structure.length - 1][1] > -1)
+          ? tagName(data.token[parse.structure[parse.structure.length - 1][1]].toLowerCase())
+          : tagName(data.token[data.begin[parse.count]].toLowerCase())
+        : '';
+
+      const square = (
+        data.types[parse.count] === 'template_start'
+        && data.token[parse.count].indexOf('<!') === 0
+        && data.token[parse.count].indexOf('<![') < 0
+        && data.token[parse.count].charAt(data.token[parse.count].length - 1) === '['
+      );
+
+      const record: IRecord = Object.create(null);
+
+      record.begin = parse.structure[parse.structure.length - 1][1];
+      record.ender = -1;
+      record.lexer = 'markup';
+      record.lines = liner;
+      record.stack = parse.structure[parse.structure.length - 1][0];
+      record.token = '';
+      record.types = 'content';
+
+      function esctest () {
+
         let aa = a - 1;
         let bb = 0;
-        if (b[a - 1] !== '\\') {
-          return false;
-        }
+
+        if (b[a - 1] !== '\\') return false;
+
         if (aa > -1) {
           do {
-            if (b[aa] !== '\\') {
-              break;
-            }
+
+            if (b[aa] !== '\\') break;
+
             bb = bb + 1;
             aa = aa - 1;
+
           } while (aa > -1);
         }
-        if (bb % 2 === 1) {
-          return true;
-        }
-        return false;
+
+        return bb % 2 === 1;
+
       };
+
       if (a < c) {
+
         let end = '';
         let quote = '';
         let quotes = 0;
+
         do {
-          if (b[a] === '\n') {
-            parse.lineNumber = parse.lineNumber + 1;
-          }
+
+          if (b[a] === '\n') parse.lineNumber = parse.lineNumber + 1;
+
           // external code requires additional parsing to look for the appropriate end
           // tag, but that end tag cannot be quoted or commented
           if (ext === true) {
+
             if (quote === '') {
+
               if (b[a] === '/') {
+
                 if (b[a + 1] === '*') {
                   quote = '*';
                 } else if (b[a + 1] === '/') {
@@ -2994,32 +3045,35 @@ export default (() => {
                     quote = 'reg';
                   }
                 }
-              } else if ((b[a] === '"' || b[a] === "'" || b[a] ===
-                    '`') && esctest() === false) {
+
+              } else if ((b[a] === '"' || b[a] === "'" || b[a] === '`') && esctest() === false) {
                 quote = b[a];
               } else if (b[a] === '{' && jsxbrace === true) {
                 quotes = quotes + 1;
               } else if (b[a] === '}' && jsxbrace === true) {
+
                 if (quotes === 0) {
 
-                  sparser.lexers.script(lex.join('')
-                    .replace(/^(\s+)/, '')
-                    .replace(/(\s+)$/, ''));
+                  sparser.lexers.script(lex.join('').replace(/^(\s+)/, '').replace(/(\s+)$/, ''));
 
                   // Originally was:
                   // parse.structure[parse.structure.length - 1][1] + 1
                   // Added incremental
                   parse.structure[parse.structure.length - 1][1] += 1;
 
-                  if (data.types[parse.count] === 'end' && data.lexer[data
-                    .begin[parse.count] - 1] === 'script') {
+                  if (
+                    data.types[parse.count] === 'end'
+                    && data.lexer[data.begin[parse.count] - 1] === 'script'
+                  ) {
+
                     record.lexer = 'script';
-                    record.token = (options.attemptCorrection === true)
-                      ? ';' : 'x;';
+                    record.token = (options.attemptCorrection === true) ? ';' : 'x;';
                     record.types = 'separator';
                     recordPush(data, record, '');
                     record.lexer = 'markup';
+
                   }
+
                   record.token = '}';
                   record.types = 'script_end';
                   recordPush(data, record, '');
@@ -3028,18 +3082,18 @@ export default (() => {
                 }
                 quotes = quotes - 1;
               }
-              end = b
-                .slice(a, a + 10)
-                .join('')
-                .toLowerCase();
+
+              end = b.slice(a, a + 10).join('').toLowerCase();
 
               // script requires use of the script lexer
               if (name === 'script') {
+
                 if (a === c - 9) {
                   end = end.slice(0, end.length - 1);
                 } else {
                   end = end.slice(0, end.length - 2);
                 }
+
                 if (end === '</script') {
                   let outside = lex.join('').replace(/^(\s+)/, '')
                     .replace(/(\s+)$/, '');
@@ -3086,9 +3140,7 @@ export default (() => {
                     record.token = '<!--';
                     record.types = 'comment';
                     recordPush(data, record, '');
-                    outside = outside.replace(/^(<!--+)/, '').replace(
-                      /(--+>)$/, ''
-                    );
+                    outside = outside.replace(/^(<!--+)/, '').replace(/(--+>)$/, '');
                     sparser.lexers.style(outside);
                     record.token = '-->';
                     recordPush(data, record, '');
@@ -3132,11 +3184,12 @@ export default (() => {
           }
           // typically this logic is for artifacts nested within an SGML tag
           if (square === true && b[a] === ']') {
+
             a = a - 1;
             ltoke = lex.join('');
-            if (options.lexerOptions.markup.parseSpace === false) {
-              ltoke = ltoke.replace(/\s+$/, '');
-            }
+
+            if (options.lexerOptions.markup.parseSpace === false) ltoke = ltoke.replace(/\s+$/, '');
+
             liner = 0;
             record.token = ltoke;
             recordPush(data, record, '');
@@ -3172,7 +3225,6 @@ export default (() => {
             ) {
               ltoke = lex.join('');
             } else {
-
               ltoke = lex.join('').replace(/\s+$/, '');
             }
 
@@ -3192,121 +3244,135 @@ export default (() => {
 
               const wrap = options.wrap;
               const store = [];
-              const wrapper =
-                  function beautify_markup_apply_content_wrapper () {
-                    if (ltoke.charAt(aa) === ' ') {
-                      store.push(ltoke.slice(0, aa));
-                      ltoke = ltoke.slice(aa + 1);
-                      len = ltoke.length;
-                      aa = wrap;
-                      return;
-                    }
-                    do {
-                      aa = aa - 1;
-                    } while (aa > 0 && ltoke.charAt(aa) !== ' ');
-                    if (aa > 0) {
-                      store.push(ltoke.slice(0, aa));
-                      ltoke = ltoke.slice(aa + 1);
-                      len = ltoke.length;
-                      aa = wrap;
-                    } else {
-                      aa = wrap;
-                      do {
-                        aa = aa + 1;
-                      } while (aa < len && ltoke.charAt(aa) !== ' ');
-                      store.push(ltoke.slice(0, aa));
-                      ltoke = ltoke.slice(aa + 1);
-                      len = ltoke.length;
-                      aa = wrap;
-                    }
-                  };
+
+              function wrapper () {
+
+                if (ltoke.charAt(aa) === ' ') {
+                  store.push(ltoke.slice(0, aa));
+                  ltoke = ltoke.slice(aa + 1);
+                  len = ltoke.length;
+                  aa = wrap;
+                  return;
+                }
+
+                do { aa = aa - 1; } while (aa > 0 && ltoke.charAt(aa) !== ' ');
+
+                if (aa > 0) {
+
+                  store.push(ltoke.slice(0, aa));
+                  ltoke = ltoke.slice(aa + 1);
+                  len = ltoke.length;
+                  aa = wrap;
+
+                } else {
+
+                  aa = wrap;
+
+                  do { aa = aa + 1; } while (aa < len && ltoke.charAt(aa) !== ' ');
+
+                  store.push(ltoke.slice(0, aa));
+
+                  ltoke = ltoke.slice(aa + 1);
+                  len = ltoke.length;
+                  aa = wrap;
+
+                }
+              };
 
               // HTML anchor lists do not get wrapping unless the content itself exceeds the wrapping limit
-              if (data.token[data.begin[parse.count]] === '<a>'
-                  && data.token[data.begin[data.begin[parse.count]]] ===
-                  '<li>'
+              if (
+                data.token[data.begin[parse.count]] === '<a>'
+                  && data.token[data.begin[data.begin[parse.count]]] === '<li>'
                   && data.lines[data.begin[parse.count]] === 0
                   && parse.linesSpace === 0
-                  && ltoke.length < options.wrap) {
+                  && ltoke.length < options.wrap
+              ) {
+
                 recordPush(data, record, '');
                 break;
               }
+
               if (len < wrap) {
                 recordPush(data, record, '');
                 break;
               }
+
               if (parse.linesSpace < 1) {
+
                 let bb = parse.count;
+
                 do {
+
                   aa = aa - data.token[bb].length;
-                  if (data.types[bb].indexOf('attribute') > -1) {
-                    aa = aa - 1;
-                  }
-                  if (data.lines[bb] > 0 && data.types[bb].indexOf(
-                    'attribute'
-                  ) < 0) {
-                    break;
-                  }
+
+                  if (data.types[bb].indexOf('attribute') > -1) aa = aa - 1;
+                  if (data.lines[bb] > 0 && data.types[bb].indexOf('attribute') < 0) break;
+
                   bb = bb - 1;
+
                 } while (bb > 0 && aa > 0);
-                if (aa < 1) {
-                  aa = ltoke.indexOf(' ');
-                }
-              }
-              ltoke = lex.join('');
-              if (options.lexerOptions.markup.parseSpace === true) {
-                startSpace = ((/\s/).test(ltoke.charAt(0)) === true)
-                  ? (/\s+/).exec(ltoke)[0]
-                  : '';
-                endSpace = ((/\s/).test(ltoke.charAt(ltoke.length -
-                      1)) === true)
-                  ? (/\s+$/).exec(ltoke)[0]
-                  : '';
+
+                if (aa < 1) aa = ltoke.indexOf(' ');
+
               }
 
-              ltoke = ltoke.replace(/^\s+/, '').replace(/\s+$/, '')
-                .replace(/\s+/g, ' ');
-              do {
-                wrapper();
-              } while (aa < len);
-              if (ltoke !== '' && ltoke !== ' ') {
-                store.push(ltoke);
+              ltoke = lex.join('');
+
+              if (options.lexerOptions.markup.parseSpace === true) {
+                startSpace = ((/\s/).test(ltoke.charAt(0)) === true) ? (/\s+/).exec(ltoke)[0] : '';
+                endSpace = ((/\s/).test(ltoke.charAt(ltoke.length - 1))) ? (/\s+$/).exec(ltoke)[0] : '';
               }
-              if (options.crlf === true) {
-                ltoke = store.join('\r\n');
-              } else {
-                ltoke = store.join('\n');
-              }
+
+              ltoke = ltoke.replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ');
+
+              do { wrapper(); } while (aa < len);
+
+              if (ltoke !== '' && ltoke !== ' ') store.push(ltoke);
+
+              ltoke = options.crlf === true ? store.join('\r\n') : store.join('\n');
               ltoke = startSpace + ltoke + endSpace;
             }
+
             liner = 0;
             record.token = ltoke;
             recordPush(data, record, '');
             break;
           }
+
           lex.push(b[a]);
+
           a = a + 1;
+
         } while (a < c);
       }
+
       if (options.lexerOptions.markup.parseSpace === false) {
+
         if (a > now && a < c) {
+
           if ((/\s/).test(b[a]) === true) {
+
             let x = a;
             parse.linesSpace = 1;
+
             do {
-              if (b[x] === '\n') {
-                parse.linesSpace = parse.linesSpace + 1;
-              }
+
+              if (b[x] === '\n') parse.linesSpace = parse.linesSpace + 1;
               x = x - 1;
+
             } while (x > now && (/\s/).test(b[x]) === true);
+
           } else {
+
             parse.linesSpace = 0;
           }
         } else if (a !== now || (a === now && ext === false)) {
+
           // regular content at the end of the supplied source
 
           ltoke = lex.join('').replace(/\s+$/, '');
           liner = 0;
+
           // this condition prevents adding content that was just added in the loop above
           if (record.token !== ltoke) {
             record.token = ltoke;
@@ -3315,6 +3381,7 @@ export default (() => {
           }
         }
       }
+
       ext = false;
     };
 
@@ -3350,6 +3417,7 @@ export default (() => {
         } else {
 
           a = parse.spacer({ array: b, end: c, index: a });
+
         }
 
       } else if (ext) {
