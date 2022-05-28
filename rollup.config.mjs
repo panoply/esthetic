@@ -38,7 +38,7 @@ export default rollup(
           plugin.copy(
             {
               targets: [
-               {
+                {
                   src: 'src/types/options.ts',
                   dest: 'types',
                   rename: 'index.d.ts'

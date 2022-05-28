@@ -28,6 +28,7 @@
     "types": "tsc --emit",
     "build": "rollup -c --environment prod",
     "pack": "cd versions; pnpm pack ../ && cd ..",
+    "play": "ava test/play.test.mjs --color --watch",
     "test": "ava test/dev.test.mjs --color --verbose --watch",
     "test:markup": "ava test/markup/* --color --verbose --watch",
     "test:cases": "ava ./test/cases/* --verbose --color --watch"

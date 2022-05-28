@@ -3,7 +3,7 @@ import test from 'ava';
 import * as prettify from '../package/index.mjs';
 import * as mocks from './mocks/export.mjs';
 
-test('test', t => {
+test.skip('test', t => {
 
   const opts = {
     forceAttribute: false,
@@ -29,7 +29,7 @@ test('test', t => {
   t.pass('Test passed');
 });
 
-test.skip('test re-runs', t => {
+test('test re-runs', t => {
 
   /* prettify.options({
     markup: {

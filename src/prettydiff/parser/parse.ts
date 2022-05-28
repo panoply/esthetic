@@ -1277,8 +1277,8 @@ export const parse = (() => {
         second.push(config.terminator);
       } else {
 
-        second.push(config.terminator);
-        // second[second.length - 1] = `${second[second.length - 1]} ${config.terminator}`;
+        // second.push(config.terminator);
+        second[second.length - 1] = `${second[second.length - 1]} ${config.terminator}`;
       }
 
       output = second.join(lf);

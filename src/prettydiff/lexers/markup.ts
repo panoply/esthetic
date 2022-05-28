@@ -2585,13 +2585,6 @@ export default (() => {
 
         } else if (record.types === 'template') {
 
-          if (isLiquidOutputTag(element)) {
-            const pos: number = element.indexOf(options.crlf ? '\r\n' : '\n');
-            if (pos > 0) {
-              record.token = record.token.replace(/^\s+/gm, '');
-            }
-          }
-
           if (element.indexOf('else') > 2) record.types = 'template_else';
 
         }

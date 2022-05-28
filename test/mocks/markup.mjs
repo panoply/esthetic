@@ -4,6 +4,25 @@
 
 export const markup_play = `
 
+{%- capture compared_price -%}
+{%- if cart.currency.iso_code == shop.currency -%}
+{{ product.compare_at_price
+| money_without_trailing_zeros
+| remove: ','
+| remove: '.'
+| remove: cart.currency.symbol -}}
+{% endif %}
+
+{{-
+  product.compare_at_price
+| money_without_trailing_zeros
+| remove: ','
+| remove: '.'
+| remove: cart.currency.symbol
+ -}}
+
+{%- endcapture -%}
+
 
 <div id="x"
   class

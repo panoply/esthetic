@@ -778,8 +778,6 @@ export default (() => {
 
         } while (a < c);
 
-        console.log(lqa);
-
         a = a - 1;
 
         if (
@@ -933,6 +931,7 @@ export default (() => {
 
                 level.push(indent);
 
+                // ATTRIBUTE GLUE
                 const pos: number = data.token[a].indexOf(lf);
 
                 if (pos > 0) {
@@ -943,10 +942,6 @@ export default (() => {
                       : options.indentSize - 1
                   );
 
-                  console.log(
-                    linez
-
-                  );
                   const linesout = [];
 
                   let iidx = 0;
@@ -958,7 +953,7 @@ export default (() => {
 
                   } while (iidx < linez);
 
-                  data.token[a] = data.token[a].replace(/\n/g, (n) => {
+                  data.token[a] = data.token[a].replace(/^\s+/gm, '').replace(/\n/g, (n) => {
                     return n + linesout.join('');
                   });
 
