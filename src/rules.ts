@@ -35,7 +35,7 @@ export const markup: PrettyDiffOptions = createInstance(
     mode: 'beautify',
     endNewline: true,
     preserveAttributes: false,
-    preserveComment: false,
+    preserveComment: true,
     preserveLine: 3,
     preserveText: true,
     quoteConvert: 'double',

@@ -10,6 +10,10 @@ prettify.options({
 
 prettify.markup(mocks.markup.markup_example).then(value => {
 
-  play(value);
+  prettify.markup(value).then(value => {
+
+    play(value);
+
+  }).catch(console.error);
 
 }).catch(console.error);

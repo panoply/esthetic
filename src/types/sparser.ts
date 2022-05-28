@@ -363,7 +363,9 @@ export const enum MarkupTypes {
  */
 export const enum ExtraTypes {
   else = 'else',
-  mixin = 'mixin'
+  mixin = 'mixin',
+  comment = 'comment',
+  'content-ignore' = 'content-ignore'
 }
 
 /**
@@ -513,6 +515,54 @@ interface wrapConfig {
   terminator: string;
 }
 
+export interface SparserOptions extends PrettyDiffOptions {
+  format?: 'arrays';
+  lexerOptions: {
+    markup?: {
+      attributeSort?: boolean;
+      attributeSortList?: string[];
+      attemptCorrection?: boolean;
+      crlf?: boolean;
+      format?: 'arrays';
+      language?: 'html';
+      lexer?: 'markup';
+      parseSpace?: boolean;
+      preserveAttributes?: boolean;
+      preserveComment?: boolean;
+      preserveText?: boolean;
+      quoteConvert?: 'none' | 'double' | 'single';
+      tagMerge?: boolean;
+      tagSort?: boolean;
+      wrap?: number;
+    };
+    script?: {
+      attemptCorrection?: boolean;
+      crlf?: boolean;
+      endComma?: 'always' |'never' |'none';
+      format?: 'arrays';
+      language?: 'javascript' | 'typescript';
+      lexer?: 'script';
+      objectSort?: boolean;
+      preserveComment?: boolean;
+      quoteConvert?: 'none' | 'double' | 'single';
+      variableList?: 'each' | 'list' | 'none';
+      wrap?: number;
+    };
+    style?: {
+      attemptCorrection?: boolean;
+      crlf?: boolean;
+      format?: 'arrays';
+      language?: 'css' | 'scss';
+      lexer?: 'style';
+      noLeadZero?: boolean;
+      objectSort?: boolean;
+      preserveComment?: boolean;
+      quoteConvert?: 'none' | 'double' | 'single';
+      wrap?: number;
+    }
+  }
+}
+
 export interface Language {
   auto(sample: string, defaultLang: string): languageAuto;
   nameproper(input : string): string;
@@ -605,7 +655,7 @@ export interface Parse {
 export interface Sparser {
   lexers?: Lexers;
   libs?: { [key: string]: any };
-  options?: PrettyDiffOptions
+  options?: SparserOptions
   parse?: Parse;
   parser?(): Parsed;
   parseError?: string;

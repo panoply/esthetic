@@ -340,15 +340,15 @@ alt="{{- product.title -}}" />
 
 </a>
 
-{%- comment -%}
+  {%- comment -%}
 
-PRODUCT FEATURE
+    PRODUCT FEATURE
 
-This is a peristed base banner applied
-to the product when a it contains a a
-feature metafield.
 
-{%- endcomment -%}
+    This is a peristed base banner applied to the
+    product when a it contains a a feature metafield.
+
+  {%- endcomment -%}
 {%- if product.metafields.product.sustainable_feature != null -%}
 <div class="feature text-center">
 <div class="ribbon d-flex ai-center jc-center">

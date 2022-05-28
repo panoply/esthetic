@@ -1,5 +1,4 @@
 import { Sparser, Language, OptionDef, Parsed } from './sparser';
-import { IMarkupOptions, IScriptOptions, IStyleOptions } from '../types/options';
 export type ValueOf<
   ObjectType,
   ValueType extends keyof ObjectType = keyof ObjectType
@@ -99,11 +98,6 @@ export interface PrettyDiffOptions {
   language?: 'auto' | 'html' | 'css' | 'javascript' | 'typescript' | 'json' | 'text' | 'jsx' | string,
   languageDefault?: string,
   lexer?: 'auto' | 'markup' | 'style' | 'script' | 'text' | string,
-  lexerOptions?: {
-    markup?: IMarkupOptions,
-    script?: IStyleOptions,
-    style?: IScriptOptions
-  },
   mode?: 'beautify' | 'diff' | 'parse'
   methodChain?: number,
   neverFlatten?: boolean,
@@ -112,6 +106,7 @@ export interface PrettyDiffOptions {
   noSemicolon?: boolean,
   objectIndent?: 'default' | 'indent' | 'inline',
   preserveAttributes?: boolean,
+  parseSpace?: boolean;
   preserveComment?: boolean,
   preserveLine?: number,
   preserveText?: boolean,

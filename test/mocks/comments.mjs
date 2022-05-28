@@ -6,38 +6,32 @@
  * logics.
  */
 export const liquid_comment_formatting = `
-
+<div>
 <h1>Testing inline comments</h1>.
 <!-- test html -->
 <p> The below comment should be untouched as
 there is no space characters.</p>
 
-{% comment %}example{% endcomment %}
-{%comment%}example{%endcomment%}
-{%- comment %}example{% endcomment %}
-{% comment -%}example{% endcomment %}
-{%- comment -%}example{% endcomment %}
-{%-comment-%}example{%endcomment%}
-{%-comment-%}example{%-endcomment-%}
-{%-comment-%}example {%-endcomment-%}
-
-{{foo}}
-
-{%for i in bar%}
-{%
-  endfor
-  %}
-
 <h1>Testing indented comments</h1>.
-<p>The below comment should be indented onto a newline</p>{%- comment -%} example {%- endcomment -%}
+<p>
+The below comment should be indented onto a newline
 
-{% comment %} example {% endcomment %}
+  {%- if product.available and product.compare_at_price > product.price -%}
+  <div class="badge sale">
+  {{- 'product_item.on_sale' | t -}}
 
-{%-comment-%} example{%-endcomment-%}
+    {%- comment -%}
 
-{%- comment -%}
-  example {%- endcomment -%}
+ON SALE BADGE
 
-{%- comment -%} example
-{%- endcomment -%}
+  Renders a small text badge overlay in
+  the top left corner of the product image
+
+  {%- endcomment -%}
+  </div>
+  {%- endif -%}
+
+</p>
+</div>
+
 `;
