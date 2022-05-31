@@ -1317,6 +1317,16 @@ export default (() => {
               // Ensure schema tag block is on same line
               build[build.length - 1] = '\n';
 
+            } else if (data.stack[a] === 'style') {
+
+              const conf = Object.assign({}, options, rules.style);
+
+              ext = prettydiff.beautify[data.lexer[a]](conf);
+
+              // HOT PATCH
+              // Ensure schema tag block is on same line
+              build[build.length - 1] = '\n';
+
             } else {
               ext = prettydiff.beautify[data.lexer[a]](options);
             }

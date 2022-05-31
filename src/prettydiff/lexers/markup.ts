@@ -2327,7 +2327,8 @@ export default (() => {
         } else if (
           liquid === true && (
             tname === 'javascript' ||
-            tname === 'schema'
+            tname === 'schema' ||
+            tname === 'style'
           )
         ) {
 
@@ -2919,9 +2920,9 @@ export default (() => {
 
               } else {
 
-                end = b.slice(a + 3, a + 14).join('').toLowerCase();
-
                 if (name === 'schema') {
+
+                  end = b.slice(a + 3, a + 14).join('').toLowerCase();
 
                   if (a === c - 12) {
                     end = end.slice(0, end.length - 3);
@@ -2957,6 +2958,50 @@ export default (() => {
                     } else {
 
                       sparser.lexers.script(outside);
+                    }
+
+                    break;
+                  }
+                } else if (name === 'style') {
+
+                  end = b.slice(a + 4, a + 14).join('').toLowerCase();
+
+                  if (a === c - 14) {
+                    end = end.slice(0, end.length - 4);
+                  } else if (a === c - 13) {
+                    end = end.slice(0, end.length - 3);
+                  } else {
+                    end = end.slice(0, end.length - 2);
+                  }
+
+                  if (end === 'endstyle') {
+
+                    let outside = lex
+                      .join('')
+                      .replace(/^\s+/, '')
+                      .replace(/\s+$/, '');
+
+                    a = a - 1;
+
+                    if (lex.length < 1) break;
+
+                    if ((/^<!--+/).test(outside) && /--+>$/.test(outside)) {
+
+                      record.token = '<!--';
+                      record.types = 'comment';
+
+                      recordPush(data, record, '');
+
+                      outside = outside.replace(/^<!--+/, '').replace(/--+>$/, '');
+
+                      sparser.lexers.style(outside);
+                      record.token = '-->';
+
+                      recordPush(data, record, '');
+
+                    } else {
+
+                      sparser.lexers.style(outside);
                     }
 
                     break;
