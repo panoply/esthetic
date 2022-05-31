@@ -3,9 +3,14 @@
 // @ts-nocheck
 
 import { sparser } from './sparser';
-import { PrettyDiffOptions, PrettyDiff, Meta } from '../../types/prettydiff';
+import { PrettyDiff, Meta } from '../../types/prettydiff';
+import { options } from '../opts/options';
 
 const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
+
+  /* -------------------------------------------- */
+  /* OPTIONS                                      */
+  /* -------------------------------------------- */
 
   const { options } = prettydiff;
 
@@ -52,11 +57,9 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
     if ((
       sindex > -1 && (sindex === 0 || "\"':".indexOf(options.source.charAt(sindex - 1)) < 0)
     ) || (
-      options.mode === 'diff'
-          && dindex > -1 && (
-        dindex === 0 ||
-            "\"':".indexOf(options.diff.charAt(dindex - 1)) < 0
-      )
+      options.mode === 'diff' &&
+      dindex > -1 &&
+      (dindex === 0 || "\"':".indexOf(options.diff.charAt(dindex - 1)) < 0)
     )) {
 
       const pdcom = sindex;
@@ -162,9 +165,9 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
                   ops.length > 0 && (
                     item === ':' ||
                       item === '='
-                  )
-                    && ops[ops.length - 1].indexOf('=') < 0
-                    && ops[ops.length - 1].indexOf(':') < 0
+                  ) &&
+                    ops[ops.length - 1].indexOf('=') < 0 &&
+                    ops[ops.length - 1].indexOf(':') < 0
                 ) {
 
                   // For cases where white space is between option name and
@@ -199,10 +202,7 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
 
             if (comment === '<!--' && source.slice(a - 2, a + 1) === '-->') break;
             if (comment === '//' && source.charAt(a) === '\n') break;
-            if (comment === '/\u002a' && source.slice(a - 1, a + 1) ===
-                '\u002a/') {
-              break;
-            }
+            if (comment === '/\u002a' && source.slice(a - 1, a + 1) === '\u002a/') break;
 
           } else if (source.charAt(a) === quote && quote !== '${') {
             quote = '';
@@ -240,67 +240,55 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
 
             if (ops[a].indexOf('=') < ops[a].indexOf(':')) {
               op = [
-                ops[a].slice(0, ops[a].indexOf('='))
-                , ops[a].slice(ops[a].indexOf('=') + 1)
+                ops[a].slice(0, ops[a].indexOf('=')),
+                ops[a].slice(ops[a].indexOf('=') + 1)
               ];
             }
 
           } else if (ops[a].indexOf('=') > 0) {
 
             op = [
-              ops[a].slice(0, ops[a].indexOf('='))
-              , ops[a].slice(ops[a].indexOf('=') + 1)
+              ops[a].slice(0, ops[a].indexOf('=')),
+              ops[a].slice(ops[a].indexOf('=') + 1)
             ];
 
           } else if (ops[a].indexOf(':') > 0) {
 
             op = [
-              ops[a].slice(0, ops[a].indexOf(':'))
-              , ops[a].slice(ops[a].indexOf(':') + 1)
+              ops[a].slice(0, ops[a].indexOf(':')),
+              ops[a].slice(ops[a].indexOf(':') + 1)
             ];
 
           } else if (
-            prettydiff.api.optionDef[ops[a]] !== undefined
-              && prettydiff.api.optionDef[ops[a]].type === 'boolean'
+            prettydiff.api.optionDef[ops[a]] !== undefined &&
+            prettydiff.api.optionDef[ops[a]].type === 'boolean'
           ) {
+
             options[ops[a]] = true;
           }
 
-          if (op.length === 2 && prettydiff.api.optionDef[op[0]] !==
-              undefined) {
-            if (
-              (
-                op[1].charAt(0) === '"' ||
-                  op[1].charAt(0) === "'" ||
-                  op[1].charAt(0) === '`'
+          if (op.length === 2 && prettydiff.api.optionDef[op[0]] !== undefined) {
 
-              ) && op[1].charAt(op[1].length - 1) === op[1].charAt(0)
+            if (
+              (op[1].charAt(0) === '"' || op[1].charAt(0) === "'" || op[1].charAt(0) === '`') &&
+              op[1].charAt(op[1].length - 1) === op[1].charAt(0)
             ) {
               op[1] = op[1].slice(1, op[1].length - 1);
             }
 
-            if (
-              prettydiff.api.optionDef[op[0]].type === 'number'
-                && isNaN(Number(op[1])) === false
-            ) {
+            if (prettydiff.api.optionDef[op[0]].type === 'number' && isNaN(Number(op[1])) === false) {
 
               options[op[0]] = Number(op[1]);
 
-            } else if (prettydiff.api.optionDef[op[0]].type ===
-                'boolean') {
+            } else if (prettydiff.api.optionDef[op[0]].type === 'boolean') {
 
-              if (op[1] === 'true') {
-                options[op[0]] = true;
-              } else if (op[1] === 'false') {
-                options[op[0]] = false;
-              }
+              options[op[0]] = op[1] === 'true';
 
             } else {
-              if (prettydiff.api.optionDef[op[0]].values !==
-                  undefined) {
 
-                valkey = Object.keys(prettydiff.api.optionDef[op[0]]
-                  .values);
+              if (prettydiff.api.optionDef[op[0]].values !== undefined) {
+
+                valkey = Object.keys(prettydiff.api.optionDef[op[0]].values);
                 b = valkey.length;
 
                 do {
@@ -488,23 +476,20 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
         }
       };
 
-      if (styleguide[options.styleguide] !== undefined) {
-        styleguide[options.styleguide]();
-      }
-
-      if (braceStyle[options.braceStyle] !== undefined) {
-        braceStyle[options.braceStyle]();
-      }
-
+      if (styleguide[options.styleguide] !== undefined) styleguide[options.styleguide]();
+      if (braceStyle[options.braceStyle] !== undefined) braceStyle[options.braceStyle]();
       if (options.language === 'json') options.wrap = 0;
 
     }
 
     do {
+
       if (options[keys[a]] !== undefined) {
 
         if (def[keys[a]].lexer[0] === 'all') {
+
           ops[keys[a]] = options[keys[a]];
+
         } else {
 
           b = def[keys[a]].lexer.length;
@@ -515,13 +500,12 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
 
             if (
               keys[a] !== 'parseSpace' || (
-                options.mode === 'parse'
-                  && keys[a] === 'parseSpace'
-                  && options[keys[a]] === true
+                options.mode === 'parse' &&
+                keys[a] === 'parseSpace' &&
+                options[keys[a]] === true
               )
             ) {
-              ops.lexerOptions[def[keys[a]].lexer[b]][keys[a]] =
-                  options[keys[a]];
+              ops.lexerOptions[def[keys[a]].lexer[b]][keys[a]] = options[keys[a]];
             }
 
           } while (b > 0);
@@ -545,7 +529,10 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
     options.language = 'text';
     options.languageName = 'Plain Text';
     options.lexer = 'text';
-  } else if (options.language === 'auto' || options.lexer === 'auto') {
+  } else if (
+    options.language === 'auto' ||
+    options.lexer === 'auto'
+  ) {
 
     let lang = prettydiff.api.language.auto(
       options.source,
@@ -585,8 +572,7 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
 
     if (
       prettydiff[modeValue][options.lexer] === undefined && (
-        (options.mode !== 'diff' && options.language === 'text') ||
-          options.language !== 'text'
+        (options.mode !== 'diff' && options.language === 'text') || options.language !== 'text'
       )
     ) {
       result = `Error: Library prettydiff.${modeValue}.${options.lexer} does not exist.`;
@@ -598,9 +584,7 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
     }
   }
 
-  result = options.endNewline === true
-    ? result.replace(/\s*$/, lf)
-    : result.replace(/\s+$/, '');
+  result = options.endNewline === true ? result.replace(/\s*$/, lf) : result.replace(/\s+$/, '');
 
   prettydiff.end = 0;
   prettydiff.start = 0;
@@ -622,91 +606,110 @@ const prettydiff: PrettyDiff = function mode (diffmeta?: Meta) {
   return result;
 };
 
-prettydiff.api = {};
-prettydiff.beautify = {};
+/* -------------------------------------------- */
+/* OBJECTS                                      */
+/* -------------------------------------------- */
+
+prettydiff.api = Object.create(null);
+prettydiff.beautify = Object.create(null);
+prettydiff.meta = Object.create(null);
+prettydiff.options = Object.create(null);
+prettydiff.options.lexerOptions = Object.create(null);
+
+/* -------------------------------------------- */
+/* PRESETS                                      */
+/* -------------------------------------------- */
+
 prettydiff.end = 0;
 prettydiff.iterator = 0;
-prettydiff.meta = {
-  error: ''
-  , lang: [ '', '', '' ]
-  , time: ''
-  , insize: 0
-  , outsize: 0
-  , difftotal: 0
-  , difflines: 0
-};
-
-prettydiff.options = {
-  attributeSort: false
-  , attributeSortList: []
-  , braceNewline: false
-  , bracePadding: false
-  , braceStyle: 'none'
-  , braceAllman: false
-  , caseSpace: false
-  , commentNewline: false
-  , comments: false
-  , compressCSS: false
-  , config: ''
-  , content: false
-  , attemptCorrection: false
-  , crlf: false
-  , classPadding: false
-  , diff: ''
-  , diffFormat: 'text'
-  , elseNewline: false
-  , endComma: 'never'
-  , endQuietly: 'default'
-  , forceAttribute: false
-  , forceIndent: false
-  , arrayFormat: 'default'
-  , objectIndent: 'default'
-  , functionNameSpace: false
-  , help: 80
-  , indentChar: ' '
-  , indentLevel: 0
-  , indentSize: 4
-  , language: 'auto'
-  , languageDefault: 'text'
-  , languageName: 'JavaScript'
-  , lexer: 'auto'
-  , methodChain: 3
-  , mode: 'diff'
-  , neverFlatten: false
-  , endNewline: false
-  , noCaseIndent: false
-  , noLeadZero: false
-  , noSemicolon: false
-  , objectSort: false
-  , output: ''
-  , parseFormat: 'parallel'
-  , parseSpace: false
-  , preserveLine: 0
-  , preserveComment: false
-  , preserveText: false
-  , quote: false
-  , quoteConvert: 'none'
-  , selector_list: false
-  , semicolon: false
-  , source: ''
-  , space: true
-  , selfCloseSpace: false
-  , styleguide: 'none'
-  , tagMerge: false
-  , tagSort: false
-  , ternaryLine: false
-  , preserveAttributes: false
-  , variableList: 'none'
-  , version: false
-  , vertical: false
-  , wrap: 0
-  , lexerOptions: {}
-} as PrettyDiffOptions;
-
 prettydiff.scopes = [];
 prettydiff.start = 0;
 
-// @ts-ignore
+/* -------------------------------------------- */
+/* META                                         */
+/* -------------------------------------------- */
+
+prettydiff.meta.error = '';
+prettydiff.meta.lang = [ '', '', '' ];
+prettydiff.meta.time = '';
+prettydiff.meta.insize = 0;
+prettydiff.meta.outsize = 0;
+prettydiff.meta.difftotal = 0;
+prettydiff.meta.difflines = 0;
+
+/* -------------------------------------------- */
+/* OPTIONS                                      */
+/* -------------------------------------------- */
+
+prettydiff.options.attributeSort = false;
+prettydiff.options.attributeSortList = [];
+prettydiff.options.braceNewline = false;
+prettydiff.options.bracePadding = false;
+prettydiff.options.braceStyle = 'none';
+prettydiff.options.braceAllman = false;
+prettydiff.options.caseSpace = false;
+prettydiff.options.commentNewline = false;
+prettydiff.options.comments = false;
+prettydiff.options.compressCSS = false;
+prettydiff.options.config = '';
+prettydiff.options.content = false;
+prettydiff.options.attemptCorrection = false;
+prettydiff.options.crlf = false;
+prettydiff.options.classPadding = false;
+prettydiff.options.diff = '';
+prettydiff.options.diffFormat = 'text';
+prettydiff.options.ifReturnInline = true;
+prettydiff.options.elseNewline = false;
+prettydiff.options.endComma = 'never';
+prettydiff.options.endQuietly = 'default';
+prettydiff.options.forceAttribute = false;
+prettydiff.options.forceIndent = false;
+prettydiff.options.arrayFormat = 'default';
+prettydiff.options.objectIndent = 'default';
+prettydiff.options.functionNameSpace = false;
+prettydiff.options.help = 80;
+prettydiff.options.indentChar = ' ';
+prettydiff.options.indentLevel = 0;
+prettydiff.options.indentSize = 4;
+prettydiff.options.language = 'auto';
+prettydiff.options.languageDefault = 'text';
+prettydiff.options.languageName = 'JavaScript';
+prettydiff.options.lexer = 'auto';
+prettydiff.options.methodChain = 3;
+prettydiff.options.mode = 'diff';
+prettydiff.options.neverFlatten = false;
+prettydiff.options.endNewline = false;
+prettydiff.options.noCaseIndent = false;
+prettydiff.options.noLeadZero = false;
+prettydiff.options.noSemicolon = false;
+prettydiff.options.objectSort = false;
+prettydiff.options.output = '';
+prettydiff.options.parseFormat = 'parallel';
+prettydiff.options.parseSpace = false;
+prettydiff.options.preserveLine = 0;
+prettydiff.options.preserveComment = false;
+prettydiff.options.preserveText = false;
+prettydiff.options.quote = false;
+prettydiff.options.quoteConvert = 'none';
+prettydiff.options.selector_list = false;
+prettydiff.options.semicolon = false;
+prettydiff.options.source = '';
+prettydiff.options.space = true;
+prettydiff.options.selfCloseSpace = false;
+prettydiff.options.styleguide = 'none';
+prettydiff.options.tagMerge = false;
+prettydiff.options.tagSort = false;
+prettydiff.options.ternaryLine = false;
+prettydiff.options.preserveAttributes = false;
+prettydiff.options.variableList = 'none';
+prettydiff.options.version = false;
+prettydiff.options.vertical = false;
+prettydiff.options.wrap = 0;
+
+/* -------------------------------------------- */
+/* SPARSER                                      */
+/* -------------------------------------------- */
+
 prettydiff.sparser = sparser;
 
 export { prettydiff };
