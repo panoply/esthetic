@@ -40,6 +40,10 @@
     ],
     "rules": {
       "no-unmodified-loop-condition": "off",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error"
+      ],
       "operator-linebreak": [
         "error",
         "after",
@@ -47,7 +51,7 @@
           "overrides": {
             "?": "before",
             ":": "before",
-            "&&": "before",
+            "&&": "after",
             "||": "after",
             "+": "before"
           }
@@ -56,6 +60,7 @@
     }
   },
   "devDependencies": {
+    "@liquify/eslint-config": "workspace:*",
     "@liquify/test-utils": "workspace:*",
     "ava": "^4.2.0",
     "chalk": "^5.0.1",
