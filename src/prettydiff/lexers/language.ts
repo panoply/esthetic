@@ -2,7 +2,7 @@ import { prettydiff } from '../parser/prettydiff';
 import { sparser } from '../parser/sparser';
 import { PDLanguage } from '../../types/prettydiff';
 
-export default (function language_init () {
+export default (() => {
 
   const language: PDLanguage = {
 
@@ -10,7 +10,6 @@ export default (function language_init () {
 
       const langmap = {
         css: 'style'
-        , handlebars: 'markup'
         , html: 'markup'
         , javascript: 'script'
         , json: 'script'
@@ -114,9 +113,7 @@ export default (function language_init () {
         let flaga = false;
         let flagb = false;
 
-        const publicprivate = (
-          /((public)|(private))\s+(static\s+)?(((v|V)oid)|(class)|(final))/
-        ).test(sample);
+        const publicprivate = (/((public)|(private))\s+(static\s+)?(((v|V)oid)|(class)|(final))/).test(sample);
 
         // language_auto_notmarkup_javascriptA
         function javascriptA () {
@@ -177,18 +174,10 @@ export default (function language_init () {
             ) return output('javascript');
           }
 
-          if (
-            (/\{\{#/).test(sample) === true &&
-              (/\{\{\//).test(sample) === true &&
-              (/<\w/).test(sample) === true
-          ) return output('handlebars');
-
           if ((/\{\s*(\w|\.|@|#)+\s*\{/).test(sample) === true) { return output('less'); }
           if ((/\$(\w|-)/).test(sample) === true) return output('scss');
           if ((/(;|\{|:)\s*@\w/).test(sample) === true) {
-            return output(
-              'less'
-            );
+            return output('less');
           }
 
           return output('css');
@@ -297,11 +286,7 @@ export default (function language_init () {
       function markup () {
 
         function html () {
-          if ((/\{\{(#|\/|\{)/).test(sample) === true) {
-            return output(
-              'handlebars'
-            );
-          }
+
           return output('html');
         };
 
@@ -321,22 +306,6 @@ export default (function language_init () {
               (/XHTML\s+1\.0\s+(S|s)((trict)|(TRICT))/).test(sample) ===
               false)
         ) return html();
-
-        if (
-          (/<jsp:include\s/).test(sample) === true ||
-            (/<c:((set)|(if))\s/).test(sample) === true
-        ) return output('jsp');
-
-        if ((/\{\{(#|\/|\{)/).test(sample) === true) {
-          return output(
-            'handlebars'
-          );
-        }
-
-        if (
-          (/<jsp:include\s/).test(sample) === true ||
-            (/<c:((set)|(if))\s/).test(sample) === true
-        ) return output('jsp');
 
         return output('xml');
 
@@ -423,4 +392,4 @@ export default (function language_init () {
   // @ts-ignore
   prettydiff.api.language = language;
 
-}());
+})();
