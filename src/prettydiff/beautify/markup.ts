@@ -2,6 +2,7 @@ import { prettydiff } from '../parser/prettydiff';
 import { PrettyDiffOptions } from '../../types/prettydiff';
 import { cc } from '../shared/enums';
 import { isLiquidElseTag, isLiquidEndTag, isLiquidOutputTag, isLiquidStartTag } from '../shared/utils';
+import * as rules from '../../rules';
 
 export default (() => {
 
@@ -186,10 +187,10 @@ export default (() => {
           aa = aa - 1;
 
           if (
-            token.is(aa, '</li>')
-            && token.is(aa - 1, '</a>')
-            && data.begin[data.begin[aa]] === stop
-            && data.begin[aa - 1] === data.begin[aa] + 1
+            token.is(aa, '</li>') &&
+            token.is(aa - 1, '</a>') &&
+            data.begin[data.begin[aa]] === stop &&
+            data.begin[aa - 1] === data.begin[aa] + 1
           ) {
 
             aa = data.begin[aa];
@@ -309,24 +310,24 @@ export default (() => {
           return;
         }
 
-        if (next < c
-          && (type.idx(next, 'end') > -1 || type.idx(next, 'start') > -1)
-          && data.lines[next] > 0
+        if (next < c &&
+          (type.idx(next, 'end') > -1 || type.idx(next, 'start') > -1) &&
+          data.lines[next] > 0
         ) {
 
           level.push(indent);
           ind = ind + 1;
 
           if (
-            data.types[a] === 'singleton'
-            && a > 0
-            && type.idx(a - 1, 'attribute') > -1
-            && type.is(data.begin[a - 1], 'singleton')
+            data.types[a] === 'singleton' &&
+            a > 0 &&
+            type.idx(a - 1, 'attribute') > -1 &&
+            type.is(data.begin[a - 1], 'singleton')
           ) {
 
             if (data.begin[a] < 0 || (
-              type.is(data.begin[a - 1], 'singleton')
-              && data.begin[data.ender[a] - 1] !== a
+              type.is(data.begin[a - 1], 'singleton') &&
+              data.begin[data.ender[a] - 1] !== a
             )) {
               level[a - 1] = indent;
             } else {
@@ -334,9 +335,9 @@ export default (() => {
             }
           }
         } else if (
-          a > 0
-          && type.is(a, 'singleton')
-          && type.idx(a - 1, 'attribute') > -1
+          a > 0 &&
+          type.is(a, 'singleton') &&
+          type.idx(a - 1, 'attribute') > -1
         ) {
 
           level[a - 1] = indent;
@@ -348,9 +349,9 @@ export default (() => {
           level.push(-20);
 
         } else if ((options.wrap === 0 || (
-          a < c - 2
-          && type.idx(a + 2, 'attribute') > -1
-          && (
+          a < c - 2 &&
+          type.idx(a + 2, 'attribute') > -1 &&
+          (
             data.token[a].length
             + data.token[a + 1].length
             + data.token[a + 2].length
@@ -378,9 +379,9 @@ export default (() => {
         }
 
         if (
-          a > 0
-          && type.idx(a - 1, 'attribute') > -1
-          && data.lines[a] < 1
+          a > 0 &&
+          type.idx(a - 1, 'attribute') > -1 &&
+          data.lines[a] < 1
         ) {
 
           level[a - 1] = -20;
@@ -487,10 +488,10 @@ export default (() => {
         do {
 
           if (
-            data.lexer[a + 1] === lexer
-            && data.begin[a + 1] < skip
-            && type.not(a + 1, 'start')
-            && type.not(a + 1, 'singleton')
+            data.lexer[a + 1] === lexer &&
+            data.begin[a + 1] < skip &&
+            type.not(a + 1, 'start') &&
+            type.not(a + 1, 'singleton')
           ) break;
 
           level.push(0);
@@ -499,19 +500,22 @@ export default (() => {
 
         } while (a < c);
 
-        level.push(indent - 1);
         externalIndex[skip] = a;
+
+        level.push(indent - 1);
         next = nextIndex();
 
         if (
-          data.lexer[next] === lexer
-          && data.stack[a].indexOf('attribute') < 0 && (
+          data.lexer[next] === lexer &&
+          data.stack[a].indexOf('attribute') < 0 && (
             data.types[next] === 'end' ||
             data.types[next] === 'template_end'
           )
         ) {
+
           indent = indent - 1;
         }
+
       };
 
       function attribute () {
@@ -705,6 +709,7 @@ export default (() => {
                 if (data.lexer[a + 1] !== lexer) {
                   a = a + 1;
                   external();
+
                 }
 
               }
@@ -737,8 +742,8 @@ export default (() => {
             } else if (
               options.forceAttribute === true ||
               attStart === true || (
-                a < c - 1 && type.not(a + 1, 'template_attribute')
-                && type.idx(a + 1, 'attribute') > 0
+                a < c - 1 && type.not(a + 1, 'template_attribute') &&
+                type.idx(a + 1, 'attribute') > 0
               )
             ) {
 
@@ -781,11 +786,11 @@ export default (() => {
         a = a - 1;
 
         if (
-          level[a - 1] > 0
-          && type.idx(a, 'end') > 0
-          && type.idx(a, 'attribute') > 0
-          && type.not(parent, 'singleton')
-          && plural === true
+          level[a - 1] > 0 &&
+          type.idx(a, 'end') > 0 &&
+          type.idx(a, 'attribute') > 0 &&
+          type.not(parent, 'singleton') &&
+          plural === true
         ) {
           level[a - 1] = level[a - 1] - 1;
         }
@@ -793,9 +798,9 @@ export default (() => {
         if (level[a] !== -20) {
 
           if (
-            options.language === 'jsx'
-            && type.idx(parent, 'start') > -1
-            && type.is(a + 1, 'script_start')
+            options.language === 'jsx' &&
+            type.idx(parent, 'start') > -1 &&
+            type.is(a + 1, 'script_start')
           ) {
             level[a] = lev;
           } else {
@@ -829,9 +834,9 @@ export default (() => {
           if (options.selfCloseSpace === false) len = len - 1;
 
           if (
-            len > options.wrap
-            && options.wrap > 0
-            && options.forceAttribute === false
+            len > options.wrap &&
+            options.wrap > 0 &&
+            options.forceAttribute === false
           ) {
 
             count = data.token[a].length;
@@ -846,10 +851,10 @@ export default (() => {
             } while (y > parent);
           }
         } else if (
-          options.wrap > 0
-          && data.types[a] === 'attribute'
-          && data.token[a].length > options.wrap
-          && (/\s/).test(data.token[a]) === true
+          options.wrap > 0 &&
+          data.types[a] === 'attribute' &&
+          data.token[a].length > options.wrap &&
+          (/\s/).test(data.token[a]) === true
         ) {
 
           wrap(a);
@@ -918,8 +923,7 @@ export default (() => {
                 level.push(-10);
               }
 
-            } else if ((options.forceIndent === false ||
-              (options.forceIndent && type.is(next, 'script_start'))
+            } else if ((options.forceIndent === false || (options.forceIndent && type.is(next, 'script_start'))
             ) && (
               type.is(a, 'content') ||
               type.is(a, 'singleton') ||
@@ -928,38 +932,7 @@ export default (() => {
 
               count = count + data.token[a].length;
 
-              if (type.is(a, 'template') && isLiquidOutputTag(data.token[a])) {
-
-                level.push(indent);
-
-                // ATTRIBUTE GLUE
-                const pos: number = data.token[a].indexOf(lf);
-
-                if (pos > 0) {
-
-                  const linez = (level[a - 1] * options.indentSize) + (
-                    data.token[a].charCodeAt(2) === cc.DSH
-                      ? options.indentSize
-                      : options.indentSize - 1
-                  );
-
-                  const linesout = [];
-
-                  let iidx = 0;
-
-                  do {
-
-                    linesout.push(' ');
-                    iidx = iidx + 1;
-
-                  } while (iidx < linez);
-
-                  data.token[a] = data.token[a].replace(/^\s+/gm, '').replace(/\n/g, (n) => {
-                    return n + linesout.join('');
-                  });
-
-                }
-              } else if (data.lines[next] > 0 && type.is(next, 'script_start')) {
+              if (data.lines[next] > 0 && type.is(next, 'script_start')) {
 
                 level.push(-10);
 
@@ -970,10 +943,7 @@ export default (() => {
 
                 content();
 
-              } else if (next < c && (
-                type.idx(next, 'end') > -1 ||
-                type.idx(next, 'start') > -1
-              ) && (
+              } else if (next < c && (type.idx(next, 'end') > -1 || type.idx(next, 'start') > -1) && (
                 data.lines[next] > 0 ||
                 type.idx(a, 'template_') > -1
               )) {
@@ -1064,10 +1034,10 @@ export default (() => {
           }
 
           if (
-            type.not(a, 'content')
-            && type.not(a, 'singleton')
-            && type.not(a, 'template')
-            && type.not(a, 'attribute')
+            type.not(a, 'content') &&
+            type.not(a, 'singleton') &&
+            type.not(a, 'template') &&
+            type.not(a, 'attribute')
           ) {
             count = 0;
           }
@@ -1106,14 +1076,6 @@ export default (() => {
         return indy.join('');
 
       })();
-
-      /* -------------------------------------------- */
-      /* MARKUP APPLY SCOPES                          */
-      /* -------------------------------------------- */
-
-      let a = prettydiff.start;
-      let external = '';
-      let lastLevel = options.indentLevel;
 
       /**
        * Applies a new line character plus the correct
@@ -1200,15 +1162,9 @@ export default (() => {
 
         do {
 
-          console.log(
-            build.length,
-            [
-
-              JSON.stringify(lines[aa])
-
-            ]
-          );
-
+          // HOT PATCH
+          // Fixes newlines in comments
+          // opposed to generation '\n     ' a newline character is applied
           if (lines[aa] !== '') {
             if (lines[aa + 1].trimStart() !== '') {
               build.push(lines[aa], newline(lev));
@@ -1233,7 +1189,6 @@ export default (() => {
 
         if (levels[a] === -10) {
           build.push(' ');
-
         } else if (levels[a] > -1) {
           const p = newline(levels[a]);
           build.push(p);
@@ -1290,6 +1245,16 @@ export default (() => {
 
       };
 
+      /* -------------------------------------------- */
+      /* MARKUP APPLY SCOPES                          */
+      /* -------------------------------------------- */
+
+      a = prettydiff.start;
+      let ext:string = '';
+      let lastLevel: number;
+
+      lastLevel = options.indentLevel;
+
       do {
 
         if (data.lexer[a] === lexer || prettydiff.beautify[data.lexer[a]] === undefined) {
@@ -1299,10 +1264,10 @@ export default (() => {
             type.is(a, 'singleton') ||
             type.is(a, 'xml') ||
             type.is(a, 'sgml')
-          ) && type.idx(a, 'attribute') < 0
-            && a < c - 1
-            && data.types[a + 1] !== undefined
-            && type.idx(a + 1, 'attribute') > -1
+          ) && type.idx(a, 'attribute') < 0 &&
+            a < c - 1 &&
+            data.types[a + 1] !== undefined &&
+            type.idx(a + 1, 'attribute') > -1
           ) {
 
             attributeEnd();
@@ -1324,8 +1289,8 @@ export default (() => {
             if (levels[a] === -10 && a < c - 1) {
               build.push(' ');
             } else if (levels[a] > -1) {
-              lastLevel = levels[a];
               build.push(newline(levels[a]));
+              lastLevel = levels[a];
             }
 
           }
@@ -1333,17 +1298,30 @@ export default (() => {
         } else {
 
           if (externalIndex[a] === a && type.not(a, 'reference')) {
+
             build.push(data.token[a]);
 
           } else {
 
-            options.indentLevel = lastLevel;
             prettydiff.end = externalIndex[a];
             prettydiff.start = a;
+            options.indentLevel = lastLevel;
 
-            external = prettydiff.beautify[data.lexer[a]](options).replace(/\s+$/, '');
+            if (data.stack[a] === 'schema') {
 
-            build.push(external);
+              const conf = Object.assign({}, options, rules.json);
+
+              ext = prettydiff.beautify[data.lexer[a]](conf);
+
+              // HOT PATCH
+              // Ensure schema tag block is on same line
+              build[build.length - 1] = '\n';
+
+            } else {
+              ext = prettydiff.beautify[data.lexer[a]](options);
+            }
+
+            build.push(ext.replace(/\s+$/, ''));
 
             if (levels[prettydiff.iterator] > -1 && externalIndex[a] > a) {
               build.push(newline(levels[prettydiff.iterator]));
@@ -1351,6 +1329,10 @@ export default (() => {
 
             a = prettydiff.iterator;
 
+            // HOT PATCH
+            // Reset indentation level, if not reset to 0 then
+            // content will shift on save
+            options.indentLevel = 0;
           }
         }
 
@@ -1358,6 +1340,7 @@ export default (() => {
 
       } while (a < c);
 
+      // console.log(prettydiff);
       prettydiff.iterator = c - 1;
 
       if (build[0] === lf || build[0] === ' ') build[0] = '';

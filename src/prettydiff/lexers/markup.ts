@@ -1,8 +1,7 @@
 
 import { sparser } from '../parser/parse';
-import { IRecord, Parsed, HTMLBlocks, HTMLVoids, Types } from '../../types/sparser';
+import { IRecord, Parsed, Types } from '../../types/sparser';
 import { cc } from '../shared/enums';
-import { isLiquidOutputTag } from '../shared/utils';
 
 export default (() => {
 
@@ -12,54 +11,77 @@ export default (() => {
 
   /**
    * HTML Block reference map
-   *
-   * > We omit the prototype because we live in a society, we are not animals.
    */
-  const blocks: { [K in HTMLBlocks]: 'block' } = Object.create(null); // eslint-disable-line
-
-  blocks.body = 'block';
-  blocks.colgroup = 'block';
-  blocks.dd = 'block';
-  blocks.dt = 'block';
-  blocks.head = 'block';
-  blocks.html = 'block';
-  blocks.li = 'block';
-  blocks.option = 'block';
-  blocks.p = 'block';
-  blocks.tbody = 'block';
-  blocks.td = 'block';
-  blocks.tfoot = 'block';
-  blocks.th = 'block';
-  blocks.thead = 'block';
-  blocks.tr = 'block';
+  const blocks = new Set([
+    'body',
+    'colgroup',
+    'dd',
+    'dt',
+    'head',
+    'html',
+    'li',
+    'option',
+    'p',
+    'tbody',
+    'td',
+    'tfoot',
+    'th',
+    'thead',
+    'tr'
+  ]);
 
   /**
    * HTML Void reference map
-   *
-   * > We omit the prototype because we live in a society, we are not animals.
    */
-  const voids: { [K in HTMLVoids]: 'singleton' } = Object.create(null); // eslint-disable-line
+  const voids = new Set([
+    'area',
+    'base',
+    'basefont',
+    'br',
+    'col',
+    'embed',
+    'eventsource',
+    'frame',
+    'hr',
+    'image',
+    'img',
+    'input',
+    'isindex',
+    'keygen',
+    'link',
+    'meta',
+    'param',
+    'progress',
+    'source',
+    'wbr'
+  ]);
 
-  voids.area = 'singleton';
-  voids.base = 'singleton';
-  voids.basefont = 'singleton';
-  voids.br = 'singleton';
-  voids.col = 'singleton';
-  voids.embed = 'singleton';
-  voids.eventsource = 'singleton';
-  voids.frame = 'singleton';
-  voids.hr = 'singleton';
-  voids.image = 'singleton';
-  voids.img = 'singleton';
-  voids.input = 'singleton';
-  voids.isindex = 'singleton';
-  voids.keygen = 'singleton';
-  voids.link = 'singleton';
-  voids.meta = 'singleton';
-  voids.param = 'singleton';
-  voids.progress = 'singleton';
-  voids.source = 'singleton';
-  voids.wbr = 'singleton';
+  /**
+   * Liquid Template reference map
+   */
+  const names = new Set([
+    'autoescape',
+    'case',
+    'capture',
+    'comment',
+    'embed',
+    'filter',
+    'for',
+    'form',
+    'if',
+    'macro',
+    'paginate',
+    'raw',
+    'switch',
+    'tablerow',
+    'unless',
+    'verbatim',
+    'schema',
+    'style',
+    'script',
+    'highlight',
+    'stylesheet'
+  ]);
 
   /* -------------------------------------------- */
   /* LEXER                                        */
@@ -89,12 +111,10 @@ export default (() => {
      * Lexer Options
      */
     const { lexerOptions } = options;
-
     /**
      * Parse data reference
      */
     const { data } = parse;
-
     /**
      * Deconstruct some preset options
      */
@@ -140,17 +160,17 @@ export default (() => {
     /**
      * Markdown flag
      */
-    let sgmlflag = 0;
+    const sgmlflag = 0;
 
     /**
-     * Extension
+     * External Tag, eg: <script> or {% schema %} etc
      */
     let ext = false;
 
     /**
      * HTML String
      */
-    let html = '';
+    let html = 'html';
 
     /* -------------------------------------------- */
     /* FUNCTIONS                                    */
@@ -224,7 +244,7 @@ export default (() => {
      */
     function bracketSpace (input: string) {
 
-      if (options.language !== 'xml' && options.language !== 'jsx') {
+      if (lexerOptions.markup.language !== 'xml' && lexerOptions.markup.language !== 'jsx') {
 
         const spaceStart = (start: string) => start.replace(/\s*$/, ' ');
         const spaceEnd = (end: string) => end.replace(/^\s*/, ' ');
@@ -250,7 +270,6 @@ export default (() => {
      */
     function recordPush (target: Parsed, record: IRecord, structure: string) {
 
-      // console.log(target);
       if (target === data) {
         if (record.types.indexOf('end') > -1) {
           count.end = count.end + 1;
@@ -258,8 +277,6 @@ export default (() => {
           count.start = count.start + 1;
         }
       }
-
-      if (lexerOptions.markup.parseSpace === true) record.lines = 0;
 
       parse.push(target, record, structure);
 
@@ -364,7 +381,7 @@ export default (() => {
 
       recordPush(data, record, '');
 
-      if (blocks[parse.structure[parse.structure.length - 1][0]] === 'block' && (
+      if (blocks.has(parse.structure[parse.structure.length - 1][0]) && (
         (end === true && parse.structure.length > 1) ||
         (end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)
       )) {
@@ -377,7 +394,7 @@ export default (() => {
 
           recordPush(data, record, '');
 
-        } while (blocks[parse.structure[parse.structure.length - 1][0]] === 'block' && (
+        } while (blocks.has(parse.structure[parse.structure.length - 1][0]) && (
           (end === true && parse.structure.length > 1) ||
           (end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)
         ));
@@ -503,7 +520,7 @@ export default (() => {
       /**
        * Whether or not the tag is a singleton type, eg: `<meta>`
        */
-      let singleton = false;
+      const singleton = false;
 
       /**
        * Attribute store reference
@@ -645,17 +662,17 @@ export default (() => {
             const len = chars.length - 1;
 
             if (
-              chars[eq + 1] !== '"'
-              && chars[chars.length - 1] !== '"'
-              && qc === 'single'
+              chars[eq + 1] !== '"' &&
+              chars[chars.length - 1] !== '"' &&
+              qc === 'single'
             ) {
 
               recordPush(data, record, '');
 
             } else if (
-              chars[eq + 1].charCodeAt(0) !== cc.SQO
-              && chars[chars.length - 1].charCodeAt(0) !== cc.SQO
-              && qc === 'double'
+              chars[eq + 1].charCodeAt(0) !== cc.SQO &&
+              chars[chars.length - 1].charCodeAt(0) !== cc.SQO &&
+              qc === 'double'
             ) {
 
               recordPush(data, record, '');
@@ -720,6 +737,7 @@ export default (() => {
 
         // fix for singleton tags, since "/" at the end of the tag is not an attribute
         if (attstore[attstore.length - 1][0] === '/') {
+
           attstore.pop();
           element = element.replace(/>$/, '/>');
         }
@@ -748,10 +766,10 @@ export default (() => {
 
         // sort the attributes
         if (
-          (lexerOptions.markup.attributeSort === true)
-          && options.language !== 'jsx'
-          && jscom === false
-          && nosort === false
+          (lexerOptions.markup.attributeSort === true) &&
+          lexerOptions.markup.language !== 'jsx' &&
+          jscom === false &&
+          nosort === false
         ) {
 
           // if making use of the 'attributeSortList` option
@@ -814,9 +832,11 @@ export default (() => {
 
             eq = attstore[idx][0].indexOf('=');
             dq = attstore[idx][0].indexOf('"');
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             sq = attstore[idx][0].indexOf("'");
 
-            if (/^\/(\/|\*)/.test(attstore[idx][0]) && options.language === 'jsx') {
+            if (/^\/(\/|\*)/.test(attstore[idx][0]) && lexerOptions.markup.language === 'jsx') {
 
               record.types = 'comment_attribute';
               record.token = attstore[idx][0];
@@ -854,11 +874,11 @@ export default (() => {
               name = attstore[idx][0].slice(0, eq);
               value = attstore[idx][0].slice(eq + 1);
 
-              if (options.attemptCorrection) {
+              if (lexerOptions.markup.attemptCorrection) {
                 if ('<{"\'='.indexOf(value.charAt(0)) < 0) value = '"' + value + '"';
               }
 
-              if (options.language === 'jsx' && /^\s*\{/.test(value)) {
+              if (lexerOptions.markup.language === 'jsx' && /^\s*\{/.test(value)) {
 
                 record.token = name + '={';
                 record.types = 'jsx_attribute_start';
@@ -966,13 +986,13 @@ export default (() => {
             start = '<!--';
 
           } else if (
-            b[a + 2] === '['
-            && b[a + 3] === 'C'
-            && b[a + 4] === 'D'
-            && b[a + 5] === 'A'
-            && b[a + 6] === 'T'
-            && b[a + 7] === 'A'
-            && b[a + 8] === '['
+            b[a + 2] === '[' &&
+            b[a + 3] === 'C' &&
+            b[a + 4] === 'D' &&
+            b[a + 5] === 'A' &&
+            b[a + 6] === 'T' &&
+            b[a + 7] === 'A' &&
+            b[a + 8] === '['
           ) {
 
             end = ']]>';
@@ -986,9 +1006,9 @@ export default (() => {
           end = '?>';
 
           if (
-            b[a + 2] === 'x'
-            && b[a + 3] === 'm'
-            && b[a + 4] === 'l'
+            b[a + 2] === 'x' &&
+            b[a + 3] === 'm' &&
+            b[a + 4] === 'l'
           ) {
             ltype = 'xml';
             simple = true;
@@ -1023,7 +1043,7 @@ export default (() => {
         }
       } else if (b[a] === '{') {
 
-        if (options.language === 'jsx') {
+        if (lexerOptions.markup.language === 'jsx') {
           ext = true;
           earlyexit = true;
           record.token = '{';
@@ -1129,13 +1149,11 @@ export default (() => {
           preserve = true;
           end = b[a + 1] + '}';
           ltype = 'template';
-
         }
       }
 
-      if (options.lexerOptions.markup.preserveAttributes === true) preserve = true;
-
-      if (earlyexit === true) return;
+      if (lexerOptions.markup.preserveAttributes === true) preserve = true;
+      if (earlyexit) return;
 
       // This is the real tag lexer.
       // Everything that follows is attribute handling and
@@ -1222,9 +1240,9 @@ export default (() => {
 
             atty = attribute.join('');
 
-            if (options.language !== 'jsx' || (
-              options.language === 'jsx'
-              && atty.charAt(atty.length - 1) !== '}'
+            if (lexerOptions.markup.language !== 'jsx' || (
+              lexerOptions.markup.language === 'jsx' &&
+              atty.charAt(atty.length - 1) !== '}'
             )) {
               atty = atty.replace(/\s+/g, ' ');
             }
@@ -1234,9 +1252,9 @@ export default (() => {
             if (name[0] === ignoreattr) ignoreme = true;
 
             if (
-              options.language === 'jsx'
-              && attribute[0] === '{'
-              && attribute[attribute.length - 1] === '}'
+              lexerOptions.markup.language === 'jsx' &&
+              attribute[0] === '{' &&
+              attribute[attribute.length - 1] === '}'
             ) {
               jsxcount = 0;
             }
@@ -1255,7 +1273,7 @@ export default (() => {
             } while (aa < bb);
           }
 
-          atty = attribute.join(options.crlf === true ? '\r\n' : '\n');
+          atty = attribute.join(lexerOptions.markup.crlf === true ? '\r\n' : '\n');
           atty = bracketSpace(atty);
 
           if (atty === '=') {
@@ -1263,18 +1281,18 @@ export default (() => {
             attstore[attstore.length - 1][0] = `${attstore[attstore.length - 1][0]}=`;
 
           } else if (
-            atty.charAt(0) === '='
-            && attstore.length > 0
-            && attstore[attstore.length - 1][0].indexOf('=') < 0
+            atty.charAt(0) === '=' &&
+            attstore.length > 0 &&
+            attstore[attstore.length - 1][0].indexOf('=') < 0
           ) {
 
             // if an attribute starts with a `=` then adjoin it to the last attribute
             attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
 
           } else if (
-            atty.charAt(0) !== '='
-            && attstore.length > 0
-            && attstore[attstore.length - 1][0].indexOf('=') === attstore[attstore.length - 1][0].length - 1
+            atty.charAt(0) !== '=' &&
+            attstore.length > 0 &&
+            attstore[attstore.length - 1][0].indexOf('=') === attstore[attstore.length - 1][0].length - 1
           ) {
 
             // if an attribute follows an attribute ending with `=` then adjoin it to the
@@ -1288,13 +1306,13 @@ export default (() => {
           }
 
           if (
-            attstore.length > 0
-            && attstore[attstore.length - 1][0].indexOf('=\u201c') > 0
+            attstore.length > 0 &&
+            attstore[attstore.length - 1][0].indexOf('=\u201c') > 0
           ) {
             sparser.parseError = `Quote looking character (\u201c, &#x201c) used instead of actual quotes on line number ${parse.lineNumber}`;
           } else if (
-            attstore.length > 0
-            && attstore[attstore.length - 1][0].indexOf('=\u201d') > 0
+            attstore.length > 0 &&
+            attstore[attstore.length - 1][0].indexOf('=\u201d') > 0
           ) {
             sparser.parseError = `Quote looking character (\u201d, &#x201d) used instead of actual quotes on line number ${parse.lineNumber}`;
           }
@@ -1392,7 +1410,7 @@ export default (() => {
 
               }
 
-              if (options.language === 'jsx') {
+              if (lexerOptions.markup.language === 'jsx') {
                 if (b[a] === '{') {
                   jsxcount = jsxcount + 1;
                 } else if (b[a] === '}') {
@@ -1401,20 +1419,20 @@ export default (() => {
               }
 
               if (
-                b[a] === '<'
-                && preserve === false
-                && lex.length > 1
-                && end !== '>>'
-                && end !== '>>>'
-                && simple === true
+                b[a] === '<' &&
+                preserve === false &&
+                lex.length > 1 &&
+                end !== '>>' &&
+                end !== '>>>' &&
+                simple === true
               ) {
                 sparser.parseError = `Parse error (line ${parse.lineNumber}) on: ${lex.join('')}`;
               }
 
               if (
-                stest === true
-                && /\s/.test(b[a]) === false
-                && b[a] !== lastchar
+                stest === true &&
+                /\s/.test(b[a]) === false &&
+                b[a] !== lastchar
               ) {
 
                 // attribute start
@@ -1428,18 +1446,18 @@ export default (() => {
                     if (b[a] === '\n') {
                       parse.lineNumber = parse.lineNumber + 1;
                     }
-                    if (options.lexerOptions.markup.preserveAttributes === true) {
+                    if (lexerOptions.markup.preserveAttributes === true) {
                       lex.push(b[a]);
                     } else {
                       attribute.push(b[a]);
                     }
 
-                    if (options.language !== 'jsx' && (
+                    if (lexerOptions.markup.language !== 'jsx' && (
                       b[a] === '<' ||
                       b[a] === '>'
                     ) && (
                       quote === '' ||
-                      quote === '>'
+                        quote === '>'
                     )) {
 
                       if (quote === '' && b[a] === '<') {
@@ -1482,10 +1500,12 @@ export default (() => {
                       // be a beautiful chaos, so I have little clue what this condition does,
                       // but it seems to fix this issue and actually preserveLine attributes.
 
-                      if (
-                        preserve === false
-                        && /^=?["']?({[{%])/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])
-                      ) {
+                      if (preserve === false && /^=?["']?({[{%])/.test(
+                        b[a]
+                        + b[a + 1]
+                        + b[a + 2]
+                        + b[a + 3]
+                      )) {
 
                         attribute.pop();
 
@@ -1516,19 +1536,19 @@ export default (() => {
                               b[a] = ' ';
                               break;
                             }
-                          } else if ((b[a] === '"' || b[a] === "'")
-                              && dustatt[dustatt.length - 1] !== '"'
-                              && dustatt[dustatt.length - 1] !== "'") {
+                          } else if ((b[a] === '"' || b[a] === "'") &&
+                            dustatt[dustatt.length - 1] !== '"' &&
+                            dustatt[dustatt.length - 1] !== "'") {
                             dustatt.push(b[a]);
                           } else if (b[a] === '{' && '{%#@:/?^<+~='
                             .indexOf(b[a + 1]) && dustatt[dustatt.length -
-                                1] !== '}') {
+                            1] !== '}') {
                             dustatt.push('}');
                           } else if (b[a] === '<' && dustatt[dustatt
                             .length - 1] !== '>') {
                             dustatt.push('>');
-                          } else if (b[a] === '[' && b[a + 1] === ':'
-                              && dustatt[dustatt.length - 1] !== ']') {
+                          } else if (b[a] === '[' && b[a + 1] === ':' &&
+                            dustatt[dustatt.length - 1] !== ']') {
                             dustatt.push(']');
                           }
 
@@ -1536,7 +1556,7 @@ export default (() => {
 
                         } while (a < c);
 
-                      } else if (b[a] === '{' && b[a - 1] === '=' && options.language !== 'jsx') {
+                      } else if (b[a] === '{' && b[a - 1] === '=' && lexerOptions.markup.language !== 'jsx') {
 
                         quote = '}';
 
@@ -1544,11 +1564,13 @@ export default (() => {
 
                         quote = b[a];
 
-                        if (b[a - 1] === '=' && (
-                          b[a + 1] === '<' ||
-                          (b[a + 1] === '{' && b[a + 2] === '%') ||
-                          ((/\s/).test(b[a + 1]) === true && b[a - 1] !== '=')
-                        )) {
+                        if (
+                          b[a - 1] === '=' && (
+                            b[a + 1] === '<' ||
+                            (b[a + 1] === '{' && b[a + 2] === '%') ||
+                            (/\s/.test(b[a + 1]) && b[a - 1] !== '=')
+                          )
+                        ) {
 
                           igcount = a;
                         }
@@ -1558,7 +1580,7 @@ export default (() => {
                         quote = ')';
                         parncount = 1;
 
-                      } else if (options.language === 'jsx') {
+                      } else if (lexerOptions.markup.language === 'jsx') {
 
                         // jsx variable attribute
                         if ((b[a - 1] === '=' || (/\s/).test(b[a - 1]) === true) && b[a] === '{') {
@@ -1577,9 +1599,9 @@ export default (() => {
 
                         }
                       } else if (
-                        lex[0] !== '{'
-                        && b[a] === '{'
-                        && (b[a + 1] === '{' || b[a + 1] === '%')
+                        lex[0] !== '{' &&
+                        b[a] === '{' &&
+                        (b[a + 1] === '{' || b[a + 1] === '%')
                       ) {
 
                         // opening embedded template expression
@@ -1642,13 +1664,13 @@ export default (() => {
                       }
 
                     } else if (
-                      options.language === 'jsx'
-                      && (
+                      lexerOptions.markup.language === 'jsx' &&
+                      (
                         quote === '}' ||
                         (quote === '\n' && b[a] === '\n') ||
-                        (quote === '\u002a/'
-                          && b[a - 1] === '*'
-                          && b[a] === '/'
+                        (quote === '\u002a/' &&
+                          b[a - 1] === '*' &&
+                          b[a] === '/'
                         )
                       )
                     ) {
@@ -1670,9 +1692,9 @@ export default (() => {
                             quote = '';
                             element = attribute.join('');
 
-                            if (options.lexerOptions.markup.preserveAttributes === false) {
+                            if (lexerOptions.markup.preserveAttributes === false) {
 
-                              if (options.language === 'jsx') {
+                              if (lexerOptions.markup.language === 'jsx') {
 
                                 if ((/^(\s*)$/).test(element) === false) {
                                   attstore.push([ element, lines ]);
@@ -1709,46 +1731,46 @@ export default (() => {
                       }
 
                     } else if (
-                      b[a] === '{'
-                      && b[a + 1] === '%'
-                      && b[igcount - 1] === '='
-                      && (quote === '"' || quote === "'")
+                      b[a] === '{' &&
+                      b[a + 1] === '%' &&
+                      b[igcount - 1] === '=' &&
+                      (quote === '"' || quote === "'")
                     ) {
 
                       quote = quote + '{%';
                       igcount = 0;
 
                     } else if (
-                      b[a - 1] === '%'
-                      && b[a] === '}'
-                      && (quote === '"{%' || quote === "'{%")
+                      b[a - 1] === '%' &&
+                      b[a] === '}' &&
+                      (quote === '"{%' || quote === "'{%")
                     ) {
 
                       quote = quote.charAt(0);
                       igcount = 0;
 
                     } else if (
-                      b[a] === '<'
-                      && end === '>'
-                      && b[igcount - 1] === '='
-                      && (quote === '"' || quote === "'")
+                      b[a] === '<' &&
+                      end === '>' &&
+                      b[igcount - 1] === '=' &&
+                      (quote === '"' || quote === "'")
                     ) {
 
                       quote = quote + '<';
                       igcount = 0;
 
                     } else if (
-                      b[a] === '>'
-                      && (quote === '"<' || quote === "'<")
+                      b[a] === '>' &&
+                      (quote === '"<' || quote === "'<")
                     ) {
 
                       quote = quote.charAt(0);
                       igcount = 0;
 
                     } else if (
-                      igcount === 0
-                      && quote !== '>'
-                      && (quote.length < 2 || (quote.charAt(0) !== '"' && quote.charAt(0) !== "'"))
+                      igcount === 0 &&
+                      quote !== '>' &&
+                      (quote.length < 2 || (quote.charAt(0) !== '"' && quote.charAt(0) !== "'"))
                     ) {
 
                       // terminate attribute at the conclusion of a quote pair
@@ -1793,77 +1815,63 @@ export default (() => {
                 quote = b[a];
 
               } else if (
-                ltype !== 'comment'
-                  && end !== '\n'
-                  && b[a] === '<'
-                  && b[a + 1] === '!'
-                  && b[a + 2] === '-'
-                  && b[a + 3] === '-'
-                  && b[a + 4] !== '#'
-                  && data.types[parse.count] !== 'conditional'
+                ltype !== 'comment' as any &&
+                end !== '\n' &&
+                b[a] === '<' &&
+                b[a + 1] === '!' &&
+                b[a + 2] === '-' &&
+                b[a + 3] === '-' &&
+                b[a + 4] !== '#' &&
+                data.types[parse.count] !== 'conditional'
               ) {
 
                 quote = '-->';
 
               } else if (
-                b[a] === '{'
-                && lex[0] !== '{'
-                && end !== '\n'
-                && (b[a + 1] === '{' || b[a + 1] === '%')
+                b[a] === '{' &&
+                lex[0] !== '{' &&
+                end !== '\n' &&
+                (b[a + 1] === '{' || b[a + 1] === '%')
               ) {
 
                 if (b[a + 1] === '{') {
-                  if (b[a + 2] === '{') {
-                    quote = '}}}';
-                  } else {
-                    quote = '}}';
-                  }
-                } else if (options.language === 'dustjs') {
-                  if (attribute.length < 1 && (attstore.length < 1 || (/\s/).test(b[a - 1]) === true)) {
-                    lex.pop();
-                    do {
-                      if (b[a] === '\n') {
-                        lines = lines + 1;
-                      }
-                      attribute.push(b[a]);
-                      a = a + 1;
-                    } while (a < c && b[a] !== '}');
-                    attribute.push('}');
-                    attstore.push([ attribute.join(''), lines ]);
-                    attribute = [];
-                    lines = 1;
-                  } else {
-                    quote = '}';
-                  }
+
+                  quote = '}}';
+
                 } else {
 
                   quote = b[a + 1] + '}';
+
                   if (attribute.length < 1 && (attstore.length < 1 || (/\s/).test(b[a - 1]) === true)) {
 
                     lex.pop();
+
                     do {
-                      if (b[a] === '\n') {
-                        lines = lines + 1;
-                      }
+
+                      if (b[a] === '\n') lines = lines + 1;
+
                       attribute.push(b[a]);
+
                       a = a + 1;
+
                     } while (a < c && b[a - 1] + b[a] !== quote);
+
                     attribute.push('}');
                     attstore.push([ attribute.join(''), lines ]);
+
                     attribute = [];
                     lines = 1;
                     quote = '';
                   }
                 }
-                if (quote === end) {
-                  quote = '';
-                }
+
+                if (quote === end) quote = '';
 
               } else if (
-                (simple === true || ltype === 'sgml')
-                && end !== '\n'
-                && (/\s/).test(b[a]) === true
-                && b[a - 1] !== '<'
+                (simple === true || ltype === 'sgml') &&
+                end !== '\n' &&
+                (/\s/).test(b[a]) === true &&
+                b[a - 1] !== '<'
               ) {
 
                 // identify a space in a regular start or singleton tag
@@ -1874,10 +1882,10 @@ export default (() => {
                 }
 
               } else if (
-                simple === true
-                && options.language === 'jsx'
-                && b[a] === '/'
-                && (b[a + 1] === '*' || b[a + 1] === '/')
+                simple === true &&
+                lexerOptions.markup.language === 'jsx' &&
+                b[a] === '/' &&
+                (b[a + 1] === '*' || b[a + 1] === '/')
               ) {
 
                 // jsx comment immediately following tag name
@@ -1892,17 +1900,17 @@ export default (() => {
                 }
 
               } else if (
-                (b[a] === lastchar || (end === '\n' && b[a + 1] === '<'))
-                && (lex.length > end.length + 1 || lex[0] === ']')
-                && (options.language !== 'jsx' || jsxcount === 0)
+                (b[a] === lastchar || (end === '\n' && b[a + 1] === '<')) &&
+                (lex.length > end.length + 1 || lex[0] === ']') &&
+                (lexerOptions.markup.language !== 'jsx' || jsxcount === 0)
               ) {
 
                 if (end === '\n') {
-                  if ((/\s/).test(lex[lex.length - 1]) === true) {
+                  if (/\s/.test(lex[lex.length - 1])) {
                     do {
                       lex.pop();
                       a = a - 1;
-                    } while ((/\s/).test(lex[lex.length - 1]) === true);
+                    } while (/\s/.test(lex[lex.length - 1]));
                   }
 
                   break;
@@ -1924,10 +1932,10 @@ export default (() => {
 
               }
             } else if (b[a] === quote.charAt(quote.length - 1) && ((
-              options.language === 'jsx'
-              && end === '}'
-              && (b[a - 1] !== '\\' || slashy() === false)) ||
-              options.language !== 'jsx' ||
+              lexerOptions.markup.language === 'jsx' &&
+              end === '}' &&
+              (b[a - 1] !== '\\' || slashy() === false)) ||
+              lexerOptions.markup.language !== 'jsx' ||
               end !== '}'
             )) {
 
@@ -1959,18 +1967,13 @@ export default (() => {
         } while (a < c);
 
         // a correction to incomplete template tags that use multiple angle braceAllman
-        if (options.attemptCorrection === true) {
+        if (lexerOptions.markup.attemptCorrection === true) {
 
           if (b[a + 1] === '>' && lex[0] === '<' && lex[1] !== '<') {
 
             do { a = a + 1; } while (b[a + 1] === '>');
 
-          } else if (
-            lex[0] === '<'
-            && lex[1] === '<'
-            && b[a + 1] !== '>'
-            && lex[lex.length - 2] !== '>'
-          ) {
+          } else if (lex[0] === '<' && lex[1] === '<' && b[a + 1] !== '>' && lex[lex.length - 2] !== '>') {
 
             do { lex.splice(1, 1); } while (lex[1] === '<');
           }
@@ -1984,20 +1987,16 @@ export default (() => {
         if (tname === 'xml') {
           html = 'xml';
         } else if (
-          html === ''
-          && tname === '!DOCTYPE'
-          && element.toLowerCase().indexOf('xhtml') > 0
+          html === '' &&
+          tname === '!DOCTYPE' &&
+          element.toLowerCase().indexOf('xhtml') > 0
         ) {
           html = 'xml';
         } else if (html === '' && tname === 'html') {
           html = 'html';
         }
 
-        if (
-          element.replace(start, '')
-            .replace(/^\s+/, '')
-            .indexOf('parse-ignore-start') === 0
-        ) {
+        if (element.replace(start, '').replace(/^\s+/, '').indexOf('parse-ignore-start') === 0) {
 
           a = a + 1;
 
@@ -2005,9 +2004,7 @@ export default (() => {
 
             lex.push(b[a]);
 
-            if (b[a] === 'd' && lex.slice(lex.length - 16).join('') === 'parse-ignore-end') {
-              break;
-            }
+            if (b[a] === 'd' && lex.slice(lex.length - 16).join('') === 'parse-ignore-end') break;
 
             a = a + 1;
 
@@ -2016,8 +2013,8 @@ export default (() => {
           do {
             lex.push(b[a]);
             if (
-              b[a] === end.charAt(end.length - 1)
-                && b.slice(a - (end.length - 1), a + 1).join('') === end
+              b[a] === end.charAt(end.length - 1) &&
+              b.slice(a - (end.length - 1), a + 1).join('') === end
             ) {
               break;
             }
@@ -2038,36 +2035,29 @@ export default (() => {
       record.types = ltype as any;
       tname = tagName(element);
 
-      if (preserve === false && options.language !== 'jsx') {
-        element = element.replace(/\s+/g, ' ');
-      }
+      if (preserve === false && lexerOptions.markup.language !== 'jsx') element = element.replace(/\s+/g, ' ');
 
       // a quick hack to inject records for a type of template comments
       if (tname === 'comment' && isLiquid(element, 2)) {
 
-        let linesStart:number = 0;
-        let linesEnd: number = 0;
-
-        const lineFindStart = function lexer_markup_tag_lineFindStart (spaces:string):string {
-          if (spaces === '') {
-            linesStart = 0;
-          } else {
-            linesStart = spaces.split('\n').length;
-          }
-          return '';
-        };
-        const lineFindEnd = function lexer_markup_tag_lineFindEnd (spaces:string):string {
-          if (spaces === '') {
-            linesEnd = 0;
-          } else {
-            linesEnd = spaces.split('\n').length;
-          }
-          return '';
-        };
-
         const open = element.slice(0, element.indexOf('%}') + 2);
         const comm = element.slice(element.indexOf('%}') + 2, element.lastIndexOf('{%'));
         const end = element.slice(element.lastIndexOf('{%'));
+
+        let linesStart: number = 0;
+        let linesEnd: number = 0;
+
+        function lineFindStart (spaces: string): string {
+          linesStart = spaces === '' ? 0 : spaces.split('\n').length;
+          return '';
+        };
+
+        function lineFindEnd (spaces: string): string {
+          linesEnd = spaces === '' ? 0 : spaces.split('\n').length;
+          return '';
+        };
+
+        /* COMMENT START ------------------------------ */
 
         record.begin = parse.structure[parse.structure.length - 1][1];
         record.ender = parse.count + 3;
@@ -2076,17 +2066,19 @@ export default (() => {
         record.token = open;
         recordPush(data, record, 'comment');
 
-        record.begin = parse.count;
+        /* COMMENT CONTENT ---------------------------- */
 
         element = comm.replace(/^\s*/, lineFindStart);
         element = element.replace(/\s*$/, lineFindEnd);
 
+        record.begin = parse.count;
         record.lines = linesStart;
         record.stack = 'comment';
         record.token = element;
         record.types = 'comment';
-
         recordPush(data, record, '');
+
+        /* COMMENT END -------------------------------- */
 
         record.types = 'template_end';
         record.stack = 'comment';
@@ -2100,69 +2092,33 @@ export default (() => {
 
       // a type correction for template tags who have variable start tag names but a
       // consistent ending tag name
-      if (element.indexOf('{{') === 0 && element.slice(element.length - 2) === '}}') {
-
-        if (tname === 'end') {
-          ltype = 'template_end';
-        } else if (tname === 'else') {
-          ltype = 'template_else';
-        }
-      }
-
       record.types = ltype;
-      // update a flag for subatomic parsing in SGML tags
-      if (end !== ']>' && sgmlflag > 0 && element.charAt(element.length -
-            1) !== '[' && (element.slice(element
-        .length - 2) === ']>' || (/^(<!((doctype)|(notation))\s)/i)
-        .test(element) === true)) {
-        sgmlflag = sgmlflag - 1;
-      }
+
       // cheat identifies HTML singleton elements as singletons even if formatted as
       // start tags, such as <br> (which is really <br/>)
-      cheat = (function lexer_markup_tag_cheat () {
+      cheat = (() => {
 
         const ender = (/(\/>)$/);
 
-        const peertest = function lexer_markup_tag_cheat_peertest (name, item) {
+        function peertest (n: string, i: string) {
 
-          if (blocks[name] === undefined) return false;
-          if (name === item) return true;
-          if (name === 'dd' && item === 'dt') return true;
-          if (name === 'dt' && item === 'dd') return true;
-          if (name === 'td' && item === 'th') return true;
-          if (name === 'th' && item === 'td') return true;
+          if (!blocks.has(n)) return false;
 
-          if (name === 'colgroup' && (
-            item === 'tbody' ||
-            item === 'tfoot' ||
-            item === 'thead' ||
-            item === 'tr'
-          )) return true;
-
-          if (name === 'tbody' && (
-            item === 'colgroup' ||
-            item === 'tfoot' ||
-            item === 'thead'
-          )) return true;
-
-          if (name === 'tfoot' && (
-            item === 'colgroup' ||
-            item === 'tbody' ||
-            item === 'thead'
-          )) return true;
-
-          if (name === 'thead' && (
-            item === 'colgroup' ||
-            item === 'tbody' ||
-            item === 'tfoot'
-          )) return true;
-
-          if (name === 'tr' && item === 'colgroup') return true;
+          if (n === i) return true;
+          if (n === 'dd' && i === 'dt') return true;
+          if (n === 'dt' && i === 'dd') return true;
+          if (n === 'td' && i === 'th') return true;
+          if (n === 'th' && i === 'td') return true;
+          if (n === 'colgroup' && (i === 'tbody' || i === 'tfoot' || i === 'thead' || i === 'tr')) return true;
+          if (n === 'tbody' && (i === 'colgroup' || i === 'tfoot' || i === 'thead')) return true;
+          if (n === 'tfoot' && (i === 'colgroup' || i === 'tbody' || i === 'thead')) return true;
+          if (n === 'thead' && (i === 'colgroup' || i === 'tbody' || i === 'tfoot')) return true;
+          if (n === 'tr' && i === 'colgroup') return true;
 
           return false;
         };
 
-        const addHtmlEnd = function (count) {
+        function addHtmlEnd (count: number) {
 
           record.lines = (data.lines[parse.count] > 0) ? 1 : 0;
           record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
@@ -2195,53 +2151,12 @@ export default (() => {
           const lastToken = data.token[parse.count];
 
           if (
-            data.types[parse.count - 1] === 'singleton'
-            && lastToken.charAt(lastToken.length - 2) !== '/'
-            && '/' + tagName(lastToken) === tname
+            data.types[parse.count - 1] === 'singleton' &&
+            lastToken.charAt(lastToken.length - 2) !== '/' &&
+            '/' + tagName(lastToken) === tname
           ) {
+
             data.types[parse.count - 1] = 'start';
-          } else if (
-            tname !== '/span'
-            && tname !== '/div'
-            && tname !== '/script'
-            && options.lexerOptions.markup.tagMerge === true
-            && (html !== 'html' || (html === 'html' && tname !== '/li'))
-          ) {
-
-            if (
-              (tname === '/' + tagName(data.token[parse.count]))
-              && data.types[parse.count] === 'start'
-            ) {
-
-              parse.structure.pop();
-              data.token[parse.count] = data.token[parse.count].replace(/>$/, '/>');
-              data.types[parse.count] = 'singleton';
-
-              singleton = true;
-
-              count.start = count.start - 1;
-
-              return false;
-            }
-
-            if (
-              tname === '/' + tagName(data.token[data.begin[parse.count]])
-              && data.types[parse.count].indexOf('attribute') > -1
-              && data.types[data.begin[parse.count]] === 'start'
-            ) {
-
-              const idx = data.begin[parse.count];
-
-              parse.structure.pop();
-              data.token[idx] = data.token[idx].replace(/>$/, '/>');
-              data.types[data.begin[parse.count]] = 'singleton';
-
-              singleton = true;
-
-              count.start = count.start - 1;
-
-              return false;
-            }
           }
         }
 
@@ -2250,9 +2165,9 @@ export default (() => {
           // html gets tag names in lowercase, if you want to preserveLine case sensitivity
           // beautify as XML
           if (
-            element.charAt(0) === '<'
-              && element.charAt(1) !== '!'
-              && element.charAt(1) !== '?' && (
+            element.charAt(0) === '<' &&
+            element.charAt(1) !== '!' &&
+            element.charAt(1) !== '?' && (
               parse.count < 0 ||
               data.types[parse.count].indexOf('template') < 0
             )
@@ -2261,91 +2176,94 @@ export default (() => {
             element = element.toLowerCase();
           }
 
-          if (
-            blocks[parse.structure[parse.structure.length - 1][0]] === 'block'
-            && peertest(
-              tname.slice(1),
-              parse.structure[parse.structure.length - 2][0]
-            ) === true
-          ) {
+          if (blocks.has(parse.structure[parse.structure.length - 1][0]) && peertest(
+            tname.slice(1),
+            parse.structure[parse.structure.length - 2][0]
+          )) {
 
             // looks for HTML tags missing an ending pair when encountering an ending tag for a parent node
             addHtmlEnd(0);
-          } else if (parse.structure.length > 3
-              && blocks[parse.structure[parse.structure.length - 1][
-                0
-              ]] === 'block'
-              && blocks[parse.structure[parse.structure.length - 2][
-                0
-              ]] === 'block'
-              && blocks[parse.structure[parse.structure.length - 3][
-                0
-              ]] === 'block'
-              && peertest(tname, parse.structure[parse.structure.length -
-                4][0]) === true) {
+          } else if (
+            parse.structure.length > 3 &&
+            blocks.has(parse.structure[parse.structure.length - 1][0]) &&
+            blocks.has(parse.structure[parse.structure.length - 2][0]) &&
+            blocks.has(parse.structure[parse.structure.length - 3][0]) &&
+            peertest(tname, parse.structure[parse.structure.length - 4][0]) === true
+          ) {
+
             // looks for consecutive missing end tags
             addHtmlEnd(3);
-          } else if (parse.structure.length > 2
-              && blocks[parse.structure[parse.structure.length - 1][
-                0
-              ]] === 'block'
-              && blocks[parse.structure[parse.structure.length - 2][
-                0
-              ]] === 'block'
-              && peertest(tname, parse.structure[parse.structure.length -
-                3][0]) === true) {
+
+          } else if (
+            parse.structure.length > 2 &&
+            blocks.has(parse.structure[parse.structure.length - 1][0]) &&
+            blocks.has(parse.structure[parse.structure.length - 2][0]) &&
+            peertest(tname, parse.structure[parse.structure.length - 3][0]) === true
+          ) {
+
             // looks for consecutive missing end tags
             addHtmlEnd(2);
+
           } else if (
-            parse.structure.length > 1
-            && blocks[parse.structure[parse.structure.length - 1][0]] === 'block'
-            && peertest(tname, parse.structure[parse.structure.length - 2][0]) === true
+            parse.structure.length > 1 &&
+            blocks.has(parse.structure[parse.structure.length - 1][0]) &&
+            peertest(tname, parse.structure[parse.structure.length - 2][0]) === true
           ) {
 
             // looks for consecutive missing end tags
             addHtmlEnd(1);
 
-          } else if (peertest(tname, parse.structure[parse.structure
-            .length - 1][0]) === true) {
+          } else if (peertest(tname, parse.structure[parse.structure.length - 1][0]) === true) {
+
             // certain tags cannot contain other certain tags if such tags are peers
             addHtmlEnd(0);
-          } else if (tname.charAt(0) === '/' && blocks[parse
-            .structure[parse.structure.length - 1][0]] ===
-              'block' && parse.structure[parse.structure.length - 1][
-            0
-          ] !== tname.slice(1)) {
+          } else if (
+            tname.charAt(0) === '/' &&
+            blocks.has(parse.structure[parse.structure.length - 1][0]) &&
+            parse.structure[parse.structure.length - 1][0] !== tname.slice(1)
+          ) {
 
             // looks for consecutive missing end tags if the current element is an end tag
             fixHtmlEnd(element, false);
+
             record.begin = parse.structure[parse.structure.length - 1][1];
             record.lines = parse.linesSpace;
             record.stack = parse.structure[parse.structure.length - 1][0];
             record.token = element;
             record.types = 'end';
+
             data.lines[parse.count - 1] = 0;
+
           }
 
           // inserts a trailing slash into singleton tags if they do not already have it
-          if (voids[tname] === 'singleton') {
-            if (options.attemptCorrection === true && ender.test(element) === false) {
+          if (voids.has(tname)) {
+            if (lexerOptions.markup.attemptCorrection === true && ender.test(element) === false) {
               element = element.slice(0, element.length - 1) + ' />';
             }
             return true;
           }
+
         }
 
         return false;
 
-      }());
+      })();
 
       // This escape flag is set in the cheat function
-      if (singleton === true) {
+      if (singleton) {
         attributeRecord();
         return;
       }
+
       // determine if the markup tag potentially contains code interpreted by a
       // different lexer
-      if (/\bscript|style\b/.test(tname) && element.slice(element.length - 2) !== '/>') {
+      if ((
+        (/\bscript|style\b/.test(tname) && element.slice(element.length - 2) !== '/>') ||
+        (/\bschema|style|stylesheet|javascript\b/.test(tname) && element.slice(element.length - 2) === '%}')
+      )) {
+
+        const liquid = isLiquid(element, 3);
 
         // get the attribute value for "type"
         let len = attstore.length - 1;
@@ -2354,15 +2272,19 @@ export default (() => {
 
         if (len > -1) {
           do {
+
             attr = attributeName(attstore[len][0]);
+
             if (attr[0] === 'type') {
+
               attValue = attr[1];
-              if (attValue.charAt(0) === '"' || attValue.charAt(0) ===
-                  "'") {
+              if (attValue.charAt(0) === '"' || attValue.charAt(0) === "'") {
                 attValue = attValue.slice(1, attValue.length - 1);
               }
+
               break;
             }
+
             len = len - 1;
           } while (len > -1);
         }
@@ -2373,7 +2295,9 @@ export default (() => {
         // Lets also capture JSON types which are defined
         // via application/json or application/ld+json
         if (
-          tname === 'script' && (
+          liquid === false &&
+          tname === 'script' &&
+          (
             attValue === '' ||
             attValue === 'text/javascript' ||
             attValue === 'babel' ||
@@ -2393,77 +2317,93 @@ export default (() => {
           ext = true;
 
         } else if (
-          tname === 'style'
-            && options.language !== 'jsx' && (
-            attValue === '' ||
-              attValue === 'text/css'
+          (tname === 'style' || tname === 'stylsheet') &&
+          lexerOptions.markup.language !== 'jsx' &&
+          (attValue === '' || attValue === 'text/css')
+        ) {
+
+          ext = true;
+
+        } else if (
+          liquid === true && (
+            tname === 'javascript' ||
+            tname === 'schema'
           )
         ) {
 
           ext = true;
+
         }
 
         if (ext === true) {
+
           len = a + 1;
+
           if (len < c) {
+
             do {
+
               if ((/\s/).test(b[len]) === false) {
+
                 if (b[len] === '<') {
+
                   if (b.slice(len + 1, len + 4).join('') === '!--') {
+
                     len = len + 4;
+
                     if (len < c) {
+
                       do {
+
                         if ((/\s/).test(b[len]) === false) {
                           ext = false;
                           break;
                         }
-                        if (b[len] === '\n' || b[len] === '\r') {
-                          break;
-                        }
+
+                        if (b[len] === '\n' || b[len] === '\r') break;
+
                         len = len + 1;
                       } while (len < c);
                     }
+
                   } else {
                     ext = false;
                   }
+
                 }
                 break;
               }
+
               len = len + 1;
+
             } while (len < c);
           }
         }
       }
 
       // am I a singleton or a start type?
-      if (
-        simple === true
-          && ignoreme === false
-          && ltype !== 'xml'
-          && ltype !== 'sgml'
-      ) {
+      if (simple && ignoreme === false && ltype !== 'xml') {
+
         if (cheat === true || element.slice(element.length - 2) === '/>') {
           ltype = 'singleton';
         } else {
           ltype = 'start';
         }
+
         record.types = ltype as Types;
       }
+
       // additional logic is required to find the end of a tag with the attribute
       // data-parse-ignore
-      if (
-        simple === true
-          && preserve === false
-          && ignoreme
-          && end === '>'
-          && element.slice(element.length - 2) !== '/>'
-      ) {
+      if (simple && preserve === false && ignoreme && end === '>' && element.slice(element.length - 2) !== '/>') {
 
         const tags = [];
         const atstring = [];
 
         if (cheat === true) {
+
           ltype = 'singleton';
+
         } else {
 
           attstore.forEach((value) => atstring.push(value[0]));
@@ -2491,17 +2431,12 @@ export default (() => {
                 if (b[a] === '"') {
 
                   delim = '"';
+
                 } else if (b[a] === "'") {
 
                   delim = "'";
 
-                } else if (
-                  tags[0] !== '{'
-                    && b[a] === '{' && (
-                    b[a + 1] === '{' ||
-                    b[a + 1] === '%'
-                  )
-                ) {
+                } else if (tags[0] !== '{' && b[a] === '{' && (b[a + 1] === '{' || b[a + 1] === '%')) {
 
                   if (b[a + 1] === '{') {
 
@@ -2525,31 +2460,31 @@ export default (() => {
 
                   if (endtag === true) {
                     igcount = igcount - 1;
-                    if (igcount < 0) {
-                      break;
-                    }
+                    if (igcount < 0) break;
                   } else {
                     igcount = igcount + 1;
                   }
                 }
 
               } else if (b[a] === delim.charAt(delim.length - 1)) {
+
                 ff = 0;
                 ee = delim.length - 1;
+
                 if (ee > -1) {
                   do {
-                    if (b[a - ff] !== delim.charAt(ee)) {
-                      break;
-                    }
+                    if (b[a - ff] !== delim.charAt(ee)) break;
                     ff = ff + 1;
                     ee = ee - 1;
                   } while (ee > -1);
                 }
-                if (ee < 0) {
-                  delim = '';
-                }
+
+                if (ee < 0) delim = '';
+
               }
+
               a = a + 1;
+
             } while (a < c);
           }
         }
@@ -2568,27 +2503,6 @@ export default (() => {
 
         if (element.slice(0, 2) === '{%') {
 
-          const names = [
-            'autoescape'
-            , 'case'
-            , 'capture'
-            , 'comment'
-            , 'embed'
-            , 'filter'
-            , 'for'
-            , 'form'
-            , 'if'
-            , 'macro'
-            , 'paginate'
-            , 'raw'
-            , 'sandbox'
-            , 'spaceless'
-            , 'switch'
-            , 'tablerow'
-            , 'unless'
-            , 'verbatim'
-          ];
-
           if (
             (tname === 'case' || tname === 'default') && (
               parse.structure[parse.structure.length - 1][0] === 'switch' ||
@@ -2596,38 +2510,42 @@ export default (() => {
             )
           ) {
             record.types = 'template_else';
-          } else if (
-            tname === 'else' ||
-            tname === 'when' ||
-            tname === 'elsif'
-          ) {
+          } else if (tname === 'else' || tname === 'when' || tname === 'elsif') {
             record.types = 'template_else';
           } else {
+            if (names.has(tname)) {
+              record.types = 'template_start';
+            } else if (tname[0] === 'e' && tname[1] === 'n' && tname[2] === 'd' && names.has(tname.slice(3))) {
+              record.types = 'template_end';
+            } else if (tname[0] === 'e' && tname[1] === 'n' && tname[2] === 'd') {
 
-            let namelen = names.length - 1;
+              record.types = 'template_end';
+              record.stack = tname.slice(3);
 
-            do {
-              if (tname === names[namelen]) {
-                record.types = 'template_start';
-                break;
-              }
+              let idx = 0;
 
-              if (tname === 'end' + names[namelen]) {
-                record.types = 'template_end';
-                break;
-              }
+              do {
+                if (data.types[idx] === 'template' && data.stack[idx] === record.stack) {
+                  data.types[idx] = 'template_start';
+                  count.start = count.start + 1;
+                  break;
+                } else {
+                  idx = data.stack.indexOf(record.stack, idx + 1);
+                }
+              } while (idx > -1);
 
-              namelen = namelen - 1;
+            } else {
 
-            } while (namelen > -1);
-
+              record.stack = tname;
+            }
           }
 
         } else if (record.types === 'template') {
-
-          if (element.indexOf('else') > 2) record.types = 'template_else';
-
+          if (element.indexOf('else') > 2) {
+            record.types = 'template_else';
+          }
         }
+
         if (record.types === 'template_start' || record.types === 'template_else') {
           if (tname === '' || tname === '%') {
             tname = tname + element.slice(1).replace(tname, '').replace(/^\s+/, '');
@@ -2677,13 +2595,16 @@ export default (() => {
 
       } else {
 
+        // Liquid Tags and other items are pushed here
+
         recordPush(data, record, tname);
+
       }
 
       attributeRecord();
 
       // inserts a script space in anticipation of word wrap since JSX has unique white space rules
-      if (options.wrap > 0 && options.language === 'jsx') {
+      if (lexerOptions.markup.wrap > 0 && lexerOptions.markup.language === 'jsx') {
 
         let current_length = 0;
         let bb = parse.count;
@@ -2708,6 +2629,7 @@ export default (() => {
         if (current_length > 0 && data.types[cc] !== 'script_end') {
 
           if (data.types[cc].indexOf('attribute') > -1) {
+
             do {
               current_length = current_length + data.token[cc].length + 1;
               cc = cc - 1;
@@ -2716,10 +2638,11 @@ export default (() => {
             if (data.lines[cc] === 1) current_length = current_length + data.token[cc].length + 1;
 
           } else if (data.lines[cc] === 1) {
+
             current_length = data.token[cc].length + 1;
           }
 
-          if (current_length > options.wrap && data.lines[bb] === 1) {
+          if (current_length > lexerOptions.markup.wrap && data.lines[bb] === 1) {
 
             record.begin = data.begin[bb];
             record.ender = bb + 2;
@@ -2730,10 +2653,10 @@ export default (() => {
             record.types = 'script_start';
 
             parse.splice({
-              data: data
-              , howmany: 0
-              , index: bb
-              , record: record
+              data: data,
+              howmany: 0,
+              index: bb,
+              record: record
             });
 
             record.begin = bb;
@@ -2741,7 +2664,7 @@ export default (() => {
             record.lines = 0;
             record.stack = 'script';
 
-            if (options.quoteConvert === 'single') {
+            if (lexerOptions.markup.quoteConvert === 'single') {
               record.token = "' '";
             } else {
               record.token = '" "';
@@ -2750,10 +2673,10 @@ export default (() => {
             record.types = 'string';
 
             parse.splice({
-              data: data
-              , howmany: 0
-              , index: bb + 1
-              , record: record
+              data: data,
+              howmany: 0,
+              index: bb + 1,
+              record: record
             });
 
             record.lexer = 'markup';
@@ -2761,10 +2684,10 @@ export default (() => {
             record.types = 'script_end';
 
             parse.splice({
-              data: data
-              , howmany: 0
-              , index: bb + 2
-              , record: record
+              data: data,
+              howmany: 0,
+              index: bb + 2,
+              record: record
             });
 
             data.ender[bb + 3] = data.ender[bb + 3] + 3;
@@ -2779,184 +2702,6 @@ export default (() => {
           }
         }
       }
-      // sorts child elements
-      if (
-        options.lexerOptions.markup.tagSort === true
-          && data.types[parse.count] === 'end'
-          && data.types[parse.count - 1] !== 'start'
-          && tname !== '/script'
-          && tname !== '/style'
-      ) {
-
-        let bb = 0;
-        let d = 0;
-        let startStore = 0;
-        let jsxatt = false;
-
-        const children = [];
-        const store = Object.create(null);
-
-        store.begin = [];
-        store.ender = [];
-        store.lexer = [];
-        store.lines = [];
-        store.stack = [];
-        store.token = [];
-        store.types = [];
-
-        function storeRecord (index: number) {
-
-          const output = Object.create(null);
-
-          output.begin = data.begin[index];
-          output.ender = data.ender[index];
-          output.lexer = data.lexer[index];
-          output.lines = data.lines[index];
-          output.stack = data.stack[index];
-          output.token = data.token[index];
-          output.types = data.types[index];
-
-          return output;
-        };
-
-        function childsort (a: number, b: number) {
-
-          return (data.token[a[0]] > data.token[b[0]])
-            ? -1
-            : 1;
-        }
-
-        bb = parse.count - 1;
-
-        if (bb > -1) {
-
-          let endStore = 0;
-
-          do {
-            if (data.types[bb] === 'start') {
-              d = d - 1;
-
-              if (d < 0) {
-
-                startStore = bb + 1;
-
-                if (data.types[startStore] === 'attribute' || data.types[startStore] === 'jsx_attribute_start') {
-
-                  jsxatt = false;
-
-                  do {
-
-                    startStore = startStore + 1;
-
-                    if (jsxatt === false && data.types[startStore] !== 'attribute') break;
-                    if (data.types[startStore] === 'jsx_attribute_start') {
-                      jsxatt = true;
-                    } else if (data.types[startStore] === 'jsx_attribute_end') {
-                      jsxatt = false;
-                    }
-
-                  } while (startStore < c);
-                }
-
-                break;
-              }
-            } else if (data.types[bb] === 'end') {
-              d = d + 1;
-              if (d === 1) endStore = bb;
-            }
-
-            if (d === 0) {
-              if (data.types[bb] === 'start') {
-
-                children.push([ bb, endStore ]);
-
-              } else {
-                if (data.types[bb] === 'singleton' && (
-                  data.types[bb + 1] === 'attribute' ||
-                  data.types[bb + 1] === 'jsx_attribute_start')
-                ) {
-
-                  let cc = bb + 1;
-                  jsxatt = false;
-
-                  do {
-
-                    if (data.types[cc] === 'jsx_attribute_start') {
-                      jsxatt = true;
-                    } else if (data.types[cc] === 'jsx_attribute_end') {
-                      jsxatt = false;
-                    }
-
-                    if (jsxatt === false
-                      && data.types[cc + 1] !== 'attribute'
-                      && data.types[cc + 1] !== 'jsx_attribute_start') break;
-
-                    cc = cc + 1;
-
-                  } while (cc < parse.count);
-
-                  children.push([ bb, cc ]);
-
-                } else if (data.types[bb] !== 'attribute' && data.types[bb] !== 'jsx_attribute_start') {
-
-                  children.push([ bb, bb ]);
-                }
-              }
-            }
-
-            bb = bb - 1;
-
-          } while (bb > -1);
-        }
-
-        if (children.length < 2) return;
-
-        children.sort(childsort);
-
-        bb = children.length - 1;
-
-        if (bb > -1) {
-          do {
-
-            recordPush(store, storeRecord(children[bb][0]), '');
-
-            if (children[bb][0] !== children[bb][1]) {
-
-              d = children[bb][0] + 1;
-
-              if (d < children[bb][1]) {
-                do {
-                  recordPush(store, storeRecord(d), '');
-                  d = d + 1;
-                } while (d < children[bb][1]);
-              }
-
-              recordPush(store, storeRecord(children[bb][1]), '');
-            }
-
-            bb = bb - 1;
-
-          } while (bb > -1);
-        }
-
-        const endData = Object.create(null);
-
-        endData.begin = data.begin.pop();
-        endData.ender = data.ender.pop();
-        endData.lexer = data.lexer.pop();
-        endData.lines = data.lines.pop();
-        endData.stack = data.stack.pop();
-        endData.token = data.token.pop();
-        endData.types = data.types.pop();
-
-        // lexer_markup_tagSorttag_slice_datanames
-        for (const value of parse.datanames) data[value] = data[value].slice(0, startStore);
-
-        parse.concat(data, store);
-        count.end = count.end - 1;
-
-        recordPush(data, endData, '');
-      }
 
       parse.linesSpace = 0;
     }
@@ -2966,23 +2711,29 @@ export default (() => {
 
       let ltoke = '';
       let liner = parse.linesSpace;
+      let name: string = '';
 
       const lex = [];
       const jsxbrace = (data.token[parse.count] === '{');
       const now = a;
 
-      const name = (ext === true) ? (jsxbrace === true)
-        ? 'script'
-        : (parse.structure[parse.structure.length - 1][1] > -1)
-          ? tagName(data.token[parse.structure[parse.structure.length - 1][1]].toLowerCase())
-          : tagName(data.token[data.begin[parse.count]].toLowerCase())
-        : '';
+      if (ext === true) {
+        if (jsxbrace === true) {
+          name = 'script';
+        } else if (parse.structure[parse.structure.length - 1][1] > -1) {
+          name = tagName(data.token[parse.structure[parse.structure.length - 1][1]].toLowerCase());
+        } else if (data.begin[parse.count] > 1) {
+          name = tagName(data.token[data.begin[parse.count]].toLowerCase());
+        } else {
+          name = tagName(data.token[data.begin[parse.count]].toLowerCase());
+        }
+      }
 
       const square = (
-        data.types[parse.count] === 'template_start'
-        && data.token[parse.count].indexOf('<!') === 0
-        && data.token[parse.count].indexOf('<![') < 0
-        && data.token[parse.count].charAt(data.token[parse.count].length - 1) === '['
+        data.types[parse.count] === 'template_start' &&
+        data.token[parse.count].indexOf('<!') === 0 &&
+        data.token[parse.count].indexOf('<![') < 0 &&
+        data.token[parse.count].charAt(data.token[parse.count].length - 1) === '['
       );
 
       const record: IRecord = Object.create(null);
@@ -3039,17 +2790,18 @@ export default (() => {
                   quote = '*';
                 } else if (b[a + 1] === '/') {
                   quote = '/';
-                } else if (name === 'script' && '([{!=,;.?:&<>'.indexOf(b[
-                  a - 1]) > -1) {
-                  if (options.language !== 'jsx' || b[a - 1] !== '<') {
-                    quote = 'reg';
-                  }
+                } else if (name === 'script' && '([{!=,;.?:&<>'.indexOf(b[a - 1]) > -1) {
+                  if (lexerOptions.markup.language !== 'jsx' || b[a - 1] !== '<') quote = 'reg';
                 }
 
               } else if ((b[a] === '"' || b[a] === "'" || b[a] === '`') && esctest() === false) {
+
                 quote = b[a];
+
               } else if (b[a] === '{' && jsxbrace === true) {
+
                 quotes = quotes + 1;
+
               } else if (b[a] === '}' && jsxbrace === true) {
 
                 if (quotes === 0) {
@@ -3057,17 +2809,13 @@ export default (() => {
                   sparser.lexers.script(lex.join('').replace(/^(\s+)/, '').replace(/(\s+)$/, ''));
 
                   // Originally was:
-                  // parse.structure[parse.structure.length - 1][1] + 1
                   // Added incremental
                   parse.structure[parse.structure.length - 1][1] += 1;
 
-                  if (
-                    data.types[parse.count] === 'end'
-                    && data.lexer[data.begin[parse.count] - 1] === 'script'
-                  ) {
+                  if (data.types[parse.count] === 'end' && data.lexer[data.begin[parse.count] - 1] === 'script') {
 
                     record.lexer = 'script';
-                    record.token = (options.attemptCorrection === true) ? ';' : 'x;';
+                    record.token = (lexerOptions.markup.attemptCorrection === true) ? ';' : 'x;';
                     record.types = 'separator';
                     recordPush(data, record, '');
                     record.lexer = 'markup';
@@ -3080,149 +2828,196 @@ export default (() => {
                   parse.structure.pop();
                   break;
                 }
+
                 quotes = quotes - 1;
               }
 
-              end = b.slice(a, a + 10).join('').toLowerCase();
+              if (isLiquid(data.token[parse.count], 3) === false) {
 
-              // script requires use of the script lexer
-              if (name === 'script') {
+                end = b.slice(a, a + 10).join('').toLowerCase();
 
-                if (a === c - 9) {
-                  end = end.slice(0, end.length - 1);
-                } else {
-                  end = end.slice(0, end.length - 2);
-                }
+                // script requires use of the script lexer
+                if (name === 'script') {
 
-                if (end === '</script') {
-                  let outside = lex.join('').replace(/^(\s+)/, '')
-                    .replace(/(\s+)$/, '');
-                  a = a - 1;
-                  if (lex.length < 1) {
+                  end = a === c - 9
+                    ? end.slice(0, end.length - 1)
+                    : end.slice(0, end.length - 2);
+
+                  if (end === '</script') {
+
+                    let outside = lex.join('').replace(/^(\s+)/, '').replace(/(\s+)$/, '');
+
+                    a = a - 1;
+
+                    if (lex.length < 1) break;
+
+                    if ((/^<!--+/).test(outside) && (/--+>$/).test(outside)) {
+
+                      record.token = '<!--';
+                      record.types = 'comment';
+
+                      recordPush(data, record, '');
+
+                      outside = outside.replace(/^<!--+/, '').replace(/--+>$/, '');
+
+                      sparser.lexers.script(outside);
+                      record.token = '-->';
+
+                      recordPush(data, record, '');
+
+                    } else {
+
+                      sparser.lexers.script(outside);
+                    }
+
                     break;
                   }
-                  if ((/^(<!--+)/).test(outside) === true && (/(--+>)$/)
-                    .test(outside) === true) {
-                    record.token = '<!--';
-                    record.types = 'comment';
-                    recordPush(data, record, '');
-                    outside = outside.replace(/^(<!--+)/, '').replace(
-                      /(--+>)$/, ''
-                    );
-                    sparser.lexers.script(outside);
-                    record.token = '-->';
-                    recordPush(data, record, '');
-                  } else {
-                    sparser.lexers.script(outside);
-                  }
-                  break;
                 }
-              }
 
-              // style requires use of the style lexer
-              if (name === 'style') {
-                if (a === c - 8) {
-                  end = end.slice(0, end.length - 1);
-                } else if (a === c - 9) {
-                  end = end.slice(0, end.length - 2);
-                } else {
-                  end = end.slice(0, end.length - 3);
-                }
-                if (end === '</style') {
-                  let outside = lex.join('').replace(/^(\s+)/, '')
-                    .replace(/(\s+)$/, '');
-                  a = a - 1;
-                  if (lex.length < 1) {
+                // style requires use of the style lexer
+                if (name === 'style') {
+
+                  if (a === c - 8) {
+                    end = end.slice(0, end.length - 1);
+                  } else if (a === c - 9) {
+                    end = end.slice(0, end.length - 2);
+                  } else {
+                    end = end.slice(0, end.length - 3);
+                  }
+
+                  if (end === '</style') {
+
+                    let outside = lex
+                      .join('')
+                      .replace(/^\s+/, '')
+                      .replace(/\s+$/, '');
+
+                    a = a - 1;
+
+                    if (lex.length < 1) break;
+
+                    if ((/^<!--+/).test(outside) && (/--+>$/).test(outside)) {
+
+                      record.token = '<!--';
+                      record.types = 'comment';
+
+                      recordPush(data, record, '');
+
+                      outside = outside.replace(/^<!--+/, '').replace(/--+>$/, '');
+
+                      sparser.lexers.style(outside);
+                      record.token = '-->';
+
+                      recordPush(data, record, '');
+                    } else {
+
+                      sparser.lexers.style(outside);
+                    }
                     break;
                   }
-                  if ((/^(<!--+)/).test(outside) === true && (/(--+>)$/)
-                    .test(outside) === true) {
-                    record.token = '<!--';
-                    record.types = 'comment';
-                    recordPush(data, record, '');
-                    outside = outside.replace(/^(<!--+)/, '').replace(/(--+>)$/, '');
-                    sparser.lexers.style(outside);
-                    record.token = '-->';
-                    recordPush(data, record, '');
-                  } else {
-                    sparser.lexers.style(outside);
-                  }
-                  break;
                 }
+
+              } else {
+
+                end = b.slice(a + 3, a + 14).join('').toLowerCase();
+
+                if (name === 'schema') {
+
+                  if (a === c - 12) {
+                    end = end.slice(0, end.length - 3);
+                  } else {
+                    end = end.slice(0, end.length - 2);
+                  }
+
+                  if (end === 'endschema') {
+
+                    let outside = lex
+                      .join('')
+                      .replace(/^\s+/, '')
+                      .replace(/\s+$/, '');
+
+                    a = a - 1;
+
+                    if (lex.length < 1) break;
+
+                    if ((/^<!--+/).test(outside) && /--+>$/.test(outside)) {
+
+                      record.token = '<!--';
+                      record.types = 'comment';
+
+                      recordPush(data, record, '');
+
+                      outside = outside.replace(/^<!--+/, '').replace(/--+>$/, '');
+
+                      sparser.lexers.script(outside);
+                      record.token = '-->';
+
+                      recordPush(data, record, '');
+
+                    } else {
+
+                      sparser.lexers.script(outside);
+                    }
+
+                    break;
+                  }
+                }
+
               }
-            } else if (quote === b[a] && (quote === '"' || quote ===
-                  "'" || quote === '`' || (quote === '*' && b[
-              a + 1] === '/')) && esctest() === false) {
+            } else if (quote === b[a] && (
+              quote === '"' ||
+              quote === "'" ||
+              quote === '`' ||
+              (quote === '*' && b[a + 1] === '/')) && esctest() === false
+            ) {
               quote = '';
-            } else if (quote === '`' && b[a] === '$' && b[a + 1] ===
-                '{' && esctest() === false) {
+            } else if (quote === '`' && b[a] === '$' && b[a + 1] === '{' && esctest() === false) {
               quote = '}';
-            } else if (quote === '}' && b[a] === '}' && esctest() ===
-                false) {
+            } else if (quote === '}' && b[a] === '}' && esctest() === false) {
               quote = '`';
-            } else if (quote === '/' && (b[a] === '\n' || b[a] ===
-                  '\r')) {
+            } else if (quote === '/' && (b[a] === '\n' || b[a] === '\r')) {
               quote = '';
-            } else if (quote === 'reg' && b[a] === '/' && esctest() ===
-                false) {
+            } else if (quote === 'reg' && b[a] === '/' && esctest() === false) {
               quote = '';
-            } else if (quote === '/' && b[a] === '>' && b[a - 1] ===
-                '-' && b[a - 2] === '-') {
-              end = b
-                .slice(a + 1, a + 11)
-                .join('')
-                .toLowerCase();
+            } else if (quote === '/' && b[a] === '>' && b[a - 1] === '-' && b[a - 2] === '-') {
+
+              end = b.slice(a + 1, a + 11).join('').toLowerCase();
               end = end.slice(0, end.length - 2);
-              if (name === 'script' && end === '</script') {
-                quote = '';
-              }
+
+              if (name === 'script' && end === '</script') quote = '';
+
               end = end.slice(0, end.length - 1);
-              if (name === 'style' && end === '</style') {
-                quote = '';
-              }
+
+              if (name === 'style' && end === '</style') quote = '';
+
             }
           }
+
           // typically this logic is for artifacts nested within an SGML tag
           if (square === true && b[a] === ']') {
 
             a = a - 1;
             ltoke = lex.join('');
-
-            if (options.lexerOptions.markup.parseSpace === false) ltoke = ltoke.replace(/\s+$/, '');
+            ltoke = ltoke.replace(/\s+$/, '');
 
             liner = 0;
             record.token = ltoke;
             recordPush(data, record, '');
             break;
           }
+
           // general content processing
-          if (
-            ext === false
-              && lex.length > 0 && (
-              (
-                b[a] === '<'
-                  && b[a + 1] !== '='
-                  && !(/\s|\d/).test(b[a + 1])
-              ) || (
-                b[a] === '['
-                  && b[a + 1] === '%'
-              ) || (
-                b[a] === '{' && (
-                  options.language === 'jsx' ||
-                    b[a + 1] === '{' ||
-                    b[a + 1] === '%'
-                )
-              )
-            )
-          ) {
+          if (ext === false &&
+              lex.length > 0 && (
+            (b[a] === '<' && b[a + 1] !== '=' && !(/\s|\d/).test(b[a + 1])) ||
+            (b[a] === '[' && b[a + 1] === '%') ||
+            (b[a] === '{' && (lexerOptions.markup.language === 'jsx' || b[a + 1] === '{' || b[a + 1] === '%'))
+          )) {
 
             // regular content
             a = a - 1;
 
-            if (
-              options.lexerOptions.markup.parseSpace === true ||
-                parse.structure[parse.structure.length - 1][0] === 'comment'
-            ) {
+            if (parse.structure[parse.structure.length - 1][0] === 'comment') {
               ltoke = lex.join('');
             } else {
               ltoke = lex.join('').replace(/\s+$/, '');
@@ -3232,17 +3027,14 @@ export default (() => {
             liner = 0;
             record.token = ltoke;
 
-            if (
-              options.wrap > 0
-                && options.lexerOptions.markup.preserveText !== true
-            ) {
+            if (lexerOptions.markup.wrap > 0 && lexerOptions.markup.preserveText !== true) {
 
-              let aa = options.wrap;
+              let aa = lexerOptions.markup.wrap;
               let len = ltoke.length;
-              let startSpace = '';
-              let endSpace = '';
+              const startSpace = '';
+              const endSpace = '';
 
-              const wrap = options.wrap;
+              const wrap = lexerOptions.markup.wrap;
               const store = [];
 
               function wrapper () {
@@ -3281,11 +3073,11 @@ export default (() => {
 
               // HTML anchor lists do not get wrapping unless the content itself exceeds the wrapping limit
               if (
-                data.token[data.begin[parse.count]] === '<a>'
-                  && data.token[data.begin[data.begin[parse.count]]] === '<li>'
-                  && data.lines[data.begin[parse.count]] === 0
-                  && parse.linesSpace === 0
-                  && ltoke.length < options.wrap
+                data.token[data.begin[parse.count]] === '<a>' &&
+                  data.token[data.begin[data.begin[parse.count]]] === '<li>' &&
+                  data.lines[data.begin[parse.count]] === 0 &&
+                  parse.linesSpace === 0 &&
+                  ltoke.length < lexerOptions.markup.wrap
               ) {
 
                 recordPush(data, record, '');
@@ -3317,19 +3109,16 @@ export default (() => {
               }
 
               ltoke = lex.join('');
-
-              if (options.lexerOptions.markup.parseSpace === true) {
-                startSpace = ((/\s/).test(ltoke.charAt(0)) === true) ? (/\s+/).exec(ltoke)[0] : '';
-                endSpace = ((/\s/).test(ltoke.charAt(ltoke.length - 1))) ? (/\s+$/).exec(ltoke)[0] : '';
-              }
-
-              ltoke = ltoke.replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ');
+              ltoke = ltoke
+                .replace(/^\s+/, '')
+                .replace(/\s+$/, '')
+                .replace(/\s+/g, ' ');
 
               do { wrapper(); } while (aa < len);
 
               if (ltoke !== '' && ltoke !== ' ') store.push(ltoke);
 
-              ltoke = options.crlf === true ? store.join('\r\n') : store.join('\n');
+              ltoke = lexerOptions.markup.crlf === true ? store.join('\r\n') : store.join('\n');
               ltoke = startSpace + ltoke + endSpace;
             }
 
@@ -3346,39 +3135,39 @@ export default (() => {
         } while (a < c);
       }
 
-      if (options.lexerOptions.markup.parseSpace === false) {
+      if (a > now && a < c) {
 
-        if (a > now && a < c) {
+        if ((/\s/).test(b[a]) === true) {
 
-          if ((/\s/).test(b[a]) === true) {
+          let x = a;
+          parse.linesSpace = 1;
 
-            let x = a;
-            parse.linesSpace = 1;
+          do {
 
-            do {
+            if (b[x] === '\n') parse.linesSpace = parse.linesSpace + 1;
+            x = x - 1;
 
-              if (b[x] === '\n') parse.linesSpace = parse.linesSpace + 1;
-              x = x - 1;
+          } while (x > now && (/\s/).test(b[x]) === true);
 
-            } while (x > now && (/\s/).test(b[x]) === true);
+        } else {
 
-          } else {
+          parse.linesSpace = 0;
+        }
+      } else if (a !== now || (a === now && ext === false)) {
 
-            parse.linesSpace = 0;
-          }
-        } else if (a !== now || (a === now && ext === false)) {
+        // regular content at the end of the supplied source
 
-          // regular content at the end of the supplied source
+        ltoke = lex
+          .join('')
+          .replace(/\s+$/, '');
 
-          ltoke = lex.join('').replace(/\s+$/, '');
-          liner = 0;
+        liner = 0;
 
-          // this condition prevents adding content that was just added in the loop above
-          if (record.token !== ltoke) {
-            record.token = ltoke;
-            recordPush(data, record, '');
-            parse.linesSpace = 0;
-          }
+        // this condition prevents adding content that was just added in the loop above
+        if (record.token !== ltoke) {
+          record.token = ltoke;
+          recordPush(data, record, '');
+          parse.linesSpace = 0;
         }
       }
 
@@ -3399,18 +3188,16 @@ export default (() => {
 
     }
 
-    if (options.language === 'html') html = 'html';
+    if (lexerOptions.markup.language === 'html') html = 'html';
 
     do {
 
       if ((/\s/).test(b[a])) {
 
-        if (
-          options.lexerOptions.markup.parseSpace === true || (
-            data.types[parse.count] === 'template_start'
-            && parse.structure[parse.structure.length - 1][0] === 'comment'
-          )
-        ) {
+        if ((
+          data.types[parse.count] === 'template_start' &&
+          parse.structure[parse.structure.length - 1][0] === 'comment'
+        )) {
 
           content();
 
@@ -3434,7 +3221,7 @@ export default (() => {
 
       } else if (
         b[a] === '{' && (
-          options.language === 'jsx' ||
+          lexerOptions.markup.language === 'jsx' ||
           b[a + 1] === '{' ||
           b[a + 1] === '%'
         )
@@ -3447,9 +3234,9 @@ export default (() => {
         tag(']>');
 
       } else if (
-        b[a] === '-'
-        && b[a + 1] === '-'
-        && b[a + 2] === '-'
+        b[a] === '-' &&
+        b[a + 1] === '-' &&
+        b[a + 2] === '-'
       ) {
 
         tag('---');
@@ -3463,8 +3250,8 @@ export default (() => {
     } while (a < c);
 
     if (
-      data.token[parse.count].charAt(0) !== '/'
-      && blocks[parse.structure[parse.structure.length - 1][0]] === 'block'
+      data.token[parse.count].charAt(0) !== '/' &&
+      blocks.has(parse.structure[parse.structure.length - 1][0])
     ) {
 
       fixHtmlEnd(data.token[parse.count], true);
@@ -3474,11 +3261,14 @@ export default (() => {
       if (count.end > count.start) {
         const x = count.end - count.start;
         const plural = (x === 1) ? '' : 's';
-        sparser.parseError = `${x} more end type${plural} than start types.`;
+        sparser.parseError = ' \x1b[31;1m✖ Prettify Parse Error:\x1b[0m\n\n'
+        + `  ${x} more end type${plural} than start types.\n\n`;
       } else {
         const x = count.start - count.end;
         const plural = (x === 1) ? '' : 's';
-        sparser.parseError = `${x} more start type${plural} than end types.`;
+        sparser.parseError = ' \x1b[31;1m✖ Prettify Parse Error:\x1b[0m\n\n'
+        + `  ${x} more start type${plural} than end types.\n\n`;
+
       }
     }
 
