@@ -12,20 +12,16 @@ export default (function beautify_script_init () {
     const data = options.parsed;
     const lexer = 'script';
     const scopes = prettydiff.scopes;
-    const b = (prettydiff.end < 1 || prettydiff.end > data.token.length)
-      ? data.token.length
-      : prettydiff.end + 1;
+    const b = (prettydiff.end < 1 || prettydiff.end > data.token.length) ? data.token.length : prettydiff.end + 1;
 
     // levels sets the white space value between the current token and the next token
     // * -20 value means no white space
     // * -10 means to separate with a space
     // * 0 and above is the number of indentation to insert
-    const levels = (function () {
+    const levels = (() => {
 
       let a = prettydiff.start; // will store the current level of indentation
-      let indent = (isNaN(options.indentLevel) === true)
-        ? 0
-        : Number(options.indentLevel);
+      let indent = (isNaN(options.indentLevel) === true) ? 0 : Number(options.indentLevel);
 
       let notcomment = false; // if in comments before any code
       let lastlist = false; // remembers the list status of the most recently closed block
@@ -36,9 +32,7 @@ export default (function beautify_script_init () {
 
       const varindex = [ -1 ]; // index in current scope of last var, let, or const keyword
       const list = []; // stores comma status of current block
-      const level = (prettydiff.start > 0)
-        ? Array(prettydiff.start).fill(0, 0, prettydiff.start)
-        : [];
+      const level = (prettydiff.start > 0) ? Array(prettydiff.start).fill(0, 0, prettydiff.start) : [];
 
       const ternary = []; // used to identify ternary statments
 
@@ -512,6 +506,7 @@ export default (function beautify_script_init () {
                     data.token[c - 1] === 'x;'
                   )
                 ) {
+
                   indent = indent - 1;
                   level[a - 1] = indent;
                   break;
@@ -574,7 +569,7 @@ export default (function beautify_script_init () {
           varindex.pop();
         }
 
-        if (options.bracePadding === false && ctoke !== '}' && ltype !== 'markup') {
+        if (options.bracePadding === false && ctoke !== '}' && ltype !== 'markup' as any) {
           level[a - 1] = -20;
         }
 
@@ -626,10 +621,7 @@ export default (function beautify_script_init () {
 
         } else if (ctoke === ')' || ctoke === 'x)') {
 
-          const countx = (ctoke === ')' && ltoke !== '(' && count.length > 0)
-            ? count.pop() +
-            1 : 0;
-
+          const countx = (ctoke === ')' && ltoke !== '(' && count.length > 0) ? count.pop() + 1 : 0;
           const countIf = (data.token[data.begin[a] - 1] === 'if') ? (
             function () {
 
@@ -811,11 +803,11 @@ export default (function beautify_script_init () {
 
                   if (len >= wrap && wrap > 0) ready = true;
 
-                } else if (data.types[aa] === 'markup' && mark === false) {
+                } else if (data.types[aa] === 'markup' as any && mark === false) {
                   mark = true;
                 }
 
-                if (level[aa] > -9 && data.token[aa] !== ',' && data.types[aa] !== 'markup') {
+                if (level[aa] > -9 && data.token[aa] !== ',' && data.types[aa] !== 'markup' as any) {
                   len = 0;
                 } else {
 
@@ -989,7 +981,7 @@ export default (function beautify_script_init () {
 
         } else if (
           data.types[a - 1] === 'comment' &&
-          data.token[a - 1].substr(0, 2) === '//'
+          data.token[a - 1].substring(0, 2) === '//'
         ) {
 
           if (data.token[a - 2] === 'x}') level[a - 3] = indent + 1;
@@ -1138,7 +1130,9 @@ export default (function beautify_script_init () {
         if (data.types[a - 1] === 'comment') level[a - 1] = indent;
 
         endExtraInd();
+
         lastlist = list[list.length - 1];
+
         list.pop();
         extraindent.pop();
         arrbreak.pop();
@@ -1284,6 +1278,7 @@ export default (function beautify_script_init () {
             data.stack[a - 1] === 'method'
           )
         ) {
+
           level.push(indent);
         } else {
           level.push(-20);
@@ -1981,6 +1976,7 @@ export default (function beautify_script_init () {
                     f === 'throw'
                   )
                 ) {
+
                   assignlist[assignlist.length - 1] = false;
                 }
               }
@@ -2136,8 +2132,8 @@ export default (function beautify_script_init () {
             do {
 
               x = x - 1;
-              if (data.types[x] === 'end') x = data.begin[x];
 
+              if (data.types[x] === 'end') x = data.begin[x];
               if (data.begin[x] === y) {
 
                 if (
@@ -2667,12 +2663,13 @@ export default (function beautify_script_init () {
 
           if (data.types[a - 1] !== 'comment') {
 
-            if (ltype === 'markup') {
+            if (ltype === 'markup' as any) {
               level[a - 1] = indent;
 
             } else if (
               options.braceAllman === true &&
-              ltype !== 'operator' && ltoke !== 'return'
+              ltype !== 'operator' &&
+              ltoke !== 'return'
             ) {
 
               level[a - 1] = indent - 1;
@@ -2684,7 +2681,7 @@ export default (function beautify_script_init () {
                 ltoke === 'x)' ||
                 ltoke === ',' ||
                 ltoke === '}' ||
-                ltype === 'markup'
+                ltype === 'markup' as any
               )
             ) {
               level[a - 1] = -10;
@@ -2940,6 +2937,7 @@ export default (function beautify_script_init () {
           ) &&
           destruct[destruct.length - 1] === false && a > 0
         ) {
+
           level[a - 1] = indent;
         }
       };
@@ -3062,8 +3060,21 @@ export default (function beautify_script_init () {
           level[data.begin[a - 1] - 1] = -10;
         }
 
+        if (
+          options.ifReturnInline === true &&
+          data.stack[a] === 'if' &&
+          ctoke === 'return' &&
+          data.token[a - 2] === ')' &&
+          ltoke !== '{'
+        ) {
+          level[a - 1] = -20;
+        }
+
         if (ltoke === ']') level[a - 1] = -10;
-        if (ltoke === '}' || ltoke === 'x}') level[a - 1] = indent;
+        if (ltoke === '}' || ltoke === 'x}') {
+          level[a - 1] = indent - 1;
+
+        }
         if (ctoke === 'else' && ltoke === '}') {
           if (data.token[a - 2] === 'x}') level[a - 3] = level[a - 3] - 1;
           if (options.braceAllman === true) level[a - 1] = indent;
@@ -3072,71 +3083,71 @@ export default (function beautify_script_init () {
         if (ctoke === 'new') {
 
           const apiword = [
-            'ActiveXObject'
-            , 'ArrayBuffer'
-            , 'AudioContext'
-            , 'Canvas'
-            , 'CustomAnimation'
-            , 'DOMParser'
-            , 'DataView'
-            , 'Date'
-            , 'Error'
-            , 'EvalError'
-            , 'FadeAnimation'
-            , 'FileReader'
-            , 'Flash'
-            , 'Float32Array'
-            , 'Float64Array'
-            , 'FormField'
-            , 'Frame'
-            , 'Generator'
-            , 'HotKey'
-            , 'Image'
-            , 'Iterator'
-            , 'Intl'
-            , 'Int16Array'
-            , 'Int32Array'
-            , 'Int8Array'
-            , 'InternalError'
-            , 'Loader'
-            , 'Map'
-            , 'MenuItem'
-            , 'MoveAnimation'
-            , 'Notification'
-            , 'ParallelArray'
-            , 'Point'
-            , 'Promise'
-            , 'Proxy'
-            , 'RangeError'
-            , 'Rectangle'
-            , 'ReferenceError'
-            , 'Reflect'
-            , 'RegExp'
-            , 'ResizeAnimation'
-            , 'RotateAnimation'
-            , 'Set'
-            , 'SQLite'
-            , 'ScrollBar'
-            , 'Set'
-            , 'Shadow'
-            , 'StopIteration'
-            , 'Symbol'
-            , 'SyntaxError'
-            , 'Text'
-            , 'TextArea'
-            , 'Timer'
-            , 'TypeError'
-            , 'URL'
-            , 'Uint16Array'
-            , 'Uint32Array'
-            , 'Uint8Array'
-            , 'Uint8ClampedArray'
-            , 'URIError'
-            , 'WeakMap'
-            , 'WeakSet'
-            , 'Web'
-            , 'Window'
-            , 'XMLHttpRequest'
+            'ActiveXObject',
+            'ArrayBuffer',
+            'AudioContext',
+            'Canvas',
+            'CustomAnimation',
+            'DOMParser',
+            'DataView',
+            'Date',
+            'Error',
+            'EvalError',
+            'FadeAnimation',
+            'FileReader',
+            'Flash',
+            'Float32Array',
+            'Float64Array',
+            'FormField',
+            'Frame',
+            'Generator',
+            'HotKey',
+            'Image',
+            'Iterator',
+            'Intl',
+            'Int16Array',
+            'Int32Array',
+            'Int8Array',
+            'InternalError',
+            'Loader',
+            'Map',
+            'MenuItem',
+            'MoveAnimation',
+            'Notification',
+            'ParallelArray',
+            'Point',
+            'Promise',
+            'Proxy',
+            'RangeError',
+            'Rectangle',
+            'ReferenceError',
+            'Reflect',
+            'RegExp',
+            'ResizeAnimation',
+            'RotateAnimation',
+            'Set',
+            'SQLite',
+            'ScrollBar',
+            'Set',
+            'Shadow',
+            'StopIteration',
+            'Symbol',
+            'SyntaxError',
+            'Text',
+            'TextArea',
+            'Timer',
+            'TypeError',
+            'URL',
+            'Uint16Array',
+            'Uint32Array',
+            'Uint8Array',
+            'Uint8ClampedArray',
+            'URIError',
+            'WeakMap',
+            'WeakSet',
+            'Web',
+            'Window',
+            'XMLHttpRequest'
           ];
 
           if (apiword.indexOf(data.token[a + 1]) < 0) news = news + 1;
@@ -3261,6 +3272,7 @@ export default (function beautify_script_init () {
           }
 
           level.push(-10);
+
           return;
         }
 
@@ -3380,7 +3392,7 @@ export default (function beautify_script_init () {
           }
 
           if (ctype !== 'comment') {
-            ltype = ctype;
+            ltype = ctype as any;
             ltoke = ctoke;
           }
 
@@ -3415,13 +3427,13 @@ export default (function beautify_script_init () {
 
       return level;
 
-    }());
+    })();
 
-    const output = (function beautify_script_output () {
+    const output = (() => {
 
       const build = [];
 
-      const tab = (function beautify_script_output_tab () {
+      const tab = (() => {
 
         const tabby = [];
         const ch = options.indentChar;
@@ -3436,7 +3448,7 @@ export default (function beautify_script_init () {
 
         return tabby.join('');
 
-      }());
+      })();
 
       const lf = (options.crlf === true) ? '\r\n' : '\n';
       const pres = options.preserveLine + 1;
@@ -3446,20 +3458,18 @@ export default (function beautify_script_init () {
       let external = '';
       let lastLevel = options.indentLevel;
 
-      const nl = function beautify_script_output_outnl (tabs: number) {
+      function nl (tabs: number) {
 
         const linesout = [];
+        const total = (() => {
 
-        const total = (
-          function beautify_script_output_outnl_total () {
+          if (a === b - 1) return 1;
+          if (data.lines[a + 1] - 1 > pres) return pres;
+          if (data.lines[a + 1] > 1) return data.lines[a + 1] - 1;
 
-            if (a === b - 1) return 1;
-            if (data.lines[a + 1] - 1 > pres) return pres;
-            if (data.lines[a + 1] > 1) return data.lines[a + 1] - 1;
+          return 1;
 
-            return 1;
-
-          }());
+        })();
 
         let index = 0;
 
@@ -3488,7 +3498,7 @@ export default (function beautify_script_init () {
 
       if (options.vertical === true) {
 
-        const vertical = function beautify_script_output_vertical (end: number) {
+        function vertical (end: number) {
 
           let longest = 0;
           let complex = 0;
@@ -3619,6 +3629,7 @@ export default (function beautify_script_init () {
               data.token[a - 1] !== '{' &&
               levels[data.begin[a]] > 0
             ) {
+
               vertical(a);
             }
 
@@ -3663,22 +3674,19 @@ export default (function beautify_script_init () {
 
             if (
               (
-                (
-                  levels[a] > -1 &&
-                  data.token[a] === '{'
-                ) || (
-                  levels[a] > -1 &&
-                  data.token[a + 1] === '}'
-                )
+                (levels[a] > -1 && data.token[a] === '{') ||
+                (levels[a] > -1 && data.token[a + 1] === '}')
               ) &&
               data.lines[a] < 3 &&
               options.braceNewline === true
             ) {
+
               build.push(nl(0));
+
             }
 
-            lastLevel = levels[a];
             build.push(nl(levels[a]));
+            lastLevel = levels[a];
 
           } else if (levels[a] === -10) {
 
@@ -3690,14 +3698,18 @@ export default (function beautify_script_init () {
         } else {
 
           if (externalIndex[a] === a) {
+
             build.push(data.token[a]);
+
           } else {
 
             prettydiff.end = externalIndex[a];
-            options.indentLevel = lastLevel;
             prettydiff.start = a;
-            external = prettydiff.beautify[data.lexer[a]](options).replace(/\s+$/, '');
-            build.push(external);
+
+            external = prettydiff.beautify[data.lexer[a]](options);
+
+            build.push(external.replace(/\s+$/, ''));
+
             a = prettydiff.iterator;
 
             if (levels[a] === -10) {
@@ -3706,6 +3718,10 @@ export default (function beautify_script_init () {
               build.push(nl(levels[a]));
             }
 
+            // HOT PATCH
+            // Reset indentation level, if not reset to 0 then
+            // content will shift on save
+            options.indentLevel = 0;
           }
         }
 
@@ -3717,7 +3733,7 @@ export default (function beautify_script_init () {
 
       return build.join('');
 
-    }());
+    })();
 
     return output;
 
