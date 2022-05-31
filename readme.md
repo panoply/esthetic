@@ -2,19 +2,29 @@
 
 # @liquify/prettify
 
-Liquid Language formatting support that provides beatification capabilities in various languages that are coupled with Liquid. Prettify leverages the [Sparser](https://github.com/unibeautify/sparser) lexing engine and its parse approach has been adapted from the distributed source code of [PrettyDiff](https://github.com/prettydiff/prettydiff). In addition, Prettify streamlines some input to [Prettier](https://prettier.io/) when dealing with embedded code regions (like frontmatter) or for handling languages like markdown.
+Liquid Language formatting support that provides beatification capabilities in various languages. Prettify leverages the [Sparser](https://github.com/unibeautify/sparser) lexers and its parse/beautification approach has been adapted from the distributed source code of [PrettyDiff](https://github.com/prettydiff/prettydiff). In addition, Prettify streamlines some input to [Prettier](https://prettier.io/) when dealing with embedded code regions (like frontmatter) or for handling languages like markdown.
 
 ### Supported Languages
 
 Prettify supports beautification of Liquid together with several other languages.
 
-- Liquid + HTML.
-- Liquid + CSS, SCSS and LESS
-- Liquid + JavaScript and TypeScript
-- Liquid + JSX and TSX
-- Markdown + Frontmatter
-- JSON (No Liquid)
-- YAML (No Liquid)
+- HTML
+- CSS
+- SCSS
+- LESS
+- JavaScript
+- TypeScript
+- JSX
+- TSX
+- JSON
+- YAML
+
+### Supported Languages with Liquid
+
+- Liquid + HTML
+- Liquid + CSS/SCSS/LESS
+- Liquid + JavaScript/TypeScript
+- Liquid + JSX/TSX
 
 # Install
 
