@@ -3,14 +3,14 @@ import { StyleEnforced, IStyleOptions } from './types/style';
 import { JSONEnforced, IJSONOptions } from './types/json';
 import { ScriptEnforced, IScriptOptions } from './types/script';
 import { PrettyDiffOptions } from './types/prettydiff';
-import { prettydiff } from './prettydiff';
+import { prettydiff } from './prettydiff/parser/prettydiff';
 
 /**
  * Creates a language specific instance
  */
 function createInstance (options: PrettyDiffOptions) {
 
-  return Object.assign({}, prettydiff.options, options);
+  return Object.assign(Object.create(null), prettydiff.options, options);
 }
 
 /**
@@ -78,7 +78,7 @@ export const json: PrettyDiffOptions = createInstance(
   {
     arrayFormat: 'default',
     attemptCorrection: false,
-    braceAllman: false,
+    braceAllman: true,
     bracePadding: false,
     braceStyle: 'none',
     endComma: 'never',
@@ -92,7 +92,7 @@ export const json: PrettyDiffOptions = createInstance(
     mode: 'beautify',
     endNewline: true,
     noSemicolon: true,
-    objectIndent: 'default',
+    objectIndent: 'indent',
     objectSort: false,
     preserveLine: 2,
     quoteConvert: 'double',
@@ -119,7 +119,7 @@ export const script: PrettyDiffOptions = createInstance(
     language_name: 'JavaScript/Liquid',
     lexer: 'script',
     mode: 'beautify',
-    braceNewline: false,
+    braceNewline: true,
     caseSpace: false,
     commentIndent: false,
     commentNewline: false,
@@ -131,7 +131,7 @@ export const script: PrettyDiffOptions = createInstance(
     neverFlatten: false,
     noCaseIndent: false,
     noSemicolon: false,
-    objectIndent: 'default',
+    objectIndent: 'indent',
     objectSort: false,
     preserveComment: true,
     preserveLine: 3,

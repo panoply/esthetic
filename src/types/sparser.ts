@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import { IMarkupOptions, IScriptOptions, IStyleOptions } from './options';
+
 import { PrettyDiffOptions } from './prettydiff';
 
 type languageAuto = [
@@ -470,7 +469,7 @@ export interface Parsed {
   types: Array<`${Types}`>
 }
 
-interface Lexers { [key:string]: (source: string) => Parsed; }
+interface Lexers { [key:string]: (source: string, rules?:any) => Parsed; }
 
 interface option {
   default: boolean | number | string;
@@ -515,51 +514,49 @@ interface wrapConfig {
   terminator: string;
 }
 
+interface SparserSharedOptions {
+  readonly format?: 'arrays';
+  attemptCorrection?: boolean;
+  crlf?: boolean;
+  preserveComment?: boolean;
+  lexer?: 'markup' | 'script' | 'style';
+  quoteConvert?: 'none' | 'double' | 'single';
+  wrap?: number;
+}
+
+export interface SparserMarkupOptions extends SparserSharedOptions {
+  attributeSort?: boolean;
+  attributeSortList?: string[];
+  language?: 'html' | 'jsx' | 'tsx' | 'xml';
+  lexer?: 'markup';
+  parseSpace?: boolean;
+  preserveAttributes?: boolean;
+  preserveComment?: boolean;
+  preserveText?: boolean;
+  tagMerge?: boolean;
+  tagSort?: boolean;
+}
+
+export interface SparserScriptOptions extends SparserSharedOptions {
+  endComma?: 'always' |'never' |'none';
+  language?: 'javascript' | 'typescript' | 'json';
+  objectSort?: boolean;
+  variableList?: 'each' | 'list' | 'none';
+}
+
+export interface SparserStyleOptions extends SparserSharedOptions {
+  language?: 'css' | 'scss';
+  lexer?: 'style';
+  noLeadZero?: boolean;
+  objectSort?: boolean;
+}
+
 export interface SparserOptions extends PrettyDiffOptions {
   format?: 'arrays';
   lexerOptions: {
-    markup?: {
-      attributeSort?: boolean;
-      attributeSortList?: string[];
-      attemptCorrection?: boolean;
-      crlf?: boolean;
-      format?: 'arrays';
-      language?: 'html';
-      lexer?: 'markup';
-      parseSpace?: boolean;
-      preserveAttributes?: boolean;
-      preserveComment?: boolean;
-      preserveText?: boolean;
-      quoteConvert?: 'none' | 'double' | 'single';
-      tagMerge?: boolean;
-      tagSort?: boolean;
-      wrap?: number;
-    };
-    script?: {
-      attemptCorrection?: boolean;
-      crlf?: boolean;
-      endComma?: 'always' |'never' |'none';
-      format?: 'arrays';
-      language?: 'javascript' | 'typescript';
-      lexer?: 'script';
-      objectSort?: boolean;
-      preserveComment?: boolean;
-      quoteConvert?: 'none' | 'double' | 'single';
-      variableList?: 'each' | 'list' | 'none';
-      wrap?: number;
-    };
-    style?: {
-      attemptCorrection?: boolean;
-      crlf?: boolean;
-      format?: 'arrays';
-      language?: 'css' | 'scss';
-      lexer?: 'style';
-      noLeadZero?: boolean;
-      objectSort?: boolean;
-      preserveComment?: boolean;
-      quoteConvert?: 'none' | 'double' | 'single';
-      wrap?: number;
-    }
+    markup?:SparserMarkupOptions
+    script?: SparserScriptOptions
+    style?: SparserStyleOptions
   }
 }
 

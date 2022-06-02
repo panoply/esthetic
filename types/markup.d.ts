@@ -51,6 +51,10 @@ export interface MarkupEnforced extends SharedEnforced {
  * they are used internally only.
  */
 export interface IMarkupOptions extends SharedOptions {
+  /**
+   * Markup Language
+   */
+  language: 'html' | 'jsx' | 'tsx' | 'liquid' | 'xml';
 
   /**
    * **Default** `false`
