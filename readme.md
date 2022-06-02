@@ -1,6 +1,6 @@
 **WIP | DO NOT USE THIS YET**
 
-# @liquify/prettify
+# Prettify
 
 Liquid Language formatting support that provides beatification capabilities in various languages. Prettify leverages the [Sparser](https://github.com/unibeautify/sparser) lexers and its parse/beautification approach has been adapted from the distributed source code of [PrettyDiff](https://github.com/prettydiff/prettydiff). In addition, Prettify streamlines some input to [Prettier](https://prettier.io/) when dealing with embedded code regions (like frontmatter) or for handling languages like markdown.
 
