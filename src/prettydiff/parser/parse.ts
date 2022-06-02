@@ -1409,7 +1409,7 @@ export const parse = (() => {
 
     };
 
-    const wordWrap = function parse_wrapCommentLine_wordWrap () {
+    function wordWrap () {
 
       const lines = [];
       const record = Object.create(null);

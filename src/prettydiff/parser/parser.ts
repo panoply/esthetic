@@ -15,7 +15,6 @@ function parser () {
   parse.data.stack = [];
   parse.data.token = [];
   parse.data.types = [];
-
   parse.datanames = [
     'begin',
     'ender',
@@ -35,7 +34,9 @@ function parser () {
   };
 
   if (sparser.options.language === 'auto' || sparser.options.lexer === 'auto') {
+
     const lang = sparser.libs.language.auto(sparser.options.source, 'javascript');
+
     if (sparser.options.language === 'auto') sparser.options.language = lang[0];
     if (sparser.options.lexer === 'auto') sparser.options.lexer = lang[1];
   }
@@ -93,95 +94,12 @@ function parser () {
 
   // Fix begin values.
   // They must be reconsidered after reordering from object sort
-  if (
-    parse.data.begin.length > 0
-    && (
-      sparser.options.lexerOptions[sparser.options.lexer].objectSort === true ||
+  if (parse.data.begin.length > 0 && (
+    sparser.options.lexerOptions[sparser.options.lexer].objectSort === true ||
       sparser.options.lexerOptions.markup.tagSort === true
-    )
-  ) {
+  )) {
+
     parse.sortCorrection(0, parse.count + 1);
-  }
-
-  if (sparser.options.format === 'minimal') {
-
-    let a = 0;
-
-    const data = [];
-    const len = parse.count + 1;
-
-    do {
-      data.push([
-        parse.data.begin[a],
-        parse.data.ender[a],
-        parse.data.lexer[a],
-        parse.data.lines[a],
-        parse.data.stack[a],
-        parse.data.token[a],
-        parse.data.types[a]
-      ]);
-
-      a = a + 1;
-
-    } while (a < len);
-
-    return data;
-  }
-
-  if (sparser.options.format === 'objects') {
-
-    let a = 0;
-
-    const data = [];
-    const len = parse.count + 1;
-
-    do {
-
-      data.push({
-        begin: parse.data.begin[a],
-        ender: parse.data.ender[a],
-        lexer: parse.data.lexer[a],
-        lines: parse.data.lines[a],
-        stack: parse.data.stack[a],
-        token: parse.data.token[a],
-        types: parse.data.types[a]
-      });
-
-      a = a + 1;
-
-    } while (a < len);
-
-    return data;
-  }
-
-  if (sparser.options.format === 'testprep') {
-
-    if (sparser.parseError !== '') return sparser.parseError;
-
-    const data = [];
-    const len = parse.count + 1;
-
-    let a = 0;
-
-    do {
-
-      data.push(
-        JSON.stringify({
-          begin: parse.data.begin[a],
-          ender: parse.data.ender[a],
-          lexer: parse.data.lexer[a],
-          lines: parse.data.lines[a],
-          stack: parse.data.stack[a],
-          token: parse.data.token[a],
-          types: parse.data.types[a]
-        })
-      );
-
-      a = a + 1;
-
-    } while (a < len);
-
-    return `[\n${data.join(',\n')}\n]`;
   }
 
   sparser.options.language = langstore[0];
