@@ -1,34 +1,27 @@
-**WIP | DO NOT USE THIS YET**
-
 # Prettify
 
-Liquid Language formatting support that provides beatification capabilities in various languages. Prettify leverages the [Sparser](https://github.com/unibeautify/sparser) lexers and its parse/beautification approach has been adapted from the distributed source code of [PrettyDiff](https://github.com/prettydiff/prettydiff). In addition, Prettify streamlines some input to [Prettier](https://prettier.io/) when dealing with embedded code regions (like frontmatter) or for handling languages like markdown.
+Liquid Language formatting support that provides beatification capabilities in various languages. Prettify leverages the Sparser lexing engines and its parse/beautification approach has been adapted from the distributed source code of PrettyDiff. It's a powerful drop-in solution that supports Liquid infusion within scripts, styles and exposes a granular set of formatting rules.
+
+### Why Prettify?
+
+Because Prettify is dope and does dope shit. Prettify supports multiple fragments like `{% schema %}`, `{% javascript %}` and `{% style %}` and can handle even the most extreme edge cases that the "engineers" at Shopify claimed was not possible. The team at Shopify recently tried and failed to produce beautification support for Liquid, shipping a half baked hack-job prettier plugin that did a whole lot of nothing while failing to support Liquid contained in languages outside of HTML.
+
+Prettify does not confine you to the restrictions and opinionated rules of Prettier, it allows you to infuse Liquid into CSS and JavaScript and can gracefully format both languages in parallel with no limitations.
 
 ### Supported Languages
 
 Prettify supports beautification of Liquid together with several other languages.
 
-- HTML
-- CSS
-- SCSS
-- LESS
-- JavaScript
-- TypeScript
-- JSX
-- TSX
-- JSON
-- YAML
-
-### Supported Languages with Liquid
-
 - Liquid + HTML
 - Liquid + CSS/SCSS/LESS
 - Liquid + JavaScript/TypeScript
 - Liquid + JSX/TSX
+- JSON
+- YAML
 
 # Install
 
-This module is used by the [Liquify IDE](https://liquify.dev) extension. The project is available on the public NPM registry and can be consumed by individuals and used by any project which is not maintained, created or shipped by the Shopify organization, its company and/or employees of the platform. Everyone else is free to use as they wish.
+This module is used by the [Liquify IDE](https://liquify.dev) extension.
 
 ```cli
 pnpm add @liquify/prettify --save-dev
@@ -38,15 +31,15 @@ pnpm add @liquify/prettify --save-dev
 
 The tool provides beautification rules for multiple languages that are infusing Liquid. Each supported language exposes different formatting options. The export accepts a `string` type and second (optional) rules object. There are different modes available, each mode is representative of a single language or multiple languages.
 
-- markup
-- style
-- script
-- json
+- Markup
+- Style
+- Script
+- Json
 
 ### Coming Soon
 
-- yaml
-- markdown
+- Yaml
+- Markdown
 
 Keeping the PrettyDiff logic, 3 lexer modes are supplied (`markup`, `style` and `script`) each mode can be used to beautify languages within a matching nexus.
 
@@ -468,10 +461,6 @@ Prettify is made possible by combining 2 beautification tools. Prettier and Pret
 ### [PrettyDiff](https://github.com/prettydiff/prettydiff) and [Sparser](https://github.com/unibeautify/sparser)
 
 [Austin Cheney](https://github.com/prettydiff) who is the original author of [PrettyDiff](https://github.com/prettydiff/prettydiff) and [Sparser](https://github.com/unibeautify/sparser) created these two projects and this module is only possible because of the work he has done. PrettyDiff was abandoned in 2019 and Austin has since created [Shared File Systems](https://github.com/prettydiff/share-file-systems) which is a privacy first point-to-point communication tool, please check it out and also have a read of [wisdom](https://github.com/prettydiff/wisdom) which personally helped me become a better developer.
-
-### [Prettier](https://prettier.io/)
-
-Thanks to the maintainers and creators of this beloved and brilliant tool. If you are not working with Liquid, then you will not need Prettify, instead just use Prettier. It is important to reiterate that Prettify is mostly a wrapper, it passes the input of some languages to Prettier.
 
 ## Author
 
