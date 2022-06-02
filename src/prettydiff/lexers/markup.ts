@@ -79,6 +79,7 @@ export default (() => {
     'schema',
     'style',
     'script',
+    'javascript',
     'highlight',
     'stylesheet'
   ]);
@@ -3006,9 +3007,53 @@ export default (() => {
 
                     break;
                   }
-                }
+                } else if (name === 'javascript') {
 
+                  end = b.slice(a + 4, a + 19).join('').toLowerCase();
+
+                  if (a === c - 19) {
+                    end = end.slice(0, end.length - 4);
+                  } else if (a === c - 18) {
+                    end = end.slice(0, end.length - 3);
+                  } else {
+                    end = end.slice(0, end.length - 2);
+                  }
+
+                  if (end === 'endjavascript') {
+
+                    let outside = lex
+                      .join('')
+                      .replace(/^\s+/, '')
+                      .replace(/\s+$/, '');
+
+                    a = a - 1;
+
+                    if (lex.length < 1) break;
+
+                    if ((/^<!--+/).test(outside) && /--+>$/.test(outside)) {
+
+                      record.token = '<!--';
+                      record.types = 'comment';
+
+                      recordPush(data, record, '');
+
+                      outside = outside.replace(/^<!--+/, '').replace(/--+>$/, '');
+
+                      sparser.lexers.script(outside);
+                      record.token = '-->';
+
+                      recordPush(data, record, '');
+
+                    } else {
+
+                      sparser.lexers.style(outside);
+                    }
+
+                    break;
+                  }
+                }
               }
+
             } else if (quote === b[a] && (
               quote === '"' ||
               quote === "'" ||

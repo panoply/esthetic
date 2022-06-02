@@ -1165,18 +1165,22 @@ export default (() => {
           // HOT PATCH
           // Fixes newlines in comments
           // opposed to generation '\n     ' a newline character is applied
-          if (lines[aa] !== '') {
-            if (lines[aa + 1].trimStart() !== '') {
-              build.push(lines[aa], newline(lev));
+          if (type.is(a, 'comment')) {
+            if (lines[aa] !== '') {
+              if (lines[aa + 1].trimStart() !== '') {
+                build.push(lines[aa], newline(lev));
+              } else {
+                build.push(lines[aa], '\n');
+              }
             } else {
-              build.push(lines[aa], '\n');
+              if (lines[aa + 1].trimStart() === '') {
+                build.push('\n');
+              } else {
+                build.push(newline(lev));
+              }
             }
           } else {
-            if (lines[aa + 1].trimStart() === '') {
-              build.push('\n');
-            } else {
-              build.push(newline(lev));
-            }
+            build.push(lines[aa], newline(lev));
           }
 
           aa = aa + 1;
@@ -1326,6 +1330,14 @@ export default (() => {
               // HOT PATCH
               // Ensure schema tag block is on same line
               build[build.length - 1] = '\n';
+
+            } else if (data.stack[a] === 'javascript') {
+
+              const conf = Object.assign({}, options, rules.script);
+
+              conf.indentLevel = lastLevel;
+
+              ext = prettydiff.beautify[data.lexer[a]](conf);
 
             } else {
               ext = prettydiff.beautify[data.lexer[a]](options);
