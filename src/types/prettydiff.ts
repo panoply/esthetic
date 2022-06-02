@@ -38,9 +38,11 @@ export interface MappedRules {
   preserveLines : 'preserve',
   preserveText: 'preserve_text',
   propertySort: 'object_sort',
+  parseFormat: 'parallel',
   quoteConvert: 'none',
   selectorList: 'selector_list',
   selfCloseSpace: 'space_close',
+  styleGuide: 'styleguide'
   ternaryLine: 'ternary_line',
   variableList: 'variable_list',
   vertical: 'vertical',
@@ -83,6 +85,7 @@ export interface PrettyDiffOptions {
   commentNewline?: boolean,
   compressCSS?: boolean,
   diff?: string,
+  ifReturnInline?: boolean;
   elseNewline?: boolean,
   endComma?: 'none' | 'always' | 'never',
   endNewline?: boolean,
@@ -104,8 +107,10 @@ export interface PrettyDiffOptions {
   noCaseIndent?: boolean,
   noLeadZero?: boolean,
   noSemicolon?: boolean,
+  objectSort?: boolean,
   objectIndent?: 'default' | 'indent' | 'inline',
   preserveAttributes?: boolean,
+  parseFormat?: 'parallel',
   parseSpace?: boolean;
   preserveComment?: boolean,
   preserveLine?: number,
@@ -114,7 +119,7 @@ export interface PrettyDiffOptions {
   quoteConvert?: 'none' | 'double' | 'single',
   selectorList?: boolean,
   selfCloseSpace?: boolean,
-  styleguide?:
+  styleGuide?:
   | 'none'
   | 'airbnb'
   | 'crockford'
@@ -140,6 +145,7 @@ export interface PrettyDiffOptions {
 
 export interface PrettyDiff {
   (meta?: Meta): string;
+  mode: 'markup' | 'style' | 'script' | 'json'
   api: {
     language?: Language,
     optionDef?: OptionDef
