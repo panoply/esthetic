@@ -1,19 +1,18 @@
+import test from 'ava';
 import { play } from '@liquify/test-utils';
-import * as prettify from '../package/index.mjs';
+import prettify from '../package/index.mjs';
 import * as mocks from './mocks/export.mjs';
 
-prettify.options({
-  forceAttribute: false,
-  wrap: 80,
-  attributeGlue: true
-});
+test('PLAY', t => {
 
-prettify.markup(mocks.markup.markup_example).then(value => {
+  prettify.markup(mocks.markup.markup_play, {
+    attemptCorrection: true,
+    forceIndent: true,
+    indentSize: 2
+  }).then(value => {
 
-  prettify.markup(value).then(value => {
-
-    play(value);
+    return t.log(play('\n\n' + value));
 
   }).catch(console.error);
 
-}).catch(console.error);
+});

@@ -1997,7 +1997,7 @@ export default (() => {
           html = 'html';
         }
 
-        if (element.replace(start, '').replace(/^\s+/, '').indexOf('parse-ignore-start') === 0) {
+        if (element.replace(start, '').replace(/^\s+/, '').indexOf('@ignorestart') === 0) {
 
           a = a + 1;
 
@@ -2005,7 +2005,7 @@ export default (() => {
 
             lex.push(b[a]);
 
-            if (b[a] === 'd' && lex.slice(lex.length - 16).join('') === 'parse-ignore-end') break;
+            if (b[a] === 'd' && lex.slice(lex.length - 10).join('') === '@ignoreend') break;
 
             a = a + 1;
 
@@ -2869,7 +2869,9 @@ export default (() => {
 
                     } else {
 
+                      sparser.options.language = 'javascript';
                       sparser.lexers.script(outside);
+                      sparser.options.language = 'html';
                     }
 
                     break;
@@ -2958,7 +2960,9 @@ export default (() => {
 
                     } else {
 
+                      sparser.options.language = 'json';
                       sparser.lexers.script(outside);
+                      sparser.options.language = 'html';
                     }
 
                     break;

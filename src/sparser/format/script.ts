@@ -1,5 +1,5 @@
 import { prettydiff } from '../parser/prettydiff';
-import { PrettyDiffOptions } from '../../types/prettydiff';
+import { PrettyDiffOptions } from '../../../types/prettydiff';
 
 export default ((() => {
 

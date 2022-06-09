@@ -1,6 +1,6 @@
 import { prettydiff } from '../parser/prettydiff';
-import { PrettyDiffOptions } from '../../types/prettydiff';
-import * as rules from '../../rules';
+import { PrettyDiffOptions } from '../../../types/prettydiff';
+import * as rules from '../../new/rules';
 
 export default (() => {
 

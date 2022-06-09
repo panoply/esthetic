@@ -3,361 +3,304 @@
 /* -------------------------------------------- */
 
 export const markup_play = `
+{{ 'component-newsletter.css' | asset_url | stylesheet_tag }}
+{{ 'newsletter-section.css' | asset_url | stylesheet_tag }}
 
-{%- capture compared_price -%}
-{%- if cart.currency.iso_code == shop.currency -%}
-{{ product.compare_at_price
-| money_without_trailing_zeros
-| remove: ','
-| remove: '.'
-| remove: cart.currency.symbol -}}
-{% endif %}
+{%- style -%}
+  .section-{{ section.id }}-padding {
+padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+}
 
-{{-
-  product.compare_at_price
-| money_without_trailing_zeros
-| remove: ','
-| remove: '.'
-| remove: cart.currency.symbol
- -}}
-
-{%- endcapture -%}
+@media screen and (min-width: 750px) {
+.section-{{ section.id }}-padding {
+padding-top: {{ section.settings.padding_top }}px;
+padding-bottom: {{ section.settings.padding_bottom }}px;
+}
+}
+{%- endstyle -%}
 
 
-<div id="x"
-  class
-="xxx xxx xxx" data- {% if x %} {{ x }} {%- else -%}foo{%- endif %}-id="within" aria-x="foo">
+{% javascript %}
+  class LocalizationForm extends HTMLElement {
+    constructor() {
+      super();
+      this.elements = {
+        input: this.querySelector("input[name='locale_code'], input[name='country_code']"),
+        button: this.querySelector("button"),
+        panel: this.querySelector(".disclosure__list-wrapper"), };
+      this.elements.button.addEventListener("click", this.openSelector.bind(this));
+      this.elements.button.addEventListener("focusout", this.closeSelector.bind(this));
+      this.addEventListener("keyup", this.onContainerKeyUp.bind(this));
 
-Hello world!
+      this.querySelectorAll("a").forEach(item => item.addEventListener("click", this.onItemClick.bind(this)));
+    }
 
+    hidePanel() {
+      this.elements.button.setAttribute("aria-expanded", "false");
+      this.elements.panel.setAttribute("hidden", true);
+    }
 
+    onContainerKeyUp(event) {
+      if(event.code.toUpperCase() !== "ESCAPE") return;
 
-<div    {% if xx -%}data-{{ xx }}{%- else -%}
-id{%- endif %}="prepended"
-   aria-x="foo" class="{{ no_quotations }}"
->
+      this.hidePanel();
+      this.elements.button.focus();
+    }
 
-hello world!
+    onItemClick(event) {
+      event.preventDefault();
+      const form = this.querySelector("form");
+      this.elements.input.value = event.currentTarget.dataset.value;
+      if(form) form.submit();
+    }
 
-{%- comment -%}
-products
+    openSelector() {
+      this.elements.button.focus();
+      this.elements.panel.toggleAttribute("hidden");
+      this.elements.button.setAttribute("aria-expanded", (this.elements.button.getAttribute("aria-expanded") === "false").toString());
+    }
 
-{%- endcomment %}
+    closeSelector(event) {
+      const shouldClose = event.relatedTarget && event.relatedTarget.nodeName === "BUTTON";
+      if(event.relatedTarget === null || shouldClose) {
+        this.hidePanel();
+      }
+    }
+  }
 
-  <div class="id" data-class="foo"></div>
+  customElements.define("localization-form", LocalizationForm);
 
+{% endjavascript %}
 
-    <div
-    {% if x %}
-      xxx
-    {% endif %}>
-
-    Lorem ipsum dolor.
+<div class="newsletter center {% if section.settings.full_width == false %}newsletter--narrow page-width{% endif %}">
+<div class="newsletter__wrapper color-{{ section.settings.color_scheme }} gradient content-container isolate{% if section.settings.full_width %} content-container--full-width{% endif %} section-{{ section.id }}-padding">
+{%- for block in section.blocks -%}
+{%- case block.type -%}
+{%- when '@app' -%}
+{% render block %}
+{%- when 'heading' -%}
+<h2 class="{{ block.settings.heading_size }}" {{ block.shopify_attributes }}>{{ block.settings.heading | escape }}</h2>
+{%- when 'paragraph' -%}
+<div class="newsletter__subheading rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+{%- when 'email_form' -%}
+<div {{ block.shopify_attributes }}>
+{% form 'customer', class: 'newsletter-form' %}
+  <input type="hidden" name="contact[tags]" value="newsletter">
+  <div class="newsletter-form__field-wrapper">
+    <div class="field">
+      <input
+        id="NewsletterForm--{{ section.id }}"
+        type="email"
+        name="contact[email]"
+        class="field__input"
+        value="{{ form.email }}"
+        aria-required="true"
+        autocorrect="off"
+        autocapitalize="off"
+        autocomplete="email"
+        {% if form.errors %}
+          autofocus
+          aria-invalid="true"
+          aria-describedby="Newsletter-error--{{ section.id }}"
+        {% elsif form.posted_successfully? %}
+          aria-describedby="Newsletter-success--{{ section.id }}"
+        {% endif %}
+        placeholder="{{ 'newsletter.label' | t }}"
+        required
+      >
+      <label class="field__label" for="NewsletterForm--{{ section.id }}">
+        {{ 'newsletter.label' | t }}
+      </label>
+      <button type="submit" class="newsletter-form__button field__button" name="commit" id="Subscribe" aria-label="{{ 'newsletter.button_label' | t }}">
+        {% render 'icon-arrow' %}
+      </button>
+    </div>
+    {%- if form.errors -%}
+      <small class="newsletter-form__message form__message" id="Newsletter-error--{{ section.id }}">{% render 'icon-error' %}{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</small>
+    {%- endif -%}
+  </div>
+  {%- if form.posted_successfully? -%}
+    <h3 class="newsletter-form__message newsletter-form__message--success form__message" id="Newsletter-success--{{ section.id }}" tabindex="-1" autofocus>{% render 'icon-success' %}{{ 'newsletter.success' | t }}</h3>
+  {%- endif -%}
+{% endform %}
+</div>
+{%- endcase -%}
+{%- endfor -%}
+</div>
 </div>
 
-  <div class="id" data-class="foo" data-attr-name="xxoxox" aria-name="xxxxx"></div>
-</div>
-
-</div>
-
+{% schema %}
+{
+"name": "t:sections.newsletter.name",
+"tag": "section",
+"class": "section",
+"settings": [
+{
+"type": "select",
+"id": "color_scheme",
+"options": [
+{
+"value": "accent-1",
+"label": "t:sections.all.colors.accent_1.label"
+},
+{
+"value": "accent-2",
+"label": "t:sections.all.colors.accent_2.label"
+},
+{
+"value": "background-1",
+"label": "t:sections.all.colors.background_1.label"
+},
+{
+"value": "background-2",
+"label": "t:sections.all.colors.background_2.label"
+},
+{
+"value": "inverse",
+"label": "t:sections.all.colors.inverse.label"
+}
+],
+"default": "background-1",
+"label": "t:sections.all.colors.label"
+},
+{
+"type": "checkbox",
+"id": "full_width",
+"default": true,
+"label": "t:sections.newsletter.settings.full_width.label"
+},
+{
+"type": "paragraph",
+"content": "t:sections.newsletter.settings.paragraph.content"
+},
+{
+"type": "header",
+"content": "t:sections.all.padding.section_padding_heading"
+},
+{
+"type": "range",
+"id": "padding_top",
+"min": 0,
+"max": 100,
+"step": 4,
+"unit": "px",
+"label": "t:sections.all.padding.padding_top",
+"default": 40
+},
+{
+"type": "range",
+"id": "padding_bottom",
+"min": 0,
+"max": 100,
+"step": 4,
+"unit": "px",
+"label": "t:sections.all.padding.padding_bottom",
+"default": 52
+}
+],
+"blocks": [
+{
+"type": "heading",
+"name": "t:sections.newsletter.blocks.heading.name",
+"limit": 1,
+"settings": [
+{
+"type": "text",
+"id": "heading",
+"default": "Subscribe to our emails",
+"label": "t:sections.newsletter.blocks.heading.settings.heading.label"
+},
+{
+"type": "select",
+"id": "heading_size",
+"options": [
+{
+  "value": "h2",
+  "label": "t:sections.all.heading_size.options__1.label"
+},
+{
+  "value": "h1",
+  "label": "t:sections.all.heading_size.options__2.label"
+},
+{
+  "value": "h0",
+  "label": "t:sections.all.heading_size.options__3.label"
+}
+],
+"default": "h1",
+"label": "t:sections.all.heading_size.label"
+}
+]
+},
+{
+"type": "paragraph",
+"name": "t:sections.newsletter.blocks.paragraph.name",
+"limit": 1,
+"settings": [
+{
+"type": "richtext",
+"id": "text",
+"default": "<p>Be the first to know about new collections and exclusive offers.</p>",
+"label": "t:sections.newsletter.blocks.paragraph.settings.paragraph.label"
+}
+]
+},
+{
+"type": "email_form",
+"name": "t:sections.newsletter.blocks.email_form.name",
+"limit": 1
+},
+{
+"type": "@app"
+}
+],
+"presets": [
+{
+"name": "t:sections.newsletter.presets.name",
+"blocks": [
+{
+"type": "heading"
+},
+{
+"type": "paragraph"
+},
+{
+"type": "email_form"
+}
+]
+}
+]
+}
+{% endschema %}
 
 `;
 
 export const markup_example = `
 
 
-
 <script>
-const foo = 'bar'
+  document.addEventListener('DOMContentLoaded', function() {
+    function isIE() {
+      const ua = window.navigator.userAgent;
+      const msie = ua.indexOf('MSIE ');
+      const trident = ua.indexOf('Trident/');
 
-const regex = /20/g;
+      return (msie > 0 || trident > 0);
+    }
 
-if(2 === 4) return true
+    if (!isIE()) return;
+    const hiddenInput = document.querySelector('{{ product_form_id }}');
+    const noScriptInputWrapper = document.createElement('div');
+    const variantSwitcher = document.querySelector('variant-radios') || document.querySelector('variant-selects');
+    noScriptInputWrapper.innerHTML = document.querySelector('.product-form__noscript-wrapper-').textContent;
+    variantSwitcher.outerHTML = noScriptInputWrapper.outerHTML;
 
-const x = f ? 1: 4
-
-function name(foo) {
-  const o = {
-    one: 2,
-    two: [
-      {
-        four: 5
-      }
-    ]
-  }
-}
+    document.querySelector('#Variants').addEventListener('change', function(event) {
+      hiddenInput.value = event.currentTarget.value;
+    });
+  });
 </script>
-
-{%- comment -%}
-
-PRODUCT ITEM
-
-This snippet will render a product item as
-part of a collection. Snippet variables are
-passed in the render call.
-
-{%- endcomment %}
-
-<div class="product-item {{ grid }}"{%- if style -%} {{ style }} {%- endif -%} {{ target }}>
-
-  {%- comment -%}
-
-  ON SALE BADGE
-
-  Renders a small text badge overlay in
-  the top left corner of the product image
-
-  {%- endcomment -%}
-
-  {%- if product.available and product.compare_at_price > product.price -%}
-  <div class="badge sale">
-  {{- 'product_item.on_sale' | t -}}
-  </div>
-  {%- endif -%}
-
-{%- unless product.available -%}
-<div class="badge sold-out">
-  {%- if product.vendor == 'Spring / Summer 22'  -%}
-  <small>
-  AVAILABLE SOON
-  </small>
-  {%- else -%}
-  {{- 'product_item.sold_out' | t -}}
-  {%- endif -%}
-</div>
-{%- endunless -%}
-
-<a href="{{ product.url }}" class="d-block">
-<div class="details d-flex ai-center jc-center text-center">
-
-{%- comment -%}
-
-LOW STOCK BADGE
-
-When quantity levels are below or equal
-to 4 a low stock badge is rendered.
-
-{%- endcomment -%}
-{%- if product.available -%}
-
-{%- for v in product.variants -%}
-{%- assign stock = stock | default: 0 | plus: v.inventory_quantity -%}
-{%- if stock >= 4 -%}
-  {% break %}
-{%- endif -%}
-{%- endfor -%}
-
-{%- if stock <= 4 -%}
-<span class="low-stock h6">
-  {{- 'words.only' | t -}}&nbsp;{{ stock }}&nbsp;{{- 'product_item.low_stock' | t -}}
-</span>
-{%- endif -%}
-{%- endif -%}
-
-<ul>
-
-{%- comment -%}
-
-PRODUCT NAME
-
-The product name is split using an "En Dash"
-UTF: 16:0x2013 uncode character.
-
-{%- endcomment -%}
-<li class="d-block h5 mb-1">
-{{- product.title | split: '–' | first -}}
-</li>
-
-{%- comment -%}
-
-VARIANT NAME
-
-Spilts product name on variant using an "En Dash"
-UTF: 16:0x2013 uncode character.
-
-{%- endcomment -%}
-<li class="d-block h6 mt-0">
-{{- product.title | split: '–' | last | strip -}}
-</li>
-
-{%- comment -%}
-
-PRICE INTEGER
-
-Capture of the product price. This is applied so prices
-can render in attributes for dynamic coversion. This is
-only useful when store is in SEK.
-
-{%- endcomment -%}
-{%- capture product_price -%}
-{%- if cart.currency.iso_code == shop.currency -%}
-  {{- product.price
-  | money_without_trailing_zeros
-  | remove: ','
-  | remove: '.'
-  | remove: cart.currency.symbol -}}
-{% endif %}
-{%- endcapture -%}
-
-{%- if product.compare_at_price > product.price -%}
-
-{%- comment -%}
-
-  COMPARE AT PRICE INTEGER
-
-  Same logic as price integer but applied to the
-  compare_at_price amount.
-
-{%- endcomment -%}
-{%- capture compared_price -%}
-{%- if cart.currency.iso_code == shop.currency -%}
-{{ product.compare_at_price
-| money_without_trailing_zeros
-| remove: ','
-| remove: '.'
-| remove: cart.currency.symbol -}}
-{% endif %}
-
-{{-
-  product.compare_at_price
-| money_without_trailing_zeros
-| remove: ','
-| remove: '.'
-| remove: cart.currency.symbol
- -}}
-
-{%- endcapture -%}
-
-
-
-{%- comment -%}
-
-  DISCOUNTED PRICE
-
-  The selling price of the product as per
-  the amount defined within Shopify.
-
-{%- endcomment -%}
-<li
-  class="price h5 d-inline mr-1"
-  data-currency-price="{{- product_price | default: 'NaN'  }}">
-  {{- product.price | money_without_trailing_zeros -}}
-</li>
-
-{%- comment -%}
-
-  ORIGINAL PRICE
-
-  The standard (retail) price before
-  discount was applied, ie: the original price.
-
-{%- endcomment -%}
-<li
-  class="price price-old h5 d-inline ml-1"
-  data-currency-price="{{- compared_price | default: 'NaN'  }}">
-  {{- product.compare_at_price | money_without_trailing_zeros  -}}
-</li>
-
-{%- else -%}
-
-{%- comment -%}
-
-  RETAIL PRICE
-
-  The standard (retail) price of the product.
-  This block is rendered when no discount is
-  applied on the pricing.
-
-{%- endcomment -%}
-<li
-  class="price h5 d-inline mr-1"
-  data-currency-price="{{- product_price | default: 'NaN'  }}">
-  {{- product.price | money_without_trailing_zeros -}}
-</li>
-
-{%- endif -%}
-
-</ul>
-
-{%- comment -%}
-
-HIGHLIGHT BANNER
-
-{%- endcomment -%}
-{%- if product.metafields.product.highlight != null -%}
-<div id="foo" aria-active="x" class="highlight h6">
-
-{%- comment -%}
-
-  For aesthetics when a highlight is
-  reversible we reverse the R letter.
-
-{%- endcomment -%}
-{%- if product.metafields.product.highlight contains 'Reversible'-%}
-  {{- product.metafields.product.highlight
-    | replace: 'Reversible', 'Reve<span class="letter-flip">r</span>sible' -}}
-{%- else -%}
-  {{- product.metafields.product.highlight -}}
-{%- endif -%}
-
-</div>
-{%- endif -%}
-
-</div>
-
-{%- comment -%}
-
-PRODUCT IMAGES
-
-Product images are lazy loaded using lazysizes
-module. This logic is repeated within the virtual
-mobile component.
-
-{%- endcomment -%}
-<div class="aspect-ratio">
-<picture>
-<source
-media="xl"
-data-srcset="{{- product.featured_image.src | img_url: '600x' | format: 'pjpg' -}}" />
-<source
-media="lg"
-data-srcset="{{- product.featured_image.src | img_url: '500x' | format: 'pjpg' -}}" />
-<source
-media="md"
-data-srcset="{{- product.featured_image.src | img_url: '440x' | format: 'pjpg' -}}" />
-<source
-media="sm"
-data-srcset="{{- product.featured_image.src | img_url: '320x' | format: 'pjpg' -}}" />
-<source
-media="xs"
-data-srcset="{{- product.featured_image.src | img_url: '320x' | format: 'pjpg' -}}" />
-<img
-class="img-fluid lazy"
-data-src="{{- product.featured_image.src | img_url: '500x' -}}"
-alt="{{- product.title -}}" />
-</picture>
-</div>
-
-</a>
-
-  {%- comment -%}
-
-    PRODUCT FEATURE
-
-
-    This is a peristed base banner applied to the
-    product when a it contains a a feature metafield.
-
-  {%- endcomment -%}
-{%- if product.metafields.product.sustainable_feature != null -%}
-<div class="feature text-center">
-<div class="ribbon d-flex ai-center jc-center">
-<span>{{- product.metafields.product.sustainable_feature -}}</span>
-</div>
-</div>
-{%- endif -%}
-
-</div>
 
 `;
 /**

@@ -10,7 +10,10 @@ import { prettydiff } from './prettydiff/parser/prettydiff';
  */
 function createInstance (options: PrettyDiffOptions) {
 
-  return Object.assign(Object.create(null), prettydiff.options, options);
+  const x = Object.assign(Object.create(null), prettydiff.options, options);
+
+  console.log(x);
+  return x;
 }
 
 /**
@@ -86,8 +89,9 @@ export const json: PrettyDiffOptions = createInstance(
     indentLevel: 0,
     indentSize: 2,
     language: 'json',
-    language_default: 'json',
-    language_name: 'JSON',
+    languageDefault: 'json',
+    languageName: 'JSON',
+    preserveText: true,
     lexer: 'script',
     mode: 'beautify',
     endNewline: true,
@@ -97,7 +101,7 @@ export const json: PrettyDiffOptions = createInstance(
     preserveLine: 2,
     quoteConvert: 'double',
     wrap: 0
-  } as JSONEnforced & IJSONOptions
+  }
 );
 
 /**
@@ -136,10 +140,10 @@ export const script: PrettyDiffOptions = createInstance(
     preserveComment: true,
     preserveLine: 3,
     preserveText: true,
-    quoteConvert: 'none',
+    quoteConvert: 'single',
     semicolon: false,
     ternaryLine: false,
-    variableList: 'none',
+    variableList: [],
     vertical: false,
     wrap: 0
   } as ScriptEnforced & IScriptOptions

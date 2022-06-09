@@ -71,7 +71,7 @@ export interface IScriptOptions extends SharedOptions {
    *
    * `expand`
    * > Sets `braces` to `true`, `format_object` to `indent`, and
-   * and `neverflatten` to `true`
+   * `neverflatten` to `true`
    *
    * `none`
    * > Ignores this option
@@ -412,7 +412,7 @@ export interface IScriptOptions extends SharedOptions {
    * comma separated list or if variables in a list should be separated.
    * each — Ensurce each reference is a single declaration statement.
    */
-  variableList?: 'none',
+  variableList?: string[],
 
   /**
    * **Description**

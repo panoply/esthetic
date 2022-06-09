@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/panoply/liquify/issues"
   },
-  "types": "package/index.d.ts",
+  "types": "index.d.ts",
   "main": "package/index.js",
   "module": "package/index.mjs",
   "exports": {
@@ -35,10 +35,14 @@
   },
   "prettier": "@liquify/prettier-config",
   "eslintConfig": {
+    "ignorePatterns": [
+      "package"
+    ],
     "extends": [
       "@liquify/eslint-config"
     ],
     "rules": {
+      "no-lone-blocks": "off",
       "no-unmodified-loop-condition": "off",
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
@@ -65,7 +69,8 @@
     "ava": "^4.2.0",
     "chalk": "^5.0.1",
     "dedent": "^0.7.0",
-    "esm": "^3.2.25"
+    "esm": "^3.2.25",
+    "type-fest": "^2.13.0"
   },
   "dependencies": {
     "prettier": "^2.6.2"

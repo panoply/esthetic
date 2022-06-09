@@ -95,6 +95,104 @@ export const json_unformatted = `
 
 `;
 
+export const json_schema = `
+
+{% schema %}
+{
+"id": "61031017580af9c3852b8446",
+"index": 0,
+"guid": "736df7b2-6fba-40d0-a081-2ef33b8af55b",
+"isActive": true,
+"balance": "$3,097.43",
+"picture": "http://placehold.it/32x32",
+"age": 35,
+"eyeColor": "blue",
+"name": "Conway Bentley",
+"gender": "male",
+"company": "CABLAM",
+"email": "conwaybentley@cablam.com",
+"phone": "+1 (904) 505-3452",
+"address": "109 Bayview Place, Russellville, Wyoming, 8270",
+"registered": "2016-11-30T08:52:05 -01:00",
+"latitude": 60.830578,
+"longitude": 121.011331,
+"tags": [
+"laborum",
+  "officia",
+  "nostrud",
+  "qui",
+  "amet",
+  "mollit",
+  "aliqua"
+],
+"friends": [
+  {
+    "id": 0,
+    "name": "Elaine Peck",
+    "friends": [
+      {
+        "id": 0,
+        "name": "Annette Morales",
+        "friends": [
+          {
+            "id": 0,
+            "name": "Rosella Weaver"
+          },
+          {
+            "id": 1,
+            "name": "Joanna Stark"
+          },
+          {
+            "id": 2,
+            "name": "Allison Navarro"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "name": "Logan Bell",
+        "friends": [
+          {
+            "id": 0,
+            "name": "Christensen Whitehead"
+          },
+          {
+            "id": 1,
+            "name": "Valencia Harris"
+          },
+          {
+            "id": 2,
+            "name": "Vinson Johnston"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Cathryn Oneil",
+        "friends": [
+          {
+            "id": 0,
+            "name": "Joann Melton"
+          },
+          {
+            "id": 1,
+            "name": "Victoria Leach"
+          },
+          {
+            "id": 2,
+            "name": "Alford Velez"
+          }
+        ]
+      }
+    ]
+  }
+]
+}
+]
+{% endschema %}
+
+`;
+
 /**
  * Invalid JSON Mock data
  *

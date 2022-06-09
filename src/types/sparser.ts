@@ -1,12 +1,6 @@
 
 import { PrettyDiffOptions } from './prettydiff';
 
-type languageAuto = [
-  string,
-  string,
-  string
-];
-
 type lexers = 'markup' | 'script' | 'style';
 
 type lexerArray = Array<lexers>;
@@ -561,13 +555,53 @@ export interface SparserOptions extends PrettyDiffOptions {
 }
 
 export interface Language {
-  auto(sample: string, defaultLang: string): languageAuto;
+  /**
+   * Used to determine the language we are dealing
+   * with. Accepts a sample string and default language.
+   */
+  auto(sample: string, defaultLang: string): [ string, string, string];
   nameproper(input : string): string;
   setlexer(input : string): string;
 }
 
 export interface OptionDef {
   [key:string]: option;
+}
+
+interface Definition {
+  /**
+   * The default setting
+   */
+  default: boolean | string[] | string | number;
+  /**
+   * Rules description
+   */
+  description: string;
+  /**
+   * Type
+   */
+  type: 'boolean' | 'array' | 'number' | 'string' | 'select';
+  /**
+   * The name of the rule
+   */
+  rule: string;
+  /**
+   * An optional list of pre-selected rule values.
+   */
+  values?: {
+    /**
+     * The rule value
+     */
+    rule: string;
+    /**
+     * Rule value description
+     */
+    description: string;
+  }[]
+}
+
+export interface OptionDefs {
+  [key:string]: Definition;
 }
 
 export interface Parse {

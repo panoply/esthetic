@@ -1,1 +1,1 @@
-export * from './modes';
+export * from './new/index';

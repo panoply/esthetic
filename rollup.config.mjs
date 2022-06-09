@@ -3,7 +3,7 @@ import { rollup, plugin, env } from '@liquify/rollup-config';
 export default rollup(
   [
     {
-      input: 'src/index.ts',
+      input: 'src/new/index.ts',
       preserveEntrySignatures: 'allow-extension',
       output: [
         {
@@ -12,6 +12,7 @@ export default rollup(
           sourcemap: process.env.prod ? false : 'inline',
           esModule: false,
           freeze: false,
+          exports: 'named',
           preferConst: true,
           chunkFileNames: '[name].js'
         },
@@ -21,6 +22,7 @@ export default rollup(
           sourcemap: process.env.prod ? false : 'inline',
           esModule: true,
           freeze: false,
+          exports: 'named',
           preferConst: true,
           chunkFileNames: '[name].js'
         }
@@ -69,16 +71,6 @@ export default rollup(
           )
         ]
       )
-    },
-    {
-      input: 'src/index.ts',
-      output: {
-        format: 'esm',
-        file: 'package/index.d.ts'
-      },
-      plugins: [
-        plugin.dts()
-      ]
     }
   ]
 );

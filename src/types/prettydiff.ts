@@ -64,7 +64,7 @@ export interface Meta {
 }
 
 export interface PDLanguage {
-  auto(sample:string, defaultLang:string): string[];
+  auto(sample:string, defaultLang:string): [string, string, string];
   nameproper(input:string): string;
   setlexer(input:string):string;
 }

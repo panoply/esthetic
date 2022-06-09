@@ -26,6 +26,7 @@ function parser () {
   ];
 
   parse.structure = [ [ 'global', -1 ] ];
+
   parse.structure.pop = () => {
     const len = parse.structure.length - 1;
     const arr = parse.structure[len];
@@ -94,12 +95,10 @@ function parser () {
 
   // Fix begin values.
   // They must be reconsidered after reordering from object sort
-  if (parse.data.begin.length > 0 && (
-    sparser.options.lexerOptions[sparser.options.lexer].objectSort === true ||
-      sparser.options.lexerOptions.markup.tagSort === true
-  )) {
-
-    parse.sortCorrection(0, parse.count + 1);
+  if (parse.data.begin.length > 0) {
+    if (sparser.options.lexerOptions[sparser.options.lexer].objectSort) {
+      parse.sortCorrection(0, parse.count + 1);
+    }
   }
 
   sparser.options.language = langstore[0];

@@ -36,7 +36,10 @@ export function options (options: IGlobalOptions) {
 export function markup (input: string, options?: IMarkupOptions): Promise<string> {
 
   if (options) assign(rules.markup, options);
-  if (prettydiff.options.language !== 'html') prettydiff.options = rules.markup;
+  if (prettydiff.options.language !== 'html') {
+    prettydiff.options = rules.markup;
+    console.log(prettydiff.options);
+  }
 
   prettydiff.options.source = input;
 

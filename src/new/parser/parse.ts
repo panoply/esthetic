@@ -1,37 +1,38 @@
 /* eslint no-unmodified-loop-condition: "off" */
-import { Parse, Types, IRecord } from '../../types/sparser';
-import { sparser } from './sparser';
+import { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splice } from '../prettify.d';
+import { prettify } from '../prettify';
+import { create } from '../../utils/native';
 
-export { sparser };
+export const parse = new class Parse implements IParse {
 
-export const parse = (() => {
+  error = '';
+  data: Data = create(null);
+  references = [ [] ];
+  structure = [ [ 'global', -1 ] as Structure ];
+  datanames = [ 'begin', 'ender', 'lexer', 'lines', 'stack', 'token', 'types' ];
+  count = -1;
+  lineNumber = 1;
+  linesSpace = 0;
 
-  const parser: Parse = Object.create(null);
+  constructor () {
+    this.data.begin = [];
+    this.data.ender = [];
+    this.data.lexer = [];
+    this.data.lines = [];
+    this.data.stack = [];
+    this.data.token = [];
+    this.data.types = [];
+  }
 
-  parser.data = Object.create(null);
-  parser.data.begin = [];
-  parser.data.ender = [];
-  parser.data.lexer = [];
-  parser.data.lines = [];
-  parser.data.stack = [];
-  parser.data.token = [];
-  parser.data.types = [];
-  parser.references = [ [] ];
-  parser.structure = [ [ 'global', -1 ] ];
-  parser.datanames = [ 'begin', 'ender', 'lexer', 'lines', 'stack', 'token', 'types' ];
-  parser.count = -1;
-  parser.lineNumber = 1;
-  parser.linesSpace = 0;
+  concat (data: Data, array: Data) {
+    for (const v of this.datanames) data[v] = data[v].concat(array[v]);
+    if (data === this.data) this.count = data.token.length - 1;
+  }
 
-  parser.concat = function (data, array) {
-    for (const v of parser.datanames) data[v] = data[v].concat(array[v]);
-    if (data === parser.data) parser.count = data.token.length - 1;
-  };
+  objectSort (data: Data) {
 
-  parser.objectSort = function (data) {
-
-    let cc = parser.count;
-    let dd = parser.structure[parser.structure.length - 1][1];
+    let cc = this.count;
+    let dd = this.structure[this.structure.length - 1][1];
     let ee = 0;
     let ff = 0;
     let gg = 0;
@@ -40,23 +41,20 @@ export const parse = (() => {
     let front = 0;
     let keyend = 0;
     let keylen = 0;
-    const global = (
-      data.lexer[cc] === 'style' &&
-      parser.structure[parser.structure.length - 1][0] === 'global'
-    );
 
+    const global = (data.lexer[cc] === 'style' && this.structure[this.structure.length - 1][0] === 'global');
     const keys = [];
-    const length = parser.count;
+    const length = this.count;
     const begin = dd;
     const style = data.lexer[cc] === 'style';
     const delim = style === true
       ? [ ';', 'separator' ]
       : [ ',', 'separator' ];
 
-    const lines = parser.linesSpace;
+    const lines = this.linesSpace;
     const stack = global === true
       ? 'global'
-      : parser.structure[parser.structure.length - 1][0];
+      : this.structure[this.structure.length - 1][0];
 
     function sort (x, y) {
 
@@ -73,39 +71,22 @@ export const parse = (() => {
       }
 
       if (data.types[yy] === 'comment') {
-        do {
-          yy = yy + 1;
-        } while (yy < length && (data.types[yy] === 'comment'));
-        if (data.token[yy] === undefined) {
-          return 1;
-        }
+        do { yy = yy + 1; } while (yy < length && (data.types[yy] === 'comment'));
+        if (data.token[yy] === undefined) return 1;
       }
 
       if (style === true) {
 
         // JavaScript's standard array sort uses implementation specific algorithms.
         // This simple numeric trick forces conformance.
-        if (
-          data.token[xx].indexOf('@import') === 0 ||
-          data.token[yy].indexOf('@import') === 0
-        ) return xx < yy ? -1 : 1;
+        if (data.token[xx].indexOf('@import') === 0 || data.token[yy].indexOf('@import') === 0) return xx < yy ? -1 : 1;
 
         if (data.types[xx] !== data.types[yy]) {
-
           if (data.types[xx] === 'function') return 1;
           if (data.types[xx] === 'variable') return -1;
           if (data.types[xx] === 'selector') return 1;
-
-          if (
-            data.types[xx] === 'property' &&
-            data.types[yy] !== 'variable'
-          ) return -1;
-
-          if (
-            data.types[xx] === 'mixin' &&
-            data.types[yy] !== 'property' &&
-            data.types[yy] !== 'variable'
-          ) return -1;
+          if (data.types[xx] === 'property' && data.types[yy] !== 'variable') return -1;
+          if (data.types[xx] === 'mixin' && data.types[yy] !== 'property' && data.types[yy] !== 'variable') return -1;
         }
 
       }
@@ -116,15 +97,15 @@ export const parse = (() => {
 
     }
 
-    const store = {
-      begin: []
-      , ender: []
-      , lexer: []
-      , lines: []
-      , stack: []
-      , token: []
-      , types: []
-    };
+    const store = create(null);
+
+    store.begin = [];
+    store.ender = [];
+    store.lexer = [];
+    store.lines = [];
+    store.stack = [];
+    store.token = [];
+    store.types = [];
 
     behind = cc;
 
@@ -166,8 +147,7 @@ export const parse = (() => {
           // keep top comments at the top
           do { front = front + 1; } while (data.types[front] === 'comment');
 
-        } else if (data.types[front] === 'comment' && data.lines[front] <
-          2) {
+        } else if (data.types[front] === 'comment' && data.lines[front] < 2) {
 
           // If a comment follows code on the same line then
           // keep the comment next to the code it follows
@@ -292,18 +272,17 @@ export const parse = (() => {
 
               } else {
 
-                parser.push(
-                  store, {
-                    begin: data.begin[ee]
-                    , ender: data.begin[ee]
-                    , lexer: data.lexer[ee]
-                    , lines: data.lines[ee]
-                    , stack: data.stack[ee]
-                    , token: data.token[ee]
-                    , types: data.types[ee]
-                  }
-                  , ''
-                );
+                const o = create(null);
+
+                o.begin = data.begin[ee];
+                o.ender = data.begin[ee];
+                o.lexer = data.lexer[ee];
+                o.lines = data.lines[ee];
+                o.stack = data.stack[ee];
+                o.token = data.token[ee];
+                o.types = data.types[ee];
+
+                this.push(store, o, '');
 
                 ff = ff + 1;
               }
@@ -351,18 +330,18 @@ export const parse = (() => {
 
             ee = ee + 1;
 
-            parser.splice({
-              data: store
-              , howmany: 0
-              , index: ee
-              , record: {
-                begin: begin
-                , ender: parser.count
-                , lexer: store.lexer[ee - 1]
-                , lines: 0
-                , stack: stack
-                , token: delim[0]
-                , types: delim[1] as Types
+            this.splice({
+              data: store,
+              howmany: 0,
+              index: ee,
+              record: {
+                begin: begin,
+                ender: this.count,
+                lexer: store.lexer[ee - 1],
+                lines: 0,
+                stack: stack,
+                token: delim[0],
+                types: delim[1] as Types
               }
             });
 
@@ -374,23 +353,18 @@ export const parse = (() => {
 
         } while (dd < keylen);
 
-        parser.splice({
-          data: data
-          , howmany: ff
-          , index: cc + 1
-        });
-
-        parser.linesSpace = lines;
-        parser.concat(data, store);
+        this.splice({ data: data, howmany: ff, index: cc + 1 });
+        this.linesSpace = lines;
+        this.concat(data, store);
 
       }
     }
 
-  };
+  }
 
-  parser.pop = function (data) {
+  pop (data: Data): Record {
 
-    const output: IRecord = Object.create(null);
+    const output: Record = create(null);
 
     output.begin = data.begin.pop();
     output.ender = data.ender.pop();
@@ -400,36 +374,31 @@ export const parse = (() => {
     output.token = data.token.pop();
     output.types = data.types.pop();
 
-    if (data === parser.data) parser.count = parser.count - 1;
+    if (data === this.data) this.count = this.count - 1;
 
     return output;
 
-  };
+  }
 
-  parser.push = function (data, record, structure) {
+  push (data: Data, record: Record, structure: string) {
 
-    function ender () {
+    const ender = () => {
 
-      let a = parser.count;
+      let a = this.count;
 
       const begin = data.begin[a];
 
       if (
         (
-          data.lexer[a] === 'markup' &&
-          sparser.options.lexerOptions.markup.tagSort === true
-        ) || (
-          (
-            data.lexer[a] === 'script' ||
-            data.lexer[a] === 'style'
-          ) && sparser.options.lexerOptions[data.lexer[a]].objectSort === true
+          (data.lexer[a] === 'script' || data.lexer[a] === 'style') &&
+          prettify.beautify[data.lexer[a]].objectSort === true
         )
       ) {
 
         // Sorting can result in a token whose begin value is greater than either
         // Its current index or the index of the end token, which results in
         // an endless loop. These end values are addressed at the end of
-        // the "parser" function with parser.sortCorrection
+        // the "parser" function with this.sortCorrection
         return;
       }
 
@@ -443,7 +412,7 @@ export const parse = (() => {
           )
         ) {
 
-          data.ender[a] = parser.count;
+          data.ender[a] = this.count;
         } else {
 
           a = data.begin[a];
@@ -453,16 +422,16 @@ export const parse = (() => {
 
       } while (a > begin);
 
-      if (a > -1) data.ender[a] = parser.count;
+      if (a > -1) data.ender[a] = this.count;
     };
 
     // parse_push_datanames
-    parser.datanames.forEach(value => data[value].push(record[value]));
+    this.datanames.forEach(value => data[value].push(record[value]));
 
-    if (data === parser.data) {
+    if (data === this.data) {
 
-      parser.count = parser.count + 1;
-      parser.linesSpace = 0;
+      this.count = this.count + 1;
+      this.linesSpace = 0;
 
       if (record.lexer !== 'style') {
         if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, '') === '') {
@@ -472,10 +441,9 @@ export const parse = (() => {
         }
       }
 
-      if (record.types === 'start' || record.types.indexOf('_start') >
-        0) {
+      if (record.types === 'start' || record.types.indexOf('_start') > 0) {
 
-        parser.structure.push([ structure, parser.count ]);
+        this.structure.push([ structure, this.count ]);
 
       } else if (record.types === 'end' || record.types.indexOf('_end') >
         0) {
@@ -486,33 +454,30 @@ export const parse = (() => {
 
         let case_ender = 0;
 
-        if (parser.structure.length > 2 && (
-          data.types[parser.structure[parser.structure.length - 1][1]] === 'else' ||
-          data.types[parser.structure[parser.structure.length - 1][1]].indexOf('_else') > 0
+        if (this.structure.length > 2 && (
+          data.types[this.structure[this.structure.length - 1][1]] === 'else' ||
+          data.types[this.structure[this.structure.length - 1][1]].indexOf('_else') > 0
         ) && (
-          data.types[parser.structure[parser.structure.length - 2][1]] === 'start' ||
-            data.types[parser.structure[parser.structure.length - 2][1]].indexOf('_start') > 0
+          data.types[this.structure[this.structure.length - 2][1]] === 'start' ||
+            data.types[this.structure[this.structure.length - 2][1]].indexOf('_start') > 0
         ) && (
-          data.types[parser.structure[parser.structure.length - 2][1] + 1] === 'else' ||
-            data.types[parser.structure[parser.structure.length - 2][1] + 1].indexOf('_else') > 0
+          data.types[this.structure[this.structure.length - 2][1] + 1] === 'else' ||
+            data.types[this.structure[this.structure.length - 2][1] + 1].indexOf('_else') > 0
         )) {
 
-          parser.structure.pop();
-          data.begin[parser.count] = parser.structure[parser.structure.length - 1][1];
-          data.stack[parser.count] = parser.structure[parser.structure.length - 1][0];
-          data.ender[parser.count - 1] = parser.count;
-          case_ender = data.ender[data.begin[parser.count] + 1];
+          this.structure.pop();
+          data.begin[this.count] = this.structure[this.structure.length - 1][1];
+          data.stack[this.count] = this.structure[this.structure.length - 1][0];
+          data.ender[this.count - 1] = this.count;
+          case_ender = data.ender[data.begin[this.count] + 1];
 
         }
 
         ender();
 
-        if (case_ender > 0) {
-          data.ender[data.begin[parser.count] + 1] =
-            case_ender;
-        }
+        if (case_ender > 0) data.ender[data.begin[this.count] + 1] = case_ender;
 
-        parser.structure.pop();
+        this.structure.pop();
 
       } else if (
         record.types === 'else' ||
@@ -521,38 +486,36 @@ export const parse = (() => {
 
         if (structure === '') structure = 'else';
         if (
-          parser.count > 0 && (
-            data.types[parser.count - 1] === 'start' ||
-            data.types[parser.count - 1].indexOf('_start') > 0
+          this.count > 0 && (
+            data.types[this.count - 1] === 'start' ||
+            data.types[this.count - 1].indexOf('_start') > 0
           )
         ) {
 
-          parser.structure.push([ structure, parser.count ]);
+          this.structure.push([ structure, this.count ]);
         } else {
 
           ender();
 
           if (structure === '') {
-            parser.structure[parser.structure.length - 1] = [ 'else', parse
-              .count ];
+            this.structure[this.structure.length - 1] = [ 'else', this.count ];
           } else {
-            parser.structure[parser.structure.length - 1] = [ structure
-              , parser.count ];
+            this.structure[this.structure.length - 1] = [ structure, this.count ];
           }
 
         }
       }
     }
-  };
+  }
 
-  parser.safeSort = function (array, operation, recursive) {
+  safeSort (array: [string, number][], operation: string, recursive: boolean): [string, number][] {
 
     // parse_safeSort_extref
     // worthless function for backwards compatibility with older versions of V8 node.
     let extref = item => item;
 
     // parse_safeSort_arTest
-    const arTest = (item: any[]) => Array.isArray(item) === true;
+    const arTest = (item: [string, number][]) => Array.isArray(item) === true;
 
     // parse_safeSort_normal
     const normal = function parse_safeSort_normal (item) {
@@ -575,7 +538,7 @@ export const parse = (() => {
       };
 
       // parse_safeSort_normal_recurse
-      function recurse (x: string) {
+      function recurse (x: any) {
 
         let a = 0;
 
@@ -604,7 +567,7 @@ export const parse = (() => {
       };
 
       extref = recurse;
-      recurse(array[0]);
+      recurse(array[0] as any);
 
       return item;
     };
@@ -637,8 +600,8 @@ export const parse = (() => {
         let b = 0;
         let d = 0;
         let e = 0;
-        let ind = [];
         let key = storeb[c];
+        let ind = [];
         let tstore = '';
 
         const tkey = typeof key;
@@ -688,7 +651,7 @@ export const parse = (() => {
 
       extref = recurse;
       recurse('');
-      return item;
+      return item as [string, number][];
 
     };
 
@@ -703,9 +666,7 @@ export const parse = (() => {
         const lenc = storeb.length;
         if (a < lenc) {
           do {
-            if (arTest(storeb[a]) === true) {
-              storeb[a] = parse_safeSort_ascend(storeb[a]);
-            }
+            if (arTest(storeb[a]) === true) storeb[a] = parse_safeSort_ascend(storeb[a]);
             a = a + 1;
           } while (a < lenc);
         }
@@ -779,17 +740,18 @@ export const parse = (() => {
 
     return ascend(array);
 
-  };
+  }
 
-  parser.sortCorrection = function (start, end) {
+  sortCorrection (start: number, end: number) {
 
     let a = start;
     let endslen = -1;
 
-    const data = parser.data;
+    const data = this.data;
     const ends = [];
-    const structure = (parser.structure.length < 2) ? [ -1 ] : [ parse
-      .structure[parser.structure.length - 2][1] ];
+    const structure = (this.structure.length < 2)
+      ? [ -1 ]
+      : [ this.structure[this.structure.length - 2][1] ];
 
     // This first loop solves for the begin values
     do {
@@ -855,19 +817,20 @@ export const parse = (() => {
       }
 
     } while (a > start);
-  };
+  }
 
-  parser.spacer = function (args) {
+  spacer (args: Spacer): number {
 
     // * array - the characters to scan
     // * index - the index to start scanning from
     // * end   - the length of the array, to break the loop
-    parser.linesSpace = 1;
+    this.linesSpace = 1;
 
     do {
+
       if (args.array[args.index] === '\n') {
-        parser.linesSpace = parser.linesSpace + 1;
-        parser.lineNumber = parser.lineNumber + 1;
+        this.linesSpace = this.linesSpace + 1;
+        this.lineNumber = this.lineNumber + 1;
       }
 
       if ((/\s/).test(args.array[args.index + 1]) === false) break;
@@ -878,9 +841,45 @@ export const parse = (() => {
 
     return args.index;
 
-  };
+  }
 
-  parser.wrapCommentBlock = function (config) {
+  splice (splice: Splice) {
+
+    const finalItem = [ this.data.begin[this.count], this.data.token[this.count] ];
+
+    // * data    - The data object to alter
+    // * howmany - How many indexes to remove
+    // * index   - The index where to start
+    // * record  - A new record to insert
+    if (splice.record !== undefined && splice.record.token !== '') {
+
+      // parse_splice_datanames
+      for (const value of this.datanames) {
+        splice.data[value].splice(splice.index, splice.howmany, splice.record[value]);
+      }
+
+      if (splice.data === this.data) {
+        this.count = (this.count - splice.howmany) + 1;
+        if (finalItem[0] !== this.data.begin[this.count] || finalItem[1] !== this.data.token[this.count]) {
+          this.linesSpace = 0;
+        }
+      }
+
+      return;
+    }
+
+    for (const value of this.datanames) {
+      splice.data[value].splice(splice.index, splice.howmany);
+    }
+
+    if (splice.data === this.data) {
+      this.count = this.count - splice.howmany;
+      this.linesSpace = 0;
+    }
+
+  }
+
+  wrapCommentBlock (config: WrapComment): [string, number] {
 
     let a = config.start;
     let b = 0;
@@ -903,14 +902,14 @@ export const parse = (() => {
 
     const build = [];
     const second = [];
-    const lf = (sparser.options.crlf === true) ? '\r\n' : '\n';
+    const lf = (prettify.options.crlf === true) ? '\r\n' : '\n';
 
     const regEsc = (/(\/|\\|\||\*|\[|\]|\{|\})/g);
     const regEnd = new RegExp(`\\s*${config.terminator.replace(regEsc, sanitize)}$`);
     const regIgnore = new RegExp(`^(${config.opening.replace(regEsc, sanitize)}\\s*@ignore\\s+start\\b)`);
     const regStart = new RegExp(`(${config.opening.replace(regEsc, sanitize)}\\s*)`);
 
-    const wrap = sparser.options.wrap;
+    const wrap = prettify.options.wrap;
 
     // parse_wrapCommentBlock_emptyLines
     function emptyLines () {
@@ -930,7 +929,7 @@ export const parse = (() => {
     do {
 
       if (config.chars[a] === '\n') {
-        parser.lineNumber = parser.lineNumber + 1;
+        this.lineNumber = this.lineNumber + 1;
         // console.log(output);
       }
 
@@ -1029,7 +1028,7 @@ export const parse = (() => {
       a === config.end ||
       wrap < 1 ||
       (output.length <= wrap && output.indexOf('\n') < 0) ||
-      sparser.options.preserveComment === true || (
+      prettify.options.preserveComment === true || (
         config.opening === '/*' &&
         output.indexOf('\n') > 0 &&
         output.replace('\n', '').indexOf('\n') > 0 &&
@@ -1148,30 +1147,21 @@ export const parse = (() => {
             bigLine = true;
             b = b - 1;
 
-          } else if (
-            (/^\s+$/).test(lines[b + 1]) === true ||
-            lines[b + 1] === ''
-          ) {
+          } else if ((/^\s+$/).test(lines[b + 1]) === true || lines[b + 1] === '') {
 
             second.push(lines[b].slice(0, c));
             lines[b] = lines[b].slice(c + 1);
             emptyLine = true;
             b = b - 1;
 
-          } else if (
-            lines[b + 1].slice(0, 4) !== '    ' &&
-            (/^\s*(\*|-)\s/).test(lines[b + 1]) === true
-          ) {
+          } else if (lines[b + 1].slice(0, 4) !== '    ' && (/^\s*(\*|-)\s/).test(lines[b + 1])) {
 
             second.push(lines[b].slice(0, c));
             lines[b] = lines[b].slice(c + 1);
             bulletLine = true;
             b = b - 1;
 
-          } else if (
-            lines[b + 1].slice(0, 4) !== '    ' &&
-            (/^\s*\d+\.\s/).test(lines[b + 1]) === true
-          ) {
+          } else if (lines[b + 1].slice(0, 4) !== '    ' && (/^\s*\d+\.\s/).test(lines[b + 1])) {
 
             second.push(lines[b].slice(0, c));
             lines[b] = lines[b].slice(c + 1);
@@ -1232,7 +1222,7 @@ export const parse = (() => {
           (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
         ) {
 
-          // LIQUID COMMENT ARE AUGMENTED HERE
+          // LIQUID COMMENTS ARE AUGMENTED HERE
 
           // console.log(lines);
 
@@ -1308,68 +1298,16 @@ export const parse = (() => {
     // console.log(output);
     return [ output, a ];
 
-  };
+  }
 
-  parser.splice = function (spliceData) {
-
-    const finalItem = [
-      parser.data.begin[parser.count]
-      , parser.data.token[parser.count]
-    ];
-
-    // * data    - The data object to alter
-    // * howmany - How many indexes to remove
-    // * index   - The index where to start
-    // * record  - A new record to insert
-    if (spliceData.record !== undefined && spliceData.record.token !== '') {
-
-      // parse_splice_datanames
-      parser.datanames.forEach((value) => {
-        spliceData.data[value].splice(
-          spliceData.index
-          , spliceData.howmany
-          , spliceData.record[value]
-        );
-      });
-
-      if (spliceData.data === parser.data) {
-
-        parser.count = (parser.count - spliceData.howmany) + 1;
-
-        if (
-          finalItem[0] !== parser.data.begin[parser.count] ||
-          finalItem[1] !== parser.data.token[parser.count]
-        ) {
-          parser.linesSpace = 0;
-        }
-      }
-
-      return;
-    }
-
-    // parse_splice_datanames
-    parser.datanames.forEach((value) => {
-      spliceData.data[value].splice(
-        spliceData.index
-        , spliceData.howmany
-      );
-    });
-
-    if (spliceData.data === parser.data) {
-      parser.count = parser.count - spliceData.howmany;
-      parser.linesSpace = 0;
-    }
-
-  };
-
-  parser.wrapCommentLine = function (config) {
+  wrapCommentLine (config: WrapComment): [string, number] {
 
     let a = config.start;
     let b = 0;
     let output = '';
     let build = [];
 
-    const wrap = sparser.options.wrap;
+    const wrap = prettify.options.wrap;
 
     const recurse = function parse_wrapCommentLine_recurse () {
 
@@ -1399,8 +1337,7 @@ export const parse = (() => {
           line.slice(0, 6) !== '//    ' &&
           (/^\/\/\s*$/).test(line) === false
         ) {
-          output =
-            `${output} ${line.replace(/(^\/\/\s*)/, '').replace(/\s+$/, '')}`;
+          output = `${output} ${line.replace(/(^\/\/\s*)/, '').replace(/\s+$/, '')}`;
           a = b - 1;
           parse_wrapCommentLine_recurse();
         }
@@ -1408,20 +1345,20 @@ export const parse = (() => {
 
     };
 
-    function wordWrap () {
+    const wordWrap = () => {
 
       const lines = [];
-      const record = Object.create(null);
+      const record = create(null);
 
       record.ender = -1;
       record.types = 'comment';
       record.lexer = config.lexer;
-      record.lines = parser.linesSpace;
+      record.lines = this.linesSpace;
 
-      if (parser.count > -1) {
-        record.begin = parser.structure[parser.structure.length - 1][1];
-        record.stack = parser.structure[parser.structure.length - 1][0];
-        record.token = parser.data.token[parser.count];
+      if (this.count > -1) {
+        record.begin = this.structure[this.structure.length - 1][1];
+        record.stack = this.structure[this.structure.length - 1][0];
+        record.token = this.data.token[this.count];
       } else {
         record.begin = -1;
         record.stack = 'global';
@@ -1462,9 +1399,9 @@ export const parse = (() => {
 
       do {
         record.token = lines[c];
-        parser.push(parser.data, record, '');
+        this.push(this.data, record, '');
         record.lines = 2;
-        parser.linesSpace = 2;
+        this.linesSpace = 2;
         c = c + 1;
       } while (c < d);
 
@@ -1515,12 +1452,10 @@ export const parse = (() => {
           if (termination === '\n' && config.chars[a + 1] === '\n') break;
           a = a + 1;
         } while (a < config.end && (
-          termination === '\n' || (
-            termination === '\u002a/' && (
-              config.chars[a - 1] !== '*' ||
-              config.chars[a] !== '/'
-            )
-          )
+          termination === '\n' || (termination === '\u002a/' && (
+            config.chars[a - 1] !== '*' ||
+            config.chars[a] !== '/'
+          ))
         ));
 
       }
@@ -1533,25 +1468,22 @@ export const parse = (() => {
     if (
       output === '//' ||
       output.slice(0, 6) === '//    ' ||
-      sparser.options.preserveComment === true
+      prettify.options.preserveComment === true
     ) {
       return [ output, a ];
     }
 
     output = output.replace(/(\/\/\s*)/, '// ');
 
-    if (wrap < 1 || (a === config.end - 1 && parser.data.begin[parser.count] < 1)) {
-      return [ output, a ];
-    }
+    if (wrap < 1 || (a === config.end - 1 && this.data.begin[this.count] < 1)) return [ output, a ];
 
     b = a + 1;
+
     recurse();
     wordWrap();
 
     return [ output, a ];
 
-  };
+  }
 
-  return parser;
-
-})();
+}();

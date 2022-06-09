@@ -6,9 +6,11 @@ import { sparser } from '../parser/parse';
 export default (function style_init () {
 
   const style = function lexer_style (source) {
+
     let a = 0;
     let ltype = '';
     let ltoke = '';
+
     const parse = sparser.parse;
     const data = parse.data;
     const options = sparser.options;
@@ -16,7 +18,9 @@ export default (function style_init () {
     const len = source.length;
     const mapper = [];
     const nosort = [];
-    const recordPush = function lexer_style_recordPush (structure) {
+
+    function recordPush (structure) {
+
       const record = {
         begin: parse.structure[parse.structure.length - 1][1]
         , ender: -1
@@ -28,6 +32,7 @@ export default (function style_init () {
       };
       parse.push(data, record, structure);
     };
+
     const esctest = function lexer_style_esctest (index) {
       const slashy = index;
       do {
@@ -38,6 +43,7 @@ export default (function style_init () {
       }
       return false;
     };
+
     // Since I am already identifying value types this is a good place to do some
     // quick analysis and clean up on certain value conditions. These things are
     // being corrected:
@@ -48,7 +54,8 @@ export default (function style_init () {
     // * url values that are not quoted are wrapped    in double quote characters
     // * color values are set to lowercase and    reduced from 6 to 3 digits if
     // appropriate
-    const value = function lexer_style_value (val) {
+    function value (val) {
+
       const x = val.replace(/\s*!important/, ' !important').split('');
       const values = [];
       const transition = (/-?transition$/).test(data.token[parse.count -
@@ -167,8 +174,8 @@ export default (function style_init () {
       cc = 0;
       if (cc < leng) {
         do {
-          if (options.lexerOptions.style.noLeadZero === true
-                && zerodotstart.test(values[cc]) === true) {
+          if (options.lexerOptions.style.noLeadZero === true &&
+                zerodotstart.test(values[cc]) === true) {
             values[cc] = values[cc].replace(/0+\./, '.');
           } else if ((options.lexerOptions.style.noLeadZero ===
                   false || options.lexerOptions.style
@@ -189,8 +196,8 @@ export default (function style_init () {
             if ((/\d/).test(values[cc].charAt(1)) === true) {
               values[cc] = values[cc].substr(1);
             }
-          } else if ((/^url\((?!('|"))/).test(values[cc]) === true
-                && values[cc].charAt(values[cc].length -
+          } else if ((/^url\((?!('|"))/).test(values[cc]) === true &&
+                values[cc].charAt(values[cc].length -
                   1) === ')') {
             block = values[cc].charAt(values[cc].indexOf('url(') + 4);
             if (block !== '@' && block !== '{' && block !== '<') {
@@ -216,9 +223,9 @@ export default (function style_init () {
               );
             }
           }
-          if ((/^\w+\(/).test(values[cc]) === true
-                && values[cc].charAt(values[cc].length - 1) === ')'
-                && (values[cc].indexOf('url(') !== 0 || (values[cc].indexOf(
+          if ((/^\w+\(/).test(values[cc]) === true &&
+                values[cc].charAt(values[cc].length - 1) === ')' &&
+                (values[cc].indexOf('url(') !== 0 || (values[cc].indexOf(
                   'url('
                 ) === 0 && values[cc].indexOf(
                   ' '
@@ -232,6 +239,7 @@ export default (function style_init () {
       return block.charAt(0) + block.slice(1)
         .replace(/\s*(\/|\+|\*)\s*(\d|\$)/, valueSpace);
     };
+
     // the generic token builder
     const buildtoken = function lexer_style_build () {
       let aa = a;
@@ -347,11 +355,11 @@ export default (function style_init () {
           }
           if (block.length === 0) {
             if ((b[aa + 1] === ';' && esctest(aa + 1) === true) ||
-                  (b[aa + 1] === ':'
-                    && b[aa] !== ':'
-                    && b[aa + 2] !== ':'
-                    && outy !== 'filter'
-                    && outy !== 'progid') ||
+                  (b[aa + 1] === ':' &&
+                    b[aa] !== ':' &&
+                    b[aa + 2] !== ':' &&
+                    outy !== 'filter' &&
+                    outy !== 'progid') ||
                   b[aa + 1] === '}' ||
                   b[aa + 1] === '{' ||
                   (b[aa + 1] === '/' && (b[aa + 2] === '*' || b[aa
@@ -374,8 +382,8 @@ export default (function style_init () {
         } while (aa < len);
       }
       a = aa;
-      if (parse.structure[parse.structure.length - 1][0] === 'map'
-            && out[0] === '(') {
+      if (parse.structure[parse.structure.length - 1][0] === 'map' &&
+            out[0] === '(') {
         mapper[mapper.length - 1] = mapper[mapper.length - 1] - 1;
       }
       ltoke = out
@@ -391,14 +399,14 @@ export default (function style_init () {
         'extend('
       ) === 0) {
         ltype = 'pseudo';
-      } else if (funk === true
-            && (/\d/).test(ltoke.charAt(0)) === false
-            && (/^rgba?\(/).test(ltoke) === false
-            && ltoke.indexOf('url(') !== 0
-            && (ltoke.indexOf(' ') < 0 || ltoke.indexOf(' ') > ltoke.indexOf(
+      } else if (funk === true &&
+            (/\d/).test(ltoke.charAt(0)) === false &&
+            (/^rgba?\(/).test(ltoke) === false &&
+            ltoke.indexOf('url(') !== 0 &&
+            (ltoke.indexOf(' ') < 0 || ltoke.indexOf(' ') > ltoke.indexOf(
               '('
-            ))
-            && ltoke.charAt(ltoke.length - 1) === ')') {
+            )) &&
+            ltoke.charAt(ltoke.length - 1) === ')') {
         if (data.token[parse.count] === ':') {
           ltype = 'value';
         } else {
@@ -564,8 +572,8 @@ export default (function style_init () {
           data.types[aa] = 'selector';
           selectorPretty(aa);
         }
-      } else if (type === 'start' && data.types[aa] === 'function'
-            && data.lexer[aa] === 'style') {
+      } else if (type === 'start' && data.types[aa] === 'function' &&
+            data.lexer[aa] === 'style') {
         data.types[aa] = 'selector';
         selectorPretty(aa);
       } else if (data.types[aa] === 'item' && data.lexer[aa] ===
@@ -751,8 +759,8 @@ export default (function style_init () {
                 }
 
                 if (
-                  ltype === 'item'
-                      && data.types[parse.count - 1] === 'colon' && (
+                  ltype === 'item' &&
+                      data.types[parse.count - 1] === 'colon' && (
                     data.types[parse.count - 2] === 'property' ||
                         data.types[parse.count - 2] === 'variable'
                   )
@@ -840,8 +848,8 @@ export default (function style_init () {
                   } while (
                     begin < ending && (/\s/).test(group.charAt(
                       begin
-                    )) === false
-                        && group.charAt(start) !== '('
+                    )) === false &&
+                        group.charAt(start) !== '('
                   );
 
                   group = group.slice(0, begin);
@@ -1088,8 +1096,8 @@ export default (function style_init () {
         if (bb > 1 && (tmargin === true || tpadding === true)) {
           do {
             if (props.removes[cc][0] !== props.last.margin && props
-              .removes[cc][0] !== props.last.padding
-                    && ((tmargin === true && props.removes[cc][1] ===
+              .removes[cc][0] !== props.last.padding &&
+                    ((tmargin === true && props.removes[cc][1] ===
                       'margin') || (tpadding === true && props
                       .removes[cc][1] === 'padding'))) {
               parse.splice({
@@ -1160,9 +1168,9 @@ export default (function style_init () {
         template('{{', '}}');
       } else if (
         b[a] === '{' || (
-          b[a] === '('
-          && data.token[parse.count] === ':'
-          && data.types[parse.count - 1] === 'variable')
+          b[a] === '(' &&
+          data.token[parse.count] === ':' &&
+          data.types[parse.count - 1] === 'variable')
       ) {
 
         item('start');
@@ -1185,18 +1193,18 @@ export default (function style_init () {
 
       } else if (
         b[a] === '}' || (
-          b[a] === ')'
-          && parse.structure[parse.structure.length - 1][0] === 'map'
-          && mapper[mapper.length - 1] === 0
+          b[a] === ')' &&
+          parse.structure[parse.structure.length - 1][0] === 'map' &&
+          mapper[mapper.length - 1] === 0
         )
       ) {
 
         if (
-          b[a] === '}'
-          && data.types[parse.count] === 'item'
-          && data.token[parse.count - 1] === '{'
-          && data.token[parse.count - 2] !== undefined
-          && data.token[parse.count - 2].charAt(data.token[parse.count - 2].length - 1) === '@'
+          b[a] === '}' &&
+          data.types[parse.count] === 'item' &&
+          data.token[parse.count - 1] === '{' &&
+          data.token[parse.count - 2] !== undefined &&
+          data.token[parse.count - 2].charAt(data.token[parse.count - 2].length - 1) === '@'
         ) {
 
           data.token[parse.count - 2] = data.token[parse.count - 2]
@@ -1262,8 +1270,8 @@ export default (function style_init () {
         ltype = 'colon';
         recordPush('');
       } else {
-        if (parse.structure[parse.structure.length - 1][0] === 'map'
-            && b[a] === '(') {
+        if (parse.structure[parse.structure.length - 1][0] === 'map' &&
+            b[a] === '(') {
           mapper[mapper.length - 1] = mapper[mapper.length - 1] + 1;
         }
         buildtoken();
