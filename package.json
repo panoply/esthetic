@@ -1,7 +1,6 @@
 {
   "name": "@liquify/prettify",
   "version": "0.1.0",
-  "private": false,
   "license": "MIT",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <nicos@gmx.com>",
   "description": "🩸 Liquid Language beautification support for multiple languages.",
@@ -17,26 +16,39 @@
     "url": "https://github.com/panoply/liquify/issues"
   },
   "types": "index.d.ts",
-  "main": "package/index.js",
-  "module": "package/index.mjs",
+  "main": "index.js",
+  "module": "index.mjs",
   "exports": {
-    "require": "./package/index.js",
-    "import": "./package/index.mjs"
+    "require": "./index.js",
+    "import": "./index.mjs"
   },
   "scripts": {
-    "dev": "rollup -c -w",
-    "types": "tsc --emit",
-    "build": "rollup -c --environment prod",
+    "dev": "tsup --watch",
+    "build": "tsup --minify-identifiers --minify-whitespace",
     "pack": "cd versions; pnpm pack ../ && cd ..",
     "play": "ava test/play.test.mjs --color --watch",
-    "test": "ava test/dev.test.mjs --color --verbose --watch",
-    "test:markup": "ava test/markup/* --color --verbose --watch",
-    "test:cases": "ava ./test/cases/* --verbose --color --watch"
+    "test": "ava tests/cases/javascript.test.mjs --verbose --color --watch"
+  },
+  "tsup": {
+    "entry": [
+      "./src/index.ts"
+    ],
+    "outDir": "./",
+    "treeshake": true,
+    "globalName": "prettify",
+    "splitting": false,
+    "format": [
+      "cjs",
+      "esm"
+    ]
   },
   "prettier": "@liquify/prettier-config",
   "eslintConfig": {
+    "root": true,
     "ignorePatterns": [
-      "package"
+      "index.js",
+      "index.mjs",
+      "**/node_modules/*"
     ],
     "extends": [
       "@liquify/eslint-config"
@@ -67,12 +79,7 @@
     "@liquify/eslint-config": "workspace:*",
     "@liquify/test-utils": "workspace:*",
     "ava": "^4.2.0",
-    "chalk": "^5.0.1",
-    "dedent": "^0.7.0",
-    "esm": "^3.2.25",
+    "tsup": "^6.1.0",
     "type-fest": "^2.13.0"
-  },
-  "dependencies": {
-    "prettier": "^2.6.2"
   }
 }

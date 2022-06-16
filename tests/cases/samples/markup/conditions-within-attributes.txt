@@ -1,0 +1,18 @@
+<div
+  id="x"
+  data-{% if x -%} {{ x }} {%- else -%} foo {%- endif %}-bar="ssss"
+  class="baz">
+
+  <div
+    data-attr="{{ within.value }}"
+    class={{ no.quotations }}
+    id="{% if x == xx %} {{ condition.in_value -}} {% endif -%}">
+
+    <div
+      id={{ no.quotations }}
+      class="xxx"
+      {% unless x %}
+      data-{{ attr_between | filter: 'xxx' }}-xxx="ssss"
+      {% endunless %}></div>
+  </div>
+</div>

@@ -1,3 +1,5 @@
+/* eslint-disable object-curly-newline */
+
 import {
   Rules,
   Options,
@@ -5,15 +7,24 @@ import {
   ScriptOptions,
   StyleOptions,
   JSONOptions,
-  Definitions
-} from './src/new/prettify.d';
+  Definitions,
+  Language,
+  LanguageNames
+} from './types/prettify';
 
-/**
- * Lexer Reference
- */
-export type LexerNames = 'markup' | 'script' | 'style' | 'json'
-
-export { Definitions, Definition, Options, Rules } from './src/new/prettify.d';
+export {
+  Definitions,
+  Definition,
+  Options,
+  Rules,
+  SharedOptions,
+  MarkupOptions,
+  ScriptOptions,
+  StyleOptions,
+  JSONOptions,
+  LanguageNames,
+  LexerNames
+} from './types/prettify';
 
 declare const Prettify: {
   /**
@@ -33,7 +44,7 @@ declare const Prettify: {
    * - Liquid + TSX
    * - JSON
    */
-  (source: string, rules?: Options): Promise<string>;
+  format(source: string, rules?: Options): Promise<string>;
   /**
    * **PRETTIFY MARKUP 💅**
    *
@@ -87,6 +98,33 @@ declare const Prettify: {
  * Rule defintions which describe the different formatting options
  * prettify offers.
  */
-export const definitions: Definitions;
+export declare const definitions: Definitions;
 
-export = Prettify;
+/**
+ * **LANGUAGE**
+ *
+ * Language detection and utilities. This is used internally by Prettify
+ * to determine the lexer to use and formatting ruleset to apply.
+ */
+export declare const language: {
+  /**
+   * Automatic language detection based on the string input.
+   * Returns lexer, language and official name.
+   */
+  auto?: (sample: string) => Language;
+  /**
+   * Sets the lexing engine
+   */
+  setLexer?: (language: LanguageNames) => LexerNames;
+  /**
+   * Utility function which returns a Language reference
+   * consisting of the Languag name, its official variation naming
+   * convention and the pertaining lexer.
+   *
+   * This function is different from `auto()` in the sense that it
+   * only accepts a lowercase language name, not a text string.
+   */
+  reference?: (language: LanguageNames) => Language;
+};
+
+export default Prettify;

@@ -1,13 +1,33 @@
 {
   "extends": "@liquify/tsconfig",
-  "exclude": ["node_modules/**", "package", "test"],
-  "include": ["src"],
+  "exclude": [
+    "node_modules/**",
+    "package",
+    "test",
+    "index.mjs",
+    "index.js",
+    "index.d.ts"
+  ],
+  "include": ["src", "types"],
   "compilerOptions": {
     "incremental": false,
     "declaration": true,
     "removeComments": false,
     "module": "ES2015",
     "emitDeclarationOnly": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "types/*": ["./types/*"],
+      "prettify": ["./src/prettify/module.ts"],
+      "@options/*": ["./src/options/*"],
+      "@beautify/*": ["./src/beautify/*"],
+      "@lexers/*": ["./src/lexers/*"],
+      "@parser/*": ["./src/parser/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@prettify/*": [
+        "./src/prettify/*",
+        "!./src/prettify/module"
+      ]
+    }
   }
 }

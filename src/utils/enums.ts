@@ -40,8 +40,17 @@ export const enum cc {
   /**
    * `'` – Single Quoted Character - Used in Liquid to define string values
    */
-  SQO = 39
+  SQO = 39,
 
+  /**
+   * ` ` – Whitespace Character
+   */
+  WSP = 32,
+
+  /**
+   * `\n` – Newline Character
+   */
+  NWL = 10,
 }
 
 export const enum TagBlocks {
