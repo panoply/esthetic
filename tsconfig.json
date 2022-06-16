@@ -1,43 +1,32 @@
 {
   "extends": "@liquify/tsconfig",
-  "exclude": ["node_modules/**", "package", "test"],
-  "include": ["src"],
+  "exclude": [
+    "node_modules/**",
+    "package",
+    "test",
+    "index.mjs",
+    "index.js",
+    "index.d.ts"
+  ],
+  "include": ["src", "types"],
   "compilerOptions": {
     "incremental": false,
     "declaration": true,
     "removeComments": false,
+    "module": "ES2015",
     "emitDeclarationOnly": true,
     "baseUrl": ".",
     "paths": {
-      "prettydiff": ["src/prettydifff/index.ts"],
-      "prettydiff/*": [
-        "src/prettydifff/parser/*.ts",
-        "./src/prettydifff/shared/*.ts"
-      ],
-      "prettydiff/markup": [
-        "./src/prettydifff/beautify/style.ts"
-      ],
-      "prettydiff/script": [
-        "./src/prettydifff/beautify/script.ts"
-      ],
-      "prettydiff/style": [
-        "./src/prettydifff/beautify/style.ts"
-      ],
-      "sparser/markup": [
-        "./src/prettydifff/lexers/markup.ts"
-      ],
-      "sparser/script": [
-        "./src/prettydifff/lexers/script.ts"
-      ],
-      "sparser/style": [
-        "./src/prettydifff/lexers/style.ts"
-      ],
-      "types/*": ["./src/types/*.ts"],
-      "types/sparser": [
-        "./src/types/prettydifff/types/sparser.ts"
-      ],
-      "types/prettydiff": [
-        "./src/prettydifff/types/prettydiff.d.ts"
+      "types/*": ["./types/*"],
+      "prettify": ["./src/prettify/module.ts"],
+      "@options/*": ["./src/options/*"],
+      "@beautify/*": ["./src/beautify/*"],
+      "@lexers/*": ["./src/lexers/*"],
+      "@parser/*": ["./src/parser/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@prettify/*": [
+        "./src/prettify/*",
+        "!./src/prettify/module"
       ]
     }
   }
