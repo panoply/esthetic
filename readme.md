@@ -6,9 +6,9 @@ Visit the [Playground](https://liquify.dev/prettify).
 
 ### Features
 
-- Fast, performant and lightweight (60kb gzip).
+- Fast, performant and lightweight (50kb gzip).
 - Language aware. Automatically infers handling.
-- Provides a granular set of formatting customizations.
+- Provides a granular set of formatting rules.
 - Single parse tree with incremental beautification capabilities
 - Drop-in solution with no complexities (boomer friendly)
 
@@ -16,11 +16,9 @@ Visit the [Playground](https://liquify.dev/prettify).
 
 Prettify is mostly geared towards projects using Liquid as the consumer facing language and exists an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/) but it does not intend to replace such tools. It's the perfect choice for projects that leverage the [Liquid](https://shopify.github.io/liquid/) template language and was developed for usage in the [Liquify](https://liquify.dev) text editor extension/plugin.
 
-Prettify allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support and because it extends upon the sparser/prettydiff libraries it can also be used in an isolated matter. parser Though the tool is mostly geared towards developers working with Shopify themes, JAM~Stack web apps generated with tools like Jekyll and Eleventy or projects using Liquid as the consumer facing language.
+Prettify allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support and because it extends upon the sparser/prettydiff libraries it can also be used in an isolated matter.
 
 ### Supported Languages
-
-Prettify supports several different languages and it can be used in an isolated manner, ie: without liquid.
 
 - Liquid + HTML
 - Liquid + CSS/SCSS/LESS
@@ -34,26 +32,104 @@ Prettify supports several different languages and it can be used in an isolated 
 This module is used by the [Liquify IDE](https://liquify.dev) extension.
 
 ```bash
-pnpm add @liquify/prettify --save-dev
+pnpm add @liquify/prettify -D
 ```
 
 # Usage
 
-The tool provides beautification rules for multiple languages. Each supported language exposes different formatting options. The export accepts a `string` type and second (optional) rules object. There are different modes available, each mode is representative of a single language or multiple languages.
+The tool provides a granular set of beautification rules. Each supported language exposes different formatting options and keeping the PrettyDiff logic 3 lexer modes are supplied `markup`, `style` and `script`. Each mode can be used to beautify languages within a matching nexus. Prettify will automatically detect the language and forward input to the appropriate lexer for handling.
 
-- Markup
-- Style
-- Script
-- Json
+### Format
 
-### Coming Soon
+The format method returns a promise and is export on the default export. The function requires a `string` parameter be provided and accepts an optional second `rules` parameter. In addition to `prettify.format(source, rules?)` the format method also exposes 2 additional hook methods that will be invoked either before or after beautification. The hook methods are triggered synchronously.
 
-- Yaml
-- Markdown
+```typescript
+import prettify from "@liquify/prettify";
 
-Keeping the PrettyDiff logic, 3 lexer modes are supplied (`markup`, `style` and `script`) each mode can be used to beautify languages within a matching nexus.
+// Formatting Code
+prettify.format(source: string, rules?: Options): Promise<string>;
 
-> The `json` and `yaml` modes are used to beautify single languages only. JSON and Yaml are data languages and these modes do not handle Liquid contained within their syntax (yet).
+// Hook that will be invoked before formatting
+prettify.format.before((rules: Options, input: string) => void | false)
+
+// Hook that will be invoked after formatting
+prettify.format.after((output: string, rules: Options) => void | false)
+```
+
+> Returning `false` in either the `prettify.format.before` or `prettify.format.after` will cancel beautification.
+
+### Options
+
+The options methods will augment formatting options (rules). Formatting options are persisted, so when you apply changes they are used on every beautification process thereafter. The ``prettify.options(rules)` method also exposes hook and getter methods. The `prettify.options.updated` method allows you to listen in on option changes and the `prettify.options.rules` getter returns a **readonly** reference of the current formatting options.
+
+```typescript
+import prettify from "@liquify/prettify";
+
+// Change formatting rules
+prettify.options(rules?: Options): Rules;
+
+// Hook listener that will be invoked when options change
+prettify.options.listen((rules: Options) => void)
+
+// Returns the current formatting options Prettify is using
+prettify.options.rules: Rules
+```
+
+### Parse
+
+The parse method can be used to inspect the data structures the Prettify constructs. Prettify is using the Sparser lexing engines under the hood and the generated parse tree returned by this method is representative of its structure.
+
+```typescript
+import prettify from "@liquify/prettify";
+
+// The generated sparser data structure
+prettify.parse(source: string): ParseTree
+```
+
+### Language
+
+The `language` method is a utility method that Prettify uses in the beautification process. It's typically used for language detection and its how Prettify determines the lexing engine to be used on provided source string input.
+
+```typescript
+import prettify from "@liquify/prettify";
+
+// Detects a language from a string sample
+prettify.language(sample: string): Language
+
+// Hook listener which is invoked after language detection
+prettify.language.listen((language: Language) => void | Language)
+```
+
+> You can augment the language reference detected in the `prettify.language.listen` hook.
+
+### Definitions
+
+The definitions is a named export.
+
+```typescript
+import { definitions } from '@liquify/prettify';
+```
+
+### Markup
+
+- Liquid
+- HTML
+- XML
+
+### Style
+
+- CSS
+- SCSS
+- SASS
+- LESS
+
+### Script
+
+- JavaScript
+- TypeScript
+- JSX
+- TSX
+- JSON
 
 # Formatting
 
@@ -108,38 +184,6 @@ The above code is some wild stuff. It is using Liquid to output HTML attributes 
 ```
 
 As you can see, the utter fucking insanity has been reasoned with. Code is beautified and structure is applied. Prettify even handles infusion within attributes and understands the intention of the developer.
-
-### Input
-
-```typescript
-import prettify from "@liquify/prettify";
-
-// METHODS
-
-prettify.format(source: string, rules?: object): Promise<string>;
-prettify.parse(source: string): Promise<AST>;
-prettify.rules(rules?: object): Rules;
-prettify.language(sample: string): Language
-
-prettify.definitions
-prettify.stats
-
-```
-
-### Output
-
-<!-- prettier-ignore -->
-```typescript
-import * as prettify from '@liquify/prettify';
-
-const code = '<div id="x" class="foo">{% if x %} {{ x }} {% endif %}</div>';
-
-prettify.format(code).then(result => {
-
-  console.log(result)
-
-})
-```
 
 ### Parse Errors
 
