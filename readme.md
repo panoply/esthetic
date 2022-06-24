@@ -2,7 +2,7 @@
 
 The new generation code beautification tool for formatting HTML, Liquid, JavaScript, TypeScript, CSS/SCSS and more! Prettify is built atop of the sparser lexing engines and its parse approach was adapted from the distributed source code of the late and powerful PrettyDiff.
 
-Visit the [Playground](https://liquify.dev/prettify).
+Visit the [Prettify Playground](https://liquify.dev/prettify)
 
 ### Features
 
@@ -14,9 +14,7 @@ Visit the [Playground](https://liquify.dev/prettify).
 
 ### Why Prettify?
 
-Prettify is mostly geared towards projects using Liquid as the consumer facing language and exists an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/) but it does not intend to replace such tools. It's the perfect choice for projects that leverage the [Liquid](https://shopify.github.io/liquid/) template language and was developed for usage in the [Liquify](https://liquify.dev) text editor extension/plugin.
-
-Prettify allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support and because it extends upon the sparser/prettydiff libraries it can also be used in an isolated matter.
+Prettify is mostly geared towards projects using Liquid as the consumer facing language and exists an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/). It's the perfect choice for projects that leverage the [Liquid](https://shopify.github.io/liquid/) template language and was developed for usage in the [Liquify](https://liquify.dev) text editor extension/plugin. Prettify allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support, it intends to be the solution you'd employ when working with the template language.
 
 ### Supported Languages
 
@@ -24,10 +22,18 @@ Prettify allows developers to comfortably infuse Liquid into different languages
 - Liquid + CSS/SCSS/LESS
 - Liquid + JavaScript/TypeScript
 - Liquid + JSX/TSX
+- HTML
+- CSS
+- SCSS
+- LESS
+- JavaScript
+- TypeScript
+- JSX
+- TSX
 - JSON
 - YAML
 
-# Install
+# Installation
 
 This module is used by the [Liquify IDE](https://liquify.dev) extension.
 
@@ -38,6 +44,33 @@ pnpm add @liquify/prettify -D
 # Usage
 
 The tool provides a granular set of beautification rules. Each supported language exposes different formatting options and keeping the PrettyDiff logic 3 lexer modes are supplied `markup`, `style` and `script`. Each mode can be used to beautify languages within a matching nexus. Prettify will automatically detect the language and forward input to the appropriate lexer for handling.
+
+<!-- prettier-ignore -->
+```typescript
+import prettify from '@liquify/prettify';
+
+const code = '<div class="example">{% if x %} {{ x }} {% endif %}</div>';
+
+prettify.format(code, { indentSize: 2 }).then(output => {
+
+  console.log(output)
+
+  // Do something with the beautified output
+
+}).catch(error => {
+
+  // Print the error
+  console.error(error);
+
+  // Return the original input
+  return code;
+
+});
+```
+
+# API
+
+Prettify does not yet provide CLI support but will in future releases. The API exports several methods on the default and intends to make usage as simple as possible with respect to extendability for more advanced use cases.
 
 ### Format
 
@@ -60,7 +93,7 @@ prettify.format.after((output: string, rules: Options) => void | false)
 
 ### Options
 
-The options methods will augment formatting options (rules). Formatting options are persisted, so when you apply changes they are used on every beautification process thereafter. The ``prettify.options(rules)` method also exposes hook and getter methods. The `prettify.options.updated` method allows you to listen in on option changes and the `prettify.options.rules` getter returns a **readonly** reference of the current formatting options.
+The options methods will augment formatting options (rules). Formatting options are persisted, so when you apply changes they are used on every beautification process thereafter. The `prettify.options(rules)` method also exposes hook and getter methods. The `prettify.options.updated` method allows you to listen in on option changes and the `prettify.options.rules` getter returns a **readonly** reference of the current formatting options.
 
 ```typescript
 import prettify from "@liquify/prettify";
@@ -104,114 +137,18 @@ prettify.language.listen((language: Language) => void | Language)
 
 ### Definitions
 
-The definitions is a named export.
+The definitions is a named export that exposes a definition list of the available formatting options. The definitions are used when validating rules and referencing. This is just an object, nothing really special.
 
 ```typescript
 import { definitions } from '@liquify/prettify';
-```
 
-### Markup
-
-- Liquid
-- HTML
-- XML
-
-### Style
-
-- CSS
-- SCSS
-- SASS
-- LESS
-
-### Script
-
-- JavaScript
-- TypeScript
-- JSX
-- TSX
-- JSON
-
-# Formatting
-
-Prettify exposes direct access to different methods on the default export. Passing a string and an optional set of beautification options/rules . Though Prettify uses PrettyDiff and Sparser internally, it is important to note that both the lexers and parsers have been largely refactored. As such, Prettify operates rather effectively and can interpret otherwise unpredictable or chaotic code:
-
-### Example
-
-Take the following (markup) code. This example is doing everything wrong. You'd actually be surprised how many folks would commit code like this when working with Liquid. This is actually because it's novice appealing in nature.
-
-<!-- prettier-ignore -->
-```liquid
-
-<div id="x"
-  class
-="xxx xxx xxx"   data-
-{% if x %} {{ x }}
-         {%- else -%}foo{%- endif %}-id   ="within"
-  aria-x =  "foo">
-
-Hello world!
-
-<div {{ attr }}="example"   {% if xx -%}data-{{ xx }}{%- else -%}
-id{%- endif %}="prepended"
-   aria-x="foo"           class={{ no_quotations }}
->
-
-I am using Prettify! </div></div>
-```
-
-The above code is some wild stuff. It is using Liquid to output HTML attributes (conditionally), it is using output tags as attributes/values and infuses tags between attribute definitions. Prettify is able to handle this and can quickly reason about what and how the intended structure should be output. The above would format as follows:
-
-<!-- prettier-ignore -->
-```liquid
-
-<div
-  id="x"
-  class="xxx xxx xxx"
-  data-{% if x %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx"
-  aria-x="foo">
-
-  Hello world!
-
-  <div
-    {{ attr }}="example"
-    {% if xx -%}data-{{ xx }}{%- else -%}id="xxx"{%- endif %}
-    aria-x="foo"
-    class="{{ no_quotations }}">
-
-    I am using Prettify!
-    </div>
-</div>
-```
-
-As you can see, the utter fucking insanity has been reasoned with. Code is beautified and structure is applied. Prettify even handles infusion within attributes and understands the intention of the developer.
-
-### Parse Errors
-
-Each method returns a promise, so when formatting fails or a parse error occurs, `.catch()` is invoked. The error returns an object. The object contains the provided input (`source`) and the error message.
-
-> It's important to note that Liquify and Prettify are using different Parsers. The Liquify parser constructs an AST that provides diagnostic capabilities (ie: linting), so the errors of these tools will differ dramatically. Liquify will give you far more context opposed to Prettify.
-
-<!-- prettier-ignore -->
-```typescript
-import * as prettify from '@liquify/prettify';
-
-// Invalid code
-const code = '{% if x %} {{ x }} {% endunless %}';
-
-prettify.markup(code).then(formatted => console.log(formatted)).catch(error => {
-
-  // Print the PrettyDiff error
-  console.error(error);
-
-  // Return the original input
-  return code;
-
-});
+// Print the definitions to console
+console.log(definitions);
 ```
 
 # Options
 
-Prettify uses a custom set of beautification rules (options). If you are formatting on a per-language basis, you can simply provide options as a second parameter, but if you are dealing with multiple languages you can preset formatting options.
+Prettify provides a granular set of beautification rules (options). The projects [Typings](#) explains in good detail the effect each available rule has on code. You can also checkout the [Playground](https://liquify.dev/prettify) to get a better idea of how code will be beautified.
 
 ```typescript
 {
@@ -336,8 +273,7 @@ Refer to the [typings](#) declaration file for description.
   newlineEnd: true,
   noLeadZero: false,
   selectorList: false,
-  quoteConvert: 'single',
-  wrap: 0
+  quoteConvert: 'single'
 }
 ```
 
@@ -355,8 +291,7 @@ Refer to the [typings](#) declaration file for description.
   newLineEnd: true,
   objectSort: false,
   objectArrays: 'default',
-  preserveLines: 3,
-  wrap: 0
+  preserveLines: 3
 }
 ```
 
@@ -396,19 +331,44 @@ Refer to the [typings](#) declaration file for description.
   semicolon: true,
   ternaryLine: false,
   variableList: 'none',
-  vertical: false,
-  wrap: 0
+  vertical: false
 }
+```
+
+# Parse Errors
+
+The `format` method returns a promise, so when beautification fails and a parse error occurs the `.catch()` is invoked. The error message will typically inform you of the issue but it's rather blasé and not very informative. There are plans to improve this aspect in future releases.
+
+> It's important to note that Liquify and Prettify are using different Parsers. The Liquify parser constructs an AST that provides diagnostic capabilities (ie: linting) whereas the Prettify parser constructs a data~structure. The errors of these tools will differ dramatically. Liquify will give you far more context opposed to Prettify.
+
+<!-- prettier-ignore -->
+```typescript
+import * as prettify from '@liquify/prettify';
+
+// Invalid code
+const code = '{% if x %} {{ x }} {% endunless %}';
+
+prettify.format(code).then(output => console.log(output)).catch(error => {
+
+  // Print the PrettyDiff error
+  console.error(error);
+
+  // Return the original input
+  return code;
+
+});
 ```
 
 # Inline Control
 
-Inline control is supported and can be applied by referencing the `@prettify` keyword in a comment followed by the operation. There are 3 operations available, `disable`, `format` and `ignore` each of which can be expressed as follows:
+Inline control is supported and can be applied within comments. There are 3 operations available (`disable`, `format` and `ignore`) each of which is expressed as follows:
 
 - `@ignore: file`
 - `@ignore: start`
 - `@ignore: end`
 - `@format: ....`
+
+> The colon separator is optional and can be omitted.
 
 ### Disable Prettify
 
@@ -424,29 +384,29 @@ You can disable Prettify from formatting a file by placing an inline control com
 </div>
 ```
 
-# Inline Formatting
+### Inline Formatting
 
-Prettify provides inline formatting support via comments. Inline formatting adopts a similar approach used in linters and other projects. The difference is how inline formats are expressed. You can direct Prettify to be apply formatting rules to an entire file by annotation the top of the document with an inline format comment.
+Prettify provides inline formatting support via comments. Inline formatting adopts a similar approach used in linters and other projects. The difference is how inline formats are expressed, in Prettify you express formats using inline annotation at the top of the document.
 
-### HTML Comments
+#### HTML Comments
 
 ```html
 <!-- @format: forceAttribute: true, indentLevel: 4 -->
 ```
 
-### CSS, SCSS or LESS Comments
+#### CSS, SCSS or LESS Comments
 
 ```css
 /* @format: forceAttribute: true, indentLevel: 4 */
 ```
 
-### JavaScript, TypeScript Comments
+#### JavaScript/TypeScript Comments
 
 ```javascript
 // @format: forceAttribute: true, indentLevel: 4
 ```
 
-### Liquid Comments
+#### Liquid Comments
 
 ```liquid
 {% comment %}
@@ -456,29 +416,104 @@ Prettify provides inline formatting support via comments. Inline formatting adop
 {% endcomment %}
 ```
 
-# Ignoring Code
+### Ignoring Code
 
 Lexer modes provide inline comments control and support ignoring regions of code. This logic is mostly lifted from within PrettyDiff and supports Liquid comments:
 
-### HTML Comments
+#### HTML Comments
 
 - `<!-- @ignore: start -->`
 - `<!-- @ignore: end -->`
 
-### CSS, SCSS or LESS Comments
+#### CSS, SCSS or LESS Comments
 
 - `/* @ignore: start */`
 - `/* @ignore: end */`
 
-### JavaScript, TypeScript Comments
+#### JavaScript/TypeScript Comments
 
 - `// @ignore: start`
 - `// @ignore: end`
 
-### Liquid Comments
+#### Liquid Comments
 
 - `{% comment %} @ignore: start {% endcomment %}`
 - `{% comment %} @ignore: end {% endcomment %}`
+
+### Markup
+
+- Liquid
+- HTML
+- XML
+
+### Style
+
+- CSS
+- SCSS
+- SASS
+- LESS
+
+### Script
+
+- JavaScript
+- TypeScript
+- JSX
+- TSX
+- JSON
+
+# Examples
+
+Prettify exposes direct access to different methods on the default export. Passing a string and an optional set of beautification options/rules . Though Prettify uses PrettyDiff and Sparser internally, it is important to note that both the lexers and parsers have been largely refactored. As such, Prettify operates rather effectively and can interpret otherwise unpredictable or chaotic code:
+
+### Demonstration
+
+Take the following (markup) code. This example is doing everything wrong. You'd actually be surprised how many folks would commit code like this when working with Liquid. This is actually because it's novice appealing in nature.
+
+<!-- prettier-ignore -->
+```liquid
+
+<div id="x"
+  class
+="xxx xxx xxx"   data-
+{% if x %} {{ x }}
+         {%- else -%}foo{%- endif %}-id   ="within"
+  aria-x =  "foo">
+
+Hello world!
+
+<div {{ attr }}="example"   {% if xx -%}data-{{ xx }}{%- else -%}
+id{%- endif %}="prepended"
+   aria-x="foo"           class={{ no_quotations }}
+>
+
+I am using Prettify! </div></div>
+```
+
+The above code is some wild stuff. It is using Liquid to output HTML attributes (conditionally), it is using output tags as attributes/values and infuses tags between attribute definitions. Prettify is able to handle this and can quickly reason about what and how the intended structure should be output. The above would format as follows:
+
+<!-- prettier-ignore -->
+```liquid
+
+<div
+  id="x"
+  class="xxx xxx xxx"
+  data-{% if x %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx"
+  aria-x="foo">
+
+  Hello world!
+
+  <div
+    {{ attr }}="example"
+    {% if xx -%}data-{{ xx }}{%- else -%}id="xxx"{%- endif %}
+    aria-x="foo"
+    class="{{ no_quotations }}">
+
+    I am using Prettify!
+    </div>
+</div>
+```
+
+As you can see, the utter fucking insanity has been reasoned with. Code is beautified and structure is applied. Prettify even handles infusion within attributes and understands the intention of the developer.
 
 # Caveats
 
@@ -494,9 +529,9 @@ Prettify can be used together with tools like ESLint and Stylelint without the n
 
 ### Shopify Themes
 
-Developers working with straps like [Dawn](https://github.com/Shopify/dawn) should take some consideration before running Prettify on the distributed code contained within the project. Dawn is chaotic and it employs some terrible approaches that may lead to problematic scenarios and readability issues. An example of this can occur when Prettify is processing HTML attribute values. By default, Prettify does not respect newlines within attribute strings so when it encounters newline characters contained within attribute string values it will appropriately strip them out.
+Developers working with straps like [Dawn](https://github.com/Shopify/dawn) should take some consideration before running Prettify on the distributed code contained within the project. Dawn is chaotic and it employs some terrible approaches that may lead to problematic scenarios and readability issues. An example of this can occur when Prettify is processing HTML attribute values. By default, Prettify does not respect newlines within attribute strings so when it encounters newline characters contained within attribute strings values it will appropriately strip them out.
 
-##### Example
+##### Demonstration
 
 The below code snippet is extracted from the Dawn theme. Notice how the `srcset` attribute value applies newlines for every `{% if %}` condition. While this is totally valid code it is poorly thought through, propagates bad habits and is generally just a terrible approach. By default, Prettify will not respect such a structure during beautification and remove those newlines.
 
@@ -534,9 +569,9 @@ During the beautification process, Prettify will appropriately convert the above
 />
 ```
 
-While the pre-format structure is more readable than the post-format result, it is important that users understand that this caveat is not necessarily an issue or bug. Prettify is merely re-producing an intended beautification operation and removing newlines from attribute values.
+While the pre-format structure is more readable than the post-format result, it is important that users understand that this caveat is not necessarily an issue or bug. Prettify is merely re-producing an intended beautification operation and removing newlines from attribute values. Just because Shopify engineers do this, it does not make it right.
 
-In future releases, Prettify will reluctantly support newlines contained in HTML attribute values but until then, please take consideration here and in any sense, just avoid following the implementations of novice developers and using Dawn as your northern star because it's a rather terrible boilerplate.
+In future releases, Prettify will reluctantly support newlines contained in HTML attribute values but until then, take consideration here and in any sense, just avoid following the implementations of novice developers and using Dawn as your northern star because it's a rather terrible boilerplate.
 
 # Credits
 
