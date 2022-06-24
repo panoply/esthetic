@@ -440,27 +440,6 @@ Lexer modes provide inline comments control and support ignoring regions of code
 - `{% comment %} @ignore: start {% endcomment %}`
 - `{% comment %} @ignore: end {% endcomment %}`
 
-### Markup
-
-- Liquid
-- HTML
-- XML
-
-### Style
-
-- CSS
-- SCSS
-- SASS
-- LESS
-
-### Script
-
-- JavaScript
-- TypeScript
-- JSX
-- TSX
-- JSON
-
 # Examples
 
 Prettify exposes direct access to different methods on the default export. Passing a string and an optional set of beautification options/rules . Though Prettify uses PrettyDiff and Sparser internally, it is important to note that both the lexers and parsers have been largely refactored. As such, Prettify operates rather effectively and can interpret otherwise unpredictable or chaotic code:
@@ -569,13 +548,42 @@ During the beautification process, Prettify will appropriately convert the above
 />
 ```
 
-While the pre-format structure is more readable than the post-format result, it is important that users understand that this caveat is not necessarily an issue or bug. Prettify is merely re-producing an intended beautification operation and removing newlines from attribute values. Just because Shopify engineers do this, it does not make it right.
+While the pre-format structure is more readable than the post-format result, it is important that users understand that this caveat is not necessarily an issue or bug. Prettify is merely re-producing an intended beautification operation and removing newlines from attribute values. Just because Shopify engineers do this, it does not make it right. In future releases, Prettify will reluctantly support newlines contained in HTML attribute values but until then, take consideration here and in any sense, just avoid following the implementations of novice developers and using Dawn as your northern star.
 
-In future releases, Prettify will reluctantly support newlines contained in HTML attribute values but until then, take consideration here and in any sense, just avoid following the implementations of novice developers and using Dawn as your northern star because it's a rather terrible boilerplate.
+# Prettify vs Shopify's Prettier Plugin
+
+Shopify recently shipped a liquid prettier plugin but the plugin does not really do much beyond indentation. While it's great to see Shopify begin to bring support for Liquid beautification despite sitting on the issue for nearly a decade, their choice for a Prettier based solution will only ever suffice for a small number of use cases when it comes to Liquid, all of which directly pertain to their theme development ecosystem. Prettier is a great tool but it's extremely opinionated and trying to tame Liquid in Prettier is difficult and restrictive.
+
+Prettify is leveraging the sparser lexing engines under the hood. Sparser along side PrettyDiff at the time I adapted them into Prettify were efficient at handling Liquid and a multitude of other template languages. I chose to build Prettify atop of sparser and prettydiff opposed to developing a Prettier plugin for a number of reasons but mostly because these lexers understood Liquid infusion within languages other than HTML.
+
+Below is a formatting specific feature comparison as of June 2022 for Markup (Liquid + HTML).
+
+| Feature                     | Prettify | Liquid Prettier Plugin |
+| --------------------------- | -------- | ---------------------- |
+| Tag Indentation             | ✓        | ✓                      |
+| Attribute Indentation       | ✓        | ✓                      |
+| Comment Formatting          | ✓        | ✓                      |
+| Content Indentation         | ✓        | 𐄂                      |
+| Delimiter Spacing           | ✓        | 𐄂                      |
+| Wrapping Indentation        | ✓        | 𐄂                      |
+| Attribute Sorting           | ✓        | 𐄂                      |
+| Liquid + CSS/SCSS           | ✓        | 𐄂                      |
+| Liquid + JS/TS              | ✓        | 𐄂                      |
+| Liquid Newline Filters      | ✓        | 𐄂                      |
+| Frontmatter Support         | ✓        | 𐄂                      |
+| Embedded `{% style %}`      | ✓        | 𐄂                      |
+| Embedded `{% javascript %}` | ✓        | 𐄂                      |
+| Embedded `{% schema %}`     | ✓        | ✓                      |
+| Embedded `<style>`          | ✓        | 𐄂                      |
+| Embedded `<script>`         | ✓        | 𐄂                      |
 
 # Credits
 
-Prettify owes its existence to Sparser and PrettyDiff. This project has been adapted from these 2 brilliant tools. ### [PrettyDiff](https://github.com/prettydiff/prettydiff) and [Sparser](https://github.com/unibeautify/sparser) [Austin Cheney](https://github.com/prettydiff) who is the original author of [PrettyDiff](https://github.com/prettydiff/prettydiff) and [Sparser](https://github.com/unibeautify/sparser) created these two projects and this module is only possible because of the work he has done.
+Prettify owes its existence to Sparser and PrettyDiff. This project has been adapted from these 2 brilliant tools.
+
+### [PrettyDiff](https://github.com/prettydiff/prettydiff) and [Sparser](https://github.com/unibeautify/sparser)
+
+[Austin Cheney](https://github.com/prettydiff) who is the original author of [PrettyDiff](https://github.com/prettydiff/prettydiff) and [Sparser](https://github.com/unibeautify/sparser) created these two projects and this module is only possible because of the work he has done.
 
 PrettyDiff was abandoned in 2019 and Austin has since created [Shared File Systems](https://github.com/prettydiff/share-file-systems) which is a privacy first point-to-point communication tool, please check it out and also have a read of
 [wisdom](https://github.com/prettydiff/wisdom) which personally helped me become a better developer.
