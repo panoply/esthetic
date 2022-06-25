@@ -26,8 +26,21 @@
     "dev": "tsup --watch",
     "build": "tsup --minify-identifiers --minify-whitespace",
     "pack": "cd versions; pnpm pack ../ && cd ..",
-    "play": "ava test/play.test.mjs --color --watch",
-    "test": "ava tests/cases/javascript.test.mjs --verbose --color --watch"
+    "play": "ava tests/play.test.mjs --color --watch",
+    "test": "ava tests/cases/*.test.mjs --serial",
+    "test:comments": "ava tests/cases/comments* ---",
+    "test:css": "ava tests/cases/css* ---",
+    "test:language": "ava tests/cases/language* ---",
+    "test:javascript": "ava tests/cases/javascript* ---"
+  },
+  "ava": {
+    "extensions": [
+      "mjs"
+    ],
+    "files": [
+      "./tests/cases/*.test.mjs"
+    ],
+    "cache": false
   },
   "tsup": {
     "entry": [
@@ -77,7 +90,7 @@
   },
   "devDependencies": {
     "@liquify/eslint-config": "workspace:*",
-    "@liquify/test-utils": "workspace:*",
+    "@liquify/test-utils": "workspace:^1.0.0",
     "ava": "^4.2.0",
     "tsup": "^6.1.0",
     "type-fest": "^2.13.0"
