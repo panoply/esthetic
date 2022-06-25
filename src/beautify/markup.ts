@@ -1288,12 +1288,18 @@ prettify.beautify.markup = function markup (options: Options) {
 
           } else if (data.stack[a] === 'javascript') {
 
-            // prettify.rules.script.indentLevel = lastLevel;
+            options.indentLevel = lastLevel;
+
             ext = prettify.beautify.script(prettify.options);
-            // prettify.rules.script.indentLevel = 0;
+
+            // HOT PATCH
+            // Ensure schema tag block is on same line
+            build[build.length - 1] = '\n';
 
           } else {
-            ext = prettify.beautify.script(options);
+
+            ext = prettify.beautify.script(prettify.options);
+
           }
 
           build.push(ext.replace(/\s+$/, ''));
