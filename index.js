@@ -22,8 +22,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var src_exports = {};
 __export(src_exports, {
   default: () => exports_exports,
-  definitions: () => definitions,
-  language: () => language_exports
+  definitions: () => definitions
 });
 module.exports = __toCommonJS(src_exports);
 
@@ -321,10 +320,10 @@ var definitions = {
     lexer: "script"
   },
   objectIndent: {
-    default: false,
     description: "This option will alphabetically sort object properties in JSON objects",
     type: "select",
     lexer: "script",
+    default: "default",
     values: [
       {
         rule: "default",
@@ -372,7 +371,7 @@ var definitions = {
   },
   elseNewline: {
     lexer: "script",
-    default: true,
+    default: false,
     type: "boolean",
     description: 'If keyword "else" is forced onto a new line.'
   },
@@ -421,10 +420,10 @@ var definitions = {
     type: "boolean"
   },
   endComma: {
-    default: "none",
     description: "If there should be a trailing comma in arrays and objects.",
     type: "select",
     lexer: "script",
+    default: "none",
     values: [
       {
         rule: "none",
@@ -453,8 +452,18 @@ prettify.mode = "beautify";
 prettify.source = "";
 prettify.end = 0;
 prettify.iterator = 0;
-prettify.scopes = [];
 prettify.start = 0;
+prettify.scopes = [];
+prettify.stats = create(null);
+prettify.stats.chars = -1;
+prettify.stats.time = -1;
+prettify.stats.size = "";
+prettify.stats.language = "";
+prettify.hooks = create(null);
+prettify.hooks.before = [];
+prettify.hooks.language = [];
+prettify.hooks.rules = [];
+prettify.hooks.after = [];
 prettify.options.mode = "beautify";
 prettify.options.tagMerge = false;
 prettify.options.tagSort = false;
@@ -604,8 +613,9 @@ var parse = new class Parse {
           return 1;
       }
       if (style3 === true) {
-        if (data.token[xx].indexOf("@import") === 0 || data.token[yy].indexOf("@import") === 0)
+        if (data.token[xx].indexOf("@import") === 0 || data.token[yy].indexOf("@import") === 0) {
           return xx < yy ? -1 : 1;
+        }
         if (data.types[xx] !== data.types[yy]) {
           if (data.types[xx] === "function")
             return 1;
@@ -619,9 +629,8 @@ var parse = new class Parse {
             return -1;
         }
       }
-      if (data.token[xx].toLowerCase() > data.token[yy].toLowerCase()) {
+      if (data.token[xx].toLowerCase() > data.token[yy].toLowerCase())
         return 1;
-      }
       return -1;
     }
     const store = create(null);
@@ -714,7 +723,7 @@ var parse = new class Parse {
               } else {
                 const o = create(null);
                 o.begin = data.begin[ee];
-                o.ender = data.begin[ee];
+                o.ender = data.ender[ee];
                 o.lexer = data.lexer[ee];
                 o.lines = data.lines[ee];
                 o.stack = data.stack[ee];
@@ -780,7 +789,7 @@ var parse = new class Parse {
     const ender = () => {
       let a = this.count;
       const begin = data.begin[a];
-      if ((data.lexer[a] === "script" || data.lexer[a] === "style") && prettify.beautify[data.lexer[a]].objectSort === true) {
+      if ((data.lexer[a] === "script" || data.lexer[a] === "style") && prettify.options[data.lexer[a]].objectSort === true) {
         return;
       }
       do {
@@ -837,22 +846,21 @@ var parse = new class Parse {
   safeSort(array, operation, recursive) {
     let extref = (item) => item;
     const arTest = (item) => Array.isArray(item) === true;
-    const normal = function parse_safeSort_normal(item) {
+    function safeSortNormal(item) {
       let storeb = item;
       const done = [item[0]];
-      function child() {
+      function safeSortNormalChild() {
         let a = 0;
         const len = storeb.length;
         if (a < len) {
           do {
-            if (arTest(storeb[a]) === true) {
-              storeb[a] = parse_safeSort_normal(storeb[a]);
-            }
+            if (arTest(storeb[a]) === true)
+              storeb[a] = safeSortNormal(storeb[a]);
             a = a + 1;
           } while (a < len);
         }
       }
-      function recurse(x) {
+      function safeSortNormalRecurse(x) {
         let a = 0;
         const storea = [];
         const len = storeb.length;
@@ -869,31 +877,30 @@ var parse = new class Parse {
           extref(storea[0]);
         } else {
           if (recursive === true)
-            child();
+            safeSortNormalChild();
           item = storeb;
         }
       }
-      extref = recurse;
-      recurse(array[0]);
+      extref = safeSortNormalRecurse;
+      safeSortNormalRecurse(array[0]);
       return item;
-    };
-    const descend = function parse_safeSort_descend(item) {
+    }
+    function safeSortDescend(item) {
       let c = 0;
       const len = item.length;
       const storeb = item;
-      const child = function parse_safeSort_descend_child() {
+      function safeSortDescendChild() {
         let a = 0;
         const lenc = storeb.length;
         if (a < lenc) {
           do {
-            if (arTest(storeb[a])) {
-              storeb[a] = parse_safeSort_descend(storeb[a]);
-            }
+            if (arTest(storeb[a]))
+              storeb[a] = safeSortDescend(storeb[a]);
             a = a + 1;
           } while (a < lenc);
         }
-      };
-      const recurse = function parse_safeSort_descend_recurse(value) {
+      }
+      function safeSortDescendRecurse(value) {
         let a = c;
         let b = 0;
         let d = 0;
@@ -930,31 +937,31 @@ var parse = new class Parse {
           extref("");
         } else {
           if (recursive === true)
-            child();
+            safeSortDescendChild();
           item = storeb;
         }
         return value;
-      };
-      extref = recurse;
-      recurse("");
+      }
+      extref = safeSortDescendRecurse;
+      safeSortDescendRecurse("");
       return item;
-    };
-    const ascend = function parse_safeSort_ascend(item) {
+    }
+    function safeSortAscend(item) {
       let c = 0;
       const len = item.length;
       const storeb = item;
-      const child = function parse_safeSort_ascend_child() {
+      function safeSortAscendChild() {
         let a = 0;
         const lenc = storeb.length;
         if (a < lenc) {
           do {
             if (arTest(storeb[a]) === true)
-              storeb[a] = parse_safeSort_ascend(storeb[a]);
+              storeb[a] = safeSortAscend(storeb[a]);
             a = a + 1;
           } while (a < lenc);
         }
-      };
-      const recurse = function parse_safeSort_ascend_recurse(value) {
+      }
+      function safeSortAscendRecurse(value) {
         let a = c;
         let b = 0;
         let d = 0;
@@ -991,22 +998,22 @@ var parse = new class Parse {
           extref("");
         } else {
           if (recursive === true)
-            child();
+            safeSortAscendChild();
           item = storeb;
         }
         return value;
-      };
-      extref = recurse;
-      recurse("");
+      }
+      extref = safeSortAscendRecurse;
+      safeSortAscendRecurse("");
       return item;
-    };
+    }
     if (arTest(array) === false)
       return array;
     if (operation === "normal")
-      return normal(array);
+      return safeSortNormal(array);
     if (operation === "descend")
-      return descend(array);
-    return ascend(array);
+      return safeSortDescend(array);
+    return safeSortAscend(array);
   }
   sortCorrection(start, end) {
     let a = start;
@@ -1118,8 +1125,9 @@ var parse = new class Parse {
     const sanitize = (input) => `\\${input}`;
     const regEsc = /(\/|\\|\||\*|\[|\]|\{|\})/g;
     const regEnd = new RegExp(`\\s*${config.terminator.replace(regEsc, sanitize)}$`);
-    const regIgnore = new RegExp(`^(${config.opening.replace(regEsc, sanitize)}\\s*@ignore\\s+start\\b)`);
-    const regStart = new RegExp(`(${config.opening.replace(regEsc, sanitize)}\\s*)`);
+    const opensan = config.opening.replace(regEsc, sanitize);
+    const regIgnore = new RegExp(`^(${opensan}\\s*@prettify-ignore-start\b)`);
+    const regStart = new RegExp(`(${opensan}\\s*)`);
     function emptylines() {
       if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === "") {
         do {
@@ -1144,7 +1152,7 @@ var parse = new class Parse {
       do {
         build.push(config.chars[a]);
         a = a + 1;
-      } while (a < config.end && (config.chars[a - 1] !== "d" || config.chars[a - 1] === "d" && build.slice(build.length - 10).join("") !== "@ignoreend"));
+      } while (a < config.end && (config.chars[a - 1] !== "d" || config.chars[a - 1] === "d" && build.slice(build.length - 20).join("") !== "@prettify-ignore-end"));
       b = a;
       terml = config.opening.length - 1;
       term = config.opening.charAt(terml);
@@ -1400,13 +1408,13 @@ var parse = new class Parse {
       a = a - 1;
     }
     output = build.join("").replace(/\s+$/, "");
-    if (/^(\/\/\s*@ignore:?\s+\bstart\b)/.test(output) === true) {
+    if (/^(\/\/\s*@prettify-ignore-start\b)/.test(output) === true) {
       let termination = "\n";
       a = a + 1;
       do {
         build.push(config.chars[a]);
         a = a + 1;
-      } while (a < config.end && (config.chars[a - 1] !== "d" || config.chars[a - 1] === "d" && (build.slice(build.length - 11).join("") !== "@ignore:end" || build.slice(build.length - 10).join("") !== "@ignoreend")));
+      } while (a < config.end && (config.chars[a - 1] !== "d" || config.chars[a - 1] === "d" && build.slice(build.length - 20).join("") !== "@prettify-ignore-end"));
       b = a;
       do {
       } while (b > config.start && config.chars[b - 1] === "/" && (config.chars[b] === "*" || config.chars[b] === "/"));
@@ -2356,12 +2364,10 @@ prettify.lexers.style = function style(source) {
         nosort.pop();
         ltoke = b[a];
         ltype = "end";
-        if (b[a] === "}") {
+        if (b[a] === "}")
           margin_padding();
-        }
-        if (options2.style.sortProperties === true && b[a] === "}") {
+        if (options2.style.sortProperties === true && b[a] === "}")
           parse.objectSort(data);
-        }
         recordPush("");
       }
     } else if (b[a] === ";" || b[a] === ",") {
@@ -4606,7 +4612,7 @@ prettify.lexers.markup = function markup(source) {
   const { options: options2 } = prettify;
   const { data } = parse;
   const asl = options2.markup.attributeSortList.length;
-  const count = /* @__PURE__ */ Object.create(null);
+  const count = create(null);
   count.end = 0;
   count.index = -1;
   count.start = 0;
@@ -5026,14 +5032,14 @@ prettify.lexers.markup = function markup(source) {
       element = comm[0];
       a = comm[1];
     } else if (a < c) {
-      let slashy = function() {
+      let slashy2 = function() {
         let x = a;
         do {
           x = x - 1;
         } while (b[x] === "\\");
         x = a - x;
         return x % 2 === 1;
-      }, attributeLexer = function(quotes) {
+      }, attributeLexer2 = function(quotes) {
         let name;
         let atty = "";
         let aa = 0;
@@ -5202,13 +5208,13 @@ prettify.lexers.markup = function markup(source) {
                         a = a - 1;
                       }
                       if (attribute.length > 0)
-                        attributeLexer(false);
+                        attributeLexer2(false);
                       break;
                     }
                     if (preserve === false && /^=?["']?({[{%])/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])) {
                       attribute.pop();
                       if (b[a] !== "=" && attribute.length > 0)
-                        attributeLexer(false);
+                        attributeLexer2(false);
                       quote = "";
                       do {
                         attribute.push(b[a]);
@@ -5223,7 +5229,7 @@ prettify.lexers.markup = function markup(source) {
                             }
                           }
                           if (dustatt.length < 1) {
-                            attributeLexer(false);
+                            attributeLexer2(false);
                             b[a] = " ";
                             break;
                           }
@@ -5287,7 +5293,7 @@ prettify.lexers.markup = function markup(source) {
                         quotetest = false;
                       } else if (jsxcount === 0 || jsxcount === 1 && attribute[0] === "{") {
                         attribute.pop();
-                        attributeLexer(false);
+                        attributeLexer2(false);
                         stest = true;
                         break;
                       }
@@ -5299,7 +5305,7 @@ prettify.lexers.markup = function markup(source) {
                     if (parncount === 0) {
                       quote = "";
                       if (b[a + 1] === end.charAt(0)) {
-                        attributeLexer(false);
+                        attributeLexer2(false);
                         break;
                       }
                     }
@@ -5369,7 +5375,7 @@ prettify.lexers.markup = function markup(source) {
                       } while (e > -1);
                     }
                     if (e < 0) {
-                      attributeLexer(true);
+                      attributeLexer2(true);
                       if (b[a + 1] === lastchar)
                         break;
                     }
@@ -5443,7 +5449,7 @@ prettify.lexers.markup = function markup(source) {
               if (e < 0)
                 break;
             }
-          } else if (b[a] === quote.charAt(quote.length - 1) && (options2.language === "jsx" && end === "}" && (b[a - 1] !== "\\" || slashy() === false) || options2.language !== "jsx" || end !== "}")) {
+          } else if (b[a] === quote.charAt(quote.length - 1) && (options2.language === "jsx" && end === "}" && (b[a - 1] !== "\\" || slashy2() === false) || options2.language !== "jsx" || end !== "}")) {
             f = 0;
             if (lex.length > 1) {
               tname = lex[1] + lex[2];
@@ -5513,10 +5519,10 @@ prettify.lexers.markup = function markup(source) {
     if (preserve === false && options2.language !== "jsx")
       element = element.replace(/\s+/g, " ");
     if (tname === "comment" && isLiquid(element, 2)) {
-      let lineFindStart = function(spaces) {
+      let lineFindStart2 = function(spaces) {
         linesStart = spaces === "" ? 0 : spaces.split("\n").length;
         return "";
-      }, lineFindEnd = function(spaces) {
+      }, lineFindEnd2 = function(spaces) {
         linesEnd = spaces === "" ? 0 : spaces.split("\n").length;
         return "";
       };
@@ -5531,8 +5537,8 @@ prettify.lexers.markup = function markup(source) {
       record.types = "template_start";
       record.token = open;
       recordPush(data, record, "comment");
-      element = comm2.replace(/^\s*/, lineFindStart);
-      element = element.replace(/\s*$/, lineFindEnd);
+      element = comm2.replace(/^\s*/, lineFindStart2);
+      element = element.replace(/\s*$/, lineFindEnd2);
       record.begin = parse.count;
       record.lines = linesStart;
       record.stack = "comment";
@@ -6013,9 +6019,7 @@ prettify.lexers.markup = function markup(source) {
                     record.token = "-->";
                     recordPush(data, record, "");
                   } else {
-                    prettify.options.language = "javascript";
                     prettify.lexers.script(outside);
-                    prettify.options.language = "html";
                   }
                   break;
                 }
@@ -6043,6 +6047,8 @@ prettify.lexers.markup = function markup(source) {
                     recordPush(data, record, "");
                   } else {
                     prettify.lexers.style(outside);
+                    if (options2.style.sortProperties === true)
+                      parse.sortCorrection(0, parse.count + 1);
                   }
                   break;
                 }
@@ -6071,6 +6077,8 @@ prettify.lexers.markup = function markup(source) {
                   } else {
                     prettify.options.language = "json";
                     prettify.lexers.script(outside);
+                    if (options2.script.objectSort === true)
+                      parse.sortCorrection(0, parse.count + 1);
                     prettify.options.language = "html";
                   }
                   break;
@@ -6126,6 +6134,9 @@ prettify.lexers.markup = function markup(source) {
                     recordPush(data, record, "");
                   } else {
                     prettify.lexers.script(outside);
+                    if (options2.script.objectSort === true) {
+                      parse.sortCorrection(0, parse.count + 1);
+                    }
                   }
                   break;
                 }
@@ -6171,7 +6182,7 @@ prettify.lexers.markup = function markup(source) {
           liner = 0;
           record.token = ltoke;
           if (options2.wrap > 0 && options2.markup.preserveText !== true) {
-            let wrapper = function() {
+            let wrapper2 = function() {
               if (ltoke.charAt(aa) === " ") {
                 store.push(ltoke.slice(0, aa));
                 ltoke = ltoke.slice(aa + 1);
@@ -6228,7 +6239,7 @@ prettify.lexers.markup = function markup(source) {
             ltoke = lex.join("");
             ltoke = ltoke.replace(/^\s+/, "").replace(/\s+$/, "").replace(/\s+/g, " ");
             do {
-              wrapper();
+              wrapper2();
             } while (aa < len);
             if (ltoke !== "" && ltoke !== " ")
               store.push(ltoke);
@@ -6779,13 +6790,13 @@ prettify.beautify.markup = function markup2(options2) {
     const build = [];
     const ind = (() => {
       const indy = [options2.indentChar];
-      const size = options2.indentSize - 1;
+      const size2 = options2.indentSize - 1;
       let aa = 0;
-      if (aa < size) {
+      if (aa < size2) {
         do {
           indy.push(options2.indentChar);
           aa = aa + 1;
-        } while (aa < size);
+        } while (aa < size2);
       }
       return indy.join("");
     })();
@@ -6930,9 +6941,11 @@ prettify.beautify.markup = function markup2(options2) {
             ext = prettify.beautify.style(prettify.options);
             build[build.length - 1] = "\n";
           } else if (data.stack[a] === "javascript") {
+            options2.indentLevel = lastLevel;
             ext = prettify.beautify.script(prettify.options);
+            build[build.length - 1] = "\n";
           } else {
-            ext = prettify.beautify.script(options2);
+            ext = prettify.beautify.script(prettify.options);
           }
           build.push(ext.replace(/\s+$/, ""));
           if (levels[prettify.iterator] > -1 && externalIndex[a] > a) {
@@ -7151,6 +7164,19 @@ function repeatChar(count, ch) {
     char += ch;
   } while (i++ < count);
   return char;
+}
+function size(bytes) {
+  const kb = 1024;
+  const mb = 1048576;
+  const gb = 1073741824;
+  if (bytes < kb)
+    return bytes + " B";
+  else if (bytes < mb)
+    return (bytes / kb).toFixed(1) + " KB";
+  else if (bytes < gb)
+    return (bytes / mb).toFixed(1) + " MB";
+  else
+    return (bytes / gb).toFixed(1) + " GB";
 }
 
 // src/beautify/script.ts
@@ -9101,7 +9127,7 @@ prettify.beautify.script = function script2(options2) {
       return linesout.join("");
     }
     if (options2.script.vertical === true) {
-      let vertical = function(end) {
+      let vertical2 = function(end) {
         let longest = 0;
         let complex = 0;
         let aa = end - 1;
@@ -9175,7 +9201,7 @@ prettify.beautify.script = function script2(options2) {
         a = a - 1;
         if (data.lexer[a] === "script") {
           if (data.token[a] === "}" && data.token[a - 1] !== "{" && levels[data.begin[a]] > 0) {
-            vertical(a);
+            vertical2(a);
           }
         } else {
           a = data.begin[a];
@@ -9243,13 +9269,13 @@ prettify.beautify.script = function script2(options2) {
   return output;
 };
 
-// src/parser/language.ts
-var language_exports = {};
-__export(language_exports, {
-  auto: () => auto,
-  reference: () => reference,
-  setLanguageName: () => setLanguageName,
-  setLexer: () => setLexer
+// src/prettify/exports.ts
+var exports_exports = {};
+__export(exports_exports, {
+  format: () => format,
+  language: () => detect,
+  options: () => options,
+  parse: () => parse2
 });
 
 // src/languages/css.ts
@@ -9282,6 +9308,15 @@ var html = [
   {
     pattern: /[a-z-]+=("|').+("|')/g,
     type: "keyword.other"
+  },
+  {
+    pattern: /{[{%][\s\S]*?[%}]}/g,
+    type: "not"
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: "not",
+    deterministic: "liquid"
   }
 ];
 
@@ -9306,7 +9341,14 @@ var liquid = [
   },
   {
     pattern: /{[{%][\s\S]*?[%}]}/g,
-    type: "keyword"
+    type: "keyword",
+    deterministic: "liquid",
+    unless: /\/.*?{[{%][\s\S]*?[%}]}.*\//
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: "meta.module",
+    deterministic: "liquid"
   }
 ];
 
@@ -9442,7 +9484,19 @@ var javascript = [
     type: "not"
   },
   {
-    pattern: /<(\/)?script( type=('|")text\/javascript('|"))?>/,
+    pattern: /(var|const|let)\s+\w+:\s*(string|number|boolean|string)(?:\[\])?/,
+    type: "not"
+  },
+  {
+    pattern: /(interface|type)\s+\w+?/,
+    type: "not"
+  },
+  {
+    pattern: /(declare|namespace)\s+\w+?/,
+    type: "not"
+  },
+  {
+    pattern: /<(\/)?script\s*(type=('|")text\/javascript('|"))?>/,
     type: "not"
   },
   {
@@ -9454,20 +9508,13 @@ var javascript = [
     type: "not"
   },
   {
+    pattern: /{[{%][\s\S]*?[%}]}/g,
+    type: "not"
+  },
+  {
     pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
-    type: "not"
-  },
-  {
-    pattern: /(var|const|let)\s+\w+:\s*(string|number|boolean|string)(?:\[\])?/,
-    type: "not"
-  },
-  {
-    pattern: /(interface|type)\s+\w+?/,
-    type: "not"
-  },
-  {
-    pattern: /(declare|namespace)\s+\w+?/,
-    type: "not"
+    type: "not",
+    deterministic: "liquid"
   }
 ];
 
@@ -9542,8 +9589,13 @@ var typescript = [
     type: "not"
   },
   {
-    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    pattern: /{[{%][\s\S]*?[%}]}/g,
     type: "not"
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: "not",
+    deterministic: "liquid"
   },
   {
     pattern: /(var|const|let)\s+\w+:\s*(string|number|boolean|string|any)(\[\])?/,
@@ -9624,7 +9676,7 @@ var languages = {
   markdown,
   yaml
 };
-function detect(sample) {
+function detectLanguage(sample) {
   let linesOfCode = sample.replace(/\r\n?/g, "\n").replace(/\n{2,}/g, "\n").split("\n");
   if (linesOfCode.length > 500) {
     linesOfCode = linesOfCode.filter((_, index) => {
@@ -9635,7 +9687,8 @@ function detect(sample) {
   }
   if (linesOfCode[0].startsWith("#!")) {
     if (linesOfCode[0].startsWith("#!/usr/bin/env")) {
-      let language = linesOfCode[0].split(" ").slice(1).join(" ");
+      let language;
+      language = linesOfCode[0].split(" ").slice(1).join(" ");
       language = shebangMap[language] || language.charAt(0).toUpperCase() + language.slice(1);
       return {
         language,
@@ -9645,7 +9698,7 @@ function detect(sample) {
     }
     if (linesOfCode[0].startsWith("#!/bin/bash")) {
       return {
-        language: "bash",
+        language: "javascript",
         statistics: {},
         linesOfCode: linesOfCode.length
       };
@@ -9653,12 +9706,26 @@ function detect(sample) {
   }
   const pairs = keys(languages).map((key) => ({ language: key, checkers: languages[key] }));
   const results = [];
+  const determine = pairs.reduce((acc, { language, checkers }) => {
+    acc[language] = checkers.filter((pattern) => "deterministic" in pattern);
+    return acc;
+  }, {});
   for (let i = 0; i < pairs.length; i++) {
     const { language, checkers } = pairs[i];
     let points = 0;
     for (let j = 0; j < linesOfCode.length; j++) {
       if (/^\s*$/.test(linesOfCode[j]))
         continue;
+      if (language in determine) {
+        const determined = definitive(linesOfCode[j], checkers);
+        if (determined) {
+          return {
+            language: determined,
+            statistics: {},
+            linesOfCode: j
+          };
+        }
+      }
       if (!nearTop(j, linesOfCode)) {
         points += getPoints(linesOfCode[j], checkers.filter((checker) => !checker.nearTop));
       } else {
@@ -9667,7 +9734,10 @@ function detect(sample) {
     }
     results.push({ language, points });
   }
-  const bestResult = results.reduce((a, b) => a.points >= b.points ? a : b, { points: 0, language: "" });
+  const bestResult = results.reduce((a, b) => a.points >= b.points ? a : b, {
+    points: 0,
+    language: ""
+  });
   const statistics = {};
   for (let i = 0; i < results.length; i++)
     statistics[results[i].language] = results[i].points;
@@ -9676,6 +9746,14 @@ function detect(sample) {
     statistics,
     linesOfCode: linesOfCode.length
   };
+}
+function definitive(lineOfCode, checkers) {
+  for (const { pattern, deterministic, unless = null } of checkers) {
+    if (pattern.test(lineOfCode) && unless !== null && !unless.test(lineOfCode)) {
+      return deterministic;
+    }
+  }
+  return false;
 }
 function parsePoint(type) {
   switch (type) {
@@ -9726,26 +9804,36 @@ function nearTop(index, linesOfCode) {
 }
 
 // src/parser/language.ts
+var lexmap = create(null);
+var map = create(null);
+{
+  lexmap.markup = "markup";
+  lexmap.html = "markup";
+  lexmap.liquid = "markup";
+  lexmap.js = "script";
+  lexmap.ts = "script";
+  lexmap.javascript = "script";
+  lexmap.typescript = "script";
+  lexmap.json = "script";
+  lexmap.jsx = "script";
+  lexmap.tsx = "script";
+  lexmap.less = "style";
+  lexmap.scss = "style";
+  lexmap.sass = "style";
+  lexmap.css = "style";
+  lexmap.text = "text";
+  lexmap.xml = "markup";
+  map.javascript = "JavaScript";
+  map.json = "JSON";
+  map.jsx = "JSX";
+  map.html = "HTML";
+  map.liquid = "Liquid";
+  map.markup = "markup";
+  map.scss = "SCSS";
+  map.text = "Plain Text";
+  map.typescript = "TypeScript";
+}
 function setLexer(input) {
-  const lexmap = {
-    markup: "markup",
-    html: "markup",
-    liquid: "markup",
-    js: "script",
-    ts: "script",
-    javascript: "script",
-    typescript: "script",
-    json: "script",
-    jsp: "markup",
-    jsx: "script",
-    tsx: "script",
-    less: "style",
-    scss: "style",
-    sass: "style",
-    css: "style",
-    text: "text",
-    xml: "markup"
-  };
   if (typeof input !== "string")
     return "script";
   if (input.indexOf("html") > -1)
@@ -9755,17 +9843,6 @@ function setLexer(input) {
   return lexmap[input];
 }
 function setLanguageName(input) {
-  const map = {
-    javascript: "JavaScript",
-    json: "JSON",
-    jsx: "JSX",
-    html: "HTML",
-    liquid: "Liquid",
-    markup: "markup",
-    scss: "SCSS",
-    text: "Plain Text",
-    typescript: "TypeScript"
-  };
   if (typeof input !== "string" || map[input] === void 0)
     return input.toUpperCase();
   return map[input];
@@ -9777,32 +9854,38 @@ function reference(language) {
   result.lexer = setLexer(language);
   return result;
 }
-function auto(sample) {
-  const { language } = detect(sample);
+detect.reference = reference;
+detect.listen = function(callback) {
+  prettify.hooks.language.push(callback);
+};
+function detect(sample) {
+  const { language } = detectLanguage(sample);
   const result = create(null);
   result.language = language;
   result.languageName = setLanguageName(language);
   result.lexer = setLexer(language);
+  if (prettify.hooks.language.length > 0) {
+    for (const hook of prettify.hooks.language) {
+      const langhook = hook(result);
+      if (typeof langhook === "object")
+        assign(result, langhook);
+    }
+  }
   return result;
 }
-
-// src/prettify/exports.ts
-var exports_exports = {};
-__export(exports_exports, {
-  format: () => format,
-  options: () => options,
-  parse: () => parse2
-});
 
 // src/parser/comment.ts
 function comment(prettify2) {
   const definitions2 = prettify2.definitions;
   const sindex = prettify2.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@format\s*(\w+)?\s*{\s+/);
+  const signore = prettify2.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify-ignore\b/);
   const k = keys(definitions2);
   const len = k.length;
   let a = 0;
+  if (signore > -1 && prettify2.source.slice(0, signore).trimStart() === "")
+    return false;
   if (sindex > -1 && (sindex === 0 || `"':`.indexOf(prettify2.source.charAt(sindex - 1)) < 0)) {
-    let esc = function() {
+    let esc2 = function() {
       if (source.charAt(a2 - 1) !== "\\")
         return false;
       let x = a2;
@@ -9842,7 +9925,7 @@ function comment(prettify2) {
       a2 = a2 + 1;
     } while (a2 < len2);
     do {
-      if (esc() === false) {
+      if (esc2() === false) {
         if (quote === "") {
           if (source.charAt(a2) === '"' || source.charAt(a2) === "'" || source.charAt(a2) === "`") {
             quote = source.charAt(a2);
@@ -10082,7 +10165,7 @@ function parser(prettify2) {
     return arr;
   };
   if (prettify2.options.language === "auto" || prettify2.options.lexer === "auto") {
-    const lang = auto(prettify2.source);
+    const lang = detect(prettify2.source);
     if (prettify2.options.language === "auto")
       prettify2.options.language = lang.language;
     if (prettify2.options.lexer === "auto")
@@ -10129,6 +10212,7 @@ function parser(prettify2) {
   return parse.data;
 }
 function mode(prettify2) {
+  const start = Date.now();
   const mv = prettify2.mode;
   const lf = prettify2.options.crlf === true ? "\r\n" : "\n";
   if (prettify2.options.language === "text") {
@@ -10142,7 +10226,7 @@ function mode(prettify2) {
     prettify2.options.languageName = "Plain Text";
     prettify2.options.lexer = "text";
   } else if (prettify2.options.language === "auto" || prettify2.options.lexer === "auto") {
-    const lang = auto(prettify2.source);
+    const lang = detect(prettify2.source);
     if (lang.language === "text") {
       lang.language = "html";
       lang.lexer = "markup";
@@ -10156,19 +10240,76 @@ function mode(prettify2) {
       prettify2.options.languageName = lang.languageName;
     }
   }
-  comment(prettify2);
+  prettify2.stats.language = prettify2.options.languageName;
+  const comm = comment(prettify2);
+  if (comm === false) {
+    prettify2.stats.time = -1;
+    prettify2.stats.chars = prettify2.source.length;
+    prettify2.stats.size = size(prettify2.stats.chars);
+    return prettify2.source;
+  }
   prettify2.parsed = parser(prettify2);
-  if (mv === "parse")
-    return JSON.stringify(prettify2.parsed);
+  if (mv === "parse") {
+    prettify2.stats.time = (Date.now() - start).toFixed(1);
+    prettify2.stats.chars = prettify2.source.length;
+    prettify2.stats.size = size(prettify2.stats.chars);
+    return prettify2.parsed;
+  }
   let result;
   result = prettify2.beautify[prettify2.options.lexer](prettify2.options);
   result = prettify2.options.endNewline === true ? result.replace(/\s*$/, lf) : result.replace(/\s+$/, "");
+  const length = result.length;
+  prettify2.stats.chars = length;
+  prettify2.stats.size = size(length);
+  prettify2.stats.time = (Date.now() - start).toFixed(1);
   prettify2.end = 0;
   prettify2.start = 0;
   return result;
 }
 
 // src/prettify/exports.ts
+format.before = function(callback) {
+  prettify.hooks.before.push(callback);
+};
+format.after = function(callback) {
+  prettify.hooks.after.push(callback);
+};
+options.listen = function(callback) {
+  prettify.hooks.rules.push(callback);
+};
+Object.defineProperty(format, "stats", {
+  get() {
+    return prettify.stats;
+  }
+});
+Object.defineProperty(options, "rules", {
+  get() {
+    return prettify.options;
+  }
+});
+function format(source, rules) {
+  prettify.source = source;
+  if (typeof rules === "object")
+    prettify.options = options(rules);
+  if (prettify.hooks.before.length > 0) {
+    for (const cb of prettify.hooks.before) {
+      if (cb(prettify.options, source) === false)
+        return source;
+    }
+  }
+  const output = mode(prettify);
+  if (prettify.hooks.after.length > 0) {
+    for (const cb of prettify.hooks.after) {
+      if (cb.call(prettify.parsed, output, prettify.options) === false)
+        return source;
+    }
+  }
+  return new Promise((resolve, reject) => {
+    if (parse.error.length)
+      return reject(parse.error);
+    return resolve(output);
+  });
+}
 function options(rules) {
   var _a, _b;
   for (const rule of keys(rules)) {
@@ -10186,18 +10327,11 @@ function options(rules) {
       prettify.options[rule] = rules[rule];
     }
   }
+  if (prettify.hooks.rules.length > 0) {
+    for (const cb of prettify.hooks.rules)
+      cb(prettify.options);
+  }
   return prettify.options;
-}
-function format(source, rules) {
-  prettify.source = source;
-  if (typeof rules === "object")
-    prettify.options = options(rules);
-  const formatted = mode(prettify);
-  return new Promise((resolve, reject) => {
-    if (parse.error.length)
-      return reject(parse.error);
-    return resolve(formatted);
-  });
 }
 function parse2(source, rules) {
   prettify.source = source;
