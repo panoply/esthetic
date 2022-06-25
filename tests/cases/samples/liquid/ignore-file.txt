@@ -1,0 +1,3 @@
+{% comment %} @ignore file {% endcomment %}
+
+<div>File should not be formatted</div>
