@@ -1,12 +1,12 @@
 import test from 'ava';
 import { samples } from '@liquify/test-utils';
-import { language } from '@liquify/prettify';
+import prettify from '@liquify/prettify';
 
-test('HTML automatic detection', async t => {
+test.serial('HTML language detection', async t => {
 
   const { source } = await samples.get('languages/html');
 
-  t.deepEqual(language.auto(source), {
+  t.deepEqual(prettify.language(source), {
     language: 'html',
     lexer: 'markup',
     languageName: 'HTML'
@@ -14,11 +14,11 @@ test('HTML automatic detection', async t => {
 
 });
 
-test('Liquid automatic detection', async t => {
+test.serial('Liquid language detection', async t => {
 
   const { source } = await samples.get('languages/liquid');
 
-  t.deepEqual(language.auto(source), {
+  t.deepEqual(prettify.language(source), {
     language: 'liquid',
     lexer: 'markup',
     languageName: 'Liquid'
@@ -26,11 +26,59 @@ test('Liquid automatic detection', async t => {
 
 });
 
-test('CSS automatic detection', async t => {
+test.serial('Liquid embedded region {% style %}', async t => {
+
+  const { source } = await samples.get('liquid/style');
+
+  t.deepEqual(prettify.language(source), {
+    language: 'liquid',
+    lexer: 'markup',
+    languageName: 'Liquid'
+  });
+
+});
+
+test.serial('Liquid embedded region {% stylesheet %}', async t => {
+
+  const { source } = await samples.get('liquid/style');
+
+  t.deepEqual(prettify.language(source), {
+    language: 'liquid',
+    lexer: 'markup',
+    languageName: 'Liquid'
+  });
+
+});
+
+test.serial('Liquid embedded region {% schema %}', async t => {
+
+  const { source } = await samples.get('liquid/schema');
+
+  t.deepEqual(prettify.language(source), {
+    language: 'liquid',
+    lexer: 'markup',
+    languageName: 'Liquid'
+  });
+
+});
+
+test.serial('Liquid embedded region {% javascript %}', async t => {
+
+  const { source } = await samples.get('liquid/javascript');
+
+  t.deepEqual(prettify.language(source), {
+    language: 'liquid',
+    lexer: 'markup',
+    languageName: 'Liquid'
+  });
+
+});
+
+test.serial('CSS language detection', async t => {
 
   const { source } = await samples.get('languages/css');
 
-  t.deepEqual(language.auto(source), {
+  t.deepEqual(prettify.language(source), {
     language: 'css',
     lexer: 'style',
     languageName: 'CSS'
@@ -38,21 +86,21 @@ test('CSS automatic detection', async t => {
 
 });
 
-test.skip('SCSS automatic detection', async t => {
+test.serial.skip('SCSS language detection', async t => {
 
   const { source } = await samples.get('languages/scss');
 
-  language.auto(source);
+  prettify.language(source);
 
-  t.log(language.auto(input.nospace));
+  t.log(prettify.language(input.nospace));
 
 });
 
-test('JSON automatic detection', async t => {
+test.serial('JSON language detection', async t => {
 
   const { source } = await samples.get('languages/json');
 
-  t.deepEqual(language.auto(source), {
+  t.deepEqual(prettify.language(source), {
     language: 'json',
     lexer: 'script',
     languageName: 'JSON'
@@ -60,11 +108,11 @@ test('JSON automatic detection', async t => {
 
 });
 
-test('JavaScript automatic detection', async t => {
+test.serial('JavaScript language detection', async t => {
 
   const { source } = await samples.get('languages/javascript');
 
-  t.deepEqual(language.auto(source), {
+  t.deepEqual(prettify.language(source), {
     language: 'javascript',
     lexer: 'script',
     languageName: 'JavaScript'
@@ -72,11 +120,41 @@ test('JavaScript automatic detection', async t => {
 
 });
 
-test('TypeScript automatic detection', async t => {
+test.serial('TypeScript language detection', async t => {
 
   const { source } = await samples.get('languages/typescript');
 
-  t.deepEqual(language.auto(source), {
+  t.deepEqual(prettify.language(source), {
+    language: 'typescript',
+    lexer: 'script',
+    languageName: 'TypeScript'
+  });
+
+});
+
+test.serial('Language Detection hooks', async t => {
+
+  const { source } = await samples.get('languages/liquid');
+
+  prettify.language.listen(({ language, languageName, lexer }) => {
+
+    t.is(language, 'liquid');
+    t.is(languageName, 'Liquid');
+    t.is(lexer, 'markup');
+
+  });
+
+  prettify.language.listen(() => {
+
+    return {
+      language: 'typescript',
+      lexer: 'script',
+      languageName: 'TypeScript'
+    };
+
+  });
+
+  t.deepEqual(prettify.language(source), {
     language: 'typescript',
     lexer: 'script',
     languageName: 'TypeScript'
