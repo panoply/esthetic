@@ -306,10 +306,10 @@ export const definitions: Definitions = {
     lexer: 'script'
   },
   objectIndent: {
-    default: false,
     description: 'This option will alphabetically sort object properties in JSON objects',
     type: 'select',
     lexer: 'script',
+    default: 'default',
     values: [
       {
         rule: 'default',
@@ -357,7 +357,7 @@ export const definitions: Definitions = {
   },
   elseNewline: {
     lexer: 'script',
-    default: true,
+    default: false,
     type: 'boolean',
     description: 'If keyword "else" is forced onto a new line.'
   },
@@ -406,10 +406,10 @@ export const definitions: Definitions = {
     type: 'boolean'
   },
   endComma: {
-    default: 'none',
     description: 'If there should be a trailing comma in arrays and objects.',
     type: 'select',
     lexer: 'script',
+    default: 'none',
     values: [
       {
         rule: 'none',
