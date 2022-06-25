@@ -20,6 +20,13 @@ export const liquid: LanguagePattern[] = [
   },
   {
     pattern: /{[{%][\s\S]*?[%}]}/g,
-    type: 'keyword'
+    type: 'keyword',
+    deterministic: 'liquid',
+    unless: /\/.*?{[{%][\s\S]*?[%}]}.*\//
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: 'meta.module',
+    deterministic: 'liquid'
   }
 ];
