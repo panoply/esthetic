@@ -1,4 +1,5 @@
 import type { DetectedLanguage, LanguagePattern, PatternTypes, LanguagePoints } from 'types/language';
+import type { LanguageProperName } from 'types/prettify';
 import { css } from '../languages/css';
 import { html } from '../languages/html';
 import { liquid } from '../languages/liquid';
@@ -15,7 +16,7 @@ export const shebangMap: Record<string, string> = {
   deno: 'typescript'
 };
 
-const languages: Record<string, LanguagePattern[]> = {
+const languages: Partial<Record<LanguageProperName, LanguagePattern[]>> = {
   css,
   html,
   liquid,
@@ -29,7 +30,7 @@ const languages: Record<string, LanguagePattern[]> = {
 /**
  * Language Detection from code sample.
  */
-export function detect (sample: string): DetectedLanguage {
+export function detectLanguage (sample: string): DetectedLanguage {
 
   let linesOfCode = sample
     .replace(/\r\n?/g, '\n')
@@ -46,8 +47,12 @@ export function detect (sample: string): DetectedLanguage {
   // Shebang check
   if (linesOfCode[0].startsWith('#!')) {
     if (linesOfCode[0].startsWith('#!/usr/bin/env')) {
-      let language = linesOfCode[0].split(' ').slice(1).join(' ');
-      language = shebangMap[language] || language.charAt(0).toUpperCase() + language.slice(1);
+
+      let language: LanguageProperName;
+
+      language = linesOfCode[0].split(' ').slice(1).join(' ') as LanguageProperName;
+      language = (shebangMap[language] || language.charAt(0).toUpperCase() + language.slice(1)) as LanguageProperName;
+
       return {
         language,
         statistics: {},
@@ -57,7 +62,7 @@ export function detect (sample: string): DetectedLanguage {
 
     if (linesOfCode[0].startsWith('#!/bin/bash')) {
       return {
-        language: 'bash',
+        language: 'javascript',
         statistics: {},
         linesOfCode: linesOfCode.length
       };
@@ -66,6 +71,10 @@ export function detect (sample: string): DetectedLanguage {
 
   const pairs = keys(languages).map((key) => ({ language: key, checkers: languages[key] }));
   const results: LanguagePoints[] = [];
+  const determine = pairs.reduce((acc, { language, checkers }) => {
+    acc[language] = checkers.filter((pattern) => 'deterministic' in pattern);
+    return acc;
+  }, {});
 
   for (let i = 0; i < pairs.length; i++) {
 
@@ -78,6 +87,18 @@ export function detect (sample: string): DetectedLanguage {
       // fast return if the current line of code is empty or contains only spaces
       if (/^\s*$/.test(linesOfCode[j])) continue;
 
+      if (language in determine) {
+        const determined = definitive(linesOfCode[j], checkers);
+        if (determined) {
+
+          return {
+            language: determined,
+            statistics: {},
+            linesOfCode: j
+          };
+        }
+      }
+
       if (!nearTop(j, linesOfCode)) {
         points += getPoints(linesOfCode[j], checkers.filter((checker) => !checker.nearTop));
       } else {
@@ -88,7 +109,11 @@ export function detect (sample: string): DetectedLanguage {
     results.push({ language, points });
   }
 
-  const bestResult = results.reduce((a, b) => a.points >= b.points ? a : b, { points: 0, language: '' });
+  const bestResult = results.reduce((a, b) => a.points >= b.points ? a : b, <LanguagePoints>{
+    points: 0,
+    language: ''
+  });
+
   const statistics: Record<string, number> = {};
 
   for (let i = 0; i < results.length; i++) statistics[results[i].language] = results[i].points;
@@ -98,6 +123,18 @@ export function detect (sample: string): DetectedLanguage {
     statistics,
     linesOfCode: linesOfCode.length
   };
+}
+
+function definitive (lineOfCode: string, checkers: LanguagePattern[]) {
+
+  for (const { pattern, deterministic, unless = null } of checkers) {
+    if (pattern.test(lineOfCode) && unless !== null && !unless.test(lineOfCode)) {
+      return deterministic;
+    }
+  }
+
+  return false;
+
 }
 
 function parsePoint (type: PatternTypes) {
