@@ -8,5 +8,5 @@ import './beautify/script';
 import './prettify/module';
 
 export { definitions } from './options/definitions';
-export * as language from './parser/language';
+
 export * as default from './prettify/exports';
