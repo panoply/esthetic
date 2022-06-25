@@ -1,15 +1,11 @@
 /* eslint-disable object-curly-newline */
 
 import {
-  Rules,
   Options,
-  MarkupOptions,
-  ScriptOptions,
-  StyleOptions,
-  JSONOptions,
   Definitions,
   Language,
-  LanguageNames
+  Data,
+  LanguageProperName
 } from './types/prettify';
 
 export {
@@ -26,11 +22,11 @@ export {
   LexerNames
 } from './types/prettify';
 
-declare const Prettify: {
+declare const prettify: {
   /**
    * **PRETTIFY 💅**
    *
-   * The next generation beautification tool for Liquid.
+   * The new generation beautification tool for Liquid.
    *
    * - Liquid + HTML
    * - Liquid + XHTML
@@ -44,87 +40,141 @@ declare const Prettify: {
    * - Liquid + TSX
    * - JSON
    */
-  format(source: string, rules?: Options): Promise<string>;
+  format?: {
+    (source: string, rules?: Options): Promise<string>;
+    /**
+     * **Before Format**
+     *
+     * Trigger a callback to execute right before beautification
+     * begins. The function will be invoked in an isolated manner.
+     */
+    before?: (callback: (rules: Options, input: string) => void | false) => void;
+    /**
+     * **After Format**
+     *
+     * Trigger a callback to execute immeadiatly after beautification
+     * has completed. The function will trigger before the returning
+     * promise has fulfilled and is invoked in an isolated nammer.
+     */
+    after?: (callback: (output: string, rules: Options) => void | false) => void
+    /**
+     * **Format Stats**
+     *
+     * Trigger a callback to execute immeadiatly after beautification
+     * has completed. The function will trigger before the returning
+     * promise has fulfilled and is invoked in an isolated nammer.
+     */
+    get stats(): {
+      /**
+       * Beautification processing time in miliseconds
+       */
+      time: number;
+      /**
+       * The output size, ie: bytes, kb or mb
+       */
+      size: number;
+      /**
+       * The number of characters contained in the output string.
+       */
+      chars: number;
+      /**
+       * The offical language name that was beautified
+       */
+      language: LanguageProperName
+    };
+
+  };
   /**
-   * **PRETTIFY MARKUP 💅**
+   * **Parse**
    *
-   * Beautify markup
-   *
-   * - Liquid + HTML
-   * - Liquid + XHTML
-   * - Liquid + XML
+   * Returns the Sparser data~structure.
    */
-  markup?: (source: string, rules?: MarkupOptions) => Promise<string>;
+  parse?: {
+    (source: string): Promise<Data>;
+    /**
+     * **Parse Stats**
+     *
+     * Return some execution information
+     */
+    get stats(): {
+      /**
+       * Parse processing time in miliseconds
+       */
+      time: number;
+      /**
+       * The source string size, ie: bytes, kb or mb
+       */
+      size: number;
+      /**
+       * The number of characters contained in the source string.
+       */
+      chars: number;
+      /**
+       * The offical language name that was parsed
+       */
+      language: LanguageProperName
+    };
+  }
   /**
-   *  **PRETTIFY SCRIPT 💅**
+   * **Options**
    *
-   * Beautify scripts
-   *
-   * - Liquid + JavaScript
-   * - Liquid + TypeScript
-   * - Liquid + JSX
-   * - Liquid + TSX
+   * Set format options to be applied to syntax
    */
-  script?: (source: string, rules?: ScriptOptions) => Promise<string>;
+  options?: {
+    (rules: Options): Options;
+    /**
+     * **Current Rules**
+     *
+     * Returns the current formatting rule options. This
+     * getter will reflect the last known options to have been
+     * passed.
+     */
+    get rules(): Options;
+    /**
+     * **Change Listener**
+     *
+     * Hook listener wich will be invoked when beautification
+     * options change or are augmented.
+     */
+    listen?: (callback: (opions: Options) => void) => void
+  };
   /**
-   *  **PRETTIFY STYLE 💅**
+   * **Language**
    *
-   * Beautify scripts
-   *
-   * - Liquid + CSS
-   * - Liquid + SCSS
-   * - Liquid + LESS
+   * Automatic language detection based on the string input.
+   * Returns lexer, language and official name.
    */
-  style?: (source: string, rules?: StyleOptions) => Promise<string>;
-  /**
-   *  **PRETTIFY JSON 💅**
-   *
-   * Beautify JSON
-   *
-   * - JSON ONLY
-   */
-  json?: (source: string, rules?: JSONOptions) => Promise<string>;
-  /**
-   * **RULES**
-   *
-   * Set universal formatting rules
-   */
-  rules?: (rules?: Rules) => Promise<string>;
+  language?: {
+    /**
+     * **Detect Language**
+     *
+     * Automatic language detection based on the string input.
+     * Returns lexer, language and official name.
+     */
+    (sample: string): Language;
+    /**
+     * **Language Reference**
+     *
+     * Returns a language from a supplied language
+     * name reference.
+     */
+    reference?(languageId: Language): Language;
+    /**
+     * **Language Listener**
+     *
+     * Trigger a callback to execute after language detection has
+     * completed. Optionally return an augmentation
+     */
+    listen?: (callback: (language: Language) => void | Language) => void;
+  };
 };
 
 /**
- * **DEFINTIONS**
+ * **Defintions**
  *
  * Rule defintions which describe the different formatting options
  * prettify offers.
  */
 export declare const definitions: Definitions;
 
-/**
- * **LANGUAGE**
- *
- * Language detection and utilities. This is used internally by Prettify
- * to determine the lexer to use and formatting ruleset to apply.
- */
-export declare const language: {
-  /**
-   * Automatic language detection based on the string input.
-   * Returns lexer, language and official name.
-   */
-  auto?: (sample: string) => Language;
-  /**
-   * Sets the lexing engine
-   */
-  setLexer?: (language: LanguageNames) => LexerNames;
-  /**
-   * Utility function which returns a Language reference
-   * consisting of the Languag name, its official variation naming
-   * convention and the pertaining lexer.
-   *
-   * This function is different from `auto()` in the sense that it
-   * only accepts a lowercase language name, not a text string.
-   */
-  reference?: (language: LanguageNames) => Language;
-};
-
-export default Prettify;
+export default prettify;
