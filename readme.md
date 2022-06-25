@@ -74,7 +74,7 @@ Prettify does not yet provide CLI support but will in future releases. The API e
 
 ### Format
 
-The format method returns a promise and is export on the default export. The function requires a `string` parameter be provided and accepts an optional second `rules` parameter. In addition to `prettify.format(source, rules?)` the format method also exposes 2 additional hook methods that will be invoked either before or after beautification. The hook methods are triggered synchronously.
+The format method returns a promise and is export on the default export. The function requires a `string` parameter be provided and accepts an optional second `rules` parameter. The format method also exposes 2 additional hook methods that will be invoked either before or after beautification and an additional `stats` getter which returns some execution information pertaining to the process.
 
 ```typescript
 import prettify from "@liquify/prettify";
@@ -87,6 +87,9 @@ prettify.format.before((rules: Options, input: string) => void | false)
 
 // Hook that will be invoked after formatting
 prettify.format.after((output: string, rules: Options) => void | false)
+
+// Returns some statistical information related to the operation
+prettify.format.stats: Stats
 ```
 
 > Returning `false` in either the `prettify.format.before` or `prettify.format.after` will cancel beautification.
@@ -110,13 +113,16 @@ prettify.options.rules: Rules
 
 ### Parse
 
-The parse method can be used to inspect the data structures the Prettify constructs. Prettify is using the Sparser lexing engines under the hood and the generated parse tree returned by this method is representative of its structure.
+The parse method can be used to inspect the data structures the Prettify constructs. Prettify is using the Sparser lexing engines under the hood and the generated parse tree returned by this method is representative of its structure. The method also provides an additional `stats` getter which returns some execution information pertaining to the process.
 
 ```typescript
 import prettify from "@liquify/prettify";
 
 // The generated sparser data structure
 prettify.parse(source: string): ParseTree
+
+// Returns some statistical information related to the parse
+prettify.parse.stats: Stats
 ```
 
 ### Language
@@ -363,19 +369,17 @@ prettify.format(code).then(output => console.log(output)).catch(error => {
 
 Inline control is supported and can be applied within comments. There are 3 operations available (`disable`, `format` and `ignore`) each of which is expressed as follows:
 
-- `@ignore: file`
-- `@ignore: start`
-- `@ignore: end`
+- `@prettify-ignore`
+- `@prettify-ignore-start`
+- `@prettify-ignore-end`
 - `@format: ....`
-
-> The colon separator is optional and can be omitted.
 
 ### Disable Prettify
 
 You can disable Prettify from formatting a file by placing an inline control comment at the type of the file:
 
 ```html
-{% comment %} @ignore: file {% endcomment %}
+{% comment %} @prettify-ignore {% endcomment %}
 
 <div>
   <ul>
@@ -422,23 +426,23 @@ Lexer modes provide inline comments control and support ignoring regions of code
 
 #### HTML Comments
 
-- `<!-- @ignore: start -->`
-- `<!-- @ignore: end -->`
+- `<!-- @prettify-ignore-start -->`
+- `<!-- @prettify-ignore-end -->`
 
 #### CSS, SCSS or LESS Comments
 
-- `/* @ignore: start */`
-- `/* @ignore: end */`
+- `/* @prettify-ignore-start */`
+- `/* @prettify-ignore-end */`
 
 #### JavaScript/TypeScript Comments
 
-- `// @ignore: start`
-- `// @ignore: end`
+- `// @prettify-ignore-start`
+- `// @prettify-ignore-end`
 
 #### Liquid Comments
 
-- `{% comment %} @ignore: start {% endcomment %}`
-- `{% comment %} @ignore: end {% endcomment %}`
+- `{% comment %} @prettify-ignore-start {% endcomment %}`
+- `{% comment %} @prettify-ignore-end {% endcomment %}`
 
 # Examples
 
