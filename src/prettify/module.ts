@@ -19,8 +19,28 @@ prettify.mode = 'beautify';
 prettify.source = '';
 prettify.end = 0;
 prettify.iterator = 0;
-prettify.scopes = [];
 prettify.start = 0;
+prettify.scopes = [];
+
+/* -------------------------------------------- */
+/* STATS                                        */
+/* -------------------------------------------- */
+
+prettify.stats = create(null);
+prettify.stats.chars = -1;
+prettify.stats.time = -1;
+prettify.stats.size = '';
+prettify.stats.language = '';
+
+/* -------------------------------------------- */
+/* HOOKS                                        */
+/* -------------------------------------------- */
+
+prettify.hooks = create(null);
+prettify.hooks.before = [];
+prettify.hooks.language = [];
+prettify.hooks.rules = [];
+prettify.hooks.after = [];
 
 /* -------------------------------------------- */
 /* ENFORCED                                     */
