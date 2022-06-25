@@ -2,7 +2,22 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test('Return inline rule', async t => {
+test.serial('preserveComment: false', async t => {
+
+  const { source } = await samples.get('javascript/comment-indent');
+
+  const output = await prettify.format(source, {
+    preserveComment: false,
+    script: {
+      braceNewline: false
+    }
+  });
+
+  t.snapshot(output);
+
+});
+
+test.serial('inlineReturn: true', async t => {
 
   const { source } = await samples.get('javascript/inline-return');
 
@@ -17,7 +32,6 @@ test('Return inline rule', async t => {
   });
 
   t.snapshot(attemptCorrectionFalse);
-  t.log('Attempt Correction is false');
 
   const attemptCorrectionTrue = await prettify.format(source, {
     attemptCorrection: true,
@@ -30,6 +44,39 @@ test('Return inline rule', async t => {
   });
 
   t.snapshot(attemptCorrectionTrue);
-  t.log('Attempt Correction is true');
+
+});
+
+test.serial('objectSort: true', async t => {
+
+  const { source } = await samples.get('javascript/object-sort');
+
+  const objectSortTrue = await prettify.format(source, {
+    attemptCorrection: false,
+    indentSize: 2,
+    script: {
+      objectSort: true,
+      objectIndent: 'indent'
+    },
+    style: {
+      sortProperties: true
+    }
+  });
+
+  t.snapshot(objectSortTrue);
+
+  const objectSortFalse = await prettify.format(source, {
+    attemptCorrection: false,
+    indentSize: 2,
+    script: {
+      objectSort: false,
+      objectIndent: 'indent'
+    },
+    style: {
+      sortProperties: false
+    }
+  });
+
+  t.snapshot(objectSortFalse);
 
 });
