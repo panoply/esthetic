@@ -1,28 +1,42 @@
-import type { Language, LanguageNames } from 'types/prettify';
-import { create } from '@utils/native';
-import { detect } from '@parser/detect';
+import type { Language, LanguageNames, Prettify } from 'types/prettify';
+import { create, assign } from '@utils/native';
+import { detectLanguage } from '@parser/detect';
+import { prettify } from 'prettify';
+
+const lexmap = create(null);
+const map = create(null);
+
+{
+  lexmap.markup = 'markup';
+  lexmap.html = 'markup';
+  lexmap.liquid = 'markup';
+  lexmap.js = 'script';
+  lexmap.ts = 'script';
+  lexmap.javascript = 'script';
+  lexmap.typescript = 'script';
+  lexmap.json = 'script';
+  lexmap.jsx = 'script';
+  lexmap.tsx = 'script';
+  lexmap.less = 'style';
+  lexmap.scss = 'style';
+  lexmap.sass = 'style';
+  lexmap.css = 'style';
+  lexmap.text = 'text';
+  lexmap.xml = 'markup';
+
+  map.javascript = 'JavaScript';
+  map.json = 'JSON';
+  map.jsx = 'JSX';
+  map.html = 'HTML';
+  map.liquid = 'Liquid';
+  map.markup = 'markup';
+  map.scss = 'SCSS';
+  map.text = 'Plain Text';
+  map.typescript = 'TypeScript';
+
+}
 
 export function setLexer (input: string) {
-
-  const lexmap = {
-    markup: 'markup',
-    html: 'markup',
-    liquid: 'markup',
-    js: 'script',
-    ts: 'script',
-    javascript: 'script',
-    typescript: 'script',
-    json: 'script',
-    jsp: 'markup',
-    jsx: 'script',
-    tsx: 'script',
-    less: 'style',
-    scss: 'style',
-    sass: 'style',
-    css: 'style',
-    text: 'text',
-    xml: 'markup'
-  };
 
   if (typeof input !== 'string') return 'script';
   if (input.indexOf('html') > -1) return 'markup';
@@ -31,19 +45,7 @@ export function setLexer (input: string) {
   return lexmap[input];
 }
 
-export function setLanguageName (input: string) {
-
-  const map = {
-    javascript: 'JavaScript',
-    json: 'JSON',
-    jsx: 'JSX',
-    html: 'HTML',
-    liquid: 'Liquid',
-    markup: 'markup',
-    scss: 'SCSS',
-    text: 'Plain Text',
-    typescript: 'TypeScript'
-  };
+function setLanguageName (input: string) {
 
   if (typeof input !== 'string' || map[input] === undefined) return input.toUpperCase();
 
@@ -63,14 +65,31 @@ export function reference (language: LanguageNames) {
 
 }
 
-export function auto (sample: string): Language {
+/* -------------------------------------------- */
+/* DETECTION HOOK                               */
+/* -------------------------------------------- */
 
-  const { language } = detect(sample);
+detect.reference = reference;
+
+detect.listen = function (callback: Prettify['hooks']['language'][number]) {
+  prettify.hooks.language.push(callback);
+};
+
+export function detect (sample: string): Language {
+
+  const { language } = detectLanguage(sample);
   const result: Language = create(null);
 
-  result.language = language as any;
+  result.language = language;
   result.languageName = setLanguageName(language as any);
   result.lexer = setLexer(language as any);
+
+  if (prettify.hooks.language.length > 0) {
+    for (const hook of prettify.hooks.language) {
+      const langhook = hook(result);
+      if (typeof langhook === 'object') assign(result, langhook);
+    }
+  }
 
   return result;
 }
