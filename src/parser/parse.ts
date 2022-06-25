@@ -108,7 +108,9 @@ export const parse = new class Parse implements IParse {
 
         // JavaScript's standard array sort uses implementation specific algorithms.
         // This simple numeric trick forces conformance.
-        if (data.token[xx].indexOf('@import') === 0 || data.token[yy].indexOf('@import') === 0) return xx < yy ? -1 : 1;
+        if (data.token[xx].indexOf('@import') === 0 || data.token[yy].indexOf('@import') === 0) {
+          return xx < yy ? -1 : 1;
+        }
 
         if (data.types[xx] !== data.types[yy]) {
           if (data.types[xx] === 'function') return 1;
@@ -120,7 +122,7 @@ export const parse = new class Parse implements IParse {
 
       }
 
-      if (data.token[xx].toLowerCase() > data.token[yy].toLowerCase()) { return 1; }
+      if (data.token[xx].toLowerCase() > data.token[yy].toLowerCase()) return 1;
 
       return -1;
 
@@ -247,6 +249,7 @@ export const parse = new class Parse implements IParse {
       ) {
 
         keys.sort(sort);
+
         keylen = keys.length;
         commaTest = false;
         dd = 0;
@@ -304,7 +307,7 @@ export const parse = new class Parse implements IParse {
                 const o = create(null);
 
                 o.begin = data.begin[ee];
-                o.ender = data.begin[ee];
+                o.ender = data.ender[ee];
                 o.lexer = data.lexer[ee];
                 o.lines = data.lines[ee];
                 o.stack = data.stack[ee];
@@ -420,7 +423,7 @@ export const parse = new class Parse implements IParse {
       if (
         (
           (data.lexer[a] === 'script' || data.lexer[a] === 'style') &&
-          prettify.beautify[data.lexer[a]].objectSort === true
+          prettify.options[data.lexer[a]].objectSort === true
         )
       ) {
 
@@ -546,27 +549,25 @@ export const parse = new class Parse implements IParse {
     const arTest = (item: [string, number][]) => Array.isArray(item) === true;
 
     // parse_safeSort_normal
-    const normal = function parse_safeSort_normal (item) {
+    function safeSortNormal (item: any) {
 
       let storeb = item;
       const done = [ item[0] ];
 
       // safeSort_normal_child
-      function child () {
+      function safeSortNormalChild () {
         let a = 0;
         const len = storeb.length;
         if (a < len) {
           do {
-            if (arTest(storeb[a]) === true) {
-              storeb[a] = parse_safeSort_normal(storeb[a]);
-            }
+            if (arTest(storeb[a]) === true) storeb[a] = safeSortNormal(storeb[a]);
             a = a + 1;
           } while (a < len);
         }
       };
 
       // parse_safeSort_normal_recurse
-      function recurse (x: any) {
+      function safeSortNormalRecurse (x: any) {
 
         let a = 0;
 
@@ -589,40 +590,37 @@ export const parse = new class Parse implements IParse {
           done.push(storea[0]);
           extref(storea[0]);
         } else {
-          if (recursive === true) child();
+          if (recursive === true) safeSortNormalChild();
           item = storeb;
         }
       };
 
-      extref = recurse;
-      recurse(array[0] as any);
+      extref = safeSortNormalRecurse;
+      safeSortNormalRecurse(array[0] as any);
 
       return item;
     };
 
-    const descend = function parse_safeSort_descend (item) {
+    function safeSortDescend (item: any) {
 
       let c = 0;
       const len = item.length;
       const storeb = item;
 
-      const child = function parse_safeSort_descend_child () {
+      function safeSortDescendChild () {
+
         let a = 0;
         const lenc = storeb.length;
 
         if (a < lenc) {
           do {
-            if (arTest(storeb[a])) {
-              storeb[a] = parse_safeSort_descend(
-                storeb[a]
-              );
-            }
+            if (arTest(storeb[a])) storeb[a] = safeSortDescend(storeb[a]);
             a = a + 1;
           } while (a < lenc);
         }
       };
 
-      const recurse = function parse_safeSort_descend_recurse (value) {
+      function safeSortDescendRecurse (value: string) {
 
         let a = c;
         let b = 0;
@@ -670,37 +668,37 @@ export const parse = new class Parse implements IParse {
         if (c < len) {
           extref('');
         } else {
-          if (recursive === true) child();
+          if (recursive === true) safeSortDescendChild();
           item = storeb;
         }
 
         return value;
       };
 
-      extref = recurse;
-      recurse('');
+      extref = safeSortDescendRecurse;
+      safeSortDescendRecurse('');
       return item as [string, number][];
 
     };
 
-    const ascend = function parse_safeSort_ascend (item) {
+    function safeSortAscend (item) {
 
       let c = 0;
       const len = item.length;
       const storeb = item;
 
-      const child = function parse_safeSort_ascend_child () {
+      function safeSortAscendChild () {
         let a = 0;
         const lenc = storeb.length;
         if (a < lenc) {
           do {
-            if (arTest(storeb[a]) === true) storeb[a] = parse_safeSort_ascend(storeb[a]);
+            if (arTest(storeb[a]) === true) storeb[a] = safeSortAscend(storeb[a]);
             a = a + 1;
           } while (a < lenc);
         }
       };
 
-      const recurse = function parse_safeSort_ascend_recurse (value) {
+      function safeSortAscendRecurse (value) {
 
         let a = c;
         let b = 0;
@@ -748,25 +746,25 @@ export const parse = new class Parse implements IParse {
         if (c < len) {
           extref('');
         } else {
-          if (recursive === true) child();
+          if (recursive === true) safeSortAscendChild();
           item = storeb;
         }
 
         return value;
       };
 
-      extref = recurse;
-      recurse('');
+      extref = safeSortAscendRecurse;
+      safeSortAscendRecurse('');
 
       return item;
 
     };
 
     if (arTest(array) === false) return array;
-    if (operation === 'normal') return normal(array);
-    if (operation === 'descend') return descend(array);
+    if (operation === 'normal') return safeSortNormal(array);
+    if (operation === 'descend') return safeSortDescend(array);
 
-    return ascend(array);
+    return safeSortAscend(array);
 
   }
 
@@ -939,8 +937,9 @@ export const parse = new class Parse implements IParse {
     const sanitize = (input: string) => `\\${input}`;
     const regEsc = (/(\/|\\|\||\*|\[|\]|\{|\})/g);
     const regEnd = new RegExp(`\\s*${config.terminator.replace(regEsc, sanitize)}$`);
-    const regIgnore = new RegExp(`^(${config.opening.replace(regEsc, sanitize)}\\s*@ignore\\s+start\\b)`);
-    const regStart = new RegExp(`(${config.opening.replace(regEsc, sanitize)}\\s*)`);
+    const opensan = config.opening.replace(regEsc, sanitize);
+    const regIgnore = new RegExp(`^(${opensan}\\s*@prettify-ignore-start\b)`);
+    const regStart = new RegExp(`(${opensan}\\s*)`);
 
     function emptylines () {
 
@@ -998,7 +997,7 @@ export const parse = new class Parse implements IParse {
       } while (a < config.end && (
         config.chars[a - 1] !== 'd' || (
           config.chars[a - 1] === 'd' &&
-          build.slice(build.length - 10).join('') !== '@ignoreend'
+          build.slice(build.length - 20).join('') !== '@prettify-ignore-end'
         )
       ));
 
@@ -1475,7 +1474,7 @@ export const parse = new class Parse implements IParse {
 
     output = build.join('').replace(/\s+$/, '');
 
-    if ((/^(\/\/\s*@ignore:?\s+\bstart\b)/).test(output) === true) {
+    if ((/^(\/\/\s*@prettify-ignore-start\b)/).test(output) === true) {
 
       let termination = '\n';
       a = a + 1;
@@ -1491,10 +1490,7 @@ export const parse = new class Parse implements IParse {
           config.chars[a - 1] !== 'd' ||
           (
             config.chars[a - 1] === 'd' &&
-           (
-             build.slice(build.length - 11).join('') !== '@ignore:end' ||
-             build.slice(build.length - 10).join('') !== '@ignoreend'
-           )
+            build.slice(build.length - 20).join('') !== '@prettify-ignore-end'
           )
         )
       );
