@@ -1,3 +1,5 @@
+import { LanguageProperName } from './prettify';
+import { LiteralUnion } from 'type-fest';
 
 export type PatternTypes =
   | 'comment.line' // single block comment
@@ -28,21 +30,22 @@ export interface LanguagePattern {
   pattern: RegExp;
   type: PatternTypes;
   nearTop?: boolean;
+  unless?: RegExp;
+  deterministic?: LanguageProperName
 }
 
 export interface Options {
   heuristic?: boolean;
-  shiki?: boolean;
   noUnknown?: boolean;
 }
 
 export interface DetectedLanguage {
-  language: string;
+  language: LiteralUnion<LanguageProperName, string>;
   statistics: Record<string, number>;
   linesOfCode: number;
 }
 
 export interface LanguagePoints {
-  language: string;
+  language: LiteralUnion<LanguageProperName, string>;
   points: number;
 }

@@ -1227,8 +1227,7 @@ prettify.lexers.style = function style (source: string) {
         data.token[parse.count - 2].charAt(data.token[parse.count - 2].length - 1) === '@'
       ) {
 
-        data.token[parse.count - 2] = data.token[parse.count - 2]
-          + '{' + data.token[parse.count] + '}';
+        data.token[parse.count - 2] = data.token[parse.count - 2] + '{' + data.token[parse.count] + '}';
 
         parse.pop(data);
         parse.pop(data);
@@ -1261,13 +1260,10 @@ prettify.lexers.style = function style (source: string) {
         nosort.pop();
         ltoke = b[a];
         ltype = 'end';
-        if (b[a] === '}') {
-          margin_padding();
-        }
-        if (options.style.sortProperties === true && b[
-          a] === '}') {
-          parse.objectSort(data);
-        }
+
+        if (b[a] === '}') margin_padding();
+        if (options.style.sortProperties === true && b[a] === '}') parse.objectSort(data);
+
         recordPush('');
       }
     } else if (b[a] === ';' || b[a] === ',') {
@@ -1309,6 +1305,7 @@ prettify.lexers.style = function style (source: string) {
     }
 
     a = a + 1;
+
   } while (a < len);
 
   if (options.style.sortProperties === true) parse.objectSort(data);

@@ -17,5 +17,14 @@ export const html: LanguagePattern[] = [
   {
     pattern: /[a-z-]+=("|').+("|')/g,
     type: 'keyword.other'
+  },
+  {
+    pattern: /{[{%][\s\S]*?[%}]}/g,
+    type: 'not'
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: 'not',
+    deterministic: 'liquid'
   }
 ];

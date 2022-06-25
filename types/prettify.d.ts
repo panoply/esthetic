@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 
-import { LiteralUnion } from 'type-fest';
+import { LiteralUnion, ValueOf } from 'type-fest';
 
 /**
  * Lexer Names string literal
@@ -47,11 +47,17 @@ export interface LanguageProperNames {
   json: 'JSON';
   css: 'CSS';
   scss: 'SCSS';
+  sass: 'SCSS';
   less: 'LESS';
   xml: 'XML';
   yaml: 'YAML';
   markdown: 'Markdown';
 }
+
+/**
+ * Language Proper name string literal
+ */
+export type LanguageProperName = LiteralUnion<keyof LanguageProperNames, string>;
 
 /**
  * Lexer names as an array type
@@ -1763,7 +1769,7 @@ export interface Language {
   /**
    * The language name in lowercase.
    */
-  language: keyof LanguageProperNames
+  language: LanguageProperName
   /**
    * The lexer the language uses.
    */
@@ -1771,7 +1777,7 @@ export interface Language {
   /**
    * The language proper name (used in reporting)
    */
-  languageName: LanguageProperNames[Language['language']]
+  languageName: ValueOf<LanguageProperNames>
 }
 
 export interface Prettify {
@@ -1784,6 +1790,18 @@ export interface Prettify {
   parsed?: Data;
   options?: Options;
   definitions?: Definitions;
+  stats?: {
+    time: number;
+    size: LiteralUnion<`${string} ${'B' | 'KB' | 'MB' | 'TB'}`, string>;
+    chars: number;
+    language: LanguageProperName;
+  }
+  hooks?: {
+    before?: ((rules: Options, input: string) => void | false)[];
+    language?: ((language: Language) => void | Language)[];
+    rules?: ((options: Options) => void)[];
+    after?: ((this: { parsed: Data }, output: string, rules: Options) => void | false)[];
+  }
   lexers: {
     style?(source: string): Data,
     markup?(source: string): Data,

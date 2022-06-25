@@ -58,7 +58,19 @@ export const javascript: LanguagePattern[] = [
     type: 'not'
   },
   {
-    pattern: /<(\/)?script( type=('|")text\/javascript('|"))?>/,
+    pattern: /(var|const|let)\s+\w+:\s*(string|number|boolean|string)(?:\[\])?/,
+    type: 'not'
+  },
+  {
+    pattern: /(interface|type)\s+\w+?/,
+    type: 'not'
+  },
+  {
+    pattern: /(declare|namespace)\s+\w+?/,
+    type: 'not'
+  },
+  {
+    pattern: /<(\/)?script\s*(type=('|")text\/javascript('|"))?>/,
     type: 'not'
   },
   {
@@ -70,19 +82,12 @@ export const javascript: LanguagePattern[] = [
     type: 'not'
   },
   {
+    pattern: /{[{%][\s\S]*?[%}]}/g,
+    type: 'not'
+  },
+  {
     pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
-    type: 'not'
-  },
-  {
-    pattern: /(var|const|let)\s+\w+:\s*(string|number|boolean|string)(?:\[\])?/,
-    type: 'not'
-  },
-  {
-    pattern: /(interface|type)\s+\w+?/,
-    type: 'not'
-  },
-  {
-    pattern: /(declare|namespace)\s+\w+?/,
-    type: 'not'
+    type: 'not',
+    deterministic: 'liquid'
   }
 ];

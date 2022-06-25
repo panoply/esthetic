@@ -70,8 +70,13 @@ export const typescript: LanguagePattern[] = [
     type: 'not'
   },
   {
-    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    pattern: /{[{%][\s\S]*?[%}]}/g,
     type: 'not'
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: 'not',
+    deterministic: 'liquid'
   },
   {
     pattern: /(var|const|let)\s+\w+:\s*(string|number|boolean|string|any)(\[\])?/,

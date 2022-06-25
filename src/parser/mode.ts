@@ -1,6 +1,7 @@
 import type { Prettify } from 'types/prettify';
 import { comment } from '@parser/comment';
 import { parse } from '@parser/parse';
+import { size } from '@utils/helpers';
 import { create, keys } from '@utils/native';
 import * as language from '@parser/language';
 
@@ -29,7 +30,7 @@ export function parser (prettify: Prettify) {
   };
 
   if (prettify.options.language === 'auto' || prettify.options.lexer === 'auto') {
-    const lang = language.auto(prettify.source);
+    const lang = language.detect(prettify.source);
     if (prettify.options.language === 'auto') prettify.options.language = lang.language;
     if (prettify.options.lexer === 'auto') prettify.options.lexer = lang.lexer;
   }
@@ -86,6 +87,7 @@ export function parser (prettify: Prettify) {
   // Fix begin values.
   // They must be reconsidered after reordering from object sort
   if (parse.data.begin.length > 0) {
+
     if (prettify.options.lexer === 'script' && prettify.options[prettify.options.lexer].objectSort) {
       parse.sortCorrection(0, parse.count + 1);
     } else if (prettify.options.lexer === 'style' && prettify.options[prettify.options.lexer].sortProperties) {
@@ -107,6 +109,8 @@ export function parser (prettify: Prettify) {
  * actions.
  */
 export function mode (prettify: Prettify) {
+
+  const start = Date.now();
 
   /**
    * Mode Value, ie: `beautify` or `parse`
@@ -136,7 +140,7 @@ export function mode (prettify: Prettify) {
     prettify.options.lexer === 'auto'
   ) {
 
-    const lang = language.auto(prettify.source);
+    const lang = language.detect(prettify.source);
 
     if (lang.language === 'text') {
       lang.language = 'html';
@@ -154,16 +158,39 @@ export function mode (prettify: Prettify) {
     }
   }
 
-  comment(prettify);
+  prettify.stats.language = prettify.options.languageName;
+
+  const comm = comment(prettify);
+
+  // If comment returns false, skip formatting and return source
+  if (comm === false) {
+    prettify.stats.time = -1;
+    prettify.stats.chars = prettify.source.length;
+    prettify.stats.size = size(prettify.stats.chars);
+
+    return prettify.source;
+  }
 
   prettify.parsed = parser(prettify);
 
-  if (mv === 'parse') return JSON.stringify(prettify.parsed);
+  if (mv === 'parse') {
+    prettify.stats.time = (Date.now() - start).toFixed(1) as any;
+    prettify.stats.chars = prettify.source.length;
+    prettify.stats.size = size(prettify.stats.chars);
+
+    return prettify.parsed;
+  }
 
   let result: string;
 
   result = prettify.beautify[prettify.options.lexer](prettify.options);
   result = prettify.options.endNewline === true ? result.replace(/\s*$/, lf) : result.replace(/\s+$/, '');
+
+  const length = result.length;
+
+  prettify.stats.chars = length;
+  prettify.stats.size = size(length);
+  prettify.stats.time = (Date.now() - start).toFixed(1) as any;
 
   prettify.end = 0;
   prettify.start = 0;

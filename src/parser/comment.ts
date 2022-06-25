@@ -32,11 +32,14 @@ export function comment (prettify: Prettify) {
 
   const definitions = prettify.definitions;
   const sindex = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@format\s*(\w+)?\s*{\s+/);
+  const signore = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify-ignore\b/);
   const k = keys(definitions);
   const len = k.length;
 
   let a = 0;
   let b = 0;
+
+  if (signore > -1 && prettify.source.slice(0, signore).trimStart() === '') return false;
 
   if ((sindex > -1 && (sindex === 0 || "\"':".indexOf(prettify.source.charAt(sindex - 1)) < 0))) {
 

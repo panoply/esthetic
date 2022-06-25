@@ -1,0 +1,11 @@
+// @prettify-ignore
+
+function(x){const foo = 'x'}
+
+const arr [
+'x'
+     ,
+
+'xx'
+
+]

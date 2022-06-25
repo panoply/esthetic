@@ -2,6 +2,7 @@ import type { Record, Data, Types } from 'types/prettify';
 import { prettify } from 'prettify';
 import { parse } from '@parser/parse';
 import { cc } from '@utils/enums';
+import { create } from '@utils/native';
 
 /* -------------------------------------------- */
 /* LEXER                                        */
@@ -114,7 +115,7 @@ prettify.lexers.markup = function markup (source: string) {
    *
    * > We omit the prototype because we live in a society, we are not animals.
    */
-  const count: { end: number; start: number; index: number } = Object.create(null);
+  const count: { end: number; start: number; index: number } = create(null);
   count.end = 0;
   count.index = -1;
   count.start = 0;
@@ -2852,9 +2853,9 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else {
 
-                    prettify.options.language = 'javascript';
+                    // prettify.options.language = 'javascript';
                     prettify.lexers.script(outside);
-                    prettify.options.language = 'html';
+                    //   prettify.options.language = 'html';
                   }
 
                   break;
@@ -2899,6 +2900,7 @@ prettify.lexers.markup = function markup (source: string) {
                   } else {
 
                     prettify.lexers.style(outside);
+                    if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
                   }
                   break;
                 }
@@ -2945,6 +2947,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                     prettify.options.language = 'json';
                     prettify.lexers.script(outside);
+                    if (options.script.objectSort === true) parse.sortCorrection(0, parse.count + 1);
                     prettify.options.language = 'html';
                   }
 
@@ -3033,7 +3036,14 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else {
 
+                    // prettify.options.language = 'javascript';
                     prettify.lexers.script(outside);
+
+                    if (options.script.objectSort === true) {
+                      parse.sortCorrection(0, parse.count + 1);
+                    }
+
+                    // prettify.options.language = 'html';
 
                   }
 
