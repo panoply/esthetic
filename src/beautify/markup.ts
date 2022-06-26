@@ -537,7 +537,7 @@ prettify.beautify.markup = function markup (options: Options) {
         let bb = 1;
         let acount = item[0].length;
 
-        if ((/=['"]?(<|{[{%]|^)/).test(data.token[index])) return;
+        if ((/=['"]?(<|{{|{%|^)/).test(data.token[index])) return;
 
         do {
 
@@ -655,8 +655,6 @@ prettify.beautify.markup = function markup (options: Options) {
 
         count = count + data.token[a].length + 1;
 
-        // console.log(a);
-
         if (data.types[a].indexOf('attribute') > 0) {
 
           if (type.is(a, 'template_attribute')) {
@@ -688,7 +686,6 @@ prettify.beautify.markup = function markup (options: Options) {
               if (data.lexer[a + 1] !== lexer) {
                 a = a + 1;
                 external();
-
               }
 
             }
@@ -882,16 +879,54 @@ prettify.beautify.markup = function markup (options: Options) {
               level.push(-10);
             }
 
-          } else if ((options.markup.forceIndent === false || (options.markup.forceIndent && type.is(next, 'script_start'))
+          } else if ((
+            options.markup.forceIndent === false || (
+              options.markup.forceIndent &&
+              type.is(next, 'script_start')
+            )
           ) && (
             type.is(a, 'content') ||
-              type.is(a, 'singleton') ||
-              type.is(a, 'template')
+            type.is(a, 'singleton') ||
+            type.is(a, 'template')
           )) {
 
             count = count + data.token[a].length;
 
-            if (data.lines[next] > 0 && type.is(next, 'script_start')) {
+            if (type.is(a, 'template')) {
+
+              level.push(indent);
+
+              // FILTER ALIGN
+              const pos: number = data.token[a].indexOf(lf);
+
+              if (pos > 0) {
+
+                const linez = (level[a - 1] * options.indentSize) + (
+                  data.token[a].charCodeAt(2) === 45
+                    ? options.indentSize
+                    : options.indentSize - 1
+                );
+
+                const linesout = [];
+
+                let iidx = 0;
+
+                do {
+
+                  linesout.push(' ');
+
+                  iidx = iidx + 1;
+
+                } while (iidx < linez);
+
+                data.token[a] = data.token[a]
+                  .replace(/^\s+/gm, '')
+                  .replace(/\n/g, (n) => {
+                    return n + linesout.join('');
+                  });
+
+              }
+            } else if (data.lines[next] > 0 && type.is(next, 'script_start')) {
 
               level.push(-10);
 
@@ -1078,9 +1113,10 @@ prettify.beautify.markup = function markup (options: Options) {
       const line = data.lines[a + 1];
 
       if (type.is(a, 'comment')) {
-        lines = lines.map(l => l.trimLeft());
+        lines = lines.map(l => l.trimStart());
+      } else if (type.is(a, 'attribute')) {
+        lines = lines.map(l => l.trim());
       }
-
       const lev = ((levels[a - 1] > -1)
         ? type.is(a, 'attribute')
           ? levels[a - 1] + 1
@@ -1090,7 +1126,10 @@ prettify.beautify.markup = function markup (options: Options) {
           let bb = a - 1; // add + 1 for inline comment formats
           let start = (bb > -1 && type.idx(bb, 'start') > -1);
 
-          if (levels[a] > -1 && type.is(a, 'attribute')) return levels[a] + 1;
+          if (levels[a] > -1 && type.is(a, 'attribute')) {
+
+            return levels[a] + 1;
+          }
 
           do {
 
@@ -1232,7 +1271,6 @@ prettify.beautify.markup = function markup (options: Options) {
           data.types[a + 1] !== undefined &&
           type.idx(a + 1, 'attribute') > -1
         ) {
-
           attributeEnd();
         }
 
