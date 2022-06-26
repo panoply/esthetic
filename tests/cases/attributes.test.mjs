@@ -2,15 +2,14 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '../../index.mjs';
 
-const sample = samples.get('attributes');
+test.serial('Conditional attributes', async t => {
 
-test.skip('Conditional attributes', async t => {
+  const { source } = await samples.get('markup/attribute-value-newlines');
 
-  const { input } = await sample('conditional-attributes');
+  return prettify.format(source).then(v => {
 
-  return prettify.format(input.nolines).then(v => {
-
-    t.log(v);
+    t.log((v).split('\n'));
+    t.pass();
 
   }).catch(t.log);
 
