@@ -725,7 +725,6 @@ prettify.lexers.markup = function markup (source: string) {
 
       // fix for singleton tags, since "/" at the end of the tag is not an attribute
       if (attstore[attstore.length - 1][0] === '/') {
-
         attstore.pop();
         element = element.replace(/>$/, '/>');
       }
@@ -815,8 +814,6 @@ prettify.lexers.markup = function markup (source: string) {
           if (attstore[idx] === undefined) break;
 
           attstore[idx][0] = attstore[idx][0].replace(/\s+$/, '');
-
-          // console.log(attstore[idx]);
 
           record.lines = attstore[idx][1];
 
@@ -1168,6 +1165,13 @@ prettify.lexers.markup = function markup (source: string) {
       element = comm[0] as string;
       a = comm[1] as number;
 
+      if (element.replace(start, '').replace(/(^\s*)/, '').indexOf('@parse-ignore-start') === 0) {
+        record.token = element;
+        record.types = 'ignore';
+        recordPush(data, record, '');
+        return;
+      }
+
     } else if (a < c) {
 
       let bcount = 0;
@@ -1230,37 +1234,16 @@ prettify.lexers.markup = function markup (source: string) {
 
           atty = attribute.join('');
 
-          if (options.language !== 'jsx' || (
-            options.language === 'jsx' &&
-            atty.charAt(atty.length - 1) !== '}'
-          )) {
-            const vlines = atty.split(options.crlf === true ? '\r\n' : '\n');
+          if (options.language !== 'jsx' || (options.language === 'jsx' && atty.charAt(atty.length - 1) !== '}')) {
 
-            if (options.markup.attributeValueNewlines === 'align') {
-              atty = atty.replace(/\s*\n/g, repeatChar(options.indentSize, options.indentChar) + '\n');
-            } else if (options.markup.attributeValueNewlines === 'collapse') {
-              atty = vlines.map(vl => vl.trimStart()).join('\n');
-            } else if (options.markup.attributeValueNewlines === 'force') {
-              atty = atty
-                .replace(/\n/g, repeatChar(options.indentSize, options.indentChar) + '\n')
-                .replace(/\s+/g, '\n' + repeatChar(options.indentSize, options.indentChar));
-            } else if (options.markup.attributeValueNewlines === 'inline') {
-              atty = atty.replace(/\s+/g, ' ');
-            }
+            atty = atty.replace(/\s+/g, ' ');
 
           }
 
           name = attributeName(atty);
 
-          if (name[0] === ignoreattr) {
-            ignoreme = true;
-          }
-
-          if (
-            options.language === 'jsx' &&
-            attribute[0] === '{' &&
-            attribute[attribute.length - 1] === '}'
-          ) {
+          if (name[0] === ignoreattr) ignoreme = true;
+          if (options.language === 'jsx' && attribute[0] === '{' && attribute[attribute.length - 1] === '}') {
             jsxcount = 0;
           }
         }
@@ -1278,8 +1261,8 @@ prettify.lexers.markup = function markup (source: string) {
           } while (aa < bb);
         }
 
-        atty = attribute.join(options.crlf === true ? '\r\n' : '\n');
-        atty = bracketSpace(atty);
+        // atty = attribute.join(options.crlf === true ? '\r\n' : '\n');
+        // atty = bracketSpace(atty);
 
         if (atty === '=') {
 
@@ -1334,11 +1317,7 @@ prettify.lexers.markup = function markup (source: string) {
           parse.lineNumber = parse.lineNumber + 1;
         }
 
-        if (preserve === true || ((
-          /\s/.test(b[a]) === false && quote !== '}'
-        ) ||
-          quote === '}'
-        )) {
+        if (preserve === true || ((/\s/.test(b[a]) === false && quote !== '}') || quote === '}')) {
 
           lex.push(b[a]);
 
@@ -1451,12 +1430,13 @@ prettify.lexers.markup = function markup (source: string) {
 
                 do {
 
-                  if (b[a] === '\n') {
-                    parse.lineNumber = parse.lineNumber + 1;
+                  if (b[a] === '\n') parse.lineNumber = parse.lineNumber + 1;
 
+                  if (options.markup.preserveAttributes === true) {
+                    lex.push(b[a]);
+                  } else {
+                    attribute.push(b[a]);
                   }
-
-                  attribute.push(b[a]);
 
                   if (options.language !== 'jsx' && (
                     b[a] === '<' ||
@@ -1506,12 +1486,7 @@ prettify.lexers.markup = function markup (source: string) {
                     // be a beautiful chaos, so I have little clue what this condition does,
                     // but it seems to fix this issue and actually preserveLine attributes.
 
-                    if (preserve === false && /^=?["']?({[{%])/.test(
-                      b[a]
-                      + b[a + 1]
-                      + b[a + 2]
-                      + b[a + 3]
-                    )) {
+                    if (preserve === false) {
 
                       attribute.pop();
 
@@ -1567,14 +1542,6 @@ prettify.lexers.markup = function markup (source: string) {
                         } else if (b[a] === '<' && dustatt[dustatt.length - 1] !== '>') {
 
                           dustatt.push('>');
-
-                        } else if (
-                          b[a] === '[' &&
-                          b[a + 1] === ':' &&
-                          dustatt[dustatt.length - 1] !== ']'
-                        ) {
-
-                          dustatt.push(']');
 
                         }
 
@@ -2033,7 +2000,7 @@ prettify.lexers.markup = function markup (source: string) {
 
           lex.push(b[a]);
 
-          if (b[a] === 'd' && lex.slice(lex.length - 10).join('') === '@prettify-ignore-end') break;
+          if (b[a] === 'd' && lex.slice(lex.length - 20).join('') === '@prettify-ignore-end') break;
 
           a = a + 1;
 
