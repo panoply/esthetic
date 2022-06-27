@@ -10,6 +10,11 @@ prettify.lexers.script = function script (source: string) {
 
   const { options } = prettify;
 
+  if (options.language === 'json') {
+    options.script.quoteConvert = 'double';
+
+  }
+
   /**
    * Advancement
    */
