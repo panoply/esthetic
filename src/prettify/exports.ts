@@ -90,7 +90,7 @@ function options (rules: Options) {
     } else if (rule === 'style') {
       assign(prettify.options.style, rules.style);
     } else if (rule === 'json') {
-      assign(prettify.options.json, rules.json);
+      assign(prettify.options.script, rules.script);
     } else if (rule in prettify.options) {
       prettify.options[rule] = rules[rule];
     }

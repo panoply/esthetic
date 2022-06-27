@@ -28,6 +28,7 @@
     "pack": "cd versions; pnpm pack ../ && cd ..",
     "play": "ava tests/play.test.mjs --color --watch",
     "test": "ava tests/cases/*.test.mjs --serial",
+    "test:attributes": "ava tests/cases/attributes* ---",
     "test:comments": "ava tests/cases/comments* ---",
     "test:css": "ava tests/cases/css* ---",
     "test:language": "ava tests/cases/language* ---",
@@ -52,7 +53,8 @@
     "splitting": false,
     "format": [
       "cjs",
-      "esm"
+      "esm",
+      "iife"
     ]
   },
   "prettier": "@liquify/prettier-config",
