@@ -20,7 +20,16 @@ export function parser (prettify: Prettify) {
   parse.data.stack = [];
   parse.data.token = [];
   parse.data.types = [];
-  parse.datanames = [ 'begin', 'ender', 'lexer', 'lines', 'stack', 'token', 'types' ];
+  parse.datanames = [
+    'begin',
+    'ender',
+    'lexer',
+    'lines',
+    'stack',
+    'token',
+    'types'
+  ];
+
   parse.structure = [ [ 'global', -1 ] ];
   parse.structure.pop = function pop () {
     const len = parse.structure.length - 1;
