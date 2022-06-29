@@ -821,7 +821,83 @@ export interface MarkupOptions {
   attributeSortList?: string[]
 
   /**
+   * **Default** `align`
+   *
+   * How attribute values containing newlines or exceeding defined wrap limit
+   * should be handled. In languages like HTML, attribute values may contain newline
+   * characters (despite the practice bordering heathenism). This rule can be used
+   * to control how Prettify should process values which contain newlines or exceed wrap.
+   *
+   * **Options**
+   *
+   * - `align` Indent and align values according to wrap/newlines.
+   * - `force` Forces all values in the string onto newlines.
+   * - `collapse` Collapses values in a controlled manner.
+   * - `inline` Strips newlines, all values will appear inline.
+   *
+   * ---
+   *
+   * **Align**
+   *
+   * This align option is the default formatting rule applied. This will
+   * use the `wrap` limit and `indentSize`. Only values that exceed wrap will
+   * be indented and forced onto a newline.
+   *
+   * ```html
+   * <div
+   *  id="x"
+   *  class="first-class-in-value second-class-in-value
+   *    {{ some.object }}
+   *    {% if x %}some-class{% else %}other-class{% endif %}"></div>
+   * ```
+   *
+   * **Force**
+   *
+   * The force option will force the values onto newlines, including the
+   * first value. Each class name in the string will be indented and the
+   * ending quotation character will be aligned with the starting attribute name
+   *
+   * ```html
+   * <div
+   *  id="x"
+   *  class="
+   *    first-class-in-value
+   *    second-class-in-value
+   *    {{ some.object }}
+   *    {% if x %}some-class{% else %}other-class{% endif %}
+   *  "></div>
+   * ```
+   *
+   *
+   * **Collapse**
+   *
+   * The collapse option behaved similar to `align` with the difference being
+   * that values will not have identation applied on the newlines.
+   *
+   * ```html
+   * <div
+   *  id="x"
+   *  class="first-class-in-value second-class-in-value
+   *  {{ some.object }}
+   *  {% if x %}some-class{% else %}other-class{% endif %}"></div>
+   * ```
+   *
+   * **Inline**
+   *
+   * The inline option will strip newlines from values.
+   *
+   * ```html
+   * <div
+   *  id="x"
+   *  class="first-class-in-value second-class-in-value {{ some.object }} {% if x %}some-class{% else %}other-class{% endif %}"></div>
+   * ```
+   */
+  attributeValueNewlines?: 'align' | 'force' | 'collapse' | 'inline'
+  /**
    * **Default** `false`
+   *
+   * Controls Liquid HTML attributes. Setting this option to `true` will
+   * glue Liquid attributes together.
    */
   attributeGlue?: boolean;
 
@@ -972,7 +1048,8 @@ export interface MarkupOptions {
    * **Default** `none`
    *
    * If the quotes of markup attributes should be converted to single quotes
-   * or double quotes.
+   * or double quotes. Don't be a fucking hero with this option. Markup content
+   * should use double quotations, it's the standard.
    *
    * **Options**
    *
@@ -1015,11 +1092,6 @@ export interface MarkupOptions {
    * when this option is enabled.
    */
   preserveAttributes?: boolean
-
-  /**
-   * **Default** `false`
-   */
-  preserveAttributeValues?: boolean
 
 }
 

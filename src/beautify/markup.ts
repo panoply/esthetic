@@ -79,7 +79,7 @@ prettify.beautify.markup = function markup (options: Options) {
    * is used rather frequently to determine the token
    * type we are dealing with.
    */
-  type.idx = (index: number, name: string) => data.types[index].indexOf(name);
+  type.idx = (index: number, name: string) => index > -1 && data.types[index].indexOf(name);
 
   /**
    * Check whether the token equals the provided tag.
@@ -520,6 +520,59 @@ prettify.beautify.markup = function markup (options: Options) {
       /* CONSTANTS                                    */
       /* -------------------------------------------- */
 
+      function attributeName (x: string) {
+
+        const eq = x.indexOf('=');
+
+        if (eq > 0 && (
+          (eq < x.indexOf('"') && x.indexOf('"') > 0) ||
+        (eq < x.indexOf("'") && x.indexOf("'") > 0)
+        )) {
+          return [
+            x.slice(0, eq),
+            x.slice(eq + 1)
+          ];
+        }
+
+        return [ x, '' ];
+
+      };
+
+      function newlineValues (attr: string) {
+
+        const attrval = attributeName(attr);
+
+        // const space = '\n' + repeatChar(options.indentSize, options.indentChar);
+
+        const m = attrval[1].replace(/\s+/g, x => x === '\n' ? '\n' : ' ');
+        const attarr: any[] = [ '=', m.slice(0, 1) ];
+
+        let vi = 1; // value item
+        let vt: number | string = ''; // value tag
+        let nt = 0; // next tag
+
+        do {
+
+          if (m[vi] === '{' && (m[vi + 1] === '{' || m[vi + 1] === '%')) {
+
+            nt = (m[vi + 1] === '%' ? m.indexOf('%}', vi + 1) : m.indexOf('}}', vi + 1)) + 2;
+            vt = m.slice(vi, nt);
+            vi = nt;
+
+            attarr.push([ vt ]);
+
+          } else {
+
+            attarr.push(m[vi]);
+
+            vi = vi + 1;
+          }
+        } while (vi < m.length);
+
+        return [ attrval[0] + '=', attarr ];
+
+      }
+
       /**
        * The parent node
        */
@@ -531,22 +584,71 @@ prettify.beautify.markup = function markup (options: Options) {
        */
       function wrap (index: number) {
 
-        const item = data.token[index].replace(/\s+/g, ' ').split(' ');
+        const item = newlineValues(data.token[index]);
         const ilen = item.length;
 
         let bb = 1;
         let acount = item[0].length;
 
-        if ((/=['"]?(<|{[{%]|^)/).test(data.token[index])) return;
+        // if ((/=['"]?(\n|<|{{|{%|^)/).test(data.token[index])) return;
+
+        console.log(item);
+
+        const attrval = attributeName(data.token[index]);
+
+        // const space = '\n' + repeatChar(options.indentSize, options.indentChar);
+
+        const m = attrval[1].replace(/\s+/g, ' ');
+
+        let vi = 1; // value item
+        let vt: number | string = attrval[0] + '=' + m.slice(0, 1); // value tag
+        let nt = 0; // next tag
 
         do {
 
+          acount = acount + item[bb].length;
+
+          if (m[vi] === '{' && (m[vi + 1] === '{' || m[vi + 1] === '%')) {
+
+            nt = (m[vi + 1] === '%' ? m.indexOf('%}', vi + 1) : m.indexOf('}}', vi + 1)) + 2;
+            vt += m.slice(vi, nt);
+            vi = nt;
+
+          } else {
+
+            if (m[vi] === ' ') {
+              vt += '\n';
+            } else {
+              vt += m[vi];
+
+            }
+
+            vi = vi + 1;
+          }
+        } while (vi < m.length);
+
+        data.token[index] = vt;
+        return;
+        do {
+
+          // bcount = anwl.indexOf(item[bb], acount);
+
           if (acount + item[bb].length > options.wrap) {
+
             acount = item[bb].length;
             item[bb] = lf + item[bb];
+
           } else {
-            item[bb] = ` ${item[bb]}`;
+
+            if (options.markup.attributeValueNewlines === 'force') {
+
+              item[bb] = `\n${item[bb]}`;
+            } else {
+              item[bb] = ` ${item[bb]}`;
+            }
+
             acount = acount + item[bb].length;
+
           }
 
           bb = bb + 1;
@@ -655,13 +757,11 @@ prettify.beautify.markup = function markup (options: Options) {
 
         count = count + data.token[a].length + 1;
 
-        // console.log(a);
-
         if (data.types[a].indexOf('attribute') > 0) {
 
           if (type.is(a, 'template_attribute')) {
 
-            level.push(-10);
+            level.push(lev);
 
           } else if (data.types[a] === 'comment_attribute') {
 
@@ -688,7 +788,6 @@ prettify.beautify.markup = function markup (options: Options) {
               if (data.lexer[a + 1] !== lexer) {
                 a = a + 1;
                 external();
-
               }
 
             }
@@ -716,7 +815,11 @@ prettify.beautify.markup = function markup (options: Options) {
 
           if (options.markup.preserveAttributes === true) {
 
-            level.push(-10);
+            if (data.lines[a] === 2) {
+              level.push(lev);
+            } else if (data.lines[a] === 1) {
+              level.push(-10);
+            }
 
           } else if (
             options.markup.forceAttribute === true ||
@@ -882,16 +985,54 @@ prettify.beautify.markup = function markup (options: Options) {
               level.push(-10);
             }
 
-          } else if ((options.markup.forceIndent === false || (options.markup.forceIndent && type.is(next, 'script_start'))
+          } else if ((
+            options.markup.forceIndent === false || (
+              options.markup.forceIndent &&
+              type.is(next, 'script_start')
+            )
           ) && (
             type.is(a, 'content') ||
-              type.is(a, 'singleton') ||
-              type.is(a, 'template')
+            type.is(a, 'singleton') ||
+            type.is(a, 'template')
           )) {
 
             count = count + data.token[a].length;
 
-            if (data.lines[next] > 0 && type.is(next, 'script_start')) {
+            if (type.is(a, 'template')) {
+
+              level.push(indent);
+
+              // FILTER ALIGN
+              const pos: number = data.token[a].indexOf(lf);
+
+              if (pos > 0) {
+
+                const linez = (level[a - 1] * options.indentSize) + (
+                  data.token[a].charCodeAt(2) === 45
+                    ? options.indentSize
+                    : options.indentSize - 1
+                );
+
+                const linesout = [];
+
+                let iidx = 0;
+
+                do {
+
+                  linesout.push(' ');
+
+                  iidx = iidx + 1;
+
+                } while (iidx < linez);
+
+                data.token[a] = data.token[a]
+                  .replace(/^\s+/gm, '')
+                  .replace(/\n/g, (n) => {
+                    return n + linesout.join('');
+                  });
+
+              }
+            } else if (data.lines[next] > 0 && type.is(next, 'script_start')) {
 
               level.push(-10);
 
@@ -1077,9 +1218,7 @@ prettify.beautify.markup = function markup (options: Options) {
       let lines = data.token[a].split(lf);
       const line = data.lines[a + 1];
 
-      if (type.is(a, 'comment')) {
-        lines = lines.map(l => l.trimLeft());
-      }
+      if (type.is(a, 'comment')) lines = lines.map(l => l.trimStart());
 
       const lev = ((levels[a - 1] > -1)
         ? type.is(a, 'attribute')
@@ -1090,7 +1229,9 @@ prettify.beautify.markup = function markup (options: Options) {
           let bb = a - 1; // add + 1 for inline comment formats
           let start = (bb > -1 && type.idx(bb, 'start') > -1);
 
-          if (levels[a] > -1 && type.is(a, 'attribute')) return levels[a] + 1;
+          if (levels[a] > -1 && type.is(a, 'attribute')) {
+            return levels[a] + 1;
+          }
 
           do {
 
@@ -1137,6 +1278,12 @@ prettify.beautify.markup = function markup (options: Options) {
               build.push(newline(lev));
             }
           }
+        } else if (type.is(a, 'attribute')) {
+          build.push(lines[aa], newline(lev));
+
+          // console.log(JSON.stringify(build, null, 4));
+
+          // ;
         } else {
           build.push(lines[aa], newline(lev));
         }
@@ -1145,6 +1292,8 @@ prettify.beautify.markup = function markup (options: Options) {
 
       } while (aa < len);
 
+      // console.log(build, lines[line]);
+
       data.lines[a + 1] = line;
 
       build.push(lines[len]);
@@ -1152,8 +1301,7 @@ prettify.beautify.markup = function markup (options: Options) {
       if (levels[a] === -10) {
         build.push(' ');
       } else if (levels[a] > -1) {
-        const p = newline(levels[a]);
-        build.push(p);
+        build.push(newline(levels[a]));
       }
 
     };
@@ -1234,14 +1382,17 @@ prettify.beautify.markup = function markup (options: Options) {
         ) {
 
           attributeEnd();
+
         }
 
-        if (token.not(a, undefined) && data.token[a].indexOf(lf) > 0 && ((
-          type.is(a, 'content') && options.markup.preserveText === false
-        ) ||
+        if (
+          token.not(a, undefined) &&
+          data.token[a].indexOf(lf) > 0 &&
+          ((type.is(a, 'content') && options.markup.preserveText === false) ||
           type.is(a, 'comment') ||
           type.is(a, 'attribute')
-        )) {
+          )
+        ) {
 
           multiline();
 

@@ -20,7 +20,16 @@ export function parser (prettify: Prettify) {
   parse.data.stack = [];
   parse.data.token = [];
   parse.data.types = [];
-  parse.datanames = [ 'begin', 'ender', 'lexer', 'lines', 'stack', 'token', 'types' ];
+  parse.datanames = [
+    'begin',
+    'ender',
+    'lexer',
+    'lines',
+    'stack',
+    'token',
+    'types'
+  ];
+
   parse.structure = [ [ 'global', -1 ] ];
   parse.structure.pop = function pop () {
     const len = parse.structure.length - 1;
@@ -118,6 +127,28 @@ export function mode (prettify: Prettify) {
   const mv = prettify.mode;
   const lf = prettify.options.crlf === true ? '\r\n' : '\n';
 
+  let result: string = '';
+
+  // Skip formatting when empty document
+  if (prettify.source.trimStart() === '') {
+
+    const preserve = new RegExp(`\\n{${prettify.options.preserveLine},}`);
+
+    result = prettify.source;
+    result = prettify.source.replace(preserve, '\n\n');
+    result = prettify.options.endNewline === true
+      ? result.replace(/\s*$/, lf)
+      : result.replace(/\s+$/, '');
+
+    prettify.stats.chars = result.length;
+    prettify.stats.language = prettify.options.languageName;
+    prettify.stats.size = size(result.length);
+    prettify.stats.time = (Date.now() - start).toFixed(1) as any;
+
+    return result;
+
+  }
+
   if (prettify.options.language === 'text') {
     prettify.options.language = 'auto';
   }
@@ -180,8 +211,6 @@ export function mode (prettify: Prettify) {
 
     return prettify.parsed;
   }
-
-  let result: string;
 
   result = prettify.beautify[prettify.options.lexer](prettify.options);
   result = prettify.options.endNewline === true ? result.replace(/\s*$/, lf) : result.replace(/\s+$/, '');

@@ -4,7 +4,7 @@
  * Used for generating repeating characters
  * and is merely a wraper around `''.repeat()`
  */
-export function repeatChar (count: number, ch: string) {
+export function repeatChar (count: number, ch: string = ' ') {
 
   if (count === 0) return ch;
 
