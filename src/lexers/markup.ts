@@ -102,6 +102,7 @@ prettify.lexers.markup = function markup (source: string) {
   ]);
 
   const { options } = prettify;
+
   /**
    * Parse data reference
    */
@@ -298,13 +299,15 @@ prettify.lexers.markup = function markup (source: string) {
      * other delimeter template languages. Instead we only want Liquid
      * delimiters.
      */
-    const regex = /^({[{%]-?\s*)/;
+    const regex = /^((\{|<)((%-?)|\{-?))/;
 
     if (typeof tag !== 'string') return '';
+
 
     space = tag.replace(regex, '%').replace(/\s+/, ' ').indexOf(' ');
     name = tag.replace(regex, ' ');
     name = space < 0 ? name.slice(1, tag.length - 1) : name.slice(1, space);
+
 
     if (html === 'html') name = name.toLowerCase();
 
@@ -326,6 +329,7 @@ prettify.lexers.markup = function markup (source: string) {
 
     if (name.indexOf('(') > 0) name = name.slice(0, name.indexOf('('));
     if (name === '?xml?') return 'xml';
+
 
     return name;
 
@@ -427,6 +431,7 @@ prettify.lexers.markup = function markup (source: string) {
     /* -------------------------------------------- */
 
     const record: Record = create(null); // fuck the prototype
+
     record.begin = parse.structure[parse.structure.length - 1][1];
     record.ender = -1;
     record.lexer = 'markup';
@@ -858,6 +863,7 @@ prettify.lexers.markup = function markup (source: string) {
           } else {
 
             // separates out the attribute name from its value
+
             name = attstore[idx][0].slice(0, eq);
             value = attstore[idx][0].slice(eq + 1);
 
@@ -966,7 +972,28 @@ prettify.lexers.markup = function markup (source: string) {
 
       } else if (b[a + 1] === '!') {
 
-        if (b[a + 2] === '-' && b[a + 3] === '-') {
+        if ((
+          b[a + 2] === 'd' || b[a + 2] === 'D'
+        ) && (
+          b[a + 3] === 'o' || b[a + 3] === 'O'
+        )  && (
+          b[a + 4] === 'c' || b[a + 4] === 'C'
+        )  && (
+          b[a + 5] === 't' || b[a + 5] === 'T'
+        )  && (
+          b[a + 6] === 'y' || b[a + 6] === 'Y'
+        ) && (
+          b[a + 7] === 'p' || b[a + 7] === 'P'
+        ) && (
+          b[a + 8] === 'e' || b[a + 8] === 'E'
+        )) {
+
+
+          end = '>';
+          ltype = 'doctype';
+          preserve = true;
+
+        } else if (b[a + 2] === '-' && b[a + 3] === '-') {
 
           end = '-->';
           ltype = 'comment';
@@ -1147,6 +1174,7 @@ prettify.lexers.markup = function markup (source: string) {
     // edge cases
     lastchar = end.charAt(end.length - 1);
 
+
     // console.log(ltype, b[a] + b[a + 1] + b[a + 2] + b[a + 3]);
 
     // HTML / Liquid Prettify comment ignore
@@ -1219,6 +1247,7 @@ prettify.lexers.markup = function markup (source: string) {
         const ignoreattr = 'data-prettify-ignore';
 
         if (quotes === true) {
+
 
           atty = attribute.join('');
           name = attributeName(atty);
@@ -1317,6 +1346,7 @@ prettify.lexers.markup = function markup (source: string) {
           parse.lineNumber = parse.lineNumber + 1;
         }
 
+
         if (preserve === true || ((/\s/.test(b[a]) === false && quote !== '}') || quote === '}')) {
 
           lex.push(b[a]);
@@ -1370,6 +1400,11 @@ prettify.lexers.markup = function markup (source: string) {
 
             if ((lex[0] + lex[1]) === '<!' && ltype !== 'cdata') {
 
+              if (ltype === 'doctype' && b[a] === '>') {
+                break
+              }
+
+             // console.log(lex[0] + lex[1] + lex[2] + lex[3] + lex[4] + lex[5])
               if (b[a] === '[') {
 
                 if (b[a + 1] === '<') {
@@ -1978,6 +2013,7 @@ prettify.lexers.markup = function markup (source: string) {
       tname = tagName(element);
       element = bracketSpace(element);
 
+
       if (tname === 'xml') {
         html = 'xml';
       } else if (
@@ -1991,6 +2027,7 @@ prettify.lexers.markup = function markup (source: string) {
       } else if (html === 'liquid') {
         html = 'html';
       }
+
 
       if (element.replace(start, '').replace(/^\s+/, '').indexOf('@prettify-ignore-start') === 0) {
 
@@ -2259,6 +2296,8 @@ prettify.lexers.markup = function markup (source: string) {
       (/\bschema|style|stylesheet|javascript\b/.test(tname) && element.slice(element.length - 2) === '%}')
     )) {
 
+
+
       const liquid = isLiquid(element, 3);
 
       // get the attribute value for "type"
@@ -2284,6 +2323,7 @@ prettify.lexers.markup = function markup (source: string) {
           len = len - 1;
         } while (len > -1);
       }
+
 
       // ext is flag to send information between the tag lexer and the content lexer
       //
@@ -2313,10 +2353,11 @@ prettify.lexers.markup = function markup (source: string) {
         ext = true;
 
       } else if (
-        (tname === 'style' || tname === 'stylsheet') &&
+        (tname === 'style' || tname === 'stylesheet') &&
         options.language !== 'jsx' &&
         (attValue === '' || attValue === 'text/css')
       ) {
+
 
         ext = true;
 
@@ -2489,6 +2530,7 @@ prettify.lexers.markup = function markup (source: string) {
       element = element + tags.join('');
       element = element.replace('>', ` ${atstring.join(' ')}>`);
 
+
       record.token = element;
       record.types = 'content-ignore' as any;
       attstore = [];
@@ -2575,7 +2617,7 @@ prettify.lexers.markup = function markup (source: string) {
 
       recordPush(data, record, '');
 
-      parse.structure.push([ 'cdata', parse.count ]);
+      parse.structure.push(['cdata', parse.count]);
 
       if (stack === 'script') {
         prettify.lexers.script(element);
@@ -2830,7 +2872,9 @@ prettify.lexers.markup = function markup (source: string) {
               quotes = quotes - 1;
             }
 
+
             if (isLiquid(data.token[parse.count], 3) === false) {
+
 
               end = b.slice(a, a + 10).join('').toLowerCase();
 
@@ -2909,10 +2953,13 @@ prettify.lexers.markup = function markup (source: string) {
                     record.token = '-->';
 
                     recordPush(data, record, '');
+
                   } else {
 
                     prettify.lexers.style(outside);
+
                     if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
+
                   }
                   break;
                 }
@@ -3009,6 +3056,7 @@ prettify.lexers.markup = function markup (source: string) {
                   } else {
 
                     prettify.lexers.style(outside);
+
                   }
 
                   break;
@@ -3374,6 +3422,7 @@ prettify.lexers.markup = function markup (source: string) {
 
     }
   }
+
 
   return data;
 
