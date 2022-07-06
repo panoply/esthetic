@@ -16,6 +16,33 @@ export function repeatChar (count: number, ch: string = ' ') {
   return char;
 }
 
+export function notchar (string: string, code: number) {
+
+  if (!string) return false;
+
+  return string.charCodeAt(0) !== code;
+
+}
+
+export function is (string: string, code: number) {
+
+  if (!string) return false;
+
+  return string.charCodeAt(0) === code;
+
+}
+
+export function not (string: string, code: number) {
+
+  return is(string, code) === false;
+
+}
+
+export function ws (string: string) {
+
+  return /\s/.test(string);
+}
+
 /**
  * Converts byte size to killobyte, megabyte,
  * gigabyte or terrabyte
