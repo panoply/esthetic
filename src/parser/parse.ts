@@ -2,6 +2,8 @@
 import type { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
 import { prettify } from 'prettify';
 import { create } from '@utils/native';
+import { cc } from '@utils/enums';
+import { is } from '@utils/helpers';
 
 export const parse = new class Parse implements IParse {
 
@@ -936,10 +938,17 @@ export const parse = new class Parse implements IParse {
 
     const sanitize = (input: string) => `\\${input}`;
     const regEsc = (/(\/|\\|\||\*|\[|\]|\{|\})/g);
-    const regEnd = new RegExp(`\\s*${config.terminator.replace(regEsc, sanitize)}$`);
+    const regEndEsc = (/{%-?\s*|\s*-?%}/g);
+
+    const regEnd = new RegExp(`\\s*${config.terminator.replace(regEndEsc, input => {
+      if (input.charCodeAt(0) === cc.LCB) return '{%-?\\s*';
+      return '\\s*-?%}';
+    })}$`);
+
     const opensan = config.opening.replace(regEsc, sanitize);
-    const regIgnore = new RegExp(`^(${opensan}\\s*@prettify-ignore-start\b)`);
+    const regIgnore = new RegExp(`^(${opensan}\\s*@prettify-ignore-start)`);
     const regStart = new RegExp(`(${opensan}\\s*)`);
+    const isLiquid = is(config.opening[0], cc.LCB) && is(config.opening[1], cc.PER);
 
     function emptylines () {
 
@@ -992,14 +1001,28 @@ export const parse = new class Parse implements IParse {
       do {
 
         build.push(config.chars[a]);
+
+        // HOT PATCH
+        // Supports comment start/end comment ignores using Liquid
+        // tags. We don't have any knowledge of the comment formation
+        // upon parse, this will re-assign the terminator
+        if (build.slice(build.length - 20).join('') === '@prettify-ignore-end') {
+          if (isLiquid) {
+            const d = config.chars.indexOf('{', a);
+            if (is(config.chars[d + 1], cc.PER)) {
+              const ender = config.chars.slice(d, config.chars.indexOf('}', d + 1) + 1).join('');
+              if (regEnd.test(ender)) config.terminator = ender;
+            }
+          }
+
+          a = a + 1;
+
+          break;
+        }
+
         a = a + 1;
 
-      } while (a < config.end && (
-        config.chars[a - 1] !== 'd' || (
-          config.chars[a - 1] === 'd' &&
-          build.slice(build.length - 20).join('') !== '@prettify-ignore-end'
-        )
-      ));
+      } while (a < config.end);
 
       b = a;
 
@@ -1037,9 +1060,7 @@ export const parse = new class Parse implements IParse {
 
           build.push(config.chars[a]);
 
-          if (
-            termination === '\n' &&
-            config.chars[a + 1] === '\n') break;
+          if (termination === '\n' && config.chars[a + 1] === '\n') break;
 
           if (
             config.chars[a] === term &&
@@ -1055,6 +1076,7 @@ export const parse = new class Parse implements IParse {
 
       output = build.join('').replace(/\s+$/, '');
 
+      // console.log(output);
       /* -------------------------------------------- */
       /* RETURN COMMENT                               */
       /* -------------------------------------------- */
