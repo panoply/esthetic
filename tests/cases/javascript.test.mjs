@@ -2,7 +2,7 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('preserveComment: false', async t => {
+test.serial.skip('preserveComment: false', async t => {
 
   const { source } = await samples.get('javascript/comment-indent');
 
@@ -17,7 +17,7 @@ test.serial('preserveComment: false', async t => {
 
 });
 
-test.serial('inlineReturn: true', async t => {
+test.serial.skip('inlineReturn: true', async t => {
 
   const { source } = await samples.get('javascript/inline-return');
 

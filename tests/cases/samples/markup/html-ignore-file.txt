@@ -1,4 +1,4 @@
-<!-- @ignore:file -->
+<!-- @prettify-ignore -->
 
 <h1>Ignore formatting on this file</h1>
 
@@ -7,9 +7,12 @@
 <div id="x">
 <ul>
 
-<li>foo</li>
-<li>bar</li>
-<li>bax</li>
+<li>foo</li>      <li>
+            bar
+
+
+            </li>
+<li>bax                                                        </li>
 
 </ul>
 </div>
