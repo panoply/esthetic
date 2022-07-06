@@ -1,11 +1,10465 @@
 'use strict';
 
-var Ce=Object.defineProperty;var Ve=Object.getOwnPropertyDescriptor;var Ge=Object.getOwnPropertyNames;var Xe=Object.prototype.hasOwnProperty;var Ie=(v,u)=>{for(var h in u)Ce(v,h,{get:u[h],enumerable:true});};var Ye=(v,u,h,s)=>{if(u&&typeof u==="object"||typeof u==="function"){for(let g of Ge(u))if(!Xe.call(v,g)&&g!==h)Ce(v,g,{get:()=>u[g],enumerable:!(s=Ve(u,g))||s.enumerable});}return v};var Ke=v=>Ye(Ce({},"__esModule",{value:true}),v);var ot={};Ie(ot,{default:()=>Pe,definitions:()=>xe});module.exports=Ke(ot);var be=Object.assign;var re=Object.create;var ge=Object.keys;var xe={language:{description:"The language name",lexer:"all",type:"select",default:"auto",values:[{rule:"auto",description:"Prettify will automatically detect the language"},{rule:"text",description:"Plain Text"},{rule:"html",description:"HTML"},{rule:"liquid",description:"HTML + Liquid"},{rule:"javascript",description:"JavaScript"},{rule:"jsx",description:"JSX"},{rule:"typescript",description:"TypeScript"},{rule:"tsx",description:"TSX"},{rule:"json",description:"JSON"},{rule:"css",description:"CSS"},{rule:"scss",description:"SCSS"},{rule:"less",description:"LESS"},{rule:"xml",description:"XML"}]},wrap:{default:0,description:"Character width limit before applying word wrap. A 0 value disables this option. A negative value concatenates script strings.",lexer:"all",type:"number"},indentSize:{default:2,description:'The number of "indentChar" values to comprise a single indentation.',lexer:"all",type:"number"},indentChar:{default:" ",description:"The string characters to comprise a single indentation. Any string combination is accepted.",lexer:"all",type:"string"},crlf:{default:false,description:"If line termination should be Windows (CRLF) format. Unix (LF) format is the default.",lexer:"all",type:"boolean"},endNewline:{default:false,description:"Insert an empty line at the end of output.",lexer:"all",type:"boolean"},preserveLine:{default:2,description:"The maximum number of consecutive empty lines to retain.",lexer:"all",type:"number"},preserveComment:{default:false,description:"Prevent comment reformatting due to option wrap.",lexer:"all",type:"boolean"},commentNewline:{default:false,description:"If a blank new line should be forced above comments.",lexer:"all",type:"boolean"},commentIndent:{default:false,description:"This will determine whether comments should always start at position 0 of each line or if comments should be indented according to the code.",lexer:"all",type:"boolean"},quoteConvert:{lexer:"all",description:"If the quotes of markup attributes should be converted to single quotes or double quotes.",type:"select",default:"none",values:[{rule:"none",description:"Ignores this option"},{rule:"single",description:"Converts double quotes to single quotes"},{rule:"double",description:"Converts single quotes to double quotes"}]},attemptCorrection:{default:false,description:"Automatically correct some sloppiness in code.",lexer:"all",type:"boolean"},attributeSort:{default:false,description:"Alphanumerically sort markup attributes. Attribute sorting is ignored on tags that contain attributes template attributes.",lexer:"markup",type:"boolean"},attributeSortList:{default:[],description:"A comma separated list of attribute names. Attributes will be sorted according to this list and then alphanumerically. This option requires 'attributeSort' have a value of true.",lexer:"markup",type:"array"},forceAttribute:{default:false,description:"If all markup attributes should be indented each onto their own line.",lexer:"markup",type:"boolean"},forceIndent:{default:false,description:"Will force indentation upon all content and tags without regard for the creation of new text nodes.",lexer:"markup",type:"boolean"},preserveAttributes:{default:false,description:"If markup tags should have their insides preserved. This option is only available to markup and does not support child tokens that require a different lexer.",lexer:"markup",type:"boolean"},preserveAttributeValues:{default:false,description:"Whether or not attribute values should be preserved. When enabled, values will allow newline characters and processing on the contents will be skipped.",lexer:"markup",type:"boolean"},preserveText:{default:false,description:"If text in the provided markup code should be preserved exactly as provided. This option eliminates beautification and wrapping of text content.",lexer:"markup",type:"boolean"},selfCloseSpace:{default:false,description:'Markup self-closing tags end will end with " />" instead of "/>".',lexer:"markup",type:"boolean"},classPadding:{description:"Inserts new line characters between every CSS code block.",default:false,type:"boolean",lexer:"style"},sortSelectors:{default:false,type:"boolean",description:"If comma separated CSS selectors should present on a single line of code.",lexer:"style"},sortProperties:{lexer:"style",description:"This option will alphabetically sort CSS properties contained within classes.",default:false,type:"boolean"},noLeadZero:{lexer:"style",description:"This will eliminate leading zeros from numbers expressed within values.",default:false,type:"boolean"},compressCSS:{lexer:"style",description:"If CSS should be beautified in a style where the properties and values are minifed for faster reading of selectors.",default:false,type:"boolean"},braceAllman:{lexer:"script",default:false,description:'Determines if opening curly braces will exist on the same line as their condition or be forced onto a new line, otherwise known as "Allman Style" indentation.',type:"boolean"},bracePadding:{default:false,description:"This will create a newline before and after objects values",type:"boolean",lexer:"script"},braceNewline:{default:false,description:"If true an empty line will be inserted after opening curly braces and before closing curly braces.",type:"boolean",lexer:"script"},braceStyle:{default:"none",description:"Emulates JSBeautify's brace_style option using existing Prettify options",type:"select",lexer:"script",values:[{rule:"none",description:"Ignores this option"},{rule:"collapse",description:"Sets formatObject to indent and neverflatten to true."},{rule:"collapse-preserve-inline",description:"Sets formatObject to inline and bracePadding to true"},{rule:"expand",description:"Sets objectIndent to indent and braceNewline + neverflatten to true."}]},arrayFormat:{lexer:"script",description:"Determines if all array indexes should be indented, never indented, or left to the default",type:"select",default:"default",values:[{rule:"default",description:"Default formatting"},{rule:"indent",description:"Always indent each index of an array"},{rule:"inline",description:"Ensure all array indexes appear on a single line"}]},objectSort:{default:false,description:"This option will alphabetically sort object properties in JSON objects",type:"boolean",lexer:"script"},objectIndent:{description:"This option will alphabetically sort object properties in JSON objects",type:"select",lexer:"script",default:"default",values:[{rule:"default",description:"Default formatting"},{rule:"indent",description:"Always indent each index of an array"},{rule:"inline",description:"Ensure all array indexes appear on a single line"}]},functionSpace:{lexer:"script",default:true,type:"boolean",description:"Inserts a space following the function keyword for anonymous functions."},functionNameSpace:{lexer:"script",default:true,type:"boolean",description:"If a space should follow a JavaScript function name."},methodChain:{lexer:"script",default:-1,description:"When to break consecutively chained methods and properties onto separate lines. A negative value disables this option. A value of 0 ensures method chainsare never broken.",type:"number"},caseSpace:{default:false,type:"boolean",description:"If the colon separating a case's expression (of a switch/case block) from its statement should be followed by a space instead of indentation thereby keeping the case on a single line of code.",lexer:"script"},inlineReturn:{lexer:"script",default:true,type:"boolean",description:"Inlines return statements contained within `if` and `else` conditions. This rules also augments code and will reason about your structure to output the best and most readable results."},elseNewline:{lexer:"script",default:false,type:"boolean",description:'If keyword "else" is forced onto a new line.'},ternaryLine:{lexer:"script",description:"If ternary operators in JavaScript `?` and `:` should remain on the same line.",type:"boolean",default:false},neverFlatten:{lexer:"script",default:true,description:"If destructured lists in script should never be flattend.",type:"boolean"},variableList:{lexer:"script",description:"If consecutive JavaScript variables should be merged into a comma separated list or if variables in a list should be separated. each \u2014 Ensure each reference is a single declaration statement.",type:"select",default:"none",values:[{rule:"none",description:"Ignores this option"},{rule:"each",description:"Ensure each reference is a single declaration statement"},{rule:"list",description:"Ensure consecutive declarations are a comma separated list"}]},vertical:{lexer:"script",description:"If lists of assignments and properties should be vertically aligned",type:"boolean",default:false},noSemicolon:{lexer:"script",description:"Removes semicolons that would be inserted by ASI. This option is in conflict with option `attemptCorrection` and takes precedence over conflicting features. Use of this option is a possible security/stability risk.",default:false,type:"boolean"},endComma:{description:"If there should be a trailing comma in arrays and objects.",type:"select",lexer:"script",default:"none",values:[{rule:"none",description:"Ignore this option"},{rule:"always",description:"Always ensure there is a tailing comma"},{rule:"never",description:"Remove trailing commas"}]}};var _=re(null);_.parsed=re(null);_.options=re(null);_.beautify=re(null);_.lexers=re(null);_.definitions=xe;_.mode="beautify";_.source="";_.end=0;_.iterator=0;_.start=0;_.scopes=[];_.stats=re(null);_.stats.chars=-1;_.stats.time=-1;_.stats.size="";_.stats.language="";_.hooks=re(null);_.hooks.before=[];_.hooks.language=[];_.hooks.rules=[];_.hooks.after=[];_.options.mode="beautify";_.options.tagMerge=false;_.options.tagSort=false;_.options.lexer="auto";_.options.language="text";_.options.languageName="Plain Text";_.options.indentLevel=0;_.options.crlf=false;_.options.attemptCorrection=false;_.options.commentIndent=true;_.options.endNewline=false;_.options.indentChar=" ";_.options.indentSize=2;_.options.preserveComment=false;_.options.preserveLine=2;_.options.wrap=0;_.options.markup=re(null);_.options.markup.attributeGlue=true;_.options.markup.attributeSort=false;_.options.markup.attributeSortList=[];_.options.markup.attributeValueNewlines="force";_.options.markup.commentNewline=false;_.options.markup.forceAttribute=false;_.options.markup.preserveText=false;_.options.markup.preserveAttributes=false;_.options.markup.selfCloseSpace=false;_.options.markup.forceIndent=false;_.options.markup.quoteConvert="none";_.options.style=re(null);_.options.style.compressCSS=false;_.options.style.classPadding=false;_.options.style.noLeadZero=false;_.options.style.sortSelectors=false;_.options.style.sortProperties=false;_.options.style.quoteConvert="none";_.options.script=re(null);_.options.script.braceNewline=false;_.options.script.bracePadding=false;_.options.script.braceStyle="none";_.options.script.braceAllman=false;_.options.script.commentNewline=false;_.options.script.caseSpace=false;_.options.script.inlineReturn=true;_.options.script.elseNewline=false;_.options.script.endComma="never";_.options.script.arrayFormat="default";_.options.script.objectSort=false;_.options.script.objectIndent="default";_.options.script.functionNameSpace=false;_.options.script.functionSpace=false;_.options.script.styleGuide="none";_.options.script.ternaryLine=false;_.options.script.methodChain=4;_.options.script.neverFlatten=false;_.options.script.noCaseIndent=false;_.options.script.noSemicolon=false;_.options.script.quoteConvert="none";_.options.script.variableList="none";_.options.script.vertical=false;_.options.json=re(null);_.options.json.arrayFormat="default";_.options.json.braceAllman=false;_.options.json.bracePadding=false;_.options.json.objectIndent="default";_.options.json.objectSort=false;var r=new class kt{constructor(){this.error="";this.data=re(null);this.references=[[]];this.structure=[["global",-1]];this.datanames=["begin","ender","lexer","lines","stack","token","types"];this.count=-1;this.lineNumber=1;this.linesSpace=0;this.data.begin=[];this.data.ender=[];this.data.lexer=[];this.data.lines=[];this.data.stack=[];this.data.token=[];this.data.types=[];}get current(){const{begin:u,ender:h,lexer:s,lines:g,stack:y,token:e,types:m}=this.data;return {begin:u[u.length-1],ender:h[h.length-1],lexer:s[s.length-1],lines:g[g.length-1],stack:y[y.length-1],token:e[u.length-1],types:m[u.length-1]}}concat(u,h){for(const s of this.datanames)u[s]=u[s].concat(h[s]);if(u===this.data)this.count=u.token.length-1;}objectSort(u){let h=this.count;let s=this.structure[this.structure.length-1][1];let g=0;let y=0;let e=0;let m=0;let T=true;let i=0;let E=0;let f=0;const n=u.lexer[h]==="style"&&this.structure[this.structure.length-1][0]==="global";const k=[];const l=this.count;const A=s;const I=u.lexer[h]==="style";const a=I===true?[";","separator"]:[",","separator"];const z=this.linesSpace;const P=n===true?"global":this.structure[this.structure.length-1][0];function W(t,d){let x=t[0];let j=d[0];if(u.types[x]==="comment"){do{x=x+1;}while(x<l&&u.types[x]==="comment");if(u.token[x]===void 0){return 1}}if(u.types[j]==="comment"){do{j=j+1;}while(j<l&&u.types[j]==="comment");if(u.token[j]===void 0)return 1}if(I===true){if(u.token[x].indexOf("@import")===0||u.token[j].indexOf("@import")===0){return x<j?-1:1}if(u.types[x]!==u.types[j]){if(u.types[x]==="function")return 1;if(u.types[x]==="variable")return -1;if(u.types[x]==="selector")return 1;if(u.types[x]==="property"&&u.types[j]!=="variable")return -1;if(u.types[x]==="mixin"&&u.types[j]!=="property"&&u.types[j]!=="variable")return -1}}if(u.token[x].toLowerCase()>u.token[j].toLowerCase())return 1;return -1}const S=re(null);S.begin=[];S.ender=[];S.lexer=[];S.lines=[];S.stack=[];S.token=[];S.types=[];m=h;do{if(u.begin[h]===s||n===true&&h<m&&u.token[h]==="}"&&u.begin[u.begin[h]]===-1){if(u.types[h].indexOf("template")>-1)return;if(u.token[h]===a[0]||I===true&&u.token[h]==="}"&&u.token[h+1]!==";"){T=true;i=h+1;}else if(I===true&&u.token[h-1]==="}"){T=true;i=h;}if(i===0&&u.types[0]==="comment"){do{i=i+1;}while(u.types[i]==="comment")}else if(u.types[i]==="comment"&&u.lines[i]<2){i=i+1;}if(T===true&&(u.token[h]===a[0]||I===true&&u.token[h-1]==="}")&&i<=m){if(I===true&&"};".indexOf(u.token[m])<0){m=m+1;}else if(I===false&&u.token[m]!==","){m=m+1;}k.push([i,m]);if(I===true&&u.token[i]==="}"){m=i;}else {m=i-1;}}}h=h-1;}while(h>s);if(k.length>0&&k[k.length-1][0]>h+1){g=k[k.length-1][0]-1;if(u.types[g]==="comment"&&u.lines[g]>1){do{g=g-1;}while(g>0&&u.types[g]==="comment");k[k.length-1][0]=g+1;}if(u.types[h+1]==="comment"&&h===-1){do{h=h+1;}while(u.types[h+1]==="comment")}k.push([h+1,g]);}if(k.length>1){if(I===true||u.token[h-1]==="="||u.token[h-1]===":"||u.token[h-1]==="("||u.token[h-1]==="["||u.token[h-1]===","||u.types[h-1]==="word"||h===0){k.sort(W);f=k.length;T=false;s=0;do{E=k[s][1];if(I===true){e=E;if(u.types[e]==="comment")e=e-1;if(u.token[e]==="}"){E=E+1;a[0]="}";a[1]="end";}else {a[0]=";";a[1]="separator";}}g=k[s][0];if(I===true&&u.types[E-1]!=="end"&&u.types[E]==="comment"&&u.types[E+1]!=="comment"&&s<f-1){E=E+1;}if(g<E){do{if(I===false&&s===f-1&&g===E-2&&u.token[g]===","&&u.lexer[g]==="script"&&u.types[g+1]==="comment"){y=y+1;}else {const t=re(null);t.begin=u.begin[g];t.ender=u.ender[g];t.lexer=u.lexer[g];t.lines=u.lines[g];t.stack=u.stack[g];t.token=u.token[g];t.types=u.types[g];this.push(S,t,"");y=y+1;}if(u.token[g]===a[0]&&(I===true||u.begin[g]===u.begin[k[s][0]])){T=true;}else if(u.token[g]!==a[0]&&u.types[g]!=="comment"){T=false;}g=g+1;}while(g<E)}if(T===false&&S.token[S.token.length-1]!=="x;"&&(I===true||s<f-1)){g=S.types.length-1;if(S.types[g]==="comment"){do{g=g-1;}while(g>0&&S.types[g]==="comment")}g=g+1;this.splice({data:S,howmany:0,index:g,record:{begin:A,ender:this.count,lexer:S.lexer[g-1],lines:0,stack:P,token:a[0],types:a[1]}});y=y+1;}s=s+1;}while(s<f);this.splice({data:u,howmany:y,index:h+1});this.linesSpace=z;this.concat(u,S);}}}pop(u){const h=re(null);h.begin=u.begin.pop();h.ender=u.ender.pop();h.lexer=u.lexer.pop();h.lines=u.lines.pop();h.stack=u.stack.pop();h.token=u.token.pop();h.types=u.types.pop();if(u===this.data)this.count=this.count-1;return h}push(u,h,s){const g=()=>{let y=this.count;const e=u.begin[y];if((u.lexer[y]==="script"||u.lexer[y]==="style")&&_.options[u.lexer[y]].objectSort===true){return}do{if(u.begin[y]===e||u.begin[u.begin[y]]===e&&u.types[y].indexOf("attribute")>-1&&u.types[y].indexOf("attribute_end")<0){u.ender[y]=this.count;}else {y=u.begin[y];}y=y-1;}while(y>e);if(y>-1)u.ender[y]=this.count;};this.datanames.forEach(y=>u[y].push(h[y]));if(u===this.data){this.count=this.count+1;this.linesSpace=0;if(h.lexer!=="style"){if(s.replace(/(\{|\}|@|<|>|%|#|)/g,"")===""){s=h.types==="else"?"else":s=h.token;}}if(h.types==="start"||h.types.indexOf("_start")>0){this.structure.push([s,this.count]);}else if(h.types==="end"||h.types.indexOf("_end")>0){let y=0;if(this.structure.length>2&&(u.types[this.structure[this.structure.length-1][1]]==="else"||u.types[this.structure[this.structure.length-1][1]].indexOf("_else")>0)&&(u.types[this.structure[this.structure.length-2][1]]==="start"||u.types[this.structure[this.structure.length-2][1]].indexOf("_start")>0)&&(u.types[this.structure[this.structure.length-2][1]+1]==="else"||u.types[this.structure[this.structure.length-2][1]+1].indexOf("_else")>0)){this.structure.pop();u.begin[this.count]=this.structure[this.structure.length-1][1];u.stack[this.count]=this.structure[this.structure.length-1][0];u.ender[this.count-1]=this.count;y=u.ender[u.begin[this.count]+1];}g();if(y>0)u.ender[u.begin[this.count]+1]=y;this.structure.pop();}else if(h.types==="else"||h.types.indexOf("_else")>0){if(s==="")s="else";if(this.count>0&&(u.types[this.count-1]==="start"||u.types[this.count-1].indexOf("_start")>0)){this.structure.push([s,this.count]);}else {g();if(s===""){this.structure[this.structure.length-1]=["else",this.count];}else {this.structure[this.structure.length-1]=[s,this.count];}}}}}safeSort(u,h,s){let g=i=>i;const y=i=>Array.isArray(i)===true;function e(i){let E=i;const f=[i[0]];function n(){let l=0;const A=E.length;if(l<A){do{if(y(E[l])===true)E[l]=e(E[l]);l=l+1;}while(l<A)}}function k(l){let A=0;const I=[];const a=E.length;if(A<a){do{if(E[A]!==l)I.push(E[A]);A=A+1;}while(A<a)}E=I;if(I.length>0){f.push(I[0]);g(I[0]);}else {if(s===true)n();i=E;}}g=k;k(u[0]);return i}function m(i){let E=0;const f=i.length;const n=i;function k(){let A=0;const I=n.length;if(A<I){do{if(y(n[A]))n[A]=m(n[A]);A=A+1;}while(A<I)}}function l(A){let I=E;let a=0;let z=0;let P=0;let W=n[E];let S=[];let t="";const d=typeof W;if(I<f){do{t=typeof n[I];if(n[I]>W||t>d){W=n[I];S=[I];}else if(n[I]===W){S.push(I);}I=I+1;}while(I<f)}z=S.length;I=E;a=z+E;if(I<a){do{n[S[P]]=n[I];n[I]=W;P=P+1;I=I+1;}while(I<a)}E=E+z;if(E<f){g("");}else {if(s===true)k();i=n;}return A}g=l;l("");return i}function T(i){let E=0;const f=i.length;const n=i;function k(){let A=0;const I=n.length;if(A<I){do{if(y(n[A])===true)n[A]=T(n[A]);A=A+1;}while(A<I)}}function l(A){let I=E;let a=0;let z=0;let P=0;let W=[];let S=n[E];let t="";const d=typeof S;if(I<f){do{t=typeof n[I];if(n[I]<S||t<d){S=n[I];W=[I];}else if(n[I]===S){W.push(I);}I=I+1;}while(I<f)}z=W.length;I=E;a=z+E;if(I<a){do{n[W[P]]=n[I];n[I]=S;P=P+1;I=I+1;}while(I<a)}E=E+z;if(E<f){g("");}else {if(s===true)k();i=n;}return A}g=l;l("");return i}if(y(u)===false)return u;if(h==="normal")return e(u);if(h==="descend")return m(u);return T(u)}sortCorrection(u,h){let s=u;let g=-1;const y=this.data;const e=[];const m=this.structure.length<2?[-1]:[this.structure[this.structure.length-2][1]];do{if(s>0&&y.types[s].indexOf("attribute")>-1&&y.types[s].indexOf("end")<0&&y.types[s-1].indexOf("start")<0&&y.types[s-1].indexOf("attribute")<0&&y.lexer[s]==="markup"){m.push(s-1);}if(s>0&&y.types[s-1].indexOf("attribute")>-1&&y.types[s].indexOf("attribute")<0&&y.lexer[m[m.length-1]]==="markup"&&y.types[m[m.length-1]].indexOf("start")<0){m.pop();}if(y.begin[s]!==m[m.length-1]){if(m.length>0){y.begin[s]=m[m.length-1];}else {y.begin[s]=-1;}}if(y.types[s].indexOf("else")>-1){if(m.length>0){m[m.length-1]=s;}else {m.push(s);}}if(y.types[s].indexOf("end")>-1)m.pop();if(y.types[s].indexOf("start")>-1)m.push(s);s=s+1;}while(s<h);s=h;do{s=s-1;if(y.types[s].indexOf("end")>-1){e.push(s);g=g+1;}y.ender[s]=g>-1?e[g]:-1;if(y.types[s].indexOf("start")>-1){e.pop();g=g-1;}}while(s>u)}spacer(u){this.linesSpace=1;do{if(u.array[u.index]==="\n"){this.linesSpace=this.linesSpace+1;this.lineNumber=this.lineNumber+1;}if(/\s/.test(u.array[u.index+1])===false)break;u.index=u.index+1;}while(u.index<u.end);return u.index}splice(u){const h=[this.data.begin[this.count],this.data.token[this.count]];if(u.record!==void 0&&u.record.token!==""){for(const s of this.datanames){u.data[s].splice(u.index,u.howmany,u.record[s]);}if(u.data===this.data){this.count=this.count-u.howmany+1;if(h[0]!==this.data.begin[this.count]||h[1]!==this.data.token[this.count]){this.linesSpace=0;}}return}for(const s of this.datanames){u.data[s].splice(u.index,u.howmany);}if(u.data===this.data){this.count=this.count-u.howmany;this.linesSpace=0;}}wrapCommentBlock(u){let h=u.start;let s=0;let g=0;let y=0;let e=0;let m=[];let T="";let i="";let E=false;let f=false;let n=false;let k=false;let l="";let A=u.terminator.length-1;let I=u.terminator.charAt(A);let a=0;const{wrap:z,crlf:P,preserveComment:W}=_.options;const S=[];const t=[];const d=P===true?"\r\n":"\n";const x=R=>`\\${R}`;const j=/(\/|\\|\||\*|\[|\]|\{|\})/g;const C=new RegExp(`\\s*${u.terminator.replace(j,x)}$`);const F=u.opening.replace(j,x);const M=new RegExp(`^(${F}\\s*@prettify-ignore-start\b)`);const $=new RegExp(`(${F}\\s*)`);function q(){if(/^\s+$/.test(m[s+1])||m[s+1]===""){do{s=s+1;}while(s<e&&(/^\s+$/.test(m[s+1])||m[s+1]===""))}if(s<e-1)t.push("");}do{S.push(u.chars[h]);if(u.chars[h]==="\n")this.lineNumber=this.lineNumber+1;if(u.chars[h]===I&&u.chars.slice(h-A,h+1).join("")===u.terminator)break;h=h+1;}while(h<u.end);l=S.join("");if(M.test(l)===true){let R="\n";h=h+1;do{S.push(u.chars[h]);h=h+1;}while(h<u.end&&(u.chars[h-1]!=="d"||u.chars[h-1]==="d"&&S.slice(S.length-20).join("")!=="@prettify-ignore-end"));s=h;A=u.opening.length-1;I=u.opening.charAt(A);do{if(u.opening==="/*"&&u.chars[s-1]==="/"&&(u.chars[s]==="*"||u.chars[s]==="/"))break;if(u.opening!=="/*"&&u.chars[s]===I&&u.chars.slice(s-A,s+1).join("")===u.opening)break;s=s-1;}while(s>u.start);if(u.opening==="/*"&&u.chars[s]==="*"){R="*/";}else if(u.opening!=="/*"){R=u.terminator;}A=R.length-1;I=R.charAt(A);if(R!=="\n"||u.chars[h]!=="\n"){do{S.push(u.chars[h]);if(R==="\n"&&u.chars[h+1]==="\n")break;if(u.chars[h]===I&&u.chars.slice(h-A,h+1).join("")===R)break;h=h+1;}while(h<u.end)}if(u.chars[h]==="\n")h=h-1;l=S.join("").replace(/\s+$/,"");return [l,h]}if(W===true||z<1||h===u.end||l.length<=z&&l.indexOf("\n")<0||u.opening==="/*"&&l.indexOf("\n")>0&&l.replace("\n","").indexOf("\n")>0&&/\n(?!(\s*\*))/.test(l)===false){return [l,h]}s=u.start;if(s>0&&u.chars[s-1]!=="\n"&&/\s/.test(u.chars[s-1])){do{s=s-1;}while(s>0&&u.chars[s-1]!=="\n"&&/\s/.test(u.chars[s-1]))}T=u.chars.slice(s,u.start).join("");const te=new RegExp("\n"+T,"g");m=l.replace(/\r\n/g,"\n").replace(te,"\n").split("\n");e=m.length;m[0]=m[0].replace($,"");m[e-1]=m[e-1].replace(C,"");if(e<2)m=m[0].split(" ");if(m[0]===""){m[0]=u.opening;}else {m.splice(0,0,u.opening);}e=m.length;s=0;do{i=s<e-1?m[s+1].replace(/^\s+/,""):"";if(/^\s+$/.test(m[s])===true||m[s]===""){q();}else if(m[s].slice(0,4)==="    "){t.push(m[s]);}else if(m[s].replace(/^\s+/,"").length>z&&m[s].replace(/^\s+/,"").indexOf(" ")>z){m[s]=m[s].replace(/^\s+/,"");g=m[s].indexOf(" ");t.push(m[s].slice(0,g));m[s]=m[s].slice(g+1);s=s-1;}else {m[s]=u.opening==="/*"&&m[s].indexOf("/*")!==0?`   ${m[s].replace(/^\s+/,"").replace(/\s+$/,"").replace(/\s+/g," ")}`:`${m[s].replace(/^\s+/,"").replace(/\s+$/,"").replace(/\s+/g," ")}`;a=s<1?z-(u.opening.length+1):z;g=m[s].length;y=m[s].replace(/^\s+/,"").indexOf(" ");if(g>a&&y>0&&y<a){g=a;do{g=g-1;if(/\s/.test(m[s].charAt(g))&&g<=z)break}while(g>0);if(m[s].slice(0,4)!=="    "&&/^\s*(\*|-)\s/.test(m[s])===true&&/^\s*(\*|-)\s/.test(m[s+1])===false){m.splice(s+1,0,"* ");}if(m[s].slice(0,4)!=="    "&&/^\s*\d+\.\s/.test(m[s])===true&&/^\s*\d+\.\s/.test(m[s+1])===false){m.splice(s+1,0,"1. ");}if(g<4){t.push(m[s]);k=true;}else if(s===e-1){t.push(m[s].slice(0,g));m[s]=m[s].slice(g+1);k=true;s=s-1;}else if(/^\s+$/.test(m[s+1])===true||m[s+1]===""){t.push(m[s].slice(0,g));m[s]=m[s].slice(g+1);E=true;s=s-1;}else if(m[s+1].slice(0,4)!=="    "&&/^\s*(\*|-)\s/.test(m[s+1])){t.push(m[s].slice(0,g));m[s]=m[s].slice(g+1);f=true;s=s-1;}else if(m[s+1].slice(0,4)!=="    "&&/^\s*\d+\.\s/.test(m[s+1])){t.push(m[s].slice(0,g));m[s]=m[s].slice(g+1);n=true;s=s-1;}else if(m[s+1].slice(0,4)==="    "){t.push(m[s].slice(0,g));m[s]=m[s].slice(g+1);k=true;s=s-1;}else if(g+i.length>z&&i.indexOf(" ")<0){t.push(m[s].slice(0,g));m[s]=m[s].slice(g+1);k=true;s=s-1;}else if(m[s].replace(/^\s+/,"").indexOf(" ")<z){m[s+1]=m[s].length>z?m[s].slice(g+1)+d+m[s+1]:`${m[s].slice(g+1)} ${m[s+1]}`;}if(E===false&&f===false&&n===false&&k===false){m[s]=m[s].slice(0,g);}}else if(m[s+1]!==void 0&&(m[s].length+i.indexOf(" ")>z&&i.indexOf(" ")>0||m[s].length+i.length>z&&i.indexOf(" ")<0)){t.push(m[s]);s=s+1;}else if(m[s+1]!==void 0&&/^\s+$/.test(m[s+1])===false&&m[s+1]!==""&&m[s+1].slice(0,4)!=="    "&&/^\s*(\*|-|(\d+\.))\s/.test(m[s+1])===false){m[s+1]=`${m[s]} ${m[s+1]}`;E=true;}if(k===false&&f===false&&n===false){if(E===true){E=false;}else if(/^\s*(\*|-|(\d+\.))\s*$/.test(m[s])===false){if(s<e-1&&m[s+1]!==""&&/^\s+$/.test(m[s])===false&&m[s+1].slice(0,4)!=="    "&&/^\s*(\*|-|(\d+\.))\s/.test(m[s+1])===false){m[s]=`${m[s]} ${m[s+1]}`;m.splice(s+1,1);e=e-1;s=s-1;}else {if(u.opening==="/*"&&m[s].indexOf("/*")!==0){t.push(`   ${m[s].replace(/^\s+/,"").replace(/\s+$/,"").replace(/\s+/g," ")}`);}else {t.push(`${m[s].replace(/^\s+/,"").replace(/\s+$/,"").replace(/\s+/g," ")}`);}}}}k=false;f=false;n=false;}s=s+1;}while(s<e);if(t.length>0){if(t[t.length-1].length>z-(u.terminator.length+1)){t.push(u.terminator);}else {t[t.length-1]=`${t[t.length-1]} ${u.terminator}`;}l=t.join(d);}else {m[m.length-1]=m[m.length-1]+u.terminator;l=m.join(d);}return [l,h]}wrapCommentLine(u){let h=u.start;let s=0;let g="";let y=[];const{wrap:e,preserveComment:m}=_.options;function T(){let E="";do{s=s+1;if(u.chars[s+1]==="\n")return}while(s<u.end&&/\s/.test(u.chars[s])===true);if(u.chars[s]+u.chars[s+1]==="//"){y=[];do{y.push(u.chars[s]);s=s+1;}while(s<u.end&&u.chars[s]!=="\n");E=y.join("");if(/^\/\/ (\*|-|(\d+\.))/.test(E)===false&&E.slice(0,6)!=="//    "&&/^\/\/\s*$/.test(E)===false){g=`${g} ${E.replace(/(^\/\/\s*)/,"").replace(/\s+$/,"")}`;h=s-1;T();}}}const i=()=>{const E=[];const f=re(null);f.ender=-1;f.types="comment";f.lexer=u.lexer;f.lines=this.linesSpace;if(this.count>-1){f.begin=this.structure[this.structure.length-1][1];f.stack=this.structure[this.structure.length-1][0];f.token=this.data.token[this.count];}else {f.begin=-1;f.stack="global";f.token="";}let n=0;let k=0;g=g.replace(/\s+/g," ").replace(/\s+$/,"");k=g.length;if(e>k)return;do{n=e;if(g.charAt(n)!==" "){do{n=n-1;}while(n>0&&g.charAt(n)!==" ");if(n<3){n=e;do{n=n+1;}while(n<k-1&&g.charAt(n)!==" ")}}E.push(g.slice(0,n));g=`// ${g.slice(n).replace(/^\s+/,"")}`;k=g.length;}while(e<k);n=0;k=E.length;do{f.token=E[n];this.push(this.data,f,"");f.lines=2;this.linesSpace=2;n=n+1;}while(n<k)};do{y.push(u.chars[h]);h=h+1;}while(h<u.end&&u.chars[h]!=="\n");if(h===u.end){u.chars.push("\n");}else {h=h-1;}g=y.join("").replace(/\s+$/,"");if(/^(\/\/\s*@prettify-ignore-start\b)/.test(g)===true){let E="\n";h=h+1;do{y.push(u.chars[h]);h=h+1;}while(h<u.end&&(u.chars[h-1]!=="d"||u.chars[h-1]==="d"&&y.slice(y.length-20).join("")!=="@prettify-ignore-end"));s=h;do{}while(s>u.start&&u.chars[s-1]==="/"&&(u.chars[s]==="*"||u.chars[s]==="/"));if(u.chars[s]==="*")E="*/";if(E!=="\n"||u.chars[h]!=="\n"){do{y.push(u.chars[h]);if(E==="\n"&&u.chars[h+1]==="\n")break;h=h+1;}while(h<u.end&&(E==="\n"||E==="*/"&&(u.chars[h-1]!=="*"||u.chars[h]!=="/")))}if(u.chars[h]==="\n")h=h-1;g=y.join("").replace(/\s+$/,"");return [g,h]}if(g==="//"||g.slice(0,6)==="//    "||m===true){return [g,h]}g=g.replace(/(\/\/\s*)/,"// ");if(e<1||h===u.end-1&&this.data.begin[this.count]<1)return [g,h];s=h+1;T();i();return [g,h]}};_.lexers.style=function v(u){const{options:h}=_;let s=0;let g="";let y="";const e=r.data;const m=u.split("");const T=u.length;const i=[];const E=[];function f(W){const S=re(null);S.begin=r.structure[r.structure.length-1][1];S.ender=-1;S.lexer="style";S.lines=r.linesSpace;S.stack=r.structure[r.structure.length-1][0];S.token=y;S.types=g;r.push(e,S,W);}const n=function W(S){const t=S;do{S=S-1;}while(m[S]==="\\"&&S>0);if((t-S)%2===1){return true}return false};function k(W){const S=W.replace(/\s*!important/," !important").split("");const t=[];const d=/-?transition$/.test(e.token[r.count-2]);const x=function ue(ne){return ne};const j=function ue(ne){ne=ne.replace(/\s*/g,"");if(/\/\d/.test(ne)===true&&W.indexOf("url(")===0)return ne;return ` ${ne.charAt(0)} ${ne.charAt(1)}`};const C=function ue(ne){if(h.style.noLeadZero===true){const fe=function Ae(we){return we.replace(/0+/,"")};return ne.replace(/^-?\D0+(\.|\d)/,fe)}if(/0*\./.test(ne)===true)return ne.replace(/0*\./,"0.");if(/0+/.test(/\d+/.exec(ne)[0])===true){if(/^\D*0+\D*$/.test(ne)===true)return ne.replace(/0+/,"0");return ne.replace(/\d+/.exec(ne)[0],/\d+/.exec(ne)[0].replace(/^0+/,""))}return ne};const F=function ue(ne){return ne.replace(",",", ")};const M=function ue(ne){return `${ne} `};const $=function ue(){const ne=L-1;let fe=ne;if(ne<1){return true}do{fe=fe-1;}while(fe>0&&S[fe]==="\\");if((ne-fe)%2===1){return true}return false};const q=/^-?0+\.\d+[a-z]/;const te=/^-?\.\d+[a-z]/;const R=/(\s|\(|,)-?0+\.?\d+([a-z]|\)|,|\s)/g;const X=/(\s|\(|,)-?\.?\d+([a-z]|\)|,|\s)/g;const le="%|cap|ch|cm|deg|dpcm|dpi|dppx|em|ex|fr|grad|Hz|ic|in|kHz|lh|mm|ms|mS|pc|pt|px|Q|rad|rem|rlh|s|turn|vb|vh|vi|vmax|vmin|vw";let L=0;let K=0;let G="";let H=S.length;let B=[];if(L<H){do{B.push(S[L]);if(S[L-1]!=="\\"||$()===false){if(G===""){if(S[L]==='"'){G='"';K=K+1;}else if(S[L]==="'"){G="'";K=K+1;}else if(S[L]==="("){G=")";K=K+1;}else if(S[L]==="["){G="]";K=K+1;}}else if(S[L]==="("&&G===")"||S[L]==="["&&G==="]"){K=K+1;}else if(S[L]===G){K=K-1;if(K===0){G="";}}}if(G===""&&S[L]===" "){B.pop();t.push(x(B.join("")));B=[];}L=L+1;}while(L<H)}t.push(x(B.join("")));H=t.length;L=0;if(L<H){do{if(h.style.noLeadZero===true&&q.test(t[L])===true){t[L]=t[L].replace(/0+\./,".");}else if((h.style.noLeadZero===false||h.style.noLeadZero===void 0)&&te.test(t[L])===true){t[L]=t[L].replace(".","0.");}else if(R.test(t[L])===true||X.test(t[L])===true){t[L]=t[L].replace(R,C).replace(X,C);}else if(/^(0+([a-z]{2,3}|%))$/.test(t[L])===true&&d===false){t[L]="0";}else if(/^(0+)/.test(t[L])===true){t[L]=t[L].replace(/0+/,"0");if(/\d/.test(t[L].charAt(1))===true){t[L]=t[L].substr(1);}}else if(/^url\((?!('|"))/.test(t[L])===true&&t[L].charAt(t[L].length-1)===")"){G=t[L].charAt(t[L].indexOf("url(")+4);if(G!=="@"&&G!=="{"&&G!=="<"){if(h.style.quoteConvert==="double"){t[L]=t[L].replace(/url\(/,'url("').replace(/\)$/,'")');}else {t[L]=t[L].replace(/url\(/,"url('").replace(/\)$/,"')");}}}if(/^(\+|-)?\d+(\.\d+)?(e-?\d+)?\D+$/.test(t[L])===true){if(le.indexOf(t[L].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/,""))<0){t[L]=t[L].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/,M);}}if(/^\w+\(/.test(t[L])===true&&t[L].charAt(t[L].length-1)===")"&&(t[L].indexOf("url(")!==0||t[L].indexOf("url(")===0&&t[L].indexOf(" ")>0)){t[L]=t[L].replace(/,\S/g,F);}L=L+1;}while(L<H)}G=t.join(" ");return G.charAt(0)+G.slice(1).replace(/\s*(\/|\+|\*)\s*(\d|\$)/,j)}const l=function W(){let S=s;let t=0;const d=[];let x="";let j=null;const C=[];const F=h.style.quoteConvert===void 0?"none":h.style.quoteConvert;const M=function $(){d.push(m[S]);if(/\s/.test(m[S+1])===true){do{S=S+1;}while(S<T&&/\s/.test(m[S+1])===true)}};if(S<T){do{if(m[S]==='"'||m[S]==="'"){if(j===null){j=false;}if(C[C.length-1]===m[S]&&(m[S-1]!=="\\"||n(S-1)===false)){C.pop();if(F==="double"){m[S]='"';}else if(F==="single"){m[S]="'";}}else if(C[C.length-1]!=='"'&&C[C.length-1]!=="'"&&(m[S-1]!=="\\"||n(S-1)===false)){C.push(m[S]);if(F==="double"){m[S]='"';}else if(F==="single"){m[S]="'";}}else if(m[S-1]==="\\"&&F!=="none"){if(n(S-1)===true){if(F==="double"&&m[S]==="'"){d.pop();}else if(F==="single"&&m[S]==='"'){d.pop();}}}else if(F==="double"&&m[S]==='"'){m[S]='\\"';}else if(F==="single"&&m[S]==="'"){m[S]="\\'";}d.push(m[S]);}else if(m[S-1]!=="\\"||n(S-1)===false){if(m[S]==="("){if(j===null){j=true;}C.push(")");M();}else if(m[S]==="["){j=false;C.push("]");M();}else if((m[S]==="#"||m[S]==="@")&&m[S+1]==="{"){j=false;d.push(m[S]);S=S+1;C.push("}");M();}else if(m[S]===C[C.length-1]){d.push(m[S]);C.pop();}else {d.push(m[S]);}}else {d.push(m[S]);}if(r.structure[r.structure.length-1][0]==="map"&&C.length===0&&(m[S+1]===","||m[S+1]===")")){if(m[S+1]===")"&&e.token[r.count]==="("){r.pop(e);r.structure.pop();d.splice(0,0,"(");}else {break}}if(m[S+1]===":"){t=S;if(/\s/.test(m[t])===true){do{t=t-1;}while(/\s/.test(m[t])===true)}x=m.slice(t-6,t+1).join("");if(x.indexOf("filter")===x.length-6||x.indexOf("progid")===x.length-6){x="filter";}}if(C.length===0){if(m[S+1]===";"&&n(S+1)===true||m[S+1]===":"&&m[S]!==":"&&m[S+2]!==":"&&x!=="filter"&&x!=="progid"||m[S+1]==="}"||m[S+1]==="{"||m[S+1]==="/"&&(m[S+2]==="*"||m[S+2]==="/")){t=d.length-1;if(/\s/.test(d[t])===true){do{t=t-1;S=S-1;d.pop();}while(/\s/.test(d[t])===true)}break}if(m[S+1]===","){break}}S=S+1;}while(S<T)}s=S;if(r.structure[r.structure.length-1][0]==="map"&&d[0]==="("){i[i.length-1]=i[i.length-1]-1;}y=d.join("").replace(/\s+/g," ").replace(/^\s/,"").replace(/\s$/,"");if(j===true){y=y.replace(/\s+\(/g,"(").replace(/\s+\)/g,")").replace(/,\(/g,", (");}if(r.count>-1&&e.token[r.count].indexOf("extend(")===0){g="pseudo";}else if(j===true&&/\d/.test(y.charAt(0))===false&&/^rgba?\(/.test(y)===false&&y.indexOf("url(")!==0&&(y.indexOf(" ")<0||y.indexOf(" ")>y.indexOf("("))&&y.charAt(y.length-1)===")"){if(e.token[r.count]===":"){g="value";}else {y=y.replace(/,\u0020?/g,", ");g="function";}y=k(y);}else if(r.count>-1&&`"'`.indexOf(e.token[r.count].charAt(0))>-1&&e.types[r.count]==="variable"){g="item";}else if(d[0]==="@"||d[0]==="$"){if(e.types[r.count]==="colon"&&h.language==="css"&&(e.types[r.count-1]==="property"||e.types[r.count-1]==="variable")){g="value";}else if(r.count>-1){g="item";x=e.token[r.count];S=x.indexOf("(");if(x.charAt(x.length-1)===")"&&S>0){x=x.slice(S+1,x.length-1);e.token[r.count]=e.token[r.count].slice(0,S+1)+k(x)+")";}}y=k(y);}else {g="item";}f("");};const A=function W(S){let t=r.count;let d=0;let x="";const j=[];const C=function M(){if(e.types[t]==="comment"||e.types[t]==="ignore"){do{t=t-1;j.push(e.token[t]);}while(t>0&&e.lexer[t]==="style"&&(e.types[t]==="comment"||e.types[t]==="ignore"))}d=t-1;if(e.types[d]==="comment"||e.types[d]==="ignore"){do{d=d-1;}while(d>0&&e.lexer[t]==="style"&&(e.types[d]==="comment"||e.types[d]==="ignore"))}x=e.token[t].charAt(0);};const F=function M($){let q=$;const te=e.begin[q];e.token[$]=e.token[$].replace(/\s*&/," &").replace(/(\s*>\s*)/g," > ").replace(/:\s+/g,": ").replace(/^(\s+)/,"").replace(/(\s+)$/,"").replace(/\s+::\s+/,"::");if(e.token[q-1]===","||e.token[q-1]===":"||e.types[q-1]==="comment"){do{q=q-1;if(e.begin[q]===te){if(e.token[q]===";"){break}if(e.token[q]!==","&&e.types[q]!=="comment"){e.types[q]="selector";}if(e.token[q]===":"){e.token[q-1]=`${e.token[q-1]}:${e.token[q+1]}`;r.splice({data:e,howmany:2,index:q});}}else {break}}while(q>0)}q=r.count;if(h.style.sortSelectors===true&&e.token[q-1]===","){const R=[e.token[q]];do{q=q-1;if(e.types[q]==="comment"||e.types[q]==="ignore"){do{q=q-1;}while(q>0&&(e.types[q]==="comment"||e.types[q]==="ignore"))}if(e.token[q]===","){q=q-1;}R.push(e.token[q]);}while(q>0&&(e.token[q-1]===","||e.types[q-1]==="selector"||e.types[q-1]==="comment"||e.types[q-1]==="ignore"));R.sort();q=r.count;e.token[q]=R.pop();do{q=q-1;if(e.types[q]==="comment"||e.types[q]==="ignore"){do{q=q-1;}while(q>0&&(e.types[q]==="comment"||e.types[q]==="ignore"))}if(e.token[q]===","){q=q-1;}e.token[q]=R.pop();}while(q>0&&(e.token[q-1]===","||e.token[q-1]==="selector"||e.types[q-1]==="comment"||e.types[q-1]==="ignore"))}t=r.count;C();};C();if(S==="start"&&(e.types[t]==="value"||e.types[t]==="variable")){e.types[t]="item";}if(e.lexer[r.count-1]!=="style"||d<0){if(S==="colon"){if(x==="$"||x==="@"){e.types[t]="variable";}else {e.types[t]="property";}}else if(e.lexer[t]==="style"){e.types[t]="selector";F(t);}}else if(S==="start"&&e.types[t]==="function"&&e.lexer[t]==="style"){e.types[t]="selector";F(t);}else if(e.types[t]==="item"&&e.lexer[t]==="style"){if(S==="start"){F(t);e.types[t]="selector";if(e.token[t]===":"){e.types[d]="selector";}if(e.token[t].indexOf("=\u201C")>0){r.error=`Quote looking character (\u201C, \\201c) used instead of actual quotes on line number ${r.lineNumber}`;}else if(e.token[t].indexOf("=\u201D")>0){r.error=`Quote looking character (\u201D, \\201d) used instead of actual quotes on line number ${r.lineNumber}`;}}else if(S==="end"){if(x==="$"||x==="@"){e.types[t]="variable";}else {e.types[t]="value";}e.token[t]=k(e.token[t]);}else if(S==="separator"){if(e.types[d]==="colon"||e.token[d]===","||e.token[d]==="{"){if(m[s]!==";"&&(e.types[d]==="selector"||e.token[d]==="{")){e.types[t]="selector";F(t);}else if(e.token[t].charAt(0)==="$"||e.token[t].charAt(0)==="@"){e.types[t]="variable";}else {e.types[t]="value";}e.token[t]=k(e.token[t]);if(e.token[t].charAt(0)==="\u201C"){r.error=`Quote looking character (\u201C, \\201c) used instead of actual quotes on line number ${r.lineNumber}`;}else if(e.token[t].charAt(0)==="\u201D"){r.error=`Quote looking character (\u201D, \\201d) used instead of actual quotes on line number ${r.lineNumber}`;}}else {if(x==="$"||x==="@"){e.types[t]="variable";}else if(e.types[d]==="value"||e.types[d]==="variable"){e.token[d]=e.token[d]+e.token[t];r.pop(e);}else {e.types[t]="value";}}}else if(S==="colon"){if(x==="$"||x==="@"){e.types[t]="variable";}else {e.types[t]="property";}}else if(e.token[d].charAt(0)==="@"&&(e.types[d-2]!=="variable"&&e.types[d-2]!=="property"||e.types[d-1]==="separator")){e.types[d]="variable";g="variable";e.token[d]=k(e.token[d]);}}};const I=function W(){let S=r.count;do{S=S-1;}while(S>0&&e.types[S]==="comment");if(e.token[S]===";"){return}r.splice({data:e,howmany:0,index:S+1,record:{begin:r.structure[r.structure.length-1][1],ender:-1,lexer:"style",lines:r.linesSpace,stack:r.structure[r.structure.length-1][0],token:";",types:"separator"}});};const a=function W(S,t){let d="";let x="";let j=S.length;let C=0;const F=[];const M=function $(q){const te=e.types[r.count-1];if(g==="item"){if(te==="colon"){e.types[r.count]="value";}else {A(te);}}g=q;if(g.indexOf("start")>-1||g.indexOf("else")>-1){f(y);}else {f("");}};E[E.length-1]=true;if(s<T){do{F.push(m[s]);if(d===""){if(m[s]==='"'){d='"';}else if(m[s]==="'"){d="'";}else if(m[s]==="/"){if(m[s+1]==="/"){d="/";}else if(m[s+1]==="*"){d="*";}}else if(m[s+1]===t.charAt(0)){do{C=C+1;s=s+1;F.push(m[s]);}while(s<T&&C<t.length&&m[s+1]===t.charAt(C));if(C===t.length){d=F.join("");if(/\s/.test(d.charAt(j))===true){do{j=j+1;}while(/\s/.test(d.charAt(j))===true)}C=j;do{C=C+1;}while(C<t.length&&/\s/.test(d.charAt(C))===false);if(C===d.length){C=C-t.length;}if(S==="{%"){if(d.indexOf("{%-")===0){d=d.replace(/^(\{%-\s*)/,"{%- ").replace(/(\s*-%\})$/," -%}").replace(/(\s*%\})$/," %}");x=d.slice(4);}else {d=d.replace(/^(\{%\s*)/,"{% ").replace(/(\s*%\})$/," %}").replace(/(\s*-%\})$/," -%}");x=d.slice(3);}}if(S==="{{"){d=d.replace(/^(\{\{\s*)/,"{{ ").replace(/^(\{\{-\s*)/,"{{- ").replace(/(\s*-\}\})$/," -}}").replace(/(\s*\}\})$/," }}");}if(g==="item"&&e.types[r.count-1]==="colon"&&(e.types[r.count-2]==="property"||e.types[r.count-2]==="variable")){g="value";e.types[r.count]="value";if(Number.isNaN(Number(e.token[r.count]))===true&&e.token[r.count].charAt(e.token[r.count].length-1)!==")"){e.token[r.count]=e.token[r.count]+d;}else {e.token[r.count]=e.token[r.count]+" "+d;}return}y=d;if(S==="{%"){const $=["autoescape","block","capture","case","comment","embed","filter","for","form","if","macro","paginate","raw","sandbox","spaceless","tablerow","unless","verbatim"];let q=$.length-1;x=x.slice(0,x.indexOf(" "));if(x.indexOf("(")>0){x=x.slice(0,x.indexOf("("));}if(x==="else"||x==="elseif"||x==="when"||x==="elsif"){M("template_else");return}q=$.length-1;if(q>-1){do{if(x===$[q]){M("template_start");return}if(x==="end"+$[q]){M("template_end");return}q=q-1;}while(q>-1)}}else if(S==="{{"){let $=d.slice(2);const q=$.length;let te=0;do{te=te+1;}while(te<q&&/\s/.test($.charAt(te))===false&&$.charAt(j)!=="(");$=$.slice(0,te);if($.charAt($.length-2)==="}"){$=$.slice(0,$.length-2);}if($==="end"){M("template_end");return}if($==="block"||$==="define"||$==="form"||$==="if"||$==="range"||$==="with"){M("template_start");return}}M("template");return}C=0;}}else if(d===m[s]){if(d==='"'||d==="'"){d="";}else if(d==="/"&&(m[s]==="\r"||m[s]==="\n")){d="";}else if(d==="*"&&m[s+1]==="/"){d="";}}s=s+1;}while(s<T)}};const z=function W(S){const t=S===true?r.wrapCommentLine({chars:m,end:T,lexer:"style",opening:"//",start:s,terminator:"\n"}):r.wrapCommentBlock({chars:m,end:T,lexer:"style",opening:"/*",start:s,terminator:"*/"});y=t[0];g=/^(\/\*\s*parse-ignore-start)/.test(y)===true?"ignore":"comment";f("");s=t[1];};const P=function W(){const S=r.linesSpace;const t={data:{margin:["","","","",false],padding:["","","","",false]},last:{margin:0,padding:0},removes:[]};const d=r.structure[r.structure.length-1][1];const x=function M($){if(e.token[C-2]===$){const q=e.token[C].replace(/\s*!important\s*/g,"").split(" ");const te=q.length;if(e.token[C].indexOf("!important")>-1){t.data[$[4]]=true;}if(te>3){if(t.data[$][0]===""){t.data[$][0]=q[0];}if(t.data[$][1]===""){t.data[$][1]=q[1];}if(t.data[$][2]===""){t.data[$][2]=q[2];}if(t.data[$][3]===""){t.data[$][3]=q[3];}}else if(te>2){if(t.data[$][0]===""){t.data[$][0]=q[0];}if(t.data[$][1]===""){t.data[$][1]=q[1];}if(t.data[$][2]===""){t.data[$][2]=q[2];}if(t.data[$][3]===""){t.data[$][3]=q[1];}}else if(te>1){if(t.data[$][0]===""){t.data[$][0]=q[0];}if(t.data[$][1]===""){t.data[$][1]=q[1];}if(t.data[$][2]===""){t.data[$][2]=q[0];}if(t.data[$][3]===""){t.data[$][3]=q[1];}}else {if(t.data[$][0]===""){t.data[$][0]=q[0];}if(t.data[$][1]===""){t.data[$][1]=q[0];}if(t.data[$][2]===""){t.data[$][2]=q[0];}if(t.data[$][3]===""){t.data[$][3]=q[0];}}}else if(e.token[C-2]===`${$}-bottom`){if(t.data[$][2]==="")t.data[$][2]=e.token[C];}else if(e.token[C-2]===`${$}-left`){if(t.data[$][3]==="")t.data[$][3]=e.token[C];}else if(e.token[C-2]===`${$}-right`){if(t.data[$][1]==="")t.data[$][1]=e.token[C];}else if(e.token[C-2]===`${$}-top`){if(t.data[$][0]==="")t.data[$][0]=e.token[C];}else {return}t.removes.push([C,$]);t.last[$]=C;};const j=function M(){let $=0;let q="";const te=/^(0+([a-z]+|%))/;const R=t.removes.length;const X=t.data.margin[0]!==""&&t.data.margin[1]!==""&&t.data.margin[2]!==""&&t.data.margin[3]!=="";const le=t.data.padding[0]!==""&&t.data.padding[1]!==""&&t.data.padding[2]!==""&&t.data.padding[3]!=="";const L=function K(G){if(te.test(t.data[G][0])===true)t.data[G][0]="0";if(te.test(t.data[G][1])===true)t.data[G][1]="0";if(te.test(t.data[G][2])===true)t.data[G][2]="0";if(te.test(t.data[G][3])===true)t.data[G][3]="0";if(t.data[G][0]===t.data[G][1]&&t.data[G][0]===t.data[G][2]&&t.data[G][0]===t.data[G][3]){q=t.data[G][0];}else if(t.data[G][0]===t.data[G][2]&&t.data[G][1]===t.data[G][3]&&t.data[G][0]!==t.data[G][1]){q=`${t.data[G][0]} ${t.data[G][1]}`;}else if(t.data[G][1]===t.data[G][3]&&t.data[G][0]!==t.data[G][2]){q=`${t.data[G][0]} ${t.data[G][1]} ${t.data[G][2]}`;}else {q=`${t.data[G][0]} ${t.data[G][1]} ${t.data[G][2]} ${t.data[G][3]}`;}if(t.data[G[4]]===true)q=`${q.replace(" !important","")} !important`;if(t.last[G]>r.count){$=d<1?1:d+1;do{if(e.begin[$]===d&&e.types[$]==="value"&&e.token[$-2].indexOf(G)===0){t.last[G]=$;break}$=$+1;}while($<r.count)}e.token[t.last[G]]=q;e.token[t.last[G]-2]=G;};if(R>1&&(X===true||le===true)){do{if(t.removes[$][0]!==t.last.margin&&t.removes[$][0]!==t.last.padding&&(X===true&&t.removes[$][1]==="margin"||le===true&&t.removes[$][1]==="padding")){r.splice({data:e,howmany:e.types[t.removes[$][0]+1]==="separator"?4:3,index:t.removes[$][0]-2});}$=$+1;}while($<R-1)}if(X===true)L("margin");if(le===true)L("padding");if(F===true){if(d<0){r.error="Brace mismatch. There appears to be more closing braces than starting braces.";}else {r.sortCorrection(d,r.count+1);}}};let C=r.count;let F=false;do{C=C-1;if(e.begin[C]===d){if(e.types[C]==="value"&&e.types[C-2]==="property"){if(e.token[C-2].indexOf("margin")===0){x("margin");}else if(e.token[C-2].indexOf("padding")===0){x("padding");}}}else {F=true;C=e.begin[C];}}while(C>d);j();r.linesSpace=S;};do{if(/\s/.test(m[s])===true){s=r.spacer({array:m,end:T,index:s});}else if(m[s]==="/"&&m[s+1]==="*"){z(false);}else if(m[s]==="/"&&m[s+1]==="/"){z(true);}else if(m[s]==="{"&&m[s+1]==="%"){a("{%","%}");}else if(m[s]==="{"&&m[s+1]==="{"){a("{{","}}");}else if(m[s]==="{"||m[s]==="("&&e.token[r.count]===":"&&e.types[r.count-1]==="variable"){A("start");g="start";y=m[s];if(m[s]==="("){f("map");i.push(0);}else if(e.types[r.count]==="selector"||e.types[r.count]==="variable"){f(e.token[r.count]);}else if(e.types[r.count]==="colon"){f(e.token[r.count-1]);}else {f("block");}E.push(false);}else if(m[s]==="}"||m[s]===")"&&r.structure[r.structure.length-1][0]==="map"&&i[i.length-1]===0){if(m[s]==="}"&&e.types[r.count]==="item"&&e.token[r.count-1]==="{"&&e.token[r.count-2]!==void 0&&e.token[r.count-2].charAt(e.token[r.count-2].length-1)==="@"){e.token[r.count-2]=e.token[r.count-2]+"{"+e.token[r.count]+"}";r.pop(e);r.pop(e);r.structure.pop();}else {if(m[s]===")")i.pop();A("end");if(m[s]==="}"&&e.token[r.count]!==";"){if(e.types[r.count]==="value"||e.types[r.count]==="function"||e.types[r.count]==="variable"&&(e.token[r.count-1]===":"||e.token[r.count-1]===";")){if(h.attemptCorrection===true){y=";";}else {y="x;";}g="separator";f("");}else if(e.types[r.count]==="comment"){I();}}g="end";E.pop();y=m[s];g="end";if(m[s]==="}")P();if(h.style.sortProperties===true&&m[s]==="}")r.objectSort(e);f("");}}else if(m[s]===";"||m[s]===","){if(e.types[r.count-1]==="selector"||e.token[r.count-1]==="}"&&e.types[r.count]!=="function"){A("start");}else {A("separator");}if(e.types[r.count]!=="separator"&&n(s)===true){y=m[s];g="separator";f("");}}else if(m[s]===":"&&e.types[r.count]!=="end"){A("colon");y=":";g="colon";f("");}else {if(r.structure[r.structure.length-1][0]==="map"&&m[s]==="("){i[i.length-1]=i[i.length-1]+1;}l();}s=s+1;}while(s<T);if(h.style.sortProperties===true)r.objectSort(e);return e};_.lexers.script=function v(u){const{options:h}=_;if(h.language==="json"){h.script.quoteConvert="double";}let s=0;let g="";let y="";let e=[];let m=0;let T=-1;let i=-1;let E=[];let f;let n;let k;const l=r.data;const A=r.references;const I=u.length;const a=u.split("");const z=[];const P=[];const W=[];const S=[0,""];const t=[false];const d=["autoescape","block","capture","case","comment","embed","filter","for","form","if","macro","paginate","raw","sandbox","spaceless","tablerow","unless","verbatim"];const x=re(null);x.count=[];x.index=[];x.len=-1;x.word=[];function j(c){let p=0;const o=L(1,false);const b=r.structure.length===0?"":r.structure[r.structure.length-1][0];const w=re(null);w.begin=l.begin[r.count];w.ender=l.begin[r.count];w.lexer=l.lexer[r.count];w.lines=l.lines[r.count];w.stack=l.stack[r.count];w.token=l.token[r.count];w.types=l.types[r.count];if(/^(\/(\/|\*)\s*@ignore\s+start)/.test(g))return;if(y==="start"||y==="type_start")return;if(h.language==="json")return;if(w.token===";"||w.token===","||w.stack==="class"||w.stack==="map"||w.stack==="attribute"||l.types[w.begin-1]==="generic"||o==="{"||b==="initializer"){return}if(w.token==="}"&&l.stack[w.begin-1]==="global"&&l.types[w.begin-1]!=="operator"&&w.stack===l.stack[r.count-1]){return}if(w.stack==="array"&&w.token!=="]")return;if(l.token[l.begin[r.count]]==="{"&&w.stack==="data_type")return;if(w.types!==void 0&&w.types.indexOf("template")>-1&&w.types.indexOf("template_string")<0){return}if(o===";"&&c===false)return;if(l.lexer[r.count-1]!=="script"&&(s<I&&I===_.source.length-1||I<_.source.length-1)){return}if(w.token==="}"&&(w.stack==="function"||w.stack==="if"||w.stack==="else"||w.stack==="for"||w.stack==="do"||w.stack==="while"||w.stack==="switch"||w.stack==="class"||w.stack==="try"||w.stack==="catch"||w.stack==="finally"||w.stack==="block")){if(w.stack==="function"&&(l.stack[w.begin-1]==="data_type"||l.types[w.begin-1]==="type")){p=w.begin;do{p=p-1;}while(p>0&&l.token[p]!==")"&&l.stack[p]!=="arguments");p=l.begin[p];}else {p=l.begin[w.begin-1];}if(l.token[p]==="("){p=p-1;if(l.token[p-1]==="function")p=p-1;if(l.stack[p-1]==="object"||l.stack[p-1]==="switch")return;if(l.token[p-1]!=="="&&l.token[p-1]!=="return"&&l.token[p-1]!==":"){return}}else {return}}if(w.types==="comment"||b==="method"||b==="paren"||b==="expression"||b==="array"||b==="object"||b==="switch"&&w.stack!=="method"&&l.token[l.begin[r.count]]==="("&&l.token[l.begin[r.count]-1]!=="return"&&l.types[l.begin[r.count]-1]!=="operator"){return}if(l.stack[r.count]==="expression"&&(l.token[l.begin[r.count]-1]!=="while"||l.token[l.begin[r.count]-1]==="while"&&l.stack[l.begin[r.count]-2]!=="do")){return}if(o!==""&&"=<>+*?|^:&%~,.()]".indexOf(o)>-1&&c===false)return;if(w.types==="comment"){p=r.count;do{p=p-1;}while(p>0&&l.types[p]==="comment");if(p<1)return;w.token=l.token[p];w.types=l.types[p];w.stack=l.stack[p];}if(w.token===void 0||w.types==="start"||w.types==="separator"||w.types==="operator"&&w.token!=="++"&&w.token!=="--"||w.token==="x}"||w.token==="var"||w.token==="let"||w.token==="const"||w.token==="else"||w.token.indexOf("#!/")===0||w.token==="instanceof"){return}if(w.stack==="method"&&(l.token[w.begin-1]==="function"||l.token[w.begin-2]==="function")){return}if(h.script.variableList==="list")x.index[x.len]=r.count;g=h.attemptCorrection===true?";":"x;";y="separator";p=r.linesSpace;r.linesSpace=0;B("");r.linesSpace=p;$();}function C(){let c=r.count;do{c=c-1;}while(c>-1&&l.token[c]==="x}");if(l.stack[c]==="else")return B("");c=c+1;r.splice({data:l,howmany:0,index:c,record:{begin:l.begin[c],ender:-1,lexer:"script",lines:r.linesSpace,stack:l.stack[c],token:g,types:y}});B("");}function F(){let c=r.count;if(l.types[c]==="comment"){do{c=c-1;}while(c>0&&l.types[c]==="comment")}if(l.token[c]==="from")c=c-2;if(l.token[c]==="x;"){r.splice({data:l,howmany:1,index:c});}}function M(){j(false);if(T>-1)V();k=r.wrapCommentBlock({chars:a,end:I,lexer:"script",opening:"/*",start:s,terminator:"*/"});s=k[1];if(l.token[r.count]==="var"||l.token[r.count]==="let"||l.token[r.count]==="const"){f=r.pop(l);B("");r.push(l,f,"");if(l.lines[r.count-2]===0)l.lines[r.count-2]=l.lines[r.count];l.lines[r.count]=0;}else if(k[0]!==""){g=k[0];y=/^\/\*\s*@ignore\s*\bstart\b/.test(g)?"ignore":"comment";if(g.indexOf("# sourceMappingURL=")===2){S[0]=r.count+1;S[1]=g;}r.push(l,{begin:r.structure[r.structure.length-1][1],ender:-1,lexer:"script",lines:r.linesSpace,stack:r.structure[r.structure.length-1][0],token:g,types:y},"");}if(/\/\*\s*global\s+/.test(l.token[r.count])===true&&l.types.indexOf("word")<0){A[0]=l.token[r.count].replace(/\/\*\s*global\s+/,"").replace("*/","").replace(/,\s+/g,",").split(",");}}function $(){let c="";const p=L(5,false);const o=r.count;const b=r.linesSpace;if(h.language==="json"||P.length<1||P[P.length-1].charAt(0)!=="x"||/^x?(;|\}|\))$/.test(g)===false){return}if(l.stack[r.count]==="do"&&p==="while"&&l.token[r.count]==="}"){return}if(g===";"&&l.token[o-1]==="x{"){c=l.token[l.begin[o-2]-1];if(l.token[o-2]==="do"||l.token[o-2]===")"&&"ifforwhilecatch".indexOf(c)>-1){f=r.pop(l);g=h.attemptCorrection===true?"}":"x}";y="end";n=r.structure[r.structure.length-1];B("");P.pop();r.linesSpace=b;return}f=r.pop(l);g=h.attemptCorrection===true?"}":"x}";y="end";n=r.structure[r.structure.length-1];B("");P.pop();g=";";y="end";r.push(l,f,"");r.linesSpace=b;return}g=h.attemptCorrection===true?"}":"x}";y="end";if(l.token[r.count]==="x}")return;if(l.stack[r.count]==="if"&&(l.token[r.count]===";"||l.token[r.count]==="x;")&&p==="else"){n=r.structure[r.structure.length-1];B("");P.pop();r.linesSpace=b;return}do{n=r.structure[r.structure.length-1];B("");P.pop();if(l.stack[r.count]==="do")break}while(P[P.length-1]==="x{");r.linesSpace=b;}function q(){let c=r.count;if(l.stack[c]==="object"&&h.script.objectSort===true){g=",";y="separator";F();B("");}else {do{c=c-1;}while(c>0&&l.types[c-1]==="comment");r.splice({data:l,howmany:0,index:c,record:{begin:l.begin[c],ender:-1,lexer:"script",lines:r.linesSpace,stack:l.stack[c],token:",",types:"separator"}});B("");}}function te(c){let p=false;let o=false;const b=L(1,false);const w=l.token[r.count]==="("?r.count:l.begin[r.count];function N(){let O=0;const D=l.token[w-1]==="Array";const Z=D===true?"[":"{";const U=D===true?"]":"}";const J=D===true?"array":"object";if(D===true&&l.types[r.count]==="number"){O=Number(l.token[r.count]);f=r.pop(l);}f=r.pop(l);f=r.pop(l);f=r.pop(l);r.structure.pop();g=Z;y="start";B(J);if(O>0){g=",";y="separator";do{B("");O=O-1;}while(O>0)}g=U;y="end";B("");}if(T>-1)V();if(W.length>0){if(W[W.length-1]===0){W.pop();}else {W[W.length-1]=W[W.length-1]-1;}}if(c===")"||c==="x)"||c==="]"){if(h.attemptCorrection===true)H();F();}if(c===")"||c==="x)")j(false);if(x.len>-1){if(c==="}"&&(h.script.variableList==="list"&&x.count[x.len]===0||l.token[r.count]==="x;"&&h.script.variableList==="each")){me();}x.count[x.len]=x.count[x.len]-1;if(x.count[x.len]<0)me();}if(g===","&&l.stack[r.count]!=="initializer"&&(c==="]"&&l.token[r.count-1]==="["||c==="}")){f=r.pop(l);}if(c===")"||c==="x)"){g=c;if(z.length>0){e=z[z.length-1];if(e.length>1&&b!=="{"&&(e[0]==="if"||e[0]==="for"||e[0]==="with"||e[0]==="while"&&l.stack[e[1]-2]!==void 0&&l.stack[e[1]-2]!=="do")){p=true;}}}else if(c==="]"){g="]";}else if(c==="}"){if(g!==","&&h.attemptCorrection===true)H();if(r.structure.length>0&&r.structure[r.structure.length-1][0]!=="object")j(true);if(h.script.objectSort===true&&r.structure[r.structure.length-1][0]==="object"){r.objectSort(l);}if(y==="comment"){g=l.token[r.count];y=l.types[r.count];}g="}";}if(r.structure[r.structure.length-1][0]==="data_type"){y="type_end";}else {y="end";}z.pop();n=r.structure[r.structure.length-1];if(c===")"&&h.attemptCorrection===true&&w-r.count<2&&(l.token[r.count]==="("||l.types[r.count]==="number")&&(l.token[w-1]==="Array"||l.token[w-1]==="Object")&&l.token[w-2]==="new"){N();o=true;}if(P[P.length-1]==="x{"&&c==="}"){$();P.pop();if(l.stack[r.count]!=="try"){if(b!==":"&&b!==";"&&l.token[l.begin[s]-1]!=="?")$();}g="}";}else {P.pop();}if(h.script.endComma!==void 0&&h.script.endComma!=="none"&&r.structure[r.structure.length-1][0]==="array"||r.structure[r.structure.length-1][0]==="object"||r.structure[r.structure.length-1][0]==="data_type"){if(h.script.endComma==="always"&&l.token[r.count]!==","){const O=r.structure[r.structure.length-1][1];let D=r.count;do{if(l.begin[D]===O){if(l.token[D]===",")break}else {D=l.begin[D];}D=D-1;}while(D>O);if(D>O){const Z=y;const U=g;g=",";y="separator";B("");g=U;y=Z;}}else if(h.script.endComma==="never"&&l.token[r.count]===","){r.pop(l);}}if(o===false){B("");if(g==="}"&&l.stack[r.count]!=="object"&&l.stack[r.count]!=="class"&&l.stack[r.count]!=="data_type"){A.pop();$();}}if(p===true){g=h.attemptCorrection===true?"{":"x{";y="start";B(e[0]);P.push("x{");e[1]=r.count;}t.pop();if(r.structure[r.structure.length-1][0]!=="data_type")t[t.length-1]=false;}function R(c,p,o){let b=0;let w=false;let N=false;let O=[c];let D;const Z=p.split("");const U=Z.length;const J=s;const ie=s+c.length;const Q=h.script.quoteConvert===void 0?"none":h.script.quoteConvert;function ce(){let se=0;O=[];y=o;b=s;if(o==="string"&&/\s/.test(a[b+1])===true){se=1;do{b=b+1;if(a[b]==="\n")se=se+1;}while(b<I&&/\s/.test(a[b+1])===true);r.linesSpace=se;}}function Y(){let se="";function he(ee){if(h.language!=="javascript"&&h.language!=="typescript"&&h.language!=="jsx"&&h.language!=="tsx"){const ae=oe=>oe.replace(/\s*$/," ");const de=oe=>oe.replace(/^\s*/," ");if(/\{(#|\/|(%>)|(%\]))/.test(ee)||/\}%(>|\])/.test(ee))return ee;ee=ee.replace(/\{((\{+)|%-?)\s*/g,ae);ee=ee.replace(/\s*((\}\}+)|(-?%\}))/g,de);return ee}return ee}if(c==='"'&&Q==="single"){O[0]="'";O[O.length-1]="'";}else if(c==="'"&&Q==="double"){O[0]='"';O[O.length-1]='"';}else if(w===true){se=O[O.length-1];O.pop();O.pop();O.push(se);}s=b;if(p==="\n"){s=s-1;O.pop();}g=O.join("");if(c==='"'||c==="'"||c==="{{"||c==="{%"){g=he(g);}if(c==="{%"||c==="{{"){D=we(g);y=D[0];B(D[1]);return}if(o==="string"){y="string";if(h.language==="json"){g=g.replace(/\u0000/g,"\\u0000").replace(/\u0001/g,"\\u0001").replace(/\u0002/g,"\\u0002").replace(/\u0003/g,"\\u0003").replace(/\u0004/g,"\\u0004").replace(/\u0005/g,"\\u0005").replace(/\u0006/g,"\\u0006").replace(/\u0007/g,"\\u0007").replace(/\u0008/g,"\\u0008").replace(/\u0009/g,"\\u0009").replace(/\u000a/g,"\\u000a").replace(/\u000b/g,"\\u000b").replace(/\u000c/g,"\\u000c").replace(/\u000d/g,"\\u000d").replace(/\u000e/g,"\\u000e").replace(/\u000f/g,"\\u000f").replace(/\u0010/g,"\\u0010").replace(/\u0011/g,"\\u0011").replace(/\u0012/g,"\\u0012").replace(/\u0013/g,"\\u0013").replace(/\u0014/g,"\\u0014").replace(/\u0015/g,"\\u0015").replace(/\u0016/g,"\\u0016").replace(/\u0017/g,"\\u0017").replace(/\u0018/g,"\\u0018").replace(/\u0019/g,"\\u0019").replace(/\u001a/g,"\\u001a").replace(/\u001b/g,"\\u001b").replace(/\u001c/g,"\\u001c").replace(/\u001d/g,"\\u001d").replace(/\u001e/g,"\\u001e").replace(/\u001f/g,"\\u001f");}else if(c.indexOf("#!")===0){g=g.slice(0,g.length-1);r.linesSpace=2;}else if(r.structure[r.structure.length-1][0]!=="object"||r.structure[r.structure.length-1][0]==="object"&&L(1,false)!==":"&&l.token[r.count]!==","&&l.token[r.count]!=="{"){if(g.length>h.wrap&&h.wrap>0||h.wrap!==0&&l.token[r.count]==="+"&&(l.token[r.count-1].charAt(0)==='"'||l.token[r.count-1].charAt(0)==="'")){let ee=g;let ae="";let de=Q==="double"?'"':Q==="single"?"'":ee.charAt(0);const oe=h.wrap;const Se=/u[0-9a-fA-F]{4}/;const Ne=/x[0-9a-fA-F]{2}/;ee=ee.slice(1,ee.length-1);if(l.token[r.count]==="+"&&(l.token[r.count-1].charAt(0)==='"'||l.token[r.count-1].charAt(0)==="'")){r.pop(l);de=l.token[r.count].charAt(0);ee=l.token[r.count].slice(1,l.token[r.count].length-1)+ee;r.pop(l);}if(ee.length>oe&&oe>0){do{ae=ee.slice(0,oe);if(ae.charAt(oe-5)==="\\"&&Se.test(ee.slice(oe-4,oe+1))){ae=ae.slice(0,oe-5);}else if(ae.charAt(oe-4)==="\\"&&Se.test(ee.slice(oe-3,oe+2))){ae=ae.slice(0,oe-4);}else if(ae.charAt(oe-3)==="\\"&&(Se.test(ee.slice(oe-2,oe+3))||Ne.test(ee.slice(oe-2,oe+1)))){ae=ae.slice(0,oe-3);}else if(ae.charAt(oe-2)==="\\"&&(Se.test(ee.slice(oe-1,oe+4))||Ne.test(ee.slice(oe-1,oe+2)))){ae=ae.slice(0,oe-2);}else if(ae.charAt(oe-1)==="\\"){ae=ae.slice(0,oe-1);}ae=de+ae+de;ee=ee.slice(ae.length-2);g=ae;y="string";B("");r.linesSpace=0;g="+";y="operator";B("");}while(ee.length>oe)}if(ee===""){g=de+de;}else {g=de+ee+de;}y="string";}}}else if(/\{\s*\?>$/.test(g)){y="template_start";}else {y=o;}if(g.length>0)B("");}if(T>-1)V();if(a[s-1]==="\\"&&ne(s-1)===true&&(a[s]==='"'||a[s]==="'")){r.pop(l);if(l.token[0]==="{"){if(a[s]==='"'){c='"';p='\\"';O=['"'];}else {c="'";p="\\'";O=["'"];}w=true;}else {if(a[s]==='"'){O=['\\"'];Y();return}O=["\\'"];Y();return}}b=ie;if(b<I){do{if(l.token[0]!=="{"&&l.token[0]!=="["&&Q!=="none"&&(a[b]==='"'||a[b]==="'")){if(a[b-1]==="\\"){if(ne(b-1)===true){if(Q==="double"&&a[b]==="'"){O.pop();}else if(Q==="single"&&a[b]==='"'){O.pop();}}}else if(Q==="double"&&a[b]==='"'&&a[s]==="'"){a[b]='\\"';}else if(Q==="single"&&a[b]==="'"&&a[s]==='"'){a[b]="\\'";}O.push(a[b]);}else if(b>J){N=true;if(a[b]==="{"&&a[b+1]==="%"&&a[b+2]!==c){Y();R("{%","%}","template");ce();}else if(a[b]==="{"&&a[b+1]==="{"&&a[b+2]!==c){Y();R("{{","}}","template");ce();}else {N=false;O.push(a[b]);}}else {O.push(a[b]);}if((c==='"'||c==="'")&&(N===true||b>J)&&h.language!=="json"&&a[b-1]!=="\\"&&a[b]!=='"'&&a[b]!=="'"&&(a[b]==="\n"||b===I-1)){r.error="Unterminated string in script on line number "+r.lineNumber;break}if(a[b]===Z[U-1]&&(a[b-1]!=="\\"||ne(b-1)===false)){if(U===1)break;if(O[b-ie]===Z[0]&&O.slice(b-ie-U+2).join("")===p)break}b=b+1;}while(b<I)}Y();}function X(){j(false);$();if(T>-1)V();k=r.wrapCommentLine({chars:a,end:I,lexer:"script",opening:"//",start:s,terminator:"\n"});s=k[1];if(k[0]!==""){g=k[0];y=/^(\/\/\s*@ignore:?\s+\bstart\b)/.test(g)?"ignore":"comment";if(g.indexOf("# sourceMappingURL=")===2){S[0]=r.count+1;S[1]=g;}r.push(l,{begin:r.structure[r.structure.length-1][1],ender:-1,lexer:"script",lines:r.linesSpace,stack:r.structure[r.structure.length-1][0],token:g,types:y},"");}}function le(){let c=0;let p=false;let o=false;let b=0;let w=0;let N=0;let O="";let D="";let Z="";const U=[];const J=t[t.length-1];const ie="0123456789=<>+-*?|^:&.,;%(){}[]~";function Q(){if(g==="(")r.structure[r.structure.length-1]=["paren",r.count];_.lexers.markup(U.join(""));}if(T>-1)V();D=r.count>0?l.token[r.count-1]:"";Z=r.count>0?l.types[r.count-1]:"";O=L(1,false);if(h.language!=="jsx"&&h.language!=="tsx"&&/\d/.test(O)===false&&(g==="function"||D==="=>"||D==="void"||D==="."||l.stack[r.count]==="arguments"||y==="type"&&D==="type"||y==="reference"&&(Z==="operator"||D==="function"||D==="class"||D==="new")||y==="type"&&Z==="operator"||g==="return"||y==="operator")){const ce=[];let Y=0;let se=0;c=s;do{ce.push(a[c]);if(a[c]==="<"){Y=Y+1;}else if(a[c]===">"){Y=Y-1;if(Y<1)break}c=c+1;}while(c<I);se=s;s=c;O=L(1,false);if(a[c]===">"&&(J===true||D==="=>"||D==="."||Z!=="operator"||Z==="operator"&&(O==="("||O==="="))){y="generic";g=ce.join("").replace(/^<\s+/,"<").replace(/\s+>$/,">").replace(/,\s*/g,", ");B("");return}s=se;}c=r.count;if(l.types[c]==="comment"){do{c=c-1;}while(c>0&&l.types[c]==="comment")}if(J===false&&L(1,false)!==">"&&(a[s]!=="<"&&ie.indexOf(a[s+1])>-1||l.token[c]==="++"||l.token[c]==="--"||/\s/.test(a[s+1])===true||/\d/.test(a[s+1])===true&&(y==="operator"||y==="string"||y==="number"||y==="reference"||y==="word"&&g!=="return"))){y="operator";g=G();return B("")}if(h.language!=="typescript"&&(l.token[c]==="return"||l.types[c]==="operator"||l.types[c]==="start"||l.types[c]==="separator"||l.types[c]==="jsx_attribute_start"||l.token[c]==="}"&&r.structure[r.structure.length-1][0]==="global")){y="markup";h.language="jsx";do{U.push(a[s]);if(a[s]==="{"){w=w+1;p=true;}else if(a[s]==="}"){w=w-1;if(w===0)p=false;}else if(a[s]==="<"&&p===false){if(a[s+1]==="<"){do{U.push(a[s]);s=s+1;}while(s<I&&a[s+1]==="<")}b=b+1;if(L(1,false)==="/")o=true;}else if(a[s]===">"&&p===false){if(a[s+1]===">"){do{U.push(a[s]);s=s+1;}while(a[s+1]===">")}b=b-1;if(o===true){N=N-1;}else if(a[s-1]!=="/"){N=N+1;}if(b===0&&w===0&&N<1){O=L(2,false);if(O.charAt(0)!=="<")return Q();if(O.charAt(0)==="<"&&ie.indexOf(O.charAt(1))<0&&/\s/.test(O.charAt(1))===false){c=s+1;do{c=c+1;if(a[c]===">"||/\s/.test(a[c-1])&&ie.indexOf(a[c])<0)break;if(ie.indexOf(a[c])>-1)return Q()}while(c<I)}else {return Q()}}o=false;}s=s+1;}while(s<I);return Q()}y="operator";g=G();B("");}function L(c,p){let o=p===true?s:s+1;let b="";if(typeof c!=="number"||c<1)c=1;if(a[s]==="/"){if(a[s+1]==="/"){b="\n";}else if(a[s+1]==="*"){b="/";}}if(o<I){do{if(/\s/.test(a[o])===false){if(a[o]==="/"){if(b===""){if(a[o+1]==="/"){b="\n";}else if(a[o+1]==="*"){b="/";}}else if(b==="/"&&a[o-1]==="*"){b="";}}if(b===""&&a[o-1]+a[o]!=="*/")return a.slice(o,o+c).join("")}else if(b==="\n"&&a[o]==="\n"){b="";}o=o+1;}while(o<I)}return ""}function K(){const c=I;const p=[a[s]];let o=0;let b=/zz/;let w=p[0]===".";if(s<I-2&&a[s]==="0"){if(a[s+1]==="x"){b=/[0-9a-fA-F]/;}else if(a[s+1]==="o"){b=/[0-9]/;}else if(a[s+1]==="b"){b=/0|1/;}if(b.test(a[s+2])===true){p.push(a[s+1]);o=s+1;do{o=o+1;p.push(a[o]);}while(b.test(a[o+1])===true);s=o;return p.join("")}}o=s+1;if(o<c){do{if(/[0-9]/.test(a[o])||a[o]==="."&&w===false){p.push(a[o]);if(a[o]===".")w=true;}else {break}o=o+1;}while(o<c)}if(o<c-1&&(/\d/.test(a[o-1])===true||/\d/.test(a[o-2])===true&&(a[o-1]==="-"||a[o-1]==="+"))&&(a[o]==="e"||a[o]==="E")){p.push(a[o]);if(a[o+1]==="-"||a[o+1]==="+"){p.push(a[o+1]);o=o+1;}w=false;o=o+1;if(o<c){do{if(/[0-9]/.test(a[o])||a[o]==="."&&w===false){p.push(a[o]);if(a[o]===".")w=true;}else {break}o=o+1;}while(o<c)}}s=o-1;return p.join("")}function G(){let c=0;let p=0;let o=I;let b="";const w=["=","<",">","+","*","?","|","^",":","&","%","~"];const N=w.length;if(T>-1)V();if(a[s]==="/"&&(r.count>-1&&(y!=="word"&&y!=="reference"||g==="typeof"||g==="return"||g==="else")&&y!=="number"&&y!=="string"&&y!=="end")){if(g==="return"||g==="typeof"||g==="else"||y!=="word"){g=ue();y="regex";}else {g="/";y="operator";}B("");return "regex"}if(a[s]==="?"&&("+-*/.?".indexOf(a[s+1])>-1||a[s+1]===":"&&w.join("").indexOf(a[s+2])<0)){if(a[s+1]==="."&&/\d/.test(a[s+2])===false){b="?.";}else if(a[s+1]==="?"){b="??";}if(b==="")return "?"}if(a[s]===":"&&"+-*/".indexOf(a[s+1])>-1)return ":";if(s<I-1){if(a[s]!=="<"&&a[s+1]==="<")return a[s];if(a[s]==="!"&&a[s+1]==="/")return "!";if(a[s]==="-"){t[t.length-1]=false;if(a[s+1]==="-"){b="--";}else if(a[s+1]==="="){b="-=";}else if(a[s+1]===">"){b="->";}if(b==="")return "-"}if(a[s]==="+"){t[t.length-1]=false;if(a[s+1]==="+"){b="++";}else if(a[s+1]==="="){b="+=";}if(b==="")return "+"}if(a[s]==="="&&a[s+1]!=="="&&a[s+1]!=="!"&&a[s+1]!==">"){t[t.length-1]=false;return "="}}if(a[s]===":"){if(h.language==="typescript"){if(l.stack[r.count]==="arguments"){if(l.token[r.count]==="?"){r.pop(l);b="?:";s=s-1;}t[t.length-1]=true;}else if(g===")"&&(l.token[l.begin[r.count]-1]==="function"||l.token[l.begin[r.count]-2]==="function")){t[t.length-1]=true;}else if(y==="reference"){c=r.count;let O=false;do{if(l.begin[c]===l.begin[r.count]){if(c<r.count&&l.token[c]===":"&&l.types[c+1]!=="type")O=true;if(l.token[c]==="?"&&O===false)break;if(l.token[c]===";"||l.token[c]==="x;")break;if(l.token[c]==="var"||l.token[c]==="let"||l.token[c]==="const"||l.types[c]==="type"){t[t.length-1]=true;break}}else {if(l.types[c]==="type_end"){t[t.length-1]=true;break}c=l.begin[c];}c=c-1;}while(c>l.begin[r.count])}}else if(l.token[r.count-1]==="["&&(l.types[r.count]==="word"||l.types[r.count]==="reference")){r.structure[r.structure.length-1][0]="attribute";l.stack[r.count]="attribute";}}if(b===""){if(a[s+1]==="+"&&a[s+2]==="+"||a[s+1]==="-"&&a[s+2]==="-"){b=a[s];}else {const O=[a[s]];c=s+1;if(c<o){do{if(a[c]==="+"&&a[c+1]==="+"||a[c]==="-"&&a[c+1]==="-")break;p=0;if(p<N){do{if(a[c]===w[p]){O.push(w[p]);break}p=p+1;}while(p<N)}if(p===N)break;c=c+1;}while(c<o)}b=O.join("");}}s=s+(b.length-1);if(b==="=>"&&g===")"){c=r.count;o=l.begin[c];do{if(l.begin[c]===o)l.stack[c]="method";c=c-1;}while(c>o-1)}return b}function H(){let c=true;let p="+";let o="";let b="";let w="";let N=0;let O=0;let D=0;let Z="";const U=[];function J(){D=l.begin[D]-1;if(l.types[D]==="end"){J();}else if(l.token[D-1]==="."){ie();}}function ie(){D=D-2;if(l.types[D]==="end"){J();}else if(l.token[D-1]==="."){ie();}}function Q(){let Y=0;const se=U.length;if(Y<se){do{r.push(l,U[Y],"");Y=Y+1;}while(Y<se)}}function ce(Y){const se=re(null);se.begin=l.begin[Y];se.ender=l.ender[Y];se.lexer=l.lexer[Y];se.lines=l.lines[Y];se.stack=l.stack[Y];se.token=l.token[Y];se.types=l.types[Y];return se}o=l.token[r.count];b=l.token[r.count-1];w=l.token[r.count-2];if(o!=="++"&&o!=="--"&&b!=="++"&&b!=="--"){D=r.count;if(l.types[D]==="end"){J();}else if(l.token[D-1]==="."){ie();}}if(l.token[D-1]==="++"||l.token[D-1]==="--"){if("startendoperator".indexOf(l.types[D-2])>-1)return;N=D;if(N<r.count+1){do{U.push(ce(N));N=N+1;}while(N<r.count+1);r.splice({data:l,howmany:r.count-D,index:D});}}else {if(h.attemptCorrection===false||o!=="++"&&o!=="--"&&b!=="++"&&b!=="--"){return}Z=L(1,false);if((o==="++"||o==="--")&&(a[s]===";"||Z===";"||a[s]==="}"||Z==="}"||a[s]===")"||Z===")")){p=l.stack[r.count];if(p==="array"||p==="method"||p==="object"||p==="paren"||p==="notation"||l.token[l.begin[r.count]-1]==="while"&&p!=="while"){return}N=r.count;do{N=N-1;if(l.token[N]==="return")return;if(l.types[N]==="end"){do{N=l.begin[N]-1;}while(l.types[N]==="end"&&N>0)}}while(N>0&&(l.token[N]==="."||l.types[N]==="word"||l.types[N]==="reference"||l.types[N]==="end"));if(l.token[N]===","&&a[s]!==";"&&Z!==";"&&a[s]!=="}"&&Z!=="}"&&a[s]!==")"&&Z!==")"){return}if(l.types[N]==="operator"){if(l.stack[N]==="switch"&&l.token[N]===":"){do{N=N-1;if(l.types[N]==="start"){O=O-1;if(O<0)break}else if(l.types[N]==="end"){O=O+1;}if(l.token[N]==="?"&&O===0)return}while(N>0)}else {return}}c=false;p=o==="--"?"-":"+";}else if(w==="["||w===";"||w==="x;"||w==="}"||w==="{"||w==="("||w===")"||w===","||w==="return"){if(o==="++"||o==="--"){if(w==="["||w==="("||w===","||w==="return")return;if(o==="--")p="-";c=false;}else if(b==="--"||o==="--"){p="-";}}else {return}if(c===false)f=r.pop(l);D=r.count;if(l.types[D]==="end"){J();}else if(l.token[D-1]==="."){ie();}N=D;if(N<r.count+1){do{U.push(ce(N));N=N+1;}while(N<r.count+1)}}if(c===true){r.splice({data:l,howmany:1,index:D-1});g="=";y="operator";B("");Q();g=p;y="operator";B("");g="1";y="number";B("");}else {g="=";y="operator";B("");Q();g=p;y="operator";B("");g="1";y="number";B("");}g=l.token[r.count];y=l.types[r.count];if(Z==="}"&&a[s]!==";")j(false);}function B(c){const p=re(null);p.begin=r.structure[r.structure.length-1][1];p.ender=-1;p.lexer="script";p.lines=r.linesSpace;p.stack=r.structure[r.structure.length-1][0];p.token=g;p.types=y;r.push(l,p,c);}function ue(){let c=s+1;let p=0;let o=0;let b="";let w=false;const N=I;const O=["/"];if(c<N){do{O.push(a[c]);if(a[c-1]!=="\\"||a[c-2]==="\\"){if(a[c]==="["){w=true;}if(a[c]==="]"){w=false;}}if(a[c]==="/"&&w===false){if(a[c-1]==="\\"){o=0;p=c-1;if(p>0){do{if(a[p]==="\\"){o=o+1;}else {break}p=p-1;}while(p>0)}if(o%2===0){break}}else {break}}c=c+1;}while(c<N)}if(a[c+1]==="g"||a[c+1]==="i"||a[c+1]==="m"||a[c+1]==="y"||a[c+1]==="u"){O.push(a[c+1]);if(a[c+2]!==a[c+1]&&(a[c+2]==="g"||a[c+2]==="i"||a[c+2]==="m"||a[c+2]==="y"||a[c+2]==="u")){O.push(a[c+2]);if(a[c+3]!==a[c+1]&&a[c+3]!==a[c+2]&&(a[c+3]==="g"||a[c+3]==="i"||a[c+3]==="m"||a[c+3]==="y"||a[c+3]==="u")){O.push(a[c+3]);if(a[c+4]!==a[c+1]&&a[c+4]!==a[c+2]&&a[c+4]!==a[c+3]&&(a[c+4]==="g"||a[c+4]==="i"||a[c+4]==="m"||a[c+4]==="y"||a[c+4]==="u")){O.push(a[c+4]);if(a[c+5]!==a[c+1]&&a[c+5]!==a[c+2]&&a[c+5]!==a[c+3]&&a[c+5]!==a[c+4]&&(a[c+5]==="g"||a[c+5]==="i"||a[c+5]==="m"||a[c+5]==="y"||a[c+5]==="u")){O.push(a[c+4]);s=c+5;}else {s=c+4;}}else {s=c+3;}}else {s=c+2;}}else {s=c+1;}}else {s=c;}b=O.join("");return b}function ne(c){const p=c;do{c=c-1;}while(a[c]==="\\"&&c>0);return (p-c)%2===1}function fe(c){let p=r.count;let o="";let b="";let w="";let N=false;P.push(c);if(c==="{"&&(l.types[r.count]==="type"||l.types[r.count]==="type_end"||l.types[r.count]==="generic")){let O=0;if(l.types[r.count]==="type_end")p=l.begin[r.count];O=p;do{p=p-1;if(l.begin[p]!==O&&l.begin[p]!==-1)break;if(l.token[p]===":")break}while(p>l.begin[p]);if(l.token[p]===":"&&l.stack[p-1]==="arguments"){t.push(false);N=true;}else {t.push(t[t.length-1]);}p=r.count;}else if(c==="["&&l.types[r.count]==="type_end"){t.push(true);}else {t.push(t[t.length-1]);}if(T>-1){V();p=r.count;}if(x.len>-1)x.count[x.len]=x.count[x.len]+1;if(l.token[p-1]==="function"){z.push(["function",p+1]);}else {z.push([g,p+1]);}g=c;if(t[t.length-1]===true){y="type_start";}else {y="start";}if(c==="("||c==="x("){F();}else if(c==="{"){if(i>-1){if(l.begin[i-1]===l.begin[l.begin[p]-1]||l.token[l.begin[p]]==="x("){i=-1;if(h.attemptCorrection===true){te(")");}else {te("x)");}F();g="{";y="start";}}else if(g===")"){F();}if(y==="comment"&&l.token[p-1]===")"){g=l.token[p];l.token[p]="{";y=l.types[p];l.types[p]="start";}}o=(()=>{let O=r.count;if(l.types[O]==="comment"){do{O=O-1;}while(O>0&&l.types[O]==="comment")}return l.token[O]})();b=l.stack[p]===void 0?"":(()=>{let O=r.count;if(l.types[O]==="comment"){do{O=O-1;}while(O>0&&l.types[O]==="comment")}return l.token[l.begin[O]-1]})();if(g==="{"&&(l.types[p]==="word"||l.token[p]==="]")){let O=p;if(l.token[O]==="]"){do{O=l.begin[O]-1;}while(l.token[O]==="]")}do{if(l.types[O]==="start"||l.types[O]==="end"||l.types[O]==="operator")break;O=O-1;}while(O>0);if(l.token[O]===":"&&l.stack[O-1]==="arguments"){w="function";A.push(E);E=[];}}if(y==="type_start"){w="data_type";}else if(w===""&&(g==="{"||g==="x{")){if(o==="else"||o==="do"||o==="try"||o==="finally"||o==="switch"){w=o;}else if(W[W.length-1]===0&&o!=="return"){W.pop();w="class";}else if(l.token[p-1]==="class"){w="class";}else if(l.token[p]==="]"&&l.token[p-1]==="["){w="array";}else if((l.types[p]==="word"||l.types[p]==="reference")&&(l.types[p-1]==="word"||l.types[p-1]==="reference"||l.token[p-1]==="?"&&(l.types[p-2]==="word"||l.types[p-2]==="reference"))&&l.token[p]!=="in"&&l.token[p-1]!=="export"&&l.token[p-1]!=="import"){w="map";}else if(l.stack[p]==="method"&&l.types[p]==="end"&&(l.types[l.begin[p]-1]==="word"||l.types[l.begin[p]-1]==="reference")&&l.token[l.begin[p]-2]==="new"){w="initializer";}else if(g==="{"&&(o===")"||o==="x)")&&(l.types[l.begin[p]-1]==="word"||l.types[l.begin[p]-1]==="reference"||l.token[l.begin[p]-1]==="]")){if(b==="if"){w="if";}else if(b==="for"){w="for";}else if(b==="while"){w="while";}else if(b==="class"){w="class";}else if(b==="switch"||l.token[l.begin[p]-1]==="switch"){w="switch";}else if(b==="catch"){w="catch";}else {w="function";}}else if(g==="{"&&(o===";"||o==="x;")){w="block";}else if(g==="{"&&l.token[p]===":"&&l.stack[p]==="switch"){w="block";}else if(l.token[p-1]==="import"||l.token[p-2]==="import"||l.token[p-1]==="export"||l.token[p-2]==="export"){w="object";}else if(o===")"&&(e[0]==="function"||e[0]==="if"||e[0]==="for"||e[0]==="class"||e[0]==="while"||e[0]==="switch"||e[0]==="catch")){w=e[0];}else if(l.stack[p]==="notation"){w="function";}else if((l.types[p]==="number"||l.types[p]==="string"||l.types[p]==="word"||l.types[p]==="reference")&&(l.types[p-1]==="word"||l.types[p-1]==="reference")&&l.token[l.begin[p]-1]!=="for"){w="function";}else if(r.structure.length>0&&l.token[p]!==":"&&r.structure[r.structure.length-1][0]==="object"&&(l.token[l.begin[p]-2]==="{"||l.token[l.begin[p]-2]===",")){w="function";}else if(l.types[e[1]-1]==="markup"&&l.token[e[1]-3]==="function"){w="function";}else if(o==="=>"){w="function";}else if(N===true||l.types[r.count]==="type_end"&&l.stack[l.begin[r.count]-2]==="arguments"){w="function";}else if(o===")"&&l.stack[p]==="method"&&(l.types[l.begin[p]-1]==="word"||l.types[l.begin[p]-1]==="property"||l.types[l.begin[p]-1]==="reference")){w="function";}else if(l.types[p]==="word"&&g==="{"&&l.token[p]!=="return"&&l.token[p]!=="in"&&l.token[p]!=="import"&&l.token[p]!=="const"&&l.token[p]!=="let"&&l.token[p]!==""){w="block";}else if(g==="{"&&"if|else|for|while|function|class|switch|catch|finally".indexOf(l.stack[p])>-1&&(l.token[p]==="x}"||l.token[p]==="}")){w="block";}else if(l.stack[p]==="arguments"){w="function";}else if(l.types[p]==="generic"){do{p=p-1;if(l.token[p]==="function"||l.stack[p]==="arguments"){w="function";break}if(l.token[p]==="interface"){w="map";break}if(l.token[p]===";"){w="object";break}}while(p>l.begin[r.count])}else {w="object";}if(w!=="object"&&w!=="class"){if(w==="function"){A.push(E);E=[];}else {A.push([]);}}}else if(g==="["){w="array";}else if(g==="("||g==="x("){if(o==="function"||l.token[p-1]==="function"||l.token[p-1]==="function*"||l.token[p-2]==="function"){w="arguments";}else if(l.token[p-1]==="."||l.token[l.begin[p]-2]==="."){w="method";}else if(l.types[p]==="generic"){w="method";}else if(l.token[p]==="}"&&l.stack[p]==="function"){w="method";}else if(o==="if"||o==="for"||o==="class"||o==="while"||o==="catch"||o==="finally"||o==="switch"||o==="with"){w="expression";}else if(l.types[p]==="word"||l.types[p]==="property"||l.types[p]==="reference"){w="method";}else {w="paren";}}B(w);if(W.length>0)W[W.length-1]=W[W.length-1]+1;}function Ae(){const c=[a[s]];s=s+1;if(s<I){do{c.push(a[s]);if(a[s]==="`"&&(a[s-1]!=="\\"||ne(s-1)===false))break;if(a[s-1]==="$"&&a[s]==="{"&&(a[s-2]!=="\\"||ne(s-2)===false))break;s=s+1;}while(s<I)}return c.join("")}function we(c){let p=2;let o=0;let b="";const w=c.slice(0,2);const N=c.length;if(c.charAt(2)==="-")p=p+1;if(/\s/.test(c.charAt(p))===true){do{p=p+1;}while(/\s/.test(c.charAt(p))===true&&p<N)}o=p;do{o=o+1;}while(/\s/.test(c.charAt(o))===false&&c.charAt(o)!=="("&&o<N);if(o===N)o=c.length-2;b=c.slice(p,o);if(b==="else"||w==="{%"&&(b==="elseif"||b==="when"||b==="elif"||b==="elsif")){return ["template_else",`template_${b}`]}if(w==="{{"){if(b==="end")return ["template_end",""];if(b==="block"&&/\{%\s*\w/.test(u)===false||b==="define"||b==="form"||b==="if"||b==="unless"||b==="range"||b==="with"){return ["template_start",`template_${b}`]}return ["template",""]}o=d.length-1;if(o>-1){do{if(b===d[o]&&(b!=="block"||/\{%\s*\w/.test(u)===false)){return ["template_start",`template_${b}`]}if(b==="end"+d[o]){return ["template_end",""]}o=o-1;}while(o>-1)}return ["template",""]}function me(){x.count.pop();x.index.pop();x.word.pop();x.len=x.len-1;}function V(){let c=T;let p=1;let o="";let b="";let w=g;let N=y;const O=[];function D(){P.push("x{");r.splice({data:l,howmany:1,index:r.count-3});}function Z(U,J,ie){const Q=l.begin[U];let ce=0;do{if(l.token[U]===J&&l.types[U]==="word"){if(ie===true){l.types[U]="reference";}else if(l.begin[U]>Q&&l.token[l.begin[U]]==="{"&&l.stack[U]!=="object"&&l.stack[U]!=="class"&&l.stack[U]!=="data_type"){if(l.stack[U]==="function"){l.types[U]="reference";}else {ce=l.begin[U];do{if(l.stack[ce]==="function"){l.types[U]="reference";break}ce=l.begin[ce];}while(ce>Q)}}}U=U-1;}while(U>Q)}do{O.push(a[c]);if(a[c]==="\\"){r.error=`Illegal escape in JavaScript on line number ${r.lineNumber}`;}c=c+1;}while(c<s);if(g.charAt(0)==="\u201C"){r.error=`Quote looking character (\u201C, \\u201c) used instead of actual quotes on line number ${r.lineNumber}`;}else if(g.charAt(0)==="\u201D"){r.error=`Quote looking character (\u201D, \\u201d) used instead of actual quotes on line number ${r.lineNumber}`;}o=O.join("");T=-1;if(r.count>0&&o==="function"&&l.token[r.count]==="("&&(l.token[r.count-1]==="{"||l.token[r.count-1]==="x{")){l.types[r.count]="start";}if(r.count>1&&o==="function"&&g==="("&&(l.token[r.count-1]==="}"||l.token[r.count-1]==="x}")){if(l.token[r.count-1]==="}"){c=r.count-2;if(c>-1){do{if(l.types[c]==="end"){p=p+1;}else if(l.types[c]==="start"||l.types[c]==="end"){p=p-1;}if(p===0)break;c=c-1;}while(c>-1)}if(l.token[c]==="{"&&l.token[c-1]===")"){p=1;c=c-2;if(c>-1){do{if(l.types[c]==="end"){p=p+1;}else if(l.types[c]==="start"||l.types[c]==="end"){p=p-1;}if(p===0)break;c=c-1;}while(c>-1)}if(l.token[c-1]!=="function"&&l.token[c-2]!=="function"){l.types[r.count]="start";}}}else {l.types[r.count]="start";}}if(h.attemptCorrection===true&&(o==="Object"||o==="Array")&&a[s+1]==="("&&a[s+2]===")"&&l.token[r.count-1]==="="&&l.token[r.count]==="new"){if(o==="Object"){l.token[r.count]="{";g="}";l.stack[r.count]="object";r.structure[r.structure.length-1][0]="object";}else {l.token[r.count]="[";g="]";l.stack[r.count]="array";r.structure[r.structure.length-1][0]="array";}l.types[r.count]="start";y="end";a[s+1]="";a[s+2]="";s=s+2;}else {p=r.count;c=p;if(h.script.variableList!=="none"&&(o==="var"||o==="let"||o==="const")){if(l.types[p]==="comment"){do{p=p-1;}while(p>0&&l.types[p]==="comment")}if(h.script.variableList==="list"&&x.len>-1&&x.index[x.len]===p&&o===x.word[x.len]){g=",";y="separator";l.token[p]=g;l.types[p]=y;x.count[x.len]=0;x.index[x.len]=p;x.word[x.len]=o;return}x.len=x.len+1;x.count.push(0);x.index.push(p);x.word.push(o);p=c;}else if(x.len>-1&&o!==x.word[x.len]&&r.count===x.index[x.len]&&l.token[x.index[x.len]]===";"&&g!==x.word[x.len]&&h.script.variableList==="list"){me();}if(o==="from"&&l.token[r.count]==="x;"&&l.token[r.count-1]==="}"){F();}if(o==="while"&&l.token[r.count]==="x;"&&l.token[r.count-1]==="}"){let U=0;let J=r.count-2;if(J>-1){do{if(l.types[J]==="end"){U=U+1;}else if(l.types[J]==="start"){U=U-1;}if(U<0){if(l.token[J]==="{"&&l.token[J-1]==="do")F();return}J=J-1;}while(J>-1)}}if(N==="comment"){let U=r.count;do{U=U-1;}while(U>0&&l.types[U]==="comment");N=l.types[U];w=l.token[U];}b=L(2,false);if(o==="void"){if(w===":"&&l.stack[r.count-1]==="arguments"){y="type";}else {y="word";}}else if((r.structure[r.structure.length-1][0]==="object"||r.structure[r.structure.length-1][0]==="class"||r.structure[r.structure.length-1][0]==="data_type")&&(l.token[r.count]==="{"||l.token[l.begin[r.count]]==="{"&&l.token[r.count]===","||l.types[r.count]==="template_end"&&(l.token[l.begin[r.count]-1]==="{"||l.token[l.begin[r.count]-1]===","))){if(o==="return"||o==="break"){y="word";}else {y="property";}}else if(t[t.length-1]===true||(h.language==="typescript"||h.language==="flow")&&w==="type"){y="type";}else if(A.length>0&&(w==="function"||w==="class"||w==="const"||w==="let"||w==="var"||w==="new"||w==="void")){y="reference";A[A.length-1].push(o);if(h.language==="javascript"||h.language==="jsx"||h.language==="typescript"||h.language==="tsx"){if(w==="var"||w==="function"&&l.types[r.count-1]!=="operator"&&l.types[r.count-1]!=="start"&&l.types[r.count-1]!=="end"){Z(r.count,o,true);}else {Z(r.count,o,false);}}else {Z(r.count,o,false);}}else if(r.structure[r.structure.length-1][0]==="arguments"&&y!=="operator"){y="reference";E.push(o);}else if(w===","&&l.stack[r.count]!=="method"&&(l.stack[r.count]!=="expression"||l.token[l.begin[r.count]-1]==="for")){let U=r.count;const J=r.structure[r.structure.length-1][1];do{if(l.begin[U]===J){if(l.token[U]===";")break;if(l.token[U]==="var"||l.token[U]==="let"||l.token[U]==="const"||l.token[U]==="type"){break}}else if(l.types[U]==="end"){U=l.begin[U];}U=U-1;}while(U>J);if(A.length>0&&l.token[U]==="var"){y="reference";A[A.length-1].push(o);if(h.language==="javascript"||h.language==="jsx"||h.language==="typescript"||h.language==="tsx"){Z(U,o,true);}else {Z(U,o,false);}}else if(A.length>0&&(l.token[U]==="let"||l.token[U]==="const"||l.token[U]==="type"&&(h.language==="typescript"||h.language==="tsx"))){y="reference";A[A.length-1].push(o);Z(U,o,false);}else {y="word";}}else if(r.structure[r.structure.length-1][0]!=="object"||r.structure[r.structure.length-1][0]==="object"&&g!==","&&g!=="{"){let U=A.length;let J=0;if(U>0){do{U=U-1;J=A[U].length;if(J>0){do{J=J-1;if(o===A[U][J])break}while(J>0);if(o===A[U][J])break}}while(U>0);if(A[U][J]===o&&w!=="."){y="reference";}else {y="word";}}else {y="word";}}else {y="word";}g=o;if(o==="from"&&l.token[r.count]==="}")F();}B("");if(o==="class")W.push(0);if(o==="do"){b=L(1,true);if(b!=="{"){g=h.attemptCorrection===true?"{":"x{";y="start";P.push("x{");B("do");}}if(o==="else"){b=L(2,true);let U=r.count-1;if(l.types[U]==="comment"){do{U=U-1;}while(U>0&&l.types[U]==="comment")}if(l.token[U]==="x}"){if(l.token[r.count]==="else"){if(l.stack[r.count-1]!=="if"&&l.types[r.count-1]!=="comment"&&l.stack[r.count-1]!=="else"){P.pop();r.splice({data:l,howmany:0,index:r.count-1,record:{begin:l.begin[l.begin[l.begin[r.count-1]-1]-1],ender:-1,lexer:"script",lines:0,stack:"if",token:h.attemptCorrection===true?"}":"x}",types:"end"}});if(r.structure.length>1){r.structure.splice(r.structure.length-2,1);r.structure[r.structure.length-1][1]=r.count;}}else if(l.token[r.count-2]==="x}"&&n[0]!=="if"&&l.stack[r.count]==="else"){D();}else if(l.token[r.count-2]==="}"&&l.stack[r.count-2]==="if"&&n[0]==="if"&&l.token[n[1]-1]!=="if"&&l.token[l.begin[r.count-1]]==="x{"){D();}}else if(l.token[r.count]==="x}"&&l.stack[r.count]==="if"){D();}}if(b!=="if"&&b.charAt(0)!=="{"){g=h.attemptCorrection===true?"{":"x{";y="start";P.push("x{");B("else");}}if((o==="for"||o==="if"||o==="switch"||o==="catch")&&l.token[r.count-1]!=="."){b=L(1,true);if(b!=="("){i=r.count;if(h.attemptCorrection===true){fe("(");}else {fe("x(");}}}}do{if(/\s/.test(a[s])){if(T>-1)V();s=r.spacer({array:a,end:I,index:s});if(r.linesSpace>1&&g!==";"&&m<r.count&&a[s+1]!=="}"){j(false);m=r.count;}}else if(a[s]==="{"&&a[s+1]==="%"){R("{%","%}","template");}else if(a[s]==="{"&&a[s+1]==="{"){R("{{","}}","template");}else if(a[s]==="<"&&a[s+1]==="!"&&a[s+2]==="-"&&a[s+3]==="-"){R("<!--","-->","comment");}else if(a[s]==="<"){le();}else if(a[s]==="/"&&(s===I-1||a[s+1]==="*")){M();}else if((r.count<0||l.lines[r.count]>0)&&a[s]==="#"&&a[s+1]==="!"&&(a[s+2]==="/"||a[s+2]==="[")){R("#!"+a[s+2],"\n","string");}else if(a[s]==="/"&&(s===I-1||a[s+1]==="/")){X();}else if(a[s]==="`"||a[s]==="}"&&r.structure[r.structure.length-1][0]==="template_string"){if(T>-1)V();g=Ae();if(g.charAt(0)==="}"&&g.slice(g.length-2)==="${"){y="template_string_else";B("template_string");}else if(g.slice(g.length-2)==="${"){y="template_string_start";B("template_string");}else if(g.charAt(0)==="}"){y="template_string_end";B("");}else {y="string";B("");}}else if(a[s]==='"'||a[s]==="'"){R(a[s],a[s],"string");}else if(a[s]==="-"&&(s<I-1&&a[s+1]!=="="&&a[s+1]!=="-")&&(y==="number"||y==="word"||y==="reference")&&g!=="return"&&(g===")"||g==="]"||y==="word"||y==="reference"||y==="number")){if(T>-1)V();g="-";y="operator";B("");}else if(T===-1&&(a[s]!=="0"||a[s]==="0"&&a[s+1]!=="b")&&(/\d/.test(a[s])||s!==I-2&&a[s]==="-"&&a[s+1]==="."&&/\d/.test(a[s+2])||s!==I-1&&(a[s]==="-"||a[s]===".")&&/\d/.test(a[s+1]))){if(T>-1)V();if(y==="end"&&a[s]==="-"){g="-";y="operator";}else {g=K();y="number";}B("");}else if(a[s]===":"&&a[s+1]===":"){if(T>-1)V();if(h.attemptCorrection===true)H();F();s=s+1;g="::";y="separator";B("");}else if(a[s]===","){if(T>-1)V();if(h.attemptCorrection===true)H();if(t[t.length-1]===true&&l.stack[r.count].indexOf("type")<0){t[t.length-1]=false;}if(y==="comment"){q();}else if(x.len>-1&&x.count[x.len]===0&&h.script.variableList==="each"){F();g=";";y="separator";B("");g=x.word[x.len];y="word";B("");x.index[x.len]=r.count;}else {g=",";y="separator";F();B("");}}else if(a[s]==="."){if(T>-1)V();t[t.length-1]=false;if(a[s+1]==="."&&a[s+2]==="."){g="...";y="operator";s=s+2;}else {F();g=".";y="separator";}if(/\s/.test(a[s-1])===true)r.linesSpace=1;B("");}else if(a[s]===";"){if(T>-1)V();if(t[t.length-1]===true&&l.stack[r.count].indexOf("type")<0){t[t.length-1]=false;}if(W[W.length-1]===0)W.pop();if(x.len>-1&&x.count[x.len]===0){if(h.script.variableList==="each"){me();}else {x.index[x.len]=r.count+1;}}if(h.attemptCorrection===true)H();g=";";y="separator";if(l.token[r.count]==="x}"){C();}else {B("");}$();}else if(a[s]==="("||a[s]==="["||a[s]==="{"){fe(a[s]);}else if(a[s]===")"||a[s]==="]"||a[s]==="}"){te(a[s]);}else if(a[s]==="*"&&l.stack[r.count]==="object"&&T<0&&/\s/.test(a[s+1])===false&&a[s+1]!=="="&&/\d/.test(a[s+1])===false){T=s;}else if(a[s]==="="||a[s]==="&"||a[s]==="<"||a[s]===">"||a[s]==="+"||a[s]==="-"||a[s]==="*"||a[s]==="/"||a[s]==="!"||a[s]==="?"||a[s]==="|"||a[s]==="^"||a[s]===":"||a[s]==="%"||a[s]==="~"){g=G();if(g==="regex"){g=l.token[r.count];}else if(g==="*"&&l.token[r.count]==="function"){l.token[r.count]="function*";}else {y="operator";if(g!=="!"&&g!=="++"&&g!=="--")F();B("");}}else if(T<0&&a[s]!==""){T=s;}if(x.len>-1&&r.count===x.index[x.len]+1&&l.token[x.index[x.len]]===";"&&g!==x.word[x.len]&&y!=="comment"&&h.script.variableList==="list"){me();}s=s+1;}while(s<I);if(T>-1)V();if((l.token[r.count]!=="}"&&l.token[0]==="{"||l.token[0]!=="{")&&(l.token[r.count]!=="]"&&l.token[0]==="["||l.token[0]!=="[")){j(false);}if(S[0]===r.count){g="\n"+S[1];y="string";B("");}if(l.token[r.count]==="x;"&&(l.token[r.count-1]==="}"||l.token[r.count-1]==="]")&&l.begin[r.count-1]===0){r.pop(l);}return l};_.lexers.markup=function v(u){const h=new Set(["body","colgroup","dd","dt","head","html","li","option","p","tbody","td","tfoot","th","thead","tr"]);const s=new Set(["area","base","basefont","br","col","embed","eventsource","frame","hr","image","img","input","isindex","keygen","link","meta","path","param","progress","source","wbr","use"]);const g=new Set(["autoescape","case","capture","comment","embed","filter","for","form","if","macro","paginate","raw","switch","tablerow","unless","verbatim","schema","style","script","javascript","highlight","stylesheet"]);const{options:y}=_;const{data:e}=r;const m=y.markup.attributeSortList.length;const T=re(null);T.end=0;T.index=-1;T.start=0;const i=u.split("");const E=i.length;let f=0;const n=0;let k=false;let l="html";function A(t,d){if(d===1){return t.charCodeAt(0)===123&&(t.charCodeAt(1)===37||t.charCodeAt(1)===123)}else if(d===2){return t.charCodeAt(t.length-1)===125&&(t.charCodeAt(t.length-2)===37||t.charCodeAt(t.length-2)===125)}else if(d===3){return t.charCodeAt(0)===123&&(t.charCodeAt(1)===37||t.charCodeAt(1)===123)&&(t.charCodeAt(t.length-1)===125&&(t.charCodeAt(t.length-2)===37||t.charCodeAt(t.length-2)===125))}else if(d===4){return /{[{%}]/.test(t)}else if(d===5){return /{[{%]/.test(t)&&/[%}]}/.test(t)}}function I(t){if(y.language!=="xml"&&y.language!=="jsx"){const d=j=>j.replace(/\s*$/," ");const x=j=>j.replace(/^\s*/," ");if(/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(t))return t;t=t.replace(/{[{%]-?\s*/g,d);t=t.replace(/\s*-?[%}]}/g,x);return t}return t}function a(t,d,x){if(t===e){if(d.types.indexOf("end")>-1){T.end=T.end+1;}else if(d.types.indexOf("start")>-1){T.start=T.start+1;}}r.push(t,d,x);}function z(t){let d=0;let x="";const j=/^({[{%]-?\s*)/;if(typeof t!=="string")return "";d=t.replace(j,"%").replace(/\s+/," ").indexOf(" ");x=t.replace(j," ");x=d<0?x.slice(1,t.length-1):x.slice(1,d);if(l==="html")x=x.toLowerCase();x=x.replace(/-?[%}]}$/,"");if(x.indexOf("(")>0)x=x.slice(0,x.indexOf("("));if(x==="?xml?")return "xml";return x}function P(t,d){const x=z(t);const j=Object.create(null);j.begin=r.structure[r.structure.length-1][1];j.ender=-1;j.lexer="markup";j.lines=e.lines[r.count]>0?1:0;j.stack=r.structure[r.structure.length-1][0];j.token=`</${r.structure[r.structure.length-1][0]}>`;j.types="end";a(e,j,"");if(h.has(r.structure[r.structure.length-1][0])&&(d===true&&r.structure.length>1||d===false&&`/${r.structure[r.structure.length-1][0]}`!==x)){do{j.begin=r.structure[r.structure.length-1][1];j.stack=r.structure[r.structure.length-1][0];j.token=`</${r.structure[r.structure.length-1][0]}>`;a(e,j,"");}while(h.has(r.structure[r.structure.length-1][0])&&(d===true&&r.structure.length>1||d===false&&`/${r.structure[r.structure.length-1][0]}`!==x))}}function W(t){const d=re(null);d.begin=r.structure[r.structure.length-1][1];d.ender=-1;d.lexer="markup";d.lines=r.linesSpace;d.stack=r.structure[r.structure.length-1][0];d.token="";d.types="";let x=0;let j="";let C="";let F="";let M="";let $="";let q=false;let te=false;let R=false;let X=false;let le=false;let L=false;let K=false;let H=[];let B=["",0];function ue(V){const c=V.indexOf("=");if(c>0&&(c<V.indexOf('"')&&V.indexOf('"')>0||c<V.indexOf("'")&&V.indexOf("'")>0)){return [V.slice(0,c),V.slice(c+1)]}return [V,""]}function ne(){const V=r.count;const c=M.replace(/\/$/,"");const p=y.markup.quoteConvert;let o=0;let b=0;let w=0;let O="";let D="";let Z=[];let U=H.length;function J(){if(R===true||p==="none"||d.types!=="attribute"||p==="single"&&d.token.indexOf('"')<0||p==="double"&&d.token.indexOf("'")<0){a(e,d,"");}else {let Q=0;let ce=false;const Y=d.token.split("");const se=d.token.indexOf("=");const he=Y.length-1;if(Y[se+1]!=='"'&&Y[Y.length-1]!=='"'&&p==="single"){a(e,d,"");}else if(Y[se+1].charCodeAt(0)!==39&&Y[Y.length-1].charCodeAt(0)!==39&&p==="double"){a(e,d,"");}else {Q=se+2;if(p==="double"){if(d.token.slice(se+2,he).indexOf('"')>-1)ce=true;Y[se+1]='"';Y[Y.length-1]='"';}else {if(d.token.slice(se+2,he).indexOf("'")>-1)ce=true;Y[se+1]="'";Y[Y.length-1]="'";}if(ce===true){do{if(Y[Q]==="'"&&p==="single"){Y[Q]='"';}else if(Y[Q]==='"'&&p==="double"){Y[Q]="'";}Q=Q+1;}while(Q<he)}d.token=Y.join("");a(e,d,"");}}}function ie(Q,ce){if(Q.charAt(0)==="{"&&"{%".indexOf(Q.charAt(1))>-1){d.types="template_attribute";}else if(Q.charAt(0)==="<"){d.types="template_attribute";}else {d.token=ce;J();return}d.token=ce;J();d.types="attribute";}if(H.length<1)return;if(H[H.length-1][0]==="/"){H.pop();j=j.replace(/>$/,"/>");}b=H.length;w=1;if(w<b){do{O=H[w-1][0];if(O.charAt(O.length-1)==="="&&H[w][0].indexOf("=")<0){H[w-1][0]=O+H[w][0];H.splice(w,1);b=b-1;w=w-1;}w=w+1;}while(w<b)}if(y.markup.attributeSort===true&&y.language!=="jsx"&&X===false&&le===false){if(m>0){const Q=[];w=0;b=0;U=H.length;do{b=0;do{O=H[b][0].split("=")[0];if(y.markup.attributeSortList[w]===O){Q.push(H[b]);H.splice(b,1);U=U-1;break}b=b+1;}while(b<U);w=w+1;}while(w<m);H=r.safeSort(H,"",false);H=Q.concat(H);U=H.length;}else {H=r.safeSort(H,"",false);}}d.begin=V;d.stack=c;d.types="attribute";Z=[];if(o<U){do{if(H[o]===void 0)break;H[o][0]=H[o][0].replace(/\s+$/,"");d.lines=H[o][1];b=H[o][0].indexOf("=");w=H[o][0].indexOf('"');H[o][0].indexOf("'");if(/^\/(\/|\*)/.test(H[o][0])&&y.language==="jsx"){d.types="comment_attribute";d.token=H[o][0];J();}else if(b<0){if(A(H[o][0],3)||A(H[o][0],5)){d.types="template_attribute";d.token=H[o][0];J();}else {d.types="attribute";d.token="#[{(".indexOf(H[o][0].charAt(0))<0?H[o][0].toLowerCase():d.token=H[o][0];J();}}else {O=H[o][0].slice(0,b);D=H[o][0].slice(b+1);if(y.attemptCorrection){if(`<{"'=`.indexOf(D.charAt(0))<0)D='"'+D+'"';}if(y.language==="jsx"&&/^\s*\{/.test(D)){d.token=O+"={";d.types="jsx_attribute_start";a(e,d,"jsx_attribute");_.lexers.script(D.slice(1,D.length-1));d.begin=r.count;if(/\s\}$/.test(D)){D=D.slice(0,D.length-1);D=/\s+$/.exec(D)[0];if(D.indexOf("\n")<0)d.lines=1;else d.lines=D.split("\n").length;}else {d.lines=0;}d.begin=r.structure[r.structure.length-1][1];d.stack=r.structure[r.structure.length-1][0];d.token="}";d.types="jsx_attribute_end";J();d.types="attribute";d.begin=V;d.stack=c;}else if(A(O,5)){O=O+"="+D;ie(D.replace(/^(["'])/,"").slice(0,2),O.replace(/(\s+)$/,""));}else {d.types="attribute";d.token="#[{(".indexOf(H[o][0].charAt(0))<0?H[o][0].toLowerCase():d.token=H[o][0];J();}}o=o+1;}while(o<U)}if(Z.length>0){d.token=Z.join(" ");J();}}k=false;if(t==="---"){$="---";F="comment";}else if(i[f]==="<"){if(i[f+1]==="/"){t=">";F="end";}else if(i[f+1]==="!"){if(i[f+2]==="-"&&i[f+3]==="-"){t="-->";F="comment";$="<!--";}else if(i[f+2]==="["&&i[f+3]==="C"&&i[f+4]==="D"&&i[f+5]==="A"&&i[f+6]==="T"&&i[f+7]==="A"&&i[f+8]==="["){t="]]>";F="cdata";L=true;}}else if(i[f+1]==="?"){t="?>";if(i[f+2]==="x"&&i[f+3]==="m"&&i[f+4]==="l"){F="xml";K=true;}else {L=true;F="template";}}else if(i[f+1]==="%"){L=true;}else if((i[f+1]==="p"||i[f+1]==="P")&&(i[f+2]==="r"||i[f+2]==="R")&&(i[f+3]==="e"||i[f+3]==="E")&&(i[f+4]===">"||/\s/.test(i[f+4]))){t="</pre>";F="ignore";L=true;}else {K=true;t=">";}}else if(i[f]==="{"){if(y.language==="jsx"){k=true;te=true;d.token="{";d.types="script_start";r.structure.push(["script",r.count]);a(e,d,"");return}if(i[f+1]==="{"){L=true;t="}}";F="template";}else if(i[f+1]==="%"){L=true;t="%}";F="template";const V=i.indexOf("}",f+2);if(i[V-1].charCodeAt(0)===37){let c=i.slice(f+2,V-1).join("");if(c.charCodeAt(0)===45){$="{%-";c=c.slice(1).trimStart();}else {$="{%";c=c.trimStart();}if(c.charCodeAt(c.length-1)===45){t="-%}";c=c.slice(0,c.length-1).trimEnd();}else {t="%}";c=c.trimEnd();}if(c==="comment"){const p=u.indexOf("{%",V);let o=p;if(i[p+1].charCodeAt(0)===45)o=p+1;o=u.indexOf("endcomment",o);if(o>0){o=i.indexOf("}",o);if(o>0&&i[o-1].charCodeAt(0)===37){F="comment";$=i.slice(f,V+1).join("");t=i.slice(p,o+1).join("");}}}}else {L=true;t="%}";F="template";}}else {L=true;t=i[f+1]+"}";F="template";}}if(y.markup.preserveAttributes===true)L=true;if(te)return;C=t.charAt(t.length-1);if(F==="comment"&&(i[f]==="<"||i[f]==="{"&&i[f+1]==="%")){B=r.wrapCommentBlock({chars:i,end:E,lexer:"markup",opening:$,start:f,terminator:t});j=B[0];f=B[1];if(j.replace($,"").replace(/(^\s*)/,"").indexOf("@parse-ignore-start")===0){d.token=j;d.types="ignore";a(e,d,"");return}}else if(f<E){let ce=function(){let se=f;do{se=se-1;}while(i[se]==="\\");se=f-se;return se%2===1},Y=function(se){let he;let ee="";let ae=0;let de=0;const oe="data-prettify-ignore";if(se===true){ee=J.join("");he=ue(ee);O="";if(he[0]===oe)R=true;}else {ee=J.join("");if(y.language!=="jsx"||y.language==="jsx"&&ee.charAt(ee.length-1)!=="}"){ee=ee.replace(/\s+/g," ");}he=ue(ee);if(he[0]===oe)R=true;if(y.language==="jsx"&&J[0]==="{"&&J[J.length-1]==="}"){p=0;}}if(ee.slice(0,2)==="{%")le=true;ee=ee.replace(/^\u0020/,"").replace(/\u0020$/,"");J=ee.replace(/\r\n/g,"\n").split("\n");de=J.length;if(ae<de){do{J[ae]=J[ae].replace(/(\s+)$/,"");ae=ae+1;}while(ae<de)}if(ee==="="){H[H.length-1][0]=`${H[H.length-1][0]}=`;}else if(ee.charAt(0)==="="&&H.length>0&&H[H.length-1][0].indexOf("=")<0){H[H.length-1][0]=H[H.length-1][0]+ee;}else if(ee.charAt(0)!=="="&&H.length>0&&H[H.length-1][0].indexOf("=")===H[H.length-1][0].length-1){H[H.length-1][0]=H[H.length-1][0]+ee;}else if(ee!==""&&ee!==" "){H.push([ee,N]);}if(H.length>0&&H[H.length-1][0].indexOf("=\u201C")>0){r.error=`Quote looking character (\u201C, &#x201c) used instead of actual quotes on line number ${r.lineNumber}`;}else if(H.length>0&&H[H.length-1][0].indexOf("=\u201D")>0){r.error=`Quote looking character (\u201D, &#x201d) used instead of actual quotes on line number ${r.lineNumber}`;}J=[];N=i[f]==="\n"?2:1;};let V=0;let p=0;let o=0;let b=0;let w=0;let N=1;let O="";let D="";let Z=false;let U=false;let J=[];const ie=[];const Q=[];do{if(i[f]==="\n"){N=N+1;r.lineNumber=r.lineNumber+1;}if(L===true||(/\s/.test(i[f])===false&&O!=="}"||O==="}")){Q.push(i[f]);if(Q[0]==="<"&&Q[1]===">"&&t===">"){d.token="<>";d.types="start";a(e,d,"(empty)");return}if(Q[0]==="<"&&Q[1]==="/"&&Q[2]===">"&&t===">"){d.token="</>";d.types="end";a(e,d,"");return}}if(F==="cdata"&&i[f]===">"&&i[f-1]==="]"&&i[f-2]!=="]"){r.error=`CDATA tag ${Q.join("")} not properly terminated with ]]>`;break}if(F==="comment"){O="";if(i[f]===C&&Q.length>t.length+1){b=Q.length;o=t.length-1;if(o>-1){do{b=b-1;if(Q[b]!==t.charAt(o))break;o=o-1;}while(o>-1)}if(o<0)break}}else {if(O===""){if(Q[0]+Q[1]==="<!"&&F!=="cdata"){if(i[f]==="["){if(i[f+1]==="<"){F="start";break}if(/\s/.test(i[f+1])===true){do{f=f+1;if(i[f]==="\n"){N=N+1;}}while(f<E-1&&/\s/.test(i[f+1])===true)}if(i[f+1]==="<"){F="start";break}}}if(y.language==="jsx"){if(i[f]==="{"){p=p+1;}else if(i[f]==="}"){p=p-1;}}if(i[f]==="<"&&L===false&&Q.length>1&&t!==">>"&&t!==">>>"&&K===true){r.error=`Parse error (line ${r.lineNumber}) on: ${Q.join("")}`;}if(Z===true&&/\s/.test(i[f])===false&&i[f]!==C){Z=false;O=D;x=0;Q.pop();if(f<E){do{if(i[f]==="\n")r.lineNumber=r.lineNumber+1;if(y.markup.preserveAttributes===true){Q.push(i[f]);}else {J.push(i[f]);}if(y.language!=="jsx"&&(i[f]==="<"||i[f]===">")&&(O===""||O===">")){if(O===""&&i[f]==="<"){O=">";}else if(O===">"){if(i[f]==="<");else if(i[f]===">");}}else if(O===""){if(i[f+1]===C){if(J[J.length-1]==="/"||J[J.length-1]==="?"&&F==="xml"){J.pop();if(L===true)Q.pop();f=f-1;}if(J.length>0)Y(false);break}if(L===false){J.pop();if(i[f]!=="="&&J.length>0)Y(false);O="";do{J.push(i[f]);if(i[f]===ie[ie.length-1]){ie.pop();if(i[f]==="}"&&i[f+1]==="}"){J.push("}");f=f+1;if(i[f+1]==="}"){J.push("}");f=f+1;}}if(ie.length<1){Y(false);i[f]=" ";break}}else if((i[f]==='"'||i[f]==="'")&&ie[ie.length-1]!=='"'&&ie[ie.length-1]!=="'"){ie.push(i[f]);}else if(i[f]==="{"&&"{%#@:/?^<+~=".indexOf(i[f+1])&&ie[ie.length-1]!=="}"){ie.push("}");}else if(i[f]==="<"&&ie[ie.length-1]!==">"){ie.push(">");}f=f+1;}while(f<E)}else if(i[f]==="{"&&i[f-1]==="="&&y.language!=="jsx"){O="}";}else if(i[f]==='"'||i[f]==="'"){O=i[f];if(i[f-1]==="="&&(i[f+1]==="<"||i[f+1]==="{"&&i[f+2]==="%"||/\s/.test(i[f+1])&&i[f-1]!=="=")){x=f;}}else if(i[f]==="("){O=")";w=1;}else if(y.language==="jsx"){if((i[f-1]==="="||/\s/.test(i[f-1])===true)&&i[f]==="{"){O="}";V=1;}else if(i[f]==="/"){if(i[f+1]==="*"){O="*/";}else if(i[f+1]==="/"){O="\n";}}}else if(Q[0]!=="{"&&i[f]==="{"&&(i[f+1]==="{"||i[f+1]==="%")){if(i[f+1]==="{"){O="}}";}else {O=i[f+1]+"}";}}if(/\s/.test(i[f])===true&&O===""){if(J[J.length-2]==="="){o=f+1;if(o<E){do{if(/\s/.test(i[o])===false){if(i[o]==='"'||i[o]==="'"){f=o-1;U=true;J.pop();}break}o=o+1;}while(o<E)}}if(U===true){U=false;}else if(p===0||p===1&&J[0]==="{"){J.pop();Y(false);Z=true;break}}}else if(i[f]==="("&&O===")"){w=w+1;}else if(i[f]===")"&&O===")"){w=w-1;if(w===0){O="";if(i[f+1]===t.charAt(0)){Y(false);break}}}else if(y.language==="jsx"&&(O==="}"||O==="\n"&&i[f]==="\n"||O==="*/"&&i[f-1]==="*"&&i[f]==="/")){if(O==="}"){if(i[f]==="{"){V=V+1;}else if(i[f]===O){V=V-1;if(V===0){p=0;O="";j=J.join("");if(y.markup.preserveAttributes===false){if(y.language==="jsx"){if(/^(\s*)$/.test(j)===false){H.push([j,N]);}}else {j=j.replace(/\s+/g," ");if(j!==" "){H.push([j,N]);}}}J=[];N=1;break}}}else {D="";X=true;j=J.join("");if(j!==" ")H.push([j,N]);J=[];N=O==="\n"?2:1;O="";break}}else if(i[f]==="{"&&i[f+1]==="%"&&i[x-1]==="="&&(O==='"'||O==="'")){O=O+"{%";x=0;}else if(i[f-1]==="%"&&i[f]==="}"&&(O==='"{%'||O==="'{%")){O=O.charAt(0);x=0;}else if(i[f]==="<"&&t===">"&&i[x-1]==="="&&(O==='"'||O==="'")){O=O+"<";x=0;}else if(i[f]===">"&&(O==='"<'||O==="'<")){O=O.charAt(0);x=0;}else if(x===0&&O!==">"&&(O.length<2||O.charAt(0)!=='"'&&O.charAt(0)!=="'")){b=0;if(Q.length>1){M=Q[1]+Q[2];M=M.toLowerCase();}o=O.length-1;if(o>-1){do{if(i[f-b]!==O.charAt(o))break;b=b+1;o=o-1;}while(o>-1)}if(o<0){Y(true);if(i[f+1]===C)break}}else if(x>0&&/\s/.test(i[f])===false){x=0;}f=f+1;}while(f<E)}}else if(t!=="\n"&&(i[f]==='"'||i[f]==="'")){O=i[f];}else if(F!=="comment"&&t!=="\n"&&i[f]==="<"&&i[f+1]==="!"&&i[f+2]==="-"&&i[f+3]==="-"&&i[f+4]!=="#"&&e.types[r.count]!=="conditional"){O="-->";}else if(i[f]==="{"&&Q[0]!=="{"&&t!=="\n"&&(i[f+1]==="{"||i[f+1]==="%")){if(i[f+1]==="{"){O="}}";}else {O=i[f+1]+"}";if(J.length<1&&(H.length<1||/\s/.test(i[f-1])===true)){Q.pop();do{if(i[f]==="\n")N=N+1;J.push(i[f]);f=f+1;}while(f<E&&i[f-1]+i[f]!==O);J.push("}");H.push([J.join(""),N]);J=[];N=1;O="";}}if(O===t)O="";}else if((K===true||F==="sgml")&&t!=="\n"&&/\s/.test(i[f])===true&&i[f-1]!=="<"){if(F==="sgml"){Q.push(" ");}else {Z=true;}}else if(K===true&&y.language==="jsx"&&i[f]==="/"&&(i[f+1]==="*"||i[f+1]==="/")){Z=true;Q[Q.length-1]=" ";J.push(i[f]);if(i[f+1]==="*"){D="*/";}else {D="\n";}}else if((i[f]===C||t==="\n"&&i[f+1]==="<")&&(Q.length>t.length+1||Q[0]==="]")&&(y.language!=="jsx"||p===0)){if(t==="\n"){if(/\s/.test(Q[Q.length-1])){do{Q.pop();f=f-1;}while(/\s/.test(Q[Q.length-1]))}break}b=Q.length;o=t.length-1;if(o>-1){do{b=b-1;if(Q[b]!==t.charAt(o))break;o=o-1;}while(o>-1)}if(o<0)break}}else if(i[f]===O.charAt(O.length-1)&&(y.language==="jsx"&&t==="}"&&(i[f-1]!=="\\"||ce()===false)||y.language!=="jsx"||t!=="}")){b=0;if(Q.length>1){M=Q[1]+Q[2];M=M.toLowerCase();}o=O.length-1;if(o>-1){do{if(i[f-b]!==O.charAt(o))break;b=b+1;o=o-1;}while(o>-1)}if(o<0)O="";}}f=f+1;}while(f<E);if(y.attemptCorrection===true){if(i[f+1]===">"&&Q[0]==="<"&&Q[1]!=="<"){do{f=f+1;}while(i[f+1]===">")}else if(Q[0]==="<"&&Q[1]==="<"&&i[f+1]!==">"&&Q[Q.length-2]!==">"){do{Q.splice(1,1);}while(Q[1]==="<")}}x=0;j=Q.join("");M=z(j);j=I(j);if(M==="xml"){l="xml";}else if(l===""&&M==="!DOCTYPE"&&j.toLowerCase().indexOf("xhtml")>0){l="xml";}else if(l===""&&M==="html"){l="html";}else if(l==="liquid"){l="html";}if(j.replace($,"").replace(/^\s+/,"").indexOf("@prettify-ignore-start")===0){f=f+1;do{Q.push(i[f]);if(i[f]==="d"&&Q.slice(Q.length-20).join("")==="@prettify-ignore-end")break;f=f+1;}while(f<E);do{Q.push(i[f]);if(i[f]===t.charAt(t.length-1)&&i.slice(f-(t.length-1),f+1).join("")===t){break}f=f+1;}while(f<E);d.token=Q.join("");d.types="ignore";a(e,d,"");return}}d.token=j;d.types=F;M=z(j);if(L===false&&y.language!=="jsx")j=j.replace(/\s+/g," ");if(M==="comment"&&A(j,2)){let w=function(O){o=O===""?0:O.split("\n").length;return ""},N=function(O){b=O===""?0:O.split("\n").length;return ""};const V=j.slice(0,j.indexOf("%}")+2);const c=j.slice(j.indexOf("%}")+2,j.lastIndexOf("{%"));const p=j.slice(j.lastIndexOf("{%"));let o=0;let b=0;d.begin=r.structure[r.structure.length-1][1];d.ender=r.count+3;d.stack=r.structure[r.structure.length-1][0];d.types="template_start";d.token=V;a(e,d,"comment");j=c.replace(/^\s*/,w);j=j.replace(/\s*$/,N);d.begin=r.count;d.lines=o;d.stack="comment";d.token=j;d.types="comment";a(e,d,"");d.types="template_end";d.stack="comment";d.lines=b;d.token=p;a(e,d,"");return}d.types=F;q=(()=>{const V=/(\/>)$/;function c(o,b){if(!h.has(o))return false;if(o===b)return true;if(o==="dd"&&b==="dt")return true;if(o==="dt"&&b==="dd")return true;if(o==="td"&&b==="th")return true;if(o==="th"&&b==="td")return true;if(o==="colgroup"&&(b==="tbody"||b==="tfoot"||b==="thead"||b==="tr"))return true;if(o==="tbody"&&(b==="colgroup"||b==="tfoot"||b==="thead"))return true;if(o==="tfoot"&&(b==="colgroup"||b==="tbody"||b==="thead"))return true;if(o==="thead"&&(b==="colgroup"||b==="tbody"||b==="tfoot"))return true;if(o==="tr"&&b==="colgroup")return true;return false}function p(o){d.lines=e.lines[r.count]>0?1:0;d.token=`</${r.structure[r.structure.length-1][0]}>`;d.types="end";a(e,d,"");if(o>0){do{d.begin=r.structure[r.structure.length-1][1];d.stack=r.structure[r.structure.length-1][0];d.token=`</${r.structure[r.structure.length-1][0]}>`;a(e,d,"");o=o-1;}while(o>0)}d.begin=r.structure[r.structure.length-1][1];d.lines=r.linesSpace;d.stack=r.structure[r.structure.length-1][0];d.token=j;d.types="end";e.lines[r.count-1]=0;}if(F==="end"){const o=e.token[r.count];if(e.types[r.count-1]==="singleton"&&o.charAt(o.length-2)!=="/"&&"/"+z(o)===M){e.types[r.count-1]="start";}}if(l==="html"){if(j.charAt(0)==="<"&&j.charAt(1)!=="!"&&j.charAt(1)!=="?"&&(r.count<0||e.types[r.count].indexOf("template")<0)){j=j.toLowerCase();}if(h.has(r.structure[r.structure.length-1][0])&&c(M.slice(1),r.structure[r.structure.length-2][0])){p(0);}else if(r.structure.length>3&&h.has(r.structure[r.structure.length-1][0])&&h.has(r.structure[r.structure.length-2][0])&&h.has(r.structure[r.structure.length-3][0])&&c(M,r.structure[r.structure.length-4][0])===true){p(3);}else if(r.structure.length>2&&h.has(r.structure[r.structure.length-1][0])&&h.has(r.structure[r.structure.length-2][0])&&c(M,r.structure[r.structure.length-3][0])===true){p(2);}else if(r.structure.length>1&&h.has(r.structure[r.structure.length-1][0])&&c(M,r.structure[r.structure.length-2][0])===true){p(1);}else if(c(M,r.structure[r.structure.length-1][0])===true){p(0);}else if(M.charAt(0)==="/"&&h.has(r.structure[r.structure.length-1][0])&&r.structure[r.structure.length-1][0]!==M.slice(1)){P(j,false);d.begin=r.structure[r.structure.length-1][1];d.lines=r.linesSpace;d.stack=r.structure[r.structure.length-1][0];d.token=j;d.types="end";e.lines[r.count-1]=0;}if(s.has(M)){if(y.attemptCorrection===true&&V.test(j)===false){j=j.slice(0,j.length-1)+" />";}return true}}return false})();if(/\bscript|style\b/.test(M)&&j.slice(j.length-2)!=="/>"||/\bschema|style|stylesheet|javascript\b/.test(M)&&j.slice(j.length-2)==="%}"){const V=A(j,3);let c=H.length-1;let p="";let o=[];if(c>-1){do{o=ue(H[c][0]);if(o[0]==="type"){p=o[1];if(p.charAt(0)==='"'||p.charAt(0)==="'"){p=p.slice(1,p.length-1);}break}c=c-1;}while(c>-1)}if(V===false&&M==="script"&&(p===""||p==="text/javascript"||p==="babel"||p==="module"||p==="application/javascript"||p==="application/x-javascript"||p==="text/ecmascript"||p==="application/ecmascript"||p==="text/jsx"||p==="application/jsx"||p==="text/cjs"||p==="application/json"||p==="application/ld+json")){k=true;}else if((M==="style"||M==="stylsheet")&&y.language!=="jsx"&&(p===""||p==="text/css")){k=true;}else if(V===true&&(M==="javascript"||M==="schema"||M==="style")){k=true;}if(k===true){c=f+1;if(c<E){do{if(/\s/.test(i[c])===false){if(i[c]==="<"){if(i.slice(c+1,c+4).join("")==="!--"){c=c+4;if(c<E){do{if(/\s/.test(i[c])===false){k=false;break}if(i[c]==="\n"||i[c]==="\r")break;c=c+1;}while(c<E)}}else {k=false;}}break}c=c+1;}while(c<E)}}}if(K&&R===false&&F!=="xml"){if(q===true||j.slice(j.length-2)==="/>"){F="singleton";}else {F="start";}d.types=F;}if(K&&L===false&&R&&t===">"&&j.slice(j.length-2)!=="/>"){const V=[];const c=[];if(q===true){F="singleton";}else {H.forEach(p=>c.push(p[0]));L=true;F="ignore";f=f+1;if(f<E){let p="";let o=0;let b=0;let w=false;do{if(i[f]==="\n")r.lineNumber=r.lineNumber+1;V.push(i[f]);if(p===""){if(i[f]==='"'){p='"';}else if(i[f]==="'"){p="'";}else if(V[0]!=="{"&&i[f]==="{"&&(i[f+1]==="{"||i[f+1]==="%")){if(i[f+1]==="{"){p="}}";}else {p=i[f+1]+"}";}}else if(i[f]==="<"&&K===true){if(i[f+1]==="/"){w=true;}else {w=false;}}else if(i[f]===C&&i[f-1]!=="/"){if(w===true){x=x-1;if(x<0)break}else {x=x+1;}}}else if(i[f]===p.charAt(p.length-1)){b=0;o=p.length-1;if(o>-1){do{if(i[f-b]!==p.charAt(o))break;b=b+1;o=o-1;}while(o>-1)}if(o<0)p="";}f=f+1;}while(f<E)}}j=j+V.join("");j=j.replace(">",` ${c.join(" ")}>`);d.token=j;d.types="content-ignore";H=[];}if(d.types.indexOf("template")>-1){if(j.slice(0,2)==="{%"){if((M==="case"||M==="default")&&(r.structure[r.structure.length-1][0]==="switch"||r.structure[r.structure.length-1][0]==="case")){d.types="template_else";}else if(M==="else"||M==="when"||M==="elsif"){d.types="template_else";}else {if(g.has(M)){d.types="template_start";}else if(M[0]==="e"&&M[1]==="n"&&M[2]==="d"&&g.has(M.slice(3))){d.types="template_end";}else if(M[0]==="e"&&M[1]==="n"&&M[2]==="d"){d.types="template_end";d.stack=M.slice(3);let V=0;do{if(e.types[V]==="template"&&e.stack[V]===d.stack){e.types[V]="template_start";T.start=T.start+1;break}else {V=e.stack.indexOf(d.stack,V+1);}}while(V>-1)}else {d.stack=M;}}}else if(d.types==="template"){if(j.indexOf("else")>2){d.types="template_else";}}if(d.types==="template_start"||d.types==="template_else"){if(M===""||M==="%"){M=M+j.slice(1).replace(M,"").replace(/^\s+/,"");M=M.slice(0,M.indexOf("(")).replace(/\s+/,"");}}}if(F==="cdata"&&(d.stack==="script"||d.stack==="style")){let V=r.count;let c=r.count;const p=d.stack;if(e.types[c]==="attribute"){do{V=V-1;c=c-1;}while(e.types[c]==="attribute"&&c>-1)}d.begin=V;d.token="<![CDATA[";d.types="cdata_start";j=j.replace(/^(\s*<!\[cdata\[)/i,"").replace(/(\]\]>\s*)$/,"");a(e,d,"");r.structure.push(["cdata",r.count]);if(p==="script"){_.lexers.script(j);}else {_.lexers.style(j);}d.begin=r.structure[r.structure.length-1][1];d.token="]]>";d.types="cdata_end";a(e,d,"");r.structure.pop();}else {a(e,d,M);}ne();if(y.wrap>0&&y.language==="jsx"){let V=0;let c=r.count;let p=0;if(e.types[c].indexOf("attribute")>-1){do{V=V+e.token[c].length+1;c=c-1;}while(e.lexer[c]!=="markup"||e.types[c].indexOf("attribute")>-1);if(e.lines[c]===1)V=V+e.token[c].length+1;}else if(e.lines[c]===1){V=e.token[c].length+1;}p=c-1;if(V>0&&e.types[p]!=="script_end"){if(e.types[p].indexOf("attribute")>-1){do{V=V+e.token[p].length+1;p=p-1;}while(e.lexer[p]!=="markup"||e.types[p].indexOf("attribute")>-1);if(e.lines[p]===1)V=V+e.token[p].length+1;}else if(e.lines[p]===1){V=e.token[p].length+1;}if(V>y.wrap&&e.lines[c]===1){d.begin=e.begin[c];d.ender=c+2;d.lexer=e.lexer[c];d.lines=1;d.stack=e.stack[c];d.token="{";d.types="script_start";r.splice({data:e,howmany:0,index:c,record:d});d.begin=c;d.lexer="script";d.lines=0;d.stack="script";if(y.markup.quoteConvert==="single"){d.token="' '";}else {d.token='" "';}d.types="string";r.splice({data:e,howmany:0,index:c+1,record:d});d.lexer="markup";d.token="}";d.types="script_end";r.splice({data:e,howmany:0,index:c+2,record:d});e.ender[c+3]=e.ender[c+3]+3;c=c+4;do{e.begin[c]=e.begin[c]+3;e.ender[c]=e.ender[c]+3;c=c+1;}while(c<r.count)}}}r.linesSpace=0;}function S(){let t="";let d=r.linesSpace;let x="";const j=[];const C=e.token[r.count]==="{";const F=f;if(k===true){if(C===true){x="script";}else if(r.structure[r.structure.length-1][1]>-1){x=z(e.token[r.structure[r.structure.length-1][1]].toLowerCase());}else if(e.begin[r.count]>1){x=z(e.token[e.begin[r.count]].toLowerCase());}else {x=z(e.token[e.begin[r.count]].toLowerCase());}}const M=e.types[r.count]==="template_start"&&e.token[r.count].indexOf("<!")===0&&e.token[r.count].indexOf("<![")<0&&e.token[r.count].charAt(e.token[r.count].length-1)==="[";const $=Object.create(null);$.begin=r.structure[r.structure.length-1][1];$.ender=-1;$.lexer="markup";$.lines=d;$.stack=r.structure[r.structure.length-1][0];$.token="";$.types="content";function q(){let R=f-1;let X=0;if(i[f-1]!=="\\")return false;if(R>-1){do{if(i[R]!=="\\")break;X=X+1;R=R-1;}while(R>-1)}return X%2===1}if(f<E){let R="";let X="";let le=0;do{if(i[f]==="\n")r.lineNumber=r.lineNumber+1;if(k===true){if(X===""){if(i[f]==="/"){if(i[f+1]==="*"){X="*";}else if(i[f+1]==="/"){X="/";}else if(x==="script"&&"([{!=,;.?:&<>".indexOf(i[f-1])>-1){if(y.language!=="jsx"||i[f-1]!=="<")X="reg";}}else if((i[f]==='"'||i[f]==="'"||i[f]==="`")&&q()===false){X=i[f];}else if(i[f]==="{"&&C===true){le=le+1;}else if(i[f]==="}"&&C===true){if(le===0){_.lexers.script(j.join("").replace(/^(\s+)/,"").replace(/(\s+)$/,""));r.structure[r.structure.length-1][1]+=1;if(e.types[r.count]==="end"&&e.lexer[e.begin[r.count]-1]==="script"){$.lexer="script";$.token=y.attemptCorrection===true?";":"x;";$.types="separator";a(e,$,"");$.lexer="markup";}$.token="}";$.types="script_end";a(e,$,"");r.structure.pop();break}le=le-1;}if(A(e.token[r.count],3)===false){R=i.slice(f,f+10).join("").toLowerCase();if(x==="script"){R=f===E-9?R.slice(0,R.length-1):R.slice(0,R.length-2);if(R==="<\/script"){let L=j.join("").replace(/^(\s+)/,"").replace(/(\s+)$/,"");f=f-1;if(j.length<1)break;if(/^<!--+/.test(L)&&/--+>$/.test(L)){$.token="<!--";$.types="comment";a(e,$,"");L=L.replace(/^<!--+/,"").replace(/--+>$/,"");_.lexers.script(L);$.token="-->";a(e,$,"");}else {_.lexers.script(L);}break}}if(x==="style"){if(f===E-8){R=R.slice(0,R.length-1);}else if(f===E-9){R=R.slice(0,R.length-2);}else {R=R.slice(0,R.length-3);}if(R==="</style"){let L=j.join("").replace(/^(\s+)/,"").replace(/(\s+)$/,"");f=f-1;if(j.length<1)break;if(/^<!--+/.test(L)&&/--+>$/.test(L)){$.token="<!--";$.types="comment";a(e,$,"");L=L.replace(/^<!--+/,"").replace(/--+>$/,"");_.lexers.style(L);$.token="-->";a(e,$,"");}else {_.lexers.style(L);if(y.style.sortProperties===true)r.sortCorrection(0,r.count+1);}break}}}else {if(x==="schema"){R=i.slice(f+3,f+14).join("").toLowerCase();if(f===E-12){R=R.slice(0,R.length-3);}else {R=R.slice(0,R.length-2);}if(R==="endschema"){let L=j.join("").replace(/^(\s+)/,"").replace(/(\s+)$/,"");f=f-1;if(j.length<1)break;if(/^<!--+/.test(L)&&/--+>$/.test(L)){$.token="<!--";$.types="comment";a(e,$,"");L=L.replace(/^<!--+/,"").replace(/--+>$/,"");_.lexers.script(L);$.token="-->";a(e,$,"");}else {_.options.language="json";_.lexers.script(L);if(y.script.objectSort===true)r.sortCorrection(0,r.count+1);_.options.language="liquid";}break}}else if(x==="style"){R=i.slice(f+4,f+14).join("").toLowerCase();if(f===E-14){R=R.slice(0,R.length-4);}else if(f===E-13){R=R.slice(0,R.length-3);}else {R=R.slice(0,R.length-2);}if(R==="endstyle"){let L=j.join("").replace(/^(\s+)/,"").replace(/(\s+)$/,"");f=f-1;if(j.length<1)break;if(/^<!--+/.test(L)&&/--+>$/.test(L)){$.token="<!--";$.types="comment";a(e,$,"");L=L.replace(/^<!--+/,"").replace(/--+>$/,"");_.lexers.style(L);$.token="-->";a(e,$,"");}else {_.lexers.style(L);}break}}else if(x==="javascript"){R=i.slice(f+4,f+19).join("").toLowerCase();if(f===E-19){R=R.slice(0,R.length-4);}else if(f===E-18){R=R.slice(0,R.length-3);}else {R=R.slice(0,R.length-2);}if(R==="endjavascript"){let L=j.join("").replace(/^(\s+)/,"").replace(/(\s+)$/,"");f=f-1;if(j.length<1)break;if(/^<!--+/.test(L)&&/--+>$/.test(L)){$.token="<!--";$.types="comment";a(e,$,"");L=L.replace(/^<!--+/,"").replace(/--+>$/,"");_.lexers.script(L);$.token="-->";a(e,$,"");}else {_.lexers.script(L);if(y.script.objectSort===true){r.sortCorrection(0,r.count+1);}}break}}}}else if(X===i[f]&&(X==='"'||X==="'"||X==="`"||X==="*"&&i[f+1]==="/")&&q()===false){X="";}else if(X==="`"&&i[f]==="$"&&i[f+1]==="{"&&q()===false){X="}";}else if(X==="}"&&i[f]==="}"&&q()===false){X="`";}else if(X==="/"&&(i[f]==="\n"||i[f]==="\r")){X="";}else if(X==="reg"&&i[f]==="/"&&q()===false){X="";}else if(X==="/"&&i[f]===">"&&i[f-1]==="-"&&i[f-2]==="-"){R=i.slice(f+1,f+11).join("").toLowerCase();R=R.slice(0,R.length-2);if(x==="script"&&R==="<\/script")X="";R=R.slice(0,R.length-1);if(x==="style"&&R==="</style")X="";}}if(M===true&&i[f]==="]"){f=f-1;t=j.join("");t=t.replace(/\s+$/,"");d=0;$.token=t;a(e,$,"");break}if(k===false&&j.length>0&&(i[f]==="<"&&i[f+1]!=="="&&!/\s|\d/.test(i[f+1])||i[f]==="["&&i[f+1]==="%"||i[f]==="{"&&(y.language==="jsx"||i[f+1]==="{"||i[f+1]==="%"))){f=f-1;if(r.structure[r.structure.length-1][0]==="comment"){t=j.join("");}else {t=j.join("").replace(/\s+$/,"");}t=I(t);d=0;$.token=t;if(y.wrap>0&&y.markup.preserveText!==true){let ne=function(){if(t.charAt(L)===" "){ue.push(t.slice(0,L));t=t.slice(L+1);K=t.length;L=B;return}do{L=L-1;}while(L>0&&t.charAt(L)!==" ");if(L>0){ue.push(t.slice(0,L));t=t.slice(L+1);K=t.length;L=B;}else {L=B;do{L=L+1;}while(L<K&&t.charAt(L)!==" ");ue.push(t.slice(0,L));t=t.slice(L+1);K=t.length;L=B;}};let L=y.wrap;let K=t.length;const G="";const H="";const B=y.wrap;const ue=[];if(e.token[e.begin[r.count]]==="<a>"&&e.token[e.begin[e.begin[r.count]]]==="<li>"&&e.lines[e.begin[r.count]]===0&&r.linesSpace===0&&t.length<y.wrap){a(e,$,"");break}if(K<B){a(e,$,"");break}if(r.linesSpace<1){let fe=r.count;do{L=L-e.token[fe].length;if(e.types[fe].indexOf("attribute")>-1)L=L-1;if(e.lines[fe]>0&&e.types[fe].indexOf("attribute")<0)break;fe=fe-1;}while(fe>0&&L>0);if(L<1)L=t.indexOf(" ");}t=j.join("");t=t.replace(/^\s+/,"").replace(/\s+$/,"").replace(/\s+/g," ");do{ne();}while(L<K);if(t!==""&&t!==" ")ue.push(t);t=y.crlf===true?ue.join("\r\n"):ue.join("\n");t=G+t+H;}d=0;$.token=t;a(e,$,"");break}j.push(i[f]);f=f+1;}while(f<E)}if(f>F&&f<E){if(/\s/.test(i[f])===true){let R=f;r.linesSpace=1;do{if(i[R]==="\n")r.linesSpace=r.linesSpace+1;R=R-1;}while(R>F&&/\s/.test(i[R])===true)}else {r.linesSpace=0;}}else if(f!==F||f===F&&k===false){t=j.join("").replace(/\s+$/,"");d=0;if($.token!==t){$.token=t;a(e,$,"");r.linesSpace=0;}}k=false;}if(m>0){do{y.markup.attributeSortList[f]=y.markup.attributeSortList[f].replace(/^\s+/,"").replace(/\s+$/,"");f=f+1;}while(f<m);f=0;}if(y.language==="html"||y.language==="liquid")l="html";do{if(/\s/.test(i[f])){if(e.types[r.count]==="template_start"&&r.structure[r.structure.length-1][0]==="comment"){S();}else {f=r.spacer({array:i,end:E,index:f});}}else if(k){S();}else if(i[f]==="<"){W("");}else if(i[f]==="["&&i[f+1]==="%"){W("%]");}else if(i[f]==="{"&&(y.language==="jsx"||i[f+1]==="{"||i[f+1]==="%")){W("");}else if(i[f]==="]"&&n>0){W("]>");}else if(i[f]==="-"&&i[f+1]==="-"&&i[f+2]==="-"){W("---");}else {S();}f=f+1;}while(f<E);if(e.token[r.count].charAt(0)!=="/"&&h.has(r.structure[r.structure.length-1][0])){P(e.token[r.count],true);}if(T.end!==T.start&&r.error===""){if(T.end>T.start){const t=T.end-T.start;const d=t===1?"":"s";r.error=`\u2716 Prettify Parse Error:
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  ${t} more end type${d} than start types.
+// src/index.ts
+var src_exports = {};
+__export(src_exports, {
+  default: () => exports_exports,
+  definitions: () => definitions
+});
+module.exports = __toCommonJS(src_exports);
 
-`;}else {const t=T.start-T.end;const d=t===1?"":"s";r.error=` \u2716 Prettify Parse Error:
+// src/utils/native.ts
+var assign = Object.assign;
+var create = Object.create;
+var keys = Object.keys;
 
-  ${t} more start type${d} than end types.
+// src/options/definitions.ts
+var definitions = {
+  language: {
+    description: "The language name",
+    lexer: "all",
+    type: "select",
+    default: "auto",
+    values: [
+      {
+        rule: "auto",
+        description: "Prettify will automatically detect the language"
+      },
+      {
+        rule: "text",
+        description: "Plain Text"
+      },
+      {
+        rule: "html",
+        description: "HTML"
+      },
+      {
+        rule: "liquid",
+        description: "HTML + Liquid"
+      },
+      {
+        rule: "javascript",
+        description: "JavaScript"
+      },
+      {
+        rule: "jsx",
+        description: "JSX"
+      },
+      {
+        rule: "typescript",
+        description: "TypeScript"
+      },
+      {
+        rule: "tsx",
+        description: "TSX"
+      },
+      {
+        rule: "json",
+        description: "JSON"
+      },
+      {
+        rule: "css",
+        description: "CSS"
+      },
+      {
+        rule: "scss",
+        description: "SCSS"
+      },
+      {
+        rule: "less",
+        description: "LESS"
+      },
+      {
+        rule: "xml",
+        description: "XML"
+      }
+    ]
+  },
+  wrap: {
+    default: 0,
+    description: "Character width limit before applying word wrap. A 0 value disables this option. A negative value concatenates script strings.",
+    lexer: "all",
+    type: "number"
+  },
+  indentSize: {
+    default: 2,
+    description: 'The number of "indentChar" values to comprise a single indentation.',
+    lexer: "all",
+    type: "number"
+  },
+  indentChar: {
+    default: " ",
+    description: "The string characters to comprise a single indentation. Any string combination is accepted.",
+    lexer: "all",
+    type: "string"
+  },
+  crlf: {
+    default: false,
+    description: "If line termination should be Windows (CRLF) format. Unix (LF) format is the default.",
+    lexer: "all",
+    type: "boolean"
+  },
+  endNewline: {
+    default: false,
+    description: "Insert an empty line at the end of output.",
+    lexer: "all",
+    type: "boolean"
+  },
+  preserveLine: {
+    default: 2,
+    description: "The maximum number of consecutive empty lines to retain.",
+    lexer: "all",
+    type: "number"
+  },
+  preserveComment: {
+    default: false,
+    description: "Prevent comment reformatting due to option wrap.",
+    lexer: "all",
+    type: "boolean"
+  },
+  commentNewline: {
+    default: false,
+    description: "If a blank new line should be forced above comments.",
+    lexer: "all",
+    type: "boolean"
+  },
+  commentIndent: {
+    default: false,
+    description: "This will determine whether comments should always start at position 0 of each line or if comments should be indented according to the code.",
+    lexer: "all",
+    type: "boolean"
+  },
+  quoteConvert: {
+    lexer: "all",
+    description: "If the quotes of markup attributes should be converted to single quotes or double quotes.",
+    type: "select",
+    default: "none",
+    values: [
+      {
+        rule: "none",
+        description: "Ignores this option"
+      },
+      {
+        rule: "single",
+        description: "Converts double quotes to single quotes"
+      },
+      {
+        rule: "double",
+        description: "Converts single quotes to double quotes"
+      }
+    ]
+  },
+  attemptCorrection: {
+    default: false,
+    description: "Automatically correct some sloppiness in code.",
+    lexer: "all",
+    type: "boolean"
+  },
+  attributeSort: {
+    default: false,
+    description: "Alphanumerically sort markup attributes. Attribute sorting is ignored on tags that contain attributes template attributes.",
+    lexer: "markup",
+    type: "boolean"
+  },
+  attributeSortList: {
+    default: [],
+    description: "A comma separated list of attribute names. Attributes will be sorted according to this list and then alphanumerically. This option requires 'attributeSort' have a value of true.",
+    lexer: "markup",
+    type: "array"
+  },
+  forceAttribute: {
+    default: false,
+    description: "If all markup attributes should be indented each onto their own line.",
+    lexer: "markup",
+    type: "boolean"
+  },
+  forceIndent: {
+    default: false,
+    description: "Will force indentation upon all content and tags without regard for the creation of new text nodes.",
+    lexer: "markup",
+    type: "boolean"
+  },
+  preserveAttributes: {
+    default: false,
+    description: "If markup tags should have their insides preserved. This option is only available to markup and does not support child tokens that require a different lexer.",
+    lexer: "markup",
+    type: "boolean"
+  },
+  preserveAttributeValues: {
+    default: false,
+    description: "Whether or not attribute values should be preserved. When enabled, values will allow newline characters and processing on the contents will be skipped.",
+    lexer: "markup",
+    type: "boolean"
+  },
+  preserveText: {
+    default: false,
+    description: "If text in the provided markup code should be preserved exactly as provided. This option eliminates beautification and wrapping of text content.",
+    lexer: "markup",
+    type: "boolean"
+  },
+  selfCloseSpace: {
+    default: false,
+    description: 'Markup self-closing tags end will end with " />" instead of "/>".',
+    lexer: "markup",
+    type: "boolean"
+  },
+  classPadding: {
+    description: "Inserts new line characters between every CSS code block.",
+    default: false,
+    type: "boolean",
+    lexer: "style"
+  },
+  sortSelectors: {
+    default: false,
+    type: "boolean",
+    description: "If comma separated CSS selectors should present on a single line of code.",
+    lexer: "style"
+  },
+  sortProperties: {
+    lexer: "style",
+    description: "This option will alphabetically sort CSS properties contained within classes.",
+    default: false,
+    type: "boolean"
+  },
+  noLeadZero: {
+    lexer: "style",
+    description: "This will eliminate leading zeros from numbers expressed within values.",
+    default: false,
+    type: "boolean"
+  },
+  compressCSS: {
+    lexer: "style",
+    description: "If CSS should be beautified in a style where the properties and values are minifed for faster reading of selectors.",
+    default: false,
+    type: "boolean"
+  },
+  braceAllman: {
+    lexer: "script",
+    default: false,
+    description: 'Determines if opening curly braces will exist on the same line as their condition or be forced onto a new line, otherwise known as "Allman Style" indentation.',
+    type: "boolean"
+  },
+  bracePadding: {
+    default: false,
+    description: "This will create a newline before and after objects values",
+    type: "boolean",
+    lexer: "script"
+  },
+  braceNewline: {
+    default: false,
+    description: "If true an empty line will be inserted after opening curly braces and before closing curly braces.",
+    type: "boolean",
+    lexer: "script"
+  },
+  braceStyle: {
+    default: "none",
+    description: "Emulates JSBeautify's brace_style option using existing Prettify options",
+    type: "select",
+    lexer: "script",
+    values: [
+      {
+        rule: "none",
+        description: "Ignores this option"
+      },
+      {
+        rule: "collapse",
+        description: "Sets formatObject to indent and neverflatten to true."
+      },
+      {
+        rule: "collapse-preserve-inline",
+        description: "Sets formatObject to inline and bracePadding to true"
+      },
+      {
+        rule: "expand",
+        description: "Sets objectIndent to indent and braceNewline + neverflatten to true."
+      }
+    ]
+  },
+  arrayFormat: {
+    lexer: "script",
+    description: "Determines if all array indexes should be indented, never indented, or left to the default",
+    type: "select",
+    default: "default",
+    values: [
+      {
+        rule: "default",
+        description: "Default formatting"
+      },
+      {
+        rule: "indent",
+        description: "Always indent each index of an array"
+      },
+      {
+        rule: "inline",
+        description: "Ensure all array indexes appear on a single line"
+      }
+    ]
+  },
+  objectSort: {
+    default: false,
+    description: "This option will alphabetically sort object properties in JSON objects",
+    type: "boolean",
+    lexer: "script"
+  },
+  objectIndent: {
+    description: "This option will alphabetically sort object properties in JSON objects",
+    type: "select",
+    lexer: "script",
+    default: "default",
+    values: [
+      {
+        rule: "default",
+        description: "Default formatting"
+      },
+      {
+        rule: "indent",
+        description: "Always indent each index of an array"
+      },
+      {
+        rule: "inline",
+        description: "Ensure all array indexes appear on a single line"
+      }
+    ]
+  },
+  functionSpace: {
+    lexer: "script",
+    default: true,
+    type: "boolean",
+    description: "Inserts a space following the function keyword for anonymous functions."
+  },
+  functionNameSpace: {
+    lexer: "script",
+    default: true,
+    type: "boolean",
+    description: "If a space should follow a JavaScript function name."
+  },
+  methodChain: {
+    lexer: "script",
+    default: -1,
+    description: "When to break consecutively chained methods and properties onto separate lines. A negative value disables this option. A value of 0 ensures method chainsare never broken.",
+    type: "number"
+  },
+  caseSpace: {
+    default: false,
+    type: "boolean",
+    description: "If the colon separating a case's expression (of a switch/case block) from its statement should be followed by a space instead of indentation thereby keeping the case on a single line of code.",
+    lexer: "script"
+  },
+  inlineReturn: {
+    lexer: "script",
+    default: true,
+    type: "boolean",
+    description: "Inlines return statements contained within `if` and `else` conditions. This rules also augments code and will reason about your structure to output the best and most readable results."
+  },
+  elseNewline: {
+    lexer: "script",
+    default: false,
+    type: "boolean",
+    description: 'If keyword "else" is forced onto a new line.'
+  },
+  ternaryLine: {
+    lexer: "script",
+    description: "If ternary operators in JavaScript `?` and `:` should remain on the same line.",
+    type: "boolean",
+    default: false
+  },
+  neverFlatten: {
+    lexer: "script",
+    default: true,
+    description: "If destructured lists in script should never be flattend.",
+    type: "boolean"
+  },
+  variableList: {
+    lexer: "script",
+    description: "If consecutive JavaScript variables should be merged into a comma separated list or if variables in a list should be separated. each \u2014 Ensure each reference is a single declaration statement.",
+    type: "select",
+    default: "none",
+    values: [
+      {
+        rule: "none",
+        description: "Ignores this option"
+      },
+      {
+        rule: "each",
+        description: "Ensure each reference is a single declaration statement"
+      },
+      {
+        rule: "list",
+        description: "Ensure consecutive declarations are a comma separated list"
+      }
+    ]
+  },
+  vertical: {
+    lexer: "script",
+    description: "If lists of assignments and properties should be vertically aligned",
+    type: "boolean",
+    default: false
+  },
+  noSemicolon: {
+    lexer: "script",
+    description: "Removes semicolons that would be inserted by ASI. This option is in conflict with option `attemptCorrection` and takes precedence over conflicting features. Use of this option is a possible security/stability risk.",
+    default: false,
+    type: "boolean"
+  },
+  endComma: {
+    description: "If there should be a trailing comma in arrays and objects.",
+    type: "select",
+    lexer: "script",
+    default: "none",
+    values: [
+      {
+        rule: "none",
+        description: "Ignore this option"
+      },
+      {
+        rule: "always",
+        description: "Always ensure there is a tailing comma"
+      },
+      {
+        rule: "never",
+        description: "Remove trailing commas"
+      }
+    ]
+  }
+};
 
-`;}}return e};_.beautify.markup=function v(u){const h=re(null);const s=re(null);const g=re(null);const y="markup";const e=_.parsed;const m=u.crlf===true?String.fromCharCode(13,10):String.fromCharCode(10);const T=_.end<1||_.end>e.token.length?e.token.length:_.end+1;h.is=(A,I)=>e.types[A]===I;h.not=(A,I)=>e.types[A]!==I;h.idx=(A,I)=>A>-1&&e.types[A].indexOf(I);s.is=(A,I)=>e.token[A]===I;s.not=(A,I)=>e.token[A]!==I;let i=_.start;let E=-1;let f=0;let n=0;let k=isNaN(u.indentLevel)?0:Number(u.indentLevel);const l=(()=>{const A=_.start>0?Array(_.start).fill(0,0,_.start):[];function I(){let t=i+1;let d=0;if(h.is(t,void 0))return t-1;if(h.is(t,"comment")||i<T-1&&h.idx(t,"attribute")>-1){do{if(h.is(t,"jsx_attribute_start")){d=t;do{if(h.is(t,"jsx_attribute_end")&&e.begin[t]===d)break;t=t+1;}while(t<T)}else if(h.not(t,"comment")&&h.idx(t,"attribute")<0)return t;t=t+1;}while(t<T)}return t}function a(){const t=e.begin[i];let d=i;do{d=d-1;if(s.is(d,"</li>")&&s.is(d-1,"</a>")&&e.begin[e.begin[d]]===t&&e.begin[d-1]===e.begin[d]+1){d=e.begin[d];}else {return}}while(d>t+1);d=i;do{d=d-1;if(h.is(d+1,"attribute")){A[d]=-10;}else if(s.not(d,"</li>")){A[d]=-20;}}while(d>t+1)}function z(){let t=i;let d=false;if(e.lines[i+1]===0&&u.markup.forceIndent===false){do{if(e.lines[t]>0){d=true;break}t=t-1;}while(t>E);t=i;}else {d=true;}if(d===true){const x=h.is(f,"comment")||h.is(f,"end")||h.is(f,"template_end")?k+1:k;do{A.push(x);t=t-1;}while(t>E);if(x===k+1)A[i]=k;if(h.is(t,"attribute")||h.is(t,"template_attribute")||h.is(t,"jsx_attribute_start")){A[e.begin[t]]=x;}else {A[t]=x;}}else {do{A.push(-20);t=t-1;}while(t>E);A[t]=-20;}E=-1;}function P(){let t=k;if(u.markup.forceIndent===true||u.markup.forceAttribute===true){A.push(k);return}if(f<T&&(h.idx(f,"end")>-1||h.idx(f,"start")>-1)&&e.lines[f]>0){A.push(k);t=t+1;if(e.types[i]==="singleton"&&i>0&&h.idx(i-1,"attribute")>-1&&h.is(e.begin[i-1],"singleton")){if(e.begin[i]<0||h.is(e.begin[i-1],"singleton")&&e.begin[e.ender[i]-1]!==i){A[i-1]=k;}else {A[i-1]=k+1;}}}else if(i>0&&h.is(i,"singleton")&&h.idx(i-1,"attribute")>-1){A[i-1]=k;n=e.token[i].length;A.push(-10);}else if(e.lines[f]===0){A.push(-20);}else if((u.wrap===0||i<T-2&&h.idx(i+2,"attribute")>-1&&e.token[i].length+e.token[i+1].length+e.token[i+2].length+1>u.wrap||e.token[i].length+e.token[i+1].length>u.wrap)&&(h.is(i+1,"singleton")||h.is(i+1,"template"))){A.push(k);}else {n=n+1;A.push(-10);}if(i>0&&h.idx(i-1,"attribute")>-1&&e.lines[i]<1){A[i-1]=-20;}if(n>u.wrap){let d=i;let x=Math.max(e.begin[i],0);if(h.is(i,"content")&&u.markup.preserveText===false){let j=0;const C=e.token[i].replace(/\s+/g," ").split(" ");do{d=d-1;if(A[d]<0){j=j+e.token[d].length;if(A[d]===-10)j=j+1;}else {break}}while(d>0);d=0;x=C.length;do{if(C[d].length+j>u.wrap){C[d]=m+C[d];j=C[d].length;}else {C[d]=` ${C[d]}`;j=j+C[d].length;}d=d+1;}while(d<x);if(C[0].charAt(0)===" "){e.token[i]=C.join("").slice(1);}else {A[i-1]=t;e.token[i]=C.join("").replace(m,"");}if(e.token[i].indexOf(m)>0){n=e.token[i].length-e.token[i].lastIndexOf(m);}}else {do{d=d-1;if(A[d]>-1){n=e.token[i].length;if(e.lines[i+1]>0)n=n+1;return}if(e.types[d].indexOf("start")>-1){n=0;return}if(e.lines[d+1]>0&&(h.not(d,"attribute")||h.is(d,"attribute")&&h.is(d+1,"attribute"))){if(h.not(d,"singleton")||h.is(d,"attribute")&&h.is(d+1,"attribute")){n=e.token[i].length;if(e.lines[i+1]>0)n=n+1;break}}}while(d>x);A[d]=t;}}}function W(){const t=i;do{if(e.lexer[i+1]===y&&e.begin[i+1]<t&&h.not(i+1,"start")&&h.not(i+1,"singleton"))break;A.push(0);i=i+1;}while(i<T);g[t]=i;A.push(k-1);f=I();if(e.lexer[f]===y&&e.stack[i].indexOf("attribute")<0&&(e.types[f]==="end"||e.types[f]==="template_end")){k=k-1;}}function S(){function t(R){const X=R.indexOf("=");if(X>0&&(X<R.indexOf('"')&&R.indexOf('"')>0||X<R.indexOf("'")&&R.indexOf("'")>0)){return [R.slice(0,X),R.slice(X+1)]}return [R,""]}function d(R){const X=t(R);const le=X[1].replace(/\s+/g,B=>B==="\n"?"\n":" ");const L=["=",le.slice(0,1)];let K=1;let G="";let H=0;do{if(le[K]==="{"&&(le[K+1]==="{"||le[K+1]==="%")){H=(le[K+1]==="%"?le.indexOf("%}",K+1):le.indexOf("}}",K+1))+2;G=le.slice(K,H);K=H;L.push([G]);}else {L.push(le[K]);K=K+1;}}while(K<le.length);return [X[0]+"=",L]}const x=i-1;function j(R){const X=d(e.token[R]);X.length;let L=1;let K=X[0].length;console.log(X);const G=t(e.token[R]);const H=G[1].replace(/\s+/g," ");let B=1;let ue=G[0]+"="+H.slice(0,1);let ne=0;do{K=K+X[L].length;if(H[B]==="{"&&(H[B+1]==="{"||H[B+1]==="%")){ne=(H[B+1]==="%"?H.indexOf("%}",B+1):H.indexOf("}}",B+1))+2;ue+=H.slice(B,ne);B=ne;}else {if(H[B]===" "){ue+="\n";}else {ue+=H[B];}B=B+1;}}while(B<H.length);e.token[R]=ue;return;}let C=i;let F=false;let M=false;let $=false;let q=e.token[x].length+1;let te=(()=>{if(h.idx(i,"start")>0){let R=i;do{if(e.types[R].indexOf("end")>0&&e.begin[R]===i){if(R<T-1&&h.idx(R+1,"attribute")>-1){F=true;break}}R=R+1;}while(R<T)}else if(i<T-1&&h.idx(i+1,"attribute")>-1){F=true;}if(h.is(f,"end")||h.is(f,"template_end")){if(h.is(x,"singleton"))return k+2;return k+1}if(h.is(x,"singleton"))return k+1;return k})();if(F===false&&h.is(i,"comment_attribute")){A.push(k);if(e.types[x]==="singleton"){A[x]=k+1;}else {A[x]=k;}return}if(te<1)te=1;do{n=n+e.token[i].length+1;if(e.types[i].indexOf("attribute")>0){if(h.is(i,"template_attribute")){A.push(te);}else if(e.types[i]==="comment_attribute"){A.push(te);}else if(e.types[i].indexOf("start")>0){$=true;if(i<T-2&&h.idx(i+2,"attribute")>0){A.push(-20);i=i+1;g[i]=i;}else {if(x===i-1&&F===false){A.push(te);}else {A.push(te+1);}if(e.lexer[i+1]!==y){i=i+1;W();}}}else if(e.types[i].indexOf("end")>0){if(A[i-1]!==-20)A[i-1]=A[e.begin[i]]-1;if(e.lexer[i+1]!==y){A.push(-20);}else {A.push(te);}}else {A.push(te);}M=true;}else if(e.types[i]==="attribute"){q=q+e.token[i].length+1;if(u.markup.preserveAttributes===true){if(e.lines[i]===2){A.push(te);}else if(e.lines[i]===1){A.push(-10);}}else if(u.markup.forceAttribute===true||$===true||i<T-1&&h.not(i+1,"template_attribute")&&h.idx(i+1,"attribute")>0){A.push(te);}else {A.push(te);}}else if(e.begin[i]<x+1){break}i=i+1;}while(i<T);i=i-1;if(A[i-1]>0&&h.idx(i,"end")>0&&h.idx(i,"attribute")>0&&h.not(x,"singleton")&&F===true){A[i-1]=A[i-1]-1;}if(A[i]!==-20){if(u.language==="jsx"&&h.idx(x,"start")>-1&&h.is(i+1,"script_start")){A[i]=te;}else {A[i]=A[x];}}if(u.markup.forceAttribute===true){n=0;A[x]=te;}else {A[x]=-10;}if(M===true||u.markup.preserveAttributes===true||s.is(x,"<%xml%>")||s.is(x,"<?xml?>")){n=0;return}C=i;if(C>x+1){if(u.markup.selfCloseSpace===false)q=q-1;if(q>u.wrap&&u.wrap>0&&u.markup.forceAttribute===false){n=e.token[i].length;do{if(e.token[C].length>u.wrap&&/\s/.test(e.token[C]))j(C);C=C-1;A[C]=te;}while(C>x)}}else if(u.wrap>0&&e.types[i]==="attribute"&&e.token[i].length>u.wrap&&/\s/.test(e.token[i])===true){j(i);}}do{if(e.lexer[i]===y){if(e.token[i].toLowerCase().indexOf("<!doctype")===0)A[i-1]=k;else if(e.types[i].indexOf("attribute")>-1){S();}else if(h.is(i,"comment")){if(E<0)E=i;if(h.not(i+1,"comment")||i>0&&h.idx(i-1,"end")>-1){z();}}else if(h.not(i,"comment")){f=I();if(h.is(f,"end")||h.is(f,"template_end")){k=k-1;if(h.is(f,"template_end")&&h.is(e.begin[f]+1,"template_else")){k=k-1;}if(s.is(i,"</ol>")||s.is(i,"</ul>")||s.is(i,"</dl>")){a();}}if(h.is(i,"script_end")&&h.is(i+1,"end")){if(e.lines[i+1]<1){A.push(-20);}else {A.push(-10);}}else if((u.markup.forceIndent===false||u.markup.forceIndent&&h.is(f,"script_start"))&&(h.is(i,"content")||h.is(i,"singleton")||h.is(i,"template"))){n=n+e.token[i].length;if(h.is(i,"template")){A.push(k);const t=e.token[i].indexOf(m);if(t>0){const d=A[i-1]*u.indentSize+(e.token[i].charCodeAt(2)===45?u.indentSize:u.indentSize-1);const x=[];let j=0;do{x.push(" ");j=j+1;}while(j<d);e.token[i]=e.token[i].replace(/^\s+/gm,"").replace(/\n/g,C=>{return C+x.join("")});}}else if(e.lines[f]>0&&h.is(f,"script_start")){A.push(-10);}else if(u.wrap>0&&(h.idx(i,"template")<0||f<T&&h.idx(i,"template")>-1&&h.idx(i,"template")<0)){P();}else if(f<T&&(h.idx(f,"end")>-1||h.idx(f,"start")>-1)&&(e.lines[f]>0||h.idx(i,"template_")>-1)){A.push(k);}else if(e.lines[f]===0){A.push(-20);}else {A.push(k);}}else if(h.is(i,"start")||h.is(i,"template_start")){k=k+1;if(h.is(i,"template_start")&&h.is(i+1,"template_else")){k=k+1;}if(u.language==="jsx"&&s.is(i+1,"{")){if(e.lines[i+1]===0){A.push(-20);}else {A.push(-10);}}else if(h.is(i,"start")&&h.is(f,"end")){A.push(-20);}else if(h.is(i,"start")&&h.is(f,"script_start")){A.push(-10);}else if(u.markup.forceIndent===true){A.push(k);}else if(h.is(i,"template_start")&&h.is(f,"template_end")){A.push(-20);}else if(e.lines[f]===0&&(h.is(f,"content")||h.is(f,"singleton")||h.is(f,"start")&&h.is(f,"template"))){A.push(-20);}else {A.push(k);}}else if(u.markup.forceIndent===false&&e.lines[f]===0&&(h.is(f,"content")||h.is(f,"singleton"))){A.push(-20);}else if(h.is(i+2,"script_end")){A.push(-20);}else if(h.is(i,"template_else")){if(h.is(f,"template_end")){A[i-1]=k+1;}else {A[i-1]=k-1;}A.push(k);}else {A.push(k);}}if(h.not(i,"content")&&h.not(i,"singleton")&&h.not(i,"template")&&h.not(i,"attribute")){n=0;}}else {n=0;W();}i=i+1;}while(i<T);return A})();return (()=>{const A=[];const I=(()=>{const t=[u.indentChar];const d=u.indentSize-1;let x=0;if(x<d){do{t.push(u.indentChar);x=x+1;}while(x<d)}return t.join("")})();function a(t){const d=[];const x=u.preserveLine+1;const j=Math.min(e.lines[i+1]-1,x);let C=0;if(t<0)t=0;do{d.push(m);C=C+1;}while(C<j);if(t>0){C=0;do{d.push(I);C=C+1;}while(C<t)}return d.join("")}function z(){let t=e.token[i].split(m);const d=e.lines[i+1];if(h.is(i,"comment"))t=t.map(F=>F.trimStart());const x=l[i-1]>-1?h.is(i,"attribute")?l[i-1]+1:l[i-1]:(()=>{let F=i-1;let M=F>-1&&h.idx(F,"start")>-1;if(l[i]>-1&&h.is(i,"attribute")){return l[i]+1}do{F=F-1;if(l[F]>-1){if(h.is(i,"content")&&M===false){return l[F]}else {return l[F]+1}}if(h.idx(F,"start")>-1)M=true;}while(F>0);return 1})();e.lines[i+1]=0;let j=0;const C=t.length-1;do{if(h.is(i,"comment")){if(t[j]!==""){if(t[j+1].trimStart()!==""){A.push(t[j],a(x));}else {A.push(t[j],"\n");}}else {if(t[j+1].trimStart()===""){A.push("\n");}else {A.push(a(x));}}}else if(h.is(i,"attribute")){A.push(t[j],a(x));}else {A.push(t[j],a(x));}j=j+1;}while(j<C);e.lines[i+1]=d;A.push(t[C]);if(l[i]===-10){A.push(" ");}else if(l[i]>-1){A.push(a(l[i]));}}function P(){const t=e.token[i];const d=/(\/|\?)?>$/;const x=d.exec(t);let j=i+1;let C=false;let F=u.markup.selfCloseSpace===true&&x!==null&&x[0]==="/>"?" ":"";if(x===null)return;e.token[i]=t.replace(d,"");do{if(h.is(j,"jsx_attribute_end")&&e.begin[e.begin[j]]===i){C=false;}else if(e.begin[j]===i){if(h.is(j,"jsx_attribute_start")){C=true;}else if(h.idx(j,"attribute")<0&&C===false){break}}else if(C===false&&(e.begin[j]<i||h.idx(j,"attribute")<0)){break}j=j+1;}while(j<T);if(h.is(j-1,"comment_attribute"))F=a(l[j-2]-1);e.token[j-1]=e.token[j-1]+F+x[0];if(h.is(j,"comment")&&e.lines[i+1]<2)l[i]=-10;}i=_.start;let W="";let S;S=u.indentLevel;do{if(e.lexer[i]===y){if((h.is(i,"start")||h.is(i,"singleton")||h.is(i,"xml")||h.is(i,"sgml"))&&h.idx(i,"attribute")<0&&i<T-1&&e.types[i+1]!==void 0&&h.idx(i+1,"attribute")>-1){P();}if(s.not(i,void 0)&&e.token[i].indexOf(m)>0&&(h.is(i,"content")&&u.markup.preserveText===false||h.is(i,"comment")||h.is(i,"attribute"))){z();}else {A.push(e.token[i]);if(l[i]===-10&&i<T-1){A.push(" ");}else if(l[i]>-1){A.push(a(l[i]));S=l[i];}}}else {if(g[i]===i&&h.not(i,"reference")){A.push(e.token[i]);}else {_.end=g[i];_.start=i;u.indentLevel=S;if(e.stack[i]==="schema"){W=_.beautify.script(_.options);A[A.length-1]="\n";}else if(e.stack[i]==="style"){W=_.beautify.style(_.options);A[A.length-1]="\n";}else if(e.stack[i]==="javascript"){u.indentLevel=S;W=_.beautify.script(_.options);A[A.length-1]="\n";}else {W=_.beautify.script(_.options);}A.push(W.replace(/\s+$/,""));if(l[_.iterator]>-1&&g[i]>i){A.push(a(l[_.iterator]));}i=_.iterator;u.indentLevel=0;}}i=i+1;}while(i<T);_.iterator=T-1;if(A[0]===m||A[0]===" ")A[0]="";return A.join("")})()};_.beautify.style=function v(u){const h=[];const s=_.parsed;const g=u.crlf===true?"\r\n":"\n";const y=_.end>0?_.end+1:s.token.length;const e=function k(){let l=0;const A=[];do{A.push(u.indentChar);l=l+1;}while(l<u.indentSize);return A.join("")}();const m=u.preserveLine+1;let T=u.indentLevel;let i=_.start;let E=["",""];const f=function k(l){const A=[];const I=function z(){if(i===y-1){return 1}if(s.lines[i+1]-1>m){return m}if(s.lines[i+1]>1){return s.lines[i+1]-1}return 1}();let a=0;if(l<0)l=0;do{A.push(g);a=a+1;}while(a<I);if(l>0){a=0;do{A.push(e);a=a+1;}while(a<l)}h.push(A.join(""));};const n=function k(){const l=s.begin[i];const A=s.token[l];const I=s.token[i];const a=[];let z=i;let P=0;let W;let S=0;if(l<0||z<=l)return;do{z=z-1;if(s.begin[z]===l){if(s.token[z]===":"){W=[z-1,0];do{z=z-1;if((s.token[z]===";"&&A==="{"||s.token[z]===","&&A==="(")&&s.begin[z]===l||s.token[z]===I&&s.begin[s.begin[z]]===l){break}if(s.types[z]!=="comment"&&s.types[z]!=="selector"&&s.token[z]!==A&&s.begin[z]===l){W[1]=s.token[z].length+W[1];}}while(z>l+1);if(W[1]>S)S=W[1];a.push(W);}}else if(s.types[z]==="end"){if(z<s.begin[z])break;z=s.begin[z];}}while(z>l);z=a.length;if(z<2)return;do{z=z-1;if(a[z][1]<S){P=a[z][1];do{s.token[a[z][0]]=s.token[a[z][0]]+" ";P=P+1;}while(P<S)}}while(z>0)};if(u.script.vertical===true&&u.style.compressCSS===false){i=y;do{i=i-1;if(s.token[i]==="}"||s.token[i]===")")n();}while(i>0);i=_.start;}do{if(s.types[i+1]==="end"||s.types[i+1]==="template_end"||s.types[i+1]==="template_else"){T=T-1;}if(s.types[i]==="template"&&s.lines[i]>0){h.push(s.token[i]);if(s.types[i-2]!=="property"&&s.types[i-1]!=="colon")f(T);}else if(s.types[i]==="template_else"){h.push(s.token[i]);T=T+1;f(T);}else if(s.types[i]==="start"||s.types[i]==="template_start"){T=T+1;h.push(s.token[i]);if(s.types[i+1]!=="end"&&s.types[i+1]!=="template_end"&&(u.style.compressCSS===false||u.style.compressCSS===true&&s.types[i+1]==="selector")){f(T);}}else if(s.token[i]===";"&&(u.style.compressCSS===false||u.style.compressCSS===true&&s.types[i+1]==="selector")||s.types[i]==="end"||s.types[i]==="template_end"||s.types[i]==="comment"){h.push(s.token[i]);if(s.types[i+1]==="value"){if(s.lines[i+1]===1){h.push(" ");}else if(s.lines[i+1]>1){f(T);}}else if(s.types[i+1]!=="separator"){if(s.types[i+1]!=="comment"||s.types[i+1]==="comment"&&s.lines[i+1]>1){f(T);}else {h.push(" ");}}}else if(s.token[i]===":"){h.push(s.token[i]);if(u.style.compressCSS===false)h.push(" ");}else if(s.types[i]==="selector"){if(u.style.classPadding===true&&s.types[i-1]==="end"&&s.lines[i]<3){h.push(g);}if(s.token[i].indexOf("and(")>0){s.token[i]=s.token[i].replace(/and\(/,"and (");h.push(s.token[i]);}else if(s.token[i].indexOf("when(")>0){E=s.token[i].split("when(");h.push(E[0].replace(/\s+$/,""));f(T+1);h.push(`when (${E[1]}`);}else {h.push(s.token[i]);}if(s.types[i+1]==="start"){if(u.script.braceAllman===true){f(T);}else if(u.style.compressCSS===false){h.push(" ");}}}else if(s.token[i]===","){h.push(s.token[i]);if(s.types[i+1]==="selector"||s.types[i+1]==="property"){f(T);}else if(u.style.compressCSS===false){h.push(" ");}}else if(s.stack[i]==="map"&&s.token[i+1]===")"&&i-s.begin[i]>5){h.push(s.token[i]);f(T);}else if(s.token[i]==="x;"){f(T);}else if((s.types[i]==="variable"||s.types[i]==="function")&&u.style.classPadding===true&&s.types[i-1]==="end"&&s.lines[i]<3){h.push(g);h.push(s.token[i]);}else if(s.token[i]!==";"||s.token[i]===";"&&(u.style.compressCSS===false||u.style.compressCSS===true&&s.token[i+1]!=="}")){h.push(s.token[i]);}i=i+1;}while(i<y);_.iterator=y-1;return h.join("")};function $e(v,u=" "){if(v===0)return u;let h="";let s=1;do{h+=u;}while(s++<v);return h}function ve(v){const u=1024;const h=1048576;const s=1073741824;if(v<u)return v+" B";else if(v<h)return (v/u).toFixed(1)+" KB";else if(v<s)return (v/h).toFixed(1)+" MB";else return (v/s).toFixed(1)+" GB"}_.beautify.script=function v(u){const h=new Set(["ActiveXObject","ArrayBuffer","AudioContext","Canvas","CustomAnimation","DOMParser","DataView","Date","Error","EvalError","FadeAnimation","FileReader","Flash","Float32Array","Float64Array","FormField","Frame","Generator","HotKey","Image","Iterator","Intl","Int16Array","Int32Array","Int8Array","InternalError","Loader","Map","MenuItem","MoveAnimation","Notification","ParallelArray","Point","Promise","Proxy","RangeError","Rectangle","ReferenceError","Reflect","RegExp","ResizeAnimation","RotateAnimation","Set","SQLite","ScrollBar","Set","Shadow","StopIteration","Symbol","SyntaxError","Text","TextArea","Timer","TypeError","URL","Uint16Array","Uint32Array","Uint8Array","Uint8ClampedArray","URIError","WeakMap","WeakSet","Web","Window","XMLHttpRequest"]);const y=re(null);const e=_.parsed;const m="script";const T=_.scopes;const i=_.end<1||_.end>e.token.length?e.token.length:_.end+1;const E=(()=>{let n=_.start;let k=isNaN(u.indentLevel)?0:Number(u.indentLevel);let l=false;let A=false;let I="";let a="";let z=e.types[0];let P=e.token[0];const W=[-1];const S=[];const t=_.start>0?Array(_.start).fill(0,0,_.start):[];const d=[];const x=[[]];const j=[];const C=[];const F=[];const M=[false];const $=[];const q=[];function te(){R(false,false);const c=u.commentIndent===true?k:0;if(l===false&&/\/\u002a\s*global\s/.test(e.token[n])){const p=e.token[n].replace(/\/\u002a\s*global\s+/,"").replace(/\s*\u002a\/$/,"").split(",");let o=p.length;do{o=o-1;p[o]=p[o].replace(/\s+/g,"");if(p[o]!=="")T.push([p[o],-1]);}while(o>0)}if(e.types[n-1]==="comment"||e.types[n+1]==="comment"){t[n-1]=c;}else if(e.lines[n]<2){let p=n+1;if(e.types[p]==="comment"){do{p=p+1;}while(p<i&&e.types[p]==="comment")}if(n<i-1&&e.stack[p]!=="block"&&(e.token[p]==="{"||e.token[p]==="x{")){let o=T.length;e.begin.splice(n,0,e.begin[p]);e.ender.splice(n,0,e.ender[p]);e.lexer.splice(n,0,e.lexer[p]);e.lines.splice(n,0,e.lines[p]);e.stack.splice(n,0,e.stack[p]);e.token.splice(n,0,e.token[p]);e.types.splice(n,0,e.types[p]);if(o>0){do{o=o-1;if(T[o][1]===p){T[o][1]=n;}else if(T[o][1]<n){break}}while(o>0)}p=p+1;e.begin.splice(p,1);e.ender.splice(p,1);e.lexer.splice(p,1);e.lines.splice(p,1);e.stack.splice(p,1);e.token.splice(p,1);e.types.splice(p,1);o=n+1;do{e.begin[o]=n;e.stack[o]=e.stack[p];o=o+1;}while(o<p);o=o+1;do{if(e.begin[o]===e.begin[p]){e.begin[o]=n;if(e.types[o]==="end"){break}}o=o+1;}while(o<i-1);e.begin[p]=n;n=n-1;}else {t[n-1]=-10;if(e.stack[n]==="paren"||e.stack[n]==="method"){t.push(k+2);}else {t.push(k);}if(u.commentIndent===true&&t[n]>-1&&e.lines[n]<3){e.lines[n]=3;}}if(e.types[n+1]!=="comment")l=true;return}else if(e.token[n-1]===","){t[n-1]=c;}else if(P==="="&&e.types[n-1]!=="comment"&&/^(\/\*\*\s*@[a-z_]+\s)/.test(a)===true){t[n-1]=-10;}else if(P==="{"&&e.types[n-1]!=="comment"&&e.lines[0]<2){if(e.stack[n]==="function"){t[n-1]=c;}else {t[n-1]=/\n/.test(a)?c:-10;}}else {t[n-1]=c;}if(e.types[n+1]!=="comment")l=true;if(e.token[e.begin[n]]==="("){t.push(k+1);}else {t.push(k);}if(t[n]>-1&&e.lines[n]<3){if(e.types[n-1]==="comment"&&a.startsWith("//")){e.lines[n]=2;}else {e.lines[n]=3;}}if(u.script.commentNewline===true&&a.startsWith("//")===false&&e.lines[n]>=3){e.lines[n]=2;}}function R(c,p){let o=n-1;let b=c===true?0:1;const w=x[x.length-1]===void 0?[]:x[x.length-1];const N=p===false&&e.stack[n]==="array"&&c===true&&a!=="[";if(C[C.length-1]===false||e.stack[n]==="array"&&u.script.arrayFormat==="inline"||e.stack[n]==="object"&&u.script.objectIndent==="inline"){return}C[C.length-1]=false;do{if(e.types[o]==="end"){b=b+1;}else if(e.types[o]==="start"){b=b-1;}if(e.stack[o]==="global"){break}if(b===0){if(e.stack[n]==="class"||e.stack[n]==="map"||N===false&&(c===false&&e.token[o]!=="("&&e.token[o]!=="x("||c===true&&e.token[o]===",")){if(e.types[o+1]==="template_start"){if(e.lines[o]<1){t[o]=-20;}else {t[o]=k-1;}}else if(w.length>0&&w[w.length-1]>-1){t[o]=k-1;}else {t[o]=k;}}else if(e.stack[n]==="array"&&e.types[n]==="operator"){if(e.token[o]===",")t[o]=k;if(o===e.begin[n])break}if(c===false)break}if(b<0){if(e.types[o+1]==="template_start"||e.types[o+1]==="template_string_start"){if(e.lines[o]<1){t[o]=-20;}else {t[o]=k-1;}}else if(w.length>0&&w[w.length-1]>-1){t[o]=k-1;}else {t[o]=k;}break}o=o-1;}while(o>-1)}function X(){const c=x[x.length-1]===void 0?[]:x[x.length-1];const p=()=>{let o=n;let b=false;const w=e.begin[o];do{o=o-1;if(e.lexer[o]==="markup"){b=true;break}if(e.begin[o]!==w)o=e.begin[o];}while(o>w);if(b===true){o=n;do{o=o-1;if(e.begin[o]!==w){o=e.begin[o];}else if(e.token[o]===","){t[o]=k+1;}}while(o>w);t[w]=k+1;t[n-1]=k;}else {t[n-1]=-20;}};if(a===")"&&e.token[n+1]==="."&&c[c.length-1]>-1&&e.token[c[0]]!==":"){let o=e.begin[n];let b=false;let w=false;do{o=o-1;}while(o>0&&t[o]<-9);b=t[o]===k;o=n+1;do{o=o+1;if(e.token[o]==="{"){w=true;break}if(e.begin[o]===e.begin[n+1]&&(e.types[o]==="separator"||e.types[o]==="end")){break}}while(o<i);if(b===false&&w===true&&x.length>1){x[x.length-2].push(e.begin[n]);k=k+1;}}if(z!=="separator")K();if(e.token[n+1]===","&&(e.stack[n]==="object"||e.stack[n]==="array")){R(true,false);}if(e.token[e.begin[n]-1]===","&&(e.token[n+1]==="}"||e.token[n+1]==="]")&&(e.stack[n]==="object"||e.stack[n]==="array")){R(true,false);}if(e.stack[n]!=="attribute"){if(a!==")"&&a!=="x)"&&(e.lexer[n-1]!=="markup"||e.lexer[n-1]==="markup"&&e.token[n-2]!=="return")){k=k-1;}if(a==="}"&&e.stack[n]==="switch"&&u.script.noCaseIndent===false){k=k-1;}}if(a==="}"||a==="x}"){if(e.types[n-1]!=="comment"&&P!=="{"&&P!=="x{"&&z!=="end"&&z!=="string"&&z!=="number"&&z!=="separator"&&P!=="++"&&P!=="--"&&(n<2||e.token[n-2]!==";"||e.token[n-2]!=="x;"||P==="break"||P==="return")){let o=n-1;let b=false;const w=e.begin[n];const N=S.length;do{if(e.begin[o]===w){if(e.token[o]==="="||e.token[o]===";"||e.token[o]==="x;"){b=true;}if(e.token[o]==="."&&t[o-1]>-1){C[C.length-1]=false;t[w]=k+1;t[n-1]=k;break}if(o>0&&e.token[o]==="return"&&(e.token[o-1]===")"||e.token[o-1]==="x)"||e.token[o-1]==="{"||e.token[o-1]==="x{"||e.token[o-1]==="}"||e.token[o-1]==="x}"||e.token[o-1]===";"||e.token[o-1]==="x;")){k=k-1;t[n-1]=k;break}if(e.token[o]===":"&&d.length===0||e.token[o]===","&&b===false){break}if(o===0||e.token[o-1]==="{"||e.token[o-1]==="x{"||e.token[o]==="for"||e.token[o]==="if"||e.token[o]==="do"||e.token[o]==="function"||e.token[o]==="while"||e.token[o]==="var"||e.token[o]==="let"||e.token[o]==="const"||e.token[o]==="with"){if(S[N-1]===false&&N>1&&(n===i-1||e.token[n+1]!==")"&&e.token[n+1]!=="x)")&&e.stack[n]!=="object"){k=k-1;}break}}else {o=e.begin[o];}o=o-1;}while(o>w)}W.pop();}if(u.script.bracePadding===false&&a!=="}"&&z!=="markup"){t[n-1]=-20;}if(u.script.bracePadding===true&&z!=="start"&&P!==";"&&(t[e.begin[n]]<-9||C[C.length-1]===true)){t[e.begin[n]]=-10;t[n-1]=-10;t.push(-20);}else if(e.stack[n]==="attribute"){t[n-1]=-20;t.push(k);}else if(e.stack[n]==="array"&&(c.length>0||j[j.length-1]===true)){le();C[C.length-1]=false;t[e.begin[n]]=k+1;t[n-1]=k;t.push(-20);}else if((e.stack[n]==="object"||e.begin[n]===0&&a==="}")&&c.length>0){le();C[C.length-1]=false;t[e.begin[n]]=k+1;t[n-1]=k;t.push(-20);}else if(a===")"||a==="x)"){const o=a===")"&&P!=="("&&q.length>0?q.pop()+1:0;const b=e.token[e.begin[n]-1]==="if"?(()=>{let w=n;do{w=w-1;if(e.token[w]===")"&&t[w-1]>-1)return o}while(w>e.begin[n]);return o+5})():o;if(o>0&&(u.language!=="jsx"||u.language==="jsx"&&e.token[e.begin[n]-1]!=="render")){const w=u.wrap;const N=e.begin[n];const O=q.length;let D=n-2;if(b>w){t[e.begin[n]]=k+1;t[n-1]=k;do{if(e.begin[D]===N){if(e.token[D]==="&&"||e.token[D]==="||"){t[D]=k+1;}else if(t[D]>-1&&e.types[D]!=="comment"&&e.token[D+1]!=="."){t[D]=t[D]+1;}}else if(t[D]>-1&&e.token[D+1]!=="."){t[D]=t[D]+1;}D=D-1;}while(D>N)}else if(O>0){q[O-1]=q[O-1]+o;}}else if(a===")"&&n>e.begin[n]+2&&e.lexer[e.begin[n]+1]===m&&e.token[e.begin[n]+1]!=="function"){const w=e.begin[n]<0?0:e.begin[n];const N=u.wrap;const O=c.length;let D=0;let Z=0;let U=0;let J=0;let ie=0;let Q=false;let ce=false;let Y=k+1;let se=false;let he=false;let ee=false;if(t[w]<-9){Z=w;do{Z=Z+1;}while(Z<n&&t[Z]<-9);J=Z;do{D=D+e.token[Z].length;if(t[Z]===-10)D=D+1;if(e.token[Z]==="("&&U>0&&U<N-1&&J===n){U=-1;}if(e.token[Z]===")"){ie=ie-1;}else if(e.token[Z]==="("){ie=ie+1;}if(Z===w&&ie>0)U=D;Z=Z-1;}while(Z>w&&t[Z]<-9);if(e.token[Z+1]===".")Y=t[Z]+1;if(D>N-1&&N>0&&P!=="("&&U!==-1&&C[C.length-2]===false){if(e.token[w-1]==="if"&&S[S.length-1]===true||e.token[w-1]!=="if"){t[w]=Y;if(e.token[w-1]==="for"){Z=w;do{Z=Z+1;if(e.token[Z]===";"&&e.begin[Z]===w){t[Z]=Y;}}while(Z<n)}}}}Z=n;D=0;do{Z=Z-1;if(e.stack[Z]==="function"){Z=e.begin[Z];}else if(e.begin[Z]===w){if(e.token[Z]==="?"){ee=true;}else if(e.token[Z]===","&&Q===false){Q=true;if(D>=N&&N>0)se=true;}else if(e.types[Z]==="markup"&&he===false){he=true;}if(t[Z]>-9&&e.token[Z]!==","&&e.types[Z]!=="markup"){D=0;}else {if(t[Z]===-10)D=D+1;D=D+e.token[Z].length;if(D>=N&&N>0&&(Q===true||he===true)){se=true;}}}else {if(t[Z]>-9){D=0;}else {D=D+e.token[Z].length;if(D>=N&&N>0&&(Q===true||he===true)){se=true;}}}}while(Z>w&&se===false);if(Q===false&&e.token[e.begin[n]+1].charAt(0)==="`"){t[e.begin[n]]=-20;t[n-1]=-20;}else if((Q===true||he===true)&&D>=N&&N>0||t[w]>-9){if(ee===true){Y=t[w];if(e.token[w-1]==="["){Z=n;do{Z=Z+1;if(e.types[Z]==="end"||e.token[Z]===","||e.token[Z]===";"){break}}while(Z<i);if(e.token[Z]==="]"){Y=Y-1;ce=true;}}}else if(O>0&&c[O-1]>Z){Y=Y-O;}C[C.length-1]=false;Z=n;do{Z=Z-1;if(e.begin[Z]===w){if(e.token[Z].indexOf("=")>-1&&e.types[Z]==="operator"&&e.token[Z].indexOf("!")<0&&e.token[Z].indexOf("==")<0&&e.token[Z]!=="<="&&e.token[Z].indexOf(">")<0){D=Z;do{D=D-1;if(e.begin[D]===w&&(e.token[D]===";"||e.token[D]===","||D===w)){break}}while(D>w)}else if(e.token[Z]===","){t[Z]=Y;}else if(t[Z]>-9&&ce===false&&(e.token[w-1]!=="for"||e.token[Z+1]==="?"||e.token[Z+1]===":")&&(e.token[e.begin[n]]!=="("||e.token[Z]!=="+")){t[Z]=t[Z]+1;}}else if(t[Z]>-9&&ce===false){t[Z]=t[Z]+1;}}while(Z>w);t[w]=Y;t[n-1]=Y-1;}else {t[n-1]=-20;}if(e.token[e.begin[n]-1]==="+"&&t[e.begin[n]]>-9){t[e.begin[n]-1]=-10;}}else if(u.language==="jsx"){p();}else {t[n-1]=-20;}t.push(-20);}else if(C[C.length-1]===true){if(a==="]"&&e.begin[n]-1>0&&e.token[e.begin[e.begin[n]-1]]==="["){C[C.length-2]=false;}if(e.begin[n]<t.length)t[e.begin[n]]=-20;if(u.language==="jsx"){p();}else if(a==="]"&&t[e.begin[n]]>-1){t[n-1]=t[e.begin[n]]-1;}else {t[n-1]=-20;}t.push(-20);}else if(e.types[n-1]==="comment"&&e.token[n-1].substring(0,2)==="//"){if(e.token[n-2]==="x}")t[n-3]=k+1;t[n-1]=k;t.push(-20);}else if(e.types[n-1]!=="comment"&&(P==="{"&&a==="}"||P==="["&&a==="]")){t[n-1]=-20;t.push(-20);}else if(a==="]"){if(S[S.length-1]===true&&C[C.length-1]===false&&u.script.arrayFormat!=="inline"||P==="]"&&t[n-2]===k+1){t[n-1]=k;t[e.begin[n]]=k+1;}else if(t[n-1]===-10){t[n-1]=-20;}if(e.token[e.begin[n]+1]==="function"){t[n-1]=k;}else if(S[S.length-1]===false){if(P==="}"||P==="x}")t[n-1]=k;let o=n-1;let b=1;do{if(e.token[o]==="]")b=b+1;if(e.token[o]==="["){b=b-1;if(b===0){if(o>0&&(e.token[o+1]==="{"||e.token[o+1]==="x{"||e.token[o+1]==="[")){t[o]=k+1;break}if(e.token[o+1]!=="["||A===false){t[o]=-20;break}break}}if(b===1&&e.token[o]==="+"&&t[o]>1){t[o]=t[o]-1;}o=o-1;}while(o>-1)}else if(u.language==="jsx"){p();}if(u.script.arrayFormat==="inline"){let o=n;const b=e.begin[n];do{o=o-1;if(e.types[o]==="end")break}while(o>b);if(o>b){t[e.begin[n]]=k+1;t[n-1]=k;}else {t[e.begin[n]]=-20;t[n-1]=-20;}}else if(t[e.begin[n]]>-1){t[n-1]=t[e.begin[n]]-1;}t.push(-20);}else if(a==="}"||a==="x}"||S[S.length-1]===true){if(a==="}"&&P==="x}"&&e.token[n+1]==="else"){t[n-2]=k+2;t.push(-20);}else {t.push(k);}t[n-1]=k;}else {t.push(-20);}if(e.types[n-1]==="comment")t[n-1]=k;if(u.script.inlineReturn&&u.attemptCorrection===false&&a==="x}"&&(e.stack[n]==="if"||e.stack[n]==="else")&&e.token[e.begin[e.begin[n-1]-1]-2]!=="else"){t[n-1]=-20;}le();A=S[S.length-1];S.pop();x.pop();j.pop();F.pop();$.pop();C.pop();M.pop();}function le(){let c=0;const p=x[x.length-1];if(p===void 0)return;c=p.length-1;if(c<1&&p[c]<0&&(a===";"||a==="x;"||a===")"||a==="x)"||a==="}"||a==="x}")){p.pop();return}if(c<0||p[c]<0)return;if(a===":"){if(e.token[p[c]]!=="?"){do{p.pop();c=c-1;k=k-1;}while(c>-1&&p[c]>-1&&e.token[p[c]]!=="?")}p[c]=n;t[n-1]=k;}else {do{p.pop();c=c-1;k=k-1;}while(c>-1&&p[c]>-1)}if((e.stack[n]==="array"||a===",")&&p.length<1)p.push(-1);}function L(){const c=n;do{if(e.lexer[n+1]===m&&e.begin[n+1]<c)break;if(e.token[c-1]==="return"&&e.types[n]==="end"&&e.begin[n]===c)break;t.push(0);n=n+1;}while(n<i);y[c]=n;t.push(k-1);}function K(){let c=n-1;const p=e.begin[n];if(k<1)return;do{if(p!==e.begin[c]){c=e.begin[c];}else {if(e.types[c]==="separator"||e.types[c]==="operator"){if(e.token[c]==="."&&t[c-1]>0){if(e.token[p-1]==="if"){k=k-2;}else {k=k-1;}}break}}c=c-1;}while(c>0&&c>p)}function G(){if(e.token[n+1]!==","&&a.indexOf("/>")!==a.length-2||e.token[n+1]===","&&e.token[e.begin[n]-3]!=="React"){R(false,false);}if(P==="return"||P==="?"||P===":"){t[n-1]=-10;t.push(-20);}else if(z==="start"||e.token[n-2]==="return"&&e.stack[n-1]==="method"){t.push(k);}else {t.push(-20);}}function H(){const c=x[x.length-1]===void 0?[]:x[x.length-1];function p(){const o=e.token[n+1];let b=0;let w=0;let N=n;let O=a==="+"?k+2:k;let D=0;if(u.wrap<1){t.push(-10);return}do{N=N-1;if(e.token[e.begin[n]]==="("){if(N===e.begin[n]){D=b;}if(e.token[N]===","&&e.begin[N]===e.begin[n]&&S[S.length-1]===true){break}}if(b>u.wrap-1)break;if(t[N]>-9)break;if(e.types[N]==="operator"&&e.token[N]!=="="&&e.token[N]!=="+"&&e.begin[N]===e.begin[n]){break}b=b+e.token[N].length;if(N===e.begin[n]&&e.token[N]==="["&&b<u.wrap-1){break}if(e.token[N]==="."&&t[N]>-9)break;if(t[N]===-10)b=b+1;}while(N>0);if(D>0)D=D+o.length;b=b+o.length;w=N;if(b>u.wrap-1&&t[N]<-9){do{w=w-1;}while(w>0&&t[w]<-9)}if(e.token[w+1]==="."&&e.begin[n]<=e.begin[w]){O=O+1;}else if(e.types[w]==="operator"){O=t[w];}w=o.length;if(b+w<u.wrap){t.push(-10);return}if(e.token[e.begin[n]]==="("&&(e.token[c[0]]===":"||e.token[c[0]]==="?")){O=k+3;}else if(e.stack[n]==="method"){t[e.begin[n]]=k;if(S[S.length-1]===true){O=k+3;}else {O=k+1;}}else if(e.stack[n]==="object"||e.stack[n]==="array"){R(true,false);}if(e.token[N]==="var"||e.token[N]==="let"||e.token[N]==="const"){b=b-u.indentSize*u.indentChar.length*2;}if(D>0){N=u.wrap-D;}else {N=u.wrap-b;}if(N>0&&N<5){t.push(O);if(e.token[n].charAt(0)==='"'||e.token[n].charAt(0)==="'"){n=n+1;t.push(-10);}return}if(e.token[e.begin[n]]!=="("||D>u.wrap-1||D===0){if(D>0)b=D;if(b-o.length<u.wrap-1&&(o.charAt(0)==='"'||o.charAt(0)==="'")){n=n+1;b=b+3;if(b-o.length>u.wrap-4){t.push(O);return}t.push(-10);return}t.push(O);return}t.push(-10);}K();if(c.length>0&&c[c.length-1]>-1&&e.stack[n]==="array"){j[j.length-1]=true;}if(a!==":"){if(e.token[e.begin[n]]!=="("&&e.token[e.begin[n]]!=="x("&&C.length>0){R(true,false);}if(a!=="?"&&e.token[c[c.length-1]]==="."){let o=0;let b=n;const w=e.begin[b];do{if(e.begin[b]===w){if(e.token[b+1]==="{"||e.token[b+1]==="["||e.token[b]==="function"){break}if(e.token[b]===","||e.token[b]===";"||e.types[b]==="end"||e.token[b]===":"){c.pop();k=k-1;break}if(e.token[b]==="?"||e.token[b]===":"){if(e.token[c[c.length-1]]==="."&&o<2)c[c.length-1]=w+1;break}if(e.token[b]===".")o=o+1;}b=b+1;}while(b<i)}}if(a==="!"||a==="..."){if(P==="}"||P==="x}")t[n-1]=k;t.push(-20);return}if(P===";"||P==="x;"){if(e.token[e.begin[n]-1]!=="for")t[n-1]=k;t.push(-20);return}if(a==="*"){if(P==="function"||P==="yield"){t[n-1]=-20;}else {t[n-1]=-10;}t.push(-10);return}if(a==="?"){if(e.lines[n]===0&&e.types[n-2]==="word"&&e.token[n-2]!=="return"&&e.token[n-2]!=="in"&&e.token[n-2]!=="instanceof"&&e.token[n-2]!=="typeof"&&(z==="reference"||z==="word")){if(e.types[n+1]==="word"||e.types[n+1]==="reference"||(e.token[n+1]==="("||e.token[n+1]==="x(")&&e.token[n-2]==="new"){t[n-1]=-20;if(e.types[n+1]==="word"||e.types[n+1]==="reference"){t.push(-10);return}t.push(-20);return}}if(e.token[n+1]===":"){t[n-1]=-20;t.push(-20);return}d.push(n);if(u.script.ternaryLine===true){t[n-1]=-10;}else {let o=n-1;do{o=o-1;}while(o>-1&&t[o]<-9);c.push(n);k=k+1;if(t[o]===k&&e.token[o+1]!==":"){k=k+1;c.push(n);}t[n-1]=k;if(e.token[e.begin[n]]==="("&&(c.length<2||c[0]===c[1])){C[C.length-1]=false;if(n-2===e.begin[n]){t[e.begin[n]]=k-1;}else {t[e.begin[n]]=k;}o=n-2;do{if(e.types[o]==="end"&&t[o-1]>-1)break;if(t[o]>-1)t[o]=t[o]+1;o=o-1;}while(o>e.begin[n])}}t.push(-10);return}if(a===":"){if(e.stack[n]==="map"||e.types[n+1]==="type"||e.types[n+1]==="type_start"){t[n-1]=-20;t.push(-10);return}if(d.length>0&&e.begin[d[d.length-1]]===e.begin[n]){let o=n;const b=e.begin[n];do{o=o-1;if(e.begin[o]===b){if(e.token[o]===","||e.token[o]===";"){t[n-1]=-20;break}if(e.token[o]==="?"){d.pop();le();if(u.script.ternaryLine===true)t[n-1]=-10;t.push(-10);return}}else if(e.types[o]==="end"){o=e.begin[o];}}while(o>b)}if(e.token[n-2]==="where"&&e.stack[n-2]===e.stack[n]){t[n-1]=-10;t.push(-10);return}if(z==="reference"&&e.token[e.begin[n]]!=="("&&e.token[e.begin[n]]!=="x("){t[n-1]=-20;t.push(-10);return}if((P===")"||P==="x)")&&e.token[e.begin[n-1]-2]==="function"){t[n-1]=-20;t.push(-10);return}if(e.stack[n]==="attribute"){t[n-1]=-20;t.push(-10);return}if(e.token[e.begin[n]]!=="("&&e.token[e.begin[n]]!=="x("&&(z==="reference"||P===")"||P==="]"||P==="?")&&(e.stack[n]==="map"||e.stack[n]==="class"||e.types[n+1]==="reference")&&(d.length===0||d[d.length-1]<e.begin[n])&&("mapclassexpressionmethodglobalparen".indexOf(e.stack[n])>-1||e.types[n-2]==="word"&&e.stack[n]!=="switch")){t[n-1]=-20;t.push(-10);return}if(e.stack[n]==="switch"&&(d.length<1||d[d.length-1]<e.begin[n])){t[n-1]=-20;if(u.script.caseSpace===true){t.push(-10);}else {t.push(k);}return}if(e.stack[n]==="object"){t[n-1]=-20;}else if(d.length>0){t[n-1]=k;}else {t[n-1]=-10;}t.push(-10);return}if(a==="++"||a==="--"){if(z==="number"||z==="reference"){t[n-1]=-20;t.push(-10);}else if(n<i-1&&(e.types[n+1]==="number"||e.types[n+1]==="reference")){t.push(-20);}else {t.push(-10);}return}if(a==="+"){if(z==="start"){t[n-1]=-20;}else {t[n-1]=-10;}if(u.wrap<1||e.token[e.begin[n]]==="x("){t.push(-10);return}const o=e.token[n+1];if(o===void 0){t.push(-10);return}if(e.types[n-1]==="operator"||e.types[n-1]==="start"){if(e.types[n+1]==="reference"||o==="("||o==="["){t.push(-20);return}if(Number(o.slice(1,-1))>-1&&(/\d/.test(o.charAt(1))===true||o.charAt(1)==="."||o.charAt(1)==="-"||o.charAt(1)==="+")){t.push(-20);return}}return p()}if(e.types[n-1]!=="comment"){if(P==="("){t[n-1]=-20;}else if(a==="*"&&e.stack[n]==="object"&&e.types[n+1]==="reference"&&(P==="{"||P===",")){t[n-1]=k;}else if(a!=="?"||d.length===0){t[n-1]=-10;}}if(a.indexOf("=")>-1&&a!=="=="&&a!=="==="&&a!=="!="&&a!=="!=="&&a!==">="&&a!=="<="&&a!=="=>"&&e.stack[n]!=="method"&&e.stack[n]!=="object"){let o=n+1;let b=0;let w=false;let N="";if((e.token[e.begin[n]]==="("||e.token[e.begin[n]]==="x(")&&e.token[n+1]!=="function"){return}do{if(e.types[o]==="start"){if(w===true&&e.token[o]!=="["){if(M[M.length-1]===true){M[M.length-1]=false;}break}b=b+1;}if(e.types[o]==="end")b=b-1;if(b<0){if(M[M.length-1]===true){M[M.length-1]=false;}break}if(b===0){N=e.token[o];if(w===true){if(e.types[o]==="operator"||e.token[o]===";"||e.token[o]==="x;"||e.token[o]==="?"||e.token[o]==="var"||e.token[o]==="let"||e.token[o]==="const"){if(N!==void 0&&(N==="?"||N.indexOf("=")>-1&&N!=="=="&&N!=="==="&&N!=="!="&&N!=="!=="&&N!==">="&&N!=="<=")){if(M[M.length-1]===false){M[M.length-1]=true;}}if((N===";"||N==="x;"||N==="var"||N==="let"||N==="const")&&M[M.length-1]===true){M[M.length-1]=false;}break}if(M[M.length-1]===true&&(N==="return"||N==="break"||N==="continue"||N==="throw")){M[M.length-1]=false;}}if(N===";"||N==="x;"||N===",")w=true;}o=o+1;}while(o<i);t.push(-10);return}if(a==="-"&&P==="return"||P==="="){t.push(-20);return}if(z==="operator"&&e.types[n+1]==="reference"&&P!=="--"&&P!=="++"&&a!=="&&"&&a!=="||"){t.push(-20);return}return p()}function B(){const c=()=>{let p=e.begin[n];if(p<0){T.push([e.token[n],-1]);}else {if(e.stack[p+1]!=="function"){do{p=e.begin[p];}while(p>-1&&e.stack[p+1]!=="function")}T.push([e.token[n],p]);}};if(e.types[n-1]==="comment"){t[n-1]=k;}else if(z==="end"&&P!==")"&&e.token[e.begin[n-1]-1]!==")"){t[n-1]=-10;}else if(z!=="separator"&&z!=="start"&&z!=="end"&&z.indexOf("template_string")<0){if(z==="word"||z==="operator"||z==="property"||z==="type"||z==="reference"){t[n-1]=-10;}else {t[n-1]=-20;}}if(P==="var"&&e.lexer[n-1]===m){c();}else if(P==="function"){T.push([e.token[n],n]);}else if(P==="let"||P==="const"){T.push([e.token[n],n]);}else if(e.stack[n]==="arguments"){T.push([e.token[n],n]);}else if(P===","){let p=n;do{p=p-1;}while(p>e.begin[n]&&e.token[p]!=="var"&&e.token[p]!=="let"&&e.token[p]!=="const");if(e.token[p]==="var"){c();}else if(e.token[p]==="let"||e.token[p]==="const"){T.push([e.token[n],n]);}}t.push(-10);}function ue(){const c=x[x.length-1]===void 0?[]:x[x.length-1];const p=()=>{if(u.script.methodChain>0){let o=n;let b=e.begin[n];const w=[n];const N=e.token[b-1]==="if";do{o=o-1;if(e.types[o]==="end")o=e.begin[o];if(e.begin[o]===b){if(e.types[o]==="string"&&e.token[o].indexOf("${")===e.token[o].length-2){break}if(e.token[o]==="."){if(t[o-1]>0){t[n-1]=N===true?k+1:k;return}w.push(o);}else if(e.token[o]===";"||e.token[o]===","||e.types[o]==="operator"||(e.types[o]==="word"||e.types[o]==="reference")&&(e.types[o-1]==="word"||e.types[o-1]==="reference")){break}}}while(o>b);if(w.length<u.script.methodChain){t[n-1]=-20;return}o=0;b=w.length;do{t[w[o]-1]=N===true?k+1:k;o=o+1;}while(o<b);o=w[w.length-1]-1;do{if(t[o]>-1)t[o]=t[o]+1;o=o+1;}while(o<n);k=N===true?k+2:k+1;}t[n-1]=k;};if(a==="::"){t[n-1]=-20;t.push(-20);return}if(a==="."){if(e.token[e.begin[n]]!=="("&&e.token[e.begin[n]]!=="x("&&c.length>0){if(e.stack[n]==="object"||e.stack[n]==="array"){R(true,false);}else {R(false,false);}}if(u.script.methodChain===0){t[n-1]=-20;}else if(u.script.methodChain<0){if(e.lines[n]>0){p();}else {t[n-1]=-20;}}else {p();}t.push(-20);return}if(a===","){K();if(S[S.length-1]===false&&(e.stack[n]==="object"||e.stack[n]==="array"||e.stack[n]==="paren"||e.stack[n]==="expression"||e.stack[n]==="method")){S[S.length-1]=true;if(e.token[e.begin[n]]==="("){let o=n;do{o=o-1;if(e.begin[o]===e.begin[n]&&e.token[o]==="+"&&t[o]>-9){t[o]=t[o]+2;}}while(o>e.begin[n])}}if(e.stack[n]==="array"&&u.script.arrayFormat==="indent"){t[n-1]=-20;t.push(k);return}if(e.stack[n]==="array"&&u.script.arrayFormat==="inline"){t[n-1]=-20;t.push(-10);return}if(e.stack[n]==="object"&&u.script.objectIndent==="indent"){t[n-1]=-20;t.push(k);return}if(e.stack[n]==="object"&&u.script.objectIndent==="inline"){t[n-1]=-20;t.push(-10);return}if(c.length>0){if(c[c.length-1]>-1)le();t[n-1]=-20;t.push(k);return}if(e.token[n-2]===":"&&e.token[n-4]==="where"){t[n-1]=-20;t.push(-10);return}t[n-1]=-20;if(e.types[n+1]!=="end"){F[F.length-1]=F[F.length-1]+1;}if((e.token[e.begin[n]]==="("||e.token[e.begin[n]]==="x(")&&u.language!=="jsx"&&e.stack[n]!=="global"&&(e.types[n-1]!=="string"&&e.types[n-1]!=="number"||e.token[n-2]!=="+"||e.types[n-1]==="string"&&e.types[n-1]!=="number"&&e.token[n-2]==="+"&&e.types[n-3]!=="string"&&e.types[n-3]!=="number")){t.push(-10);return}if(z==="reference"&&e.types[n-2]==="word"&&"var-let-const-from".indexOf(e.token[n-2])<0&&(e.types[n-3]==="end"||e.token[n-3]===";")){$[$.length-1]=true;t.push(-10);return}if($[$.length-1]===true||e.stack[n]==="notation"){t.push(-10);return}if(F[F.length-1]>3&&(e.stack[n]==="array"||e.stack[n]==="object")){if(C[C.length-1]===true)R(true,true);t[n-1]=-20;if(j[j.length-1]===true){t.push(k);return}const o=e.begin[n];let b=n;do{if(e.types[b]==="end"){b=e.begin[b];}else {if(e.token[b]===","&&e.types[b+1]!=="comment"){t[b]=k;}}b=b-1;}while(b>o);t[o]=k;j[j.length-1]=true;return}if(e.stack[n]==="object"){if(C[C.length-1]===true&&e.types[e.begin[n]-1]!=="word"&&e.types[e.begin[n]-1]!=="reference"&&e.token[e.begin[n]-1]!=="("&&e.token[e.begin[n]-1]!=="x("){const o=e.begin[n];let b=n-1;do{if(e.begin[b]===o){if(e.token[b]===",")break;if(e.token[b]===":"){R(true,false);break}}b=b-1;}while(b>o)}}if(C[C.length-1]===false||e.token[n-2]==="+"&&(z==="string"||z==="number")&&t[n-2]>0&&(P.charAt(0)==='"'||P.charAt(0)==="'")){if(e.stack[n]==="method"){if(e.token[n-2]==="+"&&(P.charAt(0)==='"'||P.charAt(0)==="'")&&(e.token[n-3].charAt(0)==='"'||e.token[n-3].charAt(0)==="'")){t.push(k+2);return}if(e.token[n-2]!=="+"){t.push(-10);return}}t.push(k);return}if(C[C.length-1]===true&&e.stack[n]!=="object"){t.push(-10);return}if(F[F.length-1]<4&&(e.stack[n]==="array"||e.stack[n]==="object")){t.push(-10);return}t.push(k);return}if(a===";"||a==="x;"){K();if(e.token[n+1]!==void 0&&e.types[n+1].indexOf("attribute")>0&&e.types[n+1].indexOf("end")>0){t[n-1]=-20;t.push(k-1);return}if(W[W.length-1]>-1&&e.stack[W[W.length-1]]!=="expression"){let o=n;do{o=o-1;if(e.token[o]===";")break;if(e.token[o]===","){k=k-1;break}if(e.types[o]==="end")o=e.begin[o];}while(o>0&&o>e.begin[n])}W[W.length-1]=-1;le();if(e.token[e.begin[n]-1]!=="for")R(false,false);$[$.length-1]=false;t[n-1]=-20;if(e.begin[n]>0&&e.token[e.begin[n]-1]==="for"&&e.stack[n]!=="for"){t.push(-10);return}t.push(k);return}t.push(-20);}function ne(){const c=e.stack[n+1];const p=n===0?e.stack[n]:e.stack[n-1];if(P===")"||(p==="object"||p==="array")&&P!=="]"){if(c!=="method"||c==="method"&&e.token[n+1]!==")"&&e.token[n+2]!==")"){if(P===")"&&(c!=="function"||e.token[e.begin[e.begin[n-1]-1]]==="("||e.token[e.begin[e.begin[n-1]-1]]==="x(")){R(false,false);}else if(e.types[n+1]!=="end"&&e.types[n+2]!=="end"){R(true,false);}}}S.push(false);x.push([]);M.push(false);j.push(false);$.push(false);F.push(0);if(u.script.neverFlatten===true||c==="array"&&u.script.arrayFormat==="indent"||c==="attribute"||z==="generic"||c==="class"&&P!=="("&&P!=="x("||a==="["&&e.token[n+1]==="function"){C.push(false);}else {if(c==="expression"||c==="method"){C.push(true);}else if((c==="object"||c==="class")&&(P==="("||P==="x("||z==="word"||z==="reference")){C.push(true);}else if(c==="array"||a==="("||a==="x("){C.push(true);}else if(a==="{"&&c==="object"&&z!=="operator"&&z!=="start"&&z!=="string"&&z!=="number"&&p!=="object"&&p!=="array"&&n>0){C.push(true);}else {C.push(false);}}if(a!=="("&&a!=="x("&&e.stack[n+1]!=="attribute"){k=k+1;}if(a==="{"||a==="x{"){W.push(-1);if(e.types[n-1]!=="comment"){if(z==="markup"){t[n-1]=k;}else if(u.script.braceAllman===true&&z!=="operator"&&P!=="return"){t[n-1]=k-1;}else if(e.stack[n+1]!=="block"&&(c==="function"||P===")"||P==="x)"||P===","||P==="}"||z==="markup")){t[n-1]=-10;}else if(P==="{"||P==="x{"||P==="["||P==="}"||P==="x}"){t[n-1]=k-1;}}if(c==="object"){if(u.script.objectIndent==="indent"){C[C.length-1]=false;t.push(k);return}if(u.script.objectIndent==="inline"){C[C.length-1]=true;t.push(-20);return}}if(c==="switch"){if(u.script.noCaseIndent===true){t.push(k-1);return}k=k+1;t.push(k);return}if(C[C.length-1]===true){if(z!=="word"&&z!=="reference"){t.push(-20);return}}t.push(k);return}if(a==="("||a==="x("){if(u.wrap>0&&a==="("&&e.token[n+1]!==")"){q.push(1);}if(P==="-"&&(e.token[n-2]==="("||e.token[n-2]==="x(")){t[n-2]=-20;}if(z==="end"&&p!=="if"&&p!=="for"&&p!=="catch"&&p!=="else"&&p!=="do"&&p!=="try"&&p!=="finally"&&p!=="catch"){if(e.types[n-1]==="comment"){t[n-1]=k;}else {t[n-1]=-20;}}if(P==="async"){t[n-1]=-10;}else if(c==="method"||e.token[n-2]==="function"&&z==="reference"){if(P==="import"||P==="in"||u.script.functionNameSpace===true){t[n-1]=-10;}else if(P==="}"&&e.stack[n-1]==="function"||z==="word"||z==="reference"||z==="property"){t[n-1]=-20;}else if(p!=="method"&&c!=="method"){t[n-1]=k;}}if(P==="+"&&(e.token[n-2].charAt(0)==='"'||e.token[n-2].charAt(0)==="'")){t.push(k);return}if(P==="}"||P==="x}"){t.push(-20);return}if(P==="-"&&(n<2||e.token[n-2]!==")"&&e.token[n-2]!=="x)"&&e.token[n-2]!=="]"&&e.types[n-2]!=="reference"&&e.types[n-2]!=="string"&&e.types[n-2]!=="number")||u.script.functionSpace===false&&P==="function"){t[n-1]=-20;}t.push(-20);return}if(a==="["){if(P==="[")S[S.length-2]=true;if(P==="return"||P==="var"||P==="let"||P==="const"){t[n-1]=-10;}else if(e.types[n-1]!=="comment"&&e.stack[n-1]!=="attribute"&&(z==="end"||z==="word"||z==="reference")){t[n-1]=-20;}else if(P==="["||P==="{"||P==="x{"){t[n-1]=k-1;}if(e.stack[n]==="attribute"){t.push(-20);return}if(u.script.arrayFormat==="indent"){C[C.length-1]=false;t.push(k);return}if(u.script.arrayFormat==="inline"){C[C.length-1]=true;t.push(-20);return}if(c==="method"||C[C.length-1]===true){t.push(-20);return}let o=n+1;do{if(e.token[o]==="]"){t.push(-20);return}if(e.token[o]===","){t.push(k);return}o=o+1;}while(o<i);t.push(-20);}}function fe(){if(a.length===1){t.push(-20);if(e.lines[n]===0)t[n-1]=-20;}else if(a.indexOf("#!/")===0){t.push(k);}else {t.push(-10);}if((P===","||z==="start")&&(e.stack[n]==="object"||e.stack[n]==="array")&&C[C.length-1]===false&&n>0){t[n-1]=k;}}function Ae(){if(I==="template_else"){t[n-1]=k-1;t.push(k);}else if(I==="template_start"){k=k+1;if(e.lines[n-1]<1)t[n-1]=-20;if(e.lines[n]>0||P.length===1&&z==="string"){t.push(k);}else {t.push(-20);}}else if(I==="template_end"){k=k-1;if(z==="template_start"||e.lines[n-1]<1){t[n-1]=-20;}else {t[n-1]=k;}if(e.lines[n]>0){t.push(k);}else {t.push(-20);}}else if(I==="template"){if(e.lines[n]>0){t.push(k);}else {t.push(-20);}}}function we(){if(I==="template_string_start"){k=k+1;t.push(k);}else if(I==="template_string_else"){K();t[n-1]=k-1;t.push(k);}else {K();k=k-1;t[n-1]=k;t.push(-10);}if(n>2&&(e.types[n-2]==="template_string_else"||e.types[n-2]==="template_string_start")){if(u.script.bracePadding===true){t[n-2]=-10;t[n-1]=-10;}else {t[n-2]=-20;t[n-1]=-20;}}}function me(){if(e.token[n-1]===","||e.token[n-1]===":"&&e.stack[n-1]!=="data_type"){t[n-1]=-10;}else {t[n-1]=-20;}if(e.types[n]==="type"||e.types[n]==="type_end"){t.push(-10);}if(e.types[n]==="type_start"){t.push(-20);}}function V(){if((P===")"||P==="x)")&&e.stack[n]==="class"&&(e.token[e.begin[n-1]-1]==="static"||e.token[e.begin[n-1]-1]==="final"||e.token[e.begin[n-1]-1]==="void")){t[n-1]=-10;t[e.begin[n-1]-1]=-10;}if(P==="]")t[n-1]=-10;if(a==="else"&&P==="}"){if(e.token[n-2]==="x}")t[n-3]=t[n-3]-1;if(u.script.braceAllman===true||u.script.elseNewline===true){t[n-1]=k;}}if(a==="new"&&h.has(e.token[n+1]));if(a==="from"&&z==="end"&&n>0&&(e.token[e.begin[n-1]-1]==="import"||e.token[e.begin[n-1]-1]===",")){t[n-1]=-10;}if(a==="function"){if(u.script.functionSpace===false&&n<i-1&&(e.token[n+1]==="("||e.token[n+1]==="x(")){t.push(-20);return}t.push(-10);return}if(P==="-"&&n>1){if(e.types[n-2]==="operator"||e.token[n-2]===","){t[n-1]=-20;}else if(e.types[n-2]==="start"){t[n-2]=-20;t[n-1]=-20;}}else if(a==="while"&&(P==="}"||P==="x}")){let c=n-1;let p=0;do{if(e.token[c]==="}"||e.token[c]==="x}")p=p+1;if(e.token[c]==="{"||e.token[c]==="x{")p=p-1;if(p===0){if(e.token[c-1]==="do"){t[n-1]=-10;break}t[n-1]=k;break}c=c-1;}while(c>-1)}else if(a==="in"||(a==="else"&&u.script.elseNewline===false&&u.script.braceAllman===false||a==="catch")&&(P==="}"||P==="x}")){t[n-1]=-10;}else if(a==="var"||a==="let"||a==="const"){W[W.length-1]=n;if(z==="end")t[n-1]=k;if(e.token[e.begin[n]-1]!=="for"){let c=n+1;let p=0;do{if(e.types[c]==="end")p=p-1;if(e.types[c]==="start")p=p+1;if(p<0||p===0&&(e.token[c]===";"||e.token[c]===",")){break}c=c+1;}while(c<i);if(e.token[c]===",")k=k+1;}t.push(-10);return}if((a==="default"||a==="case")&&z!=="word"&&e.stack[n]==="switch"){t[n-1]=k-1;t.push(-10);return}if(a==="catch"&&P==="."){t[n-1]=-20;t.push(-20);return}if(a==="catch"||a==="finally"){t[n-1]=-10;t.push(-10);return}if(u.script.bracePadding===false&&n<i-1&&e.token[n+1].charAt(0)==="}"){t.push(-20);return}if(e.stack[n]==="object"&&(P==="{"||P===",")&&(e.token[n+1]==="("||e.token[n+1]==="x(")){t.push(-20);return}if(e.types[n-1]==="comment"&&e.token[e.begin[n]]==="("){t[n-1]=k+1;}if(u.script.inlineReturn){if(e.stack[n]==="if"&&a==="return"&&(P==="x{"||P==="{")){const c=e.begin.lastIndexOf(e.begin[n-1],n-3);if(e.token[c-2]==="else"){if(P==="x{")e.token[n-1]="{";if(e.token[e.ender[n]]==="x}")e.token[e.ender[n]]="}";e.lines[e.ender[n]]=e.lines[e.ender[n]]-1;}else {if(e.token[e.ender[n-1]+2]!=="if"&&e.token[e.ender[n-1]+1]!=="else"){t[n-1]=-20;if(P==="{")e.token[n-1]="x{";if(e.token[e.ender[n]]==="}")e.token[e.ender[n]]="x}";}else if(e.token[e.ender[n-1]+2]!=="if"&&e.token[e.ender[n-1]+1]!=="x{"){t[n-1]=-20;e.lines[e.ender[n-1]+2]=e.lines[e.ender[n-1]+2]-1;if(e.token[n-1]==="{")e.token[n-1]="x{";if(e.token[e.ender[n]]==="}")e.token[e.ender[n]]="x}";if(e.token[e.ender[n-1]+2]==="{")e.token[e.ender[n-1]+2]="x{";}}}if((P==="x}"||P==="}")&&(e.stack[n-1]==="if"&&a==="else"&&(e.token[n+1]==="{"||e.token[n+1]==="x{")&&e.token[n+2]==="return")){if(e.token[n-2]==="x;")e.token[n-2]=";";}if(P==="x{"&&a==="return"&&e.stack[n]==="else"){t[n-1]=-20;if(e.token[e.ender[n-1]-1]==="x;")e.token[e.ender[n-1]-1]=";";e.lines[e.ender[n-1]]=e.lines[e.ender[n-1]]-1;e.lines[e.ender[n]+1]=e.lines[e.ender[n]+1]-1;}if(P==="x}"&&a==="else"&&e.token[n+1]==="x{"&&e.token[n+2]==="return"&&e.token[e.ender[n]-1]==="}"){e.token[e.ender[n]-1]="x}";}}t.push(-10);}do{if(e.lexer[n]===m){I=e.types[n];a=e.token[n];if(I==="comment"){te();}else if(I==="regex"){t.push(-20);}else if(I==="string"){fe();}else if(I.indexOf("template_string")===0){we();}else if(I==="separator"){ue();}else if(I==="start"){ne();}else if(I==="end"){X();}else if(I==="type"||I==="type_start"||I==="type_end"){me();}else if(I==="operator"){H();}else if(I==="word"){V();}else if(I==="reference"){B();}else if(I==="markup"){G();}else if(I.indexOf("template")===0){Ae();}else if(I==="generic"){if(P!=="return"&&P.charAt(0)!=="#"&&z!=="operator"&&P!=="public"&&P!=="private"&&P!=="static"&&P!=="final"&&P!=="implements"&&P!=="class"&&P!=="void"){t[n-1]=-20;}if(e.token[n+1]==="("||e.token[n+1]==="x("){t.push(-20);}else {t.push(-10);}}else {t.push(-10);}if(I!=="comment"){z=I;P=a;}if(q.length>0&&e.token[n]!==")"){if(e.types[n]==="comment"&&q[q.length-1]>-1){q[q.length-1]=u.wrap+1;}else if(t[n]>-1||e.token[n].charAt(0)==="`"&&e.token[n].indexOf("\n")>0){q[q.length-1]=-1;}else if(q[q.length-1]>-1){q[q.length-1]=q[q.length-1]+e.token[n].length;if(t[n]===-10)q[q.length-1]=q[q.length-1]+1;}}}else {L();}n=n+1;}while(n<i);return t})();const f=(()=>{const n=[];const k=(()=>{const t=[];const d=u.indentChar;let x=u.indentSize;if(typeof x!=="number"||x<1)return "";do{t.push(d);x=x-1;}while(x>0);return t.join("")})();const l=u.crlf===true?"\r\n":"\n";const A=u.preserveLine+1;const I=["x;","x}","x{","x(","x)"];let a=_.start;let z="";u.indentLevel;function W(t){const d=[];const x=(()=>{if(a===i-1)return 1;if(e.lines[a+1]-1>A)return A;if(e.lines[a+1]>1)return e.lines[a+1]-1;return 1})();let j=0;if(t<0)t=0;do{d.push(l);j=j+1;}while(j<x);if(t>0){j=0;do{d.push(k);j=j+1;}while(j<t)}return d.join("")}if(u.script.vertical===true){let t=function(d){let x=0;let j=0;let C=d-1;let F=0;let M=0;const $=e.begin[a];const q=[];do{if((e.begin[C]===$||e.token[C]==="]"||e.token[C]===")")&&(e.token[C+1]===":"&&e.stack[C]==="object"||e.token[C+1]==="=")){F=C;j=0;do{if(e.begin[F]===$){if(e.token[F]===","||e.token[F]===";"||e.token[F]==="x;"||E[F]>-1&&e.types[F]!=="comment"){if(e.token[F+1]==="."){j=j+u.indentSize*u.indentChar.length;}break}}else if(E[F]>-1){break}if(e.types[F]!=="comment"){if(E[F-1]===-10)j=j+1;j=e.token[F].length+j;}F=F-1;}while(F>$);M=F;if(e.token[M]===","&&e.token[C+1]==="="){do{if(e.types[M]==="end")M=e.begin[M];if(e.begin[M]===$){if(e.token[M]===";"||e.token[M]==="x;")break;if(e.token[M]==="var"||e.token[M]==="const"||e.token[M]==="let"){j=j+u.indentSize*u.indentChar.length;break}}M=M-1;}while(M>$)}if(j>x)x=j;q.push([C,j]);C=F;}else if(e.types[C]==="end"){C=e.begin[C];}C=C-1;}while(C>$);C=q.length;if(C>0){do{C=C-1;F=q[C][1];if(F<x){do{e.token[q[C][0]]=e.token[q[C][0]]+" ";F=F+1;}while(F<x)}}while(C>0)}};a=i;do{a=a-1;if(e.lexer[a]==="script"){if(e.token[a]==="}"&&e.token[a-1]!=="{"&&E[e.begin[a]]>0){t(a);}}else {a=e.begin[a];}}while(a>0)}a=_.start;do{if(e.lexer[a]===m||_.beautify[e.lexer[a]]===void 0){if(e.types[a]==="comment"&&u.commentIndent===true){if(/\n/.test(e.token[a])){const t=e.begin[a]>-1?e.token[a].charAt(2)==="*"?$e(E[a],k)+u.indentChar:$e(E[a],k):u.indentChar;const d=e.token[a].split(/\n/);let x=1;do{d[x]=t+d[x].trimLeft();x=x+1;}while(x<d.length);e.token.splice(a,1,d.join("\n"));}}if(I.indexOf(e.token[a])<0){if(e.token[a]!==";"||u.script.noSemicolon===false){n.push(e.token[a]);}else if(E[a]<0&&e.types[a+1]!=="comment"){n.push(";");}}if(a<i-1&&e.lexer[a+1]!==m&&e.begin[a]===e.begin[a+1]&&e.types[a+1].indexOf("end")<0&&e.token[a]!==","){n.push(" ");}else if(E[a]>-1){if((E[a]>-1&&e.token[a]==="{"||E[a]>-1&&e.token[a+1]==="}")&&e.lines[a]<3&&u.script.braceNewline===true){if(e.lines[a+1]<3)n.push(W(0));}n.push(W(E[a]));E[a];}else if(E[a]===-10){n.push(" ");if(e.lexer[a+1]!==m);}}else {if(y[a]===a){n.push(e.token[a]);}else {_.end=y[a];_.start=a;z=_.beautify[e.lexer[a]](u);n.push(z.replace(/\s+$/,""));a=_.iterator;if(E[a]===-10){n.push(" ");}else if(E[a]>-1){n.push(W(E[a]));}u.indentLevel=0;}}a=a+1;}while(a<i);_.iterator=i-1;return n.join("")})();return f};var Pe={};Ie(Pe,{format:()=>_e,language:()=>ye,options:()=>je,parse:()=>lt});var qe=[{pattern:/[a-z-]+:(?!:).+;/,type:"keyword"},{pattern:/<(\/)?style>/,type:"not"}];var ze=[{pattern:/<!DOCTYPE (html|HTML PUBLIC .+)>/,type:"meta.module",nearTop:true},{pattern:/<[a-z0-9]+(\s*[\w]+=('|").+('|")\s*)?>.*<\/[a-z0-9]+>/g,type:"keyword"},{pattern:/<!--(.*)(-->)?/,type:"comment.block"},{pattern:/[a-z-]+=("|').+("|')/g,type:"keyword.other"},{pattern:/{[{%][\s\S]*?[%}]}/g,type:"not"},{pattern:/{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,type:"not",deterministic:"liquid"}];var Re=[{pattern:/<!DOCTYPE (html|HTML PUBLIC .+)>/,type:"meta.module",nearTop:true},{pattern:/<[a-z0-9]+(\s*[\w]+=('|").+('|")\s*)?>.*<\/[a-z0-9]+>/g,type:"keyword"},{pattern:/<!--(.*)(-->)?/,type:"comment.block"},{pattern:/[a-z-]+=("|').+("|')/g,type:"keyword.other"},{pattern:/{[{%][\s\S]*?[%}]}/g,type:"keyword",deterministic:"liquid",unless:/\/.*?{[{%][\s\S]*?[%}]}.*\//},{pattern:/{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,type:"meta.module",deterministic:"liquid"}];var Ee=[{pattern:/^[{[]$/,type:"meta.module",nearTop:true},{pattern:/^\s*".+":\s*(".+"|[0-9]+|null|true|false)(,)?$/,type:"keyword"},{pattern:/^\s*".+":\s*(\{|\[)$/,type:"keyword"},{pattern:/^\s*".+":\s*\{(\s*".+":\s*(".+"|[0-9]+|null|true|false)(,)?\s*){1,}\}(,)?$/,type:"keyword"},{pattern:/\s*".+"\s*\[\s*((".+"|[0-9]+|null|true|false)(,)?\s*){1,}\](,)?$/,type:"keyword"}];var Te=[{pattern:/^( )*([A-Za-z0-9_. ]+):( )?(.*)?$/,type:"keyword"},{pattern:/^( )*-( )([A-Za-z0-9_. ]+):( )?(.*)?$/,type:"keyword"},{pattern:/^( )*-( )(.*)$/,type:"keyword"},{pattern:/^( )*([A-Za-z0-9_. ]+):( )!!binary( )?(|)?$/,type:"constant.type"},{pattern:/^( )*([A-Za-z0-9_. ]+):( )\|$/,type:"keyword"},{pattern:/^( )*([A-Za-z0-9_. ]+):( )>$/,type:"keyword"},{pattern:/^( )*\?( )(.*)$/,type:"keyword"},{pattern:/^( )*\?( )\|$/,type:"constant.type"},{pattern:/^( )*<<:( )(\*)(.*)?$/,type:"constant.type"},{pattern:/^( )*([A-Za-z0-9_. ]+):(.*)?( )?{$/,type:"not"},{pattern:/^( )*([A-Za-z0-9_. ]+):(.*)?( )?,$/,type:"not"}];var De=[{pattern:/undefined/g,type:"keyword"},{pattern:/window\./g,type:"keyword"},{pattern:/console\.log\s*\(/,type:"keyword.print"},{pattern:/(var|const|let)\s+\w+\s*=?/,type:"keyword.variable"},{pattern:/(('|").+('|")\s*|\w+):\s*[{[]/,type:"constant.array"},{pattern:/===/g,type:"keyword.operator"},{pattern:/!==/g,type:"keyword.operator"},{pattern:/function\*?\s*([A-Za-z$_][\w$]*)?\s*[(][^:;()]*[)]\s*{/g,type:"keyword.function"},{pattern:/\(* => {/g,type:"keyword.function"},{pattern:/null/g,type:"constant.null"},{pattern:/\(.*\)\s*=>\s*.+/,type:"keyword.control"},{pattern:/(else )?if\s+\(.+\)/,type:"keyword.control"},{pattern:/while\s+\(.+\)/,type:"keyword.control"},{pattern:/\*\w+/,type:"not"},{pattern:/(var|const|let)\s+\w+:\s*(string|number|boolean|string)(?:\[\])?/,type:"not"},{pattern:/(interface|type)\s+\w+?/,type:"not"},{pattern:/(declare|namespace)\s+\w+?/,type:"not"},{pattern:/<(\/)?script\s*(type=('|")text\/javascript('|"))?>/,type:"not"},{pattern:/<(\/)?style>/,type:"not"},{pattern:/fn\s[A-Za-z0-9<>,]+\(.*\)\s->\s\w+(\s\{|)/,type:"not"},{pattern:/{[{%][\s\S]*?[%}]}/g,type:"not"},{pattern:/{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,type:"not",deterministic:"liquid"}];var Fe=[{pattern:/undefined/g,type:"keyword"},{pattern:/window\./g,type:"keyword"},{pattern:/console\.log\s*\(/,type:"keyword.print"},{pattern:/(var|const|let)\s+\w+\s*=?/,type:"keyword.variable"},{pattern:/(('|").+('|")\s*|\w+):\s*[{[]/,type:"constant.array"},{pattern:/===/g,type:"keyword.operator"},{pattern:/!==/g,type:"keyword.operator"},{pattern:/function\*?\s*([A-Za-z$_][\w$]*)?\s*[(][^:;()]*[)]\s*{/g,type:"keyword.function"},{pattern:/\(* => {/g,type:"keyword.function"},{pattern:/null/g,type:"constant.null"},{pattern:/\(.*\)\s*=>\s*.+/,type:"keyword.control"},{pattern:/(else )?if\s+\(.+\)/,type:"keyword.control"},{pattern:/while\s+\(.+\)/,type:"keyword.control"},{pattern:/\*\w+/,type:"not"},{pattern:/<(\/)?script( type=('|")text\/javascript('|"))?>/,type:"not"},{pattern:/<(\/)?style>/,type:"not"},{pattern:/fn\s[A-Za-z0-9<>,]+\(.*\)\s->\s\w+(\s\{|)/,type:"not"},{pattern:/{[{%][\s\S]*?[%}]}/g,type:"not"},{pattern:/{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,type:"not",deterministic:"liquid"},{pattern:/(var|const|let)\s+\w+:\s*(string|number|boolean|string|any)(\[\])?/,type:"keyword.variable"},{pattern:/(\(\s*)?\w+:\s*(string|number|boolean|string|any)(\[\])?(\s*\))?/,type:"keyword.other"},{pattern:/\):\s*(\w+)(\[\])?\s*(=>|\{)\s*/,type:"keyword.function"},{pattern:/(interface|type)\s+\w+?/,type:"keyword.other"},{pattern:/(declare|namespace)\s+\w+?/,type:"keyword.other"},{pattern:/as\s+\w+?/,type:"keyword.other"}];var Me=[{pattern:/^(#){2,6}\s.+/,type:"keyword"},{pattern:/^(?!!)(=|-){2,}(?<!>)$/,type:"meta.module"},{pattern:/(!)?\[.+\]\(.+\)/,type:"keyword"},{pattern:/\[.+\]\[.+\]/,type:"keyword"},{pattern:/^\[.+\]:\s?(<)?(http)?/,type:"keyword"},{pattern:/^(> .*)+/,type:"macro"},{pattern:/^```([A-Za-z0-9#_]+)?$/,type:"keyword"},{pattern:/^---$/,type:"meta.module",nearTop:true}];var tt={node:"javascript",jsc:"javascript",deno:"typescript"};var We={css:qe,html:ze,liquid:Re,javascript:De,typescript:Fe,json:Ee,markdown:Me,yaml:Te};function Ue(v){let u=v.replace(/\r\n?/g,"\n").replace(/\n{2,}/g,"\n").split("\n");if(u.length>500){u=u.filter((m,T)=>{if(He(T,u))return true;return T%Math.ceil(u.length/500)===0});}if(u[0].startsWith("#!")){if(u[0].startsWith("#!/usr/bin/env")){let m;m=u[0].split(" ").slice(1).join(" ");m=tt[m]||m.charAt(0).toUpperCase()+m.slice(1);return {language:m,statistics:{},linesOfCode:u.length}}if(u[0].startsWith("#!/bin/bash")){return {language:"javascript",statistics:{},linesOfCode:u.length}}}const h=ge(We).map(m=>({language:m,checkers:We[m]}));const s=[];const g=h.reduce((m,{language:T,checkers:i})=>{m[T]=i.filter(E=>"deterministic"in E);return m},{});for(let m=0;m<h.length;m++){const{language:T,checkers:i}=h[m];let E=0;for(let f=0;f<u.length;f++){if(/^\s*$/.test(u[f]))continue;if(T in g){const n=nt(u[f],i);if(n){return {language:n,statistics:{},linesOfCode:f}}}if(!He(f,u)){E+=Ze(u[f],i.filter(n=>!n.nearTop));}else {E+=Ze(u[f],i);}}s.push({language:T,points:E});}const y=s.reduce((m,T)=>m.points>=T.points?m:T,{points:0,language:""});const e={};for(let m=0;m<s.length;m++)e[s[m].language]=s[m].points;return {language:y.language,statistics:e,linesOfCode:u.length}}function nt(v,u){for(const{pattern:h,deterministic:s,unless:g=null}of u){if(h.test(v)&&g!==null&&!g.test(v)){return s}}return false}function st(v){switch(v){case"keyword.print":case"meta.import":case"meta.module":return 5;case"keyword.function":case"constant.null":return 4;case"constant.type":case"constant.string":case"constant.numeric":case"constant.boolean":case"constant.dictionary":case"constant.array":case"keyword.variable":return 3;case"section.scope":case"keyword.other":case"keyword.operator":case"keyword.control":case"keyword.visibility":case"keyword":return 2;case"comment.block":case"comment.line":case"comment.documentation":case"macro":return 1;case"not":default:return -20}}function Ze(v,u){const h=u.map(s=>{if(s.pattern.test(v))return st(s.type);return 0});return h.reduce((s,g)=>s+g,0)}function He(v,u){if(u.length<=10)return true;return v<u.length/10}var pe=re(null);var ke=re(null);{pe.markup="markup";pe.html="markup";pe.liquid="markup";pe.js="script";pe.ts="script";pe.javascript="script";pe.typescript="script";pe.json="script";pe.jsx="script";pe.tsx="script";pe.less="style";pe.scss="style";pe.sass="style";pe.css="style";pe.text="text";pe.xml="markup";ke.javascript="JavaScript";ke.json="JSON";ke.jsx="JSX";ke.html="HTML";ke.liquid="Liquid";ke.markup="markup";ke.scss="SCSS";ke.text="Plain Text";ke.typescript="TypeScript";}function Oe(v){if(typeof v!=="string")return "script";if(v.indexOf("html")>-1)return "markup";if(pe[v]===void 0)return "script";return pe[v]}function Qe(v){if(typeof v!=="string"||ke[v]===void 0)return v.toUpperCase();return ke[v]}function rt(v){const u=re(null);u.language=v;u.languageName=Qe(v);u.lexer=Oe(v);return u}ye.reference=rt;ye.listen=function(v){_.hooks.language.push(v);};function ye(v){const{language:u}=Ue(v);const h=re(null);h.language=u;h.languageName=Qe(u);h.lexer=Oe(u);if(_.hooks.language.length>0){for(const s of _.hooks.language){const g=s(h);if(typeof g==="object")be(h,g);}}return h}function Be(v){const u=v.definitions;const h=v.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@format\s*(\w+)?\s*{\s+/);const s=v.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify-ignore\b/);const g=ge(u);const y=g.length;let e=0;if(s>-1&&v.source.slice(0,s).trimStart()==="")return false;if(h>-1&&(h===0||`"':`.indexOf(v.source.charAt(h-1))<0)){let d=function(){if(f.charAt(k-1)!=="\\")return false;let x=k;do{x=x-1;}while(x>0&&f.charAt(x)==="\\");return (k-x)%2===0};const i=[];const E=h;const f=v.source;const n=f.length;let k=E;let l=0;let A="";let I="";let a="";let z="";let P=[];let W=[];let S;let t;if(f.charAt(k)==="<"){t="<!--";}else if(f.charAt(k+1)==="/"){t="//";}else if(f.charAt(k+1)==="%"){S=f.indexOf("}",k+1);if(f[S-1].charCodeAt(0)===37)t=f.slice(k,S+1);}else {t="/*";}do{if(f.slice(k-7,k)==="@format")break;k=k+1;}while(k<n);do{if(d()===false){if(A===""){if(f.charAt(k)==='"'||f.charAt(k)==="'"||f.charAt(k)==="`"){A=f.charAt(k);if(i.length>0&&i[i.length-1].charAt(i[i.length-1].length-1)===":")l=k;}else if(/\s/.test(f.charAt(k))===false&&l===0){l=k;}else if(f.charAt(k)===","||/\s/.test(f.charAt(k))===true&&l>0){I=f.slice(l,k);if(i.length>0){if(i.length>0&&I===":"&&i[i.length-1].indexOf(":")<0){i[i.length-1]=i[i.length-1]+I;l=k;}else if(i.length>0&&i[i.length-1].charAt(i[i.length-1].length-1)===":"){i[i.length-1]=i[i.length-1]+I;l=0;}else {i.push(I);l=0;}}else {i.push(I);l=0;}}if(t==="<!--"&&f.slice(k-2,k+1)==="-->")break;if(t==="//"&&f.charAt(k)==="\n")break;if(t==="/*"&&f.slice(k-1,k+1)==="*/")break;if(t.charCodeAt(1)===37&&f.slice(k-1,k+1)==="%"&&f.indexOf("endcomment",f.indexOf("{%",S))>0)break}else if(f.charAt(k)===A&&A!=="${"){A="";}else if(A==="`"&&f.slice(k,k+2)==="${"){A="${";}else if(A==="${"&&f.charAt(k)==="}"){A="`";}}k=k+1;}while(k<n);if(l>0){A=f.slice(l,k+1);if(t==="<!--")A=A.replace(/\s*-+>$/,"");else if(t==="//")A=A.replace(/\s+$/,"");else A=A.replace(/\s*\u002a\/$/,"");i.push(A);}k=i.length;if(k>0){do{k=k-1;if(i[k].indexOf(":")>0){W=[i[k].slice(0,i[k].indexOf(":")),i[k].slice(i[k].indexOf(":")+1)];}else if(u[i[k]]!==void 0&&u[i[k]].type==="boolean"){v.options[i[k]]=true;}if(W.length===2&&u[W[0]]!==void 0){if(W[1].charAt(W[1].length-1)===W[1].charAt(0)&&(W[1].charAt(0)==='"'||W[1].charAt(0)==="'"||W[1].charAt(0)==="`")){W[1]=W[1].slice(1,W[1].length-1);}if(u[W[0]].type==="number"&&isNaN(Number(W[1]))===false){v.options[W[0]]=Number(W[1]);}else if(u[W[0]].type==="boolean"){v.options[W[0]]=W[1]==="true";}else {if(u[W[0]].values!==void 0){P=ge(u[W[0]].values);l=P.length;do{l=l-1;if(P[l]===W[1]){v.options[W[0]]=W[1];break}}while(l>0)}else {if(W[0]==="language"){a=W[1];}else if(W[0]==="lexer"){z=W[1];}v.options[W[0]]=W[1];}}}}while(k>0);if(z===""&&a!=="")z=Oe(a);}}if(v.options.lexer==="script"){if(v.options.script.styleGuide!==void 0){switch(v.options.script.styleGuide){case"airbnb":v.options.wrap=80;v.options.attemptCorrection=true;v.options.indentChar=" ";v.options.indentSize=2;v.options.preserveLine=1;v.options.script.quoteConvert="single";v.options.script.variableList="each";v.options.script.endComma="always";v.options.script.bracePadding=true;break;case"crockford":v.options.indentChar=" ";v.options.indentSize=4;v.options.attemptCorrection=true;v.options.script.bracePadding=false;v.options.script.elseNewline=false;v.options.script.endComma="never";v.options.script.noCaseIndent=true;v.options.script.functionSpace=true;v.options.script.variableList="each";v.options.script.vertical=false;break;case"google":v.options.wrap=-1;v.options.attemptCorrection=true;v.options.indentChar=" ";v.options.indentSize=4;v.options.preserveLine=1;v.options.script.quoteConvert="single";v.options.script.vertical=false;break;case"jquery":v.options.wrap=80;v.options.attemptCorrection=true;v.options.indentChar="	";v.options.indentSize=1;v.options.script.bracePadding=true;v.options.script.quoteConvert="double";v.options.script.variableList="each";break;case"jslint":v.options.indentChar=" ";v.options.indentSize=4;v.options.attemptCorrection=true;v.options.script.bracePadding=false;v.options.script.elseNewline=false;v.options.script.endComma="never";v.options.script.noCaseIndent=true;v.options.script.functionSpace=true;v.options.script.variableList="each";v.options.script.vertical=false;break;case"standard":v.options.wrap=0;v.options.attemptCorrection=true;v.options.indentChar=" ";v.options.indentSize=2;v.options.endNewline=false;v.options.preserveLine=1;v.options.script.noSemicolon=true;v.options.script.endComma="never";v.options.script.braceNewline=false;v.options.script.bracePadding=false;v.options.script.braceAllman=false;v.options.script.quoteConvert="single";v.options.script.functionSpace=true;v.options.script.ternaryLine=false;v.options.script.variableList="each";v.options.script.vertical=false;break;case"yandex":v.options.attemptCorrection=true;v.options.script.bracePadding=false;v.options.script.quoteConvert="single";v.options.script.variableList="each";v.options.script.vertical=false;break}}if(v.options.script.braceStyle!==void 0){switch(v.options.script.braceStyle){case"collapse":v.options.script.braceNewline=false;v.options.script.bracePadding=false;v.options.script.braceAllman=false;v.options.script.objectIndent="indent";v.options.script.neverFlatten=true;break;case"collapse-preserve-inline":v.options.script.braceNewline=false;v.options.script.bracePadding=true;v.options.script.braceAllman=false;v.options.script.objectIndent="indent";v.options.script.neverFlatten=false;break;case"expand":v.options.script.braceNewline=false;v.options.script.bracePadding=false;v.options.script.braceAllman=true;v.options.script.objectIndent="indent";v.options.script.neverFlatten=true;break}}if(v.options.language==="json")v.options.wrap=0;}do{if(v.options[ge[e]]!==void 0){u[ge[e]].lexer.length;}e=e+1;}while(e<y)}function it(v){const u=v.options.language;const h=v.options.lexer;r.count=-1;r.linesSpace=0;r.lineNumber=1;r.data.begin=[];r.data.ender=[];r.data.lexer=[];r.data.lines=[];r.data.stack=[];r.data.token=[];r.data.types=[];r.datanames=["begin","ender","lexer","lines","stack","token","types"];r.structure=[["global",-1]];r.structure.pop=function m(){const T=r.structure.length-1;const i=r.structure[T];if(T>0)r.structure.splice(T,1);return i};if(v.options.language==="auto"||v.options.lexer==="auto"){const m=ye(v.source);if(v.options.language==="auto")v.options.language=m.language;if(v.options.lexer==="auto")v.options.lexer=m.lexer;}if(typeof v.lexers[v.options.lexer]==="function"){r.references=[[]];r.error="";for(const m of ge(v.lexers)){if(v.options.language==="json"){v.options.json=v.options.json||re(null);}else {v.options[m]=v.options[m]||re(null);}}v.lexers[v.options.lexer](`${v.source} `);}else {r.error=`Specified lexer, ${v.options.lexer}, is not a function.`;}let s=0;let g=0;const y=ge(r.data);const e=y.length;do{g=s+1;do{if(r.data[y[s]].length!==r.data[y[g]].length){r.error=`"${y[s]}" array is of different length than "${y[g]}"`;break}g=g+1;}while(g<e);s=s+1;}while(s<e-1);if(r.data.begin.length>0){if(v.options.lexer==="script"&&v.options[v.options.lexer].objectSort){r.sortCorrection(0,r.count+1);}else if(v.options.lexer==="style"&&v.options[v.options.lexer].sortProperties){r.sortCorrection(0,r.count+1);}}v.options.language=u;v.options.lexer=h;return r.data}function Le(v){const u=Date.now();const h=v.mode;const s=v.options.crlf===true?"\r\n":"\n";let g="";if(v.source.trimStart()===""){const m=new RegExp(`\\n{${v.options.preserveLine},}`);g=v.source;g=v.source.replace(m,"\n\n");g=v.options.endNewline===true?g.replace(/\s*$/,s):g.replace(/\s+$/,"");v.stats.chars=g.length;v.stats.language=v.options.languageName;v.stats.size=ve(g.length);v.stats.time=(Date.now()-u).toFixed(1);return g}if(v.options.language==="text"){v.options.language="auto";}if(v.options.lexer==="text"){v.options.lexer="auto";}if(v.options.language==="text"||v.options.lexer==="text"){v.options.language="text";v.options.languageName="Plain Text";v.options.lexer="text";}else if(v.options.language==="auto"||v.options.lexer==="auto"){const m=ye(v.source);if(m.language==="text"){m.language="html";m.lexer="markup";m.languageName="HTML";}if(v.options.lexer==="auto"){v.options.lexer=m.lexer;}if(v.options.language==="auto"){v.options.language=m.language;v.options.languageName=m.languageName;}}v.stats.language=v.options.languageName;const y=Be(v);if(y===false){v.stats.time=-1;v.stats.chars=v.source.length;v.stats.size=ve(v.stats.chars);return v.source}v.parsed=it(v);if(h==="parse"){v.stats.time=(Date.now()-u).toFixed(1);v.stats.chars=v.source.length;v.stats.size=ve(v.stats.chars);return v.parsed}g=v.beautify[v.options.lexer](v.options);g=v.options.endNewline===true?g.replace(/\s*$/,s):g.replace(/\s+$/,"");const e=g.length;v.stats.chars=e;v.stats.size=ve(e);v.stats.time=(Date.now()-u).toFixed(1);v.end=0;v.start=0;return g}_e.before=function(v){_.hooks.before.push(v);};_e.after=function(v){_.hooks.after.push(v);};je.listen=function(v){_.hooks.rules.push(v);};Object.defineProperty(_e,"stats",{get(){return _.stats}});Object.defineProperty(je,"rules",{get(){return _.options}});function _e(v,u){_.source=v;if(typeof u==="object")_.options=je(u);if(_.hooks.before.length>0){for(const s of _.hooks.before){if(s(_.options,v)===false)return v}}const h=Le(_);if(_.hooks.after.length>0){for(const s of _.hooks.after){if(s.call(_.parsed,h,_.options)===false)return v}}return new Promise((s,g)=>{if(r.error.length)return g(r.error);return s(h)})}function je(v){var u,h;for(const s of ge(v)){if(((h=(u=xe)==null?void 0:u[s])==null?void 0:h.lexer)==="all"){_.options[s]=v[s];}else if(s==="markup"){be(_.options.markup,v.markup);}else if(s==="script"){be(_.options.script,v.script);}else if(s==="style"){be(_.options.style,v.style);}else if(s==="json"){be(_.options.script,v.script);}else if(s in _.options){_.options[s]=v[s];}}if(_.hooks.rules.length>0){for(const s of _.hooks.rules)s(_.options);}return _.options}function lt(v,u){_.source=v;_.mode="parse";if(typeof u==="object")_.options=je(u);const h=Le(_);return new Promise((s,g)=>{if(r.error.length)return g(r.error);return s(h)})}
+// src/prettify/module.ts
+var prettify = create(null);
+prettify.parsed = create(null);
+prettify.options = create(null);
+prettify.beautify = create(null);
+prettify.lexers = create(null);
+prettify.definitions = definitions;
+prettify.mode = "beautify";
+prettify.source = "";
+prettify.end = 0;
+prettify.iterator = 0;
+prettify.start = 0;
+prettify.scopes = [];
+prettify.stats = create(null);
+prettify.stats.chars = -1;
+prettify.stats.time = -1;
+prettify.stats.size = "";
+prettify.stats.language = "";
+prettify.hooks = create(null);
+prettify.hooks.before = [];
+prettify.hooks.language = [];
+prettify.hooks.rules = [];
+prettify.hooks.after = [];
+prettify.options.mode = "beautify";
+prettify.options.tagMerge = false;
+prettify.options.tagSort = false;
+prettify.options.lexer = "auto";
+prettify.options.language = "text";
+prettify.options.languageName = "Plain Text";
+prettify.options.indentLevel = 0;
+prettify.options.crlf = false;
+prettify.options.attemptCorrection = false;
+prettify.options.commentIndent = true;
+prettify.options.endNewline = false;
+prettify.options.indentChar = " ";
+prettify.options.indentSize = 2;
+prettify.options.preserveComment = false;
+prettify.options.preserveLine = 2;
+prettify.options.wrap = 0;
+prettify.options.markup = create(null);
+prettify.options.markup.attributeGlue = true;
+prettify.options.markup.attributeSort = false;
+prettify.options.markup.attributeSortList = [];
+prettify.options.markup.attributeValueNewlines = "force";
+prettify.options.markup.commentNewline = false;
+prettify.options.markup.forceAttribute = false;
+prettify.options.markup.preserveText = false;
+prettify.options.markup.preserveAttributes = false;
+prettify.options.markup.selfCloseSpace = false;
+prettify.options.markup.forceIndent = false;
+prettify.options.markup.quoteConvert = "none";
+prettify.options.style = create(null);
+prettify.options.style.compressCSS = false;
+prettify.options.style.classPadding = false;
+prettify.options.style.noLeadZero = false;
+prettify.options.style.sortSelectors = false;
+prettify.options.style.sortProperties = false;
+prettify.options.style.quoteConvert = "none";
+prettify.options.script = create(null);
+prettify.options.script.braceNewline = false;
+prettify.options.script.bracePadding = false;
+prettify.options.script.braceStyle = "none";
+prettify.options.script.braceAllman = false;
+prettify.options.script.commentNewline = false;
+prettify.options.script.caseSpace = false;
+prettify.options.script.inlineReturn = true;
+prettify.options.script.elseNewline = false;
+prettify.options.script.endComma = "never";
+prettify.options.script.arrayFormat = "default";
+prettify.options.script.objectSort = false;
+prettify.options.script.objectIndent = "default";
+prettify.options.script.functionNameSpace = false;
+prettify.options.script.functionSpace = false;
+prettify.options.script.styleGuide = "none";
+prettify.options.script.ternaryLine = false;
+prettify.options.script.methodChain = 4;
+prettify.options.script.neverFlatten = false;
+prettify.options.script.noCaseIndent = false;
+prettify.options.script.noSemicolon = false;
+prettify.options.script.quoteConvert = "none";
+prettify.options.script.variableList = "none";
+prettify.options.script.vertical = false;
+prettify.options.json = create(null);
+prettify.options.json.arrayFormat = "default";
+prettify.options.json.braceAllman = false;
+prettify.options.json.bracePadding = false;
+prettify.options.json.objectIndent = "default";
+prettify.options.json.objectSort = false;
+
+// src/utils/helpers.ts
+function repeatChar(count, ch = " ") {
+  if (count === 0)
+    return ch;
+  let char = "";
+  let i = 1;
+  do {
+    char += ch;
+  } while (i++ < count);
+  return char;
+}
+function is(string, code) {
+  if (!string)
+    return false;
+  return string.charCodeAt(0) === code;
+}
+function not(string, code) {
+  return is(string, code) === false;
+}
+function ws(string) {
+  return /\s/.test(string);
+}
+function size(bytes) {
+  const kb = 1024;
+  const mb = 1048576;
+  const gb = 1073741824;
+  if (bytes < kb)
+    return bytes + " B";
+  else if (bytes < mb)
+    return (bytes / kb).toFixed(1) + " KB";
+  else if (bytes < gb)
+    return (bytes / mb).toFixed(1) + " MB";
+  else
+    return (bytes / gb).toFixed(1) + " GB";
+}
+
+// src/parser/parse.ts
+var parse = new class Parse {
+  constructor() {
+    this.error = "";
+    this.data = create(null);
+    this.references = [[]];
+    this.structure = [["global", -1]];
+    this.datanames = ["begin", "ender", "lexer", "lines", "stack", "token", "types"];
+    this.count = -1;
+    this.lineNumber = 1;
+    this.linesSpace = 0;
+    this.data.begin = [];
+    this.data.ender = [];
+    this.data.lexer = [];
+    this.data.lines = [];
+    this.data.stack = [];
+    this.data.token = [];
+    this.data.types = [];
+  }
+  get current() {
+    const {
+      begin,
+      ender,
+      lexer,
+      lines,
+      stack,
+      token,
+      types
+    } = this.data;
+    return {
+      begin: begin[begin.length - 1],
+      ender: ender[ender.length - 1],
+      lexer: lexer[lexer.length - 1],
+      lines: lines[lines.length - 1],
+      stack: stack[stack.length - 1],
+      token: token[begin.length - 1],
+      types: types[begin.length - 1]
+    };
+  }
+  concat(data, array) {
+    for (const v of this.datanames)
+      data[v] = data[v].concat(array[v]);
+    if (data === this.data)
+      this.count = data.token.length - 1;
+  }
+  objectSort(data) {
+    let cc2 = this.count;
+    let dd = this.structure[this.structure.length - 1][1];
+    let ee = 0;
+    let ff = 0;
+    let gg = 0;
+    let behind = 0;
+    let commaTest = true;
+    let front = 0;
+    let keyend = 0;
+    let keylen = 0;
+    const global = data.lexer[cc2] === "style" && this.structure[this.structure.length - 1][0] === "global";
+    const keys2 = [];
+    const length = this.count;
+    const begin = dd;
+    const style3 = data.lexer[cc2] === "style";
+    const delim = style3 === true ? [";", "separator"] : [",", "separator"];
+    const lines = this.linesSpace;
+    const stack = global === true ? "global" : this.structure[this.structure.length - 1][0];
+    function sort(x, y) {
+      let xx = x[0];
+      let yy = y[0];
+      if (data.types[xx] === "comment") {
+        do {
+          xx = xx + 1;
+        } while (xx < length && data.types[xx] === "comment");
+        if (data.token[xx] === void 0) {
+          return 1;
+        }
+      }
+      if (data.types[yy] === "comment") {
+        do {
+          yy = yy + 1;
+        } while (yy < length && data.types[yy] === "comment");
+        if (data.token[yy] === void 0)
+          return 1;
+      }
+      if (style3 === true) {
+        if (data.token[xx].indexOf("@import") === 0 || data.token[yy].indexOf("@import") === 0) {
+          return xx < yy ? -1 : 1;
+        }
+        if (data.types[xx] !== data.types[yy]) {
+          if (data.types[xx] === "function")
+            return 1;
+          if (data.types[xx] === "variable")
+            return -1;
+          if (data.types[xx] === "selector")
+            return 1;
+          if (data.types[xx] === "property" && data.types[yy] !== "variable")
+            return -1;
+          if (data.types[xx] === "mixin" && data.types[yy] !== "property" && data.types[yy] !== "variable")
+            return -1;
+        }
+      }
+      if (data.token[xx].toLowerCase() > data.token[yy].toLowerCase())
+        return 1;
+      return -1;
+    }
+    const store = create(null);
+    store.begin = [];
+    store.ender = [];
+    store.lexer = [];
+    store.lines = [];
+    store.stack = [];
+    store.token = [];
+    store.types = [];
+    behind = cc2;
+    do {
+      if (data.begin[cc2] === dd || global === true && cc2 < behind && data.token[cc2] === "}" && data.begin[data.begin[cc2]] === -1) {
+        if (data.types[cc2].indexOf("template") > -1)
+          return;
+        if (data.token[cc2] === delim[0] || style3 === true && data.token[cc2] === "}" && data.token[cc2 + 1] !== ";") {
+          commaTest = true;
+          front = cc2 + 1;
+        } else if (style3 === true && data.token[cc2 - 1] === "}") {
+          commaTest = true;
+          front = cc2;
+        }
+        if (front === 0 && data.types[0] === "comment") {
+          do {
+            front = front + 1;
+          } while (data.types[front] === "comment");
+        } else if (data.types[front] === "comment" && data.lines[front] < 2) {
+          front = front + 1;
+        }
+        if (commaTest === true && (data.token[cc2] === delim[0] || style3 === true && data.token[cc2 - 1] === "}") && front <= behind) {
+          if (style3 === true && "};".indexOf(data.token[behind]) < 0) {
+            behind = behind + 1;
+          } else if (style3 === false && data.token[behind] !== ",") {
+            behind = behind + 1;
+          }
+          keys2.push([front, behind]);
+          if (style3 === true && data.token[front] === "}") {
+            behind = front;
+          } else {
+            behind = front - 1;
+          }
+        }
+      }
+      cc2 = cc2 - 1;
+    } while (cc2 > dd);
+    if (keys2.length > 0 && keys2[keys2.length - 1][0] > cc2 + 1) {
+      ee = keys2[keys2.length - 1][0] - 1;
+      if (data.types[ee] === "comment" && data.lines[ee] > 1) {
+        do {
+          ee = ee - 1;
+        } while (ee > 0 && data.types[ee] === "comment");
+        keys2[keys2.length - 1][0] = ee + 1;
+      }
+      if (data.types[cc2 + 1] === "comment" && cc2 === -1) {
+        do {
+          cc2 = cc2 + 1;
+        } while (data.types[cc2 + 1] === "comment");
+      }
+      keys2.push([cc2 + 1, ee]);
+    }
+    if (keys2.length > 1) {
+      if (style3 === true || data.token[cc2 - 1] === "=" || data.token[cc2 - 1] === ":" || data.token[cc2 - 1] === "(" || data.token[cc2 - 1] === "[" || data.token[cc2 - 1] === "," || data.types[cc2 - 1] === "word" || cc2 === 0) {
+        keys2.sort(sort);
+        keylen = keys2.length;
+        commaTest = false;
+        dd = 0;
+        do {
+          keyend = keys2[dd][1];
+          if (style3 === true) {
+            gg = keyend;
+            if (data.types[gg] === "comment")
+              gg = gg - 1;
+            if (data.token[gg] === "}") {
+              keyend = keyend + 1;
+              delim[0] = "}";
+              delim[1] = "end";
+            } else {
+              delim[0] = ";";
+              delim[1] = "separator";
+            }
+          }
+          ee = keys2[dd][0];
+          if (style3 === true && data.types[keyend - 1] !== "end" && data.types[keyend] === "comment" && data.types[keyend + 1] !== "comment" && dd < keylen - 1) {
+            keyend = keyend + 1;
+          }
+          if (ee < keyend) {
+            do {
+              if (style3 === false && dd === keylen - 1 && ee === keyend - 2 && data.token[ee] === "," && data.lexer[ee] === "script" && data.types[ee + 1] === "comment") {
+                ff = ff + 1;
+              } else {
+                const o = create(null);
+                o.begin = data.begin[ee];
+                o.ender = data.ender[ee];
+                o.lexer = data.lexer[ee];
+                o.lines = data.lines[ee];
+                o.stack = data.stack[ee];
+                o.token = data.token[ee];
+                o.types = data.types[ee];
+                this.push(store, o, "");
+                ff = ff + 1;
+              }
+              if (data.token[ee] === delim[0] && (style3 === true || data.begin[ee] === data.begin[keys2[dd][0]])) {
+                commaTest = true;
+              } else if (data.token[ee] !== delim[0] && data.types[ee] !== "comment") {
+                commaTest = false;
+              }
+              ee = ee + 1;
+            } while (ee < keyend);
+          }
+          if (commaTest === false && store.token[store.token.length - 1] !== "x;" && (style3 === true || dd < keylen - 1)) {
+            ee = store.types.length - 1;
+            if (store.types[ee] === "comment") {
+              do {
+                ee = ee - 1;
+              } while (ee > 0 && store.types[ee] === "comment");
+            }
+            ee = ee + 1;
+            this.splice({
+              data: store,
+              howmany: 0,
+              index: ee,
+              record: {
+                begin,
+                ender: this.count,
+                lexer: store.lexer[ee - 1],
+                lines: 0,
+                stack,
+                token: delim[0],
+                types: delim[1]
+              }
+            });
+            ff = ff + 1;
+          }
+          dd = dd + 1;
+        } while (dd < keylen);
+        this.splice({ data, howmany: ff, index: cc2 + 1 });
+        this.linesSpace = lines;
+        this.concat(data, store);
+      }
+    }
+  }
+  pop(data) {
+    const output = create(null);
+    output.begin = data.begin.pop();
+    output.ender = data.ender.pop();
+    output.lexer = data.lexer.pop();
+    output.lines = data.lines.pop();
+    output.stack = data.stack.pop();
+    output.token = data.token.pop();
+    output.types = data.types.pop();
+    if (data === this.data)
+      this.count = this.count - 1;
+    return output;
+  }
+  push(data, record, structure) {
+    const ender = () => {
+      let a = this.count;
+      const begin = data.begin[a];
+      if ((data.lexer[a] === "script" || data.lexer[a] === "style") && prettify.options[data.lexer[a]].objectSort === true) {
+        return;
+      }
+      do {
+        if (data.begin[a] === begin || data.begin[data.begin[a]] === begin && data.types[a].indexOf("attribute") > -1 && data.types[a].indexOf("attribute_end") < 0) {
+          data.ender[a] = this.count;
+        } else {
+          a = data.begin[a];
+        }
+        a = a - 1;
+      } while (a > begin);
+      if (a > -1)
+        data.ender[a] = this.count;
+    };
+    this.datanames.forEach((value) => data[value].push(record[value]));
+    if (data === this.data) {
+      this.count = this.count + 1;
+      this.linesSpace = 0;
+      if (record.lexer !== "style") {
+        if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, "") === "") {
+          structure = record.types === "else" ? "else" : structure = record.token;
+        }
+      }
+      if (record.types === "start" || record.types.indexOf("_start") > 0) {
+        this.structure.push([structure, this.count]);
+      } else if (record.types === "end" || record.types.indexOf("_end") > 0) {
+        let case_ender = 0;
+        if (this.structure.length > 2 && (data.types[this.structure[this.structure.length - 1][1]] === "else" || data.types[this.structure[this.structure.length - 1][1]].indexOf("_else") > 0) && (data.types[this.structure[this.structure.length - 2][1]] === "start" || data.types[this.structure[this.structure.length - 2][1]].indexOf("_start") > 0) && (data.types[this.structure[this.structure.length - 2][1] + 1] === "else" || data.types[this.structure[this.structure.length - 2][1] + 1].indexOf("_else") > 0)) {
+          this.structure.pop();
+          data.begin[this.count] = this.structure[this.structure.length - 1][1];
+          data.stack[this.count] = this.structure[this.structure.length - 1][0];
+          data.ender[this.count - 1] = this.count;
+          case_ender = data.ender[data.begin[this.count] + 1];
+        }
+        ender();
+        if (case_ender > 0)
+          data.ender[data.begin[this.count] + 1] = case_ender;
+        this.structure.pop();
+      } else if (record.types === "else" || record.types.indexOf("_else") > 0) {
+        if (structure === "")
+          structure = "else";
+        if (this.count > 0 && (data.types[this.count - 1] === "start" || data.types[this.count - 1].indexOf("_start") > 0)) {
+          this.structure.push([structure, this.count]);
+        } else {
+          ender();
+          if (structure === "") {
+            this.structure[this.structure.length - 1] = ["else", this.count];
+          } else {
+            this.structure[this.structure.length - 1] = [structure, this.count];
+          }
+        }
+      }
+    }
+  }
+  safeSort(array, operation, recursive) {
+    let extref = (item) => item;
+    const arTest = (item) => Array.isArray(item) === true;
+    function safeSortNormal(item) {
+      let storeb = item;
+      const done = [item[0]];
+      function safeSortNormalChild() {
+        let a = 0;
+        const len = storeb.length;
+        if (a < len) {
+          do {
+            if (arTest(storeb[a]) === true)
+              storeb[a] = safeSortNormal(storeb[a]);
+            a = a + 1;
+          } while (a < len);
+        }
+      }
+      function safeSortNormalRecurse(x) {
+        let a = 0;
+        const storea = [];
+        const len = storeb.length;
+        if (a < len) {
+          do {
+            if (storeb[a] !== x)
+              storea.push(storeb[a]);
+            a = a + 1;
+          } while (a < len);
+        }
+        storeb = storea;
+        if (storea.length > 0) {
+          done.push(storea[0]);
+          extref(storea[0]);
+        } else {
+          if (recursive === true)
+            safeSortNormalChild();
+          item = storeb;
+        }
+      }
+      extref = safeSortNormalRecurse;
+      safeSortNormalRecurse(array[0]);
+      return item;
+    }
+    function safeSortDescend(item) {
+      let c = 0;
+      const len = item.length;
+      const storeb = item;
+      function safeSortDescendChild() {
+        let a = 0;
+        const lenc = storeb.length;
+        if (a < lenc) {
+          do {
+            if (arTest(storeb[a]))
+              storeb[a] = safeSortDescend(storeb[a]);
+            a = a + 1;
+          } while (a < lenc);
+        }
+      }
+      function safeSortDescendRecurse(value) {
+        let a = c;
+        let b = 0;
+        let d = 0;
+        let e = 0;
+        let key = storeb[c];
+        let ind = [];
+        let tstore = "";
+        const tkey = typeof key;
+        if (a < len) {
+          do {
+            tstore = typeof storeb[a];
+            if (storeb[a] > key || tstore > tkey) {
+              key = storeb[a];
+              ind = [a];
+            } else if (storeb[a] === key) {
+              ind.push(a);
+            }
+            a = a + 1;
+          } while (a < len);
+        }
+        d = ind.length;
+        a = c;
+        b = d + c;
+        if (a < b) {
+          do {
+            storeb[ind[e]] = storeb[a];
+            storeb[a] = key;
+            e = e + 1;
+            a = a + 1;
+          } while (a < b);
+        }
+        c = c + d;
+        if (c < len) {
+          extref("");
+        } else {
+          if (recursive === true)
+            safeSortDescendChild();
+          item = storeb;
+        }
+        return value;
+      }
+      extref = safeSortDescendRecurse;
+      safeSortDescendRecurse("");
+      return item;
+    }
+    function safeSortAscend(item) {
+      let c = 0;
+      const len = item.length;
+      const storeb = item;
+      function safeSortAscendChild() {
+        let a = 0;
+        const lenc = storeb.length;
+        if (a < lenc) {
+          do {
+            if (arTest(storeb[a]) === true)
+              storeb[a] = safeSortAscend(storeb[a]);
+            a = a + 1;
+          } while (a < lenc);
+        }
+      }
+      function safeSortAscendRecurse(value) {
+        let a = c;
+        let b = 0;
+        let d = 0;
+        let e = 0;
+        let ind = [];
+        let key = storeb[c];
+        let tstore = "";
+        const tkey = typeof key;
+        if (a < len) {
+          do {
+            tstore = typeof storeb[a];
+            if (storeb[a] < key || tstore < tkey) {
+              key = storeb[a];
+              ind = [a];
+            } else if (storeb[a] === key) {
+              ind.push(a);
+            }
+            a = a + 1;
+          } while (a < len);
+        }
+        d = ind.length;
+        a = c;
+        b = d + c;
+        if (a < b) {
+          do {
+            storeb[ind[e]] = storeb[a];
+            storeb[a] = key;
+            e = e + 1;
+            a = a + 1;
+          } while (a < b);
+        }
+        c = c + d;
+        if (c < len) {
+          extref("");
+        } else {
+          if (recursive === true)
+            safeSortAscendChild();
+          item = storeb;
+        }
+        return value;
+      }
+      extref = safeSortAscendRecurse;
+      safeSortAscendRecurse("");
+      return item;
+    }
+    if (arTest(array) === false)
+      return array;
+    if (operation === "normal")
+      return safeSortNormal(array);
+    if (operation === "descend")
+      return safeSortDescend(array);
+    return safeSortAscend(array);
+  }
+  sortCorrection(start, end) {
+    let a = start;
+    let endslen = -1;
+    const data = this.data;
+    const ends = [];
+    const structure = this.structure.length < 2 ? [-1] : [this.structure[this.structure.length - 2][1]];
+    do {
+      if (a > 0 && data.types[a].indexOf("attribute") > -1 && data.types[a].indexOf("end") < 0 && data.types[a - 1].indexOf("start") < 0 && data.types[a - 1].indexOf("attribute") < 0 && data.lexer[a] === "markup") {
+        structure.push(a - 1);
+      }
+      if (a > 0 && data.types[a - 1].indexOf("attribute") > -1 && data.types[a].indexOf("attribute") < 0 && data.lexer[structure[structure.length - 1]] === "markup" && data.types[structure[structure.length - 1]].indexOf("start") < 0) {
+        structure.pop();
+      }
+      if (data.begin[a] !== structure[structure.length - 1]) {
+        if (structure.length > 0) {
+          data.begin[a] = structure[structure.length - 1];
+        } else {
+          data.begin[a] = -1;
+        }
+      }
+      if (data.types[a].indexOf("else") > -1) {
+        if (structure.length > 0) {
+          structure[structure.length - 1] = a;
+        } else {
+          structure.push(a);
+        }
+      }
+      if (data.types[a].indexOf("end") > -1)
+        structure.pop();
+      if (data.types[a].indexOf("start") > -1)
+        structure.push(a);
+      a = a + 1;
+    } while (a < end);
+    a = end;
+    do {
+      a = a - 1;
+      if (data.types[a].indexOf("end") > -1) {
+        ends.push(a);
+        endslen = endslen + 1;
+      }
+      data.ender[a] = endslen > -1 ? ends[endslen] : -1;
+      if (data.types[a].indexOf("start") > -1) {
+        ends.pop();
+        endslen = endslen - 1;
+      }
+    } while (a > start);
+  }
+  spacer(args) {
+    this.linesSpace = 1;
+    do {
+      if (args.array[args.index] === "\n") {
+        this.linesSpace = this.linesSpace + 1;
+        this.lineNumber = this.lineNumber + 1;
+      }
+      if (/\s/.test(args.array[args.index + 1]) === false)
+        break;
+      args.index = args.index + 1;
+    } while (args.index < args.end);
+    return args.index;
+  }
+  splice(splice) {
+    const finalItem = [this.data.begin[this.count], this.data.token[this.count]];
+    if (splice.record !== void 0 && splice.record.token !== "") {
+      for (const value of this.datanames) {
+        splice.data[value].splice(splice.index, splice.howmany, splice.record[value]);
+      }
+      if (splice.data === this.data) {
+        this.count = this.count - splice.howmany + 1;
+        if (finalItem[0] !== this.data.begin[this.count] || finalItem[1] !== this.data.token[this.count]) {
+          this.linesSpace = 0;
+        }
+      }
+      return;
+    }
+    for (const value of this.datanames) {
+      splice.data[value].splice(splice.index, splice.howmany);
+    }
+    if (splice.data === this.data) {
+      this.count = this.count - splice.howmany;
+      this.linesSpace = 0;
+    }
+  }
+  wrapCommentBlock(config) {
+    let a = config.start;
+    let b = 0;
+    let c = 0;
+    let d = 0;
+    let len = 0;
+    let lines = [];
+    let space = "";
+    let bline = "";
+    let emptyLine = false;
+    let bulletLine = false;
+    let numberLine = false;
+    let bigLine = false;
+    let output = "";
+    let terml = config.terminator.length - 1;
+    let term = config.terminator.charAt(terml);
+    let twrap = 0;
+    const {
+      wrap,
+      crlf,
+      preserveComment
+    } = prettify.options;
+    const build = [];
+    const second = [];
+    const lf = crlf === true ? "\r\n" : "\n";
+    const sanitize = (input) => `\\${input}`;
+    const regEsc = /(\/|\\|\||\*|\[|\]|\{|\})/g;
+    const regEndEsc = /{%-?\s*|\s*-?%}/g;
+    const regEnd = new RegExp(`\\s*${config.terminator.replace(regEndEsc, (input) => {
+      if (input.charCodeAt(0) === 123 /* LCB */)
+        return "{%-?\\s*";
+      return "\\s*-?%}";
+    })}$`);
+    const opensan = config.opening.replace(regEsc, sanitize);
+    const regIgnore = new RegExp(`^(${opensan}\\s*@prettify-ignore-start)`);
+    const regStart = new RegExp(`(${opensan}\\s*)`);
+    const isLiquid = is(config.opening[0], 123 /* LCB */) && is(config.opening[1], 37 /* PER */);
+    function emptylines() {
+      if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === "") {
+        do {
+          b = b + 1;
+        } while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === ""));
+      }
+      if (b < len - 1)
+        second.push("");
+    }
+    do {
+      build.push(config.chars[a]);
+      if (config.chars[a] === "\n")
+        this.lineNumber = this.lineNumber + 1;
+      if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join("") === config.terminator)
+        break;
+      a = a + 1;
+    } while (a < config.end);
+    output = build.join("");
+    if (regIgnore.test(output) === true) {
+      let termination = "\n";
+      a = a + 1;
+      do {
+        build.push(config.chars[a]);
+        if (build.slice(build.length - 20).join("") === "@prettify-ignore-end") {
+          if (isLiquid) {
+            const d2 = config.chars.indexOf("{", a);
+            if (is(config.chars[d2 + 1], 37 /* PER */)) {
+              const ender = config.chars.slice(d2, config.chars.indexOf("}", d2 + 1) + 1).join("");
+              if (regEnd.test(ender))
+                config.terminator = ender;
+            }
+          }
+          a = a + 1;
+          break;
+        }
+        a = a + 1;
+      } while (a < config.end);
+      b = a;
+      terml = config.opening.length - 1;
+      term = config.opening.charAt(terml);
+      do {
+        if (config.opening === "/*" && config.chars[b - 1] === "/" && (config.chars[b] === "*" || config.chars[b] === "/"))
+          break;
+        if (config.opening !== "/*" && config.chars[b] === term && config.chars.slice(b - terml, b + 1).join("") === config.opening)
+          break;
+        b = b - 1;
+      } while (b > config.start);
+      if (config.opening === "/*" && config.chars[b] === "*") {
+        termination = "*/";
+      } else if (config.opening !== "/*") {
+        termination = config.terminator;
+      }
+      terml = termination.length - 1;
+      term = termination.charAt(terml);
+      if (termination !== "\n" || config.chars[a] !== "\n") {
+        do {
+          build.push(config.chars[a]);
+          if (termination === "\n" && config.chars[a + 1] === "\n")
+            break;
+          if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join("") === termination)
+            break;
+          a = a + 1;
+        } while (a < config.end);
+      }
+      if (config.chars[a] === "\n")
+        a = a - 1;
+      output = build.join("").replace(/\s+$/, "");
+      return [output, a];
+    }
+    if (preserveComment === true || wrap < 1 || a === config.end || output.length <= wrap && output.indexOf("\n") < 0 || config.opening === "/*" && output.indexOf("\n") > 0 && output.replace("\n", "").indexOf("\n") > 0 && /\n(?!(\s*\*))/.test(output) === false) {
+      return [output, a];
+    }
+    b = config.start;
+    if (b > 0 && config.chars[b - 1] !== "\n" && /\s/.test(config.chars[b - 1])) {
+      do {
+        b = b - 1;
+      } while (b > 0 && config.chars[b - 1] !== "\n" && /\s/.test(config.chars[b - 1]));
+    }
+    space = config.chars.slice(b, config.start).join("");
+    const spaceLine = new RegExp("\n" + space, "g");
+    lines = output.replace(/\r\n/g, "\n").replace(spaceLine, "\n").split("\n");
+    len = lines.length;
+    lines[0] = lines[0].replace(regStart, "");
+    lines[len - 1] = lines[len - 1].replace(regEnd, "");
+    if (len < 2)
+      lines = lines[0].split(" ");
+    if (lines[0] === "") {
+      lines[0] = config.opening;
+    } else {
+      lines.splice(0, 0, config.opening);
+    }
+    len = lines.length;
+    b = 0;
+    do {
+      bline = b < len - 1 ? lines[b + 1].replace(/^\s+/, "") : "";
+      if (/^\s+$/.test(lines[b]) === true || lines[b] === "") {
+        emptylines();
+      } else if (lines[b].slice(0, 4) === "    ") {
+        second.push(lines[b]);
+      } else if (lines[b].replace(/^\s+/, "").length > wrap && lines[b].replace(/^\s+/, "").indexOf(" ") > wrap) {
+        lines[b] = lines[b].replace(/^\s+/, "");
+        c = lines[b].indexOf(" ");
+        second.push(lines[b].slice(0, c));
+        lines[b] = lines[b].slice(c + 1);
+        b = b - 1;
+      } else {
+        lines[b] = config.opening === "/*" && lines[b].indexOf("/*") !== 0 ? `   ${lines[b].replace(/^\s+/, "").replace(/\s+$/, "").replace(/\s+/g, " ")}` : `${lines[b].replace(/^\s+/, "").replace(/\s+$/, "").replace(/\s+/g, " ")}`;
+        twrap = b < 1 ? wrap - (config.opening.length + 1) : wrap;
+        c = lines[b].length;
+        d = lines[b].replace(/^\s+/, "").indexOf(" ");
+        if (c > twrap && d > 0 && d < twrap) {
+          c = twrap;
+          do {
+            c = c - 1;
+            if (/\s/.test(lines[b].charAt(c)) && c <= wrap)
+              break;
+          } while (c > 0);
+          if (lines[b].slice(0, 4) !== "    " && /^\s*(\*|-)\s/.test(lines[b]) === true && /^\s*(\*|-)\s/.test(lines[b + 1]) === false) {
+            lines.splice(b + 1, 0, "* ");
+          }
+          if (lines[b].slice(0, 4) !== "    " && /^\s*\d+\.\s/.test(lines[b]) === true && /^\s*\d+\.\s/.test(lines[b + 1]) === false) {
+            lines.splice(b + 1, 0, "1. ");
+          }
+          if (c < 4) {
+            second.push(lines[b]);
+            bigLine = true;
+          } else if (b === len - 1) {
+            second.push(lines[b].slice(0, c));
+            lines[b] = lines[b].slice(c + 1);
+            bigLine = true;
+            b = b - 1;
+          } else if (/^\s+$/.test(lines[b + 1]) === true || lines[b + 1] === "") {
+            second.push(lines[b].slice(0, c));
+            lines[b] = lines[b].slice(c + 1);
+            emptyLine = true;
+            b = b - 1;
+          } else if (lines[b + 1].slice(0, 4) !== "    " && /^\s*(\*|-)\s/.test(lines[b + 1])) {
+            second.push(lines[b].slice(0, c));
+            lines[b] = lines[b].slice(c + 1);
+            bulletLine = true;
+            b = b - 1;
+          } else if (lines[b + 1].slice(0, 4) !== "    " && /^\s*\d+\.\s/.test(lines[b + 1])) {
+            second.push(lines[b].slice(0, c));
+            lines[b] = lines[b].slice(c + 1);
+            numberLine = true;
+            b = b - 1;
+          } else if (lines[b + 1].slice(0, 4) === "    ") {
+            second.push(lines[b].slice(0, c));
+            lines[b] = lines[b].slice(c + 1);
+            bigLine = true;
+            b = b - 1;
+          } else if (c + bline.length > wrap && bline.indexOf(" ") < 0) {
+            second.push(lines[b].slice(0, c));
+            lines[b] = lines[b].slice(c + 1);
+            bigLine = true;
+            b = b - 1;
+          } else if (lines[b].replace(/^\s+/, "").indexOf(" ") < wrap) {
+            lines[b + 1] = lines[b].length > wrap ? lines[b].slice(c + 1) + lf + lines[b + 1] : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
+          }
+          if (emptyLine === false && bulletLine === false && numberLine === false && bigLine === false) {
+            lines[b] = lines[b].slice(0, c);
+          }
+        } else if (lines[b + 1] !== void 0 && (lines[b].length + bline.indexOf(" ") > wrap && bline.indexOf(" ") > 0 || lines[b].length + bline.length > wrap && bline.indexOf(" ") < 0)) {
+          second.push(lines[b]);
+          b = b + 1;
+        } else if (lines[b + 1] !== void 0 && /^\s+$/.test(lines[b + 1]) === false && lines[b + 1] !== "" && lines[b + 1].slice(0, 4) !== "    " && /^\s*(\*|-|(\d+\.))\s/.test(lines[b + 1]) === false) {
+          lines[b + 1] = `${lines[b]} ${lines[b + 1]}`;
+          emptyLine = true;
+        }
+        if (bigLine === false && bulletLine === false && numberLine === false) {
+          if (emptyLine === true) {
+            emptyLine = false;
+          } else if (/^\s*(\*|-|(\d+\.))\s*$/.test(lines[b]) === false) {
+            if (b < len - 1 && lines[b + 1] !== "" && /^\s+$/.test(lines[b]) === false && lines[b + 1].slice(0, 4) !== "    " && /^\s*(\*|-|(\d+\.))\s/.test(lines[b + 1]) === false) {
+              lines[b] = `${lines[b]} ${lines[b + 1]}`;
+              lines.splice(b + 1, 1);
+              len = len - 1;
+              b = b - 1;
+            } else {
+              if (config.opening === "/*" && lines[b].indexOf("/*") !== 0) {
+                second.push(`   ${lines[b].replace(/^\s+/, "").replace(/\s+$/, "").replace(/\s+/g, " ")}`);
+              } else {
+                second.push(`${lines[b].replace(/^\s+/, "").replace(/\s+$/, "").replace(/\s+/g, " ")}`);
+              }
+            }
+          }
+        }
+        bigLine = false;
+        bulletLine = false;
+        numberLine = false;
+      }
+      b = b + 1;
+    } while (b < len);
+    if (second.length > 0) {
+      if (second[second.length - 1].length > wrap - (config.terminator.length + 1)) {
+        second.push(config.terminator);
+      } else {
+        second[second.length - 1] = `${second[second.length - 1]} ${config.terminator}`;
+      }
+      output = second.join(lf);
+    } else {
+      lines[lines.length - 1] = lines[lines.length - 1] + config.terminator;
+      output = lines.join(lf);
+    }
+    return [output, a];
+  }
+  wrapCommentLine(config) {
+    let a = config.start;
+    let b = 0;
+    let output = "";
+    let build = [];
+    const { wrap, preserveComment } = prettify.options;
+    function recurse() {
+      let line = "";
+      do {
+        b = b + 1;
+        if (config.chars[b + 1] === "\n")
+          return;
+      } while (b < config.end && /\s/.test(config.chars[b]) === true);
+      if (config.chars[b] + config.chars[b + 1] === "//") {
+        build = [];
+        do {
+          build.push(config.chars[b]);
+          b = b + 1;
+        } while (b < config.end && config.chars[b] !== "\n");
+        line = build.join("");
+        if (/^\/\/ (\*|-|(\d+\.))/.test(line) === false && line.slice(0, 6) !== "//    " && /^\/\/\s*$/.test(line) === false) {
+          output = `${output} ${line.replace(/(^\/\/\s*)/, "").replace(/\s+$/, "")}`;
+          a = b - 1;
+          recurse();
+        }
+      }
+    }
+    const wordWrap = () => {
+      const lines = [];
+      const record = create(null);
+      record.ender = -1;
+      record.types = "comment";
+      record.lexer = config.lexer;
+      record.lines = this.linesSpace;
+      if (this.count > -1) {
+        record.begin = this.structure[this.structure.length - 1][1];
+        record.stack = this.structure[this.structure.length - 1][0];
+        record.token = this.data.token[this.count];
+      } else {
+        record.begin = -1;
+        record.stack = "global";
+        record.token = "";
+      }
+      let c = 0;
+      let d = 0;
+      output = output.replace(/\s+/g, " ").replace(/\s+$/, "");
+      d = output.length;
+      if (wrap > d)
+        return;
+      do {
+        c = wrap;
+        if (output.charAt(c) !== " ") {
+          do {
+            c = c - 1;
+          } while (c > 0 && output.charAt(c) !== " ");
+          if (c < 3) {
+            c = wrap;
+            do {
+              c = c + 1;
+            } while (c < d - 1 && output.charAt(c) !== " ");
+          }
+        }
+        lines.push(output.slice(0, c));
+        output = `// ${output.slice(c).replace(/^\s+/, "")}`;
+        d = output.length;
+      } while (wrap < d);
+      c = 0;
+      d = lines.length;
+      do {
+        record.token = lines[c];
+        this.push(this.data, record, "");
+        record.lines = 2;
+        this.linesSpace = 2;
+        c = c + 1;
+      } while (c < d);
+    };
+    do {
+      build.push(config.chars[a]);
+      a = a + 1;
+    } while (a < config.end && config.chars[a] !== "\n");
+    if (a === config.end) {
+      config.chars.push("\n");
+    } else {
+      a = a - 1;
+    }
+    output = build.join("").replace(/\s+$/, "");
+    if (/^(\/\/\s*@prettify-ignore-start\b)/.test(output) === true) {
+      let termination = "\n";
+      a = a + 1;
+      do {
+        build.push(config.chars[a]);
+        a = a + 1;
+      } while (a < config.end && (config.chars[a - 1] !== "d" || config.chars[a - 1] === "d" && build.slice(build.length - 20).join("") !== "@prettify-ignore-end"));
+      b = a;
+      do {
+      } while (b > config.start && config.chars[b - 1] === "/" && (config.chars[b] === "*" || config.chars[b] === "/"));
+      if (config.chars[b] === "*")
+        termination = "*/";
+      if (termination !== "\n" || config.chars[a] !== "\n") {
+        do {
+          build.push(config.chars[a]);
+          if (termination === "\n" && config.chars[a + 1] === "\n")
+            break;
+          a = a + 1;
+        } while (a < config.end && (termination === "\n" || termination === "*/" && (config.chars[a - 1] !== "*" || config.chars[a] !== "/")));
+      }
+      if (config.chars[a] === "\n")
+        a = a - 1;
+      output = build.join("").replace(/\s+$/, "");
+      return [output, a];
+    }
+    if (output === "//" || output.slice(0, 6) === "//    " || preserveComment === true) {
+      return [output, a];
+    }
+    output = output.replace(/(\/\/\s*)/, "// ");
+    if (wrap < 1 || a === config.end - 1 && this.data.begin[this.count] < 1)
+      return [output, a];
+    b = a + 1;
+    recurse();
+    wordWrap();
+    return [output, a];
+  }
+}();
+
+// src/lexers/style.ts
+prettify.lexers.style = function style(source) {
+  const { options: options2 } = prettify;
+  let a = 0;
+  let ltype = "";
+  let ltoke = "";
+  const data = parse.data;
+  const b = source.split("");
+  const len = source.length;
+  const mapper = [];
+  const nosort = [];
+  function recordPush(structure) {
+    const record = create(null);
+    record.begin = parse.structure[parse.structure.length - 1][1];
+    record.ender = -1;
+    record.lexer = "style";
+    record.lines = parse.linesSpace;
+    record.stack = parse.structure[parse.structure.length - 1][0];
+    record.token = ltoke;
+    record.types = ltype;
+    parse.push(data, record, structure);
+  }
+  const esctest = function lexer_style_esctest(index) {
+    const slashy = index;
+    do {
+      index = index - 1;
+    } while (b[index] === "\\" && index > 0);
+    if ((slashy - index) % 2 === 1) {
+      return true;
+    }
+    return false;
+  };
+  function value(val) {
+    const x = val.replace(/\s*!important/, " !important").split("");
+    const values = [];
+    const transition = /-?transition$/.test(data.token[parse.count - 2]);
+    const colorPush = function lexer_style_value_colorPush(value2) {
+      return value2;
+    };
+    const valueSpace = function lexer_style_value_valueSpace(find) {
+      find = find.replace(/\s*/g, "");
+      if (/\/\d/.test(find) === true && val.indexOf("url(") === 0)
+        return find;
+      return ` ${find.charAt(0)} ${find.charAt(1)}`;
+    };
+    const zerofix = function lexer_style_value_zerofix(find) {
+      if (options2.style.noLeadZero === true) {
+        const scrub = function lexer_style_value_zerofix_scrub(search) {
+          return search.replace(/0+/, "");
+        };
+        return find.replace(/^-?\D0+(\.|\d)/, scrub);
+      }
+      if (/0*\./.test(find) === true)
+        return find.replace(/0*\./, "0.");
+      if (/0+/.test(/\d+/.exec(find)[0]) === true) {
+        if (/^\D*0+\D*$/.test(find) === true)
+          return find.replace(/0+/, "0");
+        return find.replace(/\d+/.exec(find)[0], /\d+/.exec(find)[0].replace(/^0+/, ""));
+      }
+      return find;
+    };
+    const commaspace = function lexer_style_value_commaspace(find) {
+      return find.replace(",", ", ");
+    };
+    const diFix = function lexer_style_value_diFix(di) {
+      return `${di} `;
+    };
+    const slash = function lexer_style_value_slash() {
+      const start = cc2 - 1;
+      let xx = start;
+      if (start < 1) {
+        return true;
+      }
+      do {
+        xx = xx - 1;
+      } while (xx > 0 && x[xx] === "\\");
+      if ((start - xx) % 2 === 1) {
+        return true;
+      }
+      return false;
+    };
+    const zerodotstart = /^-?0+\.\d+[a-z]/;
+    const dotstart = /^-?\.\d+[a-z]/;
+    const zerodot = /(\s|\(|,)-?0+\.?\d+([a-z]|\)|,|\s)/g;
+    const dot = /(\s|\(|,)-?\.?\d+([a-z]|\)|,|\s)/g;
+    const dimensions = "%|cap|ch|cm|deg|dpcm|dpi|dppx|em|ex|fr|grad|Hz|ic|in|kHz|lh|mm|ms|mS|pc|pt|px|Q|rad|rem|rlh|s|turn|vb|vh|vi|vmax|vmin|vw";
+    let cc2 = 0;
+    let dd = 0;
+    let block = "";
+    let leng = x.length;
+    let items = [];
+    if (cc2 < leng) {
+      do {
+        items.push(x[cc2]);
+        if (x[cc2 - 1] !== "\\" || slash() === false) {
+          if (block === "") {
+            if (x[cc2] === '"') {
+              block = '"';
+              dd = dd + 1;
+            } else if (x[cc2] === "'") {
+              block = "'";
+              dd = dd + 1;
+            } else if (x[cc2] === "(") {
+              block = ")";
+              dd = dd + 1;
+            } else if (x[cc2] === "[") {
+              block = "]";
+              dd = dd + 1;
+            }
+          } else if (x[cc2] === "(" && block === ")" || x[cc2] === "[" && block === "]") {
+            dd = dd + 1;
+          } else if (x[cc2] === block) {
+            dd = dd - 1;
+            if (dd === 0) {
+              block = "";
+            }
+          }
+        }
+        if (block === "" && x[cc2] === " ") {
+          items.pop();
+          values.push(colorPush(items.join("")));
+          items = [];
+        }
+        cc2 = cc2 + 1;
+      } while (cc2 < leng);
+    }
+    values.push(colorPush(items.join("")));
+    leng = values.length;
+    cc2 = 0;
+    if (cc2 < leng) {
+      do {
+        if (options2.style.noLeadZero === true && zerodotstart.test(values[cc2]) === true) {
+          values[cc2] = values[cc2].replace(/0+\./, ".");
+        } else if ((options2.style.noLeadZero === false || options2.style.noLeadZero === void 0) && dotstart.test(values[cc2]) === true) {
+          values[cc2] = values[cc2].replace(".", "0.");
+        } else if (zerodot.test(values[cc2]) === true || dot.test(values[cc2]) === true) {
+          values[cc2] = values[cc2].replace(zerodot, zerofix).replace(dot, zerofix);
+        } else if (/^(0+([a-z]{2,3}|%))$/.test(values[cc2]) === true && transition === false) {
+          values[cc2] = "0";
+        } else if (/^(0+)/.test(values[cc2]) === true) {
+          values[cc2] = values[cc2].replace(/0+/, "0");
+          if (/\d/.test(values[cc2].charAt(1)) === true) {
+            values[cc2] = values[cc2].substr(1);
+          }
+        } else if (/^url\((?!('|"))/.test(values[cc2]) === true && values[cc2].charAt(values[cc2].length - 1) === ")") {
+          block = values[cc2].charAt(values[cc2].indexOf("url(") + 4);
+          if (block !== "@" && block !== "{" && block !== "<") {
+            if (options2.style.quoteConvert === "double") {
+              values[cc2] = values[cc2].replace(/url\(/, 'url("').replace(/\)$/, '")');
+            } else {
+              values[cc2] = values[cc2].replace(/url\(/, "url('").replace(/\)$/, "')");
+            }
+          }
+        }
+        if (/^(\+|-)?\d+(\.\d+)?(e-?\d+)?\D+$/.test(values[cc2]) === true) {
+          if (dimensions.indexOf(values[cc2].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, "")) < 0) {
+            values[cc2] = values[cc2].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, diFix);
+          }
+        }
+        if (/^\w+\(/.test(values[cc2]) === true && values[cc2].charAt(values[cc2].length - 1) === ")" && (values[cc2].indexOf("url(") !== 0 || values[cc2].indexOf("url(") === 0 && values[cc2].indexOf(" ") > 0)) {
+          values[cc2] = values[cc2].replace(/,\S/g, commaspace);
+        }
+        cc2 = cc2 + 1;
+      } while (cc2 < leng);
+    }
+    block = values.join(" ");
+    return block.charAt(0) + block.slice(1).replace(/\s*(\/|\+|\*)\s*(\d|\$)/, valueSpace);
+  }
+  const buildtoken = function lexer_style_build() {
+    let aa = a;
+    let bb = 0;
+    const out = [];
+    let outy = "";
+    let funk = null;
+    const block = [];
+    const qc = options2.style.quoteConvert === void 0 ? "none" : options2.style.quoteConvert;
+    const spacestart = function lexer_style_build_spacestart() {
+      out.push(b[aa]);
+      if (/\s/.test(b[aa + 1]) === true) {
+        do {
+          aa = aa + 1;
+        } while (aa < len && /\s/.test(b[aa + 1]) === true);
+      }
+    };
+    if (aa < len) {
+      do {
+        if (b[aa] === '"' || b[aa] === "'") {
+          if (funk === null) {
+            funk = false;
+          }
+          if (block[block.length - 1] === b[aa] && (b[aa - 1] !== "\\" || esctest(aa - 1) === false)) {
+            block.pop();
+            if (qc === "double") {
+              b[aa] = '"';
+            } else if (qc === "single") {
+              b[aa] = "'";
+            }
+          } else if (block[block.length - 1] !== '"' && block[block.length - 1] !== "'" && (b[aa - 1] !== "\\" || esctest(aa - 1) === false)) {
+            block.push(b[aa]);
+            if (qc === "double") {
+              b[aa] = '"';
+            } else if (qc === "single") {
+              b[aa] = "'";
+            }
+          } else if (b[aa - 1] === "\\" && qc !== "none") {
+            if (esctest(aa - 1) === true) {
+              if (qc === "double" && b[aa] === "'") {
+                out.pop();
+              } else if (qc === "single" && b[aa] === '"') {
+                out.pop();
+              }
+            }
+          } else if (qc === "double" && b[aa] === '"') {
+            b[aa] = '\\"';
+          } else if (qc === "single" && b[aa] === "'") {
+            b[aa] = "\\'";
+          }
+          out.push(b[aa]);
+        } else if (b[aa - 1] !== "\\" || esctest(aa - 1) === false) {
+          if (b[aa] === "(") {
+            if (funk === null) {
+              funk = true;
+            }
+            block.push(")");
+            spacestart();
+          } else if (b[aa] === "[") {
+            funk = false;
+            block.push("]");
+            spacestart();
+          } else if ((b[aa] === "#" || b[aa] === "@") && b[aa + 1] === "{") {
+            funk = false;
+            out.push(b[aa]);
+            aa = aa + 1;
+            block.push("}");
+            spacestart();
+          } else if (b[aa] === block[block.length - 1]) {
+            out.push(b[aa]);
+            block.pop();
+          } else {
+            out.push(b[aa]);
+          }
+        } else {
+          out.push(b[aa]);
+        }
+        if (parse.structure[parse.structure.length - 1][0] === "map" && block.length === 0 && (b[aa + 1] === "," || b[aa + 1] === ")")) {
+          if (b[aa + 1] === ")" && data.token[parse.count] === "(") {
+            parse.pop(data);
+            parse.structure.pop();
+            out.splice(0, 0, "(");
+          } else {
+            break;
+          }
+        }
+        if (b[aa + 1] === ":") {
+          bb = aa;
+          if (/\s/.test(b[bb]) === true) {
+            do {
+              bb = bb - 1;
+            } while (/\s/.test(b[bb]) === true);
+          }
+          outy = b.slice(bb - 6, bb + 1).join("");
+          if (outy.indexOf("filter") === outy.length - 6 || outy.indexOf("progid") === outy.length - 6) {
+            outy = "filter";
+          }
+        }
+        if (block.length === 0) {
+          if (b[aa + 1] === ";" && esctest(aa + 1) === true || b[aa + 1] === ":" && b[aa] !== ":" && b[aa + 2] !== ":" && outy !== "filter" && outy !== "progid" || b[aa + 1] === "}" || b[aa + 1] === "{" || b[aa + 1] === "/" && (b[aa + 2] === "*" || b[aa + 2] === "/")) {
+            bb = out.length - 1;
+            if (/\s/.test(out[bb]) === true) {
+              do {
+                bb = bb - 1;
+                aa = aa - 1;
+                out.pop();
+              } while (/\s/.test(out[bb]) === true);
+            }
+            break;
+          }
+          if (b[aa + 1] === ",") {
+            break;
+          }
+        }
+        aa = aa + 1;
+      } while (aa < len);
+    }
+    a = aa;
+    if (parse.structure[parse.structure.length - 1][0] === "map" && out[0] === "(") {
+      mapper[mapper.length - 1] = mapper[mapper.length - 1] - 1;
+    }
+    ltoke = out.join("").replace(/\s+/g, " ").replace(/^\s/, "").replace(/\s$/, "");
+    if (funk === true) {
+      ltoke = ltoke.replace(/\s+\(/g, "(").replace(/\s+\)/g, ")").replace(/,\(/g, ", (");
+    }
+    if (parse.count > -1 && data.token[parse.count].indexOf("extend(") === 0) {
+      ltype = "pseudo";
+    } else if (funk === true && /\d/.test(ltoke.charAt(0)) === false && /^rgba?\(/.test(ltoke) === false && ltoke.indexOf("url(") !== 0 && (ltoke.indexOf(" ") < 0 || ltoke.indexOf(" ") > ltoke.indexOf("(")) && ltoke.charAt(ltoke.length - 1) === ")") {
+      if (data.token[parse.count] === ":") {
+        ltype = "value";
+      } else {
+        ltoke = ltoke.replace(/,\u0020?/g, ", ");
+        ltype = "function";
+      }
+      ltoke = value(ltoke);
+    } else if (parse.count > -1 && `"'`.indexOf(data.token[parse.count].charAt(0)) > -1 && data.types[parse.count] === "variable") {
+      ltype = "item";
+    } else if (out[0] === "@" || out[0] === "$") {
+      if (data.types[parse.count] === "colon" && options2.language === "css" && (data.types[parse.count - 1] === "property" || data.types[parse.count - 1] === "variable")) {
+        ltype = "value";
+      } else if (parse.count > -1) {
+        ltype = "item";
+        outy = data.token[parse.count];
+        aa = outy.indexOf("(");
+        if (outy.charAt(outy.length - 1) === ")" && aa > 0) {
+          outy = outy.slice(aa + 1, outy.length - 1);
+          data.token[parse.count] = data.token[parse.count].slice(0, aa + 1) + value(outy) + ")";
+        }
+      }
+      ltoke = value(ltoke);
+    } else {
+      ltype = "item";
+    }
+    recordPush("");
+  };
+  const item = function lexer_style_item(type) {
+    let aa = parse.count;
+    let bb = 0;
+    let first = "";
+    const comsa = [];
+    const priors = function lexer_style_item_priors() {
+      if (data.types[aa] === "comment" || data.types[aa] === "ignore") {
+        do {
+          aa = aa - 1;
+          comsa.push(data.token[aa]);
+        } while (aa > 0 && data.lexer[aa] === "style" && (data.types[aa] === "comment" || data.types[aa] === "ignore"));
+      }
+      bb = aa - 1;
+      if (data.types[bb] === "comment" || data.types[bb] === "ignore") {
+        do {
+          bb = bb - 1;
+        } while (bb > 0 && data.lexer[aa] === "style" && (data.types[bb] === "comment" || data.types[bb] === "ignore"));
+      }
+      first = data.token[aa].charAt(0);
+    };
+    const selectorPretty = function lexer_style_item_selectorPretty(index) {
+      let cc2 = index;
+      const dd = data.begin[cc2];
+      data.token[index] = data.token[index].replace(/\s*&/, " &").replace(/(\s*>\s*)/g, " > ").replace(/:\s+/g, ": ").replace(/^(\s+)/, "").replace(/(\s+)$/, "").replace(/\s+::\s+/, "::");
+      if (data.token[cc2 - 1] === "," || data.token[cc2 - 1] === ":" || data.types[cc2 - 1] === "comment") {
+        do {
+          cc2 = cc2 - 1;
+          if (data.begin[cc2] === dd) {
+            if (data.token[cc2] === ";") {
+              break;
+            }
+            if (data.token[cc2] !== "," && data.types[cc2] !== "comment") {
+              data.types[cc2] = "selector";
+            }
+            if (data.token[cc2] === ":") {
+              data.token[cc2 - 1] = `${data.token[cc2 - 1]}:${data.token[cc2 + 1]}`;
+              parse.splice({
+                data,
+                howmany: 2,
+                index: cc2
+              });
+            }
+          } else {
+            break;
+          }
+        } while (cc2 > 0);
+      }
+      cc2 = parse.count;
+      if (options2.style.sortSelectors === true && data.token[cc2 - 1] === ",") {
+        const store = [data.token[cc2]];
+        do {
+          cc2 = cc2 - 1;
+          if (data.types[cc2] === "comment" || data.types[cc2] === "ignore") {
+            do {
+              cc2 = cc2 - 1;
+            } while (cc2 > 0 && (data.types[cc2] === "comment" || data.types[cc2] === "ignore"));
+          }
+          if (data.token[cc2] === ",") {
+            cc2 = cc2 - 1;
+          }
+          store.push(data.token[cc2]);
+        } while (cc2 > 0 && (data.token[cc2 - 1] === "," || data.types[cc2 - 1] === "selector" || data.types[cc2 - 1] === "comment" || data.types[cc2 - 1] === "ignore"));
+        store.sort();
+        cc2 = parse.count;
+        data.token[cc2] = store.pop();
+        do {
+          cc2 = cc2 - 1;
+          if (data.types[cc2] === "comment" || data.types[cc2] === "ignore") {
+            do {
+              cc2 = cc2 - 1;
+            } while (cc2 > 0 && (data.types[cc2] === "comment" || data.types[cc2] === "ignore"));
+          }
+          if (data.token[cc2] === ",") {
+            cc2 = cc2 - 1;
+          }
+          data.token[cc2] = store.pop();
+        } while (cc2 > 0 && (data.token[cc2 - 1] === "," || data.token[cc2 - 1] === "selector" || data.types[cc2 - 1] === "comment" || data.types[cc2 - 1] === "ignore"));
+      }
+      aa = parse.count;
+      priors();
+    };
+    priors();
+    if (type === "start" && (data.types[aa] === "value" || data.types[aa] === "variable")) {
+      data.types[aa] = "item";
+    }
+    if (data.lexer[parse.count - 1] !== "style" || bb < 0) {
+      if (type === "colon") {
+        if (first === "$" || first === "@") {
+          data.types[aa] = "variable";
+        } else {
+          data.types[aa] = "property";
+        }
+      } else if (data.lexer[aa] === "style") {
+        data.types[aa] = "selector";
+        selectorPretty(aa);
+      }
+    } else if (type === "start" && data.types[aa] === "function" && data.lexer[aa] === "style") {
+      data.types[aa] = "selector";
+      selectorPretty(aa);
+    } else if (data.types[aa] === "item" && data.lexer[aa] === "style") {
+      if (type === "start") {
+        selectorPretty(aa);
+        data.types[aa] = "selector";
+        if (data.token[aa] === ":") {
+          data.types[bb] = "selector";
+        }
+        if (data.token[aa].indexOf("=\u201C") > 0) {
+          parse.error = `Quote looking character (\u201C, \\201c) used instead of actual quotes on line number ${parse.lineNumber}`;
+        } else if (data.token[aa].indexOf("=\u201D") > 0) {
+          parse.error = `Quote looking character (\u201D, \\201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+        }
+      } else if (type === "end") {
+        if (first === "$" || first === "@") {
+          data.types[aa] = "variable";
+        } else {
+          data.types[aa] = "value";
+        }
+        data.token[aa] = value(data.token[aa]);
+      } else if (type === "separator") {
+        if (data.types[bb] === "colon" || data.token[bb] === "," || data.token[bb] === "{") {
+          if (b[a] !== ";" && (data.types[bb] === "selector" || data.token[bb] === "{")) {
+            data.types[aa] = "selector";
+            selectorPretty(aa);
+          } else if (data.token[aa].charAt(0) === "$" || data.token[aa].charAt(0) === "@") {
+            data.types[aa] = "variable";
+          } else {
+            data.types[aa] = "value";
+          }
+          data.token[aa] = value(data.token[aa]);
+          if (data.token[aa].charAt(0) === "\u201C") {
+            parse.error = `Quote looking character (\u201C, \\201c) used instead of actual quotes on line number ${parse.lineNumber}`;
+          } else if (data.token[aa].charAt(0) === "\u201D") {
+            parse.error = `Quote looking character (\u201D, \\201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+          }
+        } else {
+          if (first === "$" || first === "@") {
+            data.types[aa] = "variable";
+          } else if (data.types[bb] === "value" || data.types[bb] === "variable") {
+            data.token[bb] = data.token[bb] + data.token[aa];
+            parse.pop(data);
+          } else {
+            data.types[aa] = "value";
+          }
+        }
+      } else if (type === "colon") {
+        if (first === "$" || first === "@") {
+          data.types[aa] = "variable";
+        } else {
+          data.types[aa] = "property";
+        }
+      } else if (data.token[bb].charAt(0) === "@" && (data.types[bb - 2] !== "variable" && data.types[bb - 2] !== "property" || data.types[bb - 1] === "separator")) {
+        data.types[bb] = "variable";
+        ltype = "variable";
+        data.token[bb] = value(data.token[bb]);
+      }
+    }
+  };
+  const semiComment = function lexer_style_separatorComment() {
+    let x = parse.count;
+    do {
+      x = x - 1;
+    } while (x > 0 && data.types[x] === "comment");
+    if (data.token[x] === ";") {
+      return;
+    }
+    parse.splice({
+      data,
+      howmany: 0,
+      index: x + 1,
+      record: {
+        begin: parse.structure[parse.structure.length - 1][1],
+        ender: -1,
+        lexer: "style",
+        lines: parse.linesSpace,
+        stack: parse.structure[parse.structure.length - 1][0],
+        token: ";",
+        types: "separator"
+      }
+    });
+  };
+  const template = function lexer_style_template(open, end) {
+    let quote = "";
+    let name = "";
+    let start = open.length;
+    let endlen = 0;
+    const store = [];
+    const exit = function lexer_style_template_exit(typename) {
+      const endtype = data.types[parse.count - 1];
+      if (ltype === "item") {
+        if (endtype === "colon") {
+          data.types[parse.count] = "value";
+        } else {
+          item(endtype);
+        }
+      }
+      ltype = typename;
+      if (ltype.indexOf("start") > -1 || ltype.indexOf("else") > -1) {
+        recordPush(ltoke);
+      } else {
+        recordPush("");
+      }
+    };
+    nosort[nosort.length - 1] = true;
+    if (a < len) {
+      do {
+        store.push(b[a]);
+        if (quote === "") {
+          if (b[a] === '"') {
+            quote = '"';
+          } else if (b[a] === "'") {
+            quote = "'";
+          } else if (b[a] === "/") {
+            if (b[a + 1] === "/") {
+              quote = "/";
+            } else if (b[a + 1] === "*") {
+              quote = "*";
+            }
+          } else if (b[a + 1] === end.charAt(0)) {
+            do {
+              endlen = endlen + 1;
+              a = a + 1;
+              store.push(b[a]);
+            } while (a < len && endlen < end.length && b[a + 1] === end.charAt(endlen));
+            if (endlen === end.length) {
+              quote = store.join("");
+              if (/\s/.test(quote.charAt(start)) === true) {
+                do {
+                  start = start + 1;
+                } while (/\s/.test(quote.charAt(start)) === true);
+              }
+              endlen = start;
+              do {
+                endlen = endlen + 1;
+              } while (endlen < end.length && /\s/.test(quote.charAt(endlen)) === false);
+              if (endlen === quote.length) {
+                endlen = endlen - end.length;
+              }
+              if (open === "{%") {
+                if (quote.indexOf("{%-") === 0) {
+                  quote = quote.replace(/^(\{%-\s*)/, "{%- ").replace(/(\s*-%\})$/, " -%}").replace(/(\s*%\})$/, " %}");
+                  name = quote.slice(4);
+                } else {
+                  quote = quote.replace(/^(\{%\s*)/, "{% ").replace(/(\s*%\})$/, " %}").replace(/(\s*-%\})$/, " -%}");
+                  name = quote.slice(3);
+                }
+              }
+              if (open === "{{") {
+                quote = quote.replace(/^(\{\{\s*)/, "{{ ").replace(/^(\{\{-\s*)/, "{{- ").replace(/(\s*-\}\})$/, " -}}").replace(/(\s*\}\})$/, " }}");
+              }
+              if (ltype === "item" && data.types[parse.count - 1] === "colon" && (data.types[parse.count - 2] === "property" || data.types[parse.count - 2] === "variable")) {
+                ltype = "value";
+                data.types[parse.count] = "value";
+                if (Number.isNaN(Number(data.token[parse.count])) === true && data.token[parse.count].charAt(data.token[parse.count].length - 1) !== ")") {
+                  data.token[parse.count] = data.token[parse.count] + quote;
+                } else {
+                  data.token[parse.count] = data.token[parse.count] + " " + quote;
+                }
+                return;
+              }
+              ltoke = quote;
+              if (open === "{%") {
+                const templateNames = [
+                  "autoescape",
+                  "block",
+                  "capture",
+                  "case",
+                  "comment",
+                  "embed",
+                  "filter",
+                  "for",
+                  "form",
+                  "if",
+                  "macro",
+                  "paginate",
+                  "raw",
+                  "sandbox",
+                  "spaceless",
+                  "tablerow",
+                  "unless",
+                  "verbatim"
+                ];
+                let namesLen = templateNames.length - 1;
+                name = name.slice(0, name.indexOf(" "));
+                if (name.indexOf("(") > 0) {
+                  name = name.slice(0, name.indexOf("("));
+                }
+                if (name === "else" || name === "elseif" || name === "when" || name === "elsif") {
+                  exit("template_else");
+                  return;
+                }
+                namesLen = templateNames.length - 1;
+                if (namesLen > -1) {
+                  do {
+                    if (name === templateNames[namesLen]) {
+                      exit("template_start");
+                      return;
+                    }
+                    if (name === "end" + templateNames[namesLen]) {
+                      exit("template_end");
+                      return;
+                    }
+                    namesLen = namesLen - 1;
+                  } while (namesLen > -1);
+                }
+              } else if (open === "{{") {
+                let group = quote.slice(2);
+                const ending = group.length;
+                let begin = 0;
+                do {
+                  begin = begin + 1;
+                } while (begin < ending && /\s/.test(group.charAt(begin)) === false && group.charAt(start) !== "(");
+                group = group.slice(0, begin);
+                if (group.charAt(group.length - 2) === "}") {
+                  group = group.slice(0, group.length - 2);
+                }
+                if (group === "end") {
+                  exit("template_end");
+                  return;
+                }
+                if (group === "block" || group === "define" || group === "form" || group === "if" || group === "range" || group === "with") {
+                  exit("template_start");
+                  return;
+                }
+              }
+              exit("template");
+              return;
+            }
+            endlen = 0;
+          }
+        } else if (quote === b[a]) {
+          if (quote === '"' || quote === "'") {
+            quote = "";
+          } else if (quote === "/" && (b[a] === "\r" || b[a] === "\n")) {
+            quote = "";
+          } else if (quote === "*" && b[a + 1] === "/") {
+            quote = "";
+          }
+        }
+        a = a + 1;
+      } while (a < len);
+    }
+  };
+  const comment2 = function lexer_style_comment(line) {
+    const comm = line === true ? parse.wrapCommentLine({
+      chars: b,
+      end: len,
+      lexer: "style",
+      opening: "//",
+      start: a,
+      terminator: "\n"
+    }) : parse.wrapCommentBlock({
+      chars: b,
+      end: len,
+      lexer: "style",
+      opening: "/*",
+      start: a,
+      terminator: "*/"
+    });
+    ltoke = comm[0];
+    ltype = /^(\/\*\s*parse-ignore-start)/.test(ltoke) === true ? "ignore" : "comment";
+    recordPush("");
+    a = comm[1];
+  };
+  const margin_padding = function lexer_style_marginPadding() {
+    const lines = parse.linesSpace;
+    const props = {
+      data: {
+        margin: ["", "", "", "", false],
+        padding: ["", "", "", "", false]
+      },
+      last: {
+        margin: 0,
+        padding: 0
+      },
+      removes: []
+    };
+    const begin = parse.structure[parse.structure.length - 1][1];
+    const populate = function lexer_style_marginPadding_populate(prop) {
+      if (data.token[aa - 2] === prop) {
+        const values = data.token[aa].replace(/\s*!important\s*/g, "").split(" ");
+        const vlen = values.length;
+        if (data.token[aa].indexOf("!important") > -1) {
+          props.data[prop[4]] = true;
+        }
+        if (vlen > 3) {
+          if (props.data[prop][0] === "") {
+            props.data[prop][0] = values[0];
+          }
+          if (props.data[prop][1] === "") {
+            props.data[prop][1] = values[1];
+          }
+          if (props.data[prop][2] === "") {
+            props.data[prop][2] = values[2];
+          }
+          if (props.data[prop][3] === "") {
+            props.data[prop][3] = values[3];
+          }
+        } else if (vlen > 2) {
+          if (props.data[prop][0] === "") {
+            props.data[prop][0] = values[0];
+          }
+          if (props.data[prop][1] === "") {
+            props.data[prop][1] = values[1];
+          }
+          if (props.data[prop][2] === "") {
+            props.data[prop][2] = values[2];
+          }
+          if (props.data[prop][3] === "") {
+            props.data[prop][3] = values[1];
+          }
+        } else if (vlen > 1) {
+          if (props.data[prop][0] === "") {
+            props.data[prop][0] = values[0];
+          }
+          if (props.data[prop][1] === "") {
+            props.data[prop][1] = values[1];
+          }
+          if (props.data[prop][2] === "") {
+            props.data[prop][2] = values[0];
+          }
+          if (props.data[prop][3] === "") {
+            props.data[prop][3] = values[1];
+          }
+        } else {
+          if (props.data[prop][0] === "") {
+            props.data[prop][0] = values[0];
+          }
+          if (props.data[prop][1] === "") {
+            props.data[prop][1] = values[0];
+          }
+          if (props.data[prop][2] === "") {
+            props.data[prop][2] = values[0];
+          }
+          if (props.data[prop][3] === "") {
+            props.data[prop][3] = values[0];
+          }
+        }
+      } else if (data.token[aa - 2] === `${prop}-bottom`) {
+        if (props.data[prop][2] === "")
+          props.data[prop][2] = data.token[aa];
+      } else if (data.token[aa - 2] === `${prop}-left`) {
+        if (props.data[prop][3] === "")
+          props.data[prop][3] = data.token[aa];
+      } else if (data.token[aa - 2] === `${prop}-right`) {
+        if (props.data[prop][1] === "")
+          props.data[prop][1] = data.token[aa];
+      } else if (data.token[aa - 2] === `${prop}-top`) {
+        if (props.data[prop][0] === "")
+          props.data[prop][0] = data.token[aa];
+      } else {
+        return;
+      }
+      props.removes.push([aa, prop]);
+      props.last[prop] = aa;
+    };
+    const removes = function lexer_style_marginPadding_removes() {
+      let cc2 = 0;
+      let values = "";
+      const zero = /^(0+([a-z]+|%))/;
+      const bb = props.removes.length;
+      const tmargin = props.data.margin[0] !== "" && props.data.margin[1] !== "" && props.data.margin[2] !== "" && props.data.margin[3] !== "";
+      const tpadding = props.data.padding[0] !== "" && props.data.padding[1] !== "" && props.data.padding[2] !== "" && props.data.padding[3] !== "";
+      const applyValues = function lexer_style_marginPadding_removes_applyValues(prop) {
+        if (zero.test(props.data[prop][0]) === true)
+          props.data[prop][0] = "0";
+        if (zero.test(props.data[prop][1]) === true)
+          props.data[prop][1] = "0";
+        if (zero.test(props.data[prop][2]) === true)
+          props.data[prop][2] = "0";
+        if (zero.test(props.data[prop][3]) === true)
+          props.data[prop][3] = "0";
+        if (props.data[prop][0] === props.data[prop][1] && props.data[prop][0] === props.data[prop][2] && props.data[prop][0] === props.data[prop][3]) {
+          values = props.data[prop][0];
+        } else if (props.data[prop][0] === props.data[prop][2] && props.data[prop][1] === props.data[prop][3] && props.data[prop][0] !== props.data[prop][1]) {
+          values = `${props.data[prop][0]} ${props.data[prop][1]}`;
+        } else if (props.data[prop][1] === props.data[prop][3] && props.data[prop][0] !== props.data[prop][2]) {
+          values = `${props.data[prop][0]} ${props.data[prop][1]} ${props.data[prop][2]}`;
+        } else {
+          values = `${props.data[prop][0]} ${props.data[prop][1]} ${props.data[prop][2]} ${props.data[prop][3]}`;
+        }
+        if (props.data[prop[4]] === true)
+          values = `${values.replace(" !important", "")} !important`;
+        if (props.last[prop] > parse.count) {
+          cc2 = begin < 1 ? 1 : begin + 1;
+          do {
+            if (data.begin[cc2] === begin && data.types[cc2] === "value" && data.token[cc2 - 2].indexOf(prop) === 0) {
+              props.last[prop] = cc2;
+              break;
+            }
+            cc2 = cc2 + 1;
+          } while (cc2 < parse.count);
+        }
+        data.token[props.last[prop]] = values;
+        data.token[props.last[prop] - 2] = prop;
+      };
+      if (bb > 1 && (tmargin === true || tpadding === true)) {
+        do {
+          if (props.removes[cc2][0] !== props.last.margin && props.removes[cc2][0] !== props.last.padding && (tmargin === true && props.removes[cc2][1] === "margin" || tpadding === true && props.removes[cc2][1] === "padding")) {
+            parse.splice({
+              data,
+              howmany: data.types[props.removes[cc2][0] + 1] === "separator" ? 4 : 3,
+              index: props.removes[cc2][0] - 2
+            });
+          }
+          cc2 = cc2 + 1;
+        } while (cc2 < bb - 1);
+      }
+      if (tmargin === true)
+        applyValues("margin");
+      if (tpadding === true)
+        applyValues("padding");
+      if (endtest === true) {
+        if (begin < 0) {
+          parse.error = "Brace mismatch. There appears to be more closing braces than starting braces.";
+        } else {
+          parse.sortCorrection(begin, parse.count + 1);
+        }
+      }
+    };
+    let aa = parse.count;
+    let endtest = false;
+    do {
+      aa = aa - 1;
+      if (data.begin[aa] === begin) {
+        if (data.types[aa] === "value" && data.types[aa - 2] === "property") {
+          if (data.token[aa - 2].indexOf("margin") === 0) {
+            populate("margin");
+          } else if (data.token[aa - 2].indexOf("padding") === 0) {
+            populate("padding");
+          }
+        }
+      } else {
+        endtest = true;
+        aa = data.begin[aa];
+      }
+    } while (aa > begin);
+    removes();
+    parse.linesSpace = lines;
+  };
+  do {
+    if (/\s/.test(b[a]) === true) {
+      a = parse.spacer({
+        array: b,
+        end: len,
+        index: a
+      });
+    } else if (b[a] === "/" && b[a + 1] === "*") {
+      comment2(false);
+    } else if (b[a] === "/" && b[a + 1] === "/") {
+      comment2(true);
+    } else if (b[a] === "{" && b[a + 1] === "%") {
+      template("{%", "%}");
+    } else if (b[a] === "{" && b[a + 1] === "{") {
+      template("{{", "}}");
+    } else if (b[a] === "{" || b[a] === "(" && data.token[parse.count] === ":" && data.types[parse.count - 1] === "variable") {
+      item("start");
+      ltype = "start";
+      ltoke = b[a];
+      if (b[a] === "(") {
+        recordPush("map");
+        mapper.push(0);
+      } else if (data.types[parse.count] === "selector" || data.types[parse.count] === "variable") {
+        recordPush(data.token[parse.count]);
+      } else if (data.types[parse.count] === "colon") {
+        recordPush(data.token[parse.count - 1]);
+      } else {
+        recordPush("block");
+      }
+      nosort.push(false);
+    } else if (b[a] === "}" || b[a] === ")" && parse.structure[parse.structure.length - 1][0] === "map" && mapper[mapper.length - 1] === 0) {
+      if (b[a] === "}" && data.types[parse.count] === "item" && data.token[parse.count - 1] === "{" && data.token[parse.count - 2] !== void 0 && data.token[parse.count - 2].charAt(data.token[parse.count - 2].length - 1) === "@") {
+        data.token[parse.count - 2] = data.token[parse.count - 2] + "{" + data.token[parse.count] + "}";
+        parse.pop(data);
+        parse.pop(data);
+        parse.structure.pop();
+      } else {
+        if (b[a] === ")")
+          mapper.pop();
+        item("end");
+        if (b[a] === "}" && data.token[parse.count] !== ";") {
+          if (data.types[parse.count] === "value" || data.types[parse.count] === "function" || data.types[parse.count] === "variable" && (data.token[parse.count - 1] === ":" || data.token[parse.count - 1] === ";")) {
+            if (options2.attemptCorrection === true) {
+              ltoke = ";";
+            } else {
+              ltoke = "x;";
+            }
+            ltype = "separator";
+            recordPush("");
+          } else if (data.types[parse.count] === "comment") {
+            semiComment();
+          }
+        }
+        ltype = "end";
+        nosort.pop();
+        ltoke = b[a];
+        ltype = "end";
+        if (b[a] === "}")
+          margin_padding();
+        if (options2.style.sortProperties === true && b[a] === "}")
+          parse.objectSort(data);
+        recordPush("");
+      }
+    } else if (b[a] === ";" || b[a] === ",") {
+      if (data.types[parse.count - 1] === "selector" || data.token[parse.count - 1] === "}" && data.types[parse.count] !== "function") {
+        item("start");
+      } else {
+        item("separator");
+      }
+      if (data.types[parse.count] !== "separator" && esctest(a) === true) {
+        ltoke = b[a];
+        ltype = "separator";
+        recordPush("");
+      }
+    } else if (b[a] === ":" && data.types[parse.count] !== "end") {
+      item("colon");
+      ltoke = ":";
+      ltype = "colon";
+      recordPush("");
+    } else {
+      if (parse.structure[parse.structure.length - 1][0] === "map" && b[a] === "(") {
+        mapper[mapper.length - 1] = mapper[mapper.length - 1] + 1;
+      }
+      buildtoken();
+    }
+    a = a + 1;
+  } while (a < len);
+  if (options2.style.sortProperties === true)
+    parse.objectSort(data);
+  return data;
+};
+
+// src/lexers/script.ts
+prettify.lexers.script = function script(source) {
+  const { options: options2 } = prettify;
+  if (options2.language === "json") {
+    options2.script.quoteConvert = "double";
+  }
+  let a = 0;
+  let ltoke = "";
+  let ltype = "";
+  let pword = [];
+  let lengthb = 0;
+  let wordTest = -1;
+  let paren = -1;
+  let funreferences = [];
+  let tempstore;
+  let pstack;
+  let comment2;
+  const data = parse.data;
+  const references = parse.references;
+  const b = source.length;
+  const c = source.split("");
+  const lword = [];
+  const brace = [];
+  const classy = [];
+  const sourcemap = [0, ""];
+  const datatype = [false];
+  const namelist = [
+    "autoescape",
+    "block",
+    "capture",
+    "case",
+    "comment",
+    "embed",
+    "filter",
+    "for",
+    "form",
+    "if",
+    "macro",
+    "paginate",
+    "raw",
+    "sandbox",
+    "spaceless",
+    "tablerow",
+    "unless",
+    "verbatim"
+  ];
+  const vart = create(null);
+  vart.count = [];
+  vart.index = [];
+  vart.len = -1;
+  vart.word = [];
+  function asi(isEnd) {
+    let aa = 0;
+    const next = nextchar(1, false);
+    const clist = parse.structure.length === 0 ? "" : parse.structure[parse.structure.length - 1][0];
+    const record = create(null);
+    record.begin = data.begin[parse.count];
+    record.ender = data.begin[parse.count];
+    record.lexer = data.lexer[parse.count];
+    record.lines = data.lines[parse.count];
+    record.stack = data.stack[parse.count];
+    record.token = data.token[parse.count];
+    record.types = data.types[parse.count];
+    if (/^(\/(\/|\*)\s*@ignore\s+start)/.test(ltoke))
+      return;
+    if (ltype === "start" || ltype === "type_start")
+      return;
+    if (options2.language === "json")
+      return;
+    if (record.token === ";" || record.token === "," || record.stack === "class" || record.stack === "map" || record.stack === "attribute" || data.types[record.begin - 1] === "generic" || next === "{" || clist === "initializer") {
+      return;
+    }
+    if (record.token === "}" && data.stack[record.begin - 1] === "global" && data.types[record.begin - 1] !== "operator" && record.stack === data.stack[parse.count - 1]) {
+      return;
+    }
+    if (record.stack === "array" && record.token !== "]")
+      return;
+    if (data.token[data.begin[parse.count]] === "{" && record.stack === "data_type")
+      return;
+    if (record.types !== void 0 && record.types.indexOf("template") > -1 && record.types.indexOf("template_string") < 0) {
+      return;
+    }
+    if (next === ";" && isEnd === false)
+      return;
+    if (data.lexer[parse.count - 1] !== "script" && (a < b && b === prettify.source.length - 1 || b < prettify.source.length - 1)) {
+      return;
+    }
+    if (record.token === "}" && (record.stack === "function" || record.stack === "if" || record.stack === "else" || record.stack === "for" || record.stack === "do" || record.stack === "while" || record.stack === "switch" || record.stack === "class" || record.stack === "try" || record.stack === "catch" || record.stack === "finally" || record.stack === "block")) {
+      if (record.stack === "function" && (data.stack[record.begin - 1] === "data_type" || data.types[record.begin - 1] === "type")) {
+        aa = record.begin;
+        do {
+          aa = aa - 1;
+        } while (aa > 0 && data.token[aa] !== ")" && data.stack[aa] !== "arguments");
+        aa = data.begin[aa];
+      } else {
+        aa = data.begin[record.begin - 1];
+      }
+      if (data.token[aa] === "(") {
+        aa = aa - 1;
+        if (data.token[aa - 1] === "function")
+          aa = aa - 1;
+        if (data.stack[aa - 1] === "object" || data.stack[aa - 1] === "switch")
+          return;
+        if (data.token[aa - 1] !== "=" && data.token[aa - 1] !== "return" && data.token[aa - 1] !== ":") {
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+    if (record.types === "comment" || clist === "method" || clist === "paren" || clist === "expression" || clist === "array" || clist === "object" || clist === "switch" && record.stack !== "method" && data.token[data.begin[parse.count]] === "(" && data.token[data.begin[parse.count] - 1] !== "return" && data.types[data.begin[parse.count] - 1] !== "operator") {
+      return;
+    }
+    if (data.stack[parse.count] === "expression" && (data.token[data.begin[parse.count] - 1] !== "while" || data.token[data.begin[parse.count] - 1] === "while" && data.stack[data.begin[parse.count] - 2] !== "do")) {
+      return;
+    }
+    if (next !== "" && "=<>+*?|^:&%~,.()]".indexOf(next) > -1 && isEnd === false)
+      return;
+    if (record.types === "comment") {
+      aa = parse.count;
+      do {
+        aa = aa - 1;
+      } while (aa > 0 && data.types[aa] === "comment");
+      if (aa < 1)
+        return;
+      record.token = data.token[aa];
+      record.types = data.types[aa];
+      record.stack = data.stack[aa];
+    }
+    if (record.token === void 0 || record.types === "start" || record.types === "separator" || record.types === "operator" && record.token !== "++" && record.token !== "--" || record.token === "x}" || record.token === "var" || record.token === "let" || record.token === "const" || record.token === "else" || record.token.indexOf("#!/") === 0 || record.token === "instanceof") {
+      return;
+    }
+    if (record.stack === "method" && (data.token[record.begin - 1] === "function" || data.token[record.begin - 2] === "function")) {
+      return;
+    }
+    if (options2.script.variableList === "list")
+      vart.index[vart.len] = parse.count;
+    ltoke = options2.attemptCorrection === true ? ";" : "x;";
+    ltype = "separator";
+    aa = parse.linesSpace;
+    parse.linesSpace = 0;
+    recordPush("");
+    parse.linesSpace = aa;
+    blockinsert();
+  }
+  function asibrace() {
+    let aa = parse.count;
+    do {
+      aa = aa - 1;
+    } while (aa > -1 && data.token[aa] === "x}");
+    if (data.stack[aa] === "else")
+      return recordPush("");
+    aa = aa + 1;
+    parse.splice({
+      data,
+      howmany: 0,
+      index: aa,
+      record: {
+        begin: data.begin[aa],
+        ender: -1,
+        lexer: "script",
+        lines: parse.linesSpace,
+        stack: data.stack[aa],
+        token: ltoke,
+        types: ltype
+      }
+    });
+    recordPush("");
+  }
+  function asifix() {
+    let len = parse.count;
+    if (data.types[len] === "comment") {
+      do {
+        len = len - 1;
+      } while (len > 0 && data.types[len] === "comment");
+    }
+    if (data.token[len] === "from")
+      len = len - 2;
+    if (data.token[len] === "x;") {
+      parse.splice({
+        data,
+        howmany: 1,
+        index: len
+      });
+    }
+  }
+  function blockComment() {
+    asi(false);
+    if (wordTest > -1)
+      word();
+    comment2 = parse.wrapCommentBlock({
+      chars: c,
+      end: b,
+      lexer: "script",
+      opening: "/*",
+      start: a,
+      terminator: "*/"
+    });
+    a = comment2[1];
+    if (data.token[parse.count] === "var" || data.token[parse.count] === "let" || data.token[parse.count] === "const") {
+      tempstore = parse.pop(data);
+      recordPush("");
+      parse.push(data, tempstore, "");
+      if (data.lines[parse.count - 2] === 0)
+        data.lines[parse.count - 2] = data.lines[parse.count];
+      data.lines[parse.count] = 0;
+    } else if (comment2[0] !== "") {
+      ltoke = comment2[0];
+      ltype = /^\/\*\s*@ignore\s*\bstart\b/.test(ltoke) ? "ignore" : "comment";
+      if (ltoke.indexOf("# sourceMappingURL=") === 2) {
+        sourcemap[0] = parse.count + 1;
+        sourcemap[1] = ltoke;
+      }
+      parse.push(data, {
+        begin: parse.structure[parse.structure.length - 1][1],
+        ender: -1,
+        lexer: "script",
+        lines: parse.linesSpace,
+        stack: parse.structure[parse.structure.length - 1][0],
+        token: ltoke,
+        types: ltype
+      }, "");
+    }
+    if (/\/\*\s*global\s+/.test(data.token[parse.count]) === true && data.types.indexOf("word") < 0) {
+      references[0] = data.token[parse.count].replace(/\/\*\s*global\s+/, "").replace("*/", "").replace(/,\s+/g, ",").split(",");
+    }
+  }
+  function blockinsert() {
+    let name = "";
+    const next = nextchar(5, false);
+    const g = parse.count;
+    const lines = parse.linesSpace;
+    if (options2.language === "json" || brace.length < 1 || brace[brace.length - 1].charAt(0) !== "x" || /^x?(;|\}|\))$/.test(ltoke) === false) {
+      return;
+    }
+    if (data.stack[parse.count] === "do" && next === "while" && data.token[parse.count] === "}") {
+      return;
+    }
+    if (ltoke === ";" && data.token[g - 1] === "x{") {
+      name = data.token[data.begin[g - 2] - 1];
+      if (data.token[g - 2] === "do" || data.token[g - 2] === ")" && "ifforwhilecatch".indexOf(name) > -1) {
+        tempstore = parse.pop(data);
+        ltoke = options2.attemptCorrection === true ? "}" : "x}";
+        ltype = "end";
+        pstack = parse.structure[parse.structure.length - 1];
+        recordPush("");
+        brace.pop();
+        parse.linesSpace = lines;
+        return;
+      }
+      tempstore = parse.pop(data);
+      ltoke = options2.attemptCorrection === true ? "}" : "x}";
+      ltype = "end";
+      pstack = parse.structure[parse.structure.length - 1];
+      recordPush("");
+      brace.pop();
+      ltoke = ";";
+      ltype = "end";
+      parse.push(data, tempstore, "");
+      parse.linesSpace = lines;
+      return;
+    }
+    ltoke = options2.attemptCorrection === true ? "}" : "x}";
+    ltype = "end";
+    if (data.token[parse.count] === "x}")
+      return;
+    if (data.stack[parse.count] === "if" && (data.token[parse.count] === ";" || data.token[parse.count] === "x;") && next === "else") {
+      pstack = parse.structure[parse.structure.length - 1];
+      recordPush("");
+      brace.pop();
+      parse.linesSpace = lines;
+      return;
+    }
+    do {
+      pstack = parse.structure[parse.structure.length - 1];
+      recordPush("");
+      brace.pop();
+      if (data.stack[parse.count] === "do")
+        break;
+    } while (brace[brace.length - 1] === "x{");
+    parse.linesSpace = lines;
+  }
+  function commaComment() {
+    let x = parse.count;
+    if (data.stack[x] === "object" && options2.script.objectSort === true) {
+      ltoke = ",";
+      ltype = "separator";
+      asifix();
+      recordPush("");
+    } else {
+      do {
+        x = x - 1;
+      } while (x > 0 && data.types[x - 1] === "comment");
+      parse.splice({
+        data,
+        howmany: 0,
+        index: x,
+        record: {
+          begin: data.begin[x],
+          ender: -1,
+          lexer: "script",
+          lines: parse.linesSpace,
+          stack: data.stack[x],
+          token: ",",
+          types: "separator"
+        }
+      });
+      recordPush("");
+    }
+  }
+  function end(x) {
+    let insert = false;
+    let newarr = false;
+    const next = nextchar(1, false);
+    const count = data.token[parse.count] === "(" ? parse.count : data.begin[parse.count];
+    function newarray() {
+      let arraylen = 0;
+      const ar = data.token[count - 1] === "Array";
+      const startar = ar === true ? "[" : "{";
+      const endar = ar === true ? "]" : "}";
+      const namear = ar === true ? "array" : "object";
+      if (ar === true && data.types[parse.count] === "number") {
+        arraylen = Number(data.token[parse.count]);
+        tempstore = parse.pop(data);
+      }
+      tempstore = parse.pop(data);
+      tempstore = parse.pop(data);
+      tempstore = parse.pop(data);
+      parse.structure.pop();
+      ltoke = startar;
+      ltype = "start";
+      recordPush(namear);
+      if (arraylen > 0) {
+        ltoke = ",";
+        ltype = "separator";
+        do {
+          recordPush("");
+          arraylen = arraylen - 1;
+        } while (arraylen > 0);
+      }
+      ltoke = endar;
+      ltype = "end";
+      recordPush("");
+    }
+    if (wordTest > -1)
+      word();
+    if (classy.length > 0) {
+      if (classy[classy.length - 1] === 0) {
+        classy.pop();
+      } else {
+        classy[classy.length - 1] = classy[classy.length - 1] - 1;
+      }
+    }
+    if (x === ")" || x === "x)" || x === "]") {
+      if (options2.attemptCorrection === true)
+        plusplus();
+      asifix();
+    }
+    if (x === ")" || x === "x)")
+      asi(false);
+    if (vart.len > -1) {
+      if (x === "}" && (options2.script.variableList === "list" && vart.count[vart.len] === 0 || data.token[parse.count] === "x;" && options2.script.variableList === "each")) {
+        vartpop();
+      }
+      vart.count[vart.len] = vart.count[vart.len] - 1;
+      if (vart.count[vart.len] < 0)
+        vartpop();
+    }
+    if (ltoke === "," && data.stack[parse.count] !== "initializer" && (x === "]" && data.token[parse.count - 1] === "[" || x === "}")) {
+      tempstore = parse.pop(data);
+    }
+    if (x === ")" || x === "x)") {
+      ltoke = x;
+      if (lword.length > 0) {
+        pword = lword[lword.length - 1];
+        if (pword.length > 1 && next !== "{" && (pword[0] === "if" || pword[0] === "for" || pword[0] === "with" || pword[0] === "while" && data.stack[pword[1] - 2] !== void 0 && data.stack[pword[1] - 2] !== "do")) {
+          insert = true;
+        }
+      }
+    } else if (x === "]") {
+      ltoke = "]";
+    } else if (x === "}") {
+      if (ltoke !== "," && options2.attemptCorrection === true)
+        plusplus();
+      if (parse.structure.length > 0 && parse.structure[parse.structure.length - 1][0] !== "object")
+        asi(true);
+      if (options2.script.objectSort === true && parse.structure[parse.structure.length - 1][0] === "object") {
+        parse.objectSort(data);
+      }
+      if (ltype === "comment") {
+        ltoke = data.token[parse.count];
+        ltype = data.types[parse.count];
+      }
+      ltoke = "}";
+    }
+    if (parse.structure[parse.structure.length - 1][0] === "data_type") {
+      ltype = "type_end";
+    } else {
+      ltype = "end";
+    }
+    lword.pop();
+    pstack = parse.structure[parse.structure.length - 1];
+    if (x === ")" && options2.attemptCorrection === true && count - parse.count < 2 && (data.token[parse.count] === "(" || data.types[parse.count] === "number") && (data.token[count - 1] === "Array" || data.token[count - 1] === "Object") && data.token[count - 2] === "new") {
+      newarray();
+      newarr = true;
+    }
+    if (brace[brace.length - 1] === "x{" && x === "}") {
+      blockinsert();
+      brace.pop();
+      if (data.stack[parse.count] !== "try") {
+        if (next !== ":" && next !== ";" && data.token[data.begin[a] - 1] !== "?")
+          blockinsert();
+      }
+      ltoke = "}";
+    } else {
+      brace.pop();
+    }
+    if (options2.script.endComma !== void 0 && options2.script.endComma !== "none" && parse.structure[parse.structure.length - 1][0] === "array" || parse.structure[parse.structure.length - 1][0] === "object" || parse.structure[parse.structure.length - 1][0] === "data_type") {
+      if (options2.script.endComma === "always" && data.token[parse.count] !== ",") {
+        const begin = parse.structure[parse.structure.length - 1][1];
+        let y = parse.count;
+        do {
+          if (data.begin[y] === begin) {
+            if (data.token[y] === ",")
+              break;
+          } else {
+            y = data.begin[y];
+          }
+          y = y - 1;
+        } while (y > begin);
+        if (y > begin) {
+          const type = ltype;
+          const toke = ltoke;
+          ltoke = ",";
+          ltype = "separator";
+          recordPush("");
+          ltoke = toke;
+          ltype = type;
+        }
+      } else if (options2.script.endComma === "never" && data.token[parse.count] === ",") {
+        parse.pop(data);
+      }
+    }
+    if (newarr === false) {
+      recordPush("");
+      if (ltoke === "}" && data.stack[parse.count] !== "object" && data.stack[parse.count] !== "class" && data.stack[parse.count] !== "data_type") {
+        references.pop();
+        blockinsert();
+      }
+    }
+    if (insert === true) {
+      ltoke = options2.attemptCorrection === true ? "{" : "x{";
+      ltype = "start";
+      recordPush(pword[0]);
+      brace.push("x{");
+      pword[1] = parse.count;
+    }
+    datatype.pop();
+    if (parse.structure[parse.structure.length - 1][0] !== "data_type")
+      datatype[datatype.length - 1] = false;
+  }
+  function general(starting, ending, type) {
+    let ee = 0;
+    let escape = false;
+    let ext = false;
+    let build = [starting];
+    let temp;
+    const ender = ending.split("");
+    const endlen = ender.length;
+    const start2 = a;
+    const base = a + starting.length;
+    const qc = options2.script.quoteConvert === void 0 ? "none" : options2.script.quoteConvert;
+    function cleanUp() {
+      let linesSpace = 0;
+      build = [];
+      ltype = type;
+      ee = a;
+      if (type === "string" && /\s/.test(c[ee + 1]) === true) {
+        linesSpace = 1;
+        do {
+          ee = ee + 1;
+          if (c[ee] === "\n")
+            linesSpace = linesSpace + 1;
+        } while (ee < b && /\s/.test(c[ee + 1]) === true);
+        parse.linesSpace = linesSpace;
+      }
+    }
+    function finish() {
+      let str = "";
+      function bracketSpace(input) {
+        if (options2.language !== "javascript" && options2.language !== "typescript" && options2.language !== "jsx" && options2.language !== "tsx") {
+          const spaceStart = (start3) => start3.replace(/\s*$/, " ");
+          const spaceEnd = (end2) => end2.replace(/^\s*/, " ");
+          if (/\{(#|\/|(%>)|(%\]))/.test(input) || /\}%(>|\])/.test(input))
+            return input;
+          input = input.replace(/\{((\{+)|%-?)\s*/g, spaceStart);
+          input = input.replace(/\s*((\}\}+)|(-?%\}))/g, spaceEnd);
+          return input;
+        }
+        return input;
+      }
+      if (starting === '"' && qc === "single") {
+        build[0] = "'";
+        build[build.length - 1] = "'";
+      } else if (starting === "'" && qc === "double") {
+        build[0] = '"';
+        build[build.length - 1] = '"';
+      } else if (escape === true) {
+        str = build[build.length - 1];
+        build.pop();
+        build.pop();
+        build.push(str);
+      }
+      a = ee;
+      if (ending === "\n") {
+        a = a - 1;
+        build.pop();
+      }
+      ltoke = build.join("");
+      if (starting === '"' || starting === "'" || starting === "{{" || starting === "{%") {
+        ltoke = bracketSpace(ltoke);
+      }
+      if (starting === "{%" || starting === "{{") {
+        temp = tname(ltoke);
+        ltype = temp[0];
+        recordPush(temp[1]);
+        return;
+      }
+      if (type === "string") {
+        ltype = "string";
+        if (options2.language === "json") {
+          ltoke = ltoke.replace(/\u0000/g, "\\u0000").replace(/\u0001/g, "\\u0001").replace(/\u0002/g, "\\u0002").replace(/\u0003/g, "\\u0003").replace(/\u0004/g, "\\u0004").replace(/\u0005/g, "\\u0005").replace(/\u0006/g, "\\u0006").replace(/\u0007/g, "\\u0007").replace(/\u0008/g, "\\u0008").replace(/\u0009/g, "\\u0009").replace(/\u000a/g, "\\u000a").replace(/\u000b/g, "\\u000b").replace(/\u000c/g, "\\u000c").replace(/\u000d/g, "\\u000d").replace(/\u000e/g, "\\u000e").replace(/\u000f/g, "\\u000f").replace(/\u0010/g, "\\u0010").replace(/\u0011/g, "\\u0011").replace(/\u0012/g, "\\u0012").replace(/\u0013/g, "\\u0013").replace(/\u0014/g, "\\u0014").replace(/\u0015/g, "\\u0015").replace(/\u0016/g, "\\u0016").replace(/\u0017/g, "\\u0017").replace(/\u0018/g, "\\u0018").replace(/\u0019/g, "\\u0019").replace(/\u001a/g, "\\u001a").replace(/\u001b/g, "\\u001b").replace(/\u001c/g, "\\u001c").replace(/\u001d/g, "\\u001d").replace(/\u001e/g, "\\u001e").replace(/\u001f/g, "\\u001f");
+        } else if (starting.indexOf("#!") === 0) {
+          ltoke = ltoke.slice(0, ltoke.length - 1);
+          parse.linesSpace = 2;
+        } else if (parse.structure[parse.structure.length - 1][0] !== "object" || parse.structure[parse.structure.length - 1][0] === "object" && nextchar(1, false) !== ":" && data.token[parse.count] !== "," && data.token[parse.count] !== "{") {
+          if (ltoke.length > options2.wrap && options2.wrap > 0 || options2.wrap !== 0 && data.token[parse.count] === "+" && (data.token[parse.count - 1].charAt(0) === '"' || data.token[parse.count - 1].charAt(0) === "'")) {
+            let item = ltoke;
+            let segment = "";
+            let q = qc === "double" ? '"' : qc === "single" ? "'" : item.charAt(0);
+            const limit = options2.wrap;
+            const uchar = /u[0-9a-fA-F]{4}/;
+            const xchar = /x[0-9a-fA-F]{2}/;
+            item = item.slice(1, item.length - 1);
+            if (data.token[parse.count] === "+" && (data.token[parse.count - 1].charAt(0) === '"' || data.token[parse.count - 1].charAt(0) === "'")) {
+              parse.pop(data);
+              q = data.token[parse.count].charAt(0);
+              item = data.token[parse.count].slice(1, data.token[parse.count].length - 1) + item;
+              parse.pop(data);
+            }
+            if (item.length > limit && limit > 0) {
+              do {
+                segment = item.slice(0, limit);
+                if (segment.charAt(limit - 5) === "\\" && uchar.test(item.slice(limit - 4, limit + 1))) {
+                  segment = segment.slice(0, limit - 5);
+                } else if (segment.charAt(limit - 4) === "\\" && uchar.test(item.slice(limit - 3, limit + 2))) {
+                  segment = segment.slice(0, limit - 4);
+                } else if (segment.charAt(limit - 3) === "\\" && (uchar.test(item.slice(limit - 2, limit + 3)) || xchar.test(item.slice(limit - 2, limit + 1)))) {
+                  segment = segment.slice(0, limit - 3);
+                } else if (segment.charAt(limit - 2) === "\\" && (uchar.test(item.slice(limit - 1, limit + 4)) || xchar.test(item.slice(limit - 1, limit + 2)))) {
+                  segment = segment.slice(0, limit - 2);
+                } else if (segment.charAt(limit - 1) === "\\") {
+                  segment = segment.slice(0, limit - 1);
+                }
+                segment = q + segment + q;
+                item = item.slice(segment.length - 2);
+                ltoke = segment;
+                ltype = "string";
+                recordPush("");
+                parse.linesSpace = 0;
+                ltoke = "+";
+                ltype = "operator";
+                recordPush("");
+              } while (item.length > limit);
+            }
+            if (item === "") {
+              ltoke = q + q;
+            } else {
+              ltoke = q + item + q;
+            }
+            ltype = "string";
+          }
+        }
+      } else if (/\{\s*\?>$/.test(ltoke)) {
+        ltype = "template_start";
+      } else {
+        ltype = type;
+      }
+      if (ltoke.length > 0)
+        recordPush("");
+    }
+    if (wordTest > -1)
+      word();
+    if (c[a - 1] === "\\" && slashes(a - 1) === true && (c[a] === '"' || c[a] === "'")) {
+      parse.pop(data);
+      if (data.token[0] === "{") {
+        if (c[a] === '"') {
+          starting = '"';
+          ending = '\\"';
+          build = ['"'];
+        } else {
+          starting = "'";
+          ending = "\\'";
+          build = ["'"];
+        }
+        escape = true;
+      } else {
+        if (c[a] === '"') {
+          build = ['\\"'];
+          finish();
+          return;
+        }
+        build = ["\\'"];
+        finish();
+        return;
+      }
+    }
+    ee = base;
+    if (ee < b) {
+      do {
+        if (data.token[0] !== "{" && data.token[0] !== "[" && qc !== "none" && (c[ee] === '"' || c[ee] === "'")) {
+          if (c[ee - 1] === "\\") {
+            if (slashes(ee - 1) === true) {
+              if (qc === "double" && c[ee] === "'") {
+                build.pop();
+              } else if (qc === "single" && c[ee] === '"') {
+                build.pop();
+              }
+            }
+          } else if (qc === "double" && c[ee] === '"' && c[a] === "'") {
+            c[ee] = '\\"';
+          } else if (qc === "single" && c[ee] === "'" && c[a] === '"') {
+            c[ee] = "\\'";
+          }
+          build.push(c[ee]);
+        } else if (ee > start2) {
+          ext = true;
+          if (c[ee] === "{" && c[ee + 1] === "%" && c[ee + 2] !== starting) {
+            finish();
+            general("{%", "%}", "template");
+            cleanUp();
+          } else if (c[ee] === "{" && c[ee + 1] === "{" && c[ee + 2] !== starting) {
+            finish();
+            general("{{", "}}", "template");
+            cleanUp();
+          } else {
+            ext = false;
+            build.push(c[ee]);
+          }
+        } else {
+          build.push(c[ee]);
+        }
+        if ((starting === '"' || starting === "'") && (ext === true || ee > start2) && options2.language !== "json" && c[ee - 1] !== "\\" && c[ee] !== '"' && c[ee] !== "'" && (c[ee] === "\n" || ee === b - 1)) {
+          parse.error = "Unterminated string in script on line number " + parse.lineNumber;
+          break;
+        }
+        if (c[ee] === ender[endlen - 1] && (c[ee - 1] !== "\\" || slashes(ee - 1) === false)) {
+          if (endlen === 1)
+            break;
+          if (build[ee - base] === ender[0] && build.slice(ee - base - endlen + 2).join("") === ending)
+            break;
+        }
+        ee = ee + 1;
+      } while (ee < b);
+    }
+    finish();
+  }
+  function lineComment() {
+    asi(false);
+    blockinsert();
+    if (wordTest > -1)
+      word();
+    comment2 = parse.wrapCommentLine({
+      chars: c,
+      end: b,
+      lexer: "script",
+      opening: "//",
+      start: a,
+      terminator: "\n"
+    });
+    a = comment2[1];
+    if (comment2[0] !== "") {
+      ltoke = comment2[0];
+      ltype = /^(\/\/\s*@ignore:?\s+\bstart\b)/.test(ltoke) ? "ignore" : "comment";
+      if (ltoke.indexOf("# sourceMappingURL=") === 2) {
+        sourcemap[0] = parse.count + 1;
+        sourcemap[1] = ltoke;
+      }
+      parse.push(data, {
+        begin: parse.structure[parse.structure.length - 1][1],
+        ender: -1,
+        lexer: "script",
+        lines: parse.linesSpace,
+        stack: parse.structure[parse.structure.length - 1][0],
+        token: ltoke,
+        types: ltype
+      }, "");
+    }
+  }
+  function lexerMarkup() {
+    let d = 0;
+    let curlytest = false;
+    let endtag = false;
+    let anglecount = 0;
+    let curlycount = 0;
+    let tagcount = 0;
+    let next = "";
+    let priorToken = "";
+    let priorType = "";
+    const output = [];
+    const dt = datatype[datatype.length - 1];
+    const syntaxnum = "0123456789=<>+-*?|^:&.,;%(){}[]~";
+    function applyMarkup() {
+      if (ltoke === "(")
+        parse.structure[parse.structure.length - 1] = ["paren", parse.count];
+      prettify.lexers.markup(output.join(""));
+    }
+    if (wordTest > -1)
+      word();
+    priorToken = parse.count > 0 ? data.token[parse.count - 1] : "";
+    priorType = parse.count > 0 ? data.types[parse.count - 1] : "";
+    next = nextchar(1, false);
+    if (options2.language !== "jsx" && options2.language !== "tsx" && /\d/.test(next) === false && (ltoke === "function" || priorToken === "=>" || priorToken === "void" || priorToken === "." || data.stack[parse.count] === "arguments" || ltype === "type" && priorToken === "type" || ltype === "reference" && (priorType === "operator" || priorToken === "function" || priorToken === "class" || priorToken === "new") || ltype === "type" && priorType === "operator" || ltoke === "return" || ltype === "operator")) {
+      const build = [];
+      let inc = 0;
+      let e = 0;
+      d = a;
+      do {
+        build.push(c[d]);
+        if (c[d] === "<") {
+          inc = inc + 1;
+        } else if (c[d] === ">") {
+          inc = inc - 1;
+          if (inc < 1)
+            break;
+        }
+        d = d + 1;
+      } while (d < b);
+      e = a;
+      a = d;
+      next = nextchar(1, false);
+      if (c[d] === ">" && (dt === true || priorToken === "=>" || priorToken === "." || priorType !== "operator" || priorType === "operator" && (next === "(" || next === "="))) {
+        ltype = "generic";
+        ltoke = build.join("").replace(/^<\s+/, "<").replace(/\s+>$/, ">").replace(/,\s*/g, ", ");
+        recordPush("");
+        return;
+      }
+      a = e;
+    }
+    d = parse.count;
+    if (data.types[d] === "comment") {
+      do {
+        d = d - 1;
+      } while (d > 0 && data.types[d] === "comment");
+    }
+    if (dt === false && nextchar(1, false) !== ">" && (c[a] !== "<" && syntaxnum.indexOf(c[a + 1]) > -1 || data.token[d] === "++" || data.token[d] === "--" || /\s/.test(c[a + 1]) === true || /\d/.test(c[a + 1]) === true && (ltype === "operator" || ltype === "string" || ltype === "number" || ltype === "reference" || ltype === "word" && ltoke !== "return"))) {
+      ltype = "operator";
+      ltoke = operator();
+      return recordPush("");
+    }
+    if (options2.language !== "typescript" && (data.token[d] === "return" || data.types[d] === "operator" || data.types[d] === "start" || data.types[d] === "separator" || data.types[d] === "jsx_attribute_start" || data.token[d] === "}" && parse.structure[parse.structure.length - 1][0] === "global")) {
+      ltype = "markup";
+      options2.language = "jsx";
+      do {
+        output.push(c[a]);
+        if (c[a] === "{") {
+          curlycount = curlycount + 1;
+          curlytest = true;
+        } else if (c[a] === "}") {
+          curlycount = curlycount - 1;
+          if (curlycount === 0)
+            curlytest = false;
+        } else if (c[a] === "<" && curlytest === false) {
+          if (c[a + 1] === "<") {
+            do {
+              output.push(c[a]);
+              a = a + 1;
+            } while (a < b && c[a + 1] === "<");
+          }
+          anglecount = anglecount + 1;
+          if (nextchar(1, false) === "/")
+            endtag = true;
+        } else if (c[a] === ">" && curlytest === false) {
+          if (c[a + 1] === ">") {
+            do {
+              output.push(c[a]);
+              a = a + 1;
+            } while (c[a + 1] === ">");
+          }
+          anglecount = anglecount - 1;
+          if (endtag === true) {
+            tagcount = tagcount - 1;
+          } else if (c[a - 1] !== "/") {
+            tagcount = tagcount + 1;
+          }
+          if (anglecount === 0 && curlycount === 0 && tagcount < 1) {
+            next = nextchar(2, false);
+            if (next.charAt(0) !== "<")
+              return applyMarkup();
+            if (next.charAt(0) === "<" && syntaxnum.indexOf(next.charAt(1)) < 0 && /\s/.test(next.charAt(1)) === false) {
+              d = a + 1;
+              do {
+                d = d + 1;
+                if (c[d] === ">" || /\s/.test(c[d - 1]) && syntaxnum.indexOf(c[d]) < 0)
+                  break;
+                if (syntaxnum.indexOf(c[d]) > -1)
+                  return applyMarkup();
+              } while (d < b);
+            } else {
+              return applyMarkup();
+            }
+          }
+          endtag = false;
+        }
+        a = a + 1;
+      } while (a < b);
+      return applyMarkup();
+    }
+    ltype = "operator";
+    ltoke = operator();
+    recordPush("");
+  }
+  function nextchar(len, current) {
+    let cc2 = current === true ? a : a + 1;
+    let dd = "";
+    if (typeof len !== "number" || len < 1)
+      len = 1;
+    if (c[a] === "/") {
+      if (c[a + 1] === "/") {
+        dd = "\n";
+      } else if (c[a + 1] === "*") {
+        dd = "/";
+      }
+    }
+    if (cc2 < b) {
+      do {
+        if (/\s/.test(c[cc2]) === false) {
+          if (c[cc2] === "/") {
+            if (dd === "") {
+              if (c[cc2 + 1] === "/") {
+                dd = "\n";
+              } else if (c[cc2 + 1] === "*") {
+                dd = "/";
+              }
+            } else if (dd === "/" && c[cc2 - 1] === "*") {
+              dd = "";
+            }
+          }
+          if (dd === "" && c[cc2 - 1] + c[cc2] !== "*/")
+            return c.slice(cc2, cc2 + len).join("");
+        } else if (dd === "\n" && c[cc2] === "\n") {
+          dd = "";
+        }
+        cc2 = cc2 + 1;
+      } while (cc2 < b);
+    }
+    return "";
+  }
+  function numb() {
+    const f = b;
+    const build = [c[a]];
+    let ee = 0;
+    let test = /zz/;
+    let dot = build[0] === ".";
+    if (a < b - 2 && c[a] === "0") {
+      if (c[a + 1] === "x") {
+        test = /[0-9a-fA-F]/;
+      } else if (c[a + 1] === "o") {
+        test = /[0-9]/;
+      } else if (c[a + 1] === "b") {
+        test = /0|1/;
+      }
+      if (test.test(c[a + 2]) === true) {
+        build.push(c[a + 1]);
+        ee = a + 1;
+        do {
+          ee = ee + 1;
+          build.push(c[ee]);
+        } while (test.test(c[ee + 1]) === true);
+        a = ee;
+        return build.join("");
+      }
+    }
+    ee = a + 1;
+    if (ee < f) {
+      do {
+        if (/[0-9]/.test(c[ee]) || c[ee] === "." && dot === false) {
+          build.push(c[ee]);
+          if (c[ee] === ".")
+            dot = true;
+        } else {
+          break;
+        }
+        ee = ee + 1;
+      } while (ee < f);
+    }
+    if (ee < f - 1 && (/\d/.test(c[ee - 1]) === true || /\d/.test(c[ee - 2]) === true && (c[ee - 1] === "-" || c[ee - 1] === "+")) && (c[ee] === "e" || c[ee] === "E")) {
+      build.push(c[ee]);
+      if (c[ee + 1] === "-" || c[ee + 1] === "+") {
+        build.push(c[ee + 1]);
+        ee = ee + 1;
+      }
+      dot = false;
+      ee = ee + 1;
+      if (ee < f) {
+        do {
+          if (/[0-9]/.test(c[ee]) || c[ee] === "." && dot === false) {
+            build.push(c[ee]);
+            if (c[ee] === ".")
+              dot = true;
+          } else {
+            break;
+          }
+          ee = ee + 1;
+        } while (ee < f);
+      }
+    }
+    a = ee - 1;
+    return build.join("");
+  }
+  function operator() {
+    let g = 0;
+    let h = 0;
+    let jj = b;
+    let output = "";
+    const syntax = [
+      "=",
+      "<",
+      ">",
+      "+",
+      "*",
+      "?",
+      "|",
+      "^",
+      ":",
+      "&",
+      "%",
+      "~"
+    ];
+    const synlen = syntax.length;
+    if (wordTest > -1)
+      word();
+    if (c[a] === "/" && (parse.count > -1 && (ltype !== "word" && ltype !== "reference" || ltoke === "typeof" || ltoke === "return" || ltoke === "else") && ltype !== "number" && ltype !== "string" && ltype !== "end")) {
+      if (ltoke === "return" || ltoke === "typeof" || ltoke === "else" || ltype !== "word") {
+        ltoke = regex();
+        ltype = "regex";
+      } else {
+        ltoke = "/";
+        ltype = "operator";
+      }
+      recordPush("");
+      return "regex";
+    }
+    if (c[a] === "?" && ("+-*/.?".indexOf(c[a + 1]) > -1 || c[a + 1] === ":" && syntax.join("").indexOf(c[a + 2]) < 0)) {
+      if (c[a + 1] === "." && /\d/.test(c[a + 2]) === false) {
+        output = "?.";
+      } else if (c[a + 1] === "?") {
+        output = "??";
+      }
+      if (output === "")
+        return "?";
+    }
+    if (c[a] === ":" && "+-*/".indexOf(c[a + 1]) > -1)
+      return ":";
+    if (a < b - 1) {
+      if (c[a] !== "<" && c[a + 1] === "<")
+        return c[a];
+      if (c[a] === "!" && c[a + 1] === "/")
+        return "!";
+      if (c[a] === "-") {
+        datatype[datatype.length - 1] = false;
+        if (c[a + 1] === "-") {
+          output = "--";
+        } else if (c[a + 1] === "=") {
+          output = "-=";
+        } else if (c[a + 1] === ">") {
+          output = "->";
+        }
+        if (output === "")
+          return "-";
+      }
+      if (c[a] === "+") {
+        datatype[datatype.length - 1] = false;
+        if (c[a + 1] === "+") {
+          output = "++";
+        } else if (c[a + 1] === "=") {
+          output = "+=";
+        }
+        if (output === "")
+          return "+";
+      }
+      if (c[a] === "=" && c[a + 1] !== "=" && c[a + 1] !== "!" && c[a + 1] !== ">") {
+        datatype[datatype.length - 1] = false;
+        return "=";
+      }
+    }
+    if (c[a] === ":") {
+      if (options2.language === "typescript") {
+        if (data.stack[parse.count] === "arguments") {
+          if (data.token[parse.count] === "?") {
+            parse.pop(data);
+            output = "?:";
+            a = a - 1;
+          }
+          datatype[datatype.length - 1] = true;
+        } else if (ltoke === ")" && (data.token[data.begin[parse.count] - 1] === "function" || data.token[data.begin[parse.count] - 2] === "function")) {
+          datatype[datatype.length - 1] = true;
+        } else if (ltype === "reference") {
+          g = parse.count;
+          let colon = false;
+          do {
+            if (data.begin[g] === data.begin[parse.count]) {
+              if (g < parse.count && data.token[g] === ":" && data.types[g + 1] !== "type")
+                colon = true;
+              if (data.token[g] === "?" && colon === false)
+                break;
+              if (data.token[g] === ";" || data.token[g] === "x;")
+                break;
+              if (data.token[g] === "var" || data.token[g] === "let" || data.token[g] === "const" || data.types[g] === "type") {
+                datatype[datatype.length - 1] = true;
+                break;
+              }
+            } else {
+              if (data.types[g] === "type_end") {
+                datatype[datatype.length - 1] = true;
+                break;
+              }
+              g = data.begin[g];
+            }
+            g = g - 1;
+          } while (g > data.begin[parse.count]);
+        }
+      } else if (data.token[parse.count - 1] === "[" && (data.types[parse.count] === "word" || data.types[parse.count] === "reference")) {
+        parse.structure[parse.structure.length - 1][0] = "attribute";
+        data.stack[parse.count] = "attribute";
+      }
+    }
+    if (output === "") {
+      if (c[a + 1] === "+" && c[a + 2] === "+" || c[a + 1] === "-" && c[a + 2] === "-") {
+        output = c[a];
+      } else {
+        const buildout = [c[a]];
+        g = a + 1;
+        if (g < jj) {
+          do {
+            if (c[g] === "+" && c[g + 1] === "+" || c[g] === "-" && c[g + 1] === "-")
+              break;
+            h = 0;
+            if (h < synlen) {
+              do {
+                if (c[g] === syntax[h]) {
+                  buildout.push(syntax[h]);
+                  break;
+                }
+                h = h + 1;
+              } while (h < synlen);
+            }
+            if (h === synlen)
+              break;
+            g = g + 1;
+          } while (g < jj);
+        }
+        output = buildout.join("");
+      }
+    }
+    a = a + (output.length - 1);
+    if (output === "=>" && ltoke === ")") {
+      g = parse.count;
+      jj = data.begin[g];
+      do {
+        if (data.begin[g] === jj)
+          data.stack[g] = "method";
+        g = g - 1;
+      } while (g > jj - 1);
+    }
+    return output;
+  }
+  function plusplus() {
+    let pre = true;
+    let toke = "+";
+    let tokea = "";
+    let tokeb = "";
+    let tokec = "";
+    let inc = 0;
+    let ind = 0;
+    let walk = 0;
+    let next = "";
+    const store = [];
+    function end2() {
+      walk = data.begin[walk] - 1;
+      if (data.types[walk] === "end") {
+        end2();
+      } else if (data.token[walk - 1] === ".") {
+        period();
+      }
+    }
+    function period() {
+      walk = walk - 2;
+      if (data.types[walk] === "end") {
+        end2();
+      } else if (data.token[walk - 1] === ".") {
+        period();
+      }
+    }
+    function applyStore() {
+      let x = 0;
+      const y = store.length;
+      if (x < y) {
+        do {
+          parse.push(data, store[x], "");
+          x = x + 1;
+        } while (x < y);
+      }
+    }
+    function recordStore(index) {
+      const o = create(null);
+      o.begin = data.begin[index];
+      o.ender = data.ender[index];
+      o.lexer = data.lexer[index];
+      o.lines = data.lines[index];
+      o.stack = data.stack[index];
+      o.token = data.token[index];
+      o.types = data.types[index];
+      return o;
+    }
+    tokea = data.token[parse.count];
+    tokeb = data.token[parse.count - 1];
+    tokec = data.token[parse.count - 2];
+    if (tokea !== "++" && tokea !== "--" && tokeb !== "++" && tokeb !== "--") {
+      walk = parse.count;
+      if (data.types[walk] === "end") {
+        end2();
+      } else if (data.token[walk - 1] === ".") {
+        period();
+      }
+    }
+    if (data.token[walk - 1] === "++" || data.token[walk - 1] === "--") {
+      if ("startendoperator".indexOf(data.types[walk - 2]) > -1)
+        return;
+      inc = walk;
+      if (inc < parse.count + 1) {
+        do {
+          store.push(recordStore(inc));
+          inc = inc + 1;
+        } while (inc < parse.count + 1);
+        parse.splice({
+          data,
+          howmany: parse.count - walk,
+          index: walk
+        });
+      }
+    } else {
+      if (options2.attemptCorrection === false || tokea !== "++" && tokea !== "--" && tokeb !== "++" && tokeb !== "--") {
+        return;
+      }
+      next = nextchar(1, false);
+      if ((tokea === "++" || tokea === "--") && (c[a] === ";" || next === ";" || c[a] === "}" || next === "}" || c[a] === ")" || next === ")")) {
+        toke = data.stack[parse.count];
+        if (toke === "array" || toke === "method" || toke === "object" || toke === "paren" || toke === "notation" || data.token[data.begin[parse.count] - 1] === "while" && toke !== "while") {
+          return;
+        }
+        inc = parse.count;
+        do {
+          inc = inc - 1;
+          if (data.token[inc] === "return")
+            return;
+          if (data.types[inc] === "end") {
+            do {
+              inc = data.begin[inc] - 1;
+            } while (data.types[inc] === "end" && inc > 0);
+          }
+        } while (inc > 0 && (data.token[inc] === "." || data.types[inc] === "word" || data.types[inc] === "reference" || data.types[inc] === "end"));
+        if (data.token[inc] === "," && c[a] !== ";" && next !== ";" && c[a] !== "}" && next !== "}" && c[a] !== ")" && next !== ")") {
+          return;
+        }
+        if (data.types[inc] === "operator") {
+          if (data.stack[inc] === "switch" && data.token[inc] === ":") {
+            do {
+              inc = inc - 1;
+              if (data.types[inc] === "start") {
+                ind = ind - 1;
+                if (ind < 0)
+                  break;
+              } else if (data.types[inc] === "end") {
+                ind = ind + 1;
+              }
+              if (data.token[inc] === "?" && ind === 0)
+                return;
+            } while (inc > 0);
+          } else {
+            return;
+          }
+        }
+        pre = false;
+        toke = tokea === "--" ? "-" : "+";
+      } else if (tokec === "[" || tokec === ";" || tokec === "x;" || tokec === "}" || tokec === "{" || tokec === "(" || tokec === ")" || tokec === "," || tokec === "return") {
+        if (tokea === "++" || tokea === "--") {
+          if (tokec === "[" || tokec === "(" || tokec === "," || tokec === "return")
+            return;
+          if (tokea === "--")
+            toke = "-";
+          pre = false;
+        } else if (tokeb === "--" || tokea === "--") {
+          toke = "-";
+        }
+      } else {
+        return;
+      }
+      if (pre === false)
+        tempstore = parse.pop(data);
+      walk = parse.count;
+      if (data.types[walk] === "end") {
+        end2();
+      } else if (data.token[walk - 1] === ".") {
+        period();
+      }
+      inc = walk;
+      if (inc < parse.count + 1) {
+        do {
+          store.push(recordStore(inc));
+          inc = inc + 1;
+        } while (inc < parse.count + 1);
+      }
+    }
+    if (pre === true) {
+      parse.splice({
+        data,
+        howmany: 1,
+        index: walk - 1
+      });
+      ltoke = "=";
+      ltype = "operator";
+      recordPush("");
+      applyStore();
+      ltoke = toke;
+      ltype = "operator";
+      recordPush("");
+      ltoke = "1";
+      ltype = "number";
+      recordPush("");
+    } else {
+      ltoke = "=";
+      ltype = "operator";
+      recordPush("");
+      applyStore();
+      ltoke = toke;
+      ltype = "operator";
+      recordPush("");
+      ltoke = "1";
+      ltype = "number";
+      recordPush("");
+    }
+    ltoke = data.token[parse.count];
+    ltype = data.types[parse.count];
+    if (next === "}" && c[a] !== ";")
+      asi(false);
+  }
+  function recordPush(structure) {
+    const record = create(null);
+    record.begin = parse.structure[parse.structure.length - 1][1];
+    record.ender = -1;
+    record.lexer = "script";
+    record.lines = parse.linesSpace;
+    record.stack = parse.structure[parse.structure.length - 1][0];
+    record.token = ltoke;
+    record.types = ltype;
+    parse.push(data, record, structure);
+  }
+  function regex() {
+    let ee = a + 1;
+    let h = 0;
+    let i = 0;
+    let output = "";
+    let square = false;
+    const f = b;
+    const build = ["/"];
+    if (ee < f) {
+      do {
+        build.push(c[ee]);
+        if (c[ee - 1] !== "\\" || c[ee - 2] === "\\") {
+          if (c[ee] === "[") {
+            square = true;
+          }
+          if (c[ee] === "]") {
+            square = false;
+          }
+        }
+        if (c[ee] === "/" && square === false) {
+          if (c[ee - 1] === "\\") {
+            i = 0;
+            h = ee - 1;
+            if (h > 0) {
+              do {
+                if (c[h] === "\\") {
+                  i = i + 1;
+                } else {
+                  break;
+                }
+                h = h - 1;
+              } while (h > 0);
+            }
+            if (i % 2 === 0) {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+        ee = ee + 1;
+      } while (ee < f);
+    }
+    if (c[ee + 1] === "g" || c[ee + 1] === "i" || c[ee + 1] === "m" || c[ee + 1] === "y" || c[ee + 1] === "u") {
+      build.push(c[ee + 1]);
+      if (c[ee + 2] !== c[ee + 1] && (c[ee + 2] === "g" || c[ee + 2] === "i" || c[ee + 2] === "m" || c[ee + 2] === "y" || c[ee + 2] === "u")) {
+        build.push(c[ee + 2]);
+        if (c[ee + 3] !== c[ee + 1] && c[ee + 3] !== c[ee + 2] && (c[ee + 3] === "g" || c[ee + 3] === "i" || c[ee + 3] === "m" || c[ee + 3] === "y" || c[ee + 3] === "u")) {
+          build.push(c[ee + 3]);
+          if (c[ee + 4] !== c[ee + 1] && c[ee + 4] !== c[ee + 2] && c[ee + 4] !== c[ee + 3] && (c[ee + 4] === "g" || c[ee + 4] === "i" || c[ee + 4] === "m" || c[ee + 4] === "y" || c[ee + 4] === "u")) {
+            build.push(c[ee + 4]);
+            if (c[ee + 5] !== c[ee + 1] && c[ee + 5] !== c[ee + 2] && c[ee + 5] !== c[ee + 3] && c[ee + 5] !== c[ee + 4] && (c[ee + 5] === "g" || c[ee + 5] === "i" || c[ee + 5] === "m" || c[ee + 5] === "y" || c[ee + 5] === "u")) {
+              build.push(c[ee + 4]);
+              a = ee + 5;
+            } else {
+              a = ee + 4;
+            }
+          } else {
+            a = ee + 3;
+          }
+        } else {
+          a = ee + 2;
+        }
+      } else {
+        a = ee + 1;
+      }
+    } else {
+      a = ee;
+    }
+    output = build.join("");
+    return output;
+  }
+  function slashes(index) {
+    const slashy = index;
+    do {
+      index = index - 1;
+    } while (c[index] === "\\" && index > 0);
+    return (slashy - index) % 2 === 1;
+  }
+  function start(x) {
+    let aa = parse.count;
+    let wordx = "";
+    let wordy = "";
+    let stack = "";
+    let func = false;
+    brace.push(x);
+    if (x === "{" && (data.types[parse.count] === "type" || data.types[parse.count] === "type_end" || data.types[parse.count] === "generic")) {
+      let begin = 0;
+      if (data.types[parse.count] === "type_end")
+        aa = data.begin[parse.count];
+      begin = aa;
+      do {
+        aa = aa - 1;
+        if (data.begin[aa] !== begin && data.begin[aa] !== -1)
+          break;
+        if (data.token[aa] === ":")
+          break;
+      } while (aa > data.begin[aa]);
+      if (data.token[aa] === ":" && data.stack[aa - 1] === "arguments") {
+        datatype.push(false);
+        func = true;
+      } else {
+        datatype.push(datatype[datatype.length - 1]);
+      }
+      aa = parse.count;
+    } else if (x === "[" && data.types[parse.count] === "type_end") {
+      datatype.push(true);
+    } else {
+      datatype.push(datatype[datatype.length - 1]);
+    }
+    if (wordTest > -1) {
+      word();
+      aa = parse.count;
+    }
+    if (vart.len > -1)
+      vart.count[vart.len] = vart.count[vart.len] + 1;
+    if (data.token[aa - 1] === "function") {
+      lword.push(["function", aa + 1]);
+    } else {
+      lword.push([ltoke, aa + 1]);
+    }
+    ltoke = x;
+    if (datatype[datatype.length - 1] === true) {
+      ltype = "type_start";
+    } else {
+      ltype = "start";
+    }
+    if (x === "(" || x === "x(") {
+      asifix();
+    } else if (x === "{") {
+      if (paren > -1) {
+        if (data.begin[paren - 1] === data.begin[data.begin[aa] - 1] || data.token[data.begin[aa]] === "x(") {
+          paren = -1;
+          if (options2.attemptCorrection === true) {
+            end(")");
+          } else {
+            end("x)");
+          }
+          asifix();
+          ltoke = "{";
+          ltype = "start";
+        }
+      } else if (ltoke === ")") {
+        asifix();
+      }
+      if (ltype === "comment" && data.token[aa - 1] === ")") {
+        ltoke = data.token[aa];
+        data.token[aa] = "{";
+        ltype = data.types[aa];
+        data.types[aa] = "start";
+      }
+    }
+    wordx = (() => {
+      let bb = parse.count;
+      if (data.types[bb] === "comment") {
+        do {
+          bb = bb - 1;
+        } while (bb > 0 && data.types[bb] === "comment");
+      }
+      return data.token[bb];
+    })();
+    wordy = data.stack[aa] === void 0 ? "" : (() => {
+      let bb = parse.count;
+      if (data.types[bb] === "comment") {
+        do {
+          bb = bb - 1;
+        } while (bb > 0 && data.types[bb] === "comment");
+      }
+      return data.token[data.begin[bb] - 1];
+    })();
+    if (ltoke === "{" && (data.types[aa] === "word" || data.token[aa] === "]")) {
+      let bb = aa;
+      if (data.token[bb] === "]") {
+        do {
+          bb = data.begin[bb] - 1;
+        } while (data.token[bb] === "]");
+      }
+      do {
+        if (data.types[bb] === "start" || data.types[bb] === "end" || data.types[bb] === "operator")
+          break;
+        bb = bb - 1;
+      } while (bb > 0);
+      if (data.token[bb] === ":" && data.stack[bb - 1] === "arguments") {
+        stack = "function";
+        references.push(funreferences);
+        funreferences = [];
+      }
+    }
+    if (ltype === "type_start") {
+      stack = "data_type";
+    } else if (stack === "" && (ltoke === "{" || ltoke === "x{")) {
+      if (wordx === "else" || wordx === "do" || wordx === "try" || wordx === "finally" || wordx === "switch") {
+        stack = wordx;
+      } else if (classy[classy.length - 1] === 0 && wordx !== "return") {
+        classy.pop();
+        stack = "class";
+      } else if (data.token[aa - 1] === "class") {
+        stack = "class";
+      } else if (data.token[aa] === "]" && data.token[aa - 1] === "[") {
+        stack = "array";
+      } else if ((data.types[aa] === "word" || data.types[aa] === "reference") && (data.types[aa - 1] === "word" || data.types[aa - 1] === "reference" || data.token[aa - 1] === "?" && (data.types[aa - 2] === "word" || data.types[aa - 2] === "reference")) && data.token[aa] !== "in" && data.token[aa - 1] !== "export" && data.token[aa - 1] !== "import") {
+        stack = "map";
+      } else if (data.stack[aa] === "method" && data.types[aa] === "end" && (data.types[data.begin[aa] - 1] === "word" || data.types[data.begin[aa] - 1] === "reference") && data.token[data.begin[aa] - 2] === "new") {
+        stack = "initializer";
+      } else if (ltoke === "{" && (wordx === ")" || wordx === "x)") && (data.types[data.begin[aa] - 1] === "word" || data.types[data.begin[aa] - 1] === "reference" || data.token[data.begin[aa] - 1] === "]")) {
+        if (wordy === "if") {
+          stack = "if";
+        } else if (wordy === "for") {
+          stack = "for";
+        } else if (wordy === "while") {
+          stack = "while";
+        } else if (wordy === "class") {
+          stack = "class";
+        } else if (wordy === "switch" || data.token[data.begin[aa] - 1] === "switch") {
+          stack = "switch";
+        } else if (wordy === "catch") {
+          stack = "catch";
+        } else {
+          stack = "function";
+        }
+      } else if (ltoke === "{" && (wordx === ";" || wordx === "x;")) {
+        stack = "block";
+      } else if (ltoke === "{" && data.token[aa] === ":" && data.stack[aa] === "switch") {
+        stack = "block";
+      } else if (data.token[aa - 1] === "import" || data.token[aa - 2] === "import" || data.token[aa - 1] === "export" || data.token[aa - 2] === "export") {
+        stack = "object";
+      } else if (wordx === ")" && (pword[0] === "function" || pword[0] === "if" || pword[0] === "for" || pword[0] === "class" || pword[0] === "while" || pword[0] === "switch" || pword[0] === "catch")) {
+        stack = pword[0];
+      } else if (data.stack[aa] === "notation") {
+        stack = "function";
+      } else if ((data.types[aa] === "number" || data.types[aa] === "string" || data.types[aa] === "word" || data.types[aa] === "reference") && (data.types[aa - 1] === "word" || data.types[aa - 1] === "reference") && data.token[data.begin[aa] - 1] !== "for") {
+        stack = "function";
+      } else if (parse.structure.length > 0 && data.token[aa] !== ":" && parse.structure[parse.structure.length - 1][0] === "object" && (data.token[data.begin[aa] - 2] === "{" || data.token[data.begin[aa] - 2] === ",")) {
+        stack = "function";
+      } else if (data.types[pword[1] - 1] === "markup" && data.token[pword[1] - 3] === "function") {
+        stack = "function";
+      } else if (wordx === "=>") {
+        stack = "function";
+      } else if (func === true || data.types[parse.count] === "type_end" && data.stack[data.begin[parse.count] - 2] === "arguments") {
+        stack = "function";
+      } else if (wordx === ")" && data.stack[aa] === "method" && (data.types[data.begin[aa] - 1] === "word" || data.types[data.begin[aa] - 1] === "property" || data.types[data.begin[aa] - 1] === "reference")) {
+        stack = "function";
+      } else if (data.types[aa] === "word" && ltoke === "{" && data.token[aa] !== "return" && data.token[aa] !== "in" && data.token[aa] !== "import" && data.token[aa] !== "const" && data.token[aa] !== "let" && data.token[aa] !== "") {
+        stack = "block";
+      } else if (ltoke === "{" && "if|else|for|while|function|class|switch|catch|finally".indexOf(data.stack[aa]) > -1 && (data.token[aa] === "x}" || data.token[aa] === "}")) {
+        stack = "block";
+      } else if (data.stack[aa] === "arguments") {
+        stack = "function";
+      } else if (data.types[aa] === "generic") {
+        do {
+          aa = aa - 1;
+          if (data.token[aa] === "function" || data.stack[aa] === "arguments") {
+            stack = "function";
+            break;
+          }
+          if (data.token[aa] === "interface") {
+            stack = "map";
+            break;
+          }
+          if (data.token[aa] === ";") {
+            stack = "object";
+            break;
+          }
+        } while (aa > data.begin[parse.count]);
+      } else {
+        stack = "object";
+      }
+      if (stack !== "object" && stack !== "class") {
+        if (stack === "function") {
+          references.push(funreferences);
+          funreferences = [];
+        } else {
+          references.push([]);
+        }
+      }
+    } else if (ltoke === "[") {
+      stack = "array";
+    } else if (ltoke === "(" || ltoke === "x(") {
+      if (wordx === "function" || data.token[aa - 1] === "function" || data.token[aa - 1] === "function*" || data.token[aa - 2] === "function") {
+        stack = "arguments";
+      } else if (data.token[aa - 1] === "." || data.token[data.begin[aa] - 2] === ".") {
+        stack = "method";
+      } else if (data.types[aa] === "generic") {
+        stack = "method";
+      } else if (data.token[aa] === "}" && data.stack[aa] === "function") {
+        stack = "method";
+      } else if (wordx === "if" || wordx === "for" || wordx === "class" || wordx === "while" || wordx === "catch" || wordx === "finally" || wordx === "switch" || wordx === "with") {
+        stack = "expression";
+      } else if (data.types[aa] === "word" || data.types[aa] === "property" || data.types[aa] === "reference") {
+        stack = "method";
+      } else {
+        stack = "paren";
+      }
+    }
+    recordPush(stack);
+    if (classy.length > 0)
+      classy[classy.length - 1] = classy[classy.length - 1] + 1;
+  }
+  function tempstring() {
+    const output = [c[a]];
+    a = a + 1;
+    if (a < b) {
+      do {
+        output.push(c[a]);
+        if (c[a] === "`" && (c[a - 1] !== "\\" || slashes(a - 1) === false))
+          break;
+        if (c[a - 1] === "$" && c[a] === "{" && (c[a - 2] !== "\\" || slashes(a - 2) === false))
+          break;
+        a = a + 1;
+      } while (a < b);
+    }
+    return output.join("");
+  }
+  function tname(x) {
+    let sn = 2;
+    let en = 0;
+    let name = "";
+    const st = x.slice(0, 2);
+    const len = x.length;
+    if (x.charAt(2) === "-")
+      sn = sn + 1;
+    if (/\s/.test(x.charAt(sn)) === true) {
+      do {
+        sn = sn + 1;
+      } while (/\s/.test(x.charAt(sn)) === true && sn < len);
+    }
+    en = sn;
+    do {
+      en = en + 1;
+    } while (/\s/.test(x.charAt(en)) === false && x.charAt(en) !== "(" && en < len);
+    if (en === len)
+      en = x.length - 2;
+    name = x.slice(sn, en);
+    if (name === "else" || st === "{%" && (name === "elseif" || name === "when" || name === "elif" || name === "elsif")) {
+      return ["template_else", `template_${name}`];
+    }
+    if (st === "{{") {
+      if (name === "end")
+        return ["template_end", ""];
+      if (name === "block" && /\{%\s*\w/.test(source) === false || name === "define" || name === "form" || name === "if" || name === "unless" || name === "range" || name === "with") {
+        return ["template_start", `template_${name}`];
+      }
+      return ["template", ""];
+    }
+    en = namelist.length - 1;
+    if (en > -1) {
+      do {
+        if (name === namelist[en] && (name !== "block" || /\{%\s*\w/.test(source) === false)) {
+          return ["template_start", `template_${name}`];
+        }
+        if (name === "end" + namelist[en]) {
+          return [
+            "template_end",
+            ""
+          ];
+        }
+        en = en - 1;
+      } while (en > -1);
+    }
+    return ["template", ""];
+  }
+  function vartpop() {
+    vart.count.pop();
+    vart.index.pop();
+    vart.word.pop();
+    vart.len = vart.len - 1;
+  }
+  function word() {
+    let f = wordTest;
+    let g = 1;
+    let output = "";
+    let nextitem = "";
+    let tokel = ltoke;
+    let typel = ltype;
+    const lex = [];
+    function elsefix() {
+      brace.push("x{");
+      parse.splice({
+        data,
+        howmany: 1,
+        index: parse.count - 3
+      });
+    }
+    function hoisting(index, ref, samescope) {
+      const begin = data.begin[index];
+      let parent = 0;
+      do {
+        if (data.token[index] === ref && data.types[index] === "word") {
+          if (samescope === true) {
+            data.types[index] = "reference";
+          } else if (data.begin[index] > begin && data.token[data.begin[index]] === "{" && data.stack[index] !== "object" && data.stack[index] !== "class" && data.stack[index] !== "data_type") {
+            if (data.stack[index] === "function") {
+              data.types[index] = "reference";
+            } else {
+              parent = data.begin[index];
+              do {
+                if (data.stack[parent] === "function") {
+                  data.types[index] = "reference";
+                  break;
+                }
+                parent = data.begin[parent];
+              } while (parent > begin);
+            }
+          }
+        }
+        index = index - 1;
+      } while (index > begin);
+    }
+    do {
+      lex.push(c[f]);
+      if (c[f] === "\\") {
+        parse.error = `Illegal escape in JavaScript on line number ${parse.lineNumber}`;
+      }
+      f = f + 1;
+    } while (f < a);
+    if (ltoke.charAt(0) === "\u201C") {
+      parse.error = `Quote looking character (\u201C, \\u201c) used instead of actual quotes on line number ${parse.lineNumber}`;
+    } else if (ltoke.charAt(0) === "\u201D") {
+      parse.error = `Quote looking character (\u201D, \\u201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+    }
+    output = lex.join("");
+    wordTest = -1;
+    if (parse.count > 0 && output === "function" && data.token[parse.count] === "(" && (data.token[parse.count - 1] === "{" || data.token[parse.count - 1] === "x{")) {
+      data.types[parse.count] = "start";
+    }
+    if (parse.count > 1 && output === "function" && ltoke === "(" && (data.token[parse.count - 1] === "}" || data.token[parse.count - 1] === "x}")) {
+      if (data.token[parse.count - 1] === "}") {
+        f = parse.count - 2;
+        if (f > -1) {
+          do {
+            if (data.types[f] === "end") {
+              g = g + 1;
+            } else if (data.types[f] === "start" || data.types[f] === "end") {
+              g = g - 1;
+            }
+            if (g === 0)
+              break;
+            f = f - 1;
+          } while (f > -1);
+        }
+        if (data.token[f] === "{" && data.token[f - 1] === ")") {
+          g = 1;
+          f = f - 2;
+          if (f > -1) {
+            do {
+              if (data.types[f] === "end") {
+                g = g + 1;
+              } else if (data.types[f] === "start" || data.types[f] === "end") {
+                g = g - 1;
+              }
+              if (g === 0)
+                break;
+              f = f - 1;
+            } while (f > -1);
+          }
+          if (data.token[f - 1] !== "function" && data.token[f - 2] !== "function") {
+            data.types[parse.count] = "start";
+          }
+        }
+      } else {
+        data.types[parse.count] = "start";
+      }
+    }
+    if (options2.attemptCorrection === true && (output === "Object" || output === "Array") && c[a + 1] === "(" && c[a + 2] === ")" && data.token[parse.count - 1] === "=" && data.token[parse.count] === "new") {
+      if (output === "Object") {
+        data.token[parse.count] = "{";
+        ltoke = "}";
+        data.stack[parse.count] = "object";
+        parse.structure[parse.structure.length - 1][0] = "object";
+      } else {
+        data.token[parse.count] = "[";
+        ltoke = "]";
+        data.stack[parse.count] = "array";
+        parse.structure[parse.structure.length - 1][0] = "array";
+      }
+      data.types[parse.count] = "start";
+      ltype = "end";
+      c[a + 1] = "";
+      c[a + 2] = "";
+      a = a + 2;
+    } else {
+      g = parse.count;
+      f = g;
+      if (options2.script.variableList !== "none" && (output === "var" || output === "let" || output === "const")) {
+        if (data.types[g] === "comment") {
+          do {
+            g = g - 1;
+          } while (g > 0 && data.types[g] === "comment");
+        }
+        if (options2.script.variableList === "list" && vart.len > -1 && vart.index[vart.len] === g && output === vart.word[vart.len]) {
+          ltoke = ",";
+          ltype = "separator";
+          data.token[g] = ltoke;
+          data.types[g] = ltype;
+          vart.count[vart.len] = 0;
+          vart.index[vart.len] = g;
+          vart.word[vart.len] = output;
+          return;
+        }
+        vart.len = vart.len + 1;
+        vart.count.push(0);
+        vart.index.push(g);
+        vart.word.push(output);
+        g = f;
+      } else if (vart.len > -1 && output !== vart.word[vart.len] && parse.count === vart.index[vart.len] && data.token[vart.index[vart.len]] === ";" && ltoke !== vart.word[vart.len] && options2.script.variableList === "list") {
+        vartpop();
+      }
+      if (output === "from" && data.token[parse.count] === "x;" && data.token[parse.count - 1] === "}") {
+        asifix();
+      }
+      if (output === "while" && data.token[parse.count] === "x;" && data.token[parse.count - 1] === "}") {
+        let d = 0;
+        let e = parse.count - 2;
+        if (e > -1) {
+          do {
+            if (data.types[e] === "end") {
+              d = d + 1;
+            } else if (data.types[e] === "start") {
+              d = d - 1;
+            }
+            if (d < 0) {
+              if (data.token[e] === "{" && data.token[e - 1] === "do")
+                asifix();
+              return;
+            }
+            e = e - 1;
+          } while (e > -1);
+        }
+      }
+      if (typel === "comment") {
+        let d = parse.count;
+        do {
+          d = d - 1;
+        } while (d > 0 && data.types[d] === "comment");
+        typel = data.types[d];
+        tokel = data.token[d];
+      }
+      nextitem = nextchar(2, false);
+      if (output === "void") {
+        if (tokel === ":" && data.stack[parse.count - 1] === "arguments") {
+          ltype = "type";
+        } else {
+          ltype = "word";
+        }
+      } else if ((parse.structure[parse.structure.length - 1][0] === "object" || parse.structure[parse.structure.length - 1][0] === "class" || parse.structure[parse.structure.length - 1][0] === "data_type") && (data.token[parse.count] === "{" || data.token[data.begin[parse.count]] === "{" && data.token[parse.count] === "," || data.types[parse.count] === "template_end" && (data.token[data.begin[parse.count] - 1] === "{" || data.token[data.begin[parse.count] - 1] === ","))) {
+        if (output === "return" || output === "break") {
+          ltype = "word";
+        } else {
+          ltype = "property";
+        }
+      } else if (datatype[datatype.length - 1] === true || (options2.language === "typescript" || options2.language === "flow") && tokel === "type") {
+        ltype = "type";
+      } else if (references.length > 0 && (tokel === "function" || tokel === "class" || tokel === "const" || tokel === "let" || tokel === "var" || tokel === "new" || tokel === "void")) {
+        ltype = "reference";
+        references[references.length - 1].push(output);
+        if (options2.language === "javascript" || options2.language === "jsx" || options2.language === "typescript" || options2.language === "tsx") {
+          if (tokel === "var" || tokel === "function" && data.types[parse.count - 1] !== "operator" && data.types[parse.count - 1] !== "start" && data.types[parse.count - 1] !== "end") {
+            hoisting(parse.count, output, true);
+          } else {
+            hoisting(parse.count, output, false);
+          }
+        } else {
+          hoisting(parse.count, output, false);
+        }
+      } else if (parse.structure[parse.structure.length - 1][0] === "arguments" && ltype !== "operator") {
+        ltype = "reference";
+        funreferences.push(output);
+      } else if (tokel === "," && data.stack[parse.count] !== "method" && (data.stack[parse.count] !== "expression" || data.token[data.begin[parse.count] - 1] === "for")) {
+        let d = parse.count;
+        const e = parse.structure[parse.structure.length - 1][1];
+        do {
+          if (data.begin[d] === e) {
+            if (data.token[d] === ";")
+              break;
+            if (data.token[d] === "var" || data.token[d] === "let" || data.token[d] === "const" || data.token[d] === "type") {
+              break;
+            }
+          } else if (data.types[d] === "end") {
+            d = data.begin[d];
+          }
+          d = d - 1;
+        } while (d > e);
+        if (references.length > 0 && data.token[d] === "var") {
+          ltype = "reference";
+          references[references.length - 1].push(output);
+          if (options2.language === "javascript" || options2.language === "jsx" || options2.language === "typescript" || options2.language === "tsx") {
+            hoisting(d, output, true);
+          } else {
+            hoisting(d, output, false);
+          }
+        } else if (references.length > 0 && (data.token[d] === "let" || data.token[d] === "const" || data.token[d] === "type" && (options2.language === "typescript" || options2.language === "tsx"))) {
+          ltype = "reference";
+          references[references.length - 1].push(output);
+          hoisting(d, output, false);
+        } else {
+          ltype = "word";
+        }
+      } else if (parse.structure[parse.structure.length - 1][0] !== "object" || parse.structure[parse.structure.length - 1][0] === "object" && ltoke !== "," && ltoke !== "{") {
+        let d = references.length;
+        let e = 0;
+        if (d > 0) {
+          do {
+            d = d - 1;
+            e = references[d].length;
+            if (e > 0) {
+              do {
+                e = e - 1;
+                if (output === references[d][e])
+                  break;
+              } while (e > 0);
+              if (output === references[d][e])
+                break;
+            }
+          } while (d > 0);
+          if (references[d][e] === output && tokel !== ".") {
+            ltype = "reference";
+          } else {
+            ltype = "word";
+          }
+        } else {
+          ltype = "word";
+        }
+      } else {
+        ltype = "word";
+      }
+      ltoke = output;
+      if (output === "from" && data.token[parse.count] === "}")
+        asifix();
+    }
+    recordPush("");
+    if (output === "class")
+      classy.push(0);
+    if (output === "do") {
+      nextitem = nextchar(1, true);
+      if (nextitem !== "{") {
+        ltoke = options2.attemptCorrection === true ? "{" : "x{";
+        ltype = "start";
+        brace.push("x{");
+        recordPush("do");
+      }
+    }
+    if (output === "else") {
+      nextitem = nextchar(2, true);
+      let x = parse.count - 1;
+      if (data.types[x] === "comment") {
+        do {
+          x = x - 1;
+        } while (x > 0 && data.types[x] === "comment");
+      }
+      if (data.token[x] === "x}") {
+        if (data.token[parse.count] === "else") {
+          if (data.stack[parse.count - 1] !== "if" && data.types[parse.count - 1] !== "comment" && data.stack[parse.count - 1] !== "else") {
+            brace.pop();
+            parse.splice({
+              data,
+              howmany: 0,
+              index: parse.count - 1,
+              record: {
+                begin: data.begin[data.begin[data.begin[parse.count - 1] - 1] - 1],
+                ender: -1,
+                lexer: "script",
+                lines: 0,
+                stack: "if",
+                token: options2.attemptCorrection === true ? "}" : "x}",
+                types: "end"
+              }
+            });
+            if (parse.structure.length > 1) {
+              parse.structure.splice(parse.structure.length - 2, 1);
+              parse.structure[parse.structure.length - 1][1] = parse.count;
+            }
+          } else if (data.token[parse.count - 2] === "x}" && pstack[0] !== "if" && data.stack[parse.count] === "else") {
+            elsefix();
+          } else if (data.token[parse.count - 2] === "}" && data.stack[parse.count - 2] === "if" && pstack[0] === "if" && data.token[pstack[1] - 1] !== "if" && data.token[data.begin[parse.count - 1]] === "x{") {
+            elsefix();
+          }
+        } else if (data.token[parse.count] === "x}" && data.stack[parse.count] === "if") {
+          elsefix();
+        }
+      }
+      if (nextitem !== "if" && nextitem.charAt(0) !== "{") {
+        ltoke = options2.attemptCorrection === true ? "{" : "x{";
+        ltype = "start";
+        brace.push("x{");
+        recordPush("else");
+      }
+    }
+    if ((output === "for" || output === "if" || output === "switch" || output === "catch") && data.token[parse.count - 1] !== ".") {
+      nextitem = nextchar(1, true);
+      if (nextitem !== "(") {
+        paren = parse.count;
+        if (options2.attemptCorrection === true) {
+          start("(");
+        } else {
+          start("x(");
+        }
+      }
+    }
+  }
+  do {
+    if (/\s/.test(c[a])) {
+      if (wordTest > -1)
+        word();
+      a = parse.spacer({
+        array: c,
+        end: b,
+        index: a
+      });
+      if (parse.linesSpace > 1 && ltoke !== ";" && lengthb < parse.count && c[a + 1] !== "}") {
+        asi(false);
+        lengthb = parse.count;
+      }
+    } else if (c[a] === "{" && c[a + 1] === "%") {
+      general("{%", "%}", "template");
+    } else if (c[a] === "{" && c[a + 1] === "{") {
+      general("{{", "}}", "template");
+    } else if (c[a] === "<" && c[a + 1] === "!" && c[a + 2] === "-" && c[a + 3] === "-") {
+      general("<!--", "-->", "comment");
+    } else if (c[a] === "<") {
+      lexerMarkup();
+    } else if (c[a] === "/" && (a === b - 1 || c[a + 1] === "*")) {
+      blockComment();
+    } else if ((parse.count < 0 || data.lines[parse.count] > 0) && c[a] === "#" && c[a + 1] === "!" && (c[a + 2] === "/" || c[a + 2] === "[")) {
+      general("#!" + c[a + 2], "\n", "string");
+    } else if (c[a] === "/" && (a === b - 1 || c[a + 1] === "/")) {
+      lineComment();
+    } else if (c[a] === "`" || c[a] === "}" && parse.structure[parse.structure.length - 1][0] === "template_string") {
+      if (wordTest > -1)
+        word();
+      ltoke = tempstring();
+      if (ltoke.charAt(0) === "}" && ltoke.slice(ltoke.length - 2) === "${") {
+        ltype = "template_string_else";
+        recordPush("template_string");
+      } else if (ltoke.slice(ltoke.length - 2) === "${") {
+        ltype = "template_string_start";
+        recordPush("template_string");
+      } else if (ltoke.charAt(0) === "}") {
+        ltype = "template_string_end";
+        recordPush("");
+      } else {
+        ltype = "string";
+        recordPush("");
+      }
+    } else if (c[a] === '"' || c[a] === "'") {
+      general(c[a], c[a], "string");
+    } else if (c[a] === "-" && (a < b - 1 && c[a + 1] !== "=" && c[a + 1] !== "-") && (ltype === "number" || ltype === "word" || ltype === "reference") && ltoke !== "return" && (ltoke === ")" || ltoke === "]" || ltype === "word" || ltype === "reference" || ltype === "number")) {
+      if (wordTest > -1)
+        word();
+      ltoke = "-";
+      ltype = "operator";
+      recordPush("");
+    } else if (wordTest === -1 && (c[a] !== "0" || c[a] === "0" && c[a + 1] !== "b") && (/\d/.test(c[a]) || a !== b - 2 && c[a] === "-" && c[a + 1] === "." && /\d/.test(c[a + 2]) || a !== b - 1 && (c[a] === "-" || c[a] === ".") && /\d/.test(c[a + 1]))) {
+      if (wordTest > -1)
+        word();
+      if (ltype === "end" && c[a] === "-") {
+        ltoke = "-";
+        ltype = "operator";
+      } else {
+        ltoke = numb();
+        ltype = "number";
+      }
+      recordPush("");
+    } else if (c[a] === ":" && c[a + 1] === ":") {
+      if (wordTest > -1)
+        word();
+      if (options2.attemptCorrection === true)
+        plusplus();
+      asifix();
+      a = a + 1;
+      ltoke = "::";
+      ltype = "separator";
+      recordPush("");
+    } else if (c[a] === ",") {
+      if (wordTest > -1)
+        word();
+      if (options2.attemptCorrection === true)
+        plusplus();
+      if (datatype[datatype.length - 1] === true && data.stack[parse.count].indexOf("type") < 0) {
+        datatype[datatype.length - 1] = false;
+      }
+      if (ltype === "comment") {
+        commaComment();
+      } else if (vart.len > -1 && vart.count[vart.len] === 0 && options2.script.variableList === "each") {
+        asifix();
+        ltoke = ";";
+        ltype = "separator";
+        recordPush("");
+        ltoke = vart.word[vart.len];
+        ltype = "word";
+        recordPush("");
+        vart.index[vart.len] = parse.count;
+      } else {
+        ltoke = ",";
+        ltype = "separator";
+        asifix();
+        recordPush("");
+      }
+    } else if (c[a] === ".") {
+      if (wordTest > -1)
+        word();
+      datatype[datatype.length - 1] = false;
+      if (c[a + 1] === "." && c[a + 2] === ".") {
+        ltoke = "...";
+        ltype = "operator";
+        a = a + 2;
+      } else {
+        asifix();
+        ltoke = ".";
+        ltype = "separator";
+      }
+      if (/\s/.test(c[a - 1]) === true)
+        parse.linesSpace = 1;
+      recordPush("");
+    } else if (c[a] === ";") {
+      if (wordTest > -1)
+        word();
+      if (datatype[datatype.length - 1] === true && data.stack[parse.count].indexOf("type") < 0) {
+        datatype[datatype.length - 1] = false;
+      }
+      if (classy[classy.length - 1] === 0)
+        classy.pop();
+      if (vart.len > -1 && vart.count[vart.len] === 0) {
+        if (options2.script.variableList === "each") {
+          vartpop();
+        } else {
+          vart.index[vart.len] = parse.count + 1;
+        }
+      }
+      if (options2.attemptCorrection === true)
+        plusplus();
+      ltoke = ";";
+      ltype = "separator";
+      if (data.token[parse.count] === "x}") {
+        asibrace();
+      } else {
+        recordPush("");
+      }
+      blockinsert();
+    } else if (c[a] === "(" || c[a] === "[" || c[a] === "{") {
+      start(c[a]);
+    } else if (c[a] === ")" || c[a] === "]" || c[a] === "}") {
+      end(c[a]);
+    } else if (c[a] === "*" && data.stack[parse.count] === "object" && wordTest < 0 && /\s/.test(c[a + 1]) === false && c[a + 1] !== "=" && /\d/.test(c[a + 1]) === false) {
+      wordTest = a;
+    } else if (c[a] === "=" || c[a] === "&" || c[a] === "<" || c[a] === ">" || c[a] === "+" || c[a] === "-" || c[a] === "*" || c[a] === "/" || c[a] === "!" || c[a] === "?" || c[a] === "|" || c[a] === "^" || c[a] === ":" || c[a] === "%" || c[a] === "~") {
+      ltoke = operator();
+      if (ltoke === "regex") {
+        ltoke = data.token[parse.count];
+      } else if (ltoke === "*" && data.token[parse.count] === "function") {
+        data.token[parse.count] = "function*";
+      } else {
+        ltype = "operator";
+        if (ltoke !== "!" && ltoke !== "++" && ltoke !== "--")
+          asifix();
+        recordPush("");
+      }
+    } else if (wordTest < 0 && c[a] !== "") {
+      wordTest = a;
+    }
+    if (vart.len > -1 && parse.count === vart.index[vart.len] + 1 && data.token[vart.index[vart.len]] === ";" && ltoke !== vart.word[vart.len] && ltype !== "comment" && options2.script.variableList === "list") {
+      vartpop();
+    }
+    a = a + 1;
+  } while (a < b);
+  if (wordTest > -1)
+    word();
+  if ((data.token[parse.count] !== "}" && data.token[0] === "{" || data.token[0] !== "{") && (data.token[parse.count] !== "]" && data.token[0] === "[" || data.token[0] !== "[")) {
+    asi(false);
+  }
+  if (sourcemap[0] === parse.count) {
+    ltoke = "\n" + sourcemap[1];
+    ltype = "string";
+    recordPush("");
+  }
+  if (data.token[parse.count] === "x;" && (data.token[parse.count - 1] === "}" || data.token[parse.count - 1] === "]") && data.begin[parse.count - 1] === 0) {
+    parse.pop(data);
+  }
+  return data;
+};
+
+// src/lexers/markup.ts
+prettify.lexers.markup = function markup(source) {
+  const blocks = /* @__PURE__ */ new Set([
+    "body",
+    "colgroup",
+    "dd",
+    "dt",
+    "head",
+    "html",
+    "li",
+    "option",
+    "p",
+    "tbody",
+    "td",
+    "tfoot",
+    "th",
+    "thead",
+    "tr"
+  ]);
+  const voids = /* @__PURE__ */ new Set([
+    "area",
+    "base",
+    "basefont",
+    "br",
+    "col",
+    "embed",
+    "eventsource",
+    "frame",
+    "hr",
+    "image",
+    "img",
+    "input",
+    "isindex",
+    "keygen",
+    "link",
+    "meta",
+    "path",
+    "param",
+    "progress",
+    "source",
+    "wbr",
+    "use"
+  ]);
+  const names = /* @__PURE__ */ new Set([
+    "autoescape",
+    "case",
+    "capture",
+    "comment",
+    "embed",
+    "filter",
+    "for",
+    "form",
+    "if",
+    "macro",
+    "paginate",
+    "raw",
+    "switch",
+    "tablerow",
+    "unless",
+    "verbatim",
+    "schema",
+    "style",
+    "script",
+    "javascript",
+    "highlight",
+    "stylesheet"
+  ]);
+  const { options: options2 } = prettify;
+  const { data } = parse;
+  const asl = options2.markup.attributeSortList.length;
+  const count = create(null);
+  count.end = 0;
+  count.index = -1;
+  count.start = 0;
+  const b = source.split("");
+  const c = b.length;
+  let a = 0;
+  const sgmlflag = 0;
+  let ext = false;
+  let html2 = "html";
+  function isLiquid(input, direction) {
+    if (direction === 1) {
+      return input.charCodeAt(0) === 123 /* LCB */ && (input.charCodeAt(1) === 37 /* PER */ || input.charCodeAt(1) === 123 /* LCB */);
+    } else if (direction === 2) {
+      return input.charCodeAt(input.length - 1) === 125 /* RCB */ && (input.charCodeAt(input.length - 2) === 37 /* PER */ || input.charCodeAt(input.length - 2) === 125 /* RCB */);
+    } else if (direction === 3) {
+      return input.charCodeAt(0) === 123 /* LCB */ && (input.charCodeAt(1) === 37 /* PER */ || input.charCodeAt(1) === 123 /* LCB */) && (input.charCodeAt(input.length - 1) === 125 /* RCB */ && (input.charCodeAt(input.length - 2) === 37 /* PER */ || input.charCodeAt(input.length - 2) === 125 /* RCB */));
+    } else if (direction === 4) {
+      return /{[{%}]/.test(input);
+    } else if (direction === 5) {
+      return /{[{%]/.test(input) && /[%}]}/.test(input);
+    }
+  }
+  function bracketSpace(input) {
+    if (options2.language !== "xml" && options2.language !== "jsx") {
+      const spaceStart = (start) => start.replace(/\s*$/, " ");
+      const spaceEnd = (end) => end.replace(/^\s*/, " ");
+      if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input))
+        return input;
+      input = input.replace(/{[{%]-?\s*/g, spaceStart);
+      input = input.replace(/\s*-?[%}]}/g, spaceEnd);
+      return input;
+    }
+    return input;
+  }
+  function recordPush(target, record, structure) {
+    if (target === data) {
+      if (record.types.indexOf("end") > -1) {
+        count.end = count.end + 1;
+      } else if (record.types.indexOf("start") > -1) {
+        count.start = count.start + 1;
+      }
+    }
+    parse.push(target, record, structure);
+  }
+  function tagName(tag2) {
+    let space = 0;
+    let name = "";
+    const reg = /^(?:<|{%-?|{{-?)=?\s*/;
+    if (typeof tag2 !== "string")
+      return "";
+    space = tag2.replace(reg, "%").replace(/\s+/, " ").indexOf(" ");
+    name = tag2.replace(reg, " ");
+    name = space < 0 ? name.slice(1, tag2.length - 1) : name.slice(1, space);
+    if (html2 === "html")
+      name = name.toLowerCase();
+    name = name.replace(/-?[%}]}$/, "");
+    if (name.indexOf("(") > 0)
+      name = name.slice(0, name.indexOf("("));
+    if (name === "?xml?")
+      return "xml";
+    return name;
+  }
+  function fixHtmlEnd(element, end) {
+    const tname = tagName(element);
+    const record = create(null);
+    record.begin = parse.structure[parse.structure.length - 1][1];
+    record.ender = -1;
+    record.lexer = "markup";
+    record.lines = data.lines[parse.count] > 0 ? 1 : 0;
+    record.stack = parse.structure[parse.structure.length - 1][0];
+    record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
+    record.types = "end";
+    recordPush(data, record, "");
+    if (blocks.has(parse.structure[parse.structure.length - 1][0]) && (end === true && parse.structure.length > 1 || end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)) {
+      do {
+        record.begin = parse.structure[parse.structure.length - 1][1];
+        record.stack = parse.structure[parse.structure.length - 1][0];
+        record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
+        recordPush(data, record, "");
+      } while (blocks.has(parse.structure[parse.structure.length - 1][0]) && (end === true && parse.structure.length > 1 || end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname));
+    }
+  }
+  function tag(end) {
+    const record = create(null);
+    record.begin = parse.structure[parse.structure.length - 1][1];
+    record.ender = -1;
+    record.lexer = "markup";
+    record.lines = parse.linesSpace;
+    record.stack = parse.structure[parse.structure.length - 1][0];
+    record.token = "";
+    record.types = "";
+    let igcount = 0;
+    let element = "";
+    let lastchar = "";
+    let ltype = "";
+    let tname = "";
+    let start = "";
+    let cheat = false;
+    let earlyexit = false;
+    let ignoreme = false;
+    let jscom = false;
+    let nosort = false;
+    let preserve = false;
+    let simple = false;
+    let attstore = [];
+    let comm = ["", 0];
+    function attributeName(x) {
+      const eq = x.indexOf("=");
+      if (eq > 0 && (eq < x.indexOf('"') && x.indexOf('"') > 0 || eq < x.indexOf("'") && x.indexOf("'") > 0)) {
+        return [
+          x.slice(0, eq),
+          x.slice(eq + 1)
+        ];
+      }
+      return [x, ""];
+    }
+    function attributeRecord() {
+      const begin = parse.count;
+      const stack = tname.replace(/\/$/, "");
+      const qc = options2.markup.quoteConvert;
+      let idx = 0;
+      let eq = 0;
+      let dq = 0;
+      let name = "";
+      let value = "";
+      let store = [];
+      let len = attstore.length;
+      function convertq() {
+        if (ignoreme === true || qc === "none" || record.types !== "attribute" || qc === "single" && record.token.indexOf('"') < 0 || qc === "double" && record.token.indexOf("'") < 0) {
+          recordPush(data, record, "");
+        } else {
+          let ee = 0;
+          let inner = false;
+          const chars = record.token.split("");
+          const eq2 = record.token.indexOf("=");
+          const len2 = chars.length - 1;
+          if (chars[eq2 + 1] !== '"' && chars[chars.length - 1] !== '"' && qc === "single") {
+            recordPush(data, record, "");
+          } else if (chars[eq2 + 1].charCodeAt(0) !== 39 /* SQO */ && chars[chars.length - 1].charCodeAt(0) !== 39 /* SQO */ && qc === "double") {
+            recordPush(data, record, "");
+          } else {
+            ee = eq2 + 2;
+            if (qc === "double") {
+              if (record.token.slice(eq2 + 2, len2).indexOf('"') > -1)
+                inner = true;
+              chars[eq2 + 1] = '"';
+              chars[chars.length - 1] = '"';
+            } else {
+              if (record.token.slice(eq2 + 2, len2).indexOf("'") > -1)
+                inner = true;
+              chars[eq2 + 1] = "'";
+              chars[chars.length - 1] = "'";
+            }
+            if (inner === true) {
+              do {
+                if (chars[ee] === "'" && qc === "single") {
+                  chars[ee] = '"';
+                } else if (chars[ee] === '"' && qc === "double") {
+                  chars[ee] = "'";
+                }
+                ee = ee + 1;
+              } while (ee < len2);
+            }
+            record.token = chars.join("");
+            recordPush(data, record, "");
+          }
+        }
+      }
+      function templateattrs(sample, token) {
+        if (sample.charAt(0) === "{" && "{%".indexOf(sample.charAt(1)) > -1) {
+          record.types = "template_attribute";
+        } else if (sample.charAt(0) === "<") {
+          record.types = "template_attribute";
+        } else {
+          record.token = token;
+          convertq();
+          return;
+        }
+        record.token = token;
+        convertq();
+        record.types = "attribute";
+      }
+      if (attstore.length < 1)
+        return;
+      if (attstore[attstore.length - 1][0] === "/") {
+        attstore.pop();
+        element = element.replace(/>$/, "/>");
+      }
+      eq = attstore.length;
+      dq = 1;
+      if (dq < eq) {
+        do {
+          name = attstore[dq - 1][0];
+          if (name.charAt(name.length - 1) === "=" && attstore[dq][0].indexOf("=") < 0) {
+            attstore[dq - 1][0] = name + attstore[dq][0];
+            attstore.splice(dq, 1);
+            eq = eq - 1;
+            dq = dq - 1;
+          }
+          dq = dq + 1;
+        } while (dq < eq);
+      }
+      if (options2.markup.attributeSort === true && options2.language !== "jsx" && jscom === false && nosort === false) {
+        if (asl > 0) {
+          const tempstore = [];
+          dq = 0;
+          eq = 0;
+          len = attstore.length;
+          do {
+            eq = 0;
+            do {
+              name = attstore[eq][0].split("=")[0];
+              if (options2.markup.attributeSortList[dq] === name) {
+                tempstore.push(attstore[eq]);
+                attstore.splice(eq, 1);
+                len = len - 1;
+                break;
+              }
+              eq = eq + 1;
+            } while (eq < len);
+            dq = dq + 1;
+          } while (dq < asl);
+          attstore = parse.safeSort(attstore, "", false);
+          attstore = tempstore.concat(attstore);
+          len = attstore.length;
+        } else {
+          attstore = parse.safeSort(attstore, "", false);
+        }
+      }
+      record.begin = begin;
+      record.stack = stack;
+      record.types = "attribute";
+      store = [];
+      if (idx < len) {
+        do {
+          if (attstore[idx] === void 0)
+            break;
+          attstore[idx][0] = attstore[idx][0].replace(/\s+$/, "");
+          record.lines = attstore[idx][1];
+          eq = attstore[idx][0].indexOf("=");
+          dq = attstore[idx][0].indexOf('"');
+          attstore[idx][0].indexOf("'");
+          if (/^\/(\/|\*)/.test(attstore[idx][0]) && options2.language === "jsx") {
+            record.types = "comment_attribute";
+            record.token = attstore[idx][0];
+            convertq();
+          } else if (eq < 0) {
+            if (isLiquid(attstore[idx][0], 3) || isLiquid(attstore[idx][0], 5)) {
+              record.types = "template_attribute";
+              record.token = attstore[idx][0];
+              convertq();
+            } else {
+              record.types = "attribute";
+              record.token = "#[{(".indexOf(attstore[idx][0].charAt(0)) < 0 ? attstore[idx][0].toLowerCase() : record.token = attstore[idx][0];
+              convertq();
+            }
+          } else {
+            name = attstore[idx][0].slice(0, eq);
+            value = attstore[idx][0].slice(eq + 1);
+            if (options2.attemptCorrection) {
+              if (`<{"'=`.indexOf(value.charAt(0)) < 0)
+                value = '"' + value + '"';
+            }
+            if (options2.language === "jsx" && /^\s*\{/.test(value)) {
+              record.token = name + "={";
+              record.types = "jsx_attribute_start";
+              recordPush(data, record, "jsx_attribute");
+              prettify.lexers.script(value.slice(1, value.length - 1));
+              record.begin = parse.count;
+              if (/\s\}$/.test(value)) {
+                value = value.slice(0, value.length - 1);
+                value = /\s+$/.exec(value)[0];
+                if (value.indexOf("\n") < 0)
+                  record.lines = 1;
+                else
+                  record.lines = value.split("\n").length;
+              } else {
+                record.lines = 0;
+              }
+              record.begin = parse.structure[parse.structure.length - 1][1];
+              record.stack = parse.structure[parse.structure.length - 1][0];
+              record.token = "}";
+              record.types = "jsx_attribute_end";
+              convertq();
+              record.types = "attribute";
+              record.begin = begin;
+              record.stack = stack;
+            } else if (isLiquid(name, 5)) {
+              name = name + "=" + value;
+              templateattrs(value.replace(/^(["'])/, "").slice(0, 2), name.replace(/(\s+)$/, ""));
+            } else {
+              record.types = "attribute";
+              record.token = "#[{(".indexOf(attstore[idx][0].charAt(0)) < 0 ? attstore[idx][0].toLowerCase() : record.token = attstore[idx][0];
+              convertq();
+            }
+          }
+          idx = idx + 1;
+        } while (idx < len);
+      }
+      if (store.length > 0) {
+        record.token = store.join(" ");
+        convertq();
+      }
+    }
+    ext = false;
+    if (end === "---") {
+      start = "---";
+      ltype = "comment";
+    } else if (is(b[a], 60 /* LAN */)) {
+      if (b[a + 1] === "/") {
+        end = ">";
+        ltype = "end";
+      } else if (b[a + 1] === "!") {
+        if ((b[a + 2] === "d" || b[a + 2] === "D") && (b[a + 3] === "o" || b[a + 3] === "O") && (b[a + 4] === "c" || b[a + 4] === "C") && (b[a + 5] === "t" || b[a + 5] === "T") && (b[a + 6] === "y" || b[a + 6] === "Y") && (b[a + 7] === "p" || b[a + 7] === "P") && (b[a + 8] === "e" || b[a + 8] === "E")) {
+          end = ">";
+          ltype = "doctype";
+          preserve = true;
+        } else if (b[a + 2] === "-" && b[a + 3] === "-") {
+          end = "-->";
+          ltype = "comment";
+          start = "<!--";
+        } else if (b[a + 2] === "[" && b[a + 3] === "C" && b[a + 4] === "D" && b[a + 5] === "A" && b[a + 6] === "T" && b[a + 7] === "A" && b[a + 8] === "[") {
+          end = "]]>";
+          ltype = "cdata";
+          preserve = true;
+        }
+      } else if (b[a + 1] === "?") {
+        end = "?>";
+        if (b[a + 2] === "x" && b[a + 3] === "m" && b[a + 4] === "l") {
+          ltype = "xml";
+          simple = true;
+        } else {
+          preserve = true;
+          ltype = "template";
+        }
+      } else if (is(b[a + 1], 37 /* PER */)) {
+        preserve = true;
+      } else if ((b[a + 1] === "p" || b[a + 1] === "P") && (b[a + 2] === "r" || b[a + 2] === "R") && (b[a + 3] === "e" || b[a + 3] === "E") && (b[a + 4] === ">" || /\s/.test(b[a + 4]))) {
+        end = "</pre>";
+        ltype = "ignore";
+        preserve = true;
+      } else {
+        simple = true;
+        end = ">";
+      }
+    } else if (is(b[a], 123 /* LCB */)) {
+      if (options2.language === "jsx") {
+        ext = true;
+        earlyexit = true;
+        record.token = "{";
+        record.types = "script_start";
+        parse.structure.push(["script", parse.count]);
+        recordPush(data, record, "");
+        return;
+      }
+      if (is(b[a + 1], 123 /* LCB */)) {
+        preserve = true;
+        end = "}}";
+        ltype = "template";
+      } else if (is(b[a + 1], 37 /* PER */)) {
+        preserve = true;
+        end = "%}";
+        ltype = "template";
+        const rcb = b.indexOf("}", a + 2);
+        if (b[rcb - 1].charCodeAt(0) === 37 /* PER */) {
+          let t = b.slice(a + 2, rcb - 1).join("");
+          if (t.charCodeAt(0) === 45 /* DSH */) {
+            start = "{%-";
+            t = t.slice(1).trimStart();
+          } else {
+            start = "{%";
+            t = t.trimStart();
+          }
+          if (t.charCodeAt(t.length - 1) === 45 /* DSH */) {
+            end = "-%}";
+            t = t.slice(0, t.length - 1).trimEnd();
+          } else {
+            end = "%}";
+            t = t.trimEnd();
+          }
+          if (t === "comment") {
+            const idx1 = source.indexOf("{%", rcb);
+            let idx2 = idx1;
+            if (b[idx1 + 1].charCodeAt(0) === 45 /* DSH */)
+              idx2 = idx1 + 1;
+            idx2 = source.indexOf("endcomment", idx2);
+            if (idx2 > 0) {
+              idx2 = b.indexOf("}", idx2);
+              if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === 37 /* PER */) {
+                ltype = "comment";
+                start = b.slice(a, rcb + 1).join("");
+                end = b.slice(idx1, idx2 + 1).join("");
+              }
+            }
+          }
+        } else {
+          preserve = true;
+          end = "%}";
+          ltype = "template";
+        }
+      } else {
+        preserve = true;
+        end = b[a + 1] + "}";
+        ltype = "template";
+      }
+    }
+    if (options2.markup.preserveAttributes === true)
+      preserve = true;
+    if (earlyexit)
+      return;
+    lastchar = end.charAt(end.length - 1);
+    if (ltype === "comment" && (is(b[a], 60 /* LAN */) || is(b[a], 123 /* LCB */) && is(b[a + 1], 37 /* PER */))) {
+      comm = parse.wrapCommentBlock({
+        chars: b,
+        end: c,
+        lexer: "markup",
+        opening: start,
+        start: a,
+        terminator: end
+      });
+      element = comm[0];
+      a = comm[1];
+      if (element.replace(start, "").trimStart().indexOf("@prettify-ignore-start") === 0) {
+        record.token = element;
+        record.types = "ignore";
+        recordPush(data, record, "");
+        return;
+      }
+    } else if (a < c) {
+      let slashy2 = function() {
+        let x = a;
+        do {
+          x = x - 1;
+        } while (b[x] === "\\");
+        x = a - x;
+        return x % 2 === 1;
+      }, attributeLexer2 = function(quotes) {
+        let name;
+        let atty = "";
+        let aa = 0;
+        let bb = 0;
+        const ignoreattr = "data-prettify-ignore";
+        if (quotes === true) {
+          atty = attribute.join("");
+          name = attributeName(atty);
+          quote = "";
+          if (name[0] === ignoreattr)
+            ignoreme = true;
+        } else {
+          atty = attribute.join("");
+          if (options2.language !== "jsx" || options2.language === "jsx" && atty.charAt(atty.length - 1) !== "}") {
+            atty = atty.replace(/\s+/g, " ");
+          }
+          name = attributeName(atty);
+          if (name[0] === ignoreattr)
+            ignoreme = true;
+          if (options2.language === "jsx" && attribute[0] === "{" && attribute[attribute.length - 1] === "}") {
+            jsxcount = 0;
+          }
+        }
+        if (atty.slice(0, 2) === "{%")
+          nosort = true;
+        atty = atty.replace(/^\u0020/, "").replace(/\u0020$/, "");
+        attribute = atty.replace(/\r\n/g, "\n").split("\n");
+        bb = attribute.length;
+        if (aa < bb) {
+          do {
+            attribute[aa] = attribute[aa].replace(/(\s+)$/, "");
+            aa = aa + 1;
+          } while (aa < bb);
+        }
+        atty = attribute.join(options2.crlf === true ? "\r\n" : "\n");
+        atty = bracketSpace(atty);
+        if (atty === "=") {
+          attstore[attstore.length - 1][0] = `${attstore[attstore.length - 1][0]}=`;
+        } else if (atty.charAt(0) === "=" && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") < 0) {
+          attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
+        } else if (atty.charAt(0) !== "=" && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") === attstore[attstore.length - 1][0].length - 1) {
+          attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
+        } else if (atty !== "" && atty !== " ") {
+          attstore.push([atty, lines]);
+        }
+        if (attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=\u201C") > 0) {
+          parse.error = `Quote looking character (\u201C, &#x201c) used instead of actual quotes on line number ${parse.lineNumber}`;
+        } else if (attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=\u201D") > 0) {
+          parse.error = `Quote looking character (\u201D, &#x201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+        }
+        attribute = [];
+        lines = b[a] === "\n" ? 2 : 1;
+      };
+      let bcount = 0;
+      let jsxcount = 0;
+      let e = 0;
+      let f = 0;
+      let parncount = 0;
+      let lines = 1;
+      let quote = "";
+      let jsxquote = "";
+      let stest = false;
+      let quotetest = false;
+      let attribute = [];
+      const dustatt = [];
+      const lex = [];
+      do {
+        if (is(b[a], 10 /* NWL */)) {
+          lines = lines + 1;
+          parse.lineNumber = parse.lineNumber + 1;
+        }
+        if (preserve === true || (ws(b[a]) === false && not(quote, 125 /* RCB */) || is(quote, 125 /* RCB */))) {
+          lex.push(b[a]);
+          if (is(lex[0], 60 /* LAN */) && is(lex[1], 162 /* RAN */) && is(end, 162 /* RAN */)) {
+            record.token = "<>";
+            record.types = "start";
+            recordPush(data, record, "(empty)");
+            return;
+          }
+          if (is(lex[0], 60 /* LAN */) && is(lex[0], 45 /* FWS */) && is(lex[2], 162 /* RAN */) && is(end, 162 /* RAN */)) {
+            record.token = "</>";
+            record.types = "end";
+            recordPush(data, record, "");
+            return;
+          }
+        }
+        if (ltype === "cdata" && is(b[a], 162 /* RAN */) && b[a - 1] === "]" && b[a - 2] !== "]") {
+          parse.error = `CDATA tag ${lex.join("")} not properly terminated with ]]>`;
+          break;
+        }
+        if (ltype === "comment") {
+          quote = "";
+          if (b[a] === lastchar && lex.length > end.length + 1) {
+            f = lex.length;
+            e = end.length - 1;
+            if (e > -1) {
+              do {
+                f = f - 1;
+                if (lex[f] !== end.charAt(e))
+                  break;
+                e = e - 1;
+              } while (e > -1);
+            }
+            if (e < 0)
+              break;
+          }
+        } else {
+          if (quote === "") {
+            if (is(lex[0], 60 /* LAN */) && is(lex[1], 33 /* BNG */) && ltype !== "cdata") {
+              if (ltype === "doctype" && is(b[a], 162 /* RAN */))
+                break;
+              if (b[a] === "[") {
+                if (is(b[a + 1], 60 /* LAN */)) {
+                  ltype = "start";
+                  break;
+                }
+                if (ws(b[a + 1])) {
+                  do {
+                    a = a + 1;
+                    if (b[a] === "\n") {
+                      lines = lines + 1;
+                    }
+                  } while (a < c - 1 && ws(b[a + 1]));
+                }
+                if (is(b[a + 1], 60 /* LAN */)) {
+                  ltype = "start";
+                  break;
+                }
+              }
+            }
+            if (options2.language === "jsx") {
+              if (is(b[a], 123 /* LCB */)) {
+                jsxcount = jsxcount + 1;
+              } else if (is(b[a], 125 /* RCB */)) {
+                jsxcount = jsxcount - 1;
+              }
+            }
+            if (is(b[a], 60 /* LAN */) && preserve === false && lex.length > 1 && end !== ">>" && end !== ">>>" && simple === true) {
+              parse.error = `Parse error (line ${parse.lineNumber}) on: ${lex.join("")}`;
+            }
+            if (stest === true && ws(b[a]) === false && b[a] !== lastchar) {
+              stest = false;
+              quote = jsxquote;
+              igcount = 0;
+              lex.pop();
+              if (a < c) {
+                do {
+                  if (is(b[a], 10 /* NWL */))
+                    parse.lineNumber = parse.lineNumber + 1;
+                  if (options2.markup.preserveAttributes === true) {
+                    lex.push(b[a]);
+                  } else {
+                    attribute.push(b[a]);
+                  }
+                  if (options2.language !== "jsx" && (is(b[a], 60 /* LAN */) || is(b[a], 162 /* RAN */)) && (quote === "" || quote === ">")) {
+                    if (quote === "" && is(b[a], 162 /* RAN */)) {
+                      quote = ">";
+                    } else if (is(quote, 162 /* RAN */)) {
+                      if (is(b[a], 60 /* LAN */)) ; else if (b[a] === ">") ;
+                    }
+                  } else if (quote === "") {
+                    if (b[a + 1] === lastchar) {
+                      if (is(attribute[attribute.length - 1], 45 /* FWS */) || is(attribute[attribute.length - 1], 63 /* QWS */) && ltype === "xml") {
+                        attribute.pop();
+                        if (preserve === true)
+                          lex.pop();
+                        a = a - 1;
+                      }
+                      if (attribute.length > 0)
+                        attributeLexer2(false);
+                      break;
+                    }
+                    if (preserve === false && /^=?['"]?(?:{[{%]|\/|\^|<)/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])) {
+                      attribute.pop();
+                      if (not(b[a], 61 /* EQS */) && attribute.length > 0)
+                        attributeLexer2(false);
+                      quote = "";
+                      do {
+                        attribute.push(b[a]);
+                        if (b[a] === dustatt[dustatt.length - 1]) {
+                          dustatt.pop();
+                          if (is(b[a], 125 /* RCB */) && is(b[a + 1], 125 /* RCB */)) {
+                            attribute.push("}");
+                            a = a + 1;
+                            if (is(b[a + 1], 125 /* RCB */)) {
+                              attribute.push("}");
+                              a = a + 1;
+                            }
+                          }
+                          if (dustatt.length < 1) {
+                            attributeLexer2(false);
+                            b[a] = " ";
+                            break;
+                          }
+                        } else if ((is(b[a], 34 /* DQO */) || is(b[a], 39 /* SQO */)) && not(dustatt[dustatt.length - 1], 34 /* DQO */) && not(dustatt[dustatt.length - 1], 39 /* SQO */)) {
+                          dustatt.push(b[a]);
+                        } else if (is(b[a], 123 /* LCB */) && /[{%</]/.test(b[a + 1]) && not(dustatt[dustatt.length - 1], 125 /* RCB */)) {
+                          dustatt.push("}");
+                        } else if (is(b[a], 60 /* LAN */) && not(dustatt[dustatt.length - 1], 162 /* RAN */)) {
+                          dustatt.push(">");
+                        }
+                        a = a + 1;
+                      } while (a < c);
+                    } else if (is(b[a], 123 /* LCB */) && is(b[a - 1], 61 /* EQS */) && options2.language !== "jsx") {
+                      quote = "}";
+                    } else if (is(b[a], 34 /* DQO */) || is(b[a], 39 /* SQO */)) {
+                      quote = b[a];
+                      if (is(b[a - 1], 61 /* EQS */) && (is(b[a + 1], 60 /* LAN */) || is(b[a + 1], 123 /* LCB */) && is(b[a + 2], 37 /* PER */) || ws(b[a + 1]) && not(b[a - 1], 61 /* EQS */))) {
+                        igcount = a;
+                      }
+                    } else if (is(b[a], 40 /* LPR */)) {
+                      quote = ")";
+                      parncount = 1;
+                    } else if (options2.language === "jsx") {
+                      if ((is(b[a - 1], 61 /* EQS */) || ws(b[a - 1])) && is(b[a], 123 /* LCB */)) {
+                        quote = "}";
+                        bcount = 1;
+                      } else if (is(b[a], 45 /* FWS */)) {
+                        if (b[a + 1] === "*") {
+                          quote = "*/";
+                        } else if (b[a + 1] === "/") {
+                          quote = "\n";
+                        }
+                      }
+                    } else if (is(lex[0], 123 /* LCB */) && is(b[a], 123 /* LCB */) && (is(b[a + 1], 123 /* LCB */) || is(b[a + 1], 37 /* PER */))) {
+                      if (is(b[a + 1], 123 /* LCB */)) {
+                        quote = "}}";
+                      } else {
+                        quote = b[a + 1] + "}";
+                      }
+                    }
+                    if (ws(b[a]) && quote === "") {
+                      if (is(attribute[attribute.length - 2], 61 /* EQS */)) {
+                        e = a + 1;
+                        if (e < c) {
+                          do {
+                            if (ws(b[e]) === false) {
+                              if (is(b[e], 34 /* DQO */) || is(b[e], 39 /* SQO */)) {
+                                a = e - 1;
+                                quotetest = true;
+                                attribute.pop();
+                              }
+                              break;
+                            }
+                            e = e + 1;
+                          } while (e < c);
+                        }
+                      }
+                      if (quotetest === true) {
+                        quotetest = false;
+                      } else if (jsxcount === 0 || jsxcount === 1 && is(attribute[0], 123 /* LCB */)) {
+                        attribute.pop();
+                        attributeLexer2(false);
+                        stest = true;
+                        break;
+                      }
+                    }
+                  } else if (is(b[a], 40 /* LPR */) && is(quote, 41 /* RPR */)) {
+                    parncount = parncount + 1;
+                  } else if (is(b[a], 41 /* RPR */) && is(quote, 41 /* RPR */)) {
+                    parncount = parncount - 1;
+                    if (parncount === 0) {
+                      quote = "";
+                      if (b[a + 1] === end.charAt(0)) {
+                        attributeLexer2(false);
+                        break;
+                      }
+                    }
+                  } else if (options2.language === "jsx" && (is(quote, 125 /* RCB */) || is(quote, 10 /* NWL */) && is(b[a], 10 /* NWL */) || quote === "*/" && is(b[a - 1], 42 /* ARS */) && is(b[a], 45 /* FWS */))) {
+                    if (is(quote, 125 /* RCB */)) {
+                      if (is(b[a], 125 /* RCB */)) {
+                        bcount = bcount + 1;
+                      } else if (b[a] === quote) {
+                        bcount = bcount - 1;
+                        if (bcount === 0) {
+                          jsxcount = 0;
+                          quote = "";
+                          element = attribute.join("");
+                          if (options2.markup.preserveAttributes === false) {
+                            if (options2.language === "jsx") {
+                              if (/^(\s*)$/.test(element) === false) {
+                                attstore.push([element, lines]);
+                              }
+                            } else {
+                              element = element.replace(/\s+/g, " ");
+                              if (element !== " ") {
+                                attstore.push([element, lines]);
+                              }
+                            }
+                          }
+                          attribute = [];
+                          lines = 1;
+                          break;
+                        }
+                      }
+                    } else {
+                      jsxquote = "";
+                      jscom = true;
+                      element = attribute.join("");
+                      if (element !== " ")
+                        attstore.push([element, lines]);
+                      attribute = [];
+                      lines = quote === "\n" ? 2 : 1;
+                      quote = "";
+                      break;
+                    }
+                  } else if (is(b[a], 123 /* LCB */) && is(b[a + 1], 37 /* PER */) && is(b[igcount - 1], 61 /* EQS */) && (is(quote, 34 /* DQO */) || is(quote, 39 /* SQO */))) {
+                    quote = quote + "{%";
+                    igcount = 0;
+                  } else if (is(b[a - 1], 37 /* PER */) && is(b[a], 125 /* RCB */) && (quote === '"{%' || quote === "'{%")) {
+                    quote = quote.charAt(0);
+                    igcount = 0;
+                  } else if (is(b[a], 60 /* LAN */) && is(end, 162 /* RAN */) && is(b[igcount - 1], 61 /* EQS */) && (is(quote, 34 /* DQO */) || is(quote, 39 /* SQO */))) {
+                    quote = quote + "<";
+                    igcount = 0;
+                  } else if (is(b[a], 162 /* RAN */) && (quote === '"<' || quote === "'<")) {
+                    quote = quote.charAt(0);
+                    igcount = 0;
+                  } else if (igcount === 0 && not(quote, 162 /* RAN */) && (quote.length < 2 || quote.charAt(0) !== '"' && quote.charAt(0) !== "'")) {
+                    f = 0;
+                    if (lex.length > 1) {
+                      tname = lex[1] + lex[2];
+                      tname = tname.toLowerCase();
+                    }
+                    e = quote.length - 1;
+                    if (e > -1) {
+                      do {
+                        if (b[a - f] !== quote.charAt(e))
+                          break;
+                        f = f + 1;
+                        e = e - 1;
+                      } while (e > -1);
+                    }
+                    if (e < 0) {
+                      attributeLexer2(true);
+                      if (b[a + 1] === lastchar)
+                        break;
+                    }
+                  } else if (igcount > 0 && /\s/.test(b[a]) === false) {
+                    igcount = 0;
+                  }
+                  a = a + 1;
+                } while (a < c);
+              }
+            } else if (is(end, 10 /* NWL */) === false && (is(b[a], 34 /* DQO */) || is(b[a], 39 /* SQO */))) {
+              quote = b[a];
+            } else if (ltype !== "comment" && is(end, 10 /* NWL */) === false && is(b[a], 60 /* LAN */) && is(b[a + 1], 33 /* BNG */) && is(b[a + 2], 45 /* DSH */) && is(b[a + 3], 45 /* DSH */) && data.types[parse.count] !== "conditional") {
+              quote = "-->";
+            } else if (is(b[a], 123 /* LCB */) && not(lex[0], 123 /* LCB */) && not(end, 10 /* NWL */) && (is(b[a + 1], 123 /* LCB */) || is(b[a + 1], 37 /* PER */))) {
+              if (is(b[a + 1], 123 /* LCB */)) {
+                quote = "}}";
+              } else {
+                quote = b[a + 1] + "}";
+                if (attribute.length < 1 && (attstore.length < 1 || /\s/.test(b[a - 1]) === true)) {
+                  lex.pop();
+                  do {
+                    if (is(b[a], 10 /* NWL */))
+                      lines = lines + 1;
+                    attribute.push(b[a]);
+                    a = a + 1;
+                  } while (a < c && b[a - 1] + b[a] !== quote);
+                  attribute.push("}");
+                  attstore.push([attribute.join(""), lines]);
+                  attribute = [];
+                  lines = 1;
+                  quote = "";
+                }
+              }
+              if (quote === end)
+                quote = "";
+            } else if ((simple === true || ltype === "sgml") && not(end, 10 /* NWL */) && ws(b[a]) && not(b[a - 1], 60 /* LAN */)) {
+              if (ltype === "sgml") {
+                lex.push(" ");
+              } else {
+                stest = true;
+              }
+            } else if (simple === true && options2.language === "jsx" && is(b[a], 45 /* FWS */) && (is(b[a + 1], 42 /* ARS */) || is(b[a + 1], 45 /* FWS */))) {
+              stest = true;
+              lex[lex.length - 1] = " ";
+              attribute.push(b[a]);
+              if (is(b[a + 1], 42 /* ARS */)) {
+                jsxquote = "*/";
+              } else {
+                jsxquote = "\n";
+              }
+            } else if ((b[a] === lastchar || is(end, 10 /* NWL */) && is(b[a + 1], 60 /* LAN */)) && (lex.length > end.length + 1 || lex[0] === "]") && (options2.language !== "jsx" || jsxcount === 0)) {
+              if (is(end, 10 /* NWL */)) {
+                if (ws(lex[lex.length - 1])) {
+                  do {
+                    lex.pop();
+                    a = a - 1;
+                  } while (/\s/.test(lex[lex.length - 1]));
+                }
+                break;
+              }
+              f = lex.length;
+              e = end.length - 1;
+              if (e > -1) {
+                do {
+                  f = f - 1;
+                  if (lex[f] !== end.charAt(e))
+                    break;
+                  e = e - 1;
+                } while (e > -1);
+              }
+              if (e < 0)
+                break;
+            }
+          } else if (b[a] === quote.charAt(quote.length - 1) && (options2.language === "jsx" && is(end, 125 /* RCB */) && (b[a - 1] !== "\\" || slashy2() === false) || options2.language !== "jsx" || not(end, 125 /* RCB */))) {
+            f = 0;
+            if (lex.length > 1) {
+              tname = lex[1] + lex[2];
+              tname = tname.toLowerCase();
+            }
+            e = quote.length - 1;
+            if (e > -1) {
+              do {
+                if (b[a - f] !== quote.charAt(e))
+                  break;
+                f = f + 1;
+                e = e - 1;
+              } while (e > -1);
+            }
+            if (e < 0)
+              quote = "";
+          }
+        }
+        a = a + 1;
+      } while (a < c);
+      if (options2.attemptCorrection === true) {
+        if (is(b[a + 1], 162 /* RAN */) && is(lex[0], 60 /* LAN */) && not(lex[0], 60 /* LAN */)) {
+          do {
+            a = a + 1;
+          } while (is(b[a + 1], 162 /* RAN */));
+        } else if (is(lex[0], 60 /* LAN */) && is(lex[1], 60 /* LAN */) && not(b[a + 1], 162 /* RAN */) && not(lex[lex.length - 2], 162 /* RAN */)) {
+          do {
+            lex.splice(1, 1);
+          } while (lex[1] === "<");
+        }
+      }
+      igcount = 0;
+      element = lex.join("");
+      tname = tagName(element);
+      element = bracketSpace(element);
+      if (tname === "xml") {
+        html2 = "xml";
+      } else if (html2 === "" && tname === "html") {
+        html2 = "html";
+      } else if (html2 === "liquid") {
+        html2 = "html";
+      }
+    }
+    record.token = element;
+    record.types = ltype;
+    tname = tagName(element);
+    if (preserve === false && options2.language !== "jsx")
+      element = element.replace(/\s+/g, " ");
+    if (tname === "comment" && isLiquid(element, 2)) {
+      let lineFindStart2 = function(spaces) {
+        linesStart = spaces === "" ? 0 : spaces.split("\n").length;
+        return "";
+      }, lineFindEnd2 = function(spaces) {
+        linesEnd = spaces === "" ? 0 : spaces.split("\n").length;
+        return "";
+      };
+      const open = element.slice(0, element.indexOf("%}") + 2);
+      const comm2 = element.slice(element.indexOf("%}") + 2, element.lastIndexOf("{%"));
+      const end2 = element.slice(element.lastIndexOf("{%"));
+      let linesStart = 0;
+      let linesEnd = 0;
+      record.begin = parse.structure[parse.structure.length - 1][1];
+      record.ender = parse.count + 3;
+      record.stack = parse.structure[parse.structure.length - 1][0];
+      record.types = "template_start";
+      record.token = open;
+      recordPush(data, record, "comment");
+      element = comm2.replace(/^\s*/, lineFindStart2);
+      element = element.replace(/\s*$/, lineFindEnd2);
+      record.begin = parse.count;
+      record.lines = linesStart;
+      record.stack = "comment";
+      record.token = element;
+      record.types = "comment";
+      recordPush(data, record, "");
+      record.types = "template_end";
+      record.stack = "comment";
+      record.lines = linesEnd;
+      record.token = end2;
+      recordPush(data, record, "");
+      return;
+    }
+    record.types = ltype;
+    cheat = (() => {
+      const ender = /(\/>)$/;
+      function peertest(n, i) {
+        if (!blocks.has(n))
+          return false;
+        if (n === i)
+          return true;
+        if (n === "dd" && i === "dt")
+          return true;
+        if (n === "dt" && i === "dd")
+          return true;
+        if (n === "td" && i === "th")
+          return true;
+        if (n === "th" && i === "td")
+          return true;
+        if (n === "colgroup" && (i === "tbody" || i === "tfoot" || i === "thead" || i === "tr"))
+          return true;
+        if (n === "tbody" && (i === "colgroup" || i === "tfoot" || i === "thead"))
+          return true;
+        if (n === "tfoot" && (i === "colgroup" || i === "tbody" || i === "thead"))
+          return true;
+        if (n === "thead" && (i === "colgroup" || i === "tbody" || i === "tfoot"))
+          return true;
+        if (n === "tr" && i === "colgroup")
+          return true;
+        return false;
+      }
+      function addHtmlEnd(count2) {
+        record.lines = data.lines[parse.count] > 0 ? 1 : 0;
+        record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
+        record.types = "end";
+        recordPush(data, record, "");
+        if (count2 > 0) {
+          do {
+            record.begin = parse.structure[parse.structure.length - 1][1];
+            record.stack = parse.structure[parse.structure.length - 1][0];
+            record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
+            recordPush(data, record, "");
+            count2 = count2 - 1;
+          } while (count2 > 0);
+        }
+        record.begin = parse.structure[parse.structure.length - 1][1];
+        record.lines = parse.linesSpace;
+        record.stack = parse.structure[parse.structure.length - 1][0];
+        record.token = element;
+        record.types = "end";
+        data.lines[parse.count - 1] = 0;
+      }
+      if (ltype === "end") {
+        const lastToken = data.token[parse.count];
+        if (data.types[parse.count - 1] === "singleton" && lastToken.charCodeAt(lastToken.length - 2) !== 45 /* FWS */ && "/" + tagName(lastToken) === tname) {
+          data.types[parse.count - 1] = "start";
+        }
+      }
+      if (html2 === "html") {
+        if (element.charCodeAt(0) === 60 /* LAN */ && element.charCodeAt(1) !== 33 /* BNG */ && element.charCodeAt(1) !== 63 /* QWS */ && (parse.count < 0 || data.types[parse.count].indexOf("template") < 0)) {
+          element = element.toLowerCase();
+        }
+        if (blocks.has(parse.structure[parse.structure.length - 1][0]) && peertest(tname.slice(1), parse.structure[parse.structure.length - 2][0])) {
+          addHtmlEnd(0);
+        } else if (parse.structure.length > 3 && blocks.has(parse.structure[parse.structure.length - 1][0]) && blocks.has(parse.structure[parse.structure.length - 2][0]) && blocks.has(parse.structure[parse.structure.length - 3][0]) && peertest(tname, parse.structure[parse.structure.length - 4][0]) === true) {
+          addHtmlEnd(3);
+        } else if (parse.structure.length > 2 && blocks.has(parse.structure[parse.structure.length - 1][0]) && blocks.has(parse.structure[parse.structure.length - 2][0]) && peertest(tname, parse.structure[parse.structure.length - 3][0]) === true) {
+          addHtmlEnd(2);
+        } else if (parse.structure.length > 1 && blocks.has(parse.structure[parse.structure.length - 1][0]) && peertest(tname, parse.structure[parse.structure.length - 2][0]) === true) {
+          addHtmlEnd(1);
+        } else if (peertest(tname, parse.structure[parse.structure.length - 1][0]) === true) {
+          addHtmlEnd(0);
+        } else if (tname.charCodeAt(0) === 45 /* FWS */ && blocks.has(parse.structure[parse.structure.length - 1][0]) && parse.structure[parse.structure.length - 1][0] !== tname.slice(1)) {
+          fixHtmlEnd(element, false);
+          record.begin = parse.structure[parse.structure.length - 1][1];
+          record.lines = parse.linesSpace;
+          record.stack = parse.structure[parse.structure.length - 1][0];
+          record.token = element;
+          record.types = "end";
+          data.lines[parse.count - 1] = 0;
+        }
+        if (voids.has(tname)) {
+          if (options2.attemptCorrection === true && ender.test(element) === false) {
+            element = element.slice(0, element.length - 1) + " />";
+          }
+          return true;
+        }
+      }
+      return false;
+    })();
+    if (/\bscript|style\b/.test(tname) && element.slice(element.length - 2) !== "/>" || /\bschema|style|stylesheet|javascript\b/.test(tname) && element.slice(element.length - 2) === "%}") {
+      const liquid2 = isLiquid(element, 3);
+      let len = attstore.length - 1;
+      let attValue = "";
+      let attr = [];
+      if (len > -1) {
+        do {
+          attr = attributeName(attstore[len][0]);
+          if (attr[0] === "type") {
+            attValue = attr[1];
+            if (attValue.charCodeAt(0) === 34 /* DQO */ || attValue.charCodeAt(0) === 39 /* SQO */) {
+              attValue = attValue.slice(1, attValue.length - 1);
+            }
+            break;
+          }
+          len = len - 1;
+        } while (len > -1);
+      }
+      if (liquid2 === false && tname === "script" && (attValue === "" || attValue === "text/javascript" || attValue === "babel" || attValue === "module" || attValue === "application/javascript" || attValue === "application/x-javascript" || attValue === "text/ecmascript" || attValue === "application/ecmascript" || attValue === "text/jsx" || attValue === "application/jsx" || attValue === "text/cjs" || attValue === "application/json" || attValue === "application/ld+json")) {
+        ext = true;
+      } else if ((tname === "style" || tname === "stylesheet") && options2.language !== "jsx" && (attValue === "" || attValue === "text/css")) {
+        ext = true;
+      } else if (liquid2 === true && (tname === "javascript" || tname === "schema" || tname === "style")) {
+        ext = true;
+      }
+      if (ext === true) {
+        len = a + 1;
+        if (len < c) {
+          do {
+            if (ws(b[len]) === false) {
+              if (is(b[len], 60 /* LAN */)) {
+                if (b.slice(len + 1, len + 4).join("") === "!--") {
+                  len = len + 4;
+                  if (len < c) {
+                    do {
+                      if (ws(b[len]) === false) {
+                        ext = false;
+                        break;
+                      }
+                      if (b[len] === "\n" || b[len] === "\r")
+                        break;
+                      len = len + 1;
+                    } while (len < c);
+                  }
+                } else {
+                  ext = false;
+                }
+              }
+              break;
+            }
+            len = len + 1;
+          } while (len < c);
+        }
+      }
+    }
+    if (simple && ignoreme === false && ltype !== "xml") {
+      if (cheat === true || element.slice(element.length - 2) === "/>") {
+        ltype = "singleton";
+      } else {
+        ltype = "start";
+      }
+      record.types = ltype;
+    }
+    if (simple && preserve === false && ignoreme && end === ">" && element.slice(element.length - 2) !== "/>") {
+      const tags = [];
+      const atstring = [];
+      if (cheat === true) {
+        ltype = "singleton";
+      } else {
+        attstore.forEach((value) => atstring.push(value[0]));
+        preserve = true;
+        ltype = "ignore";
+        a = a + 1;
+        if (a < c) {
+          let delim = "";
+          let ee = 0;
+          let ff = 0;
+          let endtag = false;
+          do {
+            if (is(b[a], 10 /* NWL */))
+              parse.lineNumber = parse.lineNumber + 1;
+            tags.push(b[a]);
+            if (delim === "") {
+              if (is(b[a], 34 /* DQO */)) {
+                delim = '"';
+              } else if (is(b[a], 39 /* SQO */)) {
+                delim = "'";
+              } else if (not(tags[0], 123 /* LCB */) && is(b[a], 123 /* LCB */) && (is(b[a + 1], 123 /* LCB */) || is(b[a + 1], 37 /* PER */))) {
+                if (is(b[a + 1], 123 /* LCB */)) {
+                  delim = "}}";
+                } else {
+                  delim = b[a + 1] + "}";
+                }
+              } else if (is(b[a], 60 /* LAN */) && simple === true) {
+                if (is(b[a + 1], 45 /* FWS */)) {
+                  endtag = true;
+                } else {
+                  endtag = false;
+                }
+              } else if (b[a] === lastchar && not(b[a - 1], 45 /* FWS */)) {
+                if (endtag === true) {
+                  igcount = igcount - 1;
+                  if (igcount < 0)
+                    break;
+                } else {
+                  igcount = igcount + 1;
+                }
+              }
+            } else if (b[a] === delim.charAt(delim.length - 1)) {
+              ff = 0;
+              ee = delim.length - 1;
+              if (ee > -1) {
+                do {
+                  if (b[a - ff] !== delim.charAt(ee))
+                    break;
+                  ff = ff + 1;
+                  ee = ee - 1;
+                } while (ee > -1);
+              }
+              if (ee < 0)
+                delim = "";
+            }
+            a = a + 1;
+          } while (a < c);
+        }
+      }
+      element = element + tags.join("");
+      element = element.replace(">", ` ${atstring.join(" ")}>`);
+      record.token = element;
+      record.types = "content-ignore";
+      attstore = [];
+    }
+    if (record.types.indexOf("template") > -1) {
+      if (element.slice(0, 2) === "{%") {
+        if ((tname === "case" || tname === "default") && (parse.structure[parse.structure.length - 1][0] === "switch" || parse.structure[parse.structure.length - 1][0] === "case")) {
+          record.types = "template_else";
+        } else if (tname === "else" || tname === "when" || tname === "elsif") {
+          record.types = "template_else";
+        } else {
+          if (names.has(tname)) {
+            record.types = "template_start";
+          } else if (tname[0] === "e" && tname[1] === "n" && tname[2] === "d" && names.has(tname.slice(3))) {
+            record.types = "template_end";
+          } else if (tname[0] === "e" && tname[1] === "n" && tname[2] === "d") {
+            record.types = "template_end";
+            record.stack = tname.slice(3);
+            let idx = 0;
+            do {
+              if (data.types[idx] === "template" && data.stack[idx] === record.stack) {
+                data.types[idx] = "template_start";
+                count.start = count.start + 1;
+                break;
+              } else {
+                idx = data.stack.indexOf(record.stack, idx + 1);
+              }
+            } while (idx > -1);
+          } else {
+            record.stack = tname;
+          }
+        }
+      } else if (record.types === "template") {
+        if (element.indexOf("else") > 2) {
+          record.types = "template_else";
+        }
+      }
+      if (record.types === "template_start" || record.types === "template_else") {
+        if (tname === "" || tname === "%") {
+          tname = tname + element.slice(1).replace(tname, "").replace(/^\s+/, "");
+          tname = tname.slice(0, tname.indexOf("(")).replace(/\s+/, "");
+        }
+      }
+    }
+    if (ltype === "cdata" && (record.stack === "script" || record.stack === "style")) {
+      let counta = parse.count;
+      let countb = parse.count;
+      const stack = record.stack;
+      if (data.types[countb] === "attribute") {
+        do {
+          counta = counta - 1;
+          countb = countb - 1;
+        } while (data.types[countb] === "attribute" && countb > -1);
+      }
+      record.begin = counta;
+      record.token = "<![CDATA[";
+      record.types = "cdata_start";
+      element = element.replace(/^(\s*<!\[cdata\[)/i, "").replace(/(\]\]>\s*)$/, "");
+      recordPush(data, record, "");
+      parse.structure.push(["cdata", parse.count]);
+      if (stack === "script") {
+        prettify.lexers.script(element);
+      } else {
+        prettify.lexers.style(element);
+      }
+      record.begin = parse.structure[parse.structure.length - 1][1];
+      record.token = "]]>";
+      record.types = "cdata_end";
+      recordPush(data, record, "");
+      parse.structure.pop();
+    } else {
+      recordPush(data, record, tname);
+    }
+    attributeRecord();
+    if (options2.wrap > 0 && options2.language === "jsx") {
+      let current_length = 0;
+      let bb = parse.count;
+      let cc2 = 0;
+      if (data.types[bb].indexOf("attribute") > -1) {
+        do {
+          current_length = current_length + data.token[bb].length + 1;
+          bb = bb - 1;
+        } while (data.lexer[bb] !== "markup" || data.types[bb].indexOf("attribute") > -1);
+        if (data.lines[bb] === 1)
+          current_length = current_length + data.token[bb].length + 1;
+      } else if (data.lines[bb] === 1) {
+        current_length = data.token[bb].length + 1;
+      }
+      cc2 = bb - 1;
+      if (current_length > 0 && data.types[cc2] !== "script_end") {
+        if (data.types[cc2].indexOf("attribute") > -1) {
+          do {
+            current_length = current_length + data.token[cc2].length + 1;
+            cc2 = cc2 - 1;
+          } while (data.lexer[cc2] !== "markup" || data.types[cc2].indexOf("attribute") > -1);
+          if (data.lines[cc2] === 1)
+            current_length = current_length + data.token[cc2].length + 1;
+        } else if (data.lines[cc2] === 1) {
+          current_length = data.token[cc2].length + 1;
+        }
+        if (current_length > options2.wrap && data.lines[bb] === 1) {
+          record.begin = data.begin[bb];
+          record.ender = bb + 2;
+          record.lexer = data.lexer[bb];
+          record.lines = 1;
+          record.stack = data.stack[bb];
+          record.token = "{";
+          record.types = "script_start";
+          parse.splice({
+            data,
+            howmany: 0,
+            index: bb,
+            record
+          });
+          record.begin = bb;
+          record.lexer = "script";
+          record.lines = 0;
+          record.stack = "script";
+          if (options2.markup.quoteConvert === "single") {
+            record.token = "' '";
+          } else {
+            record.token = '" "';
+          }
+          record.types = "string";
+          parse.splice({
+            data,
+            howmany: 0,
+            index: bb + 1,
+            record
+          });
+          record.lexer = "markup";
+          record.token = "}";
+          record.types = "script_end";
+          parse.splice({
+            data,
+            howmany: 0,
+            index: bb + 2,
+            record
+          });
+          data.ender[bb + 3] = data.ender[bb + 3] + 3;
+          bb = bb + 4;
+          do {
+            data.begin[bb] = data.begin[bb] + 3;
+            data.ender[bb] = data.ender[bb] + 3;
+            bb = bb + 1;
+          } while (bb < parse.count);
+        }
+      }
+    }
+    parse.linesSpace = 0;
+  }
+  function content() {
+    let ltoke = "";
+    let liner = parse.linesSpace;
+    let name = "";
+    const lex = [];
+    const jsxbrace = data.token[parse.count] === "{";
+    const now = a;
+    if (ext === true) {
+      if (jsxbrace === true) {
+        name = "script";
+      } else if (parse.structure[parse.structure.length - 1][1] > -1) {
+        name = tagName(data.token[parse.structure[parse.structure.length - 1][1]].toLowerCase());
+      } else if (data.begin[parse.count] > 1) {
+        name = tagName(data.token[data.begin[parse.count]].toLowerCase());
+      } else {
+        name = tagName(data.token[data.begin[parse.count]].toLowerCase());
+      }
+    }
+    const square = data.types[parse.count] === "template_start" && data.token[parse.count].indexOf("<!") === 0 && data.token[parse.count].indexOf("<![") < 0 && data.token[parse.count].charAt(data.token[parse.count].length - 1) === "[";
+    const record = /* @__PURE__ */ Object.create(null);
+    record.begin = parse.structure[parse.structure.length - 1][1];
+    record.ender = -1;
+    record.lexer = "markup";
+    record.lines = liner;
+    record.stack = parse.structure[parse.structure.length - 1][0];
+    record.token = "";
+    record.types = "content";
+    function esctest() {
+      let aa = a - 1;
+      let bb = 0;
+      if (b[a - 1] !== "\\")
+        return false;
+      if (aa > -1) {
+        do {
+          if (b[aa] !== "\\")
+            break;
+          bb = bb + 1;
+          aa = aa - 1;
+        } while (aa > -1);
+      }
+      return bb % 2 === 1;
+    }
+    if (a < c) {
+      let end = "";
+      let quote = "";
+      let quotes = 0;
+      do {
+        if (b[a] === "\n")
+          parse.lineNumber = parse.lineNumber + 1;
+        if (ext === true) {
+          if (quote === "") {
+            if (b[a] === "/") {
+              if (b[a + 1] === "*") {
+                quote = "*";
+              } else if (b[a + 1] === "/") {
+                quote = "/";
+              } else if (name === "script" && "([{!=,;.?:&<>".indexOf(b[a - 1]) > -1) {
+                if (options2.language !== "jsx" || b[a - 1] !== "<")
+                  quote = "reg";
+              }
+            } else if ((b[a] === '"' || b[a] === "'" || b[a] === "`") && esctest() === false) {
+              quote = b[a];
+            } else if (b[a] === "{" && jsxbrace === true) {
+              quotes = quotes + 1;
+            } else if (b[a] === "}" && jsxbrace === true) {
+              if (quotes === 0) {
+                prettify.lexers.script(lex.join("").replace(/^(\s+)/, "").replace(/(\s+)$/, ""));
+                parse.structure[parse.structure.length - 1][1] += 1;
+                if (data.types[parse.count] === "end" && data.lexer[data.begin[parse.count] - 1] === "script") {
+                  record.lexer = "script";
+                  record.token = options2.attemptCorrection === true ? ";" : "x;";
+                  record.types = "separator";
+                  recordPush(data, record, "");
+                  record.lexer = "markup";
+                }
+                record.token = "}";
+                record.types = "script_end";
+                recordPush(data, record, "");
+                parse.structure.pop();
+                break;
+              }
+              quotes = quotes - 1;
+            }
+            if (isLiquid(data.token[parse.count], 3) === false) {
+              end = b.slice(a, a + 10).join("").toLowerCase();
+              if (name === "script") {
+                end = a === c - 9 ? end.slice(0, end.length - 1) : end.slice(0, end.length - 2);
+                if (end === "<\/script") {
+                  let outside = lex.join("").replace(/^(\s+)/, "").replace(/(\s+)$/, "");
+                  a = a - 1;
+                  if (lex.length < 1)
+                    break;
+                  if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
+                    record.token = "<!--";
+                    record.types = "comment";
+                    recordPush(data, record, "");
+                    outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
+                    prettify.lexers.script(outside);
+                    record.token = "-->";
+                    recordPush(data, record, "");
+                  } else {
+                    prettify.lexers.script(outside);
+                  }
+                  break;
+                }
+              }
+              if (name === "style") {
+                if (a === c - 8) {
+                  end = end.slice(0, end.length - 1);
+                } else if (a === c - 9) {
+                  end = end.slice(0, end.length - 2);
+                } else {
+                  end = end.slice(0, end.length - 3);
+                }
+                if (end === "</style") {
+                  let outside = lex.join("").replace(/^(\s+)/, "").replace(/(\s+)$/, "");
+                  a = a - 1;
+                  if (lex.length < 1)
+                    break;
+                  if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
+                    record.token = "<!--";
+                    record.types = "comment";
+                    recordPush(data, record, "");
+                    outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
+                    prettify.lexers.style(outside);
+                    record.token = "-->";
+                    recordPush(data, record, "");
+                  } else {
+                    prettify.lexers.style(outside);
+                    if (options2.style.sortProperties === true)
+                      parse.sortCorrection(0, parse.count + 1);
+                  }
+                  break;
+                }
+              }
+            } else {
+              if (name === "schema") {
+                end = b.slice(a + 3, a + 14).join("").toLowerCase();
+                if (a === c - 12) {
+                  end = end.slice(0, end.length - 3);
+                } else {
+                  end = end.slice(0, end.length - 2);
+                }
+                if (end === "endschema") {
+                  let outside = lex.join("").replace(/^(\s+)/, "").replace(/(\s+)$/, "");
+                  a = a - 1;
+                  if (lex.length < 1)
+                    break;
+                  if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
+                    record.token = "<!--";
+                    record.types = "comment";
+                    recordPush(data, record, "");
+                    outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
+                    prettify.lexers.script(outside);
+                    record.token = "-->";
+                    recordPush(data, record, "");
+                  } else {
+                    prettify.options.language = "json";
+                    prettify.lexers.script(outside);
+                    if (options2.script.objectSort === true)
+                      parse.sortCorrection(0, parse.count + 1);
+                    prettify.options.language = "liquid";
+                  }
+                  break;
+                }
+              } else if (name === "style") {
+                end = b.slice(a + 4, a + 14).join("").toLowerCase();
+                if (a === c - 14) {
+                  end = end.slice(0, end.length - 4);
+                } else if (a === c - 13) {
+                  end = end.slice(0, end.length - 3);
+                } else {
+                  end = end.slice(0, end.length - 2);
+                }
+                if (end === "endstyle") {
+                  let outside = lex.join("").replace(/^(\s+)/, "").replace(/(\s+)$/, "");
+                  a = a - 1;
+                  if (lex.length < 1)
+                    break;
+                  if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
+                    record.token = "<!--";
+                    record.types = "comment";
+                    recordPush(data, record, "");
+                    outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
+                    prettify.lexers.style(outside);
+                    record.token = "-->";
+                    recordPush(data, record, "");
+                  } else {
+                    prettify.lexers.style(outside);
+                  }
+                  break;
+                }
+              } else if (name === "javascript") {
+                end = b.slice(a + 4, a + 19).join("").toLowerCase();
+                if (a === c - 19) {
+                  end = end.slice(0, end.length - 4);
+                } else if (a === c - 18) {
+                  end = end.slice(0, end.length - 3);
+                } else {
+                  end = end.slice(0, end.length - 2);
+                }
+                if (end === "endjavascript") {
+                  let outside = lex.join("").replace(/^(\s+)/, "").replace(/(\s+)$/, "");
+                  a = a - 1;
+                  if (lex.length < 1)
+                    break;
+                  if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
+                    record.token = "<!--";
+                    record.types = "comment";
+                    recordPush(data, record, "");
+                    outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
+                    prettify.lexers.script(outside);
+                    record.token = "-->";
+                    recordPush(data, record, "");
+                  } else {
+                    prettify.lexers.script(outside);
+                    if (options2.script.objectSort === true) {
+                      parse.sortCorrection(0, parse.count + 1);
+                    }
+                  }
+                  break;
+                }
+              }
+            }
+          } else if (quote === b[a] && (quote === '"' || quote === "'" || quote === "`" || quote === "*" && b[a + 1] === "/") && esctest() === false) {
+            quote = "";
+          } else if (quote === "`" && b[a] === "$" && b[a + 1] === "{" && esctest() === false) {
+            quote = "}";
+          } else if (quote === "}" && b[a] === "}" && esctest() === false) {
+            quote = "`";
+          } else if (quote === "/" && (b[a] === "\n" || b[a] === "\r")) {
+            quote = "";
+          } else if (quote === "reg" && b[a] === "/" && esctest() === false) {
+            quote = "";
+          } else if (quote === "/" && b[a] === ">" && b[a - 1] === "-" && b[a - 2] === "-") {
+            end = b.slice(a + 1, a + 11).join("").toLowerCase();
+            end = end.slice(0, end.length - 2);
+            if (name === "script" && end === "<\/script")
+              quote = "";
+            end = end.slice(0, end.length - 1);
+            if (name === "style" && end === "</style")
+              quote = "";
+          }
+        }
+        if (square === true && b[a] === "]") {
+          a = a - 1;
+          ltoke = lex.join("");
+          ltoke = ltoke.replace(/\s+$/, "");
+          liner = 0;
+          record.token = ltoke;
+          recordPush(data, record, "");
+          break;
+        }
+        if (ext === false && lex.length > 0 && (b[a] === "<" && b[a + 1] !== "=" && !/\s|\d/.test(b[a + 1]) || b[a] === "[" && b[a + 1] === "%" || b[a] === "{" && (options2.language === "jsx" || b[a + 1] === "{" || b[a + 1] === "%"))) {
+          a = a - 1;
+          if (parse.structure[parse.structure.length - 1][0] === "comment") {
+            ltoke = lex.join("");
+          } else {
+            ltoke = lex.join("").replace(/\s+$/, "");
+          }
+          ltoke = bracketSpace(ltoke);
+          liner = 0;
+          record.token = ltoke;
+          if (options2.wrap > 0 && options2.markup.preserveText !== true) {
+            let wrapper2 = function() {
+              if (ltoke.charAt(aa) === " ") {
+                store.push(ltoke.slice(0, aa));
+                ltoke = ltoke.slice(aa + 1);
+                len = ltoke.length;
+                aa = wrap;
+                return;
+              }
+              do {
+                aa = aa - 1;
+              } while (aa > 0 && ltoke.charAt(aa) !== " ");
+              if (aa > 0) {
+                store.push(ltoke.slice(0, aa));
+                ltoke = ltoke.slice(aa + 1);
+                len = ltoke.length;
+                aa = wrap;
+              } else {
+                aa = wrap;
+                do {
+                  aa = aa + 1;
+                } while (aa < len && ltoke.charAt(aa) !== " ");
+                store.push(ltoke.slice(0, aa));
+                ltoke = ltoke.slice(aa + 1);
+                len = ltoke.length;
+                aa = wrap;
+              }
+            };
+            let aa = options2.wrap;
+            let len = ltoke.length;
+            const startSpace = "";
+            const endSpace = "";
+            const wrap = options2.wrap;
+            const store = [];
+            if (data.token[data.begin[parse.count]] === "<a>" && data.token[data.begin[data.begin[parse.count]]] === "<li>" && data.lines[data.begin[parse.count]] === 0 && parse.linesSpace === 0 && ltoke.length < options2.wrap) {
+              recordPush(data, record, "");
+              break;
+            }
+            if (len < wrap) {
+              recordPush(data, record, "");
+              break;
+            }
+            if (parse.linesSpace < 1) {
+              let bb = parse.count;
+              do {
+                aa = aa - data.token[bb].length;
+                if (data.types[bb].indexOf("attribute") > -1)
+                  aa = aa - 1;
+                if (data.lines[bb] > 0 && data.types[bb].indexOf("attribute") < 0)
+                  break;
+                bb = bb - 1;
+              } while (bb > 0 && aa > 0);
+              if (aa < 1)
+                aa = ltoke.indexOf(" ");
+            }
+            ltoke = lex.join("");
+            ltoke = ltoke.replace(/^\s+/, "").replace(/\s+$/, "").replace(/\s+/g, " ");
+            do {
+              wrapper2();
+            } while (aa < len);
+            if (ltoke !== "" && ltoke !== " ")
+              store.push(ltoke);
+            ltoke = options2.crlf === true ? store.join("\r\n") : store.join("\n");
+            ltoke = startSpace + ltoke + endSpace;
+          }
+          liner = 0;
+          record.token = ltoke;
+          recordPush(data, record, "");
+          break;
+        }
+        lex.push(b[a]);
+        a = a + 1;
+      } while (a < c);
+    }
+    if (a > now && a < c) {
+      if (/\s/.test(b[a]) === true) {
+        let x = a;
+        parse.linesSpace = 1;
+        do {
+          if (b[x] === "\n")
+            parse.linesSpace = parse.linesSpace + 1;
+          x = x - 1;
+        } while (x > now && /\s/.test(b[x]) === true);
+      } else {
+        parse.linesSpace = 0;
+      }
+    } else if (a !== now || a === now && ext === false) {
+      ltoke = lex.join("").replace(/\s+$/, "");
+      liner = 0;
+      if (record.token !== ltoke) {
+        record.token = ltoke;
+        recordPush(data, record, "");
+        parse.linesSpace = 0;
+      }
+    }
+    ext = false;
+  }
+  if (asl > 0) {
+    do {
+      options2.markup.attributeSortList[a] = options2.markup.attributeSortList[a].replace(/^\s+/, "").replace(/\s+$/, "");
+      a = a + 1;
+    } while (a < asl);
+    a = 0;
+  }
+  if (options2.language === "html" || options2.language === "liquid")
+    html2 = "html";
+  do {
+    if (/\s/.test(b[a])) {
+      if (data.types[parse.count] === "template_start" && parse.structure[parse.structure.length - 1][0] === "comment") {
+        content();
+      } else {
+        a = parse.spacer({ array: b, end: c, index: a });
+      }
+    } else if (ext) {
+      content();
+    } else if (b[a] === "<") {
+      tag("");
+    } else if (b[a] === "[" && b[a + 1] === "%") {
+      tag("%]");
+    } else if (b[a] === "{" && (options2.language === "jsx" || b[a + 1] === "{" || b[a + 1] === "%")) {
+      tag("");
+    } else if (b[a] === "]" && sgmlflag > 0) {
+      tag("]>");
+    } else if (b[a] === "-" && b[a + 1] === "-" && b[a + 2] === "-") {
+      tag("---");
+    } else {
+      content();
+    }
+    a = a + 1;
+  } while (a < c);
+  if (data.token[parse.count].charAt(0) !== "/" && blocks.has(parse.structure[parse.structure.length - 1][0])) {
+    fixHtmlEnd(data.token[parse.count], true);
+  }
+  if (count.end !== count.start && parse.error === "") {
+    if (count.end > count.start) {
+      const x = count.end - count.start;
+      const plural = x === 1 ? "" : "s";
+      parse.error = `\u2716 Prettify Parse Error:
+
+  ${x} more end type${plural} than start types.
+
+`;
+    } else {
+      const x = count.start - count.end;
+      const plural = x === 1 ? "" : "s";
+      parse.error = ` \u2716 Prettify Parse Error:
+
+  ${x} more start type${plural} than end types.
+
+`;
+    }
+  }
+  return data;
+};
+
+// src/beautify/markup.ts
+prettify.beautify.markup = function markup2(options2) {
+  const type = create(null);
+  const token = create(null);
+  const externalIndex = create(null);
+  const lexer = "markup";
+  const data = prettify.parsed;
+  const lf = options2.crlf === true ? String.fromCharCode(13, 10) : String.fromCharCode(10);
+  const c = prettify.end < 1 || prettify.end > data.token.length ? data.token.length : prettify.end + 1;
+  type.is = (index, name) => data.types[index] === name;
+  type.not = (index, name) => data.types[index] !== name;
+  type.idx = (index, name) => index > -1 && data.types[index].indexOf(name);
+  token.is = (index, tag) => data.token[index] === tag;
+  token.not = (index, tag) => data.token[index] !== tag;
+  let a = prettify.start;
+  let comstart = -1;
+  let next = 0;
+  let count = 0;
+  let indent = isNaN(options2.indentLevel) ? 0 : Number(options2.indentLevel);
+  const levels = (() => {
+    const level = prettify.start > 0 ? Array(prettify.start).fill(0, 0, prettify.start) : [];
+    function nextIndex() {
+      let x = a + 1;
+      let y = 0;
+      if (type.is(x, void 0))
+        return x - 1;
+      if (type.is(x, "comment") || a < c - 1 && type.idx(x, "attribute") > -1) {
+        do {
+          if (type.is(x, "jsx_attribute_start")) {
+            y = x;
+            do {
+              if (type.is(x, "jsx_attribute_end") && data.begin[x] === y)
+                break;
+              x = x + 1;
+            } while (x < c);
+          } else if (type.not(x, "comment") && type.idx(x, "attribute") < 0)
+            return x;
+          x = x + 1;
+        } while (x < c);
+      }
+      return x;
+    }
+    function anchorList() {
+      const stop = data.begin[a];
+      let aa = a;
+      do {
+        aa = aa - 1;
+        if (token.is(aa, "</li>") && token.is(aa - 1, "</a>") && data.begin[data.begin[aa]] === stop && data.begin[aa - 1] === data.begin[aa] + 1) {
+          aa = data.begin[aa];
+        } else {
+          return;
+        }
+      } while (aa > stop + 1);
+      aa = a;
+      do {
+        aa = aa - 1;
+        if (type.is(aa + 1, "attribute")) {
+          level[aa] = -10;
+        } else if (token.not(aa, "</li>")) {
+          level[aa] = -20;
+        }
+      } while (aa > stop + 1);
+    }
+    function comment2() {
+      let x = a;
+      let test = false;
+      if (data.lines[a + 1] === 0 && options2.markup.forceIndent === false) {
+        do {
+          if (data.lines[x] > 0) {
+            test = true;
+            break;
+          }
+          x = x - 1;
+        } while (x > comstart);
+        x = a;
+      } else {
+        test = true;
+      }
+      if (test === true) {
+        const ind = type.is(next, "comment") || type.is(next, "end") || type.is(next, "template_end") ? indent + 1 : indent;
+        do {
+          level.push(ind);
+          x = x - 1;
+        } while (x > comstart);
+        if (ind === indent + 1)
+          level[a] = indent;
+        if (type.is(x, "attribute") || type.is(x, "template_attribute") || type.is(x, "jsx_attribute_start")) {
+          level[data.begin[x]] = ind;
+        } else {
+          level[x] = ind;
+        }
+      } else {
+        do {
+          level.push(-20);
+          x = x - 1;
+        } while (x > comstart);
+        level[x] = -20;
+      }
+      comstart = -1;
+    }
+    function content() {
+      let ind = indent;
+      if (options2.markup.forceIndent === true || options2.markup.forceAttribute === true) {
+        level.push(indent);
+        return;
+      }
+      if (next < c && (type.idx(next, "end") > -1 || type.idx(next, "start") > -1) && data.lines[next] > 0) {
+        level.push(indent);
+        ind = ind + 1;
+        if (data.types[a] === "singleton" && a > 0 && type.idx(a - 1, "attribute") > -1 && type.is(data.begin[a - 1], "singleton")) {
+          if (data.begin[a] < 0 || type.is(data.begin[a - 1], "singleton") && data.begin[data.ender[a] - 1] !== a) {
+            level[a - 1] = indent;
+          } else {
+            level[a - 1] = indent + 1;
+          }
+        }
+      } else if (a > 0 && type.is(a, "singleton") && type.idx(a - 1, "attribute") > -1) {
+        level[a - 1] = indent;
+        count = data.token[a].length;
+        level.push(-10);
+      } else if (data.lines[next] === 0) {
+        level.push(-20);
+      } else if ((options2.wrap === 0 || a < c - 2 && type.idx(a + 2, "attribute") > -1 && data.token[a].length + data.token[a + 1].length + data.token[a + 2].length + 1 > options2.wrap || data.token[a].length + data.token[a + 1].length > options2.wrap) && (type.is(a + 1, "singleton") || type.is(a + 1, "template"))) {
+        level.push(indent);
+      } else {
+        count = count + 1;
+        level.push(-10);
+      }
+      if (a > 0 && type.idx(a - 1, "attribute") > -1 && data.lines[a] < 1) {
+        level[a - 1] = -20;
+      }
+      if (count > options2.wrap) {
+        let d = a;
+        let e = Math.max(data.begin[a], 0);
+        if (type.is(a, "content") && options2.markup.preserveText === false) {
+          let countx = 0;
+          const chars = data.token[a].replace(/\s+/g, " ").split(" ");
+          do {
+            d = d - 1;
+            if (level[d] < 0) {
+              countx = countx + data.token[d].length;
+              if (level[d] === -10)
+                countx = countx + 1;
+            } else {
+              break;
+            }
+          } while (d > 0);
+          d = 0;
+          e = chars.length;
+          do {
+            if (chars[d].length + countx > options2.wrap) {
+              chars[d] = lf + chars[d];
+              countx = chars[d].length;
+            } else {
+              chars[d] = ` ${chars[d]}`;
+              countx = countx + chars[d].length;
+            }
+            d = d + 1;
+          } while (d < e);
+          if (chars[0].charAt(0) === " ") {
+            data.token[a] = chars.join("").slice(1);
+          } else {
+            level[a - 1] = ind;
+            data.token[a] = chars.join("").replace(lf, "");
+          }
+          if (data.token[a].indexOf(lf) > 0) {
+            count = data.token[a].length - data.token[a].lastIndexOf(lf);
+          }
+        } else {
+          do {
+            d = d - 1;
+            if (level[d] > -1) {
+              count = data.token[a].length;
+              if (data.lines[a + 1] > 0)
+                count = count + 1;
+              return;
+            }
+            if (data.types[d].indexOf("start") > -1) {
+              count = 0;
+              return;
+            }
+            if (data.lines[d + 1] > 0 && (type.not(d, "attribute") || type.is(d, "attribute") && type.is(d + 1, "attribute"))) {
+              if (type.not(d, "singleton") || type.is(d, "attribute") && type.is(d + 1, "attribute")) {
+                count = data.token[a].length;
+                if (data.lines[a + 1] > 0)
+                  count = count + 1;
+                break;
+              }
+            }
+          } while (d > e);
+          level[d] = ind;
+        }
+      }
+    }
+    function external() {
+      const skip = a;
+      do {
+        if (data.lexer[a + 1] === lexer && data.begin[a + 1] < skip && type.not(a + 1, "start") && type.not(a + 1, "singleton"))
+          break;
+        level.push(0);
+        a = a + 1;
+      } while (a < c);
+      externalIndex[skip] = a;
+      level.push(indent - 1);
+      next = nextIndex();
+      if (data.lexer[next] === lexer && data.stack[a].indexOf("attribute") < 0 && (data.types[next] === "end" || data.types[next] === "template_end")) {
+        indent = indent - 1;
+      }
+    }
+    function attribute() {
+      function attributeName(x) {
+        const eq = x.indexOf("=");
+        if (eq > 0 && (eq < x.indexOf('"') && x.indexOf('"') > 0 || eq < x.indexOf("'") && x.indexOf("'") > 0)) {
+          return [
+            x.slice(0, eq),
+            x.slice(eq + 1)
+          ];
+        }
+        return [x, ""];
+      }
+      function newlineValues(attr2) {
+        const attrval = attributeName(attr2);
+        const m = attrval[1].replace(/\s+/g, (x) => x === "\n" ? "\n" : " ");
+        const attarr = ["=", m.slice(0, 1)];
+        let vi = 1;
+        let vt = "";
+        let nt = 0;
+        do {
+          if (m[vi] === "{" && (m[vi + 1] === "{" || m[vi + 1] === "%")) {
+            nt = (m[vi + 1] === "%" ? m.indexOf("%}", vi + 1) : m.indexOf("}}", vi + 1)) + 2;
+            vt = m.slice(vi, nt);
+            vi = nt;
+            attarr.push([vt]);
+          } else {
+            attarr.push(m[vi]);
+            vi = vi + 1;
+          }
+        } while (vi < m.length);
+        return [attrval[0] + "=", attarr];
+      }
+      const parent = a - 1;
+      function wrap(index) {
+        const item = newlineValues(data.token[index]);
+        const ilen = item.length;
+        let bb = 1;
+        let acount = item[0].length;
+        const attrval = attributeName(data.token[index]);
+        const m = attrval[1].replace(/\s+/g, " ");
+        let vi = 1;
+        let vt = attrval[0] + "=" + m.slice(0, 1);
+        let nt = 0;
+        do {
+          acount = acount + item[bb].length;
+          if (m[vi] === "{" && (m[vi + 1] === "{" || m[vi + 1] === "%")) {
+            nt = (m[vi + 1] === "%" ? m.indexOf("%}", vi + 1) : m.indexOf("}}", vi + 1)) + 2;
+            vt += m.slice(vi, nt);
+            vi = nt;
+          } else {
+            if (m[vi] === " ") {
+              vt += "\n";
+            } else {
+              vt += m[vi];
+            }
+            vi = vi + 1;
+          }
+        } while (vi < m.length);
+        data.token[index] = vt;
+        do {
+          if (acount + item[bb].length > options2.wrap) {
+            acount = item[bb].length;
+            item[bb] = lf + item[bb];
+          } else {
+            if (options2.markup.attributeValueNewlines === "force") {
+              item[bb] = `
+${item[bb]}`;
+            } else {
+              item[bb] = ` ${item[bb]}`;
+            }
+            acount = acount + item[bb].length;
+          }
+          bb = bb + 1;
+        } while (bb < ilen);
+        data.token[index] = item.join("");
+      }
+      let y = a;
+      let plural = false;
+      let earlyexit = false;
+      let attStart = false;
+      let len = data.token[parent].length + 1;
+      let lev = (() => {
+        if (type.idx(a, "start") > 0) {
+          let x = a;
+          do {
+            if (data.types[x].indexOf("end") > 0 && data.begin[x] === a) {
+              if (x < c - 1 && type.idx(x + 1, "attribute") > -1) {
+                plural = true;
+                break;
+              }
+            }
+            x = x + 1;
+          } while (x < c);
+        } else if (a < c - 1 && type.idx(a + 1, "attribute") > -1) {
+          plural = true;
+        }
+        if (type.is(next, "end") || type.is(next, "template_end")) {
+          if (type.is(parent, "singleton"))
+            return indent + 2;
+          return indent + 1;
+        }
+        if (type.is(parent, "singleton"))
+          return indent + 1;
+        return indent;
+      })();
+      if (plural === false && type.is(a, "comment_attribute")) {
+        level.push(indent);
+        if (data.types[parent] === "singleton") {
+          level[parent] = indent + 1;
+        } else {
+          level[parent] = indent;
+        }
+        return;
+      }
+      if (lev < 1)
+        lev = 1;
+      const attr = create(null);
+      do {
+        count = count + data.token[a].length + 1;
+        if (data.types[a].indexOf("attribute") > 0) {
+          if (data.types[a] === "template_attribute") {
+            level.push(-10);
+          } else if (data.types[a] === "comment_attribute") {
+            level.push(lev);
+          } else if (data.types[a].indexOf("start") > 0) {
+            attStart = true;
+            if (a < c - 2 && data.types[a + 2].indexOf("attribute") > 0) {
+              level.push(-20);
+              a = a + 1;
+              externalIndex[a] = a;
+            } else {
+              if (parent === a - 1 && plural === false) {
+                level.push(lev);
+              } else {
+                level.push(lev + 1);
+              }
+              if (data.lexer[a + 1] !== lexer) {
+                a = a + 1;
+                external();
+              }
+            }
+          } else if (data.types[a].indexOf("end") > 0) {
+            if (level[a - 1] !== -20) {
+              level[a - 1] = level[data.begin[a]] - 1;
+            }
+            if (data.lexer[a + 1] !== lexer) {
+              level.push(-20);
+            } else {
+              level.push(lev);
+            }
+          } else {
+            level.push(lev);
+          }
+          earlyexit = true;
+        } else if (type.is(a, "attribute")) {
+          len = len + data.token[a].length + 1;
+          if (options2.markup.preserveAttributes === true) {
+            level.push(-10);
+          } else if (options2.markup.forceAttribute === true || options2.markup.forceAttribute >= 1 || attStart === true || a < c - 1 && type.not(a + 1, "template_attribute") && type.idx(a + 1, "attribute") > 0) {
+            if (typeof options2.markup.forceAttribute === "number") {
+              attr[data.begin[a]] = 1 + attr[data.begin[a]] || 0;
+              if (attr[data.begin[a]] > options2.markup.forceAttribute - 1) {
+                level.fill(lev, -options2.markup.forceAttribute);
+                level.push(lev);
+              } else {
+                level.push(-10);
+              }
+            } else {
+              level.push(lev);
+            }
+          } else {
+            level.push(-10);
+          }
+        } else if (data.begin[a] < parent + 1) {
+          break;
+        }
+        a = a + 1;
+      } while (a < c);
+      a = a - 1;
+      if (level[a - 1] > 0 && type.idx(a, "end") > 0 && type.idx(a, "attribute") > 0 && type.not(parent, "singleton") && plural === true) {
+        level[a - 1] = level[a - 1] - 1;
+      }
+      if (level[a] !== -20) {
+        if (options2.language === "jsx" && type.idx(parent, "start") > -1 && type.is(a + 1, "script_start")) {
+          level[a] = lev;
+        } else {
+          level[a] = level[parent];
+        }
+      }
+      if (options2.markup.forceAttribute === true) {
+        count = 0;
+        level[parent] = lev;
+      } else if (options2.markup.forceAttribute >= 1) {
+        if (attr[parent] > options2.markup.forceAttribute - 1) {
+          level[parent] = lev;
+        } else {
+          level[parent] = -10;
+        }
+      } else {
+        level[parent] = -10;
+      }
+      if (earlyexit === true || options2.markup.preserveAttributes === true || token.is(parent, "<%xml%>") || token.is(parent, "<?xml?>")) {
+        count = 0;
+        return;
+      }
+      y = a;
+      if (y > parent + 1) {
+        if (options2.markup.selfCloseSpace === false)
+          len = len - 1;
+        if (len > options2.wrap && options2.wrap > 0 && options2.markup.forceAttribute === false) {
+          count = data.token[a].length;
+          do {
+            if (data.token[y].length > options2.wrap && /\s/.test(data.token[y]))
+              wrap(y);
+            y = y - 1;
+            level[y] = lev;
+          } while (y > parent);
+        }
+      } else if (options2.wrap > 0 && data.types[a] === "attribute" && data.token[a].length > options2.wrap && /\s/.test(data.token[a]) === true) {
+        wrap(a);
+      }
+    }
+    do {
+      if (data.lexer[a] === lexer) {
+        if (data.token[a].toLowerCase().indexOf("<!doctype") === 0)
+          level[a - 1] = indent;
+        if (data.types[a].indexOf("attribute") > -1) {
+          attribute();
+        } else if (type.is(a, "comment")) {
+          if (comstart < 0)
+            comstart = a;
+          if (type.not(a + 1, "comment") || a > 0 && type.idx(a - 1, "end") > -1) {
+            comment2();
+          }
+        } else if (type.not(a, "comment")) {
+          next = nextIndex();
+          if (type.is(next, "end") || type.is(next, "template_end")) {
+            indent = indent - 1;
+            if (type.is(next, "template_end") && type.is(data.begin[next] + 1, "template_else")) {
+              indent = indent - 1;
+            }
+            if (token.is(a, "</ol>") || token.is(a, "</ul>") || token.is(a, "</dl>")) {
+              anchorList();
+            }
+          }
+          if (type.is(a, "script_end") && type.is(a + 1, "end")) {
+            if (data.lines[a + 1] < 1) {
+              level.push(-20);
+            } else {
+              level.push(-10);
+            }
+          } else if ((options2.markup.forceIndent === false || options2.markup.forceIndent && type.is(next, "script_start")) && (type.is(a, "content") || type.is(a, "singleton") || type.is(a, "template"))) {
+            count = count + data.token[a].length;
+            if (type.is(a, "template")) {
+              level.push(indent);
+              const pos = data.token[a].indexOf(lf);
+              if (pos > 0) {
+                const linez = level[a - 1] * options2.indentSize + (data.token[a].charCodeAt(2) === 45 ? options2.indentSize : options2.indentSize - 1);
+                const linesout = [];
+                let iidx = 0;
+                do {
+                  linesout.push(" ");
+                  iidx = iidx + 1;
+                } while (iidx < linez);
+                data.token[a] = data.token[a].replace(/^\s+/gm, "").replace(/\n/g, (n) => {
+                  return n + linesout.join("");
+                });
+              }
+            } else if (data.lines[next] > 0 && type.is(next, "script_start")) {
+              level.push(-10);
+            } else if (options2.wrap > 0 && (type.idx(a, "template") < 0 || next < c && type.idx(a, "template") > -1 && type.idx(a, "template") < 0)) {
+              content();
+            } else if (next < c && (type.idx(next, "end") > -1 || type.idx(next, "start") > -1) && (data.lines[next] > 0 || type.idx(a, "template_") > -1)) {
+              level.push(indent);
+            } else if (data.lines[next] === 0) {
+              level.push(-20);
+            } else {
+              level.push(indent);
+            }
+          } else if (type.is(a, "start") || type.is(a, "template_start")) {
+            indent = indent + 1;
+            if (type.is(a, "template_start") && type.is(a + 1, "template_else")) {
+              indent = indent + 1;
+            }
+            if (options2.language === "jsx" && token.is(a + 1, "{")) {
+              if (data.lines[a + 1] === 0) {
+                level.push(-20);
+              } else {
+                level.push(-10);
+              }
+            } else if (type.is(a, "start") && type.is(next, "end")) {
+              level.push(-20);
+            } else if (type.is(a, "start") && type.is(next, "script_start")) {
+              level.push(-10);
+            } else if (options2.markup.forceIndent === true) {
+              level.push(indent);
+            } else if (type.is(a, "template_start") && type.is(next, "template_end")) {
+              level.push(-20);
+            } else if (data.lines[next] === 0 && (type.is(next, "content") || type.is(next, "singleton") || type.is(next, "start") && type.is(next, "template"))) {
+              level.push(-20);
+            } else {
+              level.push(indent);
+            }
+          } else if (options2.markup.forceIndent === false && data.lines[next] === 0 && (type.is(next, "content") || type.is(next, "singleton"))) {
+            level.push(-20);
+          } else if (type.is(a + 2, "script_end")) {
+            level.push(-20);
+          } else if (type.is(a, "template_else")) {
+            if (type.is(next, "template_end")) {
+              level[a - 1] = indent + 1;
+            } else {
+              level[a - 1] = indent - 1;
+            }
+            level.push(indent);
+          } else {
+            level.push(indent);
+          }
+        }
+        if (type.not(a, "content") && type.not(a, "singleton") && type.not(a, "template") && type.not(a, "attribute")) {
+          count = 0;
+        }
+      } else {
+        count = 0;
+        external();
+      }
+      a = a + 1;
+    } while (a < c);
+    return level;
+  })();
+  return (() => {
+    const build = [];
+    const ind = (() => {
+      const indy = [options2.indentChar];
+      const size2 = options2.indentSize - 1;
+      let aa = 0;
+      if (aa < size2) {
+        do {
+          indy.push(options2.indentChar);
+          aa = aa + 1;
+        } while (aa < size2);
+      }
+      return indy.join("");
+    })();
+    function newline(tabs) {
+      const linesout = [];
+      const pres = options2.preserveLine + 1;
+      const total = Math.min(data.lines[a + 1] - 1, pres);
+      let index = 0;
+      if (tabs < 0)
+        tabs = 0;
+      do {
+        linesout.push(lf);
+        index = index + 1;
+      } while (index < total);
+      if (tabs > 0) {
+        index = 0;
+        do {
+          linesout.push(ind);
+          index = index + 1;
+        } while (index < tabs);
+      }
+      return linesout.join("");
+    }
+    function multiline() {
+      let lines = data.token[a].split(lf);
+      const line = data.lines[a + 1];
+      if (type.is(a, "comment"))
+        lines = lines.map((l) => l.trimStart());
+      const lev = levels[a - 1] > -1 ? type.is(a, "attribute") ? levels[a - 1] + 1 : levels[a - 1] : (() => {
+        let bb = a - 1;
+        let start = bb > -1 && type.idx(bb, "start") > -1;
+        if (levels[a] > -1 && type.is(a, "attribute")) {
+          return levels[a] + 1;
+        }
+        do {
+          bb = bb - 1;
+          if (levels[bb] > -1) {
+            if (type.is(a, "content") && start === false) {
+              return levels[bb];
+            } else {
+              return levels[bb] + 1;
+            }
+          }
+          if (type.idx(bb, "start") > -1)
+            start = true;
+        } while (bb > 0);
+        return 1;
+      })();
+      data.lines[a + 1] = 0;
+      let aa = 0;
+      const len = lines.length - 1;
+      do {
+        if (type.is(a, "comment")) {
+          if (lines[aa] !== "") {
+            if (lines[aa + 1].trimStart() !== "") {
+              build.push(lines[aa], newline(lev));
+            } else {
+              build.push(lines[aa], "\n");
+            }
+          } else {
+            if (lines[aa + 1].trimStart() === "") {
+              build.push("\n");
+            } else {
+              build.push(newline(lev));
+            }
+          }
+        } else {
+          build.push(lines[aa], newline(lev));
+        }
+        aa = aa + 1;
+      } while (aa < len);
+      data.lines[a + 1] = line;
+      build.push(lines[len]);
+      if (levels[a] === -10) {
+        build.push(" ");
+      } else if (levels[a] > -1) {
+        build.push(newline(levels[a]));
+      }
+    }
+    function attributeEnd() {
+      const parent = data.token[a];
+      const regend = /(\/|\?)?>$/;
+      const end = regend.exec(parent);
+      let y = a + 1;
+      let jsx = false;
+      let space = options2.markup.selfCloseSpace === true && end !== null && end[0] === "/>" ? " " : "";
+      if (end === null)
+        return;
+      data.token[a] = parent.replace(regend, "");
+      do {
+        if (type.is(y, "jsx_attribute_end") && data.begin[data.begin[y]] === a) {
+          jsx = false;
+        } else if (data.begin[y] === a) {
+          if (type.is(y, "jsx_attribute_start")) {
+            jsx = true;
+          } else if (type.idx(y, "attribute") < 0 && jsx === false) {
+            break;
+          }
+        } else if (jsx === false && (data.begin[y] < a || type.idx(y, "attribute") < 0)) {
+          break;
+        }
+        y = y + 1;
+      } while (y < c);
+      if (type.is(y - 1, "comment_attribute"))
+        space = newline(levels[y - 2] - 1);
+      data.token[y - 1] = data.token[y - 1] + space + end[0];
+      if (type.is(y, "comment") && data.lines[a + 1] < 2)
+        levels[a] = -10;
+    }
+    a = prettify.start;
+    let ext = "";
+    let lastLevel;
+    lastLevel = options2.indentLevel;
+    do {
+      if (data.lexer[a] === lexer) {
+        if ((type.is(a, "start") || type.is(a, "singleton") || type.is(a, "xml") || type.is(a, "sgml")) && type.idx(a, "attribute") < 0 && a < c - 1 && data.types[a + 1] !== void 0 && type.idx(a + 1, "attribute") > -1) {
+          attributeEnd();
+        }
+        if (token.not(a, void 0) && data.token[a].indexOf(lf) > 0 && (type.is(a, "content") && options2.markup.preserveText === false || type.is(a, "comment") || type.is(a, "attribute"))) {
+          multiline();
+        } else {
+          build.push(data.token[a]);
+          if (levels[a] === -10 && a < c - 1) {
+            build.push(" ");
+          } else if (levels[a] > -1) {
+            build.push(newline(levels[a]));
+            lastLevel = levels[a];
+          }
+        }
+      } else {
+        if (externalIndex[a] === a && type.not(a, "reference")) {
+          build.push(data.token[a]);
+        } else {
+          prettify.end = externalIndex[a];
+          prettify.start = a;
+          options2.indentLevel = lastLevel;
+          ext = prettify.beautify[data.lexer[a]](options2).replace(/\s+$/, "");
+          build.push(ext);
+          if (levels[prettify.iterator] > -1 && externalIndex[a] > a) {
+            build.push(newline(levels[prettify.iterator]));
+          }
+          a = prettify.iterator;
+          options2.indentLevel = 0;
+        }
+      }
+      a = a + 1;
+    } while (a < c);
+    prettify.iterator = c - 1;
+    if (build[0] === lf || build[0] === " ")
+      build[0] = "";
+    return build.join("");
+  })();
+};
+
+// src/beautify/style.ts
+prettify.beautify.style = function style2(options2) {
+  const build = [];
+  const data = prettify.parsed;
+  const lf = options2.crlf === true ? "\r\n" : "\n";
+  const len = prettify.end > 0 ? prettify.end + 1 : data.token.length;
+  const tab = function beautify_style_tab() {
+    let aa = 0;
+    const bb = [];
+    do {
+      bb.push(options2.indentChar);
+      aa = aa + 1;
+    } while (aa < options2.indentSize);
+    return bb.join("");
+  }();
+  const pres = options2.preserveLine + 1;
+  let indent = options2.indentLevel;
+  let a = prettify.start;
+  let when = ["", ""];
+  const nl = function beautify_style_nl(tabs) {
+    const linesout = [];
+    const total = function beautify_style_nl_total() {
+      if (a === len - 1) {
+        return 1;
+      }
+      if (data.lines[a + 1] - 1 > pres) {
+        return pres;
+      }
+      if (data.lines[a + 1] > 1) {
+        return data.lines[a + 1] - 1;
+      }
+      return 1;
+    }();
+    let index = 0;
+    if (tabs < 0)
+      tabs = 0;
+    do {
+      linesout.push(lf);
+      index = index + 1;
+    } while (index < total);
+    if (tabs > 0) {
+      index = 0;
+      do {
+        linesout.push(tab);
+        index = index + 1;
+      } while (index < tabs);
+    }
+    build.push(linesout.join(""));
+  };
+  const vertical = function beautify_style_vertical() {
+    const start = data.begin[a];
+    const startChar = data.token[start];
+    const endChar = data.token[a];
+    const store = [];
+    let b = a;
+    let c = 0;
+    let item;
+    let longest = 0;
+    if (start < 0 || b <= start)
+      return;
+    do {
+      b = b - 1;
+      if (data.begin[b] === start) {
+        if (data.token[b] === ":") {
+          item = [b - 1, 0];
+          do {
+            b = b - 1;
+            if ((data.token[b] === ";" && startChar === "{" || data.token[b] === "," && startChar === "(") && data.begin[b] === start || data.token[b] === endChar && data.begin[data.begin[b]] === start) {
+              break;
+            }
+            if (data.types[b] !== "comment" && data.types[b] !== "selector" && data.token[b] !== startChar && data.begin[b] === start) {
+              item[1] = data.token[b].length + item[1];
+            }
+          } while (b > start + 1);
+          if (item[1] > longest)
+            longest = item[1];
+          store.push(item);
+        }
+      } else if (data.types[b] === "end") {
+        if (b < data.begin[b])
+          break;
+        b = data.begin[b];
+      }
+    } while (b > start);
+    b = store.length;
+    if (b < 2)
+      return;
+    do {
+      b = b - 1;
+      if (store[b][1] < longest) {
+        c = store[b][1];
+        do {
+          data.token[store[b][0]] = data.token[store[b][0]] + " ";
+          c = c + 1;
+        } while (c < longest);
+      }
+    } while (b > 0);
+  };
+  if (options2.script.vertical === true && options2.style.compressCSS === false) {
+    a = len;
+    do {
+      a = a - 1;
+      if (data.token[a] === "}" || data.token[a] === ")")
+        vertical();
+    } while (a > 0);
+    a = prettify.start;
+  }
+  do {
+    if (data.types[a + 1] === "end" || data.types[a + 1] === "template_end" || data.types[a + 1] === "template_else") {
+      indent = indent - 1;
+    }
+    if (data.types[a] === "template" && data.lines[a] > 0) {
+      build.push(data.token[a]);
+      if (data.types[a - 2] !== "property" && data.types[a - 1] !== "colon")
+        nl(indent);
+    } else if (data.types[a] === "template_else") {
+      build.push(data.token[a]);
+      indent = indent + 1;
+      nl(indent);
+    } else if (data.types[a] === "start" || data.types[a] === "template_start") {
+      indent = indent + 1;
+      build.push(data.token[a]);
+      if (data.types[a + 1] !== "end" && data.types[a + 1] !== "template_end" && (options2.style.compressCSS === false || options2.style.compressCSS === true && data.types[a + 1] === "selector")) {
+        nl(indent);
+      }
+    } else if (data.token[a] === ";" && (options2.style.compressCSS === false || options2.style.compressCSS === true && data.types[a + 1] === "selector") || data.types[a] === "end" || data.types[a] === "template_end" || data.types[a] === "comment") {
+      build.push(data.token[a]);
+      if (data.types[a + 1] === "value") {
+        if (data.lines[a + 1] === 1) {
+          build.push(" ");
+        } else if (data.lines[a + 1] > 1) {
+          nl(indent);
+        }
+      } else if (data.types[a + 1] !== "separator") {
+        if (data.types[a + 1] !== "comment" || data.types[a + 1] === "comment" && data.lines[a + 1] > 1) {
+          nl(indent);
+        } else {
+          build.push(" ");
+        }
+      }
+    } else if (data.token[a] === ":") {
+      build.push(data.token[a]);
+      if (options2.style.compressCSS === false)
+        build.push(" ");
+    } else if (data.types[a] === "selector") {
+      if (options2.style.classPadding === true && data.types[a - 1] === "end" && data.lines[a] < 3) {
+        build.push(lf);
+      }
+      if (data.token[a].indexOf("and(") > 0) {
+        data.token[a] = data.token[a].replace(/and\(/, "and (");
+        build.push(data.token[a]);
+      } else if (data.token[a].indexOf("when(") > 0) {
+        when = data.token[a].split("when(");
+        build.push(when[0].replace(/\s+$/, ""));
+        nl(indent + 1);
+        build.push(`when (${when[1]}`);
+      } else {
+        build.push(data.token[a]);
+      }
+      if (data.types[a + 1] === "start") {
+        if (options2.script.braceAllman === true) {
+          nl(indent);
+        } else if (options2.style.compressCSS === false) {
+          build.push(" ");
+        }
+      }
+    } else if (data.token[a] === ",") {
+      build.push(data.token[a]);
+      if (data.types[a + 1] === "selector" || data.types[a + 1] === "property") {
+        nl(indent);
+      } else if (options2.style.compressCSS === false) {
+        build.push(" ");
+      }
+    } else if (data.stack[a] === "map" && data.token[a + 1] === ")" && a - data.begin[a] > 5) {
+      build.push(data.token[a]);
+      nl(indent);
+    } else if (data.token[a] === "x;") {
+      nl(indent);
+    } else if ((data.types[a] === "variable" || data.types[a] === "function") && options2.style.classPadding === true && data.types[a - 1] === "end" && data.lines[a] < 3) {
+      build.push(lf);
+      build.push(data.token[a]);
+    } else if (data.token[a] !== ";" || data.token[a] === ";" && (options2.style.compressCSS === false || options2.style.compressCSS === true && data.token[a + 1] !== "}")) {
+      build.push(data.token[a]);
+    }
+    a = a + 1;
+  } while (a < len);
+  prettify.iterator = len - 1;
+  return build.join("");
+};
+
+// src/beautify/script.ts
+prettify.beautify.script = function script2(options2) {
+  const apiword = /* @__PURE__ */ new Set([
+    "ActiveXObject",
+    "ArrayBuffer",
+    "AudioContext",
+    "Canvas",
+    "CustomAnimation",
+    "DOMParser",
+    "DataView",
+    "Date",
+    "Error",
+    "EvalError",
+    "FadeAnimation",
+    "FileReader",
+    "Flash",
+    "Float32Array",
+    "Float64Array",
+    "FormField",
+    "Frame",
+    "Generator",
+    "HotKey",
+    "Image",
+    "Iterator",
+    "Intl",
+    "Int16Array",
+    "Int32Array",
+    "Int8Array",
+    "InternalError",
+    "Loader",
+    "Map",
+    "MenuItem",
+    "MoveAnimation",
+    "Notification",
+    "ParallelArray",
+    "Point",
+    "Promise",
+    "Proxy",
+    "RangeError",
+    "Rectangle",
+    "ReferenceError",
+    "Reflect",
+    "RegExp",
+    "ResizeAnimation",
+    "RotateAnimation",
+    "Set",
+    "SQLite",
+    "ScrollBar",
+    "Set",
+    "Shadow",
+    "StopIteration",
+    "Symbol",
+    "SyntaxError",
+    "Text",
+    "TextArea",
+    "Timer",
+    "TypeError",
+    "URL",
+    "Uint16Array",
+    "Uint32Array",
+    "Uint8Array",
+    "Uint8ClampedArray",
+    "URIError",
+    "WeakMap",
+    "WeakSet",
+    "Web",
+    "Window",
+    "XMLHttpRequest"
+  ]);
+  const externalIndex = create(null);
+  const data = prettify.parsed;
+  const lexer = "script";
+  const scopes = prettify.scopes;
+  const b = prettify.end < 1 || prettify.end > data.token.length ? data.token.length : prettify.end + 1;
+  const levels = (() => {
+    let a = prettify.start;
+    let indent = isNaN(options2.indentLevel) ? 0 : Number(options2.indentLevel);
+    let notcomment = false;
+    let lastlist = false;
+    let ctype = "";
+    let ctoke = "";
+    let ltype = data.types[0];
+    let ltoke = data.token[0];
+    const varindex = [-1];
+    const list = [];
+    const level = prettify.start > 0 ? Array(prettify.start).fill(0, 0, prettify.start) : [];
+    const ternary = [];
+    const extraindent = [[]];
+    const arrbreak = [];
+    const destruct = [];
+    const itemcount = [];
+    const assignlist = [false];
+    const wordlist = [];
+    const count = [];
+    function comment2() {
+      destructfix(false, false);
+      const ind = options2.commentIndent === true ? indent : 0;
+      if (notcomment === false && /\/\u002a\s*global\s/.test(data.token[a])) {
+        const globallist = data.token[a].replace(/\/\u002a\s*global\s+/, "").replace(/\s*\u002a\/$/, "").split(",");
+        let aa = globallist.length;
+        do {
+          aa = aa - 1;
+          globallist[aa] = globallist[aa].replace(/\s+/g, "");
+          if (globallist[aa] !== "")
+            scopes.push([globallist[aa], -1]);
+        } while (aa > 0);
+      }
+      if (data.types[a - 1] === "comment" || data.types[a + 1] === "comment") {
+        level[a - 1] = ind;
+      } else if (data.lines[a] < 2) {
+        let aa = a + 1;
+        if (data.types[aa] === "comment") {
+          do {
+            aa = aa + 1;
+          } while (aa < b && data.types[aa] === "comment");
+        }
+        if (a < b - 1 && data.stack[aa] !== "block" && (data.token[aa] === "{" || data.token[aa] === "x{")) {
+          let bb = scopes.length;
+          data.begin.splice(a, 0, data.begin[aa]);
+          data.ender.splice(a, 0, data.ender[aa]);
+          data.lexer.splice(a, 0, data.lexer[aa]);
+          data.lines.splice(a, 0, data.lines[aa]);
+          data.stack.splice(a, 0, data.stack[aa]);
+          data.token.splice(a, 0, data.token[aa]);
+          data.types.splice(a, 0, data.types[aa]);
+          if (bb > 0) {
+            do {
+              bb = bb - 1;
+              if (scopes[bb][1] === aa) {
+                scopes[bb][1] = a;
+              } else if (scopes[bb][1] < a) {
+                break;
+              }
+            } while (bb > 0);
+          }
+          aa = aa + 1;
+          data.begin.splice(aa, 1);
+          data.ender.splice(aa, 1);
+          data.lexer.splice(aa, 1);
+          data.lines.splice(aa, 1);
+          data.stack.splice(aa, 1);
+          data.token.splice(aa, 1);
+          data.types.splice(aa, 1);
+          bb = a + 1;
+          do {
+            data.begin[bb] = a;
+            data.stack[bb] = data.stack[aa];
+            bb = bb + 1;
+          } while (bb < aa);
+          bb = bb + 1;
+          do {
+            if (data.begin[bb] === data.begin[aa]) {
+              data.begin[bb] = a;
+              if (data.types[bb] === "end") {
+                break;
+              }
+            }
+            bb = bb + 1;
+          } while (bb < b - 1);
+          data.begin[aa] = a;
+          a = a - 1;
+        } else {
+          level[a - 1] = -10;
+          if (data.stack[a] === "paren" || data.stack[a] === "method") {
+            level.push(indent + 2);
+          } else {
+            level.push(indent);
+          }
+          if (options2.commentIndent === true && level[a] > -1 && data.lines[a] < 3) {
+            data.lines[a] = 3;
+          }
+        }
+        if (data.types[a + 1] !== "comment")
+          notcomment = true;
+        return;
+      } else if (data.token[a - 1] === ",") {
+        level[a - 1] = ind;
+      } else if (ltoke === "=" && data.types[a - 1] !== "comment" && /^(\/\*\*\s*@[a-z_]+\s)/.test(ctoke) === true) {
+        level[a - 1] = -10;
+      } else if (ltoke === "{" && data.types[a - 1] !== "comment" && data.lines[0] < 2) {
+        if (data.stack[a] === "function") {
+          level[a - 1] = ind;
+        } else {
+          level[a - 1] = /\n/.test(ctoke) ? ind : -10;
+        }
+      } else {
+        level[a - 1] = ind;
+      }
+      if (data.types[a + 1] !== "comment")
+        notcomment = true;
+      if (data.token[data.begin[a]] === "(") {
+        level.push(indent + 1);
+      } else {
+        level.push(indent);
+      }
+      if (level[a] > -1 && data.lines[a] < 3) {
+        if (data.types[a - 1] === "comment" && ctoke.startsWith("//")) {
+          data.lines[a] = 2;
+        } else {
+          data.lines[a] = 3;
+        }
+      }
+      if (options2.script.commentNewline === true && ctoke.startsWith("//") === false && data.lines[a] >= 3) {
+        data.lines[a] = 2;
+      }
+    }
+    function destructfix(listFix, override) {
+      let c = a - 1;
+      let d = listFix === true ? 0 : 1;
+      const ei = extraindent[extraindent.length - 1] === void 0 ? [] : extraindent[extraindent.length - 1];
+      const arrayCheck = override === false && data.stack[a] === "array" && listFix === true && ctoke !== "[";
+      if (destruct[destruct.length - 1] === false || data.stack[a] === "array" && options2.script.arrayFormat === "inline" || data.stack[a] === "object" && options2.script.objectIndent === "inline") {
+        return;
+      }
+      destruct[destruct.length - 1] = false;
+      do {
+        if (data.types[c] === "end") {
+          d = d + 1;
+        } else if (data.types[c] === "start") {
+          d = d - 1;
+        }
+        if (data.stack[c] === "global") {
+          break;
+        }
+        if (d === 0) {
+          if (data.stack[a] === "class" || data.stack[a] === "map" || arrayCheck === false && (listFix === false && data.token[c] !== "(" && data.token[c] !== "x(" || listFix === true && data.token[c] === ",")) {
+            if (data.types[c + 1] === "template_start") {
+              if (data.lines[c] < 1) {
+                level[c] = -20;
+              } else {
+                level[c] = indent - 1;
+              }
+            } else if (ei.length > 0 && ei[ei.length - 1] > -1) {
+              level[c] = indent - 1;
+            } else {
+              level[c] = indent;
+            }
+          } else if (data.stack[a] === "array" && data.types[a] === "operator") {
+            if (data.token[c] === ",")
+              level[c] = indent;
+            if (c === data.begin[a])
+              break;
+          }
+          if (listFix === false)
+            break;
+        }
+        if (d < 0) {
+          if (data.types[c + 1] === "template_start" || data.types[c + 1] === "template_string_start") {
+            if (data.lines[c] < 1) {
+              level[c] = -20;
+            } else {
+              level[c] = indent - 1;
+            }
+          } else if (ei.length > 0 && ei[ei.length - 1] > -1) {
+            level[c] = indent - 1;
+          } else {
+            level[c] = indent;
+          }
+          break;
+        }
+        c = c - 1;
+      } while (c > -1);
+    }
+    function end() {
+      const ei = extraindent[extraindent.length - 1] === void 0 ? [] : extraindent[extraindent.length - 1];
+      const markuplist = () => {
+        let aa = a;
+        let markup4 = false;
+        const begin = data.begin[aa];
+        do {
+          aa = aa - 1;
+          if (data.lexer[aa] === "markup") {
+            markup4 = true;
+            break;
+          }
+          if (data.begin[aa] !== begin)
+            aa = data.begin[aa];
+        } while (aa > begin);
+        if (markup4 === true) {
+          aa = a;
+          do {
+            aa = aa - 1;
+            if (data.begin[aa] !== begin) {
+              aa = data.begin[aa];
+            } else if (data.token[aa] === ",") {
+              level[aa] = indent + 1;
+            }
+          } while (aa > begin);
+          level[begin] = indent + 1;
+          level[a - 1] = indent;
+        } else {
+          level[a - 1] = -20;
+        }
+      };
+      if (ctoke === ")" && data.token[a + 1] === "." && ei[ei.length - 1] > -1 && data.token[ei[0]] !== ":") {
+        let c = data.begin[a];
+        let d = false;
+        let e = false;
+        do {
+          c = c - 1;
+        } while (c > 0 && level[c] < -9);
+        d = level[c] === indent;
+        c = a + 1;
+        do {
+          c = c + 1;
+          if (data.token[c] === "{") {
+            e = true;
+            break;
+          }
+          if (data.begin[c] === data.begin[a + 1] && (data.types[c] === "separator" || data.types[c] === "end")) {
+            break;
+          }
+        } while (c < b);
+        if (d === false && e === true && extraindent.length > 1) {
+          extraindent[extraindent.length - 2].push(data.begin[a]);
+          indent = indent + 1;
+        }
+      }
+      if (ltype !== "separator")
+        fixchain();
+      if (data.token[a + 1] === "," && (data.stack[a] === "object" || data.stack[a] === "array")) {
+        destructfix(true, false);
+      }
+      if (data.token[data.begin[a] - 1] === "," && (data.token[a + 1] === "}" || data.token[a + 1] === "]") && (data.stack[a] === "object" || data.stack[a] === "array")) {
+        destructfix(true, false);
+      }
+      if (data.stack[a] !== "attribute") {
+        if (ctoke !== ")" && ctoke !== "x)" && (data.lexer[a - 1] !== "markup" || data.lexer[a - 1] === "markup" && data.token[a - 2] !== "return")) {
+          indent = indent - 1;
+        }
+        if (ctoke === "}" && data.stack[a] === "switch" && options2.script.noCaseIndent === false) {
+          indent = indent - 1;
+        }
+      }
+      if (ctoke === "}" || ctoke === "x}") {
+        if (data.types[a - 1] !== "comment" && ltoke !== "{" && ltoke !== "x{" && ltype !== "end" && ltype !== "string" && ltype !== "number" && ltype !== "separator" && ltoke !== "++" && ltoke !== "--" && (a < 2 || data.token[a - 2] !== ";" || data.token[a - 2] !== "x;" || ltoke === "break" || ltoke === "return")) {
+          let c = a - 1;
+          let assign2 = false;
+          const begin = data.begin[a];
+          const listlen = list.length;
+          do {
+            if (data.begin[c] === begin) {
+              if (data.token[c] === "=" || data.token[c] === ";" || data.token[c] === "x;") {
+                assign2 = true;
+              }
+              if (data.token[c] === "." && level[c - 1] > -1) {
+                destruct[destruct.length - 1] = false;
+                level[begin] = indent + 1;
+                level[a - 1] = indent;
+                break;
+              }
+              if (c > 0 && data.token[c] === "return" && (data.token[c - 1] === ")" || data.token[c - 1] === "x)" || data.token[c - 1] === "{" || data.token[c - 1] === "x{" || data.token[c - 1] === "}" || data.token[c - 1] === "x}" || data.token[c - 1] === ";" || data.token[c - 1] === "x;")) {
+                indent = indent - 1;
+                level[a - 1] = indent;
+                break;
+              }
+              if (data.token[c] === ":" && ternary.length === 0 || data.token[c] === "," && assign2 === false) {
+                break;
+              }
+              if (c === 0 || data.token[c - 1] === "{" || data.token[c - 1] === "x{" || data.token[c] === "for" || data.token[c] === "if" || data.token[c] === "do" || data.token[c] === "function" || data.token[c] === "while" || data.token[c] === "var" || data.token[c] === "let" || data.token[c] === "const" || data.token[c] === "with") {
+                if (list[listlen - 1] === false && listlen > 1 && (a === b - 1 || data.token[a + 1] !== ")" && data.token[a + 1] !== "x)") && data.stack[a] !== "object") {
+                  indent = indent - 1;
+                }
+                break;
+              }
+            } else {
+              c = data.begin[c];
+            }
+            c = c - 1;
+          } while (c > begin);
+        }
+        varindex.pop();
+      }
+      if (options2.script.bracePadding === false && ctoke !== "}" && ltype !== "markup") {
+        level[a - 1] = -20;
+      }
+      if (options2.script.bracePadding === true && ltype !== "start" && ltoke !== ";" && (level[data.begin[a]] < -9 || destruct[destruct.length - 1] === true)) {
+        level[data.begin[a]] = -10;
+        level[a - 1] = -10;
+        level.push(-20);
+      } else if (data.stack[a] === "attribute") {
+        level[a - 1] = -20;
+        level.push(indent);
+      } else if (data.stack[a] === "array" && (ei.length > 0 || arrbreak[arrbreak.length - 1] === true)) {
+        endExtraInd();
+        destruct[destruct.length - 1] = false;
+        level[data.begin[a]] = indent + 1;
+        level[a - 1] = indent;
+        level.push(-20);
+      } else if ((data.stack[a] === "object" || data.begin[a] === 0 && ctoke === "}") && ei.length > 0) {
+        endExtraInd();
+        destruct[destruct.length - 1] = false;
+        level[data.begin[a]] = indent + 1;
+        level[a - 1] = indent;
+        level.push(-20);
+      } else if (ctoke === ")" || ctoke === "x)") {
+        const countx = ctoke === ")" && ltoke !== "(" && count.length > 0 ? count.pop() + 1 : 0;
+        const countif = data.token[data.begin[a] - 1] === "if" ? (() => {
+          let bb = a;
+          do {
+            bb = bb - 1;
+            if (data.token[bb] === ")" && level[bb - 1] > -1)
+              return countx;
+          } while (bb > data.begin[a]);
+          return countx + 5;
+        })() : countx;
+        if (countx > 0 && (options2.language !== "jsx" || options2.language === "jsx" && data.token[data.begin[a] - 1] !== "render")) {
+          const wrap = options2.wrap;
+          const begin = data.begin[a];
+          const len = count.length;
+          let aa = a - 2;
+          if (countif > wrap) {
+            level[data.begin[a]] = indent + 1;
+            level[a - 1] = indent;
+            do {
+              if (data.begin[aa] === begin) {
+                if (data.token[aa] === "&&" || data.token[aa] === "||") {
+                  level[aa] = indent + 1;
+                } else if (level[aa] > -1 && data.types[aa] !== "comment" && data.token[aa + 1] !== ".") {
+                  level[aa] = level[aa] + 1;
+                }
+              } else if (level[aa] > -1 && data.token[aa + 1] !== ".") {
+                level[aa] = level[aa] + 1;
+              }
+              aa = aa - 1;
+            } while (aa > begin);
+          } else if (len > 0) {
+            count[len - 1] = count[len - 1] + countx;
+          }
+        } else if (ctoke === ")" && a > data.begin[a] + 2 && data.lexer[data.begin[a] + 1] === lexer && data.token[data.begin[a] + 1] !== "function") {
+          const open = data.begin[a] < 0 ? 0 : data.begin[a];
+          const wrap = options2.wrap;
+          const exl = ei.length;
+          let len = 0;
+          let aa = 0;
+          let short = 0;
+          let first = 0;
+          let inc = 0;
+          let comma = false;
+          let array = false;
+          let ind = indent + 1;
+          let ready = false;
+          let mark = false;
+          let tern = false;
+          if (level[open] < -9) {
+            aa = open;
+            do {
+              aa = aa + 1;
+            } while (aa < a && level[aa] < -9);
+            first = aa;
+            do {
+              len = len + data.token[aa].length;
+              if (level[aa] === -10)
+                len = len + 1;
+              if (data.token[aa] === "(" && short > 0 && short < wrap - 1 && first === a) {
+                short = -1;
+              }
+              if (data.token[aa] === ")") {
+                inc = inc - 1;
+              } else if (data.token[aa] === "(") {
+                inc = inc + 1;
+              }
+              if (aa === open && inc > 0)
+                short = len;
+              aa = aa - 1;
+            } while (aa > open && level[aa] < -9);
+            if (data.token[aa + 1] === ".")
+              ind = level[aa] + 1;
+            if (len > wrap - 1 && wrap > 0 && ltoke !== "(" && short !== -1 && destruct[destruct.length - 2] === false) {
+              if (data.token[open - 1] === "if" && list[list.length - 1] === true || data.token[open - 1] !== "if") {
+                level[open] = ind;
+                if (data.token[open - 1] === "for") {
+                  aa = open;
+                  do {
+                    aa = aa + 1;
+                    if (data.token[aa] === ";" && data.begin[aa] === open) {
+                      level[aa] = ind;
+                    }
+                  } while (aa < a);
+                }
+              }
+            }
+          }
+          aa = a;
+          len = 0;
+          do {
+            aa = aa - 1;
+            if (data.stack[aa] === "function") {
+              aa = data.begin[aa];
+            } else if (data.begin[aa] === open) {
+              if (data.token[aa] === "?") {
+                tern = true;
+              } else if (data.token[aa] === "," && comma === false) {
+                comma = true;
+                if (len >= wrap && wrap > 0)
+                  ready = true;
+              } else if (data.types[aa] === "markup" && mark === false) {
+                mark = true;
+              }
+              if (level[aa] > -9 && data.token[aa] !== "," && data.types[aa] !== "markup") {
+                len = 0;
+              } else {
+                if (level[aa] === -10)
+                  len = len + 1;
+                len = len + data.token[aa].length;
+                if (len >= wrap && wrap > 0 && (comma === true || mark === true)) {
+                  ready = true;
+                }
+              }
+            } else {
+              if (level[aa] > -9) {
+                len = 0;
+              } else {
+                len = len + data.token[aa].length;
+                if (len >= wrap && wrap > 0 && (comma === true || mark === true)) {
+                  ready = true;
+                }
+              }
+            }
+          } while (aa > open && ready === false);
+          if (comma === false && data.token[data.begin[a] + 1].charAt(0) === "`") {
+            level[data.begin[a]] = -20;
+            level[a - 1] = -20;
+          } else if ((comma === true || mark === true) && len >= wrap && wrap > 0 || level[open] > -9) {
+            if (tern === true) {
+              ind = level[open];
+              if (data.token[open - 1] === "[") {
+                aa = a;
+                do {
+                  aa = aa + 1;
+                  if (data.types[aa] === "end" || data.token[aa] === "," || data.token[aa] === ";") {
+                    break;
+                  }
+                } while (aa < b);
+                if (data.token[aa] === "]") {
+                  ind = ind - 1;
+                  array = true;
+                }
+              }
+            } else if (exl > 0 && ei[exl - 1] > aa) {
+              ind = ind - exl;
+            }
+            destruct[destruct.length - 1] = false;
+            aa = a;
+            do {
+              aa = aa - 1;
+              if (data.begin[aa] === open) {
+                if (data.token[aa].indexOf("=") > -1 && data.types[aa] === "operator" && data.token[aa].indexOf("!") < 0 && data.token[aa].indexOf("==") < 0 && data.token[aa] !== "<=" && data.token[aa].indexOf(">") < 0) {
+                  len = aa;
+                  do {
+                    len = len - 1;
+                    if (data.begin[len] === open && (data.token[len] === ";" || data.token[len] === "," || len === open)) {
+                      break;
+                    }
+                  } while (len > open);
+                } else if (data.token[aa] === ",") {
+                  level[aa] = ind;
+                } else if (level[aa] > -9 && array === false && (data.token[open - 1] !== "for" || data.token[aa + 1] === "?" || data.token[aa + 1] === ":") && (data.token[data.begin[a]] !== "(" || data.token[aa] !== "+")) {
+                  level[aa] = level[aa] + 1;
+                }
+              } else if (level[aa] > -9 && array === false) {
+                level[aa] = level[aa] + 1;
+              }
+            } while (aa > open);
+            level[open] = ind;
+            level[a - 1] = ind - 1;
+          } else {
+            level[a - 1] = -20;
+          }
+          if (data.token[data.begin[a] - 1] === "+" && level[data.begin[a]] > -9) {
+            level[data.begin[a] - 1] = -10;
+          }
+        } else if (options2.language === "jsx") {
+          markuplist();
+        } else {
+          level[a - 1] = -20;
+        }
+        level.push(-20);
+      } else if (destruct[destruct.length - 1] === true) {
+        if (ctoke === "]" && data.begin[a] - 1 > 0 && data.token[data.begin[data.begin[a] - 1]] === "[") {
+          destruct[destruct.length - 2] = false;
+        }
+        if (data.begin[a] < level.length)
+          level[data.begin[a]] = -20;
+        if (options2.language === "jsx") {
+          markuplist();
+        } else if (ctoke === "]" && level[data.begin[a]] > -1) {
+          level[a - 1] = level[data.begin[a]] - 1;
+        } else {
+          level[a - 1] = -20;
+        }
+        level.push(-20);
+      } else if (data.types[a - 1] === "comment" && data.token[a - 1].substring(0, 2) === "//") {
+        if (data.token[a - 2] === "x}")
+          level[a - 3] = indent + 1;
+        level[a - 1] = indent;
+        level.push(-20);
+      } else if (data.types[a - 1] !== "comment" && (ltoke === "{" && ctoke === "}" || ltoke === "[" && ctoke === "]")) {
+        level[a - 1] = -20;
+        level.push(-20);
+      } else if (ctoke === "]") {
+        if (list[list.length - 1] === true && destruct[destruct.length - 1] === false && options2.script.arrayFormat !== "inline" || ltoke === "]" && level[a - 2] === indent + 1) {
+          level[a - 1] = indent;
+          level[data.begin[a]] = indent + 1;
+        } else if (level[a - 1] === -10) {
+          level[a - 1] = -20;
+        }
+        if (data.token[data.begin[a] + 1] === "function") {
+          level[a - 1] = indent;
+        } else if (list[list.length - 1] === false) {
+          if (ltoke === "}" || ltoke === "x}")
+            level[a - 1] = indent;
+          let c = a - 1;
+          let d = 1;
+          do {
+            if (data.token[c] === "]")
+              d = d + 1;
+            if (data.token[c] === "[") {
+              d = d - 1;
+              if (d === 0) {
+                if (c > 0 && (data.token[c + 1] === "{" || data.token[c + 1] === "x{" || data.token[c + 1] === "[")) {
+                  level[c] = indent + 1;
+                  break;
+                }
+                if (data.token[c + 1] !== "[" || lastlist === false) {
+                  level[c] = -20;
+                  break;
+                }
+                break;
+              }
+            }
+            if (d === 1 && data.token[c] === "+" && level[c] > 1) {
+              level[c] = level[c] - 1;
+            }
+            c = c - 1;
+          } while (c > -1);
+        } else if (options2.language === "jsx") {
+          markuplist();
+        }
+        if (options2.script.arrayFormat === "inline") {
+          let c = a;
+          const begin = data.begin[a];
+          do {
+            c = c - 1;
+            if (data.types[c] === "end")
+              break;
+          } while (c > begin);
+          if (c > begin) {
+            level[data.begin[a]] = indent + 1;
+            level[a - 1] = indent;
+          } else {
+            level[data.begin[a]] = -20;
+            level[a - 1] = -20;
+          }
+        } else if (level[data.begin[a]] > -1) {
+          level[a - 1] = level[data.begin[a]] - 1;
+        }
+        level.push(-20);
+      } else if (ctoke === "}" || ctoke === "x}" || list[list.length - 1] === true) {
+        if (ctoke === "}" && ltoke === "x}" && data.token[a + 1] === "else") {
+          level[a - 2] = indent + 2;
+          level.push(-20);
+        } else {
+          level.push(indent);
+        }
+        level[a - 1] = indent;
+      } else {
+        level.push(-20);
+      }
+      if (data.types[a - 1] === "comment")
+        level[a - 1] = indent;
+      if (options2.script.inlineReturn && options2.attemptCorrection === false && ctoke === "x}" && (data.stack[a] === "if" || data.stack[a] === "else") && data.token[data.begin[data.begin[a - 1] - 1] - 2] !== "else") {
+        level[a - 1] = -20;
+      }
+      endExtraInd();
+      lastlist = list[list.length - 1];
+      list.pop();
+      extraindent.pop();
+      arrbreak.pop();
+      itemcount.pop();
+      wordlist.pop();
+      destruct.pop();
+      assignlist.pop();
+    }
+    function endExtraInd() {
+      let c = 0;
+      const ei = extraindent[extraindent.length - 1];
+      if (ei === void 0)
+        return;
+      c = ei.length - 1;
+      if (c < 1 && ei[c] < 0 && (ctoke === ";" || ctoke === "x;" || ctoke === ")" || ctoke === "x)" || ctoke === "}" || ctoke === "x}")) {
+        ei.pop();
+        return;
+      }
+      if (c < 0 || ei[c] < 0)
+        return;
+      if (ctoke === ":") {
+        if (data.token[ei[c]] !== "?") {
+          do {
+            ei.pop();
+            c = c - 1;
+            indent = indent - 1;
+          } while (c > -1 && ei[c] > -1 && data.token[ei[c]] !== "?");
+        }
+        ei[c] = a;
+        level[a - 1] = indent;
+      } else {
+        do {
+          ei.pop();
+          c = c - 1;
+          indent = indent - 1;
+        } while (c > -1 && ei[c] > -1);
+      }
+      if ((data.stack[a] === "array" || ctoke === ",") && ei.length < 1)
+        ei.push(-1);
+    }
+    function external() {
+      const skip = a;
+      do {
+        if (data.lexer[a + 1] === lexer && data.begin[a + 1] < skip)
+          break;
+        if (data.token[skip - 1] === "return" && data.types[a] === "end" && data.begin[a] === skip)
+          break;
+        level.push(0);
+        a = a + 1;
+      } while (a < b);
+      externalIndex[skip] = a;
+      level.push(indent - 1);
+    }
+    function fixchain() {
+      let bb = a - 1;
+      const cc2 = data.begin[a];
+      if (indent < 1)
+        return;
+      do {
+        if (cc2 !== data.begin[bb]) {
+          bb = data.begin[bb];
+        } else {
+          if (data.types[bb] === "separator" || data.types[bb] === "operator") {
+            if (data.token[bb] === "." && level[bb - 1] > 0) {
+              if (data.token[cc2 - 1] === "if") {
+                indent = indent - 2;
+              } else {
+                indent = indent - 1;
+              }
+            }
+            break;
+          }
+        }
+        bb = bb - 1;
+      } while (bb > 0 && bb > cc2);
+    }
+    function markup3() {
+      if (data.token[a + 1] !== "," && ctoke.indexOf("/>") !== ctoke.length - 2 || data.token[a + 1] === "," && data.token[data.begin[a] - 3] !== "React") {
+        destructfix(false, false);
+      }
+      if (ltoke === "return" || ltoke === "?" || ltoke === ":") {
+        level[a - 1] = -10;
+        level.push(-20);
+      } else if (ltype === "start" || data.token[a - 2] === "return" && data.stack[a - 1] === "method") {
+        level.push(indent);
+      } else {
+        level.push(-20);
+      }
+    }
+    function operator() {
+      const ei = extraindent[extraindent.length - 1] === void 0 ? [] : extraindent[extraindent.length - 1];
+      function opWrap() {
+        const aa = data.token[a + 1];
+        let line = 0;
+        let next = 0;
+        let c = a;
+        let ind = ctoke === "+" ? indent + 2 : indent;
+        let meth = 0;
+        if (options2.wrap < 1) {
+          level.push(-10);
+          return;
+        }
+        do {
+          c = c - 1;
+          if (data.token[data.begin[a]] === "(") {
+            if (c === data.begin[a]) {
+              meth = line;
+            }
+            if (data.token[c] === "," && data.begin[c] === data.begin[a] && list[list.length - 1] === true) {
+              break;
+            }
+          }
+          if (line > options2.wrap - 1)
+            break;
+          if (level[c] > -9)
+            break;
+          if (data.types[c] === "operator" && data.token[c] !== "=" && data.token[c] !== "+" && data.begin[c] === data.begin[a]) {
+            break;
+          }
+          line = line + data.token[c].length;
+          if (c === data.begin[a] && data.token[c] === "[" && line < options2.wrap - 1) {
+            break;
+          }
+          if (data.token[c] === "." && level[c] > -9)
+            break;
+          if (level[c] === -10)
+            line = line + 1;
+        } while (c > 0);
+        if (meth > 0)
+          meth = meth + aa.length;
+        line = line + aa.length;
+        next = c;
+        if (line > options2.wrap - 1 && level[c] < -9) {
+          do {
+            next = next - 1;
+          } while (next > 0 && level[next] < -9);
+        }
+        if (data.token[next + 1] === "." && data.begin[a] <= data.begin[next]) {
+          ind = ind + 1;
+        } else if (data.types[next] === "operator") {
+          ind = level[next];
+        }
+        next = aa.length;
+        if (line + next < options2.wrap) {
+          level.push(-10);
+          return;
+        }
+        if (data.token[data.begin[a]] === "(" && (data.token[ei[0]] === ":" || data.token[ei[0]] === "?")) {
+          ind = indent + 3;
+        } else if (data.stack[a] === "method") {
+          level[data.begin[a]] = indent;
+          if (list[list.length - 1] === true) {
+            ind = indent + 3;
+          } else {
+            ind = indent + 1;
+          }
+        } else if (data.stack[a] === "object" || data.stack[a] === "array") {
+          destructfix(true, false);
+        }
+        if (data.token[c] === "var" || data.token[c] === "let" || data.token[c] === "const") {
+          line = line - options2.indentSize * options2.indentChar.length * 2;
+        }
+        if (meth > 0) {
+          c = options2.wrap - meth;
+        } else {
+          c = options2.wrap - line;
+        }
+        if (c > 0 && c < 5) {
+          level.push(ind);
+          if (data.token[a].charAt(0) === '"' || data.token[a].charAt(0) === "'") {
+            a = a + 1;
+            level.push(-10);
+          }
+          return;
+        }
+        if (data.token[data.begin[a]] !== "(" || meth > options2.wrap - 1 || meth === 0) {
+          if (meth > 0)
+            line = meth;
+          if (line - aa.length < options2.wrap - 1 && (aa.charAt(0) === '"' || aa.charAt(0) === "'")) {
+            a = a + 1;
+            line = line + 3;
+            if (line - aa.length > options2.wrap - 4) {
+              level.push(ind);
+              return;
+            }
+            level.push(-10);
+            return;
+          }
+          level.push(ind);
+          return;
+        }
+        level.push(-10);
+      }
+      fixchain();
+      if (ei.length > 0 && ei[ei.length - 1] > -1 && data.stack[a] === "array") {
+        arrbreak[arrbreak.length - 1] = true;
+      }
+      if (ctoke !== ":") {
+        if (data.token[data.begin[a]] !== "(" && data.token[data.begin[a]] !== "x(" && destruct.length > 0) {
+          destructfix(true, false);
+        }
+        if (ctoke !== "?" && data.token[ei[ei.length - 1]] === ".") {
+          let e = 0;
+          let c = a;
+          const d = data.begin[c];
+          do {
+            if (data.begin[c] === d) {
+              if (data.token[c + 1] === "{" || data.token[c + 1] === "[" || data.token[c] === "function") {
+                break;
+              }
+              if (data.token[c] === "," || data.token[c] === ";" || data.types[c] === "end" || data.token[c] === ":") {
+                ei.pop();
+                indent = indent - 1;
+                break;
+              }
+              if (data.token[c] === "?" || data.token[c] === ":") {
+                if (data.token[ei[ei.length - 1]] === "." && e < 2)
+                  ei[ei.length - 1] = d + 1;
+                break;
+              }
+              if (data.token[c] === ".")
+                e = e + 1;
+            }
+            c = c + 1;
+          } while (c < b);
+        }
+      }
+      if (ctoke === "!" || ctoke === "...") {
+        if (ltoke === "}" || ltoke === "x}")
+          level[a - 1] = indent;
+        level.push(-20);
+        return;
+      }
+      if (ltoke === ";" || ltoke === "x;") {
+        if (data.token[data.begin[a] - 1] !== "for")
+          level[a - 1] = indent;
+        level.push(-20);
+        return;
+      }
+      if (ctoke === "*") {
+        if (ltoke === "function" || ltoke === "yield") {
+          level[a - 1] = -20;
+        } else {
+          level[a - 1] = -10;
+        }
+        level.push(-10);
+        return;
+      }
+      if (ctoke === "?") {
+        if (data.lines[a] === 0 && data.types[a - 2] === "word" && data.token[a - 2] !== "return" && data.token[a - 2] !== "in" && data.token[a - 2] !== "instanceof" && data.token[a - 2] !== "typeof" && (ltype === "reference" || ltype === "word")) {
+          if (data.types[a + 1] === "word" || data.types[a + 1] === "reference" || (data.token[a + 1] === "(" || data.token[a + 1] === "x(") && data.token[a - 2] === "new") {
+            level[a - 1] = -20;
+            if (data.types[a + 1] === "word" || data.types[a + 1] === "reference") {
+              level.push(-10);
+              return;
+            }
+            level.push(-20);
+            return;
+          }
+        }
+        if (data.token[a + 1] === ":") {
+          level[a - 1] = -20;
+          level.push(-20);
+          return;
+        }
+        ternary.push(a);
+        if (options2.script.ternaryLine === true) {
+          level[a - 1] = -10;
+        } else {
+          let c = a - 1;
+          do {
+            c = c - 1;
+          } while (c > -1 && level[c] < -9);
+          ei.push(a);
+          indent = indent + 1;
+          if (level[c] === indent && data.token[c + 1] !== ":") {
+            indent = indent + 1;
+            ei.push(a);
+          }
+          level[a - 1] = indent;
+          if (data.token[data.begin[a]] === "(" && (ei.length < 2 || ei[0] === ei[1])) {
+            destruct[destruct.length - 1] = false;
+            if (a - 2 === data.begin[a]) {
+              level[data.begin[a]] = indent - 1;
+            } else {
+              level[data.begin[a]] = indent;
+            }
+            c = a - 2;
+            do {
+              if (data.types[c] === "end" && level[c - 1] > -1)
+                break;
+              if (level[c] > -1)
+                level[c] = level[c] + 1;
+              c = c - 1;
+            } while (c > data.begin[a]);
+          }
+        }
+        level.push(-10);
+        return;
+      }
+      if (ctoke === ":") {
+        if (data.stack[a] === "map" || data.types[a + 1] === "type" || data.types[a + 1] === "type_start") {
+          level[a - 1] = -20;
+          level.push(-10);
+          return;
+        }
+        if (ternary.length > 0 && data.begin[ternary[ternary.length - 1]] === data.begin[a]) {
+          let c = a;
+          const d = data.begin[a];
+          do {
+            c = c - 1;
+            if (data.begin[c] === d) {
+              if (data.token[c] === "," || data.token[c] === ";") {
+                level[a - 1] = -20;
+                break;
+              }
+              if (data.token[c] === "?") {
+                ternary.pop();
+                endExtraInd();
+                if (options2.script.ternaryLine === true)
+                  level[a - 1] = -10;
+                level.push(-10);
+                return;
+              }
+            } else if (data.types[c] === "end") {
+              c = data.begin[c];
+            }
+          } while (c > d);
+        }
+        if (data.token[a - 2] === "where" && data.stack[a - 2] === data.stack[a]) {
+          level[a - 1] = -10;
+          level.push(-10);
+          return;
+        }
+        if (ltype === "reference" && data.token[data.begin[a]] !== "(" && data.token[data.begin[a]] !== "x(") {
+          level[a - 1] = -20;
+          level.push(-10);
+          return;
+        }
+        if ((ltoke === ")" || ltoke === "x)") && data.token[data.begin[a - 1] - 2] === "function") {
+          level[a - 1] = -20;
+          level.push(-10);
+          return;
+        }
+        if (data.stack[a] === "attribute") {
+          level[a - 1] = -20;
+          level.push(-10);
+          return;
+        }
+        if (data.token[data.begin[a]] !== "(" && data.token[data.begin[a]] !== "x(" && (ltype === "reference" || ltoke === ")" || ltoke === "]" || ltoke === "?") && (data.stack[a] === "map" || data.stack[a] === "class" || data.types[a + 1] === "reference") && (ternary.length === 0 || ternary[ternary.length - 1] < data.begin[a]) && ("mapclassexpressionmethodglobalparen".indexOf(data.stack[a]) > -1 || data.types[a - 2] === "word" && data.stack[a] !== "switch")) {
+          level[a - 1] = -20;
+          level.push(-10);
+          return;
+        }
+        if (data.stack[a] === "switch" && (ternary.length < 1 || ternary[ternary.length - 1] < data.begin[a])) {
+          level[a - 1] = -20;
+          if (options2.script.caseSpace === true) {
+            level.push(-10);
+          } else {
+            level.push(indent);
+          }
+          return;
+        }
+        if (data.stack[a] === "object") {
+          level[a - 1] = -20;
+        } else if (ternary.length > 0) {
+          level[a - 1] = indent;
+        } else {
+          level[a - 1] = -10;
+        }
+        level.push(-10);
+        return;
+      }
+      if (ctoke === "++" || ctoke === "--") {
+        if (ltype === "number" || ltype === "reference") {
+          level[a - 1] = -20;
+          level.push(-10);
+        } else if (a < b - 1 && (data.types[a + 1] === "number" || data.types[a + 1] === "reference")) {
+          level.push(-20);
+        } else {
+          level.push(-10);
+        }
+        return;
+      }
+      if (ctoke === "+") {
+        if (ltype === "start") {
+          level[a - 1] = -20;
+        } else {
+          level[a - 1] = -10;
+        }
+        if (options2.wrap < 1 || data.token[data.begin[a]] === "x(") {
+          level.push(-10);
+          return;
+        }
+        const aa = data.token[a + 1];
+        if (aa === void 0) {
+          level.push(-10);
+          return;
+        }
+        if (data.types[a - 1] === "operator" || data.types[a - 1] === "start") {
+          if (data.types[a + 1] === "reference" || aa === "(" || aa === "[") {
+            level.push(-20);
+            return;
+          }
+          if (Number(aa.slice(1, -1)) > -1 && (/\d/.test(aa.charAt(1)) === true || aa.charAt(1) === "." || aa.charAt(1) === "-" || aa.charAt(1) === "+")) {
+            level.push(-20);
+            return;
+          }
+        }
+        return opWrap();
+      }
+      if (data.types[a - 1] !== "comment") {
+        if (ltoke === "(") {
+          level[a - 1] = -20;
+        } else if (ctoke === "*" && data.stack[a] === "object" && data.types[a + 1] === "reference" && (ltoke === "{" || ltoke === ",")) {
+          level[a - 1] = indent;
+        } else if (ctoke !== "?" || ternary.length === 0) {
+          level[a - 1] = -10;
+        }
+      }
+      if (ctoke.indexOf("=") > -1 && ctoke !== "==" && ctoke !== "===" && ctoke !== "!=" && ctoke !== "!==" && ctoke !== ">=" && ctoke !== "<=" && ctoke !== "=>" && data.stack[a] !== "method" && data.stack[a] !== "object") {
+        let c = a + 1;
+        let d = 0;
+        let e = false;
+        let f = "";
+        if ((data.token[data.begin[a]] === "(" || data.token[data.begin[a]] === "x(") && data.token[a + 1] !== "function") {
+          return;
+        }
+        do {
+          if (data.types[c] === "start") {
+            if (e === true && data.token[c] !== "[") {
+              if (assignlist[assignlist.length - 1] === true) {
+                assignlist[assignlist.length - 1] = false;
+              }
+              break;
+            }
+            d = d + 1;
+          }
+          if (data.types[c] === "end")
+            d = d - 1;
+          if (d < 0) {
+            if (assignlist[assignlist.length - 1] === true) {
+              assignlist[assignlist.length - 1] = false;
+            }
+            break;
+          }
+          if (d === 0) {
+            f = data.token[c];
+            if (e === true) {
+              if (data.types[c] === "operator" || data.token[c] === ";" || data.token[c] === "x;" || data.token[c] === "?" || data.token[c] === "var" || data.token[c] === "let" || data.token[c] === "const") {
+                if (f !== void 0 && (f === "?" || f.indexOf("=") > -1 && f !== "==" && f !== "===" && f !== "!=" && f !== "!==" && f !== ">=" && f !== "<=")) {
+                  if (assignlist[assignlist.length - 1] === false) {
+                    assignlist[assignlist.length - 1] = true;
+                  }
+                }
+                if ((f === ";" || f === "x;" || f === "var" || f === "let" || f === "const") && assignlist[assignlist.length - 1] === true) {
+                  assignlist[assignlist.length - 1] = false;
+                }
+                break;
+              }
+              if (assignlist[assignlist.length - 1] === true && (f === "return" || f === "break" || f === "continue" || f === "throw")) {
+                assignlist[assignlist.length - 1] = false;
+              }
+            }
+            if (f === ";" || f === "x;" || f === ",")
+              e = true;
+          }
+          c = c + 1;
+        } while (c < b);
+        level.push(-10);
+        return;
+      }
+      if (ctoke === "-" && ltoke === "return" || ltoke === "=") {
+        level.push(-20);
+        return;
+      }
+      if (ltype === "operator" && data.types[a + 1] === "reference" && ltoke !== "--" && ltoke !== "++" && ctoke !== "&&" && ctoke !== "||") {
+        level.push(-20);
+        return;
+      }
+      return opWrap();
+    }
+    function reference2() {
+      const hoist = () => {
+        let func = data.begin[a];
+        if (func < 0) {
+          scopes.push([data.token[a], -1]);
+        } else {
+          if (data.stack[func + 1] !== "function") {
+            do {
+              func = data.begin[func];
+            } while (func > -1 && data.stack[func + 1] !== "function");
+          }
+          scopes.push([data.token[a], func]);
+        }
+      };
+      if (data.types[a - 1] === "comment") {
+        level[a - 1] = indent;
+      } else if (ltype === "end" && ltoke !== ")" && data.token[data.begin[a - 1] - 1] !== ")") {
+        level[a - 1] = -10;
+      } else if (ltype !== "separator" && ltype !== "start" && ltype !== "end" && ltype.indexOf("template_string") < 0) {
+        if (ltype === "word" || ltype === "operator" || ltype === "property" || ltype === "type" || ltype === "reference") {
+          level[a - 1] = -10;
+        } else {
+          level[a - 1] = -20;
+        }
+      }
+      if (ltoke === "var" && data.lexer[a - 1] === lexer) {
+        hoist();
+      } else if (ltoke === "function") {
+        scopes.push([data.token[a], a]);
+      } else if (ltoke === "let" || ltoke === "const") {
+        scopes.push([data.token[a], a]);
+      } else if (data.stack[a] === "arguments") {
+        scopes.push([data.token[a], a]);
+      } else if (ltoke === ",") {
+        let index = a;
+        do {
+          index = index - 1;
+        } while (index > data.begin[a] && data.token[index] !== "var" && data.token[index] !== "let" && data.token[index] !== "const");
+        if (data.token[index] === "var") {
+          hoist();
+        } else if (data.token[index] === "let" || data.token[index] === "const") {
+          scopes.push([data.token[a], a]);
+        }
+      }
+      level.push(-10);
+    }
+    function separator() {
+      const ei = extraindent[extraindent.length - 1] === void 0 ? [] : extraindent[extraindent.length - 1];
+      const propertybreak = () => {
+        if (options2.script.methodChain > 0) {
+          let x = a;
+          let y = data.begin[a];
+          const z = [a];
+          const ify = data.token[y - 1] === "if";
+          do {
+            x = x - 1;
+            if (data.types[x] === "end")
+              x = data.begin[x];
+            if (data.begin[x] === y) {
+              if (data.types[x] === "string" && data.token[x].indexOf("${") === data.token[x].length - 2) {
+                break;
+              }
+              if (data.token[x] === ".") {
+                if (level[x - 1] > 0) {
+                  level[a - 1] = ify === true ? indent + 1 : indent;
+                  return;
+                }
+                z.push(x);
+              } else if (data.token[x] === ";" || data.token[x] === "," || data.types[x] === "operator" || (data.types[x] === "word" || data.types[x] === "reference") && (data.types[x - 1] === "word" || data.types[x - 1] === "reference")) {
+                break;
+              }
+            }
+          } while (x > y);
+          if (z.length < options2.script.methodChain) {
+            level[a - 1] = -20;
+            return;
+          }
+          x = 0;
+          y = z.length;
+          do {
+            level[z[x] - 1] = ify === true ? indent + 1 : indent;
+            x = x + 1;
+          } while (x < y);
+          x = z[z.length - 1] - 1;
+          do {
+            if (level[x] > -1)
+              level[x] = level[x] + 1;
+            x = x + 1;
+          } while (x < a);
+          indent = ify === true ? indent + 2 : indent + 1;
+        }
+        level[a - 1] = indent;
+      };
+      if (ctoke === "::") {
+        level[a - 1] = -20;
+        level.push(-20);
+        return;
+      }
+      if (ctoke === ".") {
+        if (data.token[data.begin[a]] !== "(" && data.token[data.begin[a]] !== "x(" && ei.length > 0) {
+          if (data.stack[a] === "object" || data.stack[a] === "array") {
+            destructfix(true, false);
+          } else {
+            destructfix(false, false);
+          }
+        }
+        if (options2.script.methodChain === 0) {
+          level[a - 1] = -20;
+        } else if (options2.script.methodChain < 0) {
+          if (data.lines[a] > 0) {
+            propertybreak();
+          } else {
+            level[a - 1] = -20;
+          }
+        } else {
+          propertybreak();
+        }
+        level.push(-20);
+        return;
+      }
+      if (ctoke === ",") {
+        fixchain();
+        if (list[list.length - 1] === false && (data.stack[a] === "object" || data.stack[a] === "array" || data.stack[a] === "paren" || data.stack[a] === "expression" || data.stack[a] === "method")) {
+          list[list.length - 1] = true;
+          if (data.token[data.begin[a]] === "(") {
+            let aa = a;
+            do {
+              aa = aa - 1;
+              if (data.begin[aa] === data.begin[a] && data.token[aa] === "+" && level[aa] > -9) {
+                level[aa] = level[aa] + 2;
+              }
+            } while (aa > data.begin[a]);
+          }
+        }
+        if (data.stack[a] === "array" && options2.script.arrayFormat === "indent") {
+          level[a - 1] = -20;
+          level.push(indent);
+          return;
+        }
+        if (data.stack[a] === "array" && options2.script.arrayFormat === "inline") {
+          level[a - 1] = -20;
+          level.push(-10);
+          return;
+        }
+        if (data.stack[a] === "object" && options2.script.objectIndent === "indent") {
+          level[a - 1] = -20;
+          level.push(indent);
+          return;
+        }
+        if (data.stack[a] === "object" && options2.script.objectIndent === "inline") {
+          level[a - 1] = -20;
+          level.push(-10);
+          return;
+        }
+        if (ei.length > 0) {
+          if (ei[ei.length - 1] > -1)
+            endExtraInd();
+          level[a - 1] = -20;
+          level.push(indent);
+          return;
+        }
+        if (data.token[a - 2] === ":" && data.token[a - 4] === "where") {
+          level[a - 1] = -20;
+          level.push(-10);
+          return;
+        }
+        level[a - 1] = -20;
+        if (data.types[a + 1] !== "end") {
+          itemcount[itemcount.length - 1] = itemcount[itemcount.length - 1] + 1;
+        }
+        if ((data.token[data.begin[a]] === "(" || data.token[data.begin[a]] === "x(") && options2.language !== "jsx" && data.stack[a] !== "global" && (data.types[a - 1] !== "string" && data.types[a - 1] !== "number" || data.token[a - 2] !== "+" || data.types[a - 1] === "string" && data.types[a - 1] !== "number" && data.token[a - 2] === "+" && data.types[a - 3] !== "string" && data.types[a - 3] !== "number")) {
+          level.push(-10);
+          return;
+        }
+        if (ltype === "reference" && data.types[a - 2] === "word" && "var-let-const-from".indexOf(data.token[a - 2]) < 0 && (data.types[a - 3] === "end" || data.token[a - 3] === ";")) {
+          wordlist[wordlist.length - 1] = true;
+          level.push(-10);
+          return;
+        }
+        if (wordlist[wordlist.length - 1] === true || data.stack[a] === "notation") {
+          level.push(-10);
+          return;
+        }
+        if (itemcount[itemcount.length - 1] > 3 && (data.stack[a] === "array" || data.stack[a] === "object")) {
+          if (destruct[destruct.length - 1] === true)
+            destructfix(true, true);
+          level[a - 1] = -20;
+          if (arrbreak[arrbreak.length - 1] === true) {
+            level.push(indent);
+            return;
+          }
+          const begin = data.begin[a];
+          let c = a;
+          do {
+            if (data.types[c] === "end") {
+              c = data.begin[c];
+            } else {
+              if (data.token[c] === "," && data.types[c + 1] !== "comment") {
+                level[c] = indent;
+              }
+            }
+            c = c - 1;
+          } while (c > begin);
+          level[begin] = indent;
+          arrbreak[arrbreak.length - 1] = true;
+          return;
+        }
+        if (data.stack[a] === "object") {
+          if (destruct[destruct.length - 1] === true && data.types[data.begin[a] - 1] !== "word" && data.types[data.begin[a] - 1] !== "reference" && data.token[data.begin[a] - 1] !== "(" && data.token[data.begin[a] - 1] !== "x(") {
+            const bb = data.begin[a];
+            let aa = a - 1;
+            do {
+              if (data.begin[aa] === bb) {
+                if (data.token[aa] === ",")
+                  break;
+                if (data.token[aa] === ":") {
+                  destructfix(true, false);
+                  break;
+                }
+              }
+              aa = aa - 1;
+            } while (aa > bb);
+          }
+        }
+        if (destruct[destruct.length - 1] === false || data.token[a - 2] === "+" && (ltype === "string" || ltype === "number") && level[a - 2] > 0 && (ltoke.charAt(0) === '"' || ltoke.charAt(0) === "'")) {
+          if (data.stack[a] === "method") {
+            if (data.token[a - 2] === "+" && (ltoke.charAt(0) === '"' || ltoke.charAt(0) === "'") && (data.token[a - 3].charAt(0) === '"' || data.token[a - 3].charAt(0) === "'")) {
+              level.push(indent + 2);
+              return;
+            }
+            if (data.token[a - 2] !== "+") {
+              level.push(-10);
+              return;
+            }
+          }
+          level.push(indent);
+          return;
+        }
+        if (destruct[destruct.length - 1] === true && data.stack[a] !== "object") {
+          level.push(-10);
+          return;
+        }
+        if (itemcount[itemcount.length - 1] < 4 && (data.stack[a] === "array" || data.stack[a] === "object")) {
+          level.push(-10);
+          return;
+        }
+        level.push(indent);
+        return;
+      }
+      if (ctoke === ";" || ctoke === "x;") {
+        fixchain();
+        if (data.token[a + 1] !== void 0 && data.types[a + 1].indexOf("attribute") > 0 && data.types[a + 1].indexOf("end") > 0) {
+          level[a - 1] = -20;
+          level.push(indent - 1);
+          return;
+        }
+        if (varindex[varindex.length - 1] > -1 && data.stack[varindex[varindex.length - 1]] !== "expression") {
+          let aa = a;
+          do {
+            aa = aa - 1;
+            if (data.token[aa] === ";")
+              break;
+            if (data.token[aa] === ",") {
+              indent = indent - 1;
+              break;
+            }
+            if (data.types[aa] === "end")
+              aa = data.begin[aa];
+          } while (aa > 0 && aa > data.begin[a]);
+        }
+        varindex[varindex.length - 1] = -1;
+        endExtraInd();
+        if (data.token[data.begin[a] - 1] !== "for")
+          destructfix(false, false);
+        wordlist[wordlist.length - 1] = false;
+        level[a - 1] = -20;
+        if (data.begin[a] > 0 && data.token[data.begin[a] - 1] === "for" && data.stack[a] !== "for") {
+          level.push(-10);
+          return;
+        }
+        level.push(indent);
+        return;
+      }
+      level.push(-20);
+    }
+    function start() {
+      const deep = data.stack[a + 1];
+      const deeper = a === 0 ? data.stack[a] : data.stack[a - 1];
+      if (ltoke === ")" || (deeper === "object" || deeper === "array") && ltoke !== "]") {
+        if (deep !== "method" || deep === "method" && data.token[a + 1] !== ")" && data.token[a + 2] !== ")") {
+          if (ltoke === ")" && (deep !== "function" || data.token[data.begin[data.begin[a - 1] - 1]] === "(" || data.token[data.begin[data.begin[a - 1] - 1]] === "x(")) {
+            destructfix(false, false);
+          } else if (data.types[a + 1] !== "end" && data.types[a + 2] !== "end") {
+            destructfix(true, false);
+          }
+        }
+      }
+      list.push(false);
+      extraindent.push([]);
+      assignlist.push(false);
+      arrbreak.push(false);
+      wordlist.push(false);
+      itemcount.push(0);
+      if (options2.script.neverFlatten === true || deep === "array" && options2.script.arrayFormat === "indent" || deep === "attribute" || ltype === "generic" || deep === "class" && ltoke !== "(" && ltoke !== "x(" || ctoke === "[" && data.token[a + 1] === "function") {
+        destruct.push(false);
+      } else {
+        if (deep === "expression" || deep === "method") {
+          destruct.push(true);
+        } else if ((deep === "object" || deep === "class") && (ltoke === "(" || ltoke === "x(" || ltype === "word" || ltype === "reference")) {
+          destruct.push(true);
+        } else if (deep === "array" || ctoke === "(" || ctoke === "x(") {
+          destruct.push(true);
+        } else if (ctoke === "{" && deep === "object" && ltype !== "operator" && ltype !== "start" && ltype !== "string" && ltype !== "number" && deeper !== "object" && deeper !== "array" && a > 0) {
+          destruct.push(true);
+        } else {
+          destruct.push(false);
+        }
+      }
+      if (ctoke !== "(" && ctoke !== "x(" && data.stack[a + 1] !== "attribute") {
+        indent = indent + 1;
+      }
+      if (ctoke === "{" || ctoke === "x{") {
+        varindex.push(-1);
+        if (data.types[a - 1] !== "comment") {
+          if (ltype === "markup") {
+            level[a - 1] = indent;
+          } else if (options2.script.braceAllman === true && ltype !== "operator" && ltoke !== "return") {
+            level[a - 1] = indent - 1;
+          } else if (data.stack[a + 1] !== "block" && (deep === "function" || ltoke === ")" || ltoke === "x)" || ltoke === "," || ltoke === "}" || ltype === "markup")) {
+            level[a - 1] = -10;
+          } else if (ltoke === "{" || ltoke === "x{" || ltoke === "[" || ltoke === "}" || ltoke === "x}") {
+            level[a - 1] = indent - 1;
+          }
+        }
+        if (deep === "object") {
+          if (options2.script.objectIndent === "indent") {
+            destruct[destruct.length - 1] = false;
+            level.push(indent);
+            return;
+          }
+          if (options2.script.objectIndent === "inline") {
+            destruct[destruct.length - 1] = true;
+            level.push(-20);
+            return;
+          }
+        }
+        if (deep === "switch") {
+          if (options2.script.noCaseIndent === true) {
+            level.push(indent - 1);
+            return;
+          }
+          indent = indent + 1;
+          level.push(indent);
+          return;
+        }
+        if (destruct[destruct.length - 1] === true) {
+          if (ltype !== "word" && ltype !== "reference") {
+            level.push(-20);
+            return;
+          }
+        }
+        level.push(indent);
+        return;
+      }
+      if (ctoke === "(" || ctoke === "x(") {
+        if (options2.wrap > 0 && ctoke === "(" && data.token[a + 1] !== ")") {
+          count.push(1);
+        }
+        if (ltoke === "-" && (data.token[a - 2] === "(" || data.token[a - 2] === "x(")) {
+          level[a - 2] = -20;
+        }
+        if (ltype === "end" && deeper !== "if" && deeper !== "for" && deeper !== "catch" && deeper !== "else" && deeper !== "do" && deeper !== "try" && deeper !== "finally" && deeper !== "catch") {
+          if (data.types[a - 1] === "comment") {
+            level[a - 1] = indent;
+          } else {
+            level[a - 1] = -20;
+          }
+        }
+        if (ltoke === "async") {
+          level[a - 1] = -10;
+        } else if (deep === "method" || data.token[a - 2] === "function" && ltype === "reference") {
+          if (ltoke === "import" || ltoke === "in" || options2.script.functionNameSpace === true) {
+            level[a - 1] = -10;
+          } else if (ltoke === "}" && data.stack[a - 1] === "function" || ltype === "word" || ltype === "reference" || ltype === "property") {
+            level[a - 1] = -20;
+          } else if (deeper !== "method" && deep !== "method") {
+            level[a - 1] = indent;
+          }
+        }
+        if (ltoke === "+" && (data.token[a - 2].charAt(0) === '"' || data.token[a - 2].charAt(0) === "'")) {
+          level.push(indent);
+          return;
+        }
+        if (ltoke === "}" || ltoke === "x}") {
+          level.push(-20);
+          return;
+        }
+        if (ltoke === "-" && (a < 2 || data.token[a - 2] !== ")" && data.token[a - 2] !== "x)" && data.token[a - 2] !== "]" && data.types[a - 2] !== "reference" && data.types[a - 2] !== "string" && data.types[a - 2] !== "number") || options2.script.functionSpace === false && ltoke === "function") {
+          level[a - 1] = -20;
+        }
+        level.push(-20);
+        return;
+      }
+      if (ctoke === "[") {
+        if (ltoke === "[")
+          list[list.length - 2] = true;
+        if (ltoke === "return" || ltoke === "var" || ltoke === "let" || ltoke === "const") {
+          level[a - 1] = -10;
+        } else if (data.types[a - 1] !== "comment" && data.stack[a - 1] !== "attribute" && (ltype === "end" || ltype === "word" || ltype === "reference")) {
+          level[a - 1] = -20;
+        } else if (ltoke === "[" || ltoke === "{" || ltoke === "x{") {
+          level[a - 1] = indent - 1;
+        }
+        if (data.stack[a] === "attribute") {
+          level.push(-20);
+          return;
+        }
+        if (options2.script.arrayFormat === "indent") {
+          destruct[destruct.length - 1] = false;
+          level.push(indent);
+          return;
+        }
+        if (options2.script.arrayFormat === "inline") {
+          destruct[destruct.length - 1] = true;
+          level.push(-20);
+          return;
+        }
+        if (deep === "method" || destruct[destruct.length - 1] === true) {
+          level.push(-20);
+          return;
+        }
+        let c = a + 1;
+        do {
+          if (data.token[c] === "]") {
+            level.push(-20);
+            return;
+          }
+          if (data.token[c] === ",") {
+            level.push(indent);
+            return;
+          }
+          c = c + 1;
+        } while (c < b);
+        level.push(-20);
+      }
+    }
+    function string() {
+      if (ctoke.length === 1) {
+        level.push(-20);
+        if (data.lines[a] === 0)
+          level[a - 1] = -20;
+      } else if (ctoke.indexOf("#!/") === 0) {
+        level.push(indent);
+      } else {
+        level.push(-10);
+      }
+      if ((ltoke === "," || ltype === "start") && (data.stack[a] === "object" || data.stack[a] === "array") && destruct[destruct.length - 1] === false && a > 0) {
+        level[a - 1] = indent;
+      }
+    }
+    function template() {
+      if (ctype === "template_else") {
+        level[a - 1] = indent - 1;
+        level.push(indent);
+      } else if (ctype === "template_start") {
+        indent = indent + 1;
+        if (data.lines[a - 1] < 1)
+          level[a - 1] = -20;
+        if (data.lines[a] > 0 || ltoke.length === 1 && ltype === "string") {
+          level.push(indent);
+        } else {
+          level.push(-20);
+        }
+      } else if (ctype === "template_end") {
+        indent = indent - 1;
+        if (ltype === "template_start" || data.lines[a - 1] < 1) {
+          level[a - 1] = -20;
+        } else {
+          level[a - 1] = indent;
+        }
+        if (data.lines[a] > 0) {
+          level.push(indent);
+        } else {
+          level.push(-20);
+        }
+      } else if (ctype === "template") {
+        if (data.lines[a] > 0) {
+          level.push(indent);
+        } else {
+          level.push(-20);
+        }
+      }
+    }
+    function templateString() {
+      if (ctype === "template_string_start") {
+        indent = indent + 1;
+        level.push(indent);
+      } else if (ctype === "template_string_else") {
+        fixchain();
+        level[a - 1] = indent - 1;
+        level.push(indent);
+      } else {
+        fixchain();
+        indent = indent - 1;
+        level[a - 1] = indent;
+        level.push(-10);
+      }
+      if (a > 2 && (data.types[a - 2] === "template_string_else" || data.types[a - 2] === "template_string_start")) {
+        if (options2.script.bracePadding === true) {
+          level[a - 2] = -10;
+          level[a - 1] = -10;
+        } else {
+          level[a - 2] = -20;
+          level[a - 1] = -20;
+        }
+      }
+    }
+    function types() {
+      if (data.token[a - 1] === "," || data.token[a - 1] === ":" && data.stack[a - 1] !== "data_type") {
+        level[a - 1] = -10;
+      } else {
+        level[a - 1] = -20;
+      }
+      if (data.types[a] === "type" || data.types[a] === "type_end") {
+        level.push(-10);
+      }
+      if (data.types[a] === "type_start") {
+        level.push(-20);
+      }
+    }
+    function word() {
+      if ((ltoke === ")" || ltoke === "x)") && data.stack[a] === "class" && (data.token[data.begin[a - 1] - 1] === "static" || data.token[data.begin[a - 1] - 1] === "final" || data.token[data.begin[a - 1] - 1] === "void")) {
+        level[a - 1] = -10;
+        level[data.begin[a - 1] - 1] = -10;
+      }
+      if (ltoke === "]")
+        level[a - 1] = -10;
+      if (ctoke === "else" && ltoke === "}") {
+        if (data.token[a - 2] === "x}")
+          level[a - 3] = level[a - 3] - 1;
+        if (options2.script.braceAllman === true || options2.script.elseNewline === true) {
+          level[a - 1] = indent;
+        }
+      }
+      if (ctoke === "new" && apiword.has(data.token[a + 1]))
+        ;
+      if (ctoke === "from" && ltype === "end" && a > 0 && (data.token[data.begin[a - 1] - 1] === "import" || data.token[data.begin[a - 1] - 1] === ",")) {
+        level[a - 1] = -10;
+      }
+      if (ctoke === "function") {
+        if (options2.script.functionSpace === false && a < b - 1 && (data.token[a + 1] === "(" || data.token[a + 1] === "x(")) {
+          level.push(-20);
+          return;
+        }
+        level.push(-10);
+        return;
+      }
+      if (ltoke === "-" && a > 1) {
+        if (data.types[a - 2] === "operator" || data.token[a - 2] === ",") {
+          level[a - 1] = -20;
+        } else if (data.types[a - 2] === "start") {
+          level[a - 2] = -20;
+          level[a - 1] = -20;
+        }
+      } else if (ctoke === "while" && (ltoke === "}" || ltoke === "x}")) {
+        let c = a - 1;
+        let d = 0;
+        do {
+          if (data.token[c] === "}" || data.token[c] === "x}")
+            d = d + 1;
+          if (data.token[c] === "{" || data.token[c] === "x{")
+            d = d - 1;
+          if (d === 0) {
+            if (data.token[c - 1] === "do") {
+              level[a - 1] = -10;
+              break;
+            }
+            level[a - 1] = indent;
+            break;
+          }
+          c = c - 1;
+        } while (c > -1);
+      } else if (ctoke === "in" || (ctoke === "else" && options2.script.elseNewline === false && options2.script.braceAllman === false || ctoke === "catch") && (ltoke === "}" || ltoke === "x}")) {
+        level[a - 1] = -10;
+      } else if (ctoke === "var" || ctoke === "let" || ctoke === "const") {
+        varindex[varindex.length - 1] = a;
+        if (ltype === "end")
+          level[a - 1] = indent;
+        if (data.token[data.begin[a] - 1] !== "for") {
+          let c = a + 1;
+          let d = 0;
+          do {
+            if (data.types[c] === "end")
+              d = d - 1;
+            if (data.types[c] === "start")
+              d = d + 1;
+            if (d < 0 || d === 0 && (data.token[c] === ";" || data.token[c] === ",")) {
+              break;
+            }
+            c = c + 1;
+          } while (c < b);
+          if (data.token[c] === ",")
+            indent = indent + 1;
+        }
+        level.push(-10);
+        return;
+      }
+      if ((ctoke === "default" || ctoke === "case") && ltype !== "word" && data.stack[a] === "switch") {
+        level[a - 1] = indent - 1;
+        level.push(-10);
+        return;
+      }
+      if (ctoke === "catch" && ltoke === ".") {
+        level[a - 1] = -20;
+        level.push(-20);
+        return;
+      }
+      if (ctoke === "catch" || ctoke === "finally") {
+        level[a - 1] = -10;
+        level.push(-10);
+        return;
+      }
+      if (options2.script.bracePadding === false && a < b - 1 && data.token[a + 1].charAt(0) === "}") {
+        level.push(-20);
+        return;
+      }
+      if (data.stack[a] === "object" && (ltoke === "{" || ltoke === ",") && (data.token[a + 1] === "(" || data.token[a + 1] === "x(")) {
+        level.push(-20);
+        return;
+      }
+      if (data.types[a - 1] === "comment" && data.token[data.begin[a]] === "(") {
+        level[a - 1] = indent + 1;
+      }
+      if (options2.script.inlineReturn) {
+        if (data.stack[a] === "if" && ctoke === "return" && (ltoke === "x{" || ltoke === "{")) {
+          const lastelse = data.begin.lastIndexOf(data.begin[a - 1], a - 3);
+          if (data.token[lastelse - 2] === "else") {
+            if (ltoke === "x{")
+              data.token[a - 1] = "{";
+            if (data.token[data.ender[a]] === "x}")
+              data.token[data.ender[a]] = "}";
+            data.lines[data.ender[a]] = data.lines[data.ender[a]] - 1;
+          } else {
+            if (data.token[data.ender[a - 1] + 2] !== "if" && data.token[data.ender[a - 1] + 1] !== "else") {
+              level[a - 1] = -20;
+              if (ltoke === "{")
+                data.token[a - 1] = "x{";
+              if (data.token[data.ender[a]] === "}")
+                data.token[data.ender[a]] = "x}";
+            } else if (data.token[data.ender[a - 1] + 2] !== "if" && data.token[data.ender[a - 1] + 1] !== "x{") {
+              level[a - 1] = -20;
+              data.lines[data.ender[a - 1] + 2] = data.lines[data.ender[a - 1] + 2] - 1;
+              if (data.token[a - 1] === "{")
+                data.token[a - 1] = "x{";
+              if (data.token[data.ender[a]] === "}")
+                data.token[data.ender[a]] = "x}";
+              if (data.token[data.ender[a - 1] + 2] === "{")
+                data.token[data.ender[a - 1] + 2] = "x{";
+            }
+          }
+        }
+        if ((ltoke === "x}" || ltoke === "}") && (data.stack[a - 1] === "if" && ctoke === "else" && (data.token[a + 1] === "{" || data.token[a + 1] === "x{") && data.token[a + 2] === "return")) {
+          if (data.token[a - 2] === "x;")
+            data.token[a - 2] = ";";
+        }
+        if (ltoke === "x{" && ctoke === "return" && data.stack[a] === "else") {
+          level[a - 1] = -20;
+          if (data.token[data.ender[a - 1] - 1] === "x;")
+            data.token[data.ender[a - 1] - 1] = ";";
+          data.lines[data.ender[a - 1]] = data.lines[data.ender[a - 1]] - 1;
+          data.lines[data.ender[a] + 1] = data.lines[data.ender[a] + 1] - 1;
+        }
+        if (ltoke === "x}" && ctoke === "else" && data.token[a + 1] === "x{" && data.token[a + 2] === "return" && data.token[data.ender[a] - 1] === "}") {
+          data.token[data.ender[a] - 1] = "x}";
+        }
+      }
+      level.push(-10);
+    }
+    do {
+      if (data.lexer[a] === lexer) {
+        ctype = data.types[a];
+        ctoke = data.token[a];
+        if (ctype === "comment") {
+          comment2();
+        } else if (ctype === "regex") {
+          level.push(-20);
+        } else if (ctype === "string") {
+          string();
+        } else if (ctype.indexOf("template_string") === 0) {
+          templateString();
+        } else if (ctype === "separator") {
+          separator();
+        } else if (ctype === "start") {
+          start();
+        } else if (ctype === "end") {
+          end();
+        } else if (ctype === "type" || ctype === "type_start" || ctype === "type_end") {
+          types();
+        } else if (ctype === "operator") {
+          operator();
+        } else if (ctype === "word") {
+          word();
+        } else if (ctype === "reference") {
+          reference2();
+        } else if (ctype === "markup") {
+          markup3();
+        } else if (ctype.indexOf("template") === 0) {
+          template();
+        } else if (ctype === "generic") {
+          if (ltoke !== "return" && ltoke.charAt(0) !== "#" && ltype !== "operator" && ltoke !== "public" && ltoke !== "private" && ltoke !== "static" && ltoke !== "final" && ltoke !== "implements" && ltoke !== "class" && ltoke !== "void") {
+            level[a - 1] = -20;
+          }
+          if (data.token[a + 1] === "(" || data.token[a + 1] === "x(") {
+            level.push(-20);
+          } else {
+            level.push(-10);
+          }
+        } else {
+          level.push(-10);
+        }
+        if (ctype !== "comment") {
+          ltype = ctype;
+          ltoke = ctoke;
+        }
+        if (count.length > 0 && data.token[a] !== ")") {
+          if (data.types[a] === "comment" && count[count.length - 1] > -1) {
+            count[count.length - 1] = options2.wrap + 1;
+          } else if (level[a] > -1 || data.token[a].charAt(0) === "`" && data.token[a].indexOf("\n") > 0) {
+            count[count.length - 1] = -1;
+          } else if (count[count.length - 1] > -1) {
+            count[count.length - 1] = count[count.length - 1] + data.token[a].length;
+            if (level[a] === -10)
+              count[count.length - 1] = count[count.length - 1] + 1;
+          }
+        }
+      } else {
+        external();
+      }
+      a = a + 1;
+    } while (a < b);
+    return level;
+  })();
+  const output = (() => {
+    const build = [];
+    const tab = (() => {
+      const tabby = [];
+      const ch = options2.indentChar;
+      let index = options2.indentSize;
+      if (typeof index !== "number" || index < 1)
+        return "";
+      do {
+        tabby.push(ch);
+        index = index - 1;
+      } while (index > 0);
+      return tabby.join("");
+    })();
+    const lf = options2.crlf === true ? "\r\n" : "\n";
+    const pres = options2.preserveLine + 1;
+    const invisibles = ["x;", "x}", "x{", "x(", "x)"];
+    let a = prettify.start;
+    let external = "";
+    options2.indentLevel;
+    function nl(tabs) {
+      const linesout = [];
+      const total = (() => {
+        if (a === b - 1)
+          return 1;
+        if (data.lines[a + 1] - 1 > pres)
+          return pres;
+        if (data.lines[a + 1] > 1)
+          return data.lines[a + 1] - 1;
+        return 1;
+      })();
+      let index = 0;
+      if (tabs < 0)
+        tabs = 0;
+      do {
+        linesout.push(lf);
+        index = index + 1;
+      } while (index < total);
+      if (tabs > 0) {
+        index = 0;
+        do {
+          linesout.push(tab);
+          index = index + 1;
+        } while (index < tabs);
+      }
+      return linesout.join("");
+    }
+    if (options2.script.vertical === true) {
+      let vertical2 = function(end) {
+        let longest = 0;
+        let complex = 0;
+        let aa = end - 1;
+        let bb = 0;
+        let cc2 = 0;
+        const begin = data.begin[a];
+        const list = [];
+        do {
+          if ((data.begin[aa] === begin || data.token[aa] === "]" || data.token[aa] === ")") && (data.token[aa + 1] === ":" && data.stack[aa] === "object" || data.token[aa + 1] === "=")) {
+            bb = aa;
+            complex = 0;
+            do {
+              if (data.begin[bb] === begin) {
+                if (data.token[bb] === "," || data.token[bb] === ";" || data.token[bb] === "x;" || levels[bb] > -1 && data.types[bb] !== "comment") {
+                  if (data.token[bb + 1] === ".") {
+                    complex = complex + options2.indentSize * options2.indentChar.length;
+                  }
+                  break;
+                }
+              } else if (levels[bb] > -1) {
+                break;
+              }
+              if (data.types[bb] !== "comment") {
+                if (levels[bb - 1] === -10)
+                  complex = complex + 1;
+                complex = data.token[bb].length + complex;
+              }
+              bb = bb - 1;
+            } while (bb > begin);
+            cc2 = bb;
+            if (data.token[cc2] === "," && data.token[aa + 1] === "=") {
+              do {
+                if (data.types[cc2] === "end")
+                  cc2 = data.begin[cc2];
+                if (data.begin[cc2] === begin) {
+                  if (data.token[cc2] === ";" || data.token[cc2] === "x;")
+                    break;
+                  if (data.token[cc2] === "var" || data.token[cc2] === "const" || data.token[cc2] === "let") {
+                    complex = complex + options2.indentSize * options2.indentChar.length;
+                    break;
+                  }
+                }
+                cc2 = cc2 - 1;
+              } while (cc2 > begin);
+            }
+            if (complex > longest)
+              longest = complex;
+            list.push([aa, complex]);
+            aa = bb;
+          } else if (data.types[aa] === "end") {
+            aa = data.begin[aa];
+          }
+          aa = aa - 1;
+        } while (aa > begin);
+        aa = list.length;
+        if (aa > 0) {
+          do {
+            aa = aa - 1;
+            bb = list[aa][1];
+            if (bb < longest) {
+              do {
+                data.token[list[aa][0]] = data.token[list[aa][0]] + " ";
+                bb = bb + 1;
+              } while (bb < longest);
+            }
+          } while (aa > 0);
+        }
+      };
+      a = b;
+      do {
+        a = a - 1;
+        if (data.lexer[a] === "script") {
+          if (data.token[a] === "}" && data.token[a - 1] !== "{" && levels[data.begin[a]] > 0) {
+            vertical2(a);
+          }
+        } else {
+          a = data.begin[a];
+        }
+      } while (a > 0);
+    }
+    a = prettify.start;
+    do {
+      if (data.lexer[a] === lexer || prettify.beautify[data.lexer[a]] === void 0) {
+        if (data.types[a] === "comment" && options2.commentIndent === true) {
+          if (/\n/.test(data.token[a])) {
+            const space = data.begin[a] > -1 ? data.token[a].charAt(2) === "*" ? repeatChar(levels[a], tab) + options2.indentChar : repeatChar(levels[a], tab) : options2.indentChar;
+            const comm = data.token[a].split(/\n/);
+            let i = 1;
+            do {
+              comm[i] = space + comm[i].trimLeft();
+              i = i + 1;
+            } while (i < comm.length);
+            data.token.splice(a, 1, comm.join("\n"));
+          }
+        }
+        if (invisibles.indexOf(data.token[a]) < 0) {
+          if (data.token[a] !== ";" || options2.script.noSemicolon === false) {
+            build.push(data.token[a]);
+          } else if (levels[a] < 0 && data.types[a + 1] !== "comment") {
+            build.push(";");
+          }
+        }
+        if (a < b - 1 && data.lexer[a + 1] !== lexer && data.begin[a] === data.begin[a + 1] && data.types[a + 1].indexOf("end") < 0 && data.token[a] !== ",") {
+          build.push(" ");
+        } else if (levels[a] > -1) {
+          if ((levels[a] > -1 && data.token[a] === "{" || levels[a] > -1 && data.token[a + 1] === "}") && data.lines[a] < 3 && options2.script.braceNewline === true) {
+            if (data.lines[a + 1] < 3)
+              build.push(nl(0));
+          }
+          build.push(nl(levels[a]));
+          levels[a];
+        } else if (levels[a] === -10) {
+          build.push(" ");
+          if (data.lexer[a + 1] !== lexer)
+            ;
+        }
+      } else {
+        if (externalIndex[a] === a) {
+          build.push(data.token[a]);
+        } else {
+          prettify.end = externalIndex[a];
+          prettify.start = a;
+          external = prettify.beautify[data.lexer[a]](options2);
+          build.push(external.replace(/\s+$/, ""));
+          a = prettify.iterator;
+          if (levels[a] === -10) {
+            build.push(" ");
+          } else if (levels[a] > -1) {
+            build.push(nl(levels[a]));
+          }
+          options2.indentLevel = 0;
+        }
+      }
+      a = a + 1;
+    } while (a < b);
+    prettify.iterator = b - 1;
+    return build.join("");
+  })();
+  return output;
+};
+
+// src/prettify/exports.ts
+var exports_exports = {};
+__export(exports_exports, {
+  format: () => format,
+  language: () => detect,
+  options: () => options,
+  parse: () => parse2
+});
+
+// src/languages/css.ts
+var css = [
+  {
+    pattern: /[a-z-]+:(?!:).+;/,
+    type: "keyword"
+  },
+  {
+    pattern: /<(\/)?style>/,
+    type: "not"
+  }
+];
+
+// src/languages/html.ts
+var html = [
+  {
+    pattern: /<!DOCTYPE (html|HTML PUBLIC .+)>/,
+    type: "meta.module",
+    nearTop: true
+  },
+  {
+    pattern: /<[a-z0-9]+(\s*[\w]+=('|").+('|")\s*)?>.*<\/[a-z0-9]+>/g,
+    type: "keyword"
+  },
+  {
+    pattern: /<!--(.*)(-->)?/,
+    type: "comment.block"
+  },
+  {
+    pattern: /[a-z-]+=("|').+("|')/g,
+    type: "keyword.other"
+  },
+  {
+    pattern: /{[{%][\s\S]*?[%}]}/g,
+    type: "not"
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: "not",
+    deterministic: "liquid"
+  }
+];
+
+// src/languages/liquid.ts
+var liquid = [
+  {
+    pattern: /<!DOCTYPE (html|HTML PUBLIC .+)>/,
+    type: "meta.module",
+    nearTop: true
+  },
+  {
+    pattern: /<[a-z0-9]+(\s*[\w]+=('|").+('|")\s*)?>.*<\/[a-z0-9]+>/g,
+    type: "keyword"
+  },
+  {
+    pattern: /<!--(.*)(-->)?/,
+    type: "comment.block"
+  },
+  {
+    pattern: /[a-z-]+=("|').+("|')/g,
+    type: "keyword.other"
+  },
+  {
+    pattern: /{[{%][\s\S]*?[%}]}/g,
+    type: "keyword",
+    deterministic: "liquid",
+    unless: /\/.*?{[{%][\s\S]*?[%}]}.*\//
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: "meta.module",
+    deterministic: "liquid"
+  }
+];
+
+// src/languages/json.ts
+var json = [
+  {
+    pattern: /^[{[]$/,
+    type: "meta.module",
+    nearTop: true
+  },
+  {
+    pattern: /^\s*".+":\s*(".+"|[0-9]+|null|true|false)(,)?$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^\s*".+":\s*(\{|\[)$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^\s*".+":\s*\{(\s*".+":\s*(".+"|[0-9]+|null|true|false)(,)?\s*){1,}\}(,)?$/,
+    type: "keyword"
+  },
+  {
+    pattern: /\s*".+"\s*\[\s*((".+"|[0-9]+|null|true|false)(,)?\s*){1,}\](,)?$/,
+    type: "keyword"
+  }
+];
+
+// src/languages/yaml.ts
+var yaml = [
+  {
+    pattern: /^( )*([A-Za-z0-9_. ]+):( )?(.*)?$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^( )*-( )([A-Za-z0-9_. ]+):( )?(.*)?$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^( )*-( )(.*)$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^( )*([A-Za-z0-9_. ]+):( )!!binary( )?(|)?$/,
+    type: "constant.type"
+  },
+  {
+    pattern: /^( )*([A-Za-z0-9_. ]+):( )\|$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^( )*([A-Za-z0-9_. ]+):( )>$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^( )*\?( )(.*)$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^( )*\?( )\|$/,
+    type: "constant.type"
+  },
+  {
+    pattern: /^( )*<<:( )(\*)(.*)?$/,
+    type: "constant.type"
+  },
+  {
+    pattern: /^( )*([A-Za-z0-9_. ]+):(.*)?( )?{$/,
+    type: "not"
+  },
+  {
+    pattern: /^( )*([A-Za-z0-9_. ]+):(.*)?( )?,$/,
+    type: "not"
+  }
+];
+
+// src/languages/javascript.ts
+var javascript = [
+  {
+    pattern: /undefined/g,
+    type: "keyword"
+  },
+  {
+    pattern: /window\./g,
+    type: "keyword"
+  },
+  {
+    pattern: /console\.log\s*\(/,
+    type: "keyword.print"
+  },
+  {
+    pattern: /(var|const|let)\s+\w+\s*=?/,
+    type: "keyword.variable"
+  },
+  {
+    pattern: /(('|").+('|")\s*|\w+):\s*[{[]/,
+    type: "constant.array"
+  },
+  {
+    pattern: /===/g,
+    type: "keyword.operator"
+  },
+  {
+    pattern: /!==/g,
+    type: "keyword.operator"
+  },
+  {
+    pattern: /function\*?\s*([A-Za-z$_][\w$]*)?\s*[(][^:;()]*[)]\s*{/g,
+    type: "keyword.function"
+  },
+  {
+    pattern: /\(* => {/g,
+    type: "keyword.function"
+  },
+  {
+    pattern: /null/g,
+    type: "constant.null"
+  },
+  {
+    pattern: /\(.*\)\s*=>\s*.+/,
+    type: "keyword.control"
+  },
+  {
+    pattern: /(else )?if\s+\(.+\)/,
+    type: "keyword.control"
+  },
+  {
+    pattern: /while\s+\(.+\)/,
+    type: "keyword.control"
+  },
+  {
+    pattern: /\*\w+/,
+    type: "not"
+  },
+  {
+    pattern: /(var|const|let)\s+\w+:\s*(string|number|boolean|string)(?:\[\])?/,
+    type: "not"
+  },
+  {
+    pattern: /(interface|type)\s+\w+?/,
+    type: "not"
+  },
+  {
+    pattern: /(declare|namespace)\s+\w+?/,
+    type: "not"
+  },
+  {
+    pattern: /<(\/)?script\s*(type=('|")text\/javascript('|"))?>/,
+    type: "not"
+  },
+  {
+    pattern: /<(\/)?style>/,
+    type: "not"
+  },
+  {
+    pattern: /fn\s[A-Za-z0-9<>,]+\(.*\)\s->\s\w+(\s\{|)/,
+    type: "not"
+  },
+  {
+    pattern: /{[{%][\s\S]*?[%}]}/g,
+    type: "not"
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: "not",
+    deterministic: "liquid"
+  }
+];
+
+// src/languages/typescript.ts
+var typescript = [
+  {
+    pattern: /undefined/g,
+    type: "keyword"
+  },
+  {
+    pattern: /window\./g,
+    type: "keyword"
+  },
+  {
+    pattern: /console\.log\s*\(/,
+    type: "keyword.print"
+  },
+  {
+    pattern: /(var|const|let)\s+\w+\s*=?/,
+    type: "keyword.variable"
+  },
+  {
+    pattern: /(('|").+('|")\s*|\w+):\s*[{[]/,
+    type: "constant.array"
+  },
+  {
+    pattern: /===/g,
+    type: "keyword.operator"
+  },
+  {
+    pattern: /!==/g,
+    type: "keyword.operator"
+  },
+  {
+    pattern: /function\*?\s*([A-Za-z$_][\w$]*)?\s*[(][^:;()]*[)]\s*{/g,
+    type: "keyword.function"
+  },
+  {
+    pattern: /\(* => {/g,
+    type: "keyword.function"
+  },
+  {
+    pattern: /null/g,
+    type: "constant.null"
+  },
+  {
+    pattern: /\(.*\)\s*=>\s*.+/,
+    type: "keyword.control"
+  },
+  {
+    pattern: /(else )?if\s+\(.+\)/,
+    type: "keyword.control"
+  },
+  {
+    pattern: /while\s+\(.+\)/,
+    type: "keyword.control"
+  },
+  {
+    pattern: /\*\w+/,
+    type: "not"
+  },
+  {
+    pattern: /<(\/)?script( type=('|")text\/javascript('|"))?>/,
+    type: "not"
+  },
+  {
+    pattern: /<(\/)?style>/,
+    type: "not"
+  },
+  {
+    pattern: /fn\s[A-Za-z0-9<>,]+\(.*\)\s->\s\w+(\s\{|)/,
+    type: "not"
+  },
+  {
+    pattern: /{[{%][\s\S]*?[%}]}/g,
+    type: "not"
+  },
+  {
+    pattern: /{%-?\s*(end)?(schema|style(sheet)?|javascript)\s*-?%}/,
+    type: "not",
+    deterministic: "liquid"
+  },
+  {
+    pattern: /(var|const|let)\s+\w+:\s*(string|number|boolean|string|any)(\[\])?/,
+    type: "keyword.variable"
+  },
+  {
+    pattern: /(\(\s*)?\w+:\s*(string|number|boolean|string|any)(\[\])?(\s*\))?/,
+    type: "keyword.other"
+  },
+  {
+    pattern: /\):\s*(\w+)(\[\])?\s*(=>|\{)\s*/,
+    type: "keyword.function"
+  },
+  {
+    pattern: /(interface|type)\s+\w+?/,
+    type: "keyword.other"
+  },
+  {
+    pattern: /(declare|namespace)\s+\w+?/,
+    type: "keyword.other"
+  },
+  {
+    pattern: /as\s+\w+?/,
+    type: "keyword.other"
+  }
+];
+
+// src/languages/markdown.ts
+var markdown = [
+  {
+    pattern: /^(#){2,6}\s.+/,
+    type: "keyword"
+  },
+  {
+    pattern: /^(?!!)(=|-){2,}(?<!>)$/,
+    type: "meta.module"
+  },
+  {
+    pattern: /(!)?\[.+\]\(.+\)/,
+    type: "keyword"
+  },
+  {
+    pattern: /\[.+\]\[.+\]/,
+    type: "keyword"
+  },
+  {
+    pattern: /^\[.+\]:\s?(<)?(http)?/,
+    type: "keyword"
+  },
+  {
+    pattern: /^(> .*)+/,
+    type: "macro"
+  },
+  {
+    pattern: /^```([A-Za-z0-9#_]+)?$/,
+    type: "keyword"
+  },
+  {
+    pattern: /^---$/,
+    type: "meta.module",
+    nearTop: true
+  }
+];
+
+// src/parser/detect.ts
+var shebangMap = {
+  node: "javascript",
+  jsc: "javascript",
+  deno: "typescript"
+};
+var languages = {
+  css,
+  html,
+  liquid,
+  javascript,
+  typescript,
+  json,
+  markdown,
+  yaml
+};
+function detectLanguage(sample) {
+  let linesOfCode = sample.replace(/\r\n?/g, "\n").replace(/\n{2,}/g, "\n").split("\n");
+  if (linesOfCode.length > 500) {
+    linesOfCode = linesOfCode.filter((_, index) => {
+      if (nearTop(index, linesOfCode))
+        return true;
+      return index % Math.ceil(linesOfCode.length / 500) === 0;
+    });
+  }
+  if (linesOfCode[0].startsWith("#!")) {
+    if (linesOfCode[0].startsWith("#!/usr/bin/env")) {
+      let language;
+      language = linesOfCode[0].split(" ").slice(1).join(" ");
+      language = shebangMap[language] || language.charAt(0).toUpperCase() + language.slice(1);
+      return {
+        language,
+        statistics: {},
+        linesOfCode: linesOfCode.length
+      };
+    }
+    if (linesOfCode[0].startsWith("#!/bin/bash")) {
+      return {
+        language: "javascript",
+        statistics: {},
+        linesOfCode: linesOfCode.length
+      };
+    }
+  }
+  const pairs = keys(languages).map((key) => ({ language: key, checkers: languages[key] }));
+  const results = [];
+  const determine = pairs.reduce((acc, { language, checkers }) => {
+    acc[language] = checkers.filter((pattern) => "deterministic" in pattern);
+    return acc;
+  }, {});
+  for (let i = 0; i < pairs.length; i++) {
+    const { language, checkers } = pairs[i];
+    let points = 0;
+    for (let j = 0; j < linesOfCode.length; j++) {
+      if (/^\s*$/.test(linesOfCode[j]))
+        continue;
+      if (language in determine) {
+        const determined = definitive(linesOfCode[j], checkers);
+        if (determined) {
+          return {
+            language: determined,
+            statistics: {},
+            linesOfCode: j
+          };
+        }
+      }
+      if (!nearTop(j, linesOfCode)) {
+        points += getPoints(linesOfCode[j], checkers.filter((checker) => !checker.nearTop));
+      } else {
+        points += getPoints(linesOfCode[j], checkers);
+      }
+    }
+    results.push({ language, points });
+  }
+  const bestResult = results.reduce((a, b) => a.points >= b.points ? a : b, {
+    points: 0,
+    language: ""
+  });
+  const statistics = {};
+  for (let i = 0; i < results.length; i++)
+    statistics[results[i].language] = results[i].points;
+  return {
+    language: bestResult.language,
+    statistics,
+    linesOfCode: linesOfCode.length
+  };
+}
+function definitive(lineOfCode, checkers) {
+  for (const { pattern, deterministic, unless = null } of checkers) {
+    if (pattern.test(lineOfCode) && unless !== null && !unless.test(lineOfCode)) {
+      return deterministic;
+    }
+  }
+  return false;
+}
+function parsePoint(type) {
+  switch (type) {
+    case "keyword.print":
+    case "meta.import":
+    case "meta.module":
+      return 5;
+    case "keyword.function":
+    case "constant.null":
+      return 4;
+    case "constant.type":
+    case "constant.string":
+    case "constant.numeric":
+    case "constant.boolean":
+    case "constant.dictionary":
+    case "constant.array":
+    case "keyword.variable":
+      return 3;
+    case "section.scope":
+    case "keyword.other":
+    case "keyword.operator":
+    case "keyword.control":
+    case "keyword.visibility":
+    case "keyword":
+      return 2;
+    case "comment.block":
+    case "comment.line":
+    case "comment.documentation":
+    case "macro":
+      return 1;
+    case "not":
+    default:
+      return -20;
+  }
+}
+function getPoints(lineOfCode, checkers) {
+  const checker = checkers.map((o) => {
+    if (o.pattern.test(lineOfCode))
+      return parsePoint(o.type);
+    return 0;
+  });
+  return checker.reduce((memo, num) => memo + num, 0);
+}
+function nearTop(index, linesOfCode) {
+  if (linesOfCode.length <= 10)
+    return true;
+  return index < linesOfCode.length / 10;
+}
+
+// src/parser/language.ts
+var lexmap = create(null);
+var map = create(null);
+{
+  lexmap.markup = "markup";
+  lexmap.html = "markup";
+  lexmap.liquid = "markup";
+  lexmap.js = "script";
+  lexmap.ts = "script";
+  lexmap.javascript = "script";
+  lexmap.typescript = "script";
+  lexmap.json = "script";
+  lexmap.jsx = "script";
+  lexmap.tsx = "script";
+  lexmap.less = "style";
+  lexmap.scss = "style";
+  lexmap.sass = "style";
+  lexmap.css = "style";
+  lexmap.text = "text";
+  lexmap.xml = "markup";
+  map.javascript = "JavaScript";
+  map.json = "JSON";
+  map.jsx = "JSX";
+  map.html = "HTML";
+  map.liquid = "Liquid";
+  map.markup = "markup";
+  map.scss = "SCSS";
+  map.text = "Plain Text";
+  map.typescript = "TypeScript";
+}
+function setLexer(input) {
+  if (typeof input !== "string")
+    return "script";
+  if (input.indexOf("html") > -1)
+    return "markup";
+  if (lexmap[input] === void 0)
+    return "script";
+  return lexmap[input];
+}
+function setLanguageName(input) {
+  if (typeof input !== "string" || map[input] === void 0)
+    return input.toUpperCase();
+  return map[input];
+}
+function reference(language) {
+  const result = create(null);
+  result.language = language;
+  result.languageName = setLanguageName(language);
+  result.lexer = setLexer(language);
+  return result;
+}
+detect.reference = reference;
+detect.listen = function(callback) {
+  prettify.hooks.language.push(callback);
+};
+function detect(sample) {
+  const { language } = detectLanguage(sample);
+  const result = create(null);
+  result.language = language;
+  result.languageName = setLanguageName(language);
+  result.lexer = setLexer(language);
+  if (prettify.hooks.language.length > 0) {
+    for (const hook of prettify.hooks.language) {
+      const langhook = hook(result);
+      if (typeof langhook === "object")
+        assign(result, langhook);
+    }
+  }
+  return result;
+}
+
+// src/parser/comment.ts
+function comment(prettify2) {
+  const definitions2 = prettify2.definitions;
+  const sindex = prettify2.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@format\s*(\w+)?\s*{\s+/);
+  const signore = prettify2.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify-ignore\b/);
+  const k = keys(definitions2);
+  const len = k.length;
+  let a = 0;
+  if (signore > -1 && prettify2.source.slice(0, signore).trimStart() === "")
+    return false;
+  if (sindex > -1 && (sindex === 0 || `"':`.indexOf(prettify2.source.charAt(sindex - 1)) < 0)) {
+    let esc2 = function() {
+      if (source.charAt(a2 - 1) !== "\\")
+        return false;
+      let x = a2;
+      do {
+        x = x - 1;
+      } while (x > 0 && source.charAt(x) === "\\");
+      return (a2 - x) % 2 === 0;
+    };
+    const ops = [];
+    const pdcom = sindex;
+    const source = prettify2.source;
+    const len2 = source.length;
+    let a2 = pdcom;
+    let b2 = 0;
+    let quote = "";
+    let item = "";
+    let lang = "";
+    let lex = "";
+    let valkey = [];
+    let op = [];
+    let rcb;
+    let comment2;
+    if (source.charAt(a2) === "<") {
+      comment2 = "<!--";
+    } else if (source.charAt(a2 + 1) === "/") {
+      comment2 = "//";
+    } else if (source.charAt(a2 + 1) === "%") {
+      rcb = source.indexOf("}", a2 + 1);
+      if (source[rcb - 1].charCodeAt(0) === 37 /* PER */)
+        comment2 = source.slice(a2, rcb + 1);
+    } else {
+      comment2 = "/*";
+    }
+    do {
+      if (source.slice(a2 - 7, a2) === "@format")
+        break;
+      a2 = a2 + 1;
+    } while (a2 < len2);
+    do {
+      if (esc2() === false) {
+        if (quote === "") {
+          if (source.charAt(a2) === '"' || source.charAt(a2) === "'" || source.charAt(a2) === "`") {
+            quote = source.charAt(a2);
+            if (ops.length > 0 && ops[ops.length - 1].charAt(ops[ops.length - 1].length - 1) === ":")
+              b2 = a2;
+          } else if (/\s/.test(source.charAt(a2)) === false && b2 === 0) {
+            b2 = a2;
+          } else if (source.charAt(a2) === "," || /\s/.test(source.charAt(a2)) === true && b2 > 0) {
+            item = source.slice(b2, a2);
+            if (ops.length > 0) {
+              if (ops.length > 0 && item === ":" && ops[ops.length - 1].indexOf(":") < 0) {
+                ops[ops.length - 1] = ops[ops.length - 1] + item;
+                b2 = a2;
+              } else if (ops.length > 0 && ops[ops.length - 1].charAt(ops[ops.length - 1].length - 1) === ":") {
+                ops[ops.length - 1] = ops[ops.length - 1] + item;
+                b2 = 0;
+              } else {
+                ops.push(item);
+                b2 = 0;
+              }
+            } else {
+              ops.push(item);
+              b2 = 0;
+            }
+          }
+          if (comment2 === "<!--" && source.slice(a2 - 2, a2 + 1) === "-->")
+            break;
+          if (comment2 === "//" && source.charAt(a2) === "\n")
+            break;
+          if (comment2 === "/*" && source.slice(a2 - 1, a2 + 1) === "*/")
+            break;
+          if (comment2.charCodeAt(1) === 37 /* PER */ && source.slice(a2 - 1, a2 + 1) === "%" && source.indexOf("endcomment", source.indexOf("{%", rcb)) > 0)
+            break;
+        } else if (source.charAt(a2) === quote && quote !== "${") {
+          quote = "";
+        } else if (quote === "`" && source.slice(a2, a2 + 2) === "${") {
+          quote = "${";
+        } else if (quote === "${" && source.charAt(a2) === "}") {
+          quote = "`";
+        }
+      }
+      a2 = a2 + 1;
+    } while (a2 < len2);
+    if (b2 > 0) {
+      quote = source.slice(b2, a2 + 1);
+      if (comment2 === "<!--")
+        quote = quote.replace(/\s*-+>$/, "");
+      else if (comment2 === "//")
+        quote = quote.replace(/\s+$/, "");
+      else
+        quote = quote.replace(/\s*\u002a\/$/, "");
+      ops.push(quote);
+    }
+    a2 = ops.length;
+    if (a2 > 0) {
+      do {
+        a2 = a2 - 1;
+        if (ops[a2].indexOf(":") > 0) {
+          op = [ops[a2].slice(0, ops[a2].indexOf(":")), ops[a2].slice(ops[a2].indexOf(":") + 1)];
+        } else if (definitions2[ops[a2]] !== void 0 && definitions2[ops[a2]].type === "boolean") {
+          prettify2.options[ops[a2]] = true;
+        }
+        if (op.length === 2 && definitions2[op[0]] !== void 0) {
+          if (op[1].charAt(op[1].length - 1) === op[1].charAt(0) && (op[1].charAt(0) === '"' || op[1].charAt(0) === "'" || op[1].charAt(0) === "`")) {
+            op[1] = op[1].slice(1, op[1].length - 1);
+          }
+          if (definitions2[op[0]].type === "number" && isNaN(Number(op[1])) === false) {
+            prettify2.options[op[0]] = Number(op[1]);
+          } else if (definitions2[op[0]].type === "boolean") {
+            prettify2.options[op[0]] = op[1] === "true";
+          } else {
+            if (definitions2[op[0]].values !== void 0) {
+              valkey = keys(definitions2[op[0]].values);
+              b2 = valkey.length;
+              do {
+                b2 = b2 - 1;
+                if (valkey[b2] === op[1]) {
+                  prettify2.options[op[0]] = op[1];
+                  break;
+                }
+              } while (b2 > 0);
+            } else {
+              if (op[0] === "language") {
+                lang = op[1];
+              } else if (op[0] === "lexer") {
+                lex = op[1];
+              }
+              prettify2.options[op[0]] = op[1];
+            }
+          }
+        }
+      } while (a2 > 0);
+      if (lex === "" && lang !== "")
+        lex = setLexer(lang);
+    }
+  }
+  if (prettify2.options.lexer === "script") {
+    if (prettify2.options.script.styleGuide !== void 0) {
+      switch (prettify2.options.script.styleGuide) {
+        case "airbnb":
+          prettify2.options.wrap = 80;
+          prettify2.options.attemptCorrection = true;
+          prettify2.options.indentChar = " ";
+          prettify2.options.indentSize = 2;
+          prettify2.options.preserveLine = 1;
+          prettify2.options.script.quoteConvert = "single";
+          prettify2.options.script.variableList = "each";
+          prettify2.options.script.endComma = "always";
+          prettify2.options.script.bracePadding = true;
+          break;
+        case "crockford":
+          prettify2.options.indentChar = " ";
+          prettify2.options.indentSize = 4;
+          prettify2.options.attemptCorrection = true;
+          prettify2.options.script.bracePadding = false;
+          prettify2.options.script.elseNewline = false;
+          prettify2.options.script.endComma = "never";
+          prettify2.options.script.noCaseIndent = true;
+          prettify2.options.script.functionSpace = true;
+          prettify2.options.script.variableList = "each";
+          prettify2.options.script.vertical = false;
+          break;
+        case "google":
+          prettify2.options.wrap = -1;
+          prettify2.options.attemptCorrection = true;
+          prettify2.options.indentChar = " ";
+          prettify2.options.indentSize = 4;
+          prettify2.options.preserveLine = 1;
+          prettify2.options.script.quoteConvert = "single";
+          prettify2.options.script.vertical = false;
+          break;
+        case "jquery":
+          prettify2.options.wrap = 80;
+          prettify2.options.attemptCorrection = true;
+          prettify2.options.indentChar = "	";
+          prettify2.options.indentSize = 1;
+          prettify2.options.script.bracePadding = true;
+          prettify2.options.script.quoteConvert = "double";
+          prettify2.options.script.variableList = "each";
+          break;
+        case "jslint":
+          prettify2.options.indentChar = " ";
+          prettify2.options.indentSize = 4;
+          prettify2.options.attemptCorrection = true;
+          prettify2.options.script.bracePadding = false;
+          prettify2.options.script.elseNewline = false;
+          prettify2.options.script.endComma = "never";
+          prettify2.options.script.noCaseIndent = true;
+          prettify2.options.script.functionSpace = true;
+          prettify2.options.script.variableList = "each";
+          prettify2.options.script.vertical = false;
+          break;
+        case "standard":
+          prettify2.options.wrap = 0;
+          prettify2.options.attemptCorrection = true;
+          prettify2.options.indentChar = " ";
+          prettify2.options.indentSize = 2;
+          prettify2.options.endNewline = false;
+          prettify2.options.preserveLine = 1;
+          prettify2.options.script.noSemicolon = true;
+          prettify2.options.script.endComma = "never";
+          prettify2.options.script.braceNewline = false;
+          prettify2.options.script.bracePadding = false;
+          prettify2.options.script.braceAllman = false;
+          prettify2.options.script.quoteConvert = "single";
+          prettify2.options.script.functionSpace = true;
+          prettify2.options.script.ternaryLine = false;
+          prettify2.options.script.variableList = "each";
+          prettify2.options.script.vertical = false;
+          break;
+        case "yandex":
+          prettify2.options.attemptCorrection = true;
+          prettify2.options.script.bracePadding = false;
+          prettify2.options.script.quoteConvert = "single";
+          prettify2.options.script.variableList = "each";
+          prettify2.options.script.vertical = false;
+          break;
+      }
+    }
+    if (prettify2.options.script.braceStyle !== void 0) {
+      switch (prettify2.options.script.braceStyle) {
+        case "collapse":
+          prettify2.options.script.braceNewline = false;
+          prettify2.options.script.bracePadding = false;
+          prettify2.options.script.braceAllman = false;
+          prettify2.options.script.objectIndent = "indent";
+          prettify2.options.script.neverFlatten = true;
+          break;
+        case "collapse-preserve-inline":
+          prettify2.options.script.braceNewline = false;
+          prettify2.options.script.bracePadding = true;
+          prettify2.options.script.braceAllman = false;
+          prettify2.options.script.objectIndent = "indent";
+          prettify2.options.script.neverFlatten = false;
+          break;
+        case "expand":
+          prettify2.options.script.braceNewline = false;
+          prettify2.options.script.bracePadding = false;
+          prettify2.options.script.braceAllman = true;
+          prettify2.options.script.objectIndent = "indent";
+          prettify2.options.script.neverFlatten = true;
+          break;
+      }
+    }
+    if (prettify2.options.language === "json")
+      prettify2.options.wrap = 0;
+  }
+  do {
+    if (prettify2.options[keys[a]] !== void 0) {
+      definitions2[keys[a]].lexer.length;
+    }
+    a = a + 1;
+  } while (a < len);
+}
+
+// src/parser/mode.ts
+function parser(prettify2) {
+  const langname = prettify2.options.language;
+  const langlexer = prettify2.options.lexer;
+  parse.count = -1;
+  parse.linesSpace = 0;
+  parse.lineNumber = 1;
+  parse.data.begin = [];
+  parse.data.ender = [];
+  parse.data.lexer = [];
+  parse.data.lines = [];
+  parse.data.stack = [];
+  parse.data.token = [];
+  parse.data.types = [];
+  parse.datanames = [
+    "begin",
+    "ender",
+    "lexer",
+    "lines",
+    "stack",
+    "token",
+    "types"
+  ];
+  parse.structure = [["global", -1]];
+  parse.structure.pop = function pop() {
+    const len = parse.structure.length - 1;
+    const arr = parse.structure[len];
+    if (len > 0)
+      parse.structure.splice(len, 1);
+    return arr;
+  };
+  if (prettify2.options.language === "auto" || prettify2.options.lexer === "auto") {
+    const lang = detect(prettify2.source);
+    if (prettify2.options.language === "auto")
+      prettify2.options.language = lang.language;
+    if (prettify2.options.lexer === "auto")
+      prettify2.options.lexer = lang.lexer;
+  }
+  if (typeof prettify2.lexers[prettify2.options.lexer] === "function") {
+    parse.references = [[]];
+    parse.error = "";
+    for (const lexer of keys(prettify2.lexers)) {
+      if (prettify2.options.language === "json") {
+        prettify2.options.json = prettify2.options.json || create(null);
+      } else {
+        prettify2.options[lexer] = prettify2.options[lexer] || create(null);
+      }
+    }
+    prettify2.lexers[prettify2.options.lexer](`${prettify2.source} `);
+  } else {
+    parse.error = `Specified lexer, ${prettify2.options.lexer}, is not a function.`;
+  }
+  let a = 0;
+  let b = 0;
+  const k = keys(parse.data);
+  const c = k.length;
+  do {
+    b = a + 1;
+    do {
+      if (parse.data[k[a]].length !== parse.data[k[b]].length) {
+        parse.error = `"${k[a]}" array is of different length than "${k[b]}"`;
+        break;
+      }
+      b = b + 1;
+    } while (b < c);
+    a = a + 1;
+  } while (a < c - 1);
+  if (parse.data.begin.length > 0) {
+    if (prettify2.options.lexer === "script" && prettify2.options[prettify2.options.lexer].objectSort) {
+      parse.sortCorrection(0, parse.count + 1);
+    } else if (prettify2.options.lexer === "style" && prettify2.options[prettify2.options.lexer].sortProperties) {
+      parse.sortCorrection(0, parse.count + 1);
+    }
+  }
+  prettify2.options.language = langname;
+  prettify2.options.lexer = langlexer;
+  return parse.data;
+}
+function mode(prettify2) {
+  const start = Date.now();
+  const mv = prettify2.mode;
+  const lf = prettify2.options.crlf === true ? "\r\n" : "\n";
+  let result = "";
+  if (prettify2.source.trimStart() === "") {
+    const preserve = new RegExp(`\\n{${prettify2.options.preserveLine},}`);
+    result = prettify2.source;
+    result = prettify2.source.replace(preserve, "\n\n");
+    result = prettify2.options.endNewline === true ? result.replace(/\s*$/, lf) : result.replace(/\s+$/, "");
+    prettify2.stats.chars = result.length;
+    prettify2.stats.language = prettify2.options.languageName;
+    prettify2.stats.size = size(result.length);
+    prettify2.stats.time = (Date.now() - start).toFixed(1);
+    return result;
+  }
+  if (prettify2.options.language === "text") {
+    prettify2.options.language = "auto";
+  }
+  if (prettify2.options.lexer === "text") {
+    prettify2.options.lexer = "auto";
+  }
+  if (prettify2.options.language === "text" || prettify2.options.lexer === "text") {
+    prettify2.options.language = "text";
+    prettify2.options.languageName = "Plain Text";
+    prettify2.options.lexer = "text";
+  } else if (prettify2.options.language === "auto" && prettify2.options.lexer === "auto") {
+    const lang = detect(prettify2.source);
+    if (lang.language === "text") {
+      lang.language = "html";
+      lang.lexer = "markup";
+      lang.languageName = "HTML";
+    }
+    if (prettify2.options.lexer === "auto") {
+      prettify2.options.lexer = lang.lexer;
+    }
+    if (prettify2.options.language === "auto") {
+      prettify2.options.language = lang.language;
+      prettify2.options.languageName = lang.languageName;
+    }
+  } else {
+    prettify2.options.lexer = "markup";
+  }
+  prettify2.stats.language = prettify2.options.languageName;
+  const comm = comment(prettify2);
+  if (comm === false) {
+    prettify2.stats.time = -1;
+    prettify2.stats.chars = prettify2.source.length;
+    prettify2.stats.size = size(prettify2.stats.chars);
+    return prettify2.source;
+  }
+  prettify2.parsed = parser(prettify2);
+  if (mv === "parse") {
+    prettify2.stats.time = (Date.now() - start).toFixed(1);
+    prettify2.stats.chars = prettify2.source.length;
+    prettify2.stats.size = size(prettify2.stats.chars);
+    return prettify2.parsed;
+  }
+  result = prettify2.beautify[prettify2.options.lexer](prettify2.options);
+  result = prettify2.options.endNewline === true ? result.replace(/\s*$/, lf) : result.replace(/\s+$/, "");
+  const length = result.length;
+  prettify2.stats.chars = length;
+  prettify2.stats.size = size(length);
+  prettify2.stats.time = (Date.now() - start).toFixed(1);
+  prettify2.end = 0;
+  prettify2.start = 0;
+  return result;
+}
+
+// src/prettify/exports.ts
+format.before = function(callback) {
+  prettify.hooks.before.push(callback);
+};
+format.after = function(callback) {
+  prettify.hooks.after.push(callback);
+};
+options.listen = function(callback) {
+  prettify.hooks.rules.push(callback);
+};
+Object.defineProperty(format, "stats", {
+  get() {
+    return prettify.stats;
+  }
+});
+Object.defineProperty(options, "rules", {
+  get() {
+    return prettify.options;
+  }
+});
+function format(source, rules) {
+  prettify.source = source;
+  if (typeof rules === "object")
+    prettify.options = options(rules);
+  if (prettify.hooks.before.length > 0) {
+    for (const cb of prettify.hooks.before) {
+      if (cb(prettify.options, source) === false)
+        return source;
+    }
+  }
+  const output = mode(prettify);
+  if (prettify.hooks.after.length > 0) {
+    for (const cb of prettify.hooks.after) {
+      if (cb.call(prettify.parsed, output, prettify.options) === false)
+        return source;
+    }
+  }
+  return new Promise((resolve, reject) => {
+    if (parse.error.length)
+      return reject(parse.error);
+    return resolve(output);
+  });
+}
+function options(rules) {
+  var _a, _b;
+  for (const rule of keys(rules)) {
+    if (((_b = (_a = definitions) == null ? void 0 : _a[rule]) == null ? void 0 : _b.lexer) === "auto") {
+      prettify.options[rule] = rules[rule];
+    } else if (rule === "markup") {
+      assign(prettify.options.markup, rules.markup);
+    } else if (rule === "script") {
+      assign(prettify.options.script, rules.script);
+    } else if (rule === "style") {
+      assign(prettify.options.style, rules.style);
+    } else if (rule === "json") {
+      assign(prettify.options.script, rules.script);
+    } else if (rule in prettify.options) {
+      prettify.options[rule] = rules[rule];
+    }
+  }
+  if (prettify.hooks.rules.length > 0) {
+    for (const cb of prettify.hooks.rules)
+      cb(prettify.options);
+  }
+  return prettify.options;
+}
+function parse2(source, rules) {
+  prettify.source = source;
+  prettify.mode = "parse";
+  if (typeof rules === "object")
+    prettify.options = options(rules);
+  const formatted = mode(prettify);
+  return new Promise((resolve, reject) => {
+    if (parse.error.length)
+      return reject(parse.error);
+    return resolve(formatted);
+  });
+}

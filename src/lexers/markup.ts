@@ -1,7 +1,7 @@
 import type { Record, Data, Types } from 'types/prettify';
 import { prettify } from 'prettify';
 import { parse } from '@parser/parse';
-import { repeatChar } from '@utils/helpers';
+import { is, not, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
 import { create } from '@utils/native';
 
@@ -102,6 +102,7 @@ prettify.lexers.markup = function markup (source: string) {
   ]);
 
   const { options } = prettify;
+
   /**
    * Parse data reference
    */
@@ -290,41 +291,21 @@ prettify.lexers.markup = function markup (source: string) {
     /**
      * Delimeter expression match
      *
-     * ----
-     *
-     * @prettify
-     *
-     * We eliminate the possibility of Ruby ERB to be matched or
-     * other delimeter template languages. Instead we only want Liquid
-     * delimiters.
      */
-    const regex = /^({[{%]-?\s*)/;
+    const reg: RegExp = (/^(?:<|{%-?|{{-?)=?\s*/);
 
     if (typeof tag !== 'string') return '';
 
-    space = tag.replace(regex, '%').replace(/\s+/, ' ').indexOf(' ');
-    name = tag.replace(regex, ' ');
-    name = space < 0 ? name.slice(1, tag.length - 1) : name.slice(1, space);
+    space = tag.replace(reg, '%').replace(/\s+/, ' ').indexOf(' ');
+    name = tag.replace(reg, ' ');
+    name = (space < 0) ? name.slice(1, tag.length - 1) : name.slice(1, space);
 
     if (html === 'html') name = name.toLowerCase();
 
-    /**
-     * @pettify
-     *
-     * PRETTIFY PATCH
-     *
-     * Liquid delimiters that did not contain a space were failing
-     * to have their name matched and instead ignore by the beautificiation
-     * process, for example:
-     *
-     * {{tag}} would match
-     * {{tag-}} would not match
-     * {% endtag%} would not match
-     * {%else%} would not match
-     */
     name = name.replace(/-?[%}]}$/, '');
 
     if (name.indexOf('(') > 0) name = name.slice(0, name.indexOf('('));
+
     if (name === '?xml?') return 'xml';
 
     return name;
@@ -352,7 +333,7 @@ prettify.lexers.markup = function markup (source: string) {
      * Parse record - This is generated as a drop-in as
      * this function is a fix utility that borders "linting"
      */
-    const record: Record = Object.create(null); // fuck the prototype
+    const record: Record = create(null); // fuck the prototype
 
     record.begin = parse.structure[parse.structure.length - 1][1];
     record.ender = -1;
@@ -427,6 +408,7 @@ prettify.lexers.markup = function markup (source: string) {
     /* -------------------------------------------- */
 
     const record: Record = create(null); // fuck the prototype
+
     record.begin = parse.structure[parse.structure.length - 1][1];
     record.ender = -1;
     record.lexer = 'markup';
@@ -457,7 +439,7 @@ prettify.lexers.markup = function markup (source: string) {
     /**
      * Lexer Type, ie: `start`, `template` etc etc
      */
-    let ltype: Types = '' as Types;
+    let ltype: Types = '';
 
     /**
      * Tag Name
@@ -858,6 +840,7 @@ prettify.lexers.markup = function markup (source: string) {
           } else {
 
             // separates out the attribute name from its value
+
             name = attstore[idx][0].slice(0, eq);
             value = attstore[idx][0].slice(eq + 1);
 
@@ -957,7 +940,7 @@ prettify.lexers.markup = function markup (source: string) {
       start = '---';
       ltype = 'comment';
 
-    } else if (b[a] === '<') {
+    } else if (is(b[a], cc.LAN)) {
 
       if (b[a + 1] === '/') {
 
@@ -966,7 +949,27 @@ prettify.lexers.markup = function markup (source: string) {
 
       } else if (b[a + 1] === '!') {
 
-        if (b[a + 2] === '-' && b[a + 3] === '-') {
+        if ((
+          b[a + 2] === 'd' || b[a + 2] === 'D'
+        ) && (
+          b[a + 3] === 'o' || b[a + 3] === 'O'
+        ) && (
+          b[a + 4] === 'c' || b[a + 4] === 'C'
+        ) && (
+          b[a + 5] === 't' || b[a + 5] === 'T'
+        ) && (
+          b[a + 6] === 'y' || b[a + 6] === 'Y'
+        ) && (
+          b[a + 7] === 'p' || b[a + 7] === 'P'
+        ) && (
+          b[a + 8] === 'e' || b[a + 8] === 'E'
+        )) {
+
+          end = '>';
+          ltype = 'doctype';
+          preserve = true;
+
+        } else if (b[a + 2] === '-' && b[a + 3] === '-') {
 
           end = '-->';
           ltype = 'comment';
@@ -974,12 +977,12 @@ prettify.lexers.markup = function markup (source: string) {
 
         } else if (
           b[a + 2] === '[' &&
-          b[a + 3] === 'C' &&
-          b[a + 4] === 'D' &&
-          b[a + 5] === 'A' &&
-          b[a + 6] === 'T' &&
-          b[a + 7] === 'A' &&
-          b[a + 8] === '['
+            b[a + 3] === 'C' &&
+            b[a + 4] === 'D' &&
+            b[a + 5] === 'A' &&
+            b[a + 6] === 'T' &&
+            b[a + 7] === 'A' &&
+            b[a + 8] === '['
         ) {
 
           end = ']]>';
@@ -994,8 +997,8 @@ prettify.lexers.markup = function markup (source: string) {
 
         if (
           b[a + 2] === 'x' &&
-          b[a + 3] === 'm' &&
-          b[a + 4] === 'l'
+            b[a + 3] === 'm' &&
+            b[a + 4] === 'l'
         ) {
           ltype = 'xml';
           simple = true;
@@ -1004,7 +1007,7 @@ prettify.lexers.markup = function markup (source: string) {
           ltype = 'template';
         }
 
-      } else if (b[a + 1] === '%') {
+      } else if (is(b[a + 1], cc.PER)) {
 
         preserve = true;
 
@@ -1028,7 +1031,7 @@ prettify.lexers.markup = function markup (source: string) {
         end = '>';
 
       }
-    } else if (b[a] === '{') {
+    } else if (is(b[a], cc.LCB)) {
 
       if (options.language === 'jsx') {
         ext = true;
@@ -1040,12 +1043,12 @@ prettify.lexers.markup = function markup (source: string) {
         return;
       }
 
-      if (b[a + 1] === '{') {
+      if (is(b[a + 1], cc.LCB)) {
         preserve = true;
         end = '}}';
         ltype = 'template';
 
-      } else if (b[a + 1] === '%') {
+      } else if (is(b[a + 1], cc.PER)) {
 
         preserve = true; // Required for  lexer
         end = '%}';
@@ -1093,9 +1096,9 @@ prettify.lexers.markup = function markup (source: string) {
           if (t === 'comment') {
 
             /**
-             * `{%` The index of the next known closing delimiter
-             * starting from the last `rcb` index position.
-             */
+               * `{%` The index of the next known closing delimiter
+               * starting from the last `rcb` index position.
+               */
             const idx1 = source.indexOf('{%', rcb);
 
             //  Lets reference this index
@@ -1151,7 +1154,7 @@ prettify.lexers.markup = function markup (source: string) {
 
     // HTML / Liquid Prettify comment ignore
     //
-    if (ltype === 'comment' && (b[a] === '<' || (b[a] === '{' && b[a + 1] === '%'))) {
+    if (ltype === 'comment' && (is(b[a], cc.LAN) || (is(b[a], cc.LCB) && is(b[a + 1], cc.PER)))) {
 
       comm = parse.wrapCommentBlock({
         chars: b,
@@ -1165,7 +1168,9 @@ prettify.lexers.markup = function markup (source: string) {
       element = comm[0] as string;
       a = comm[1] as number;
 
-      if (element.replace(start, '').replace(/(^\s*)/, '').indexOf('@parse-ignore-start') === 0) {
+      // console.log(comm);
+
+      if (element.replace(start, '').trimStart().indexOf('@prettify-ignore-start') === 0) {
         record.token = element;
         record.types = 'ignore';
         recordPush(data, record, '');
@@ -1235,9 +1240,7 @@ prettify.lexers.markup = function markup (source: string) {
           atty = attribute.join('');
 
           if (options.language !== 'jsx' || (options.language === 'jsx' && atty.charAt(atty.length - 1) !== '}')) {
-
             atty = atty.replace(/\s+/g, ' ');
-
           }
 
           name = attributeName(atty);
@@ -1261,8 +1264,8 @@ prettify.lexers.markup = function markup (source: string) {
           } while (aa < bb);
         }
 
-        // atty = attribute.join(options.crlf === true ? '\r\n' : '\n');
-        // atty = bracketSpace(atty);
+        atty = attribute.join(options.crlf === true ? '\r\n' : '\n');
+        atty = bracketSpace(atty);
 
         if (atty === '=') {
 
@@ -1312,23 +1315,32 @@ prettify.lexers.markup = function markup (source: string) {
 
       do {
 
-        if (b[a] === '\n') {
+        if (is(b[a], cc.NWL)) {
           lines = lines + 1;
           parse.lineNumber = parse.lineNumber + 1;
         }
 
-        if (preserve === true || ((/\s/.test(b[a]) === false && quote !== '}') || quote === '}')) {
+        if (preserve === true || ((ws(b[a]) === false && not(quote, cc.RCB)) || is(quote, cc.RCB))) {
 
           lex.push(b[a]);
 
-          if (lex[0] === '<' && lex[1] === '>' && end === '>') {
+          if (
+            is(lex[0], cc.LAN) &&
+            is(lex[1], cc.RAN) &&
+            is(end, cc.RAN)
+          ) {
             record.token = '<>';
             record.types = 'start';
             recordPush(data, record, '(empty)');
             return;
           }
 
-          if (lex[0] === '<' && lex[1] === '/' && lex[2] === '>' && end === '>') {
+          if (
+            is(lex[0], cc.LAN) &&
+            is(lex[0], cc.FWS) &&
+            is(lex[2], cc.RAN) &&
+            is(end, cc.RAN)
+          ) {
             record.token = '</>';
             record.types = 'end';
             recordPush(data, record, '');
@@ -1336,7 +1348,12 @@ prettify.lexers.markup = function markup (source: string) {
           }
         }
 
-        if (ltype === 'cdata' && b[a] === '>' && b[a - 1] === ']' && b[a - 2] !== ']') {
+        if (
+          ltype === 'cdata' &&
+          is(b[a], cc.RAN) &&
+          b[a - 1] === ']' &&
+          b[a - 2] !== ']'
+        ) {
           parse.error = `CDATA tag ${lex.join('')} not properly terminated with ]]>`;
           break;
         }
@@ -1368,25 +1385,34 @@ prettify.lexers.markup = function markup (source: string) {
 
           if (quote === '') {
 
-            if ((lex[0] + lex[1]) === '<!' && ltype !== 'cdata') {
+            if (
+              is(lex[0], cc.LAN) &&
+              is(lex[1], cc.BNG) &&
+              ltype !== 'cdata'
+            ) {
 
+              // HOT PATCH
+              // Fixes doctype handling
+              if (ltype === 'doctype' && is(b[a], cc.RAN)) break;
+
+              // console.log(lex[0] + lex[1] + lex[2] + lex[3] + lex[4] + lex[5])
               if (b[a] === '[') {
 
-                if (b[a + 1] === '<') {
+                if (is(b[a + 1], cc.LAN)) {
                   ltype = 'start';
                   break;
                 }
 
-                if ((/\s/).test(b[a + 1]) === true) {
+                if (ws(b[a + 1])) {
                   do {
                     a = a + 1;
                     if (b[a] === '\n') {
                       lines = lines + 1;
                     }
-                  } while (a < c - 1 && (/\s/).test(b[a + 1]) === true);
+                  } while (a < c - 1 && ws(b[a + 1]));
                 }
 
-                if (b[a + 1] === '<') {
+                if (is(b[a + 1], cc.LAN)) {
                   ltype = 'start';
                   break;
                 }
@@ -1395,15 +1421,15 @@ prettify.lexers.markup = function markup (source: string) {
             }
 
             if (options.language === 'jsx') {
-              if (b[a] === '{') {
+              if (is(b[a], cc.LCB)) {
                 jsxcount = jsxcount + 1;
-              } else if (b[a] === '}') {
+              } else if (is(b[a], cc.RCB)) {
                 jsxcount = jsxcount - 1;
               }
             }
 
             if (
-              b[a] === '<' &&
+              is(b[a], cc.LAN) &&
               preserve === false &&
               lex.length > 1 &&
               end !== '>>' &&
@@ -1415,7 +1441,7 @@ prettify.lexers.markup = function markup (source: string) {
 
             if (
               stest === true &&
-              /\s/.test(b[a]) === false &&
+              ws(b[a]) === false &&
               b[a] !== lastchar
             ) {
 
@@ -1430,7 +1456,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                 do {
 
-                  if (b[a] === '\n') parse.lineNumber = parse.lineNumber + 1;
+                  if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
 
                   if (options.markup.preserveAttributes === true) {
                     lex.push(b[a]);
@@ -1439,18 +1465,18 @@ prettify.lexers.markup = function markup (source: string) {
                   }
 
                   if (options.language !== 'jsx' && (
-                    b[a] === '<' ||
-                    b[a] === '>'
+                    is(b[a], cc.LAN) ||
+                    is(b[a], cc.RAN)
                   ) && (
                     quote === '' ||
                     quote === '>'
                   )) {
 
-                    if (quote === '' && b[a] === '<') {
+                    if (quote === '' && is(b[a], cc.RAN)) {
                       quote = '>';
                       braccount = 1;
-                    } else if (quote === '>') {
-                      if (b[a] === '<') {
+                    } else if (is(quote, cc.RAN)) {
+                      if (is(b[a], cc.LAN)) {
                         braccount = braccount + 1;
                       } else if (b[a] === '>') {
                         braccount = braccount - 1;
@@ -1463,12 +1489,14 @@ prettify.lexers.markup = function markup (source: string) {
 
                       // if at end of tag
                       if (
-                        attribute[attribute.length - 1] === '/' ||
-                        (attribute[attribute.length - 1] === '?' && ltype === 'xml')
+                        is(attribute[attribute.length - 1], cc.FWS) ||
+                        (is(attribute[attribute.length - 1], cc.QWS) && ltype === 'xml')
                       ) {
 
                         attribute.pop();
+
                         if (preserve === true) lex.pop();
+
                         a = a - 1;
                       }
 
@@ -1477,20 +1505,14 @@ prettify.lexers.markup = function markup (source: string) {
                       break;
                     }
 
-                    // HOTFIX
-                    //
-                    // When options is unformatter=true liquid attributes
-                    // were being replaced in an incorrect manner, essentially,
-                    // wreaking total fucking havoc. If preserveLine is set to false,
-                    // then this control condition can pass, this code base can sometimes
-                    // be a beautiful chaos, so I have little clue what this condition does,
-                    // but it seems to fix this issue and actually preserveLine attributes.
-
-                    if (preserve === false) {
+                    if (
+                      preserve === false &&
+                      (/^=?['"]?(?:{[{%]|\/|\^|<)/).test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])
+                    ) {
 
                       attribute.pop();
 
-                      if (b[a] !== '=' && attribute.length > 0) attributeLexer(false);
+                      if (not(b[a], cc.EQS) && attribute.length > 0) attributeLexer(false);
 
                       quote = '';
 
@@ -1502,13 +1524,13 @@ prettify.lexers.markup = function markup (source: string) {
 
                           dustatt.pop();
 
-                          if (b[a] === '}' && b[a + 1] === '}') {
+                          if (is(b[a], cc.RCB) && is(b[a + 1], cc.RCB)) {
 
                             attribute.push('}');
 
                             a = a + 1;
 
-                            if (b[a + 1] === '}') {
+                            if (is(b[a + 1], cc.RCB)) {
                               attribute.push('}');
                               a = a + 1;
                             }
@@ -1519,27 +1541,32 @@ prettify.lexers.markup = function markup (source: string) {
                             attributeLexer(false);
 
                             b[a] = ' ';
-                            break;
 
+                            break;
                           }
 
-                        } else if (
-                          (b[a] === '"' || b[a] === "'") &&
-                          dustatt[dustatt.length - 1] !== '"' &&
-                          dustatt[dustatt.length - 1] !== "'"
+                        } else if ((
+                          is(b[a], cc.DQO) ||
+                          is(b[a], cc.SQO)
+                        ) &&
+                          not(dustatt[dustatt.length - 1], cc.DQO) &&
+                          not(dustatt[dustatt.length - 1], cc.SQO)
                         ) {
 
                           dustatt.push(b[a]);
 
                         } else if (
-                          b[a] === '{' &&
-                          '{%#@:/?^<+~='.indexOf(b[a + 1]) &&
-                          dustatt[dustatt.length - 1] !== '}'
+                          is(b[a], cc.LCB) &&
+                          /[{%</]/.test(b[a + 1]) &&
+                          not(dustatt[dustatt.length - 1], cc.RCB)
                         ) {
 
                           dustatt.push('}');
 
-                        } else if (b[a] === '<' && dustatt[dustatt.length - 1] !== '>') {
+                        } else if (
+                          is(b[a], cc.LAN) &&
+                          not(dustatt[dustatt.length - 1], cc.RAN)
+                        ) {
 
                           dustatt.push('>');
 
@@ -1549,26 +1576,36 @@ prettify.lexers.markup = function markup (source: string) {
 
                       } while (a < c);
 
-                    } else if (b[a] === '{' && b[a - 1] === '=' && options.language !== 'jsx') {
+                    } else if (
+                      is(b[a], cc.LCB) &&
+                      is(b[a - 1], cc.EQS) &&
+                      options.language !== 'jsx'
+                    ) {
 
                       quote = '}';
 
-                    } else if (b[a] === '"' || b[a] === "'") {
+                    } else if (
+                      is(b[a], cc.DQO) ||
+                      is(b[a], cc.SQO)
+                    ) {
 
                       quote = b[a];
 
-                      if (
-                        b[a - 1] === '=' && (
-                          b[a + 1] === '<' ||
-                          (b[a + 1] === '{' && b[a + 2] === '%') ||
-                          (/\s/.test(b[a + 1]) && b[a - 1] !== '=')
+                      if (is(b[a - 1], cc.EQS) && (
+                        is(b[a + 1], cc.LAN) || (
+                          is(b[a + 1], cc.LCB) &&
+                          is(b[a + 2], cc.PER)
+                        ) || (
+                          ws(b[a + 1]) &&
+                          not(b[a - 1], cc.EQS)
                         )
-                      ) {
+                      )) {
 
                         igcount = a;
+
                       }
 
-                    } else if (b[a] === '(') {
+                    } else if (is(b[a], cc.LPR)) {
 
                       quote = ')';
                       parncount = 1;
@@ -1576,12 +1613,12 @@ prettify.lexers.markup = function markup (source: string) {
                     } else if (options.language === 'jsx') {
 
                       // jsx variable attribute
-                      if ((b[a - 1] === '=' || (/\s/).test(b[a - 1]) === true) && b[a] === '{') {
+                      if ((is(b[a - 1], cc.EQS) || ws(b[a - 1])) && is(b[a], cc.LCB)) {
 
                         quote = '}';
                         bcount = 1;
 
-                      } else if (b[a] === '/') {
+                      } else if (is(b[a], cc.FWS)) {
 
                         // jsx comments
                         if (b[a + 1] === '*') {
@@ -1592,31 +1629,31 @@ prettify.lexers.markup = function markup (source: string) {
 
                       }
                     } else if (
-                      lex[0] !== '{' &&
-                      b[a] === '{' &&
-                      (b[a + 1] === '{' || b[a + 1] === '%')
+                      is(lex[0], cc.LCB) &&
+                      is(b[a], cc.LCB) && (is(b[a + 1], cc.LCB) || is(b[a + 1], cc.PER))
                     ) {
 
                       // opening embedded template expression
-                      if (b[a + 1] === '{') {
+                      if (is(b[a + 1], cc.LCB)) {
                         quote = '}}';
                       } else {
                         quote = b[a + 1] + '}';
                       }
                     }
-                    if ((/\s/).test(b[a]) === true && quote === '') {
+
+                    if (ws(b[a]) && quote === '') {
 
                       // Testing for a run of spaces between an attribute's = and a quoted value.
                       // Unquoted values separated by space are separate attributes
                       //
-                      if (attribute[attribute.length - 2] === '=') {
+                      if (is(attribute[attribute.length - 2], cc.EQS)) {
 
                         e = a + 1;
 
                         if (e < c) {
                           do {
-                            if ((/\s/).test(b[e]) === false) {
-                              if (b[e] === '"' || b[e] === "'") {
+                            if (ws(b[e]) === false) {
+                              if (is(b[e], cc.DQO) || is(b[e], cc.SQO)) {
                                 a = e - 1;
                                 quotetest = true;
                                 attribute.pop();
@@ -1629,8 +1666,10 @@ prettify.lexers.markup = function markup (source: string) {
                       }
 
                       if (quotetest === true) {
+
                         quotetest = false;
-                      } else if (jsxcount === 0 || (jsxcount === 1 && attribute[0] === '{')) {
+
+                      } else if (jsxcount === 0 || (jsxcount === 1 && is(attribute[0], cc.LCB))) {
 
                         // If there is an unquoted space attribute is complete
                         //
@@ -1641,38 +1680,36 @@ prettify.lexers.markup = function markup (source: string) {
                         break;
                       }
                     }
-                  } else if (b[a] === '(' && quote === ')') {
+                  } else if (is(b[a], cc.LPR) && is(quote, cc.RPR)) {
 
                     parncount = parncount + 1;
 
-                  } else if (b[a] === ')' && quote === ')') {
+                  } else if (is(b[a], cc.RPR) && is(quote, cc.RPR)) {
 
                     parncount = parncount - 1;
 
                     if (parncount === 0) {
+
                       quote = '';
+
                       if (b[a + 1] === end.charAt(0)) {
                         attributeLexer(false);
                         break;
                       }
                     }
 
-                  } else if (
-                    options.language === 'jsx' &&
-                    (
-                      quote === '}' ||
-                      (quote === '\n' && b[a] === '\n') ||
-                      (quote === '\u002a/' &&
-                        b[a - 1] === '*' &&
-                        b[a] === '/'
-                      )
+                  } else if (options.language === 'jsx' && (
+                    is(quote, cc.RCB) || (is(quote, cc.NWL) && is(b[a], cc.NWL)) || (
+                      quote === '\u002a/' &&
+                      is(b[a - 1], cc.ARS) &&
+                      is(b[a], cc.FWS)
                     )
-                  ) {
+                  )) {
 
                     // jsx attributes
-                    if (quote === '}') {
+                    if (is(quote, cc.RCB)) {
 
-                      if (b[a] === '{') {
+                      if (is(b[a], cc.RCB)) {
 
                         bcount = bcount + 1;
 
@@ -1696,6 +1733,7 @@ prettify.lexers.markup = function markup (source: string) {
                             } else {
 
                               element = element.replace(/\s+/g, ' ');
+
                               if (element !== ' ') {
                                 attstore.push([ element, lines ]);
                               }
@@ -1725,36 +1763,33 @@ prettify.lexers.markup = function markup (source: string) {
                     }
 
                   } else if (
-                    b[a] === '{' &&
-                    b[a + 1] === '%' &&
-                    b[igcount - 1] === '=' &&
-                    (quote === '"' || quote === "'")
+                    is(b[a], cc.LCB) &&
+                    is(b[a + 1], cc.PER) &&
+                    is(b[igcount - 1], cc.EQS) && (is(quote, cc.DQO) || is(quote, cc.SQO))
                   ) {
 
                     quote = quote + '{%';
                     igcount = 0;
 
                   } else if (
-                    b[a - 1] === '%' &&
-                    b[a] === '}' &&
-                    (quote === '"{%' || quote === "'{%")
+                    is(b[a - 1], cc.PER) &&
+                    is(b[a], cc.RCB) && (quote === '"{%' || quote === "'{%")
                   ) {
 
                     quote = quote.charAt(0);
                     igcount = 0;
 
                   } else if (
-                    b[a] === '<' &&
-                    end === '>' &&
-                    b[igcount - 1] === '=' &&
-                    (quote === '"' || quote === "'")
+                    is(b[a], cc.LAN) &&
+                    is(end, cc.RAN) &&
+                    is(b[igcount - 1], cc.EQS) && (is(quote, cc.DQO) || is(quote, cc.SQO))
                   ) {
 
                     quote = quote + '<';
                     igcount = 0;
 
                   } else if (
-                    b[a] === '>' &&
+                    is(b[a], cc.RAN) &&
                     (quote === '"<' || quote === "'<")
                   ) {
 
@@ -1763,7 +1798,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else if (
                     igcount === 0 &&
-                    quote !== '>' &&
+                    not(quote, cc.RAN) &&
                     (quote.length < 2 || (quote.charAt(0) !== '"' && quote.charAt(0) !== "'"))
                   ) {
 
@@ -1791,7 +1826,9 @@ prettify.lexers.markup = function markup (source: string) {
                     }
 
                     if (e < 0) {
+
                       attributeLexer(true);
+
                       if (b[a + 1] === lastchar) break;
                     }
 
@@ -1803,32 +1840,30 @@ prettify.lexers.markup = function markup (source: string) {
 
                 } while (a < c);
               }
-            } else if (end !== '\n' && (b[a] === '"' || b[a] === "'")) {
+            } else if (is(end, cc.NWL) === false && (is(b[a], cc.DQO) || is(b[a], cc.SQO))) {
 
               // opening quote
               quote = b[a];
 
             } else if (
-              ltype !== 'comment' as any &&
-              end !== '\n' &&
-              b[a] === '<' &&
-              b[a + 1] === '!' &&
-              b[a + 2] === '-' &&
-              b[a + 3] === '-' &&
-              b[a + 4] !== '#' &&
+              ltype !== 'comment' &&
+              is(end, cc.NWL) === false &&
+              is(b[a], cc.LAN) &&
+              is(b[a + 1], cc.BNG) &&
+              is(b[a + 2], cc.DSH) &&
+              is(b[a + 3], cc.DSH) &&
               data.types[parse.count] !== 'conditional'
             ) {
 
               quote = '-->';
 
             } else if (
-              b[a] === '{' &&
-              lex[0] !== '{' &&
-              end !== '\n' &&
-              (b[a + 1] === '{' || b[a + 1] === '%')
+              is(b[a], cc.LCB) &&
+              not(lex[0], cc.LCB) &&
+              not(end, cc.NWL) && (is(b[a + 1], cc.LCB) || is(b[a + 1], cc.PER))
             ) {
 
-              if (b[a + 1] === '{') {
+              if (is(b[a + 1], cc.LCB)) {
 
                 quote = '}}';
 
@@ -1842,7 +1877,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                   do {
 
-                    if (b[a] === '\n') lines = lines + 1;
+                    if (is(b[a], cc.NWL)) lines = lines + 1;
 
                     attribute.push(b[a]);
 
@@ -1863,9 +1898,9 @@ prettify.lexers.markup = function markup (source: string) {
 
             } else if (
               (simple === true || ltype === 'sgml') &&
-              end !== '\n' &&
-              (/\s/).test(b[a]) === true &&
-              b[a - 1] !== '<'
+              not(end, cc.NWL) &&
+              ws(b[a]) &&
+              not(b[a - 1], cc.LAN)
             ) {
 
               // identify a space in a regular start or singleton tag
@@ -1878,8 +1913,7 @@ prettify.lexers.markup = function markup (source: string) {
             } else if (
               simple === true &&
               options.language === 'jsx' &&
-              b[a] === '/' &&
-              (b[a + 1] === '*' || b[a + 1] === '/')
+              is(b[a], cc.FWS) && (is(b[a + 1], cc.ARS) || is(b[a + 1], cc.FWS))
             ) {
 
               // jsx comment immediately following tag name
@@ -1887,20 +1921,20 @@ prettify.lexers.markup = function markup (source: string) {
               lex[lex.length - 1] = ' ';
               attribute.push(b[a]);
 
-              if (b[a + 1] === '*') {
+              if (is(b[a + 1], cc.ARS)) {
                 jsxquote = '\u002a/';
               } else {
                 jsxquote = '\n';
               }
 
             } else if (
-              (b[a] === lastchar || (end === '\n' && b[a + 1] === '<')) &&
+              (b[a] === lastchar || (is(end, cc.NWL) && is(b[a + 1], cc.LAN))) &&
               (lex.length > end.length + 1 || lex[0] === ']') &&
               (options.language !== 'jsx' || jsxcount === 0)
             ) {
 
-              if (end === '\n') {
-                if (/\s/.test(lex[lex.length - 1])) {
+              if (is(end, cc.NWL)) {
+                if (ws(lex[lex.length - 1])) {
                   do {
                     lex.pop();
                     a = a - 1;
@@ -1927,10 +1961,10 @@ prettify.lexers.markup = function markup (source: string) {
             }
           } else if (b[a] === quote.charAt(quote.length - 1) && ((
             options.language === 'jsx' &&
-            end === '}' &&
+            is(end, cc.RCB) &&
             (b[a - 1] !== '\\' || slashy() === false)) ||
             options.language !== 'jsx' ||
-            end !== '}'
+            not(end, cc.RCB)
           )) {
 
             // find the closing quote or embedded template expression
@@ -1963,11 +1997,20 @@ prettify.lexers.markup = function markup (source: string) {
       // a correction to incomplete template tags that use multiple angle braceAllman
       if (options.attemptCorrection === true) {
 
-        if (b[a + 1] === '>' && lex[0] === '<' && lex[1] !== '<') {
+        if (
+          is(b[a + 1], cc.RAN) &&
+          is(lex[0], cc.LAN) &&
+          not(lex[0], cc.LAN)
+        ) {
 
-          do { a = a + 1; } while (b[a + 1] === '>');
+          do { a = a + 1; } while (is(b[a + 1], cc.RAN));
 
-        } else if (lex[0] === '<' && lex[1] === '<' && b[a + 1] !== '>' && lex[lex.length - 2] !== '>') {
+        } else if (
+          is(lex[0], cc.LAN) &&
+          is(lex[1], cc.LAN) &&
+          not(b[a + 1], cc.RAN) &&
+          not(lex[lex.length - 2], cc.RAN)
+        ) {
 
           do { lex.splice(1, 1); } while (lex[1] === '<');
         }
@@ -1980,50 +2023,10 @@ prettify.lexers.markup = function markup (source: string) {
 
       if (tname === 'xml') {
         html = 'xml';
-      } else if (
-        html === '' &&
-        tname === '!DOCTYPE' &&
-        element.toLowerCase().indexOf('xhtml') > 0
-      ) {
-        html = 'xml';
       } else if (html === '' && tname === 'html') {
         html = 'html';
       } else if (html === 'liquid') {
         html = 'html';
-      }
-
-      if (element.replace(start, '').replace(/^\s+/, '').indexOf('@prettify-ignore-start') === 0) {
-
-        a = a + 1;
-
-        do {
-
-          lex.push(b[a]);
-
-          if (b[a] === 'd' && lex.slice(lex.length - 20).join('') === '@prettify-ignore-end') break;
-
-          a = a + 1;
-
-        } while (a < c);
-
-        do {
-          lex.push(b[a]);
-          if (
-            b[a] === end.charAt(end.length - 1) &&
-            b.slice(a - (end.length - 1), a + 1).join('') === end
-          ) {
-            break;
-          }
-
-          a = a + 1;
-
-        } while (a < c);
-
-        record.token = lex.join('');
-        record.types = 'ignore';
-        recordPush(data, record, '');
-
-        return;
       }
     }
 
@@ -2148,7 +2151,7 @@ prettify.lexers.markup = function markup (source: string) {
 
         if (
           data.types[parse.count - 1] === 'singleton' &&
-          lastToken.charAt(lastToken.length - 2) !== '/' &&
+          lastToken.charCodeAt(lastToken.length - 2) !== cc.FWS &&
           '/' + tagName(lastToken) === tname
         ) {
 
@@ -2161,9 +2164,9 @@ prettify.lexers.markup = function markup (source: string) {
         // html gets tag names in lowercase, if you want to preserveLine case sensitivity
         // beautify as XML
         if (
-          element.charAt(0) === '<' &&
-          element.charAt(1) !== '!' &&
-          element.charAt(1) !== '?' && (
+          element.charCodeAt(0) === cc.LAN &&
+          element.charCodeAt(1) !== cc.BNG &&
+          element.charCodeAt(1) !== cc.QWS && (
             parse.count < 0 ||
             data.types[parse.count].indexOf('template') < 0
           )
@@ -2214,7 +2217,7 @@ prettify.lexers.markup = function markup (source: string) {
           // certain tags cannot contain other certain tags if such tags are peers
           addHtmlEnd(0);
         } else if (
-          tname.charAt(0) === '/' &&
+          tname.charCodeAt(0) === cc.FWS &&
           blocks.has(parse.structure[parse.structure.length - 1][0]) &&
           parse.structure[parse.structure.length - 1][0] !== tname.slice(1)
         ) {
@@ -2234,9 +2237,11 @@ prettify.lexers.markup = function markup (source: string) {
 
         // inserts a trailing slash into singleton tags if they do not already have it
         if (voids.has(tname)) {
+
           if (options.attemptCorrection === true && ender.test(element) === false) {
             element = element.slice(0, element.length - 1) + ' />';
           }
+
           return true;
         }
 
@@ -2274,7 +2279,7 @@ prettify.lexers.markup = function markup (source: string) {
           if (attr[0] === 'type') {
 
             attValue = attr[1];
-            if (attValue.charAt(0) === '"' || attValue.charAt(0) === "'") {
+            if (attValue.charCodeAt(0) === cc.DQO || attValue.charCodeAt(0) === cc.SQO) {
               attValue = attValue.slice(1, attValue.length - 1);
             }
 
@@ -2313,7 +2318,7 @@ prettify.lexers.markup = function markup (source: string) {
         ext = true;
 
       } else if (
-        (tname === 'style' || tname === 'stylsheet') &&
+        (tname === 'style' || tname === 'stylesheet') &&
         options.language !== 'jsx' &&
         (attValue === '' || attValue === 'text/css')
       ) {
@@ -2340,9 +2345,9 @@ prettify.lexers.markup = function markup (source: string) {
 
           do {
 
-            if ((/\s/).test(b[len]) === false) {
+            if (ws(b[len]) === false) {
 
-              if (b[len] === '<') {
+              if (is(b[len], cc.LAN)) {
 
                 if (b.slice(len + 1, len + 4).join('') === '!--') {
 
@@ -2352,7 +2357,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                     do {
 
-                      if ((/\s/).test(b[len]) === false) {
+                      if (ws(b[len]) === false) {
                         ext = false;
                         break;
                       }
@@ -2419,23 +2424,26 @@ prettify.lexers.markup = function markup (source: string) {
 
           do {
 
-            if (b[a] === '\n') parse.lineNumber = parse.lineNumber + 1;
+            if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
 
             tags.push(b[a]);
 
             if (delim === '') {
 
-              if (b[a] === '"') {
+              if (is(b[a], cc.DQO)) {
 
                 delim = '"';
 
-              } else if (b[a] === "'") {
+              } else if (is(b[a], cc.SQO)) {
 
                 delim = "'";
 
-              } else if (tags[0] !== '{' && b[a] === '{' && (b[a + 1] === '{' || b[a + 1] === '%')) {
+              } else if (
+                not(tags[0], cc.LCB) &&
+                is(b[a], cc.LCB) && (is(b[a + 1], cc.LCB) || is(b[a + 1], cc.PER))
+              ) {
 
-                if (b[a + 1] === '{') {
+                if (is(b[a + 1], cc.LCB)) {
 
                   delim = '}}';
 
@@ -2445,15 +2453,15 @@ prettify.lexers.markup = function markup (source: string) {
 
                 }
 
-              } else if (b[a] === '<' && simple === true) {
+              } else if (is(b[a], cc.LAN) && simple === true) {
 
-                if (b[a + 1] === '/') {
+                if (is(b[a + 1], cc.FWS)) {
                   endtag = true;
                 } else {
                   endtag = false;
                 }
 
-              } else if (b[a] === lastchar && b[a - 1] !== '/') {
+              } else if (b[a] === lastchar && not(b[a - 1], cc.FWS)) {
 
                 if (endtag === true) {
                   igcount = igcount - 1;
@@ -2594,7 +2602,7 @@ prettify.lexers.markup = function markup (source: string) {
     } else {
 
       // Liquid Tags and other items are pushed here
-
+      //  console.log(record);
       recordPush(data, record, tname);
 
     }
@@ -2909,10 +2917,13 @@ prettify.lexers.markup = function markup (source: string) {
                     record.token = '-->';
 
                     recordPush(data, record, '');
+
                   } else {
 
                     prettify.lexers.style(outside);
+
                     if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
+
                   }
                   break;
                 }
@@ -3009,6 +3020,7 @@ prettify.lexers.markup = function markup (source: string) {
                   } else {
 
                     prettify.lexers.style(outside);
+
                   }
 
                   break;

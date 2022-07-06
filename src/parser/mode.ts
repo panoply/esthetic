@@ -167,7 +167,7 @@ export function mode (prettify: Prettify) {
     prettify.options.lexer = 'text';
 
   } else if (
-    prettify.options.language === 'auto' ||
+    prettify.options.language === 'auto' &&
     prettify.options.lexer === 'auto'
   ) {
 
@@ -187,6 +187,9 @@ export function mode (prettify: Prettify) {
       prettify.options.language = lang.language;
       prettify.options.languageName = lang.languageName;
     }
+  } else {
+
+    prettify.options.lexer = 'markup'
   }
 
   prettify.stats.language = prettify.options.languageName;

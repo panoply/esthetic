@@ -6,7 +6,7 @@
 </li>
 
 
-{% comment -%}@prettify-ignore-start{%- endcomment -%}
+{% comment %}@prettify-ignore-start{%- endcomment -%}
 <li>
 <div> WILL NOT FORMAT </div>
 </li>
@@ -27,11 +27,11 @@
 </li>
 </ul>
 
-{% comment -%}@prettify-ignore-start{%- endcomment -%}
+{% comment %}@prettify-ignore-start{% endcomment %}
 {%if customer.name == "xxx" %} THIS WILL BE IGNORED AND NOT FORMATTED
 {% elsif customer.name == "xx" %}
 The lines and spacing will be preserver {% else %}Hi Stranger!         {% endif %}
-{% comment %} @prettify-ignore-end {% endcomment %}
+{% comment %}@prettify-ignore-end{% endcomment %}
 
 Formatting is applied:
 
@@ -45,7 +45,7 @@ Formatting is applied:
 
 Lets test Liquid comment ignores
 
-{% comment -%}@prettify-ignore-start{%- endcomment -%}
+{% comment %}@prettify-ignore-start{% endcomment -%}
 
 {%- comment -%}
 example
@@ -57,9 +57,7 @@ example
 <li>two</li>
 </ul>
 </div>
-
-
-{% comment %}@prettify-ignore-end {% endcomment %}
+{%- comment %}@prettify-ignore-end {%- endcomment %}
 
 
 <div class="bar"> <div>foo </div></div>

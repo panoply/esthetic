@@ -2,7 +2,7 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('Markup ignore file Liquid comment', async t => {
+test.serial('Ignore file using Liquid comment', async t => {
 
   // t.log('{% comment %} @prettify-ignore {% endcomment %}');
 
@@ -18,7 +18,7 @@ test.serial('Markup ignore file Liquid comment', async t => {
 
 });
 
-test.serial('Markup ignore file HTML comment', async t => {
+test.serial('Ignore file using HTML comment', async t => {
 
   // t.log('<!-- @prettify-ignore -->');
 
@@ -30,11 +30,12 @@ test.serial('Markup ignore file HTML comment', async t => {
     }
   });
 
+  // t.log(output);
   t.snapshot(output);
 
 });
 
-test.serial('Markup ignored regions Liquid comments ', async t => {
+test.serial('Ignore code regions using Liquid comments ', async t => {
 
   // t.log('{% comment %} @prettify-ignore-start {% endcomment %}');
   // t.log('{% comment %} @prettify-ignore-end {% endcomment %}');
@@ -47,11 +48,12 @@ test.serial('Markup ignored regions Liquid comments ', async t => {
     }
   });
 
+  // t.log(output);
   t.snapshot(output);
 
 });
 
-test.serial('Markup ignored regions HTML comments', async t => {
+test.serial('Ignore code regions using HTML comments', async t => {
 
   // t.log('<!-- @prettify-ignore-start -->');
   // t.log('<!-- @prettify-ignore-end -->');
@@ -64,43 +66,50 @@ test.serial('Markup ignored regions HTML comments', async t => {
     }
   });
 
+  //  t.log(output);
   t.snapshot(output);
 
 });
 
-test.serial('Script ignore file line comment', async t => {
+test.serial('Ignore file using line comment', async t => {
 
   // t.log('// @prettify-ignore');
 
   const { source } = await samples.get('javascript/ignore-file-inline');
 
   const output = await prettify.format(source, {
+    lexer: 'script',
+    language: 'javascript',
     script: {
       arrayFormat: 'inline'
     }
   });
 
+  // t.log(output);
   t.snapshot(output);
 
 });
 
-test.serial('Script ignore file block comment', async t => {
+test.serial('Ignore file using line block comment', async t => {
 
   // t.log('/* @prettify-ignore */');
 
   const { source } = await samples.get('javascript/ignore-file-inline');
 
   const output = await prettify.format(source, {
+    lexer: 'script',
+    language: 'javascript',
     script: {
       arrayFormat: 'inline'
     }
   });
 
+  // t.log(output);
   t.snapshot(output);
 
 });
 
-test.serial('Script ignored regions block comments ', async t => {
+test.serial.skip('Ignore code regions using JS/TS/CSS block comments', async t => {
 
   // t.log('/* @prettify-ignore-start */');
   // t.log('/* @prettify-ignore-end */');
@@ -108,16 +117,19 @@ test.serial('Script ignored regions block comments ', async t => {
   const { source } = await samples.get('javascript/ignore-region-block');
 
   const output = await prettify.format(source, {
-    markup: {
-      forceIndent: true
+    lexer: 'script',
+    language: 'javascript',
+    script: {
+      arrayFormat: 'inline'
     }
   });
 
+  // t.log(output);
   t.snapshot(output);
 
 });
 
-test.serial('Script ignored regions inline comments ', async t => {
+test.serial.skip('Ignore code regions using JS/TS/SCSS line comments', async t => {
 
   // t.log('// @prettify-ignore-start');
   // t.log('// @prettify-ignore-end');

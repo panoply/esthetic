@@ -29,8 +29,10 @@
     "play": "ava tests/play.test.mjs --color --watch",
     "test": "ava tests/cases/*.test.mjs --serial",
     "test:attributes": "ava tests/cases/attributes* ---",
-    "test:comments": "ava tests/cases/comments* ---",
+    "test:ignores": "ava tests/cases/ignores* ---",
     "test:css": "ava tests/cases/css* ---",
+    "test:liquid": "ava tests/cases/liquid* ---",
+    "test:html": "ava tests/cases/html* ---",
     "test:language": "ava tests/cases/language* ---",
     "test:javascript": "ava tests/cases/javascript* ---"
   },

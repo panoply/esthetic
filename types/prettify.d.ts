@@ -72,7 +72,7 @@ export type Structure = [token: string, index: number];
 /**
  * Token Types string literal
  */
-export type Types = `${MarkupTypes | ExtraTypes | ScriptTypes | StyleTypes}`
+export type Types = LiteralUnion<`${MarkupTypes | ExtraTypes | ScriptTypes | StyleTypes}`, string>
 
 /**
  * Rule option defintions
@@ -301,6 +301,10 @@ export enum MarkupTypes {
    * A tag attribute from a regular start or singular tag type.
    */
   attribute = 'attribute',
+  /**
+   * The doctype tag
+   */
+  doctype = 'doctype',
   /**
    * An XML/SGML CDATA block. Typically used to allow extraneous string content in an XML
    * document that might otherwise break the XML syntax rules.
@@ -980,33 +984,59 @@ export interface MarkupOptions {
   /**
    * **Default** `false`
    *
-   * If all markup attributes should be indented each onto their own line.
-   * Please note that when you define a `wrap` level then attributes will
+   * If all markup attributes should be indented each onto their own line. You
+   * can optionally provide an integer value of `1` or more. When an integer value
+   * is passed, attributes will be forced only wheb the number of attributes contained
+   * on the tag exceeds the supplied value limit.
+   *
+   * > Please note that when you define a `wrap` level then attributes will
    * be automatically forced. This is typically a better solution than forcing
    * all attributes onto newlines.
    *
    * ---
    *
-   * **Example**
+   * **Disabled**
    *
-   * Below is an example of how this rule works if it's enabled, ie: `true`
-   *
-   * **Before Formatting:**
+   * *Below is the default, wherein attributes are only forced when wrap is exceeded.*
    *
    * ```html
    * <div class="x" id="{{ foo }}" data-x="xx"></div>
+   *
    * ```
    *
-   * **After Formatting:**
+   * **Enabled**
+   *
+   * *Below is an example of how this rule works if it's enabled, ie: `true`*
    *
    * ```html
    * <div
    *   class="x"
    *   id="{{ foo }}"
    *   data-x="xx"></div>
+   *
+   * ```
+   *
+   * **Limits**
+   *
+   * *Below we provide a value of `2` so formatting will be applied as such:*
+   *
+   * ```html
+   *
+   * <!-- Tag contains 2 attributes, they will not be forced-->
+   * <div class="x" id="{{ foo }}"></div>
+   *
+   * <!-- Tag contains 3 attributes, thus they will be forced -->
+   * <div
+   *   class="x"
+   *   id="{{ foo }}"
+   *   data-x="xx"></div>
+   *
+   * <!-- Tag contains 1 attribute, it will not be forced-->
+   * <div class="x"></div>
+   *
    * ```
    */
-  forceAttribute?: boolean
+  forceAttribute?: boolean | number;
 
   /**
    * **Default** `false`

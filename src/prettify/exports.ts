@@ -81,7 +81,7 @@ function options (rules: Options) {
 
   for (const rule of keys(rules)) {
 
-    if (definitions?.[rule]?.lexer === 'all') {
+    if (definitions?.[rule]?.lexer === 'auto') {
       prettify.options[rule] = rules[rule];
     } else if (rule === 'markup') {
       assign(prettify.options.markup, rules.markup);

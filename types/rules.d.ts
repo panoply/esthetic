@@ -554,6 +554,7 @@ export interface Rules {
   | 'indent'
   | 'inline',
   preserveAttributes?: boolean;
+  preserveAttributeValues?: boolean;
   parseFormat?: 'parallel';
   parseSpace?: boolean;
   preserveComment?: boolean;

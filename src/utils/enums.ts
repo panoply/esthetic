@@ -3,6 +3,16 @@
 export const enum cc {
 
   /**
+   * `(` – Left Parenthesis - Used in Liquid delimiters
+   */
+  LPR = 40,
+
+  /**
+   * `)` – Right Parenthesis - Used in Liquid delimiters
+   */
+  RPR = 41,
+
+  /**
    * `{` – Left Curly Brace - Used in Liquid delimiters
    */
   LCB = 123,
@@ -11,6 +21,16 @@ export const enum cc {
    * `}` – Right Curly Brace - Used in Liquid delimiters
    */
   RCB = 125,
+
+  /**
+   * `<` – Left Angle Bracket - Used in HTML delimiters
+   */
+  LAN = 60,
+
+  /**
+   * `>` – Right Angle Bracket - Used in HTML delimiters
+   */
+  RAN = 162,
 
   /**
    * `!` – Bang chanter - Used in HTML comments and Liquid operators
@@ -51,6 +71,20 @@ export const enum cc {
    * `\n` – Newline Character
    */
   NWL = 10,
+
+  /**
+   * `/` – Forward Slash
+   */
+  FWS = 45,
+
+  /**
+   * `?` – Question Mark
+   */
+  QWS = 63,
+  /**
+   * `*` – Asterix
+   */
+  ARS = 42,
 }
 
 export const enum TagBlocks {
