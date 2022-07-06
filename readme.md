@@ -1,12 +1,14 @@
+### WIP - RELEASE CANDIDATE ALMOST COMPLETE
+
+_This module is still in development but approaching a stable release. It is not yet available for consumption on the NPM Registry and the the playground is not using the most recent versions, however the cloning the repository will give you the most recent working version_
+
 # Prettify 💅
 
 The new generation code beautification tool for formatting HTML, Liquid, JavaScript, TypeScript, CSS/SCSS and more! Prettify is built atop of the sparser lexing engines and its parse approach was adapted from the distributed source code of the late and powerful PrettyDiff.
 
-Visit the [Prettify Playground](https://liquify.dev/prettify)
-
 ### Features
 
-- Fast, performant and lightweight (50kb gzip).
+- Fast, performant and lightweight (40kb gzip).
 - Language aware. Automatically infers handling.
 - Provides a granular set of formatting rules.
 - Single parse tree with incremental beautification capabilities
@@ -512,47 +514,7 @@ Prettify can be used together with tools like ESLint and Stylelint without the n
 
 ### Shopify Themes
 
-Developers working with straps like [Dawn](https://github.com/Shopify/dawn) should take some consideration before running Prettify on the distributed code contained within the project. Dawn is chaotic and it employs some terrible approaches that may lead to problematic scenarios and readability issues. An example of this can occur when Prettify is processing HTML attribute values. By default, Prettify does not respect newlines within attribute strings so when it encounters newline characters contained within attribute strings values it will appropriately strip them out.
-
-##### Demonstration
-
-The below code snippet is extracted from the Dawn theme. Notice how the `srcset` attribute value applies newlines for every `{% if %}` condition. While this is totally valid code it is poorly thought through, propagates bad habits and is generally just a terrible approach. By default, Prettify will not respect such a structure during beautification and remove those newlines.
-
-```html
-<img
-  srcset="{%- if section.settings.image.width >= 375 -%}{{ section.settings.image | image_url: width: 375 }} 375w,{%- endif -%}
-  {%- if section.settings.image.width >= 750 -%}{{ section.settings.image | image_url: width: 750 }} 750w,{%- endif -%}
-  {%- if section.settings.image.width >= 1100 -%}{{ section.settings.image | image_url: width: 1100 }} 1100w,{%- endif -%}
-  {%- if section.settings.image.width >= 1500 -%}{{ section.settings.image | image_url: width: 1500 }} 1500w,{%- endif -%}
-  {%- if section.settings.image.width >= 1780 -%}{{ section.settings.image | image_url: width: 1780 }} 1780w,{%- endif -%}
-  {%- if section.settings.image.width >= 2000 -%}{{ section.settings.image | image_url: width: 2000 }} 2000w,{%- endif -%}
-  {%- if section.settings.image.width >= 3000 -%}{{ section.settings.image | image_url: width: 3000 }} 3000w,{%- endif -%}
-  {%- if section.settings.image.width >= 3840 -%}{{ section.settings.image | image_url: width: 3840 }} 3840w,{%- endif -%}
-  {{ section.settings.image | image_url }} {{ section.settings.image.width }}w"
-  sizes="100vw"
-  src="{{ section.settings.image | image_url: width: 1500 }}"
-  loading="lazy"
-  alt="{{ section.settings.image.alt | escape }}"
-  width="{{ section.settings.image.width }}"
-  height="{{ section.settings.image.width | divided_by: section.settings.image.aspect_ratio }}"
-/>
-```
-
-During the beautification process, Prettify will appropriately convert the above code to a what it assumes to be the intended structure. The lexing algorithm will take wrap levels, predefined rules and the existing node tree into consideration. Because Prettify considers newlines within HTML attribute values as invalid, the beautified output will be harder to read and reason with:
-
-```html
-<img
-  srcset="{%- if section.settings.image.width >= 375 -%}{{ section.settings.image | image_url: width: 375 }} 375w,{%- endif -%}{%- if section.settings.image.width >= 750 -%}{{ section.settings.image | image_url: width: 750 }} 750w,{%- endif -%}{%- if section.settings.image.width >= 1100 -%}{{ section.settings.image | image_url: width: 1100 }} 1100w,{%- endif -%}{%- if section.settings.image.width >= 1500 -%}{{ section.settings.image | image_url: width: 1500 }} 1500w,{%- endif -%}{%- if section.settings.image.width >= 1780 -%}{{ section.settings.image | image_url: width: 1780 }} 1780w,{%- endif -%}{%- if section.settings.image.width >= 2000 -%}{{ section.settings.image | image_url: width: 2000 }} 2000w,{%- endif -%}{%- if section.settings.image.width >= 3000 -%}{{ section.settings.image | image_url: width: 3000 }} 3000w,{%- endif -%}{%- if section.settings.image.width >= 3840 -%}{{ section.settings.image | image_url: width: 3840 }} 3840w,{%- endif -%}{{ section.settings.image | image_url }} {{ section.settings.image.width }}w"
-  sizes="100vw"
-  src="{{ section.settings.image | image_url: width: 1500 }}"
-  loading="lazy"
-  alt="{{ section.settings.image.alt | escape }}"
-  width="{{ section.settings.image.width }}"
-  height="{{ section.settings.image.width | divided_by: section.settings.image.aspect_ratio }}"
-/>
-```
-
-While the pre-format structure is more readable than the post-format result, it is important that users understand that this caveat is not necessarily an issue or bug. Prettify is merely re-producing an intended beautification operation and removing newlines from attribute values. Just because Shopify engineers do this, it does not make it right. In future releases, Prettify will reluctantly support newlines contained in HTML attribute values but until then, take consideration here and in any sense, just avoid following the implementations of novice developers and using Dawn as your northern star.
+Developers working with straps like [Dawn](https://github.com/Shopify/dawn) should take some consideration before running Prettify on the distributed code contained within the project. Dawn is chaotic and it employs some terrible approaches that may lead to problematic scenarios and readability issues upon formatting.
 
 # Prettify vs Shopify's Prettier Plugin
 
@@ -562,24 +524,26 @@ Prettify is leveraging the sparser lexing engines under the hood. Sparser along 
 
 Below is a formatting specific feature comparison as of June 2022 for Markup (Liquid + HTML).
 
-| Feature                     | Prettify | Liquid Prettier Plugin |
-| --------------------------- | -------- | ---------------------- |
-| Tag Indentation             | ✓        | ✓                      |
-| Attribute Indentation       | ✓        | ✓                      |
-| Comment Formatting          | ✓        | ✓                      |
-| Content Indentation         | ✓        | 𐄂                      |
-| Delimiter Spacing           | ✓        | 𐄂                      |
-| Wrapping Indentation        | ✓        | 𐄂                      |
-| Attribute Sorting           | ✓        | 𐄂                      |
-| Liquid + CSS/SCSS           | ✓        | 𐄂                      |
-| Liquid + JS/TS              | ✓        | 𐄂                      |
-| Liquid Newline Filters      | ✓        | 𐄂                      |
-| Frontmatter Support         | ✓        | 𐄂                      |
-| Embedded `{% style %}`      | ✓        | 𐄂                      |
-| Embedded `{% javascript %}` | ✓        | 𐄂                      |
-| Embedded `{% schema %}`     | ✓        | ✓                      |
-| Embedded `<style>`          | ✓        | 𐄂                      |
-| Embedded `<script>`         | ✓        | 𐄂                      |
+| Feature                          | Prettify | Liquid Prettier Plugin |
+| -------------------------------- | -------- | ---------------------- |
+| Tag Indentation                  | ✓        | ✓                      |
+| Attribute Indentation            | ✓        | ✓                      |
+| Comment Formatting               | ✓        | ✓                      |
+| Controlled Attribute Indentation | ✓        | 𐄂                      |
+| Content Indentation              | ✓        | 𐄂                      |
+| Delimiter Spacing                | ✓        | 𐄂                      |
+| Wrapping Indentation             | ✓        | 𐄂                      |
+| Attribute Sorting                | ✓        | 𐄂                      |
+| Liquid + CSS/SCSS                | ✓        | 𐄂                      |
+| Liquid + JS/TS                   | ✓        | 𐄂                      |
+| Liquid Newline Filters           | ✓        | 𐄂                      |
+| Frontmatter Support              | ✓        | 𐄂                      |
+| Embedded `{% style %}`           | ✓        | 𐄂                      |
+| Embedded `{% stylesheet %}`      | ✓        | 𐄂                      |
+| Embedded `{% javascript %}`      | ✓        | 𐄂                      |
+| Embedded `{% schema %}`          | ✓        | ✓                      |
+| Embedded `<style>`               | ✓        | 𐄂                      |
+| Embedded `<script>`              | ✓        | 𐄂                      |
 
 # Credits
 
