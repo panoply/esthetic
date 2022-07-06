@@ -256,8 +256,6 @@ prettify.beautify.markup = function markup (options: Options) {
         ) ? indent + 1
           : indent;
 
-        // console.log(data.token[a]);
-
         do {
           level.push(ind);
           x = x - 1;
@@ -592,7 +590,7 @@ prettify.beautify.markup = function markup (options: Options) {
 
         // if ((/=['"]?(\n|<|{{|{%|^)/).test(data.token[index])) return;
 
-        console.log(item);
+        //  console.log(item);
 
         const attrval = attributeName(data.token[index]);
 
@@ -628,7 +626,7 @@ prettify.beautify.markup = function markup (options: Options) {
         } while (vi < m.length);
 
         data.token[index] = vt;
-        return;
+
         do {
 
           // bcount = anwl.indexOf(item[bb], acount);
@@ -747,6 +745,8 @@ prettify.beautify.markup = function markup (options: Options) {
 
       if (lev < 1) lev = 1;
 
+      const attr: { [begin: number]: number } = create(null);
+
       // First, set levels and determine if there
       // are template attributes. When we have template
       // attributes we handle them in a similar manner
@@ -759,84 +759,83 @@ prettify.beautify.markup = function markup (options: Options) {
 
         if (data.types[a].indexOf('attribute') > 0) {
 
-          if (type.is(a, 'template_attribute')) {
-
-            level.push(lev);
-
+          if (data.types[a] === 'template_attribute') {
+            level.push(-10);
           } else if (data.types[a] === 'comment_attribute') {
-
             level.push(lev);
-
           } else if (data.types[a].indexOf('start') > 0) {
 
             attStart = true;
 
-            if (a < c - 2 && type.idx(a + 2, 'attribute') > 0) {
-
+            if (a < c - 2 && data.types[a + 2].indexOf('attribute') > 0) {
               level.push(-20);
               a = a + 1;
               externalIndex[a] = a;
-
             } else {
-
               if (parent === a - 1 && plural === false) {
                 level.push(lev);
               } else {
                 level.push(lev + 1);
               }
-
               if (data.lexer[a + 1] !== lexer) {
                 a = a + 1;
                 external();
               }
-
             }
-
           } else if (data.types[a].indexOf('end') > 0) {
 
-            if (level[a - 1] !== -20) level[a - 1] = level[data.begin[a]] - 1;
+            if (level[a - 1] !== -20) {
+              level[a - 1] = level[data.begin[a]] - 1;
+            }
 
             if (data.lexer[a + 1] !== lexer) {
               level.push(-20);
             } else {
               level.push(lev);
             }
-
           } else {
-
             level.push(lev);
           }
 
           earlyexit = true;
 
-        } else if (data.types[a] === 'attribute') {
+        } else if (type.is(a, 'attribute')) {
 
           len = len + data.token[a].length + 1;
 
           if (options.markup.preserveAttributes === true) {
 
-            if (data.lines[a] === 2) {
-              level.push(lev);
-            } else if (data.lines[a] === 1) {
-              level.push(-10);
-            }
+            level.push(-10);
 
           } else if (
             options.markup.forceAttribute === true ||
+            options.markup.forceAttribute >= 1 ||
             attStart === true || (
-              a < c - 1 && type.not(a + 1, 'template_attribute') &&
+              a < c - 1 &&
+              type.not(a + 1, 'template_attribute') &&
               type.idx(a + 1, 'attribute') > 0
             )
           ) {
 
-            level.push(lev);
+            // HOT PATCH
+            // Support forced attribute limits, wherein the user
+            // can define a minimal number of attributes before
+            // force is applied.
 
+            if (typeof options.markup.forceAttribute === 'number') {
+              attr[data.begin[a]] = 1 + attr[data.begin[a]] || 0;
+              if (attr[data.begin[a]] > (options.markup.forceAttribute - 1)) {
+                level.fill(lev, -options.markup.forceAttribute);
+                level.push(lev);
+              } else {
+                level.push(-10);
+              }
+            } else {
+              level.push(lev);
+            }
           } else {
-
-            level.push(lev);
-
+            level.push(-10);
           }
-
         } else if (data.begin[a] < parent + 1) {
           break;
         }
@@ -873,6 +872,12 @@ prettify.beautify.markup = function markup (options: Options) {
       if (options.markup.forceAttribute === true) {
         count = 0;
         level[parent] = lev;
+      } else if (options.markup.forceAttribute >= 1) {
+        if (attr[parent] > (options.markup.forceAttribute as number - 1)) {
+          level[parent] = lev;
+        } else {
+          level[parent] = -10;
+        }
       } else {
         level[parent] = -10;
       }
@@ -939,7 +944,7 @@ prettify.beautify.markup = function markup (options: Options) {
 
         if (data.token[a].toLowerCase().indexOf('<!doctype') === 0) level[a - 1] = indent;
 
-        else if (data.types[a].indexOf('attribute') > -1) {
+        if (data.types[a].indexOf('attribute') > -1) {
 
           attribute();
 
@@ -1278,12 +1283,6 @@ prettify.beautify.markup = function markup (options: Options) {
               build.push(newline(lev));
             }
           }
-        } else if (type.is(a, 'attribute')) {
-          build.push(lines[aa], newline(lev));
-
-          // console.log(JSON.stringify(build, null, 4));
-
-          // ;
         } else {
           build.push(lines[aa], newline(lev));
         }
@@ -1375,9 +1374,9 @@ prettify.beautify.markup = function markup (options: Options) {
           type.is(a, 'singleton') ||
           type.is(a, 'xml') ||
           type.is(a, 'sgml')
-        ) && type.idx(a, 'attribute') < 0 &&
-          a < c - 1 &&
-          data.types[a + 1] !== undefined &&
+        ) &&
+          type.idx(a, 'attribute') < 0 &&
+          a < c - 1 && data.types[a + 1] !== undefined &&
           type.idx(a + 1, 'attribute') > -1
         ) {
 
@@ -1421,39 +1420,9 @@ prettify.beautify.markup = function markup (options: Options) {
           prettify.start = a;
           options.indentLevel = lastLevel;
 
-          if (data.stack[a] === 'schema') {
+          ext = prettify.beautify[data.lexer[a]](options).replace(/\s+$/, '');
 
-            ext = prettify.beautify.script(prettify.options);
-
-            // HOT PATCH
-            // Ensure schema tag block is on same line
-            build[build.length - 1] = '\n';
-
-          } else if (data.stack[a] === 'style') {
-
-            ext = prettify.beautify.style(prettify.options);
-
-            // HOT PATCH
-            // Ensure schema tag block is on same line
-            build[build.length - 1] = '\n';
-
-          } else if (data.stack[a] === 'javascript') {
-
-            options.indentLevel = lastLevel;
-
-            ext = prettify.beautify.script(prettify.options);
-
-            // HOT PATCH
-            // Ensure schema tag block is on same line
-            build[build.length - 1] = '\n';
-
-          } else {
-
-            ext = prettify.beautify.script(prettify.options);
-
-          }
-
-          build.push(ext.replace(/\s+$/, ''));
+          build.push(ext);
 
           if (levels[prettify.iterator] > -1 && externalIndex[a] > a) {
             build.push(newline(levels[prettify.iterator]));
