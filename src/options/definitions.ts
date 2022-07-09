@@ -140,17 +140,17 @@ export const definitions: Definitions = {
       }
     ]
   },
-  attemptCorrection: {
-    default: false,
-    description: 'Automatically correct some sloppiness in code.',
-    lexer: 'all',
-    type: 'boolean'
-  },
 
   /* -------------------------------------------- */
   /* LEXER:MARKUP                                 */
   /* -------------------------------------------- */
 
+  correct: {
+    default: false,
+    description: 'Automatically correct some sloppiness in code.',
+    lexer: 'all',
+    type: 'boolean'
+  },
   attributeSort: {
     default: false,
     description: 'Alphanumerically sort markup attributes. Attribute sorting is ignored on tags that contain attributes template attributes.',
@@ -162,6 +162,32 @@ export const definitions: Definitions = {
     description: "A comma separated list of attribute names. Attributes will be sorted according to this list and then alphanumerically. This option requires 'attributeSort' have a value of true.",
     lexer: 'markup',
     type: 'array'
+  },
+  attributeChain: {
+    default: 'inline',
+    description: 'Controls how Liquid tags contained within HTML attributed should be formatted.',
+    type: 'select',
+    lexer: 'markup',
+    values: [
+      {
+        rule: 'inline',
+        description: 'Liquid tag block contents are chained together'
+      },
+      {
+        rule: 'collapse',
+        description: 'Liquid tag block contents are split onto newlines'
+      },
+      {
+        rule: 'preserve',
+        description: 'Liquid tag block contents are preserved'
+      }
+    ]
+  },
+  delimiterSpacing: {
+    default: true,
+    description: 'Whether or not delimiter characters should apply a single space at the start and end point',
+    lexer: 'markup',
+    type: 'boolean'
   },
   forceAttribute: {
     default: false,
@@ -181,7 +207,7 @@ export const definitions: Definitions = {
     lexer: 'markup',
     type: 'boolean'
   },
-  preserveAttributeValues: {
+  preserveValues: {
     default: false,
     description: 'Whether or not attribute values should be preserved. When enabled, values will allow newline characters and processing on the contents will be skipped.',
     lexer: 'markup',
@@ -233,6 +259,7 @@ export const definitions: Definitions = {
     default: false,
     type: 'boolean'
   },
+
   /* -------------------------------------------- */
   /* LEXER:SCRIPT                                 */
   /* -------------------------------------------- */

@@ -1,4 +1,4 @@
-We have 4 Attributes
+All attributes will be indented
 
 <div
   id="{{ xxx | filter: 'xxx' }}"
@@ -7,12 +7,12 @@ We have 4 Attributes
   data-condition="{% if x %}foo{% else %}{{ x -}}{% endif %}"></div>
 
 
-We have 1 Attribute
+Attributes will not be indented
 
 <div id="{{ xxx | filter: 'xxx' }}"></div>
 
 
-We have 5 Attributes
+All attributes will be indented
 
 <div
   id="{{ xxx | filter: 'xxx' }}"
@@ -21,12 +21,12 @@ We have 5 Attributes
   data-condition="{% if x %}foo{% else %}{{ x -}}{% endif %}"
   data-xx="{{ foo.bar }}">
 
-We have 2 Attributes
+Attributes will not be indented
 
 <div id="{{ xxx | filter: 'xxx' }}" class="{{ foo.bar }}"></div>
 
 
-We have 3 Attributes
+Attributes will not be indented
 
 <div data-xx="x" id="{{ xxx | filter: 'xxx' }}" class="{{ foo.bar }}"></div>
 

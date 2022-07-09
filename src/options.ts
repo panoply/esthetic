@@ -64,7 +64,6 @@ prettify.options.indentLevel = 0;
 /* -------------------------------------------- */
 
 prettify.options.crlf = false;
-prettify.options.attemptCorrection = false;
 prettify.options.commentIndent = true;
 prettify.options.endNewline = false;
 prettify.options.indentChar = ' ';
@@ -78,14 +77,15 @@ prettify.options.wrap = 0;
 /* -------------------------------------------- */
 
 prettify.options.markup = create(null);
-prettify.options.markup.attributeGlue = true;
+prettify.options.markup.correct = false;
+prettify.options.markup.attributeChain = 'inline';
 prettify.options.markup.attributeSort = false;
 prettify.options.markup.attributeSortList = [];
-prettify.options.markup.attributeValueNewlines = 'force';
 prettify.options.markup.commentNewline = false;
 prettify.options.markup.forceAttribute = false;
 prettify.options.markup.preserveText = false;
 prettify.options.markup.preserveAttributes = false;
+prettify.options.markup.preserveValues = false;
 prettify.options.markup.selfCloseSpace = false;
 prettify.options.markup.forceIndent = false;
 prettify.options.markup.quoteConvert = 'none';
@@ -95,6 +95,7 @@ prettify.options.markup.quoteConvert = 'none';
 /* -------------------------------------------- */
 
 prettify.options.style = create(null);
+prettify.options.style.correct = false;
 prettify.options.style.compressCSS = false;
 prettify.options.style.classPadding = false;
 prettify.options.style.noLeadZero = false;
@@ -107,6 +108,7 @@ prettify.options.style.quoteConvert = 'none';
 /* -------------------------------------------- */
 
 prettify.options.script = create(null);
+prettify.options.script.correct = false;
 prettify.options.script.braceNewline = false;
 prettify.options.script.bracePadding = false;
 prettify.options.script.braceStyle = 'none';

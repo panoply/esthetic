@@ -21,7 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var src_exports = {};
 __export(src_exports, {
-  default: () => exports_exports,
+  default: () => prettify_exports,
   definitions: () => definitions
 });
 module.exports = __toCommonJS(src_exports);
@@ -167,7 +167,7 @@ var definitions = {
       }
     ]
   },
-  attemptCorrection: {
+  correct: {
     default: false,
     description: "Automatically correct some sloppiness in code.",
     lexer: "all",
@@ -184,6 +184,32 @@ var definitions = {
     description: "A comma separated list of attribute names. Attributes will be sorted according to this list and then alphanumerically. This option requires 'attributeSort' have a value of true.",
     lexer: "markup",
     type: "array"
+  },
+  attributeChain: {
+    default: "inline",
+    description: "Controls how Liquid tags contained within HTML attributed should be formatted.",
+    type: "select",
+    lexer: "markup",
+    values: [
+      {
+        rule: "inline",
+        description: "Liquid tag block contents are chained together"
+      },
+      {
+        rule: "collapse",
+        description: "Liquid tag block contents are split onto newlines"
+      },
+      {
+        rule: "preserve",
+        description: "Liquid tag block contents are preserved"
+      }
+    ]
+  },
+  delimiterSpacing: {
+    default: true,
+    description: "Whether or not delimiter characters should apply a single space at the start and end point",
+    lexer: "markup",
+    type: "boolean"
   },
   forceAttribute: {
     default: false,
@@ -203,7 +229,7 @@ var definitions = {
     lexer: "markup",
     type: "boolean"
   },
-  preserveAttributeValues: {
+  preserveValues: {
     default: false,
     description: "Whether or not attribute values should be preserved. When enabled, values will allow newline characters and processing on the contents will be skipped.",
     lexer: "markup",
@@ -441,7 +467,7 @@ var definitions = {
   }
 };
 
-// src/prettify/module.ts
+// src/options.ts
 var prettify = create(null);
 prettify.parsed = create(null);
 prettify.options = create(null);
@@ -472,7 +498,6 @@ prettify.options.language = "text";
 prettify.options.languageName = "Plain Text";
 prettify.options.indentLevel = 0;
 prettify.options.crlf = false;
-prettify.options.attemptCorrection = false;
 prettify.options.commentIndent = true;
 prettify.options.endNewline = false;
 prettify.options.indentChar = " ";
@@ -481,18 +506,20 @@ prettify.options.preserveComment = false;
 prettify.options.preserveLine = 2;
 prettify.options.wrap = 0;
 prettify.options.markup = create(null);
-prettify.options.markup.attributeGlue = true;
+prettify.options.markup.correct = false;
+prettify.options.markup.attributeChain = "inline";
 prettify.options.markup.attributeSort = false;
 prettify.options.markup.attributeSortList = [];
-prettify.options.markup.attributeValueNewlines = "force";
 prettify.options.markup.commentNewline = false;
 prettify.options.markup.forceAttribute = false;
 prettify.options.markup.preserveText = false;
 prettify.options.markup.preserveAttributes = false;
+prettify.options.markup.preserveValues = false;
 prettify.options.markup.selfCloseSpace = false;
 prettify.options.markup.forceIndent = false;
 prettify.options.markup.quoteConvert = "none";
 prettify.options.style = create(null);
+prettify.options.style.correct = false;
 prettify.options.style.compressCSS = false;
 prettify.options.style.classPadding = false;
 prettify.options.style.noLeadZero = false;
@@ -500,6 +527,7 @@ prettify.options.style.sortSelectors = false;
 prettify.options.style.sortProperties = false;
 prettify.options.style.quoteConvert = "none";
 prettify.options.script = create(null);
+prettify.options.script.correct = false;
 prettify.options.script.braceNewline = false;
 prettify.options.script.bracePadding = false;
 prettify.options.script.braceStyle = "none";
@@ -2403,7 +2431,7 @@ prettify.lexers.style = function style(source) {
         item("end");
         if (b[a] === "}" && data.token[parse.count] !== ";") {
           if (data.types[parse.count] === "value" || data.types[parse.count] === "function" || data.types[parse.count] === "variable" && (data.token[parse.count - 1] === ":" || data.token[parse.count - 1] === ";")) {
-            if (options2.attemptCorrection === true) {
+            if (options2.style.correct === true) {
               ltoke = ";";
             } else {
               ltoke = "x;";
@@ -2590,7 +2618,7 @@ prettify.lexers.script = function script(source) {
     }
     if (options2.script.variableList === "list")
       vart.index[vart.len] = parse.count;
-    ltoke = options2.attemptCorrection === true ? ";" : "x;";
+    ltoke = options2.script.correct === true ? ";" : "x;";
     ltype = "separator";
     aa = parse.linesSpace;
     parse.linesSpace = 0;
@@ -2695,7 +2723,7 @@ prettify.lexers.script = function script(source) {
       name = data.token[data.begin[g - 2] - 1];
       if (data.token[g - 2] === "do" || data.token[g - 2] === ")" && "ifforwhilecatch".indexOf(name) > -1) {
         tempstore = parse.pop(data);
-        ltoke = options2.attemptCorrection === true ? "}" : "x}";
+        ltoke = options2.script.correct === true ? "}" : "x}";
         ltype = "end";
         pstack = parse.structure[parse.structure.length - 1];
         recordPush("");
@@ -2704,7 +2732,7 @@ prettify.lexers.script = function script(source) {
         return;
       }
       tempstore = parse.pop(data);
-      ltoke = options2.attemptCorrection === true ? "}" : "x}";
+      ltoke = options2.script.correct === true ? "}" : "x}";
       ltype = "end";
       pstack = parse.structure[parse.structure.length - 1];
       recordPush("");
@@ -2715,7 +2743,7 @@ prettify.lexers.script = function script(source) {
       parse.linesSpace = lines;
       return;
     }
-    ltoke = options2.attemptCorrection === true ? "}" : "x}";
+    ltoke = options2.script.correct === true ? "}" : "x}";
     ltype = "end";
     if (data.token[parse.count] === "x}")
       return;
@@ -2807,7 +2835,7 @@ prettify.lexers.script = function script(source) {
       }
     }
     if (x === ")" || x === "x)" || x === "]") {
-      if (options2.attemptCorrection === true)
+      if (options2.script.correct === true)
         plusplus();
       asifix();
     }
@@ -2835,7 +2863,7 @@ prettify.lexers.script = function script(source) {
     } else if (x === "]") {
       ltoke = "]";
     } else if (x === "}") {
-      if (ltoke !== "," && options2.attemptCorrection === true)
+      if (ltoke !== "," && options2.script.correct === true)
         plusplus();
       if (parse.structure.length > 0 && parse.structure[parse.structure.length - 1][0] !== "object")
         asi(true);
@@ -2855,7 +2883,7 @@ prettify.lexers.script = function script(source) {
     }
     lword.pop();
     pstack = parse.structure[parse.structure.length - 1];
-    if (x === ")" && options2.attemptCorrection === true && count - parse.count < 2 && (data.token[parse.count] === "(" || data.types[parse.count] === "number") && (data.token[count - 1] === "Array" || data.token[count - 1] === "Object") && data.token[count - 2] === "new") {
+    if (x === ")" && options2.script.correct === true && count - parse.count < 2 && (data.token[parse.count] === "(" || data.types[parse.count] === "number") && (data.token[count - 1] === "Array" || data.token[count - 1] === "Object") && data.token[count - 2] === "new") {
       newarray();
       newarr = true;
     }
@@ -2904,7 +2932,7 @@ prettify.lexers.script = function script(source) {
       }
     }
     if (insert === true) {
-      ltoke = options2.attemptCorrection === true ? "{" : "x{";
+      ltoke = options2.script.correct === true ? "{" : "x{";
       ltype = "start";
       recordPush(pword[0]);
       brace.push("x{");
@@ -3605,7 +3633,7 @@ prettify.lexers.script = function script(source) {
         });
       }
     } else {
-      if (options2.attemptCorrection === false || tokea !== "++" && tokea !== "--" && tokeb !== "++" && tokeb !== "--") {
+      if (options2.script.correct === false || tokea !== "++" && tokea !== "--" && tokeb !== "++" && tokeb !== "--") {
         return;
       }
       next = nextchar(1, false);
@@ -3854,7 +3882,7 @@ prettify.lexers.script = function script(source) {
       if (paren > -1) {
         if (data.begin[paren - 1] === data.begin[data.begin[aa] - 1] || data.token[data.begin[aa]] === "x(") {
           paren = -1;
-          if (options2.attemptCorrection === true) {
+          if (options2.script.correct === true) {
             end(")");
           } else {
             end("x)");
@@ -4184,7 +4212,7 @@ prettify.lexers.script = function script(source) {
         data.types[parse.count] = "start";
       }
     }
-    if (options2.attemptCorrection === true && (output === "Object" || output === "Array") && c[a + 1] === "(" && c[a + 2] === ")" && data.token[parse.count - 1] === "=" && data.token[parse.count] === "new") {
+    if (options2.script.correct === true && (output === "Object" || output === "Array") && c[a + 1] === "(" && c[a + 2] === ")" && data.token[parse.count - 1] === "=" && data.token[parse.count] === "new") {
       if (output === "Object") {
         data.token[parse.count] = "{";
         ltoke = "}";
@@ -4356,7 +4384,7 @@ prettify.lexers.script = function script(source) {
     if (output === "do") {
       nextitem = nextchar(1, true);
       if (nextitem !== "{") {
-        ltoke = options2.attemptCorrection === true ? "{" : "x{";
+        ltoke = options2.script.correct === true ? "{" : "x{";
         ltype = "start";
         brace.push("x{");
         recordPush("do");
@@ -4384,7 +4412,7 @@ prettify.lexers.script = function script(source) {
                 lexer: "script",
                 lines: 0,
                 stack: "if",
-                token: options2.attemptCorrection === true ? "}" : "x}",
+                token: options2.script.correct === true ? "}" : "x}",
                 types: "end"
               }
             });
@@ -4402,7 +4430,7 @@ prettify.lexers.script = function script(source) {
         }
       }
       if (nextitem !== "if" && nextitem.charAt(0) !== "{") {
-        ltoke = options2.attemptCorrection === true ? "{" : "x{";
+        ltoke = options2.script.correct === true ? "{" : "x{";
         ltype = "start";
         brace.push("x{");
         recordPush("else");
@@ -4412,7 +4440,7 @@ prettify.lexers.script = function script(source) {
       nextitem = nextchar(1, true);
       if (nextitem !== "(") {
         paren = parse.count;
-        if (options2.attemptCorrection === true) {
+        if (options2.script.correct === true) {
           start("(");
         } else {
           start("x(");
@@ -4486,7 +4514,7 @@ prettify.lexers.script = function script(source) {
     } else if (c[a] === ":" && c[a + 1] === ":") {
       if (wordTest > -1)
         word();
-      if (options2.attemptCorrection === true)
+      if (options2.script.correct === true)
         plusplus();
       asifix();
       a = a + 1;
@@ -4496,7 +4524,7 @@ prettify.lexers.script = function script(source) {
     } else if (c[a] === ",") {
       if (wordTest > -1)
         word();
-      if (options2.attemptCorrection === true)
+      if (options2.script.correct === true)
         plusplus();
       if (datatype[datatype.length - 1] === true && data.stack[parse.count].indexOf("type") < 0) {
         datatype[datatype.length - 1] = false;
@@ -4549,7 +4577,7 @@ prettify.lexers.script = function script(source) {
           vart.index[vart.len] = parse.count + 1;
         }
       }
-      if (options2.attemptCorrection === true)
+      if (options2.script.correct === true)
         plusplus();
       ltoke = ";";
       ltype = "separator";
@@ -4663,10 +4691,16 @@ prettify.lexers.markup = function markup(source) {
     "verbatim",
     "schema",
     "style",
-    "script",
     "javascript",
     "highlight",
     "stylesheet"
+  ]);
+  const condelse = /* @__PURE__ */ new Set([
+    "case",
+    "default",
+    "else",
+    "when",
+    "elsif"
   ]);
   const { options: options2 } = prettify;
   const { data } = parse;
@@ -4681,13 +4715,42 @@ prettify.lexers.markup = function markup(source) {
   const sgmlflag = 0;
   let ext = false;
   let html2 = "html";
+  let ttexp = false;
+  function getLiquidTagName(input) {
+    const begin = input.indexOf("{");
+    const token = is(input[begin + 2], 45 /* DSH */) ? input.slice(begin + 3).trimStart() : input.slice(begin + 2).trimStart();
+    return token.slice(0, token.search(/\s/));
+  }
+  function isLiquidStart(input) {
+    const begin = input.indexOf("{");
+    if (is(input[begin + 1], 37 /* PER */)) {
+      let token = is(input[begin + 2], 45 /* DSH */) ? input.slice(begin + 3).trimStart() : input.slice(begin + 2).trimStart();
+      token = token.slice(0, token.search(/\s/));
+      if (token.startsWith("end"))
+        return false;
+      return names.has(token);
+    }
+    return false;
+  }
+  function isLiquidEnd(input) {
+    let token = input;
+    if (Array.isArray(input))
+      token = input.join("");
+    const begin = token.indexOf("{");
+    if (is(token[begin + 1], 37 /* PER */)) {
+      if (is(token[begin + 2], 45 /* DSH */))
+        return token.slice(begin + 3).trimStart().startsWith("end");
+      return token.slice(begin + 2).trimStart().startsWith("end");
+    }
+    return false;
+  }
   function isLiquid(input, direction) {
     if (direction === 1) {
-      return input.charCodeAt(0) === 123 /* LCB */ && (input.charCodeAt(1) === 37 /* PER */ || input.charCodeAt(1) === 123 /* LCB */);
+      return is(input[0], 123 /* LCB */) && (is(input[1], 37 /* PER */) || is(input[1], 123 /* LCB */));
     } else if (direction === 2) {
-      return input.charCodeAt(input.length - 1) === 125 /* RCB */ && (input.charCodeAt(input.length - 2) === 37 /* PER */ || input.charCodeAt(input.length - 2) === 125 /* RCB */);
+      return is(input[input.length - 1], 125 /* RCB */) && (is(input[input.length - 2], 37 /* PER */) || is(input[input.length - 2], 123 /* LCB */));
     } else if (direction === 3) {
-      return input.charCodeAt(0) === 123 /* LCB */ && (input.charCodeAt(1) === 37 /* PER */ || input.charCodeAt(1) === 123 /* LCB */) && (input.charCodeAt(input.length - 1) === 125 /* RCB */ && (input.charCodeAt(input.length - 2) === 37 /* PER */ || input.charCodeAt(input.length - 2) === 125 /* RCB */));
+      return is(input[0], 123 /* LCB */) && (is(input[1], 37 /* PER */) || is(input[1], 123 /* LCB */)) && (is(input[input.length - 1], 125 /* RCB */) && (is(input[input.length - 2], 37 /* PER */) || is(input[input.length - 2], 123 /* LCB */)));
     } else if (direction === 4) {
       return /{[{%}]/.test(input);
     } else if (direction === 5) {
@@ -4840,10 +4903,26 @@ prettify.lexers.markup = function markup(source) {
           }
         }
       }
-      function templateattrs(sample, token) {
-        if (sample.charAt(0) === "{" && "{%".indexOf(sample.charAt(1)) > -1) {
+      function liquidAttributes(sample, token) {
+        if (isLiquidStart(token)) {
+          const ttname = getLiquidTagName(token);
+          if (names.has(ttname)) {
+            record.types = "template_attribute_start";
+            record.stack = ttname;
+            parse.structure.push([record.stack, parse.count]);
+          }
+          record.token = token;
+          convertq();
+          return;
+        } else if (isLiquidEnd(token)) {
+          record.types = "template_attribute_end";
+          record.token = token;
+          parse.structure.pop();
+          convertq();
+          return;
+        } else if (isLiquid(sample, 1)) {
           record.types = "template_attribute";
-        } else if (sample.charAt(0) === "<") {
+        } else if (is(sample[0], 60 /* LAN */)) {
           record.types = "template_attribute";
         } else {
           record.token = token;
@@ -4918,9 +4997,27 @@ prettify.lexers.markup = function markup(source) {
             record.types = "comment_attribute";
             record.token = attstore[idx][0];
             convertq();
-          } else if (eq < 0) {
-            if (isLiquid(attstore[idx][0], 3) || isLiquid(attstore[idx][0], 5)) {
-              record.types = "template_attribute";
+          } else if (isLiquid(attstore[idx][0], 5)) {
+            if (isLiquid(attstore[idx][0], 5)) {
+              if (is(attstore[idx][0][1], 123 /* LCB */)) {
+                record.types = "template_attribute";
+              } else {
+                if (isLiquidEnd(attstore[idx][0])) {
+                  record.types = "template_attribute_end";
+                  parse.structure.pop();
+                  ttexp = false;
+                } else {
+                  const ttname = getLiquidTagName(attstore[idx][0]);
+                  if (condelse.has(ttname)) {
+                    record.types = "template_attribute_else";
+                  } else if (names.has(ttname)) {
+                    record.types = "template_attribute_start";
+                    record.stack = ttname;
+                    parse.structure.push([record.stack, parse.count]);
+                    ttexp = true;
+                  }
+                }
+              }
               record.token = attstore[idx][0];
               convertq();
             } else {
@@ -4931,10 +5028,8 @@ prettify.lexers.markup = function markup(source) {
           } else {
             name = attstore[idx][0].slice(0, eq);
             value = attstore[idx][0].slice(eq + 1);
-            if (options2.attemptCorrection) {
-              if (`<{"'=`.indexOf(value.charAt(0)) < 0)
-                value = '"' + value + '"';
-            }
+            if (options2.markup.correct && `<{"'=`.indexOf(value[0]) < 0)
+              value = '"' + value + '"';
             if (options2.language === "jsx" && /^\s*\{/.test(value)) {
               record.token = name + "={";
               record.types = "jsx_attribute_start";
@@ -4944,10 +5039,11 @@ prettify.lexers.markup = function markup(source) {
               if (/\s\}$/.test(value)) {
                 value = value.slice(0, value.length - 1);
                 value = /\s+$/.exec(value)[0];
-                if (value.indexOf("\n") < 0)
+                if (value.indexOf("\n") < 0) {
                   record.lines = 1;
-                else
+                } else {
                   record.lines = value.split("\n").length;
+                }
               } else {
                 record.lines = 0;
               }
@@ -4961,7 +5057,7 @@ prettify.lexers.markup = function markup(source) {
               record.stack = stack;
             } else if (isLiquid(name, 5)) {
               name = name + "=" + value;
-              templateattrs(value.replace(/^(["'])/, "").slice(0, 2), name.replace(/(\s+)$/, ""));
+              liquidAttributes(value.replace(/^(["'])/, "").replace(/(["'])$/, ""), name.replace(/(\s+)$/, ""));
             } else {
               record.types = "attribute";
               record.token = "#[{(".indexOf(attstore[idx][0].charAt(0)) < 0 ? attstore[idx][0].toLowerCase() : record.token = attstore[idx][0];
@@ -5132,8 +5228,13 @@ prettify.lexers.markup = function markup(source) {
             jsxcount = 0;
           }
         }
-        if (atty.slice(0, 2) === "{%")
+        if (is(atty[0], 123 /* LCB */) && is(atty[1], 37 /* PER */))
           nosort = true;
+        if (ttexp === false && isLiquidStart(atty)) {
+          ttexp = true;
+        } else if (ttexp === true && isLiquidEnd(atty)) {
+          ttexp = false;
+        }
         atty = atty.replace(/^\u0020/, "").replace(/\u0020$/, "");
         attribute = atty.replace(/\r\n/g, "\n").split("\n");
         bb = attribute.length;
@@ -5145,11 +5246,14 @@ prettify.lexers.markup = function markup(source) {
         }
         atty = attribute.join(options2.crlf === true ? "\r\n" : "\n");
         atty = bracketSpace(atty);
+        if (is(atty[0], 123 /* LCB */) && (is(atty[1], 37 /* PER */) || is(atty[1], 123 /* LCB */)) || ttexp === true) ;
+        if (ttexp === true && isLiquidEnd(atty))
+          ttexp = false;
         if (atty === "=") {
           attstore[attstore.length - 1][0] = `${attstore[attstore.length - 1][0]}=`;
-        } else if (atty.charAt(0) === "=" && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") < 0) {
+        } else if (is(atty[0], 61 /* EQS */) && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") < 0) {
           attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
-        } else if (atty.charAt(0) !== "=" && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") === attstore[attstore.length - 1][0].length - 1) {
+        } else if (not(atty[0], 61 /* EQS */) && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") === attstore[attstore.length - 1][0].length - 1) {
           attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
         } else if (atty !== "" && atty !== " ") {
           attstore.push([atty, lines]);
@@ -5167,13 +5271,13 @@ prettify.lexers.markup = function markup(source) {
       let e = 0;
       let f = 0;
       let parncount = 0;
-      let lines = 1;
+      let lines = 0;
       let quote = "";
       let jsxquote = "";
       let stest = false;
       let quotetest = false;
       let attribute = [];
-      const dustatt = [];
+      const lattr = [];
       const lex = [];
       do {
         if (is(b[a], 10 /* NWL */)) {
@@ -5283,13 +5387,14 @@ prettify.lexers.markup = function markup(source) {
                     }
                     if (preserve === false && /^=?['"]?(?:{[{%]|\/|\^|<)/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])) {
                       attribute.pop();
-                      if (not(b[a], 61 /* EQS */) && attribute.length > 0)
+                      if (attribute.length > 0 && not(b[a], 61 /* EQS */) && ttexp) {
                         attributeLexer2(false);
+                      }
                       quote = "";
                       do {
                         attribute.push(b[a]);
-                        if (b[a] === dustatt[dustatt.length - 1]) {
-                          dustatt.pop();
+                        if (b[a] === lattr[lattr.length - 1]) {
+                          lattr.pop();
                           if (is(b[a], 125 /* RCB */) && is(b[a + 1], 125 /* RCB */)) {
                             attribute.push("}");
                             a = a + 1;
@@ -5298,17 +5403,29 @@ prettify.lexers.markup = function markup(source) {
                               a = a + 1;
                             }
                           }
-                          if (dustatt.length < 1) {
+                          if (lattr.length < 1) {
+                            if (ttexp === false && is(b[a], 125 /* RCB */) && not(attribute[0], 123 /* LCB */) && (not(attribute[1], 37 /* PER */) || not(attribute[1], 123 /* LCB */))) {
+                              attributeLexer2(false);
+                              break;
+                            }
+                            if (ttexp === true && isLiquidEnd(attribute)) {
+                              if (ws(b[a + 1])) {
+                                attributeLexer2(false);
+                                break;
+                              } else {
+                                a = a + 1;
+                                continue;
+                              }
+                            }
                             attributeLexer2(false);
-                            b[a] = " ";
                             break;
                           }
-                        } else if ((is(b[a], 34 /* DQO */) || is(b[a], 39 /* SQO */)) && not(dustatt[dustatt.length - 1], 34 /* DQO */) && not(dustatt[dustatt.length - 1], 39 /* SQO */)) {
-                          dustatt.push(b[a]);
-                        } else if (is(b[a], 123 /* LCB */) && /[{%</]/.test(b[a + 1]) && not(dustatt[dustatt.length - 1], 125 /* RCB */)) {
-                          dustatt.push("}");
-                        } else if (is(b[a], 60 /* LAN */) && not(dustatt[dustatt.length - 1], 162 /* RAN */)) {
-                          dustatt.push(">");
+                        } else if ((is(b[a], 34 /* DQO */) || is(b[a], 39 /* SQO */)) && not(lattr[lattr.length - 1], 34 /* DQO */) && not(lattr[lattr.length - 1], 39 /* SQO */)) {
+                          lattr.push(b[a]);
+                        } else if (is(b[a], 123 /* LCB */) && /[{%</]/.test(b[a + 1]) && not(lattr[lattr.length - 1], 125 /* RCB */)) {
+                          lattr.push("}");
+                        } else if (is(b[a], 60 /* LAN */) && not(lattr[lattr.length - 1], 162 /* RAN */)) {
+                          lattr.push(">");
                         }
                         a = a + 1;
                       } while (a < c);
@@ -5447,7 +5564,7 @@ prettify.lexers.markup = function markup(source) {
                       if (b[a + 1] === lastchar)
                         break;
                     }
-                  } else if (igcount > 0 && /\s/.test(b[a]) === false) {
+                  } else if (igcount > 0 && ws(b[a]) === false) {
                     igcount = 0;
                   }
                   a = a + 1;
@@ -5462,7 +5579,7 @@ prettify.lexers.markup = function markup(source) {
                 quote = "}}";
               } else {
                 quote = b[a + 1] + "}";
-                if (attribute.length < 1 && (attstore.length < 1 || /\s/.test(b[a - 1]) === true)) {
+                if (attribute.length < 1 && (attstore.length < 1 || ws(b[a - 1]))) {
                   lex.pop();
                   do {
                     if (is(b[a], 10 /* NWL */))
@@ -5500,7 +5617,7 @@ prettify.lexers.markup = function markup(source) {
                   do {
                     lex.pop();
                     a = a - 1;
-                  } while (/\s/.test(lex[lex.length - 1]));
+                  } while (ws(lex[lex.length - 1]));
                 }
                 break;
               }
@@ -5538,7 +5655,7 @@ prettify.lexers.markup = function markup(source) {
         }
         a = a + 1;
       } while (a < c);
-      if (options2.attemptCorrection === true) {
+      if (options2.markup.correct === true) {
         if (is(b[a + 1], 162 /* RAN */) && is(lex[0], 60 /* LAN */) && not(lex[0], 60 /* LAN */)) {
           do {
             a = a + 1;
@@ -5679,7 +5796,7 @@ prettify.lexers.markup = function markup(source) {
           data.lines[parse.count - 1] = 0;
         }
         if (voids.has(tname)) {
-          if (options2.attemptCorrection === true && ender.test(element) === false) {
+          if (options2.markup.correct === true && ender.test(element) === false) {
             element = element.slice(0, element.length - 1) + " />";
           }
           return true;
@@ -5707,9 +5824,9 @@ prettify.lexers.markup = function markup(source) {
       }
       if (liquid2 === false && tname === "script" && (attValue === "" || attValue === "text/javascript" || attValue === "babel" || attValue === "module" || attValue === "application/javascript" || attValue === "application/x-javascript" || attValue === "text/ecmascript" || attValue === "application/ecmascript" || attValue === "text/jsx" || attValue === "application/jsx" || attValue === "text/cjs" || attValue === "application/json" || attValue === "application/ld+json")) {
         ext = true;
-      } else if ((tname === "style" || tname === "stylesheet") && options2.language !== "jsx" && (attValue === "" || attValue === "text/css")) {
+      } else if (tname === "style" && options2.language !== "jsx" && (attValue === "" || attValue === "text/css")) {
         ext = true;
-      } else if (liquid2 === true && (tname === "javascript" || tname === "schema" || tname === "style")) {
+      } else if (liquid2 === true && (tname === "javascript" || tname === "schema" || tname === "style" || tname === "stylesheet")) {
         ext = true;
       }
       if (ext === true) {
@@ -5750,7 +5867,7 @@ prettify.lexers.markup = function markup(source) {
       }
       record.types = ltype;
     }
-    if (simple && preserve === false && ignoreme && end === ">" && element.slice(element.length - 2) !== "/>") {
+    if (simple && preserve === false && ignoreme && is(end, 162 /* RAN */) && element.slice(element.length - 2) !== "/>") {
       const tags = [];
       const atstring = [];
       if (cheat === true) {
@@ -5820,7 +5937,7 @@ prettify.lexers.markup = function markup(source) {
       attstore = [];
     }
     if (record.types.indexOf("template") > -1) {
-      if (element.slice(0, 2) === "{%") {
+      if (is(element[0], 123 /* LCB */) && is(element[1], 37 /* PER */)) {
         if ((tname === "case" || tname === "default") && (parse.structure[parse.structure.length - 1][0] === "switch" || parse.structure[parse.structure.length - 1][0] === "case")) {
           record.types = "template_else";
         } else if (tname === "else" || tname === "when" || tname === "elsif") {
@@ -5848,9 +5965,8 @@ prettify.lexers.markup = function markup(source) {
           }
         }
       } else if (record.types === "template") {
-        if (element.indexOf("else") > 2) {
+        if (element.indexOf("else") > 2)
           record.types = "template_else";
-        }
       }
       if (record.types === "template_start" || record.types === "template_else") {
         if (tname === "" || tname === "%") {
@@ -6036,7 +6152,7 @@ prettify.lexers.markup = function markup(source) {
                 parse.structure[parse.structure.length - 1][1] += 1;
                 if (data.types[parse.count] === "end" && data.lexer[data.begin[parse.count] - 1] === "script") {
                   record.lexer = "script";
-                  record.token = options2.attemptCorrection === true ? ";" : "x;";
+                  record.token = options2.markup.correct === true ? ";" : "x;";
                   record.types = "separator";
                   recordPush(data, record, "");
                   record.lexer = "markup";
@@ -6506,7 +6622,7 @@ prettify.beautify.markup = function markup2(options2) {
         level.push(-10);
       } else if (data.lines[next] === 0) {
         level.push(-20);
-      } else if ((options2.wrap === 0 || a < c - 2 && type.idx(a + 2, "attribute") > -1 && data.token[a].length + data.token[a + 1].length + data.token[a + 2].length + 1 > options2.wrap || data.token[a].length + data.token[a + 1].length > options2.wrap) && (type.is(a + 1, "singleton") || type.is(a + 1, "template"))) {
+      } else if ((options2.wrap === 0 || a < c - 2 && type.idx(a + 2, "attribute") > -1 && data.token[a].length + data.token[a + 1].length > options2.wrap || (data.token[a].length + data.token[a + 1] ? data.token[a + 1].length : 0) > options2.wrap) && (type.is(a + 1, "singleton") || type.is(a + 1, "template"))) {
         level.push(indent);
       } else {
         count = count + 1;
@@ -6604,8 +6720,8 @@ prettify.beautify.markup = function markup2(options2) {
         }
         return [x, ""];
       }
-      function newlineValues(attr2) {
-        const attrval = attributeName(attr2);
+      function newlineValues(attr) {
+        const attrval = attributeName(attr);
         const m = attrval[1].replace(/\s+/g, (x) => x === "\n" ? "\n" : " ");
         const attarr = ["=", m.slice(0, 1)];
         let vi = 1;
@@ -6656,19 +6772,14 @@ prettify.beautify.markup = function markup2(options2) {
             acount = item[bb].length;
             item[bb] = lf + item[bb];
           } else {
-            if (options2.markup.attributeValueNewlines === "force") {
-              item[bb] = `
-${item[bb]}`;
-            } else {
-              item[bb] = ` ${item[bb]}`;
-            }
+            item[bb] = ` ${item[bb]}`;
             acount = acount + item[bb].length;
           }
           bb = bb + 1;
         } while (bb < ilen);
         data.token[index] = item.join("");
       }
-      let y = a;
+      let w = a;
       let plural = false;
       let earlyexit = false;
       let attStart = false;
@@ -6688,11 +6799,8 @@ ${item[bb]}`;
         } else if (a < c - 1 && type.idx(a + 1, "attribute") > -1) {
           plural = true;
         }
-        if (type.is(next, "end") || type.is(next, "template_end")) {
-          if (type.is(parent, "singleton"))
-            return indent + 2;
-          return indent + 1;
-        }
+        if (type.is(next, "end") || type.is(next, "template_end"))
+          return indent + type.is(parent, "singleton") ? 2 : 1;
         if (type.is(parent, "singleton"))
           return indent + 1;
         return indent;
@@ -6708,11 +6816,38 @@ ${item[bb]}`;
       }
       if (lev < 1)
         lev = 1;
-      const attr = create(null);
       do {
         count = count + data.token[a].length + 1;
         if (data.types[a].indexOf("attribute") > 0) {
-          if (data.types[a] === "template_attribute") {
+          if (data.types[a] === "template_attribute_start") {
+            if (options2.markup.preserveAttributes === true) {
+              level.push(-10);
+            } else {
+              do {
+                len = len + data.token[a].length + 1;
+                if (data.types[a] === "template_attribute_end")
+                  break;
+                if (options2.markup.attributeChain === "inline") {
+                  level.push(-20);
+                } else if (options2.markup.attributeChain === "collapse") {
+                  level.push(lev);
+                } else if (options2.markup.attributeChain === "preserve") {
+                  if (data.lines[a] === 0) {
+                    level.push(-20);
+                  } else if (data.lines[a] === 1) {
+                    level.push(-10);
+                  } else if (data.lines[a] > options2.preserveLine) {
+                    level.push(options2.preserveLine);
+                  } else {
+                    level.push(lev);
+                  }
+                }
+                a = a + 1;
+                count = count + data.token[a].length + 1;
+              } while (a < c);
+              if (len > options2.wrap) ;
+            }
+          } else if (data.types[a] === "template_attribute") {
             level.push(-10);
           } else if (data.types[a] === "comment_attribute") {
             level.push(lev);
@@ -6733,10 +6868,9 @@ ${item[bb]}`;
                 external();
               }
             }
-          } else if (data.types[a].indexOf("end") > 0) {
-            if (level[a - 1] !== -20) {
+          } else if (data.types[a].indexOf("end") > 0 && data.types[a].indexOf("template") < 0) {
+            if (level[a - 1] !== -20)
               level[a - 1] = level[data.begin[a]] - 1;
-            }
             if (data.lexer[a + 1] !== lexer) {
               level.push(-20);
             } else {
@@ -6751,17 +6885,7 @@ ${item[bb]}`;
           if (options2.markup.preserveAttributes === true) {
             level.push(-10);
           } else if (options2.markup.forceAttribute === true || options2.markup.forceAttribute >= 1 || attStart === true || a < c - 1 && type.not(a + 1, "template_attribute") && type.idx(a + 1, "attribute") > 0) {
-            if (typeof options2.markup.forceAttribute === "number") {
-              attr[data.begin[a]] = 1 + attr[data.begin[a]] || 0;
-              if (attr[data.begin[a]] > options2.markup.forceAttribute - 1) {
-                level.fill(lev, -options2.markup.forceAttribute);
-                level.push(lev);
-              } else {
-                level.push(-10);
-              }
-            } else {
-              level.push(lev);
-            }
+            level.push(lev);
           } else {
             level.push(-10);
           }
@@ -6785,7 +6909,7 @@ ${item[bb]}`;
         count = 0;
         level[parent] = lev;
       } else if (options2.markup.forceAttribute >= 1) {
-        if (attr[parent] > options2.markup.forceAttribute - 1) {
+        if (level.length > options2.markup.forceAttribute) {
           level[parent] = lev;
         } else {
           level[parent] = -10;
@@ -6797,20 +6921,20 @@ ${item[bb]}`;
         count = 0;
         return;
       }
-      y = a;
-      if (y > parent + 1) {
+      w = a;
+      if (w > parent + 1) {
         if (options2.markup.selfCloseSpace === false)
           len = len - 1;
         if (len > options2.wrap && options2.wrap > 0 && options2.markup.forceAttribute === false) {
           count = data.token[a].length;
           do {
-            if (data.token[y].length > options2.wrap && /\s/.test(data.token[y]))
-              wrap(y);
-            y = y - 1;
-            level[y] = lev;
-          } while (y > parent);
+            if (data.token[w].length > options2.wrap && /\s/.test(data.token[w]))
+              wrap(w);
+            level[w] = lev;
+            w = w - 1;
+          } while (w > parent);
         }
-      } else if (options2.wrap > 0 && data.types[a] === "attribute" && data.token[a].length > options2.wrap && /\s/.test(data.token[a]) === true) {
+      } else if (options2.wrap > 0 && type.is(a, "attribute") && data.token[a].length > options2.wrap && /\s/.test(data.token[a])) {
         wrap(a);
       }
     }
@@ -6823,9 +6947,8 @@ ${item[bb]}`;
         } else if (type.is(a, "comment")) {
           if (comstart < 0)
             comstart = a;
-          if (type.not(a + 1, "comment") || a > 0 && type.idx(a - 1, "end") > -1) {
+          if (type.not(a + 1, "comment") || a > 0 && type.idx(a - 1, "end") > -1)
             comment2();
-          }
         } else if (type.not(a, "comment")) {
           next = nextIndex();
           if (type.is(next, "end") || type.is(next, "template_end")) {
@@ -9366,9 +9489,9 @@ prettify.beautify.script = function script2(options2) {
   return output;
 };
 
-// src/prettify/exports.ts
-var exports_exports = {};
-__export(exports_exports, {
+// src/prettify.ts
+var prettify_exports = {};
+__export(prettify_exports, {
   format: () => format,
   language: () => detect,
   options: () => options,
@@ -9974,7 +10097,7 @@ function detect(sample) {
 // src/parser/comment.ts
 function comment(prettify2) {
   const definitions2 = prettify2.definitions;
-  const sindex = prettify2.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@format\s*(\w+)?\s*{\s+/);
+  const sindex = prettify2.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify\s+(\w+)?\s*{\s+/);
   const signore = prettify2.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify-ignore\b/);
   const k = keys(definitions2);
   const len = k.length;
@@ -10017,7 +10140,7 @@ function comment(prettify2) {
       comment2 = "/*";
     }
     do {
-      if (source.slice(a2 - 7, a2) === "@format")
+      if (source.slice(a2 - 9, a2) === "@prettify")
         break;
       a2 = a2 + 1;
     } while (a2 < len2);
@@ -10124,10 +10247,10 @@ function comment(prettify2) {
       switch (prettify2.options.script.styleGuide) {
         case "airbnb":
           prettify2.options.wrap = 80;
-          prettify2.options.attemptCorrection = true;
           prettify2.options.indentChar = " ";
           prettify2.options.indentSize = 2;
           prettify2.options.preserveLine = 1;
+          prettify2.options.script.correct = true;
           prettify2.options.script.quoteConvert = "single";
           prettify2.options.script.variableList = "each";
           prettify2.options.script.endComma = "always";
@@ -10136,7 +10259,7 @@ function comment(prettify2) {
         case "crockford":
           prettify2.options.indentChar = " ";
           prettify2.options.indentSize = 4;
-          prettify2.options.attemptCorrection = true;
+          prettify2.options.script.correct = true;
           prettify2.options.script.bracePadding = false;
           prettify2.options.script.elseNewline = false;
           prettify2.options.script.endComma = "never";
@@ -10147,18 +10270,18 @@ function comment(prettify2) {
           break;
         case "google":
           prettify2.options.wrap = -1;
-          prettify2.options.attemptCorrection = true;
           prettify2.options.indentChar = " ";
           prettify2.options.indentSize = 4;
           prettify2.options.preserveLine = 1;
+          prettify2.options.script.correct = true;
           prettify2.options.script.quoteConvert = "single";
           prettify2.options.script.vertical = false;
           break;
         case "jquery":
           prettify2.options.wrap = 80;
-          prettify2.options.attemptCorrection = true;
           prettify2.options.indentChar = "	";
           prettify2.options.indentSize = 1;
+          prettify2.options.script.correct = true;
           prettify2.options.script.bracePadding = true;
           prettify2.options.script.quoteConvert = "double";
           prettify2.options.script.variableList = "each";
@@ -10166,7 +10289,7 @@ function comment(prettify2) {
         case "jslint":
           prettify2.options.indentChar = " ";
           prettify2.options.indentSize = 4;
-          prettify2.options.attemptCorrection = true;
+          prettify2.options.script.correct = true;
           prettify2.options.script.bracePadding = false;
           prettify2.options.script.elseNewline = false;
           prettify2.options.script.endComma = "never";
@@ -10177,11 +10300,11 @@ function comment(prettify2) {
           break;
         case "standard":
           prettify2.options.wrap = 0;
-          prettify2.options.attemptCorrection = true;
           prettify2.options.indentChar = " ";
           prettify2.options.indentSize = 2;
           prettify2.options.endNewline = false;
           prettify2.options.preserveLine = 1;
+          prettify2.options.script.correct = true;
           prettify2.options.script.noSemicolon = true;
           prettify2.options.script.endComma = "never";
           prettify2.options.script.braceNewline = false;
@@ -10194,7 +10317,7 @@ function comment(prettify2) {
           prettify2.options.script.vertical = false;
           break;
         case "yandex":
-          prettify2.options.attemptCorrection = true;
+          prettify2.options.script.correct = true;
           prettify2.options.script.bracePadding = false;
           prettify2.options.script.quoteConvert = "single";
           prettify2.options.script.variableList = "each";
@@ -10385,7 +10508,7 @@ function mode(prettify2) {
   return result;
 }
 
-// src/prettify/exports.ts
+// src/prettify.ts
 format.before = function(callback) {
   prettify.hooks.before.push(callback);
 };

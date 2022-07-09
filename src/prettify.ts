@@ -1,5 +1,5 @@
 import type { Options, Prettify } from 'types/prettify';
-import { prettify } from 'prettify';
+import { prettify } from '@prettify/options';
 import { definitions } from '@options/definitions';
 import { parse as parser } from '@parser/parse';
 import { mode } from '@parser/mode';

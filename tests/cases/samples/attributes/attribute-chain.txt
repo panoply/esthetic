@@ -1,0 +1,26 @@
+
+ATTRIBUTE CHAINING
+
+<div id="xxxx" class="xxx xxx xxx" data-{% if x %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx" aria-x="foo">
+
+</div>
+
+
+
+ATTRIBUTE CHAINING NESTED EXPRESSIONS
+
+<div id="xxxxxxxxxxx">
+<div
+  id="xxxx" class="xxxxxxxxxxxxxxxxxxxxxxxxxx"
+        data-x="zzzz"
+  >
+
+  <div data-attr="xxxxxxxxxxxxxxxxxx"  class="xxxxxxxxxxxxxxxxxxx"
+  id="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+
+  <div id="xxxxxxxxxxxxxxxxx" class="xxx">
+
+  </div>
+  </div>
+  </div>
+</div>

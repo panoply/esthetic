@@ -1,7 +1,7 @@
 import type { Language, LanguageNames, Prettify } from 'types/prettify';
 import { create, assign } from '@utils/native';
 import { detectLanguage } from '@parser/detect';
-import { prettify } from 'prettify';
+import { prettify } from '@prettify/options';
 
 const lexmap = create(null);
 const map = create(null);

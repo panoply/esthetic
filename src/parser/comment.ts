@@ -5,8 +5,8 @@ import { keys } from '@utils/native';
 
 /**
  * Parses the inline comment settings. This has been adapted from
- * the PrettyDiff comment parser and refactored to focus purely on
- * the Prettify supported logics.
+ * the Prettify (formally PrettyDiff) comment parser and refactored
+ * to focus purely on the Prettify supported logics.
  *
  * Source Priorities:
  *
@@ -15,15 +15,15 @@ import { keys } from '@utils/native';
  *
  * Examples:
  *
- * - `/* @format width: 80 preserveLine: 4 } *\/`
- * - `// @format width: 80 preserveLine: 4`
- * - `<!-- @format width: 80 preserveLine: 4 -->`
- * - `{% comment %} @format width:40 preserveLine:2 {% endcomment %}`
+ * - `/* @prettify width: 80 preserveLine: 4 } *\/`
+ * - `// @prettify width: 80 preserveLine: 4`
+ * - `<!-- @prettify width: 80 preserveLine: 4 -->`
+ * - `{% comment %} @prettify width:40 preserveLine:2 {% endcomment %}`
  *
  * Parsing Considerations:
  *
  * 1. There may be any amount of space at the start or end of the comment
- * 2. `@format` must exist at the start of the comment
+ * 2. `@prettify` must exist at the start of the comment
  * 3. Comment must exist prior to non-comment tokens (near top of code)
  * 4. Parameters are name value pairs separated by white space
  * 5. The delimiter separating name and value must be a colon character, eg: `:`
@@ -31,7 +31,7 @@ import { keys } from '@utils/native';
 export function comment (prettify: Prettify) {
 
   const definitions = prettify.definitions;
-  const sindex = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@format\s*(\w+)?\s*{\s+/);
+  const sindex = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify\s+(\w+)?\s*{\s+/);
   const signore = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify-ignore\b/);
   const k = keys(definitions);
   const len = k.length;
@@ -84,7 +84,7 @@ export function comment (prettify: Prettify) {
     };
 
     do {
-      if (source.slice(a - 7, a) === '@format') break;
+      if (source.slice(a - 9, a) === '@prettify') break;
       a = a + 1;
     } while (a < len);
 
@@ -249,10 +249,10 @@ export function comment (prettify: Prettify) {
       switch (prettify.options.script.styleGuide) {
         case 'airbnb':
           prettify.options.wrap = 80;
-          prettify.options.attemptCorrection = true;
           prettify.options.indentChar = ' ';
           prettify.options.indentSize = 2;
           prettify.options.preserveLine = 1;
+          prettify.options.script.correct = true;
           prettify.options.script.quoteConvert = 'single';
           prettify.options.script.variableList = 'each';
           prettify.options.script.endComma = 'always';
@@ -261,7 +261,7 @@ export function comment (prettify: Prettify) {
         case 'crockford':
           prettify.options.indentChar = ' ';
           prettify.options.indentSize = 4;
-          prettify.options.attemptCorrection = true;
+          prettify.options.script.correct = true;
           prettify.options.script.bracePadding = false;
           prettify.options.script.elseNewline = false;
           prettify.options.script.endComma = 'never';
@@ -272,18 +272,18 @@ export function comment (prettify: Prettify) {
           break;
         case 'google':
           prettify.options.wrap = -1;
-          prettify.options.attemptCorrection = true;
           prettify.options.indentChar = ' ';
           prettify.options.indentSize = 4;
           prettify.options.preserveLine = 1;
+          prettify.options.script.correct = true;
           prettify.options.script.quoteConvert = 'single';
           prettify.options.script.vertical = false;
           break;
         case 'jquery':
           prettify.options.wrap = 80;
-          prettify.options.attemptCorrection = true;
           prettify.options.indentChar = '\u0009';
           prettify.options.indentSize = 1;
+          prettify.options.script.correct = true;
           prettify.options.script.bracePadding = true;
           prettify.options.script.quoteConvert = 'double';
           prettify.options.script.variableList = 'each';
@@ -291,7 +291,7 @@ export function comment (prettify: Prettify) {
         case 'jslint':
           prettify.options.indentChar = ' ';
           prettify.options.indentSize = 4;
-          prettify.options.attemptCorrection = true;
+          prettify.options.script.correct = true;
           prettify.options.script.bracePadding = false;
           prettify.options.script.elseNewline = false;
           prettify.options.script.endComma = 'never';
@@ -302,11 +302,11 @@ export function comment (prettify: Prettify) {
           break;
         case 'standard':
           prettify.options.wrap = 0;
-          prettify.options.attemptCorrection = true;
           prettify.options.indentChar = ' ';
           prettify.options.indentSize = 2;
           prettify.options.endNewline = false;
           prettify.options.preserveLine = 1;
+          prettify.options.script.correct = true;
           prettify.options.script.noSemicolon = true;
           prettify.options.script.endComma = 'never';
           prettify.options.script.braceNewline = false;
@@ -319,7 +319,7 @@ export function comment (prettify: Prettify) {
           prettify.options.script.vertical = false;
           break;
         case 'yandex':
-          prettify.options.attemptCorrection = true;
+          prettify.options.script.correct = true;
           prettify.options.script.bracePadding = false;
           prettify.options.script.quoteConvert = 'single';
           prettify.options.script.variableList = 'each';

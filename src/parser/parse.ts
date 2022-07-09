@@ -1,6 +1,6 @@
 /* eslint no-unmodified-loop-condition: "off" */
 import type { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
-import { prettify } from 'prettify';
+import { prettify } from '@prettify/options';
 import { create } from '@utils/native';
 import { cc } from '@utils/enums';
 import { is } from '@utils/helpers';
