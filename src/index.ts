@@ -5,8 +5,8 @@ import './lexers/markup';
 import './beautify/markup';
 import './beautify/style';
 import './beautify/script';
-import './prettify/module';
+import './options';
 
 export { definitions } from './options/definitions';
 
-export * as default from './prettify/exports';
+export * as default from './prettify';

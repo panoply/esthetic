@@ -2,7 +2,7 @@
 /* eslint-disable no-control-regex */
 
 import type { Record, Structure } from 'types/prettify';
-import { prettify } from 'prettify';
+import { prettify } from '@prettify/options';
 import { parse } from '@parser/parse';
 import { create } from '@utils/native';
 
@@ -325,7 +325,7 @@ prettify.lexers.script = function script (source: string) {
 
     if (options.script.variableList === 'list') vart.index[vart.len] = parse.count;
 
-    ltoke = (options.attemptCorrection === true) ? ';' : 'x;';
+    ltoke = (options.script.correct === true) ? ';' : 'x;';
     ltype = 'separator';
 
     aa = parse.linesSpace;
@@ -488,7 +488,7 @@ prettify.lexers.script = function script (source: string) {
       if (data.token[g - 2] === 'do' || (data.token[g - 2] === ')' && 'ifforwhilecatch'.indexOf(name) > -1)) {
 
         tempstore = parse.pop(data);
-        ltoke = (options.attemptCorrection === true) ? '}' : 'x}';
+        ltoke = (options.script.correct === true) ? '}' : 'x}';
         ltype = 'end';
         pstack = parse.structure[parse.structure.length - 1];
         recordPush('');
@@ -499,7 +499,7 @@ prettify.lexers.script = function script (source: string) {
 
       // to prevent the semicolon from inserting between the braceAllman --> while (x) {};
       tempstore = parse.pop(data);
-      ltoke = (options.attemptCorrection === true) ? '}' : 'x}';
+      ltoke = (options.script.correct === true) ? '}' : 'x}';
       ltype = 'end';
       pstack = parse.structure[parse.structure.length - 1];
 
@@ -515,7 +515,7 @@ prettify.lexers.script = function script (source: string) {
       return;
     }
 
-    ltoke = (options.attemptCorrection === true) ? '}' : 'x}';
+    ltoke = (options.script.correct === true) ? '}' : 'x}';
     ltype = 'end';
 
     if (data.token[parse.count] === 'x}') return;
@@ -654,7 +654,7 @@ prettify.lexers.script = function script (source: string) {
     }
 
     if (x === ')' || x === 'x)' || x === ']') {
-      if (options.attemptCorrection === true) plusplus();
+      if (options.script.correct === true) plusplus();
       asifix();
     }
 
@@ -713,7 +713,7 @@ prettify.lexers.script = function script (source: string) {
 
     } else if (x === '}') {
 
-      if (ltoke !== ',' && options.attemptCorrection === true) plusplus();
+      if (ltoke !== ',' && options.script.correct === true) plusplus();
       if (parse.structure.length > 0 && parse.structure[parse.structure.length - 1][0] !== 'object') asi(true);
       if (
         options.script.objectSort === true &&
@@ -741,7 +741,7 @@ prettify.lexers.script = function script (source: string) {
 
     if (
       x === ')' &&
-      options.attemptCorrection === true &&
+      options.script.correct === true &&
       count - parse.count < 2 && (
         data.token[parse.count] === '(' ||
         data.types[parse.count] === 'number'
@@ -834,7 +834,7 @@ prettify.lexers.script = function script (source: string) {
 
     if (insert === true) {
 
-      ltoke = (options.attemptCorrection === true) ? '{' : 'x{';
+      ltoke = (options.script.correct === true) ? '{' : 'x{';
       ltype = 'start';
 
       recordPush(pword[0]);
@@ -2012,7 +2012,7 @@ prettify.lexers.script = function script (source: string) {
       }
     } else {
 
-      if (options.attemptCorrection === false || (
+      if (options.script.correct === false || (
         tokea !== '++' &&
         tokea !== '--' &&
         tokeb !== '++' &&
@@ -2431,7 +2431,7 @@ prettify.lexers.script = function script (source: string) {
 
           paren = -1;
 
-          if (options.attemptCorrection === true) {
+          if (options.script.correct === true) {
             end(')');
           } else {
             end('x)');
@@ -3121,7 +3121,7 @@ prettify.lexers.script = function script (source: string) {
     }
 
     if (
-      options.attemptCorrection === true &&
+      options.script.correct === true &&
       (output === 'Object' || output === 'Array') &&
       c[a + 1] === '(' &&
       c[a + 2] === ')' &&
@@ -3443,7 +3443,7 @@ prettify.lexers.script = function script (source: string) {
 
       if (nextitem !== '{') {
 
-        ltoke = (options.attemptCorrection === true) ? '{' : 'x{';
+        ltoke = (options.script.correct === true) ? '{' : 'x{';
         ltype = 'start';
 
         brace.push('x{');
@@ -3481,7 +3481,7 @@ prettify.lexers.script = function script (source: string) {
                 lexer: 'script',
                 lines: 0,
                 stack: 'if',
-                token: (options.attemptCorrection === true) ? '}' : 'x}',
+                token: (options.script.correct === true) ? '}' : 'x}',
                 types: 'end'
               }
             });
@@ -3517,7 +3517,7 @@ prettify.lexers.script = function script (source: string) {
       }
 
       if (nextitem !== 'if' && nextitem.charAt(0) !== '{') {
-        ltoke = (options.attemptCorrection === true) ? '{' : 'x{';
+        ltoke = (options.script.correct === true) ? '{' : 'x{';
         ltype = 'start';
         brace.push('x{');
         recordPush('else');
@@ -3535,7 +3535,7 @@ prettify.lexers.script = function script (source: string) {
 
       if (nextitem !== '(') {
         paren = parse.count;
-        if (options.attemptCorrection === true) {
+        if (options.script.correct === true) {
           start('(');
         } else {
           start('x(');
@@ -3709,7 +3709,7 @@ prettify.lexers.script = function script (source: string) {
     } else if (c[a] === ':' && c[a + 1] === ':') {
 
       if (wordTest > -1) word();
-      if (options.attemptCorrection === true) plusplus();
+      if (options.script.correct === true) plusplus();
 
       asifix();
 
@@ -3723,7 +3723,7 @@ prettify.lexers.script = function script (source: string) {
 
       // comma
       if (wordTest > -1) word();
-      if (options.attemptCorrection === true) plusplus();
+      if (options.script.correct === true) plusplus();
 
       if (
         datatype[datatype.length - 1] === true &&
@@ -3815,7 +3815,7 @@ prettify.lexers.script = function script (source: string) {
         }
       }
 
-      if (options.attemptCorrection === true) plusplus();
+      if (options.script.correct === true) plusplus();
 
       ltoke = ';';
       ltype = 'separator';

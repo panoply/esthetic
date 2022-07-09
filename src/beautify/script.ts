@@ -1,5 +1,5 @@
 import type { Options } from 'types/prettify';
-import { prettify } from 'prettify';
+import { prettify } from '@prettify/options';
 import { create } from '@utils/native';
 import { repeatChar } from '@utils/helpers';
 
