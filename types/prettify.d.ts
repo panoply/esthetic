@@ -298,10 +298,6 @@ export enum ScriptTypes {
  */
 export enum MarkupTypes {
   /**
-   * A tag attribute from a regular start or singular tag type.
-   */
-  attribute = 'attribute',
-  /**
    * The doctype tag
    */
   doctype = 'doctype',
@@ -369,6 +365,15 @@ export enum MarkupTypes {
    */
   script_end = 'script_end',
   /**
+   * A curly brace indicating the contents that need to be passed to the script lexer for
+   * JSX language.
+   */
+  schema_start = 'schema_start',
+  /**
+   * A curly brace indicating a schema string has concluded.
+   */
+  schema_end = 'schema_end',
+  /**
    * SGML type notations, which can be deeply nested using square brace notation.
    *
    * @deprecated
@@ -388,23 +393,94 @@ export enum MarkupTypes {
    */
   style = 'style',
   /**
-   * A tag delimited by a known convention of an external template language.
+   * A tag attribute from a regular start or singular tag type.
+   */
+  attribute = 'attribute',
+  /**
+   * A tag attribute contained within a template attribute.
+   * This is different from `attribute_template_start` and
+   * `attribute_template_end` in the sense that it will be
+   * applied to sequences which are preceded and followed by
+   * whitespace characters.
    *
    * ---
-   * @prettify
+   * @example
    *
+   * // Where the attr-in-template will be marked as an
+   * // attribute_template markup type.
+   * <div {% if x %} attr-in-template {% endif %}>
+   */
+  attribute_template = 'attribute_template',
+  /**
+   * A tag attribute which is preceded by a template tag
+   *
+   * ---
+   * @example
+   *
+   * <div {{ x }}-attr></div>
+   * <div {% if x %}some-attr>
+   */
+  attribute_template_start = 'attribute_template_start',
+  /**
+   * A tag attribute which is following a template tag
+   *
+   * ---
+   * @example
+   *
+   * <div attr-{{ tag }}></div>
+   * <div some-attr{% if x %}>
+   */
+  attribute_template_end = 'attribute_template_start',
+  /**
+   * A tag delimited by a known convention of an external template language.
    * This is typically going to represent singleton Liquid tags or Liquid objects,
    * but could also represent unknown Liquid tags.
+   *
+   * ---
+   * @example
+   *
+   * {{ object }}
+   * {% tag %} // singleton
    */
   template = 'template',
   /**
-   * A tag attribute that conveys instructions to a template pre-parser opposed to
-   * meta data describing the markup tag.
+   * A start template tag being used within an attribute
    *
    * ---
-   * @prettify
+   * @example
    *
-   * This is representative of Liquid tags infused within HTML attributes.
+   * <div {% if x %}>
+   */
+  template_attribute_start = 'template_attribute_start',
+  /**
+   * template tag acting as the else block of a condition but contained
+   * within a HTML attribute
+   *
+   * ---
+   * @example
+   *
+   * <div {% if x %}data-attr{% else %}>
+   */
+  template_attribute_else = 'template_attribute_else',
+  /**
+   * A closing template tag associated with a prior template_start tag type but
+   * contained within a HTML attribute
+   *
+   * ---
+   * @example
+   *
+   * <div {% if x %}data-attr{% else %}data-x{% endif %}>
+   */
+  template_attribute_end = 'template_attribute_end',
+  /**
+   * A tag attribute that conveys instructions to a template pre-parser opposed to
+   * meta data describing the markup tag. This is representative of Liquid tags
+   * infused within HTML attributes.
+   *
+   * ---
+   * @example
+   *
+   * <div {{ foo }}>
    */
   template_attribute = 'template_attribute',
   /**
@@ -424,7 +500,7 @@ export enum MarkupTypes {
    *
    * This is representative of Liquid tags like `{% endif %}` or `{% endfor %}` etc
    */
-  template_end = 'template_else',
+  template_end = 'template_end',
   /**
    * A template tag that contains content or other tags not associated with
    * the template language and expects a closing tag.
@@ -732,18 +808,9 @@ export interface SharedOptions {
   /**
    * **Default** `2`
    *
-   * The maximum number of consecutive empty lines to retain.§
+   * The maximum number of consecutive empty lines to retain.
    */
   preserveLine?: number;
-
-  /**
-   * **Default** `false`
-   *
-   * Automatically correct some sloppiness in code. This rules acts a very
-   * mild form of linting, wherein otherwise invalid code is automatically
-   * corrected.
-   */
-  attemptCorrection?: boolean;
 
   /* -------------------------------------------- */
   /* OTHER                                        */
@@ -754,11 +821,55 @@ export interface SharedOptions {
   lexer?: LiteralUnion<LexerNames, string>;
   languageName?: string;
   mode?: 'beautify' | 'parse';
+  /**
+   * Extend the the lexing engine and provide
+   * addition support for custom Liquid variations
+   */
+  extend?: {
+    /**
+     * Liquid Tags
+     *
+     * String list of tags blocks. Tags require an
+     * `{% ender %}` - Use the `singleton` options to
+     * define non void type liquid tags.
+     */
+    tags?: string[];
+    /**
+     * Liquid Singletons
+     *
+     * String list of tags blocks. Tags require an
+     * `{% ender %}` - Use the `singleton` options to
+     * define non void type liquid tags.
+     */
+    singletons?: string[];
+    /**
+     * HTML Voids
+     *
+     * String list of void tags
+     */
+    voids?: string[];
+  }
 }
 
 /* MARKUP ------------------------------------- */
 
 export interface MarkupOptions {
+
+  /**
+   * **Default** `false`
+   *
+   * Automatically correct some sloppiness in code and allow Prettify to
+   * reason with the intended structures in order to reduce chaos in otherwise
+   * unreadble and terrible code like that of Shopify's Dawn theme. The option acts
+   * as a very mild form of linting, wherein invalid code will be attempt to be
+   * corrected.
+   *
+   * The option enables Prettify to go about fixing your shitty code. It's not
+   * going to produce miracles and for the most part it will have little effect
+   * overall but can help in some situations.
+   */
+  correct?: boolean;
+
   /**
    * **Default** `false`
    *
@@ -768,20 +879,33 @@ export interface MarkupOptions {
    *
    * ---
    *
-   * **Example**
+   * #### Example
    *
-   * Below is an example of how this rule works if it's enabled, ie: `true`
-   *
-   * **Before Formatting:**
-   *
-   * ```html
-   * <div id="x" data-x="foo" class="xx"></div>
-   * ```
-   *
-   * **After Formatting:**
+   * *Below is an example of how this rule works if it's enabled, ie: `true`. Notice
+   * how the attributes are not alphabetically sorted before formatting is applied
+   * whereas after formatting they are sorted alphabetically.*
    *
    * ```html
-   * <div class="xx" data-x="foo" id="x"></div>
+   *
+   * <!-- Before formatting -->
+   * <div
+   *   id="x"
+   *   data-b="100"
+   *   data-a="foo"
+   *   data-c="x"
+   *   class="xx">
+   *
+   * </div>
+   *
+   * <!-- After formatting -->
+   * <div
+   *   class="xx"
+   *   data-a="foo"
+   *   data-b="100"
+   *   data-c="x"
+   *   id="x">
+   *
+   * </div>
    * ```
    */
   attributeSort?: boolean
@@ -795,10 +919,10 @@ export interface MarkupOptions {
    *
    * ---
    *
-   * **Example**
+   * #### Example
    *
-   * Below is an example of how this rule works if it's enabled and you've defined
-   * the following attribute sorting structure:
+   * *Below is an example of how this rule works if it's enabled and you've defined
+   * the following attribute sorting structure:*
    *
    * ```js
    * {
@@ -807,103 +931,137 @@ export interface MarkupOptions {
    * }
    * ```
    *
-   * **Before Formatting:**
+   * *Using the above options, notice how how `data-a`, `data-c` and `data-d` are sorted
+   * alphabetically in order following the sort list we provided*
    *
    * ```html
-   * <div data-a id="x" data-d data-c data-b class="xx"></div>
+   *
+   * <!-- Before formatting -->
+   * <div
+   *   data-a
+   *   id="x"
+   *   data-d
+   *   data-c
+   *   data-b
+   *   class="xx">
+   *
+   * </div>
+   *
+   * <!-- After formatting -->
+   * <div
+   *   id="x"
+   *   class="xx"
+   *   data-b
+   *   data-a
+   *   data-c
+   *   data-d>
+   *
+   * </div>
    * ```
-   *
-   * **After Formatting:**
-   *
-   * ```html
-   * <div id="x" class="xx" data-b data-a data-c data-d></div>
-   * ```
-   *
-   * Notice how `data-a`, `data-c` and `data-d` are sorted alphabetically
-   * in order following the sort list we provided above.
    */
-  attributeSortList?: string[]
+  attributeSortList?: string[];
 
   /**
-   * **Default** `align`
+   * **Default** `preserve`
    *
-   * How attribute values containing newlines or exceeding defined wrap limit
-   * should be handled. In languages like HTML, attribute values may contain newline
-   * characters (despite the practice bordering heathenism). This rule can be used
-   * to control how Prettify should process values which contain newlines or exceed wrap.
+   * Controls how Liquid tags contained within HTML attributed should be formatted.
+   * Attribute chaining respects the defined `wrap` limit but overrides `forceAttribute`
+   * on inner contents when using `inline`. In cases where you have defined a `wrap` limit
+   * and using `inline` with `correct` enabled Prettify will apply whitespace dashes to surrounding
+   * tag delimiters of the inner content it newlined when the chain exceeds `wrap` length.
    *
-   * **Options**
-   *
-   * - `align` Indent and align values according to wrap/newlines.
-   * - `force` Forces all values in the string onto newlines.
-   * - `collapse` Collapses values in a controlled manner.
-   * - `inline` Strips newlines, all values will appear inline.
+   * Typically, the best option to use here is going to be the default `preserve`. This allows
+   * you to control how the inner content of tag blocks which are contained within
+   * HTML attributes are structured.
    *
    * ---
    *
-   * **Align**
+   * #### Preserve Example (default)
    *
-   * This align option is the default formatting rule applied. This will
-   * use the `wrap` limit and `indentSize`. Only values that exceed wrap will
-   * be indented and forced onto a newline.
-   *
-   * ```html
-   * <div
-   *  id="x"
-   *  class="first-class-in-value second-class-in-value
-   *    {{ some.object }}
-   *    {% if x %}some-class{% else %}other-class{% endif %}"></div>
-   * ```
-   *
-   * **Force**
-   *
-   * The force option will force the values onto newlines, including the
-   * first value. Each class name in the string will be indented and the
-   * ending quotation character will be aligned with the starting attribute name
+   * *Preserve strips extraneous whitespaces and newlines if they exceed the defined
+   * `preserveLine` limit but it will leave the overall structure intact. Notice how
+   * in the below example, the only differents before and after formatting is the
+   * extreanous whitespace.*
    *
    * ```html
+   *
+   * <!-- Before formatting -->
    * <div
-   *  id="x"
-   *  class="
-   *    first-class-in-value
-   *    second-class-in-value
-   *    {{ some.object }}
-   *    {% if x %}some-class{% else %}other-class{% endif %}
-   *  "></div>
+   *   class="x"
+   *   {% if x %} id="{{ foo }}"
+   *   {% else %}  data-x="xx"    {% endif %}>
+   *
+   * </div>
+   *
+   * <!-- After formatting -->
+   * <div
+   *   class="x"
+   *   {% if x %}id="{{ foo }}"
+   *   {% else %}data-x="xx"{% endif %}>
+   *
+   * </div>
+   *
    * ```
    *
+   * ---
    *
-   * **Collapse**
+   * #### Inline Example
    *
-   * The collapse option behaved similar to `align` with the difference being
-   * that values will not have identation applied on the newlines.
+   * *Notice how before formatting the contents of the tag block are separated onto newlines
+   * whereas after formatting the contents are chained together*
    *
    * ```html
+   *
+   * <!-- Before formatting -->
    * <div
-   *  id="x"
-   *  class="first-class-in-value second-class-in-value
-   *  {{ some.object }}
-   *  {% if x %}some-class{% else %}other-class{% endif %}"></div>
+   *   class="x"
+   *   {% if x %}
+   *   id="{{ foo }}"
+   *   {% else %}
+   *   data-x="xx"{% endif %}>
+   *
+   * </div>
+   *
+   * <!-- After formatting -->
+   * <div
+   *   class="x"
+   *   {% if x %}id="{{ foo }}"{% else %}data-x="xx"{% endif %}>
+   *
+   * </div>
+   *
    * ```
    *
-   * **Inline**
+   * ---
    *
-   * The inline option will strip newlines from values.
+   * #### Collapse Example
+   *
+   * *Collapase will newline the contents of the tag block. Notice how before formatting
+   * contents are expressed on a single line, whereas after formatting content is forced
+   * onto newlines.*
    *
    * ```html
+   *
+   * <!-- Before formatting -->
    * <div
-   *  id="x"
-   *  class="first-class-in-value second-class-in-value {{ some.object }} {% if x %}some-class{% else %}other-class{% endif %}"></div>
+   *   class="x"
+   *   {% if x %}id="{{ foo }}"{% else %}data-x="xx"{% endif %}>
+   *
+   * </div>
+   *
+   * <!-- After formatting -->
+   * <div
+   *   class="x"
+   *   {% if x %}
+   *   id="{{ foo }}"
+   *   {% else %}
+   *   data-x="xx"{% endif %}>
+   *
+   * </div>
+   *
    * ```
+   *
    */
-  attributeValueNewlines?: 'align' | 'force' | 'collapse' | 'inline'
-  /**
-   * **Default** `false`
-   *
-   * Controls Liquid HTML attributes. Setting this option to `true` will
-   * glue Liquid attributes together.
-   */
-  attributeGlue?: boolean;
+  attributeChain?: 'inline' | 'collapse' | 'preserve';
 
   /**
    * **Default** `false`
@@ -920,26 +1078,39 @@ export interface MarkupOptions {
    *
    * ---
    *
-   * **Example**
+   * #### Example
    *
-   * Below is an example of how this rule works if it's enabled, ie: `true`
+   * *Below is an example of how this rule works if it's enabled, ie: `true`*
    *
-   * **Before Formatting:**
    *
-   * ```liquid
-   * {{foo}}
-   * {%if x%}
-   *   Hello World
-   * {%endif%}
-   * ```
+   * ```html
    *
-   * **After Formatting:**
+   * <!-- Before formatting -->
+   * {% for i in arr   %}
+   *   {{i.object
+   *        }}
    *
-   * ```liquid
-   * {{ foo }}
-   * {% if x %}
-   *   Hello World
-   * {% endif %}
+   *   {%if x%}
+   *
+   *     {{foo}}
+   *     {{bar   }}
+   *     {{   baz   }}
+   *
+   *   {%   endif%}
+   * {%endfor%}
+   *
+   * <!-- After formatting -->
+   * {% for i in arr %}
+   *   {{ i.object }}
+   *
+   *   {% if x %}
+   *
+   *     {{ foo }}
+   *     {{ bar }}
+   *     {{ baz }}
+   *
+   *   {% endif %}
+   * {% endfor %}
    * ```
    */
   delimiterSpacing?: boolean
@@ -951,24 +1122,23 @@ export interface MarkupOptions {
    *
    * ---
    *
-   * **Example**
+   * #### Example
    *
-   * Below is an example of how this rule works if it's enabled, ie: `true`
+   * *Below is an example of how this rule works if it's enabled, ie: `true`*
    *
-   * **Before Formatting:**
    *
    * ```html
+   *
+   * <!-- Before formatting -->
    * <picture>
    *   <path srcset="."/>
    * </picture>
-   * ```
    *
-   * **After Formatting:**
-   *
-   * ```html
+   * <!-- After formatting -->
    * <picture>
    *   <path srcset="." />
    * </picture>
+   *
    * ```
    */
   selfCloseSpace?: boolean,
@@ -987,56 +1157,124 @@ export interface MarkupOptions {
    * If all markup attributes should be indented each onto their own line. You
    * can optionally provide an integer value of `1` or more. When an integer value
    * is passed, attributes will be forced only wheb the number of attributes contained
-   * on the tag exceeds the supplied value limit.
-   *
-   * > Please note that when you define a `wrap` level then attributes will
-   * be automatically forced. This is typically a better solution than forcing
-   * all attributes onto newlines.
+   * on the tag exceeds the supplied value limit. When you define a `wrap` level then
+   * attributes will be automatically forced. This is typically a better solution than
+   * forcing all attributes onto newlines or an even better solution would be to set
+   * a limit level.
    *
    * ---
    *
-   * **Disabled**
+   * #### Disabled Example
    *
    * *Below is the default, wherein attributes are only forced when wrap is exceeded.*
    *
    * ```html
-   * <div class="x" id="{{ foo }}" data-x="xx"></div>
+   *
+   * <div class="x" id="{{ foo }}" data-x="xx">
+   *
+   * </div>
    *
    * ```
    *
-   * **Enabled**
+   * ---
+   *
+   * #### Enabled Example
    *
    * *Below is an example of how this rule works if it's enabled, ie: `true`*
    *
    * ```html
+   *
    * <div
    *   class="x"
    *   id="{{ foo }}"
-   *   data-x="xx"></div>
+   *   data-x="xx">
+   *
+   * </div>
    *
    * ```
    *
-   * **Limits**
+   * ---
+   *
+   * #### Limit Example
    *
    * *Below we provide a value of `2` so formatting will be applied as such:*
    *
    * ```html
    *
    * <!-- Tag contains 2 attributes, they will not be forced-->
-   * <div class="x" id="{{ foo }}"></div>
+   * <div class="x" id="{{ foo }}">
+   *
+   * </div>
    *
    * <!-- Tag contains 3 attributes, thus they will be forced -->
    * <div
    *   class="x"
    *   id="{{ foo }}"
-   *   data-x="xx"></div>
+   *   data-x="xx">
+   *
+   * </div>
    *
    * <!-- Tag contains 1 attribute, it will not be forced-->
-   * <div class="x"></div>
+   * <div class="x">
+   *
+   * </div>
    *
    * ```
    */
   forceAttribute?: boolean | number;
+
+  /**
+   * **Default** `false`
+   *
+   * Whether the leading attribute should be forced onto a newline when
+   * word `wrap` limit is exceeded or if it should be preserved. By default,
+   * Prettify preserves the leading attribute when applying wrap indentation.
+   * Enabling this option will force indent all attributes when wrap is exceeded.
+   *
+   * This rule requires a `wrap` level to be defined. If you have `forceAttribute`
+   * enabled or using a force limit value it will override this option, so be sure to
+   * set `forceAttribute` to `false` if you desire wrap based attribute indentation.
+   *
+   * ---
+   *
+   * #### Disabled (default)
+   *
+   * *Below is an example of how this rule works if it's disabled (ie: `false`) and
+   * attributes have exceeded a defined wrap limit. Notice how leading attributes
+   * are preserved that have not exceeded wrap.*
+   *
+   * ```html
+   *
+   * <!-- Leading attribute is preserved -->
+   * <div class="x"
+   *   id="{{ foo }}"
+   *   data-attribute-example="100"
+   *   data-x="xx">
+   *
+   * </div>
+   *
+   * ```
+   *
+   * #### Enabled
+   *
+   * *Below is an example of how this rule works if it's enabled (ie: `true`) and
+   * attributes have exceeded the defined wrap limit.*
+   *
+   *
+   * ```html
+   *
+   * <!-- All attributes are forced including the leading attribute  -->
+   * <div
+   *   class="x"
+   *   id="{{ foo }}"
+   *   data-attribute-example="100"
+   *   data-x="xx">
+   *
+   * </div>
+   *
+   * ```
+   */
+  forceLeadingAttribute?: boolean | number;
 
   /**
    * **Default** `false`
@@ -1046,22 +1284,20 @@ export interface MarkupOptions {
    *
    * ---
    *
-   * **Example**
+   * #### Example
    *
-   * Below is an example of how this rule works if it's enabled, ie: `true`
+   * *Below is an example of how this rule works if it's enabled, ie: `true`*
    *
-   * **Before Formatting:**
    *
    * ```html
+   *
+   * <!-- Before Formatting -->
    * <ul>
    *  <li>Hello</li>
    *  <li>World</li>
    * </ul>
-   * ```
    *
-   * **After Formatting:**
-   *
-   * ```html
+   * <!-- After formatting -->
    * <ul>
    *   <li>
    *     Hello
@@ -1094,40 +1330,86 @@ export interface MarkupOptions {
    *
    * If markup tags should have their insides preserved.
    * This option is only available to markup and does not support
-   * child tokens that require a different lexer.
+   * child tokens that require a different lexer. When enabled, this
+   * rule will run precedence for all attribute related rules.
    *
    * ---
    *
-   * **Example**
+   * #### Example
    *
-   * Below is an example of how this rule works if it's enabled, ie: `true`
-   *
-   * **Before Formatting:**
-   *
-   * ```html
-   * <div
-   *  id="x"    data-x="foo"
-   * class="xx"></div>
-   * ```
-   *
-   * **After Formatting:**
-   *
-   * ```html
-   * <div
-   *  id="x"    data-x="foo"
-   * class="xx"></div>
-   * ```
-   *
+   * *Below is an example of how this rule works if it's enabled, ie: `true`.
    * There is no difference between the _before_ and _after_ version of the code
-   * when this option is enabled.
+   * when this option is enabled.*
+   *
+   * ```html
+   *
+   * <!-- Before Formatting -->
+   * <div
+   *  id="x"    data-x="foo"
+   * class="xx"></div>
+   *
+   * <!-- After Formatting -->
+   * <div
+   *  id="x"    data-x="foo"
+   * class="xx"></div>
+   * ```
    */
-  preserveAttributes?: boolean
+  preserveAttributes?: boolean;
+
+  /**
+   * **Default** `false`
+   *
+   * How attribute values should be handled. By default, Prettify will replace
+   * the contents of attribute values. Extraneous whitespaces and newlines are
+   * stripped. Set this option to `true` to disable that behaviour and preserve
+   * attribute values.
+   *
+   * ---
+   *
+   * **Disabled (default)**
+   *
+   * *Attribute values are stripped and equally spaced. Any newline characters are
+   * removed and single whitespace separated is applied.*
+   *
+   * ```html
+   * <!-- The attribute value before formatting -->
+   * <div class="one   two
+   *    {{ some.object }}"></div>
+   *
+   * <!-- The attribute value after formatting -->
+   * <div class="one two {{ some.object }}"></div>
+   * ```
+   *
+   * **Enabled**
+   *
+   * *The attribute values will not be touched, newlines, extraneous spacing will remain
+   * intact.*
+   *
+   * ```html
+   * <!-- The attribute value before formatting -->
+   * <div class="one   two
+   *    {{ some.object }}"></div>
+   *
+   * <!-- The attribute value after formatting -->
+   * <div class="one   two
+   *    {{ some.object }}"></div>
+   * ```
+   */
+  preserveValues?: boolean;
 
 }
 
 /* STYLE -------------------------------------- */
 
 export interface StyleOptions {
+  /**
+   * **Default** `false`
+   *
+   * Automatically correct some sloppiness in code. This rules acts a very
+   * mild form of linting, wherein otherwise invalid code is automatically
+   * corrected.
+   */
+  correct?: boolean;
 
   /**
    * This option will alphabetically sort CSS properties contained
@@ -1137,12 +1419,13 @@ export interface StyleOptions {
    *
    * **Enabled**
    *
-   * Below is an example when this option is set to `true` first
-   * and how a class would be formatted.
+   * *Below is an example when this option is set to `true` first
+   * and how a class would be formatted.*
    *
-   * Before:
+   * **Before:**
    *
    * ```css
+   *
    * .class {
    *   width: 100px;
    *   color: blue;
@@ -1150,9 +1433,10 @@ export interface StyleOptions {
    * }
    * ```
    *
-   * After:
+   * **After:**
    *
    * ```css
+   *
    * .class {
    *   background: pink;
    *   color: blue;
@@ -1184,6 +1468,7 @@ export interface StyleOptions {
    * Before:
    *
    * ```css
+   *
    * .class {
    *   width: 100px;
    *   color: blue;
@@ -1194,6 +1479,7 @@ export interface StyleOptions {
    * After:
    *
    * ```css
+   *
    * .class {
    *   background: pink;
    *   color: blue;
@@ -1219,6 +1505,7 @@ export interface StyleOptions {
    * Below is an example when this option is set to `true`
    *
    * ```css
+   *
    * .class-a { width: 100px; }
    * .class-b { width: 100px; }
    * ```
@@ -1231,6 +1518,7 @@ export interface StyleOptions {
    * the newline between classes
    *
    * ```css
+   *
    * .class-a { width: 100px; }
    * .class-b { width: 100px; }
    * ```
@@ -1254,6 +1542,7 @@ export interface StyleOptions {
    * Below is an example when this option is set to `true`
    *
    * ```css
+   *
    * .class { width: .10rem; }
    * ```
    *
@@ -1264,6 +1553,7 @@ export interface StyleOptions {
    * Below is an example when this option is set to `false`
    *
    * ```css
+   *
    * .class-a { width: 0.10rem; }
    * ```
    *
@@ -1309,6 +1599,15 @@ export interface StyleOptions {
 export interface ScriptOptions {
 
   /**
+   * **Default** `false`
+   *
+   * Automatically correct some sloppiness in code. This rules acts a very
+   * mild form of linting, wherein otherwise invalid code is automatically
+   * corrected.
+   */
+  correct?: boolean;
+
+  /**
    * **Former Rule**
    *
    * `end_comma`
@@ -1342,10 +1641,9 @@ export interface ScriptOptions {
   commentNewline?: boolean;
 
   /**
-   * **Description**
+   * **Default: `none`**
    *
-   * > Emulates JSBeautify's brace_style option using existing
-   * Pretty Diff options._
+   * Emulates JSBeautify's brace_style option using existing options.
    *
    * **Options**
    *
@@ -1660,6 +1958,27 @@ export interface ScriptOptions {
    *
    * If consecutive JavaScript variables should be merged into a
    * comma separated list or if variables in a list should be separated.
+   * ---
+   *
+   * **Example**
+   *
+   * Below is an example of how this rule works if it's enabled, ie: `true`
+   *
+   * **Before Formatting:**
+   *
+   * ```js
+   * const foo = 'x'
+   * const bar = 'x'
+   * const baz = 'x'
+   * ```
+   *
+   * **After Formatting:**
+   *
+   * ```js
+   * const foo = 'x',
+   *   bar = 'x',
+   *   baz = 'x';
+   * ```
    */
   variableList?:
   | 'none'
@@ -1670,8 +1989,33 @@ export interface ScriptOptions {
    * **Description**
    *
    * If lists of assignments and properties should be vertically aligned
+   *
+   * ---
+   *
+   * **Example**
+   *
+   * Below is an example of how this rule works if it's enabled, ie: `true`
+   *
+   * **Before Formatting:**
+   *
+   * ```js
+   * const object = {
+   *   someProperty: 'x',
+   *   anotherProperty: 'x',
+   *   fooProperty: 'x'
+   * };
+   * ```
+   *
+   * **After Formatting:**
+   *
+   * ```js
+   * const object = {
+   *   someProperty    : 'x',
+   *   anotherProperty : 'x',
+   *   fooProperty     : 'x'
+   * };
+   * ```
    */
-
   vertical?: boolean,
   /**
    * **Description**
