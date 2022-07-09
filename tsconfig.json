@@ -18,15 +18,14 @@
     "baseUrl": ".",
     "paths": {
       "types/*": ["./types/*"],
-      "prettify": ["./src/prettify/module.ts"],
       "@options/*": ["./src/options/*"],
       "@beautify/*": ["./src/beautify/*"],
       "@lexers/*": ["./src/lexers/*"],
       "@parser/*": ["./src/parser/*"],
       "@utils/*": ["./src/utils/*"],
       "@prettify/*": [
-        "./src/prettify/*",
-        "!./src/prettify/module"
+        "./src/options.ts",
+        "./src/prettify.ts"
       ]
     }
   }
