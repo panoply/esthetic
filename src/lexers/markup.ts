@@ -1,5 +1,5 @@
 import type { Record, Data, Types } from 'types/prettify';
-import { prettify } from 'prettify';
+import { prettify } from '@prettify/options';
 import { parse } from '@parser/parse';
 import { is, not, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
@@ -95,11 +95,20 @@ prettify.lexers.markup = function markup (source: string) {
     'verbatim',
     'schema',
     'style',
-    'script',
     'javascript',
     'highlight',
     'stylesheet'
   ]);
+
+  const condelse = new Set(
+    [
+      'case',
+      'default',
+      'else',
+      'when',
+      'elsif'
+    ]
+  );
 
   const { options } = prettify;
 
@@ -160,9 +169,63 @@ prettify.lexers.markup = function markup (source: string) {
    */
   let html = 'html';
 
+  /**
+   * Whether or not we are currently within a Template Tag expression in an HTML attribute.
+   */
+  let ttexp = false;
+
   /* -------------------------------------------- */
   /* FUNCTIONS                                    */
   /* -------------------------------------------- */
+
+  function getLiquidTagName (input: string) {
+
+    const begin = input.indexOf('{');
+    const token = is(input[begin + 2], cc.DSH)
+      ? input.slice(begin + 3).trimStart()
+      : input.slice(begin + 2).trimStart();
+
+    return token.slice(0, token.search(/\s/));
+
+  }
+
+  function isLiquidStart (input: string) {
+
+    const begin = input.indexOf('{');
+
+    if (is(input[begin + 1], cc.PER)) {
+
+      let token = is(input[begin + 2], cc.DSH)
+        ? input.slice(begin + 3).trimStart()
+        : input.slice(begin + 2).trimStart();
+
+      token = token.slice(0, token.search(/\s/));
+
+      if (token.startsWith('end')) return false;
+
+      return names.has(token);
+
+    }
+
+    return false;
+  }
+
+  function isLiquidEnd (input: string | string[]) {
+
+    let token = input as string;
+
+    if (Array.isArray(input)) token = input.join('');
+
+    const begin = token.indexOf('{');
+
+    if (is(token[begin + 1], cc.PER)) {
+      if (is(token[begin + 2], cc.DSH)) return token.slice(begin + 3).trimStart().startsWith('end');
+      return token.slice(begin + 2).trimStart().startsWith('end');
+    }
+
+    return false;
+
+  }
 
   /**
    * Checks where the provided string contains Liquid
@@ -180,28 +243,29 @@ prettify.lexers.markup = function markup (source: string) {
   function isLiquid (input: string, direction: 1 | 2 | 3 | 4 | 5): boolean {
 
     if (direction === 1) {
-      return input.charCodeAt(0) === cc.LCB && (
-        input.charCodeAt(1) === cc.PER ||
-        input.charCodeAt(1) === cc.LCB
+
+      return is(input[0], cc.LCB) && (
+        is(input[1], cc.PER) ||
+        is(input[1], cc.LCB)
       );
+
     } else if (direction === 2) {
-      return (
-        input.charCodeAt(input.length - 1) === cc.RCB && (
-          input.charCodeAt(input.length - 2) === cc.PER ||
-          input.charCodeAt(input.length - 2) === cc.RCB
-        )
+
+      return is(input[input.length - 1], cc.RCB) && (
+        is(input[input.length - 2], cc.PER) ||
+        is(input[input.length - 2], cc.LCB)
       );
 
     } else if (direction === 3) {
       return (
-        input.charCodeAt(0) === cc.LCB && (
-          input.charCodeAt(1) === cc.PER ||
-          input.charCodeAt(1) === cc.LCB
+        is(input[0], cc.LCB) && (
+          is(input[1], cc.PER) ||
+          is(input[1], cc.LCB)
         )
       ) && (
-        input.charCodeAt(input.length - 1) === cc.RCB && (
-          input.charCodeAt(input.length - 2) === cc.PER ||
-            input.charCodeAt(input.length - 2) === cc.RCB
+        is(input[input.length - 1], cc.RCB) && (
+          is(input[input.length - 2], cc.PER) ||
+          is(input[input.length - 2], cc.LCB)
         )
       );
 
@@ -482,14 +546,14 @@ prettify.lexers.markup = function markup (source: string) {
     let preserve = false;
 
     /**
-     * Infers a simple lex to be applied, typically used on easy taga
+     * Infers a simple lex to be applied, typically used on easy tags
      */
     let simple = false;
 
     /**
      * Whether or not the tag is a singleton type, eg: `<meta>`
      */
-    const singleton = false;
+    const singleton = false; // TODO - Remove this it does nothing
 
     /**
      * Attribute store reference
@@ -618,8 +682,6 @@ prettify.lexers.markup = function markup (source: string) {
           (qc === 'double' && record.token.indexOf("'") < 0)
         ) {
 
-          // console.log(record);
-
           recordPush(data, record, '');
 
         } else {
@@ -681,17 +743,52 @@ prettify.lexers.markup = function markup (source: string) {
         }
       };
 
-      function templateattrs (sample: string, token: string) {
+      /**
+       * Sample is attribute value
+       * Token is the captured token
+       */
+      function liquidAttributes (sample: string, token: string) {
 
-        if (sample.charAt(0) === '{' && '{%'.indexOf(sample.charAt(1)) > -1) {
+        if (isLiquidStart(token)) {
+
+          const ttname = getLiquidTagName(token);
+
+          if (names.has(ttname)) {
+
+            record.types = 'template_attribute_start';
+            record.stack = ttname;
+            parse.structure.push([ record.stack, parse.count ]);
+
+          }
+
+          record.token = token;
+
+          convertq();
+          return;
+
+        } else if (isLiquidEnd(token)) {
+
+          record.types = 'template_attribute_end';
+          record.token = token;
+          parse.structure.pop();
+
+          convertq();
+          return;
+
+        } else if (isLiquid(sample, 1)) {
+
           record.types = 'template_attribute';
-        } else if (sample.charAt(0) === '<') {
+
+        } else if (is(sample[0], cc.LAN)) {
+
           record.types = 'template_attribute';
+
         } else {
 
           record.token = token;
           convertq();
           return;
+
         }
 
         record.token = token;
@@ -795,6 +892,8 @@ prettify.lexers.markup = function markup (source: string) {
 
           if (attstore[idx] === undefined) break;
 
+          // console.log(attstore[idx][0]);
+
           attstore[idx][0] = attstore[idx][0].replace(/\s+$/, '');
 
           record.lines = attstore[idx][1];
@@ -811,7 +910,7 @@ prettify.lexers.markup = function markup (source: string) {
             record.token = attstore[idx][0];
             convertq();
 
-          } else if (eq < 0) {
+          } else if (isLiquid(attstore[idx][0], 5)) {
 
             // in most markup languages an attribute without an expressed value has its name
             // as its string value
@@ -819,12 +918,47 @@ prettify.lexers.markup = function markup (source: string) {
             // Lets look for a template tag
             // The 2nd character should be a percentage %
             //
-            if (isLiquid(attstore[idx][0], 3) || isLiquid(attstore[idx][0], 5)) {
+            if (isLiquid(attstore[idx][0], 5)) {
 
-              record.types = 'template_attribute';
+              if (is(attstore[idx][0][1], cc.LCB)) {
+
+                record.types = 'template_attribute';
+
+              } else {
+
+                if (isLiquidEnd(attstore[idx][0])) {
+
+                  record.types = 'template_attribute_end';
+                  parse.structure.pop();
+
+                  ttexp = false;
+
+                } else {
+
+                  const ttname = getLiquidTagName(attstore[idx][0]);
+
+                  if (condelse.has(ttname)) {
+
+                    record.types = 'template_attribute_else';
+
+                  } else if (names.has(ttname)) {
+
+                    record.types = 'template_attribute_start';
+                    record.stack = ttname;
+                    parse.structure.push([ record.stack, parse.count ]);
+
+                    ttexp = true;
+
+                  }
+                }
+
+              }
+
               record.token = attstore[idx][0];
 
-              // console.log('ATTR', attstore[idx][0]);
+              // console.log(record);
+              // console.log(attstore);
+
               convertq();
 
             } else {
@@ -844,9 +978,7 @@ prettify.lexers.markup = function markup (source: string) {
             name = attstore[idx][0].slice(0, eq);
             value = attstore[idx][0].slice(eq + 1);
 
-            if (options.attemptCorrection) {
-              if ('<{"\'='.indexOf(value.charAt(0)) < 0) value = '"' + value + '"';
-            }
+            if (options.markup.correct && '<{"\'='.indexOf(value[0]) < 0) value = '"' + value + '"';
 
             if (options.language === 'jsx' && /^\s*\{/.test(value)) {
 
@@ -863,8 +995,11 @@ prettify.lexers.markup = function markup (source: string) {
                 value = value.slice(0, value.length - 1);
                 value = /\s+$/.exec(value)[0];
 
-                if (value.indexOf('\n') < 0) record.lines = 1;
-                else record.lines = value.split('\n').length;
+                if (value.indexOf('\n') < 0) {
+                  record.lines = 1;
+                } else {
+                  record.lines = value.split('\n').length;
+                }
 
               } else {
                 record.lines = 0;
@@ -885,8 +1020,8 @@ prettify.lexers.markup = function markup (source: string) {
 
               name = name + '=' + value;
 
-              templateattrs(
-                value.replace(/^(["'])/, '').slice(0, 2),
+              liquidAttributes(
+                value.replace(/^(["'])/, '').replace(/(["'])$/, ''),
                 name.replace(/(\s+)$/, '')
               );
 
@@ -904,6 +1039,7 @@ prettify.lexers.markup = function markup (source: string) {
           idx = idx + 1;
 
         } while (idx < len);
+
       }
 
       if (store.length > 0) {
@@ -1185,14 +1321,25 @@ prettify.lexers.markup = function markup (source: string) {
       let e = 0;
       let f = 0;
       let parncount = 0;
-      let lines = 1;
+      let lines = 0;
       let quote = '';
       let jsxquote = '';
       let stest = false;
       let quotetest = false;
+
+      /**
+       * Attribute store
+       */
       let attribute = [];
 
-      const dustatt = [];
+      /**
+       * Liquid attribute store
+       */
+      const lattr = [];
+
+      /**
+       * Lexing store
+       */
       const lex = [];
 
       /**
@@ -1251,7 +1398,15 @@ prettify.lexers.markup = function markup (source: string) {
           }
         }
 
-        if (atty.slice(0, 2) === '{%') nosort = true;
+        if (is(atty[0], cc.LCB) && is(atty[1], cc.PER)) nosort = true;
+
+        if (ttexp === false && isLiquidStart(atty)) {
+          ttexp = true;
+        } else if (ttexp === true && isLiquidEnd(atty)) {
+          ttexp = false;
+        }
+
+        // console.log('IN ATTR LEXER', atty, ttexp);
 
         atty = atty.replace(/^\u0020/, '').replace(/\u0020$/, '');
         attribute = atty.replace(/\r\n/g, '\n').split('\n');
@@ -1267,12 +1422,31 @@ prettify.lexers.markup = function markup (source: string) {
         atty = attribute.join(options.crlf === true ? '\r\n' : '\n');
         atty = bracketSpace(atty);
 
+        // PATCH
+        // EXPRESSION LINES
+        if (
+          (
+            is(atty[0], cc.LCB) && (is(atty[1], cc.PER) || is(atty[1], cc.LCB))
+          ) || (
+            ttexp === true
+          )
+        ) {
+
+          // lines = ws(b[a + 1]) ? b[a + 1] === '\n' ? 2 : 1 : 0;
+          // console.log(lines, atty, JSON.stringify(b[a + 1]));
+          // lines = b[a + 1] === '\n' ? 2 : b[a + 1] === ' ' ? 1 : 0;
+
+          // console.log('IN ATTR LEXER', atty, ttexp);
+        }
+
+        if (ttexp === true && isLiquidEnd(atty)) ttexp = false;
+
         if (atty === '=') {
 
           attstore[attstore.length - 1][0] = `${attstore[attstore.length - 1][0]}=`;
 
         } else if (
-          atty.charAt(0) === '=' &&
+          is(atty[0], cc.EQS) &&
           attstore.length > 0 &&
           attstore[attstore.length - 1][0].indexOf('=') < 0
         ) {
@@ -1281,7 +1455,7 @@ prettify.lexers.markup = function markup (source: string) {
           attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
 
         } else if (
-          atty.charAt(0) !== '=' &&
+          not(atty[0], cc.EQS) &&
           attstore.length > 0 &&
           attstore[attstore.length - 1][0].indexOf('=') === attstore[attstore.length - 1][0].length - 1
         ) {
@@ -1293,6 +1467,8 @@ prettify.lexers.markup = function markup (source: string) {
         } else if (atty !== '' && atty !== ' ') {
 
           attstore.push([ atty, lines ]);
+
+          // console.log(attstore);
 
         }
 
@@ -1512,7 +1688,9 @@ prettify.lexers.markup = function markup (source: string) {
 
                       attribute.pop();
 
-                      if (not(b[a], cc.EQS) && attribute.length > 0) attributeLexer(false);
+                      if (attribute.length > 0 && not(b[a], cc.EQS) && ttexp) {
+                        attributeLexer(false);
+                      }
 
                       quote = '';
 
@@ -1520,9 +1698,9 @@ prettify.lexers.markup = function markup (source: string) {
 
                         attribute.push(b[a]);
 
-                        if (b[a] === dustatt[dustatt.length - 1]) {
+                        if (b[a] === lattr[lattr.length - 1]) {
 
-                          dustatt.pop();
+                          lattr.pop();
 
                           if (is(b[a], cc.RCB) && is(b[a + 1], cc.RCB)) {
 
@@ -1534,41 +1712,67 @@ prettify.lexers.markup = function markup (source: string) {
                               attribute.push('}');
                               a = a + 1;
                             }
+
                           }
 
-                          if (dustatt.length < 1) {
+                          if (lattr.length < 1) {
+
+                            // Captures attribute expression like:
+                            //
+                            // data-{{  }}
+                            // data{% if %}
+                            //
+                            if (ttexp === false && is(b[a], cc.RCB) && not(attribute[0], cc.LCB) && (
+                              not(attribute[1], cc.PER) ||
+                              not(attribute[1], cc.LCB)
+                            )) {
+                              attributeLexer(false);
+                              break;
+                            }
+
+                            // Captures chained attributes on the ender tokens
+                            //
+                            // {% endif %}-attr
+                            //
+                            if (ttexp === true && isLiquidEnd(attribute)) {
+                              if (ws(b[a + 1])) {
+                                attributeLexer(false);
+                                break;
+                              } else {
+                                a = a + 1;
+                                continue;
+                              }
+                            }
 
                             attributeLexer(false);
-
-                            b[a] = ' ';
-
                             break;
+
                           }
 
                         } else if ((
                           is(b[a], cc.DQO) ||
                           is(b[a], cc.SQO)
                         ) &&
-                          not(dustatt[dustatt.length - 1], cc.DQO) &&
-                          not(dustatt[dustatt.length - 1], cc.SQO)
+                          not(lattr[lattr.length - 1], cc.DQO) &&
+                          not(lattr[lattr.length - 1], cc.SQO)
                         ) {
 
-                          dustatt.push(b[a]);
+                          lattr.push(b[a]);
 
                         } else if (
                           is(b[a], cc.LCB) &&
                           /[{%</]/.test(b[a + 1]) &&
-                          not(dustatt[dustatt.length - 1], cc.RCB)
+                          not(lattr[lattr.length - 1], cc.RCB)
                         ) {
 
-                          dustatt.push('}');
+                          lattr.push('}');
 
                         } else if (
                           is(b[a], cc.LAN) &&
-                          not(dustatt[dustatt.length - 1], cc.RAN)
+                          not(lattr[lattr.length - 1], cc.RAN)
                         ) {
 
-                          dustatt.push('>');
+                          lattr.push('>');
 
                         }
 
@@ -1832,7 +2036,7 @@ prettify.lexers.markup = function markup (source: string) {
                       if (b[a + 1] === lastchar) break;
                     }
 
-                  } else if (igcount > 0 && (/\s/).test(b[a]) === false) {
+                  } else if (igcount > 0 && ws(b[a]) === false) {
                     igcount = 0;
                   }
 
@@ -1871,7 +2075,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                 quote = b[a + 1] + '}';
 
-                if (attribute.length < 1 && (attstore.length < 1 || (/\s/).test(b[a - 1]) === true)) {
+                if (attribute.length < 1 && (attstore.length < 1 || ws(b[a - 1]))) {
 
                   lex.pop();
 
@@ -1938,7 +2142,7 @@ prettify.lexers.markup = function markup (source: string) {
                   do {
                     lex.pop();
                     a = a - 1;
-                  } while (/\s/.test(lex[lex.length - 1]));
+                  } while (ws(lex[lex.length - 1]));
                 }
 
                 break;
@@ -1995,7 +2199,7 @@ prettify.lexers.markup = function markup (source: string) {
       } while (a < c);
 
       // a correction to incomplete template tags that use multiple angle braceAllman
-      if (options.attemptCorrection === true) {
+      if (options.markup.correct === true) {
 
         if (
           is(b[a + 1], cc.RAN) &&
@@ -2238,7 +2442,7 @@ prettify.lexers.markup = function markup (source: string) {
         // inserts a trailing slash into singleton tags if they do not already have it
         if (voids.has(tname)) {
 
-          if (options.attemptCorrection === true && ender.test(element) === false) {
+          if (options.markup.correct === true && ender.test(element) === false) {
             element = element.slice(0, element.length - 1) + ' />';
           }
 
@@ -2318,7 +2522,7 @@ prettify.lexers.markup = function markup (source: string) {
         ext = true;
 
       } else if (
-        (tname === 'style' || tname === 'stylesheet') &&
+        (tname === 'style') &&
         options.language !== 'jsx' &&
         (attValue === '' || attValue === 'text/css')
       ) {
@@ -2329,7 +2533,8 @@ prettify.lexers.markup = function markup (source: string) {
         liquid === true && (
           tname === 'javascript' ||
           tname === 'schema' ||
-          tname === 'style'
+          tname === 'style' ||
+          tname === 'stylesheet'
         )
       ) {
 
@@ -2397,7 +2602,13 @@ prettify.lexers.markup = function markup (source: string) {
 
     // additional logic is required to find the end of a tag with the attribute
     // data-parse-ignore
-    if (simple && preserve === false && ignoreme && end === '>' && element.slice(element.length - 2) !== '/>') {
+    if (
+      simple &&
+      preserve === false &&
+      ignoreme &&
+      is(end, cc.RAN) &&
+      element.slice(element.length - 2) !== '/>'
+    ) {
 
       const tags = [];
       const atstring = [];
@@ -2507,7 +2718,7 @@ prettify.lexers.markup = function markup (source: string) {
     // block start/end based on syntax alone
     if (record.types.indexOf('template') > -1) {
 
-      if (element.slice(0, 2) === '{%') {
+      if (is(element[0], cc.LCB) && is(element[1], cc.PER)) {
 
         if (
           (tname === 'case' || tname === 'default') && (
@@ -2515,10 +2726,15 @@ prettify.lexers.markup = function markup (source: string) {
             parse.structure[parse.structure.length - 1][0] === 'case'
           )
         ) {
+
           record.types = 'template_else';
+
         } else if (tname === 'else' || tname === 'when' || tname === 'elsif') {
+
           record.types = 'template_else';
+
         } else {
+
           if (names.has(tname)) {
             record.types = 'template_start';
           } else if (tname[0] === 'e' && tname[1] === 'n' && tname[2] === 'd' && names.has(tname.slice(3))) {
@@ -2547,9 +2763,7 @@ prettify.lexers.markup = function markup (source: string) {
         }
 
       } else if (record.types === 'template') {
-        if (element.indexOf('else') > 2) {
-          record.types = 'template_else';
-        }
+        if (element.indexOf('else') > 2) record.types = 'template_else';
       }
 
       if (record.types === 'template_start' || record.types === 'template_else') {
@@ -2602,7 +2816,6 @@ prettify.lexers.markup = function markup (source: string) {
     } else {
 
       // Liquid Tags and other items are pushed here
-      //  console.log(record);
       recordPush(data, record, tname);
 
     }
@@ -2821,7 +3034,7 @@ prettify.lexers.markup = function markup (source: string) {
                 if (data.types[parse.count] === 'end' && data.lexer[data.begin[parse.count] - 1] === 'script') {
 
                   record.lexer = 'script';
-                  record.token = (options.attemptCorrection === true) ? ';' : 'x;';
+                  record.token = (options.markup.correct === true) ? ';' : 'x;';
                   record.types = 'separator';
                   recordPush(data, record, '');
                   record.lexer = 'markup';
