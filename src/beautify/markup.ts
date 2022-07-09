@@ -1,7 +1,8 @@
 import { Options } from 'types/prettify';
-import { prettify } from 'prettify';
+import { prettify } from '@prettify/options';
 import { create } from '@utils/native';
-
+import { is, not } from '@utils/helpers';
+import { cc } from '@utils/enums';
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
 /* -------------------------------------------- */
@@ -342,23 +343,22 @@ prettify.beautify.markup = function markup (options: Options) {
 
         level.push(-20);
 
-      } else if ((options.wrap === 0 || (
-        a < c - 2 &&
-        type.idx(a + 2, 'attribute') > -1 &&
+      } else if (
         (
-          data.token[a].length
-          + data.token[a + 1].length
-          + data.token[a + 2].length
-          + 1
-        ) > options.wrap) || (
-        (
-          data.token[a].length
-            + data.token[a + 1].length
-        ) > options.wrap
-      )) && (
-        type.is(a + 1, 'singleton') ||
+          options.wrap === 0 || (a < c - 2 && type.idx(a + 2, 'attribute') > -1 &&
+          (
+            data.token[a].length + data.token[a + 1].length // + data.token[a + 2].length + 1
+          ) > options.wrap
+          ) || (
+            (
+              data.token[a].length
+            + data.token[a + 1] ? data.token[a + 1].length : 0
+            ) > options.wrap
+          )
+        ) && (
+          type.is(a + 1, 'singleton') ||
           type.is(a + 1, 'template')
-      )) {
+        )) {
 
         // Wrap if
         // 1. options.wrap is 0
@@ -377,7 +377,6 @@ prettify.beautify.markup = function markup (options: Options) {
         type.idx(a - 1, 'attribute') > -1 &&
         data.lines[a] < 1
       ) {
-
         level[a - 1] = -20;
       }
 
@@ -524,7 +523,7 @@ prettify.beautify.markup = function markup (options: Options) {
 
         if (eq > 0 && (
           (eq < x.indexOf('"') && x.indexOf('"') > 0) ||
-        (eq < x.indexOf("'") && x.indexOf("'") > 0)
+          (eq < x.indexOf("'") && x.indexOf("'") > 0)
         )) {
           return [
             x.slice(0, eq),
@@ -638,12 +637,7 @@ prettify.beautify.markup = function markup (options: Options) {
 
           } else {
 
-            if (options.markup.attributeValueNewlines === 'force') {
-
-              item[bb] = `\n${item[bb]}`;
-            } else {
-              item[bb] = ` ${item[bb]}`;
-            }
+            item[bb] = ` ${item[bb]}`;
 
             acount = acount + item[bb].length;
 
@@ -662,9 +656,9 @@ prettify.beautify.markup = function markup (options: Options) {
       /* -------------------------------------------- */
 
       /**
-       * References `a` position.
+       * References index position of `a` - we use a reference of `w` to infer "wrap"
        */
-      let y = a;
+      let w = a;
 
       /**
        * Plural
@@ -674,7 +668,7 @@ prettify.beautify.markup = function markup (options: Options) {
       /**
        * Whether or not the exit the walk early
        */
-      let earlyexit = false; // eslint-disable-line prefer-const
+      let earlyexit = false;
 
       /**
        * Whether or not the attribute is a start type
@@ -714,11 +708,7 @@ prettify.beautify.markup = function markup (options: Options) {
 
         }
 
-        if (type.is(next, 'end') || type.is(next, 'template_end')) {
-          if (type.is(parent, 'singleton')) return indent + 2;
-          return indent + 1;
-        }
-
+        if (type.is(next, 'end') || type.is(next, 'template_end')) return indent + type.is(parent, 'singleton') ? 2 : 1;
         if (type.is(parent, 'singleton')) return indent + 1;
 
         return indent;
@@ -735,7 +725,6 @@ prettify.beautify.markup = function markup (options: Options) {
         } else {
           level[parent] = indent;
         }
-
         return;
       }
 
@@ -744,8 +733,6 @@ prettify.beautify.markup = function markup (options: Options) {
       /* -------------------------------------------- */
 
       if (lev < 1) lev = 1;
-
-      const attr: { [begin: number]: number } = create(null);
 
       // First, set levels and determine if there
       // are template attributes. When we have template
@@ -759,42 +746,97 @@ prettify.beautify.markup = function markup (options: Options) {
 
         if (data.types[a].indexOf('attribute') > 0) {
 
-          if (data.types[a] === 'template_attribute') {
+          if (data.types[a] === 'template_attribute_start') {
+
+            if (options.markup.preserveAttributes === true) {
+
+              level.push(-10);
+
+            } else {
+
+              do {
+
+                len = len + data.token[a].length + 1;
+
+                if (data.types[a] === 'template_attribute_end') break;
+
+                if (options.markup.attributeChain === 'inline') {
+                  level.push(-20);
+                } else if (options.markup.attributeChain === 'collapse') {
+                  level.push(lev);
+                } else if (options.markup.attributeChain === 'preserve') {
+                  if (data.lines[a] === 0) {
+                    level.push(-20);
+                  } else if (data.lines[a] === 1) {
+                    level.push(-10);
+                  } else if (data.lines[a] > options.preserveLine) {
+                    level.push(options.preserveLine);
+                  } else {
+                    level.push(lev);
+                  }
+                }
+
+                a = a + 1;
+                count = count + data.token[a].length + 1;
+
+              } while (a < c);
+
+              if (len > options.wrap) {
+
+                //  console.log('WRAP EXCEEDED', len, count);
+
+              }
+
+            }
+
+          } else if (data.types[a] === 'template_attribute') {
+
             level.push(-10);
+
           } else if (data.types[a] === 'comment_attribute') {
+
             level.push(lev);
+
           } else if (data.types[a].indexOf('start') > 0) {
 
             attStart = true;
 
             if (a < c - 2 && data.types[a + 2].indexOf('attribute') > 0) {
+
               level.push(-20);
+
               a = a + 1;
+
               externalIndex[a] = a;
+
             } else {
+
               if (parent === a - 1 && plural === false) {
                 level.push(lev);
               } else {
                 level.push(lev + 1);
               }
+
               if (data.lexer[a + 1] !== lexer) {
                 a = a + 1;
                 external();
               }
             }
-          } else if (data.types[a].indexOf('end') > 0) {
 
-            if (level[a - 1] !== -20) {
-              level[a - 1] = level[data.begin[a]] - 1;
-            }
+          } else if (data.types[a].indexOf('end') > 0 && data.types[a].indexOf('template') < 0) {
+
+            if (level[a - 1] !== -20) level[a - 1] = level[data.begin[a]] - 1;
 
             if (data.lexer[a + 1] !== lexer) {
               level.push(-20);
             } else {
               level.push(lev);
             }
+
           } else {
+
             level.push(lev);
+
           }
 
           earlyexit = true;
@@ -816,28 +858,15 @@ prettify.beautify.markup = function markup (options: Options) {
               type.idx(a + 1, 'attribute') > 0
             )
           ) {
-
-            // HOT PATCH
-            // Support forced attribute limits, wherein the user
-            // can define a minimal number of attributes before
-            // force is applied.
-
-            if (typeof options.markup.forceAttribute === 'number') {
-              attr[data.begin[a]] = 1 + attr[data.begin[a]] || 0;
-              if (attr[data.begin[a]] > (options.markup.forceAttribute - 1)) {
-                level.fill(lev, -options.markup.forceAttribute);
-                level.push(lev);
-              } else {
-                level.push(-10);
-              }
-            } else {
-              level.push(lev);
-            }
+            level.push(lev);
           } else {
             level.push(-10);
           }
+
         } else if (data.begin[a] < parent + 1) {
+
           break;
+
         }
 
         a = a + 1;
@@ -870,14 +899,18 @@ prettify.beautify.markup = function markup (options: Options) {
       }
 
       if (options.markup.forceAttribute === true) {
+
         count = 0;
         level[parent] = lev;
+
       } else if (options.markup.forceAttribute >= 1) {
-        if (attr[parent] > (options.markup.forceAttribute as number - 1)) {
+
+        if (level.length > (options.markup.forceAttribute as number)) {
           level[parent] = lev;
         } else {
           level[parent] = -10;
         }
+
       } else {
         level[parent] = -10;
       }
@@ -892,10 +925,10 @@ prettify.beautify.markup = function markup (options: Options) {
         return;
       }
 
-      y = a;
+      w = a;
 
       // second, ensure tag contains more than one attribute
-      if (y > parent + 1) {
+      if (w > parent + 1) {
 
         // finally, indent attributes if tag length exceeds the wrap limit
         if (options.markup.selfCloseSpace === false) len = len - 1;
@@ -910,18 +943,17 @@ prettify.beautify.markup = function markup (options: Options) {
 
           do {
 
-            if (data.token[y].length > options.wrap && (/\s/).test(data.token[y])) wrap(y);
+            if (data.token[w].length > options.wrap && (/\s/).test(data.token[w])) wrap(w);
 
-            y = y - 1;
-            level[y] = lev;
-
-          } while (y > parent);
+            level[w] = lev;
+            w = w - 1;
+          } while (w > parent);
         }
       } else if (
         options.wrap > 0 &&
-        data.types[a] === 'attribute' &&
+        type.is(a, 'attribute') &&
         data.token[a].length > options.wrap &&
-        (/\s/).test(data.token[a]) === true
+        (/\s/).test(data.token[a])
       ) {
 
         wrap(a);
@@ -951,10 +983,8 @@ prettify.beautify.markup = function markup (options: Options) {
         } else if (type.is(a, 'comment')) {
 
           if (comstart < 0) comstart = a;
+          if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) comment();
 
-          if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) {
-            comment();
-          }
         } else if (type.not(a, 'comment')) {
 
           next = nextIndex();
@@ -1108,6 +1138,7 @@ prettify.beautify.markup = function markup (options: Options) {
               level.push(-20);
 
             } else {
+
               level.push(indent);
 
             }
