@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import type { Record, Types } from 'types/prettify';
-import { prettify } from 'prettify';
+import { prettify } from '@prettify/options';
 import { parse } from '@parser/parse';
 import { create } from '@utils/native';
 
@@ -1245,7 +1245,7 @@ prettify.lexers.style = function style (source: string) {
             parse.count] === 'variable' && (data.token[parse
             .count - 1] === ':' || data.token[parse
             .count - 1] === ';'))) {
-            if (options.attemptCorrection === true) {
+            if (options.style.correct === true) {
               ltoke = ';';
             } else {
               ltoke = 'x;';
