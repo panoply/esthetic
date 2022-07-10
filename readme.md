@@ -179,12 +179,12 @@ Prettify provides a granular set of beautification options (rules). The projects
     attributeSort: false,
     attributeSortList: [],
     attributeChain: 'preserve',
+    attributeValues: 'align',
     delimiterSpacing: true,
     commentNewline: false,
     forceAttribute: false,
     forceLeadingAttribute: false,
     forceIndent: false,
-    preserveValues: true,
     preserveAttributes: false,
     preserveComment: true,
     preserveLine: 3,
@@ -261,6 +261,7 @@ Refer to the [typings](#) declaration file for description. Rules will be used w
   attributeSort: false,
   attributeSortList: [],
   attributeChain: 'preserve',
+  attributeValues: 'align',
   delimiterSpacing: true,
   commentNewline: false,
   forceAttribute: false,
@@ -541,26 +542,27 @@ Prettify takes a complete different approach and is leveraging the sparser lexin
 
 Below is a formatting specific feature comparison as of June 2022 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities.
 
-| Feature                          | Prettify | Liquid Prettier Plugin |
-| -------------------------------- | -------- | ---------------------- |
-| Tag Indentation                  | ✓        | ✓                      |
-| Attribute Indentation            | ✓        | ✓                      |
-| Comment Formatting               | ✓        | ✓                      |
-| Controlled Attribute Indentation | ✓        | 𐄂                      |
-| Content Indentation              | ✓        | 𐄂                      |
-| Delimiter Spacing                | ✓        | 𐄂                      |
-| Wrapping Indentation             | ✓        | 𐄂                      |
-| Attribute Sorting                | ✓        | 𐄂                      |
-| Liquid + CSS/SCSS                | ✓        | 𐄂                      |
-| Liquid + JS/TS                   | ✓        | 𐄂                      |
-| Liquid Newline Filters           | ✓        | 𐄂                      |
-| Frontmatter Support              | ✓        | 𐄂                      |
-| Embedded `{% style %}`           | ✓        | 𐄂                      |
-| Embedded `{% stylesheet %}`      | ✓        | 𐄂                      |
-| Embedded `{% javascript %}`      | ✓        | 𐄂                      |
-| Embedded `{% schema %}`          | ✓        | ✓                      |
-| Embedded CSS + Liquid `<style>`  | ✓        | 𐄂                      |
-| Embedded JS + Liquid `<script>`  | ✓        | 𐄂                      |
+| Feature                         | Prettify | Liquid Prettier Plugin |
+| ------------------------------- | -------- | ---------------------- |
+| Tag Indentation                 | ✓        | ✓                      |
+| HTML Attribute Indentation      | ✓        | ✓                      |
+| Comment Formatting              | ✓        | ✓                      |
+| Content Indentation             | ✓        | 𐄂                      |
+| Delimiter Spacing               | ✓        | 𐄂                      |
+| Wrapping Indentation            | ✓        | 𐄂                      |
+| Attribute Sorting               | ✓        | 𐄂                      |
+| Attribute Indentation (Liquid)  | ✓        | 𐄂                      |
+| Attribute Value Formatting      | ✓        | 𐄂                      |
+| Liquid + CSS/SCSS               | ✓        | 𐄂                      |
+| Liquid + JS/TS                  | ✓        | 𐄂                      |
+| Liquid Newline Filters          | ✓        | 𐄂                      |
+| Frontmatter Support             | ✓        | 𐄂                      |
+| Embedded `{% style %}`          | ✓        | 𐄂                      |
+| Embedded `{% stylesheet %}`     | ✓        | 𐄂                      |
+| Embedded `{% javascript %}`     | ✓        | 𐄂                      |
+| Embedded `{% schema %}`         | ✓        | ✓                      |
+| Embedded CSS + Liquid `<style>` | ✓        | 𐄂                      |
+| Embedded JS + Liquid `<script>` | ✓        | 𐄂                      |
 
 # Credits
 

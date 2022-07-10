@@ -1,4 +1,4 @@
-import { Options } from 'types/prettify';
+import { Options, TypeHelper, TokenHelper } from 'types/prettify';
 import { prettify } from '@prettify/options';
 import { create } from '@utils/native';
 import { is, not } from '@utils/helpers';
@@ -17,13 +17,13 @@ prettify.beautify.markup = function markup (options: Options) {
    * Type token helper utilities for querying
    * the `data.types` (options.parsed) AST tree.
    */
-  const type = create(null);
+  const type: TypeHelper = create(null);
 
   /**
    * Token helper utilities for querying
    * the `data.token` (options.parsed) AST tree.
    */
-  const token = create(null);
+  const token: TokenHelper = create(null);
 
   /**
    * External Lexer reference  when dealing with
@@ -59,43 +59,10 @@ prettify.beautify.markup = function markup (options: Options) {
   /* UTILITIES                                    */
   /* -------------------------------------------- */
 
-  /**
-   * Check whether the token type at specific index
-   * equals the provided name. Returns a truthy.
-   *
-   * > Use `type.not()` for false comparisons.
-   */
   type.is = (index: number, name: string) => data.types[index] === name;
-
-  /**
-   * Check whether the token type at specific index
-   * does not equal the provided name. Returns a truthy.
-   *
-   * > Use `type.is()` for true comparisons.
-   */
   type.not = (index: number, name: string) => data.types[index] !== name;
-
-  /**
-   * Returns the `indexOf` a `data.types` name. This
-   * is used rather frequently to determine the token
-   * type we are dealing with.
-   */
   type.idx = (index: number, name: string) => index > -1 && data.types[index].indexOf(name);
-
-  /**
-   * Check whether the token equals the provided tag.
-   * Returns a truthy.
-   *
-   * > Use `token.not()` for false comparisons.
-   */
   token.is = (index: number, tag: string) => data.token[index] === tag;
-
-  /**
-   * Check whether the token does not equals the
-   * provided tag. Returns a truthy.
-   *
-   * > Use `token.is()` for false comparisons.
-   */
   token.not = (index: number, tag: string) => data.token[index] !== tag;
 
   /* -------------------------------------------- */
@@ -535,30 +502,50 @@ prettify.beautify.markup = function markup (options: Options) {
 
       };
 
-      function newlineValues (attr: string) {
+      function attributeValues (input: string) {
 
-        const attrval = attributeName(attr);
+        const attr = attributeName(input);
 
+        if (attr[1] === '') {
+          return input;
+        } else if (options.markup.attributeValues === 'preserve') {
+          return attr[0] + '=' + attr[1];
+        } else if (options.markup.attributeValues === 'strip') {
+          return attr[0].trimStart() + '=' + attr[1].replace(/\s+/g, ' ').replace(/^["']\s+/, '"');
+        }
         // const space = '\n' + repeatChar(options.indentSize, options.indentChar);
 
-        const m = attrval[1].replace(/\s+/g, x => x === '\n' ? '\n' : ' ');
-        const attarr: any[] = [ '=', m.slice(0, 1) ];
+        const m = options.markup.attributeValues === 'collapse' || options.markup.attributeValues === 'wrap'
+          ? attr[1].replace(/\s+/g, ' ')
+          : attr[1].replace(/\s+/g, x => /\n/.test(x) ? '\n' : x.replace(/\s+/, ' '));
 
-        let vi = 1; // value item
+        const attarr: any[] = [];
+        const wrp = options.wrap > 0 ? attr[1].length > options.wrap : false;
+
+        let vi = 0; // value item
         let vt: number | string = ''; // value tag
         let nt = 0; // next tag
 
         do {
 
-          if (m[vi] === '{' && (m[vi + 1] === '{' || m[vi + 1] === '%')) {
+          if (is(m[vi], cc.LCB) && (is(m[vi + 1], cc.LCB) || is(m[vi + 1], cc.PER))) {
 
-            nt = (m[vi + 1] === '%' ? m.indexOf('%}', vi + 1) : m.indexOf('}}', vi + 1)) + 2;
+            nt = (is(m[vi + 1], cc.PER) ? m.indexOf('%}', vi + 1) : m.indexOf('}}', vi + 1)) + 2;
             vt = m.slice(vi, nt);
             vi = nt;
 
-            attarr.push([ vt ]);
+            attarr.push(vt);
 
           } else {
+
+            if (m[vi] === ' ') {
+
+              if (options.markup.attributeValues === 'collapse') {
+                attarr.push('\n');
+              } else if (options.markup.attributeValues === 'wrap') {
+                if (wrp) attarr.push('\n');
+              }
+            }
 
             attarr.push(m[vi]);
 
@@ -566,7 +553,7 @@ prettify.beautify.markup = function markup (options: Options) {
           }
         } while (vi < m.length);
 
-        return [ attrval[0] + '=', attarr ];
+        return attr[0] + '=' + attarr.join('');
 
       }
 
@@ -581,50 +568,16 @@ prettify.beautify.markup = function markup (options: Options) {
        */
       function wrap (index: number) {
 
-        const item = newlineValues(data.token[index]);
+        if (type.is(index, 'attribute') || type.idx(index, 'template_attribute') > -1) {
+          data.token[index] = attributeValues(data.token[index]);
+          return;
+        }
+
+        const item = data.token[index].replace(/\s+/g, ' ').split(' ');
         const ilen = item.length;
 
         let bb = 1;
         let acount = item[0].length;
-
-        // if ((/=['"]?(\n|<|{{|{%|^)/).test(data.token[index])) return;
-
-        //  console.log(item);
-
-        const attrval = attributeName(data.token[index]);
-
-        // const space = '\n' + repeatChar(options.indentSize, options.indentChar);
-
-        const m = attrval[1].replace(/\s+/g, ' ');
-
-        let vi = 1; // value item
-        let vt: number | string = attrval[0] + '=' + m.slice(0, 1); // value tag
-        let nt = 0; // next tag
-
-        do {
-
-          acount = acount + item[bb].length;
-
-          if (m[vi] === '{' && (m[vi + 1] === '{' || m[vi + 1] === '%')) {
-
-            nt = (m[vi + 1] === '%' ? m.indexOf('%}', vi + 1) : m.indexOf('}}', vi + 1)) + 2;
-            vt += m.slice(vi, nt);
-            vi = nt;
-
-          } else {
-
-            if (m[vi] === ' ') {
-              vt += '\n';
-            } else {
-              vt += m[vi];
-
-            }
-
-            vi = vi + 1;
-          }
-        } while (vi < m.length);
-
-        data.token[index] = vt;
 
         do {
 
@@ -636,11 +589,8 @@ prettify.beautify.markup = function markup (options: Options) {
             item[bb] = lf + item[bb];
 
           } else {
-
             item[bb] = ` ${item[bb]}`;
-
             acount = acount + item[bb].length;
-
           }
 
           bb = bb + 1;
@@ -708,8 +658,13 @@ prettify.beautify.markup = function markup (options: Options) {
 
         }
 
-        if (type.is(next, 'end') || type.is(next, 'template_end')) return indent + type.is(parent, 'singleton') ? 2 : 1;
-        if (type.is(parent, 'singleton')) return indent + 1;
+        if (type.is(next, 'end') || type.is(next, 'template_end')) {
+          return indent + (type.is(parent, 'singleton') ? 2 : 1);
+        }
+
+        if (type.is(parent, 'singleton')) {
+          return indent + 1;
+        }
 
         return indent;
 
@@ -777,6 +732,7 @@ prettify.beautify.markup = function markup (options: Options) {
                 }
 
                 a = a + 1;
+
                 count = count + data.token[a].length + 1;
 
               } while (a < c);
@@ -1060,11 +1016,9 @@ prettify.beautify.markup = function markup (options: Options) {
 
                 } while (iidx < linez);
 
-                data.token[a] = data.token[a]
-                  .replace(/^\s+/gm, '')
-                  .replace(/\n/g, (n) => {
-                    return n + linesout.join('');
-                  });
+                data.token[a] = data.token[a].replace(/^\s+/gm, '').replace(/\n/g, (n) => {
+                  return n + linesout.join('');
+                });
 
               }
             } else if (data.lines[next] > 0 && type.is(next, 'script_start')) {
