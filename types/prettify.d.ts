@@ -639,6 +639,49 @@ export interface WrapComment {
   terminator: string;
 }
 
+export interface TypeHelper {
+  /**
+   * Check whether the token type at specific index
+   * equals the provided name. Returns a truthy.
+   *
+   * > Use `type.not()` for false comparisons.
+   */
+  is(index: number, name: Types): boolean;
+
+  /**
+   * Check whether the token type at specific index
+   * does not equal the provided name. Returns a truthy.
+   *
+   * > Use `type.is()` for true comparisons.
+   */
+  not(index: number, name: Types): boolean;
+
+  /**
+   * Returns the `indexOf` a `data.types` name. This
+   * is used rather frequently to determine the token
+   * type we are dealing with.
+   */
+  idx(index: number, name: Types): number
+}
+
+export interface TokenHelper {
+  /**
+   * Check whether the token equals the provided tag.
+   * Returns a truthy.
+   *
+   * > Use `token.not()` for false comparisons.
+   */
+  is(index: number, tag: string): boolean;
+
+  /**
+   * Check whether the token does not equals the
+   * provided tag. Returns a truthy.
+   *
+   * > Use `token.is()` for false comparisons.
+   */
+  not(index: number, tag: string): boolean;
+}
+
 export interface IParse {
   /**
    * Parse Error
@@ -822,32 +865,77 @@ export interface SharedOptions {
   languageName?: string;
   mode?: 'beautify' | 'parse';
   /**
-   * Extend the the lexing engine and provide
-   * addition support for custom Liquid variations
+   * #### NOT YET AVAILABLE
+   *
+   * **This option is will be available in future releases and is currently
+   * experimental and not fully operational.**
+   *
+   * ---
+   *
+   * #### Grammar
+   *
+   * Low level access to optionally extend the lexers tag handling algorithm.
+   * This option allows you to inform Prettify of any custom or
+   * additional tokens. This is helpful when you need Prettify to
+   * process custom tags in a specific manner.
    */
-  extend?: {
-    /**
-     * Liquid Tags
-     *
-     * String list of tags blocks. Tags require an
-     * `{% ender %}` - Use the `singleton` options to
-     * define non void type liquid tags.
-     */
-    tags?: string[];
-    /**
-     * Liquid Singletons
-     *
-     * String list of tags blocks. Tags require an
-     * `{% ender %}` - Use the `singleton` options to
-     * define non void type liquid tags.
-     */
-    singletons?: string[];
-    /**
-     * HTML Voids
-     *
-     * String list of void tags
-     */
-    voids?: string[];
+  grammar?: {
+
+    liquid?: {
+      /**
+       * **Tags**
+       *
+       * String list of token names to be treated as tag blocks. These are tags,
+       * which require an `{% end %}` token be defined, like (for example) the
+       * `{% capture %}` token which requires `{% endcapture %}`.
+       *
+       * The Tags names you provide here will inform Prettify to cancel beautification
+       * when no ender can be found or the ender is in-correctly placed.
+       *
+       * > _By default, Prettify will allow tags that it has no context of to be expressed
+       * as either a _singleton_ or _block_ but this might not always be ideal, especially
+       * in an SSG environment like 11ty or Jekyll where custom Liquid tags can be used._
+       */
+      tags?: string[];
+
+      /**
+       * **Singletons**
+       *
+       * String list of token names to be treated as singletons. These are tags,
+       * which no require an `{% end %}` token to be defined, like (for example)
+       * the `{% assign %}` token is a singleton.
+       *
+       * The Tags names you provide here will inform Prettify to cancel beautification
+       * when if the token uses an ender.
+       *
+       *
+       * > _By default, Prettify will allow tags that it has no context of to be expressed
+       * as either a _singleton_ or _block_ but this might not always be ideal, especially
+       * in an SSG environment like 11ty or Jekyll where custom Liquid tags can be used._
+       */
+      singletons?: string[];
+
+      /**
+       * **Embedded**
+       *
+       * A list of token names who's inner contents should be formatted using a different
+       * lexer mode. Embedded tags will treat their contained content as external and allow
+       * you to apply region based beautification to custom tag blocks.
+       *
+       */
+      embedded?: {
+        [K in LanguageNames]: Array<string | RegExp>
+      }
+    };
+    html: {
+      /**
+       * HTML Voids
+       *
+       * String list of additional or custom void type
+       * HTML tags.
+       */
+      voids?: string[];
+    }
   }
 }
 
@@ -1064,6 +1152,46 @@ export interface MarkupOptions {
   attributeChain?: 'inline' | 'collapse' | 'preserve';
 
   /**
+   * **Default** `align`
+   *
+   * How attribute values should be handled. By default, Prettify strips extraneous
+   * whitespaces from HTML attribute values but preserves newlines. You can control
+   * how attribute values should be processed
+   *
+   * ---
+   *
+   * #### Disabled (default)
+   *
+   * *Attribute values are stripped and equally spaced. Any newline characters are
+   * removed and single whitespace separation is applied.*
+   *
+   * ```html
+   * <!-- The attribute value before formatting -->
+   * <div class="one     two
+   *    {{ some.object }}"></div>
+   *
+   * <!-- The attribute value after formatting -->
+   * <div class="one two {{ some.object }}"></div>
+   * ```
+   *
+   * #### Enabled
+   *
+   * *The attribute values will not be touched, newlines, extraneous spacing will remain
+   * intact.*
+   *
+   * ```html
+   * <!-- The attribute value before formatting -->
+   * <div class="one   two
+   *    {{ some.object }}"></div>
+   *
+   * <!-- The attribute value after formatting -->
+   * <div class="one   two
+   *    {{ some.object }}"></div>
+   * ```
+   */
+  attributeValues?: 'align' | 'preserve' | 'strip' | 'collapse' | 'wrap'
+
+  /**
    * **Default** `false`
    *
    * If a blank new line should be forced above comments.
@@ -1134,7 +1262,7 @@ export interface MarkupOptions {
    *   <path srcset="."/>
    * </picture>
    *
-   * <!-- After formatting -->
+   * <!-- After formatting - Notice the the space insertion applied -->
    * <picture>
    *   <path srcset="." />
    * </picture>
@@ -1229,11 +1357,12 @@ export interface MarkupOptions {
    * Whether the leading attribute should be forced onto a newline when
    * word `wrap` limit is exceeded or if it should be preserved. By default,
    * Prettify preserves the leading attribute when applying wrap indentation.
-   * Enabling this option will force indent all attributes when wrap is exceeded.
+   * Enabling this option will force indent all attributes if wrap is exceeded.
    *
    * This rule requires a `wrap` level to be defined. If you have `forceAttribute`
-   * enabled or using a force limit value it will override this option, so be sure to
-   * set `forceAttribute` to `false` if you desire wrap based attribute indentation.
+   * enabled or using a force attribute limit value it will override this option.
+   * If you desire wrap based attribute indentation, set `forceAttribute` to `false`
+   * and ensure a `wrap` level is defined.
    *
    * ---
    *
@@ -1241,7 +1370,8 @@ export interface MarkupOptions {
    *
    * *Below is an example of how this rule works if it's disabled (ie: `false`) and
    * attributes have exceeded a defined wrap limit. Notice how leading attributes
-   * are preserved that have not exceeded wrap.*
+   * are preserved that have not exceeded wrap, but proceeding attributes are indented
+   * onto their own lines, this is the default behaviour Prettify uses.*
    *
    * ```html
    *
@@ -1258,7 +1388,8 @@ export interface MarkupOptions {
    * #### Enabled
    *
    * *Below is an example of how this rule works if it's enabled (ie: `true`) and
-   * attributes have exceeded the defined wrap limit.*
+   * attributes have exceeded the defined wrap limit. Notice how all attributes
+   * and indented onto their own line, including the leading attribute.*
    *
    *
    * ```html
@@ -1280,7 +1411,7 @@ export interface MarkupOptions {
    * **Default** `false`
    *
    * Will force indentation upon all content and tags without regard for the
-   * of new text nodes.
+   * text nodes.
    *
    * ---
    *
@@ -1331,7 +1462,8 @@ export interface MarkupOptions {
    * If markup tags should have their insides preserved.
    * This option is only available to markup and does not support
    * child tokens that require a different lexer. When enabled, this
-   * rule will run precedence for all attribute related rules.
+   * rule will override and run precedence for all attribute related rules.
+   *
    *
    * ---
    *
@@ -1355,47 +1487,6 @@ export interface MarkupOptions {
    * ```
    */
   preserveAttributes?: boolean;
-
-  /**
-   * **Default** `false`
-   *
-   * How attribute values should be handled. By default, Prettify will replace
-   * the contents of attribute values. Extraneous whitespaces and newlines are
-   * stripped. Set this option to `true` to disable that behaviour and preserve
-   * attribute values.
-   *
-   * ---
-   *
-   * **Disabled (default)**
-   *
-   * *Attribute values are stripped and equally spaced. Any newline characters are
-   * removed and single whitespace separated is applied.*
-   *
-   * ```html
-   * <!-- The attribute value before formatting -->
-   * <div class="one   two
-   *    {{ some.object }}"></div>
-   *
-   * <!-- The attribute value after formatting -->
-   * <div class="one two {{ some.object }}"></div>
-   * ```
-   *
-   * **Enabled**
-   *
-   * *The attribute values will not be touched, newlines, extraneous spacing will remain
-   * intact.*
-   *
-   * ```html
-   * <!-- The attribute value before formatting -->
-   * <div class="one   two
-   *    {{ some.object }}"></div>
-   *
-   * <!-- The attribute value after formatting -->
-   * <div class="one   two
-   *    {{ some.object }}"></div>
-   * ```
-   */
-  preserveValues?: boolean;
 
 }
 
