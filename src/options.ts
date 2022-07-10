@@ -78,14 +78,15 @@ prettify.options.wrap = 0;
 
 prettify.options.markup = create(null);
 prettify.options.markup.correct = false;
+prettify.options.markup.commentNewline = false;
 prettify.options.markup.attributeChain = 'inline';
+prettify.options.markup.attributeValues = 'align';
 prettify.options.markup.attributeSort = false;
 prettify.options.markup.attributeSortList = [];
-prettify.options.markup.commentNewline = false;
 prettify.options.markup.forceAttribute = false;
+prettify.options.markup.forceLeadingAttribute = false;
 prettify.options.markup.preserveText = false;
 prettify.options.markup.preserveAttributes = false;
-prettify.options.markup.preserveValues = false;
 prettify.options.markup.selfCloseSpace = false;
 prettify.options.markup.forceIndent = false;
 prettify.options.markup.quoteConvert = 'none';
