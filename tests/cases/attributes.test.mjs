@@ -54,19 +54,16 @@ test.serial.skip('preserveAttributes: true', async t => {
 
 });
 
-test.serial.skip('attributeValueNewlines: "force"', async t => {
+test.serial('attributeValueNewlines: "force"', async t => {
 
-  const { source } = await samples.get('markup/attribute-value-newlines');
+  const { source } = await samples.get('attributes/attribute-values');
 
   return prettify.format(source, {
-
+    wrap: 80,
     markup: {
-      attributeValueNewlines: 'collapse'
+      attributeValues: 'wrap'
     }
   }).then(v => {
-
-    console.log(v);
-    return;
 
     return prettify.format(v, {
       wrap: 80,

@@ -34,19 +34,3 @@ ATTRIBUTE CHAINING NESTED EXPRESSIONS
         {{ step.title }}
     </div>
 {% endfor %}
-
-
-
-{% for step in steps %}
-    <div
-      class="
-      {% if loop.index < currentStep %}
-      opacity-50
-      {% elsif loop.index > currentStep %}
-      font-bold font-black
-      {% endif %}">
-
-        {{ loop.index }}.
-        {{ step.title }}
-    </div>
-{% endfor %}
