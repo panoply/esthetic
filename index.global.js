@@ -508,14 +508,15 @@
     prettify.options.wrap = 0;
     prettify.options.markup = create(null);
     prettify.options.markup.correct = false;
+    prettify.options.markup.commentNewline = false;
     prettify.options.markup.attributeChain = "inline";
+    prettify.options.markup.attributeValues = "align";
     prettify.options.markup.attributeSort = false;
     prettify.options.markup.attributeSortList = [];
-    prettify.options.markup.commentNewline = false;
     prettify.options.markup.forceAttribute = false;
+    prettify.options.markup.forceLeadingAttribute = false;
     prettify.options.markup.preserveText = false;
     prettify.options.markup.preserveAttributes = false;
-    prettify.options.markup.preserveValues = false;
     prettify.options.markup.selfCloseSpace = false;
     prettify.options.markup.forceIndent = false;
     prettify.options.markup.quoteConvert = "none";
@@ -4770,7 +4771,7 @@
         }
         return input;
       }
-      function recordPush(target, record, structure) {
+      function recordpush(target, record, structure) {
         if (target === data) {
           if (record.types.indexOf("end") > -1) {
             count.end = count.end + 1;
@@ -4808,13 +4809,13 @@
         record.stack = parse.structure[parse.structure.length - 1][0];
         record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
         record.types = "end";
-        recordPush(data, record, "");
+        recordpush(data, record, "");
         if (blocks.has(parse.structure[parse.structure.length - 1][0]) && (end === true && parse.structure.length > 1 || end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)) {
           do {
             record.begin = parse.structure[parse.structure.length - 1][1];
             record.stack = parse.structure[parse.structure.length - 1][0];
             record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
-            recordPush(data, record, "");
+            recordpush(data, record, "");
           } while (blocks.has(parse.structure[parse.structure.length - 1][0]) && (end === true && parse.structure.length > 1 || end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname));
         }
       }
@@ -4842,7 +4843,7 @@
         let simple = false;
         let attstore = [];
         let comm = ["", 0];
-        function attributeName(x) {
+        function attrname(x) {
           const eq = x.indexOf("=");
           if (eq > 0 && (eq < x.indexOf('"') && x.indexOf('"') > 0 || eq < x.indexOf("'") && x.indexOf("'") > 0)) {
             return [
@@ -4852,9 +4853,9 @@
           }
           return [x, ""];
         }
-        function attributeRecord() {
+        function attrecord() {
           const begin = parse.count;
-          const stack = tname.replace(/\/$/, "");
+          const stack = tname.replace(/(\/)$/, "");
           const qc = options2.markup.quoteConvert;
           let idx = 0;
           let eq = 0;
@@ -4865,17 +4866,17 @@
           let len = attstore.length;
           function convertq() {
             if (ignoreme === true || qc === "none" || record.types !== "attribute" || qc === "single" && record.token.indexOf('"') < 0 || qc === "double" && record.token.indexOf("'") < 0) {
-              recordPush(data, record, "");
+              recordpush(data, record, "");
             } else {
               let ee = 0;
               let inner = false;
               const chars = record.token.split("");
               const eq2 = record.token.indexOf("=");
               const len2 = chars.length - 1;
-              if (chars[eq2 + 1] !== '"' && chars[chars.length - 1] !== '"' && qc === "single") {
-                recordPush(data, record, "");
-              } else if (chars[eq2 + 1].charCodeAt(0) !== 39 /* SQO */ && chars[chars.length - 1].charCodeAt(0) !== 39 /* SQO */ && qc === "double") {
-                recordPush(data, record, "");
+              if (not(chars[eq2 + 1], 34 /* DQO */) && not(chars[chars.length - 1], 34 /* DQO */) && qc === "single") {
+                recordpush(data, record, "");
+              } else if (not(chars[eq2 + 1], 39 /* SQO */) && not(chars[chars.length - 1], 39 /* SQO */) && qc === "double") {
+                recordpush(data, record, "");
               } else {
                 ee = eq2 + 2;
                 if (qc === "double") {
@@ -4900,7 +4901,7 @@
                   } while (ee < len2);
                 }
                 record.token = chars.join("");
-                recordPush(data, record, "");
+                recordpush(data, record, "");
               }
             }
           }
@@ -4925,10 +4926,6 @@
               record.types = "template_attribute";
             } else if (is(sample[0], 60 /* LAN */)) {
               record.types = "template_attribute";
-            } else {
-              record.token = token;
-              convertq();
-              return;
             }
             record.token = token;
             convertq();
@@ -4993,12 +4990,17 @@
               record.lines = attstore[idx][1];
               eq = attstore[idx][0].indexOf("=");
               dq = attstore[idx][0].indexOf('"');
+              if (isLiquid(attstore[idx][0], 5)) {
+                if (eq > attstore[idx][0].indexOf("{") && eq < attstore[idx][0].indexOf("}")) {
+                  eq = -1;
+                }
+              }
               attstore[idx][0].indexOf("'");
               if (/^\/(\/|\*)/.test(attstore[idx][0]) && options2.language === "jsx") {
                 record.types = "comment_attribute";
                 record.token = attstore[idx][0];
                 convertq();
-              } else if (isLiquid(attstore[idx][0], 5)) {
+              } else if (eq < 0) {
                 if (isLiquid(attstore[idx][0], 5)) {
                   if (is(attstore[idx][0][1], 123 /* LCB */)) {
                     record.types = "template_attribute";
@@ -5006,20 +5008,19 @@
                     if (isLiquidEnd(attstore[idx][0])) {
                       record.types = "template_attribute_end";
                       parse.structure.pop();
-                      ttexp = false;
                     } else {
                       const ttname = getLiquidTagName(attstore[idx][0]);
-                      if (condelse.has(ttname)) {
-                        record.types = "template_attribute_else";
-                      } else if (names.has(ttname)) {
+                      if (names.has(ttname)) {
                         record.types = "template_attribute_start";
                         record.stack = ttname;
                         parse.structure.push([record.stack, parse.count]);
-                        ttexp = true;
+                      } else if (condelse.has(ttname)) {
+                        record.types = "template_attribute_else";
                       }
                     }
                   }
                   record.token = attstore[idx][0];
+                  console.log(record);
                   convertq();
                 } else {
                   record.types = "attribute";
@@ -5034,7 +5035,7 @@
                 if (options2.language === "jsx" && /^\s*\{/.test(value)) {
                   record.token = name + "={";
                   record.types = "jsx_attribute_start";
-                  recordPush(data, record, "jsx_attribute");
+                  recordpush(data, record, "jsx_attribute");
                   prettify.lexers.script(value.slice(1, value.length - 1));
                   record.begin = parse.count;
                   if (/\s\}$/.test(value)) {
@@ -5121,7 +5122,7 @@
             record.token = "{";
             record.types = "script_start";
             parse.structure.push(["script", parse.count]);
-            recordPush(data, record, "");
+            recordpush(data, record, "");
             return;
           }
           if (is(b[a + 1], 123 /* LCB */)) {
@@ -5194,50 +5195,57 @@
           if (element.replace(start, "").trimStart().indexOf("@prettify-ignore-start") === 0) {
             record.token = element;
             record.types = "ignore";
-            recordPush(data, record, "");
+            recordpush(data, record, "");
             return;
           }
         } else if (a < c) {
-          let slashy2 = function() {
+          let inliquid2 = function() {
+            if (inliq === false && is(b[a - 1], 123 /* LCB */) && (is(b[a], 123 /* LCB */) || is(b[a], 37 /* PER */))) {
+              return true;
+            } else if (inliq === true && is(b[a], 125 /* RCB */) && (is(b[a - 1], 125 /* RCB */) || is(b[a - 1], 37 /* PER */))) {
+              return false;
+            }
+            return inliq;
+          }, escslash2 = function() {
             let x = a;
             do {
               x = x - 1;
             } while (b[x] === "\\");
             x = a - x;
             return x % 2 === 1;
-          }, attributeLexer2 = function(quotes) {
+          }, lexattr2 = function(quotes) {
             let name;
-            let atty = "";
+            let attr = "";
             let aa = 0;
             let bb = 0;
             const ignoreattr = "data-prettify-ignore";
             if (quotes === true) {
-              atty = attribute.join("");
-              name = attributeName(atty);
+              attr = attribute.join("");
+              name = attrname(attr);
               quote = "";
               if (name[0] === ignoreattr)
                 ignoreme = true;
             } else {
-              atty = attribute.join("");
-              if (options2.language !== "jsx" || options2.language === "jsx" && atty.charAt(atty.length - 1) !== "}") {
-                atty = atty.replace(/\s+/g, " ");
+              attr = attribute.join("");
+              if (options2.language !== "jsx" || options2.language === "jsx" && attr.charAt(attr.length - 1) !== "}") {
+                attr = attr.replace(/\s+/g, " ");
               }
-              name = attributeName(atty);
+              name = attrname(attr);
               if (name[0] === ignoreattr)
                 ignoreme = true;
               if (options2.language === "jsx" && attribute[0] === "{" && attribute[attribute.length - 1] === "}") {
                 jsxcount = 0;
               }
             }
-            if (is(atty[0], 123 /* LCB */) && is(atty[1], 37 /* PER */))
+            if (is(attr[0], 123 /* LCB */) && is(attr[1], 37 /* PER */))
               nosort = true;
-            if (ttexp === false && isLiquidStart(atty)) {
+            if (ttexp === false && isLiquidStart(attr)) {
               ttexp = true;
-            } else if (ttexp === true && isLiquidEnd(atty)) {
+            } else if (ttexp === true && isLiquidEnd(attr)) {
               ttexp = false;
             }
-            atty = atty.replace(/^\u0020/, "").replace(/\u0020$/, "");
-            attribute = atty.replace(/\r\n/g, "\n").split("\n");
+            attr = attr.replace(/^\u0020/, "").replace(/\u0020$/, "");
+            attribute = attr.replace(/\r\n/g, "\n").split("\n");
             bb = attribute.length;
             if (aa < bb) {
               do {
@@ -5245,28 +5253,31 @@
                 aa = aa + 1;
               } while (aa < bb);
             }
-            atty = attribute.join(options2.crlf === true ? "\r\n" : "\n");
-            atty = bracketSpace(atty);
-            if (is(atty[0], 123 /* LCB */) && (is(atty[1], 37 /* PER */) || is(atty[1], 123 /* LCB */)) || ttexp === true) ;
-            if (ttexp === true && isLiquidEnd(atty))
-              ttexp = false;
-            if (atty === "=") {
+            attr = attribute.join(options2.crlf === true ? "\r\n" : "\n");
+            attr = bracketSpace(attr);
+            if (ttexp === true || is(attr[0], 123 /* LCB */) && (is(attr[1], 37 /* PER */) || is(attr[1], 123 /* LCB */))) ;
+            if (attr === "=") {
               attstore[attstore.length - 1][0] = `${attstore[attstore.length - 1][0]}=`;
-            } else if (is(atty[0], 61 /* EQS */) && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") < 0) {
-              attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
-            } else if (not(atty[0], 61 /* EQS */) && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") === attstore[attstore.length - 1][0].length - 1) {
-              attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + atty;
-            } else if (atty !== "" && atty !== " ") {
-              attstore.push([atty, lines]);
+            } else if (is(attr[0], 61 /* EQS */) && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") < 0) {
+              attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + attr;
+            } else if (not(attr[0], 61 /* EQS */) && attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=") === attstore[attstore.length - 1][0].length - 1) {
+              attstore[attstore.length - 1][0] = attstore[attstore.length - 1][0] + attr;
+            } else if (attr !== "" && attr !== " ") {
+              attstore.push([attr, lines]);
             }
-            if (attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=\u201C") > 0) {
-              parse.error = `Quote looking character (\u201C, &#x201c) used instead of actual quotes on line number ${parse.lineNumber}`;
-            } else if (attstore.length > 0 && attstore[attstore.length - 1][0].indexOf("=\u201D") > 0) {
-              parse.error = `Quote looking character (\u201D, &#x201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+            if (attstore.length > 0) {
+              const [value] = attstore[attstore.length - 1];
+              if (value.indexOf("=\u201C") > 0) {
+                parse.error = `Invalid quote character (\u201C, &#x201c) used on line number ${parse.lineNumber}`;
+              } else if (value.indexOf("=\u201D") > 0) {
+                parse.error = `Invalid quote character (\u201D, &#x201d) used on line number ${parse.lineNumber}`;
+              }
             }
             attribute = [];
             lines = b[a] === "\n" ? 2 : 1;
           };
+          const liqattr = [];
+          const lex = [];
           let bcount = 0;
           let jsxcount = 0;
           let e = 0;
@@ -5277,31 +5288,31 @@
           let jsxquote = "";
           let stest = false;
           let quotetest = false;
+          let inliq = false;
           let attribute = [];
-          const lattr = [];
-          const lex = [];
           do {
             if (is(b[a], 10 /* NWL */)) {
               lines = lines + 1;
               parse.lineNumber = parse.lineNumber + 1;
             }
             if (preserve === true || (ws(b[a]) === false && not(quote, 125 /* RCB */) || is(quote, 125 /* RCB */))) {
+              inliq = inliquid2();
               lex.push(b[a]);
               if (is(lex[0], 60 /* LAN */) && is(lex[1], 162 /* RAN */) && is(end, 162 /* RAN */)) {
                 record.token = "<>";
                 record.types = "start";
-                recordPush(data, record, "(empty)");
+                recordpush(data, record, "(empty)");
                 return;
               }
-              if (is(lex[0], 60 /* LAN */) && is(lex[0], 45 /* FWS */) && is(lex[2], 162 /* RAN */) && is(end, 162 /* RAN */)) {
+              if (is(lex[0], 60 /* LAN */) && is(lex[1], 45 /* FWS */) && is(lex[2], 162 /* RAN */) && is(end, 162 /* RAN */)) {
                 record.token = "</>";
                 record.types = "end";
-                recordPush(data, record, "");
+                recordpush(data, record, "");
                 return;
               }
             }
             if (ltype === "cdata" && is(b[a], 162 /* RAN */) && b[a - 1] === "]" && b[a - 2] !== "]") {
-              parse.error = `CDATA tag ${lex.join("")} not properly terminated with ]]>`;
+              parse.error = `CDATA tag (${lex.join("")}) not properly terminated with "]]>"`;
               break;
             }
             if (ltype === "comment") {
@@ -5383,50 +5394,49 @@
                             a = a - 1;
                           }
                           if (attribute.length > 0)
-                            attributeLexer2(false);
+                            lexattr2(false);
                           break;
                         }
-                        if (preserve === false && /^=?['"]?(?:{[{%]|\/|\^|<)/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])) {
+                        if (preserve === false && /^=?['"]?({[{%]|\/|\^|<)/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])) {
                           attribute.pop();
                           if (attribute.length > 0 && not(b[a], 61 /* EQS */) && ttexp) {
-                            attributeLexer2(false);
+                            lexattr2(false);
                           }
                           quote = "";
                           do {
                             attribute.push(b[a]);
-                            if (b[a] === lattr[lattr.length - 1]) {
-                              lattr.pop();
+                            inliq = inliquid2();
+                            if (b[a] === liqattr[liqattr.length - 1]) {
+                              liqattr.pop();
                               if (is(b[a], 125 /* RCB */) && is(b[a + 1], 125 /* RCB */)) {
                                 attribute.push("}");
                                 a = a + 1;
-                                if (is(b[a + 1], 125 /* RCB */)) {
-                                  attribute.push("}");
-                                  a = a + 1;
-                                }
                               }
-                              if (lattr.length < 1) {
+                              if (liqattr.length < 1) {
                                 if (ttexp === false && is(b[a], 125 /* RCB */) && not(attribute[0], 123 /* LCB */) && (not(attribute[1], 37 /* PER */) || not(attribute[1], 123 /* LCB */))) {
-                                  attributeLexer2(false);
+                                  lexattr2(false);
+                                  inliq = !inliq;
                                   break;
                                 }
                                 if (ttexp === true && isLiquidEnd(attribute)) {
                                   if (ws(b[a + 1])) {
-                                    attributeLexer2(false);
+                                    lexattr2(false);
                                     break;
                                   } else {
                                     a = a + 1;
-                                    continue;
+                                    break;
                                   }
                                 }
-                                attributeLexer2(false);
+                                lexattr2(false);
+                                b[a] = " ";
                                 break;
                               }
-                            } else if ((is(b[a], 34 /* DQO */) || is(b[a], 39 /* SQO */)) && not(lattr[lattr.length - 1], 34 /* DQO */) && not(lattr[lattr.length - 1], 39 /* SQO */)) {
-                              lattr.push(b[a]);
-                            } else if (is(b[a], 123 /* LCB */) && /[{%</]/.test(b[a + 1]) && not(lattr[lattr.length - 1], 125 /* RCB */)) {
-                              lattr.push("}");
-                            } else if (is(b[a], 60 /* LAN */) && not(lattr[lattr.length - 1], 162 /* RAN */)) {
-                              lattr.push(">");
+                            } else if ((is(b[a], 34 /* DQO */) || is(b[a], 39 /* SQO */)) && not(liqattr[liqattr.length - 1], 34 /* DQO */) && not(liqattr[liqattr.length - 1], 39 /* SQO */)) {
+                              liqattr.push(b[a]);
+                            } else if (not(liqattr[liqattr.length - 1], 125 /* RCB */) && is(b[a], 123 /* LCB */) && (is(b[a + 1], 123 /* LCB */) || is(b[a + 1], 37 /* PER */))) {
+                              liqattr.push("}");
+                            } else if (inliq === false && is(b[a], 60 /* LAN */) && not(liqattr[liqattr.length - 1], 162 /* RAN */)) {
+                              liqattr.push(">");
                             }
                             a = a + 1;
                           } while (a < c);
@@ -5479,7 +5489,7 @@
                             quotetest = false;
                           } else if (jsxcount === 0 || jsxcount === 1 && is(attribute[0], 123 /* LCB */)) {
                             attribute.pop();
-                            attributeLexer2(false);
+                            lexattr2(false);
                             stest = true;
                             break;
                           }
@@ -5491,7 +5501,7 @@
                         if (parncount === 0) {
                           quote = "";
                           if (b[a + 1] === end.charAt(0)) {
-                            attributeLexer2(false);
+                            lexattr2(false);
                             break;
                           }
                         }
@@ -5507,14 +5517,12 @@
                               element = attribute.join("");
                               if (options2.markup.preserveAttributes === false) {
                                 if (options2.language === "jsx") {
-                                  if (/^(\s*)$/.test(element) === false) {
+                                  if (/^\s*$/.test(element) === false)
                                     attstore.push([element, lines]);
-                                  }
                                 } else {
                                   element = element.replace(/\s+/g, " ");
-                                  if (element !== " ") {
+                                  if (element !== " ")
                                     attstore.push([element, lines]);
-                                  }
                                 }
                               }
                               attribute = [];
@@ -5545,7 +5553,7 @@
                       } else if (is(b[a], 162 /* RAN */) && (quote === '"<' || quote === "'<")) {
                         quote = quote.charAt(0);
                         igcount = 0;
-                      } else if (igcount === 0 && not(quote, 162 /* RAN */) && (quote.length < 2 || quote.charAt(0) !== '"' && quote.charAt(0) !== "'")) {
+                      } else if (igcount === 0 && not(quote, 162 /* RAN */) && (quote.length < 2 || not(quote[0], 34 /* DQO */) && not(quote[0], 39 /* SQO */))) {
                         f = 0;
                         if (lex.length > 1) {
                           tname = lex[1] + lex[2];
@@ -5554,14 +5562,14 @@
                         e = quote.length - 1;
                         if (e > -1) {
                           do {
-                            if (b[a - f] !== quote.charAt(e))
+                            if (b[a - f].charCodeAt(0) !== quote.charCodeAt(e))
                               break;
                             f = f + 1;
                             e = e - 1;
                           } while (e > -1);
                         }
                         if (e < 0) {
-                          attributeLexer2(true);
+                          lexattr2(true);
                           if (b[a + 1] === lastchar)
                             break;
                         }
@@ -5635,7 +5643,7 @@
                   if (e < 0)
                     break;
                 }
-              } else if (b[a] === quote.charAt(quote.length - 1) && (options2.language === "jsx" && is(end, 125 /* RCB */) && (b[a - 1] !== "\\" || slashy2() === false) || options2.language !== "jsx" || not(end, 125 /* RCB */))) {
+              } else if (b[a].charCodeAt(0) === quote.charCodeAt(quote.length - 1) && (options2.language === "jsx" && is(end, 125 /* RCB */) && (b[a - 1] !== "\\" || escslash2() === false) || options2.language !== "jsx" || not(end, 125 /* RCB */))) {
                 f = 0;
                 if (lex.length > 1) {
                   tname = lex[1] + lex[2];
@@ -5702,7 +5710,7 @@
           record.stack = parse.structure[parse.structure.length - 1][0];
           record.types = "template_start";
           record.token = open;
-          recordPush(data, record, "comment");
+          recordpush(data, record, "comment");
           element = comm2.replace(/^\s*/, lineFindStart2);
           element = element.replace(/\s*$/, lineFindEnd2);
           record.begin = parse.count;
@@ -5710,12 +5718,12 @@
           record.stack = "comment";
           record.token = element;
           record.types = "comment";
-          recordPush(data, record, "");
+          recordpush(data, record, "");
           record.types = "template_end";
           record.stack = "comment";
           record.lines = linesEnd;
           record.token = end2;
-          recordPush(data, record, "");
+          recordpush(data, record, "");
           return;
         }
         record.types = ltype;
@@ -5750,13 +5758,13 @@
             record.lines = data.lines[parse.count] > 0 ? 1 : 0;
             record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
             record.types = "end";
-            recordPush(data, record, "");
+            recordpush(data, record, "");
             if (count2 > 0) {
               do {
                 record.begin = parse.structure[parse.structure.length - 1][1];
                 record.stack = parse.structure[parse.structure.length - 1][0];
                 record.token = `</${parse.structure[parse.structure.length - 1][0]}>`;
-                recordPush(data, record, "");
+                recordpush(data, record, "");
                 count2 = count2 - 1;
               } while (count2 > 0);
             }
@@ -5809,12 +5817,12 @@
           const liquid2 = isLiquid(element, 3);
           let len = attstore.length - 1;
           let attValue = "";
-          let attr = [];
+          let attrName = [];
           if (len > -1) {
             do {
-              attr = attributeName(attstore[len][0]);
-              if (attr[0] === "type") {
-                attValue = attr[1];
+              attrName = attrname(attstore[len][0]);
+              if (attrName[0] === "type") {
+                attValue = attrName[1];
                 if (attValue.charCodeAt(0) === 34 /* DQO */ || attValue.charCodeAt(0) === 39 /* SQO */) {
                   attValue = attValue.slice(1, attValue.length - 1);
                 }
@@ -5990,7 +5998,7 @@
           record.token = "<![CDATA[";
           record.types = "cdata_start";
           element = element.replace(/^(\s*<!\[cdata\[)/i, "").replace(/(\]\]>\s*)$/, "");
-          recordPush(data, record, "");
+          recordpush(data, record, "");
           parse.structure.push(["cdata", parse.count]);
           if (stack === "script") {
             prettify.lexers.script(element);
@@ -6000,12 +6008,12 @@
           record.begin = parse.structure[parse.structure.length - 1][1];
           record.token = "]]>";
           record.types = "cdata_end";
-          recordPush(data, record, "");
+          recordpush(data, record, "");
           parse.structure.pop();
         } else {
-          recordPush(data, record, tname);
+          recordpush(data, record, tname);
         }
-        attributeRecord();
+        attrecord();
         if (options2.wrap > 0 && options2.language === "jsx") {
           let current_length = 0;
           let bb = parse.count;
@@ -6155,12 +6163,12 @@
                       record.lexer = "script";
                       record.token = options2.markup.correct === true ? ";" : "x;";
                       record.types = "separator";
-                      recordPush(data, record, "");
+                      recordpush(data, record, "");
                       record.lexer = "markup";
                     }
                     record.token = "}";
                     record.types = "script_end";
-                    recordPush(data, record, "");
+                    recordpush(data, record, "");
                     parse.structure.pop();
                     break;
                   }
@@ -6178,11 +6186,11 @@
                       if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
                         record.token = "<!--";
                         record.types = "comment";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                         outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
                         prettify.lexers.script(outside);
                         record.token = "-->";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                       } else {
                         prettify.lexers.script(outside);
                       }
@@ -6205,11 +6213,11 @@
                       if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
                         record.token = "<!--";
                         record.types = "comment";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                         outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
                         prettify.lexers.style(outside);
                         record.token = "-->";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                       } else {
                         prettify.lexers.style(outside);
                         if (options2.style.sortProperties === true)
@@ -6234,11 +6242,11 @@
                       if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
                         record.token = "<!--";
                         record.types = "comment";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                         outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
                         prettify.lexers.script(outside);
                         record.token = "-->";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                       } else {
                         prettify.options.language = "json";
                         prettify.lexers.script(outside);
@@ -6265,11 +6273,11 @@
                       if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
                         record.token = "<!--";
                         record.types = "comment";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                         outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
                         prettify.lexers.style(outside);
                         record.token = "-->";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                       } else {
                         prettify.lexers.style(outside);
                       }
@@ -6292,11 +6300,11 @@
                       if (/^<!--+/.test(outside) && /--+>$/.test(outside)) {
                         record.token = "<!--";
                         record.types = "comment";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                         outside = outside.replace(/^<!--+/, "").replace(/--+>$/, "");
                         prettify.lexers.script(outside);
                         record.token = "-->";
-                        recordPush(data, record, "");
+                        recordpush(data, record, "");
                       } else {
                         prettify.lexers.script(outside);
                         if (options2.script.objectSort === true) {
@@ -6333,7 +6341,7 @@
               ltoke = ltoke.replace(/\s+$/, "");
               liner = 0;
               record.token = ltoke;
-              recordPush(data, record, "");
+              recordpush(data, record, "");
               break;
             }
             if (ext === false && lex.length > 0 && (b[a] === "<" && b[a + 1] !== "=" && !/\s|\d/.test(b[a + 1]) || b[a] === "[" && b[a + 1] === "%" || b[a] === "{" && (options2.language === "jsx" || b[a + 1] === "{" || b[a + 1] === "%"))) {
@@ -6381,11 +6389,11 @@
                 const wrap = options2.wrap;
                 const store = [];
                 if (data.token[data.begin[parse.count]] === "<a>" && data.token[data.begin[data.begin[parse.count]]] === "<li>" && data.lines[data.begin[parse.count]] === 0 && parse.linesSpace === 0 && ltoke.length < options2.wrap) {
-                  recordPush(data, record, "");
+                  recordpush(data, record, "");
                   break;
                 }
                 if (len < wrap) {
-                  recordPush(data, record, "");
+                  recordpush(data, record, "");
                   break;
                 }
                 if (parse.linesSpace < 1) {
@@ -6413,7 +6421,7 @@
               }
               liner = 0;
               record.token = ltoke;
-              recordPush(data, record, "");
+              recordpush(data, record, "");
               break;
             }
             lex.push(b[a]);
@@ -6437,7 +6445,7 @@
           liner = 0;
           if (record.token !== ltoke) {
             record.token = ltoke;
-            recordPush(data, record, "");
+            recordpush(data, record, "");
             parse.linesSpace = 0;
           }
         }
@@ -6721,53 +6729,52 @@
             }
             return [x, ""];
           }
-          function newlineValues(attr) {
-            const attrval = attributeName(attr);
-            const m = attrval[1].replace(/\s+/g, (x) => x === "\n" ? "\n" : " ");
-            const attarr = ["=", m.slice(0, 1)];
-            let vi = 1;
+          function attributeValues(input) {
+            const attr = attributeName(input);
+            if (attr[1] === "") {
+              return input;
+            } else if (options2.markup.attributeValues === "preserve") {
+              return attr[0] + "=" + attr[1];
+            } else if (options2.markup.attributeValues === "strip") {
+              return attr[0].trimStart() + "=" + attr[1].replace(/\s+/g, " ").replace(/^["']\s+/, '"');
+            }
+            const m = options2.markup.attributeValues === "collapse" || options2.markup.attributeValues === "wrap" ? attr[1].replace(/\s+/g, " ") : attr[1].replace(/\s+/g, (x) => /\n/.test(x) ? "\n" : x.replace(/\s+/, " "));
+            const attarr = [];
+            const wrp = options2.wrap > 0 ? attr[1].length > options2.wrap : false;
+            let vi = 0;
             let vt = "";
             let nt = 0;
             do {
-              if (m[vi] === "{" && (m[vi + 1] === "{" || m[vi + 1] === "%")) {
-                nt = (m[vi + 1] === "%" ? m.indexOf("%}", vi + 1) : m.indexOf("}}", vi + 1)) + 2;
+              if (is(m[vi], 123 /* LCB */) && (is(m[vi + 1], 123 /* LCB */) || is(m[vi + 1], 37 /* PER */))) {
+                nt = (is(m[vi + 1], 37 /* PER */) ? m.indexOf("%}", vi + 1) : m.indexOf("}}", vi + 1)) + 2;
                 vt = m.slice(vi, nt);
                 vi = nt;
-                attarr.push([vt]);
+                attarr.push(vt);
               } else {
+                if (m[vi] === " ") {
+                  if (options2.markup.attributeValues === "collapse") {
+                    attarr.push("\n");
+                  } else if (options2.markup.attributeValues === "wrap") {
+                    if (wrp)
+                      attarr.push("\n");
+                  }
+                }
                 attarr.push(m[vi]);
                 vi = vi + 1;
               }
             } while (vi < m.length);
-            return [attrval[0] + "=", attarr];
+            return attr[0] + "=" + attarr.join("");
           }
           const parent = a - 1;
           function wrap(index) {
-            const item = newlineValues(data.token[index]);
+            if (type.is(index, "attribute") || type.idx(index, "template_attribute") > -1) {
+              data.token[index] = attributeValues(data.token[index]);
+              return;
+            }
+            const item = data.token[index].replace(/\s+/g, " ").split(" ");
             const ilen = item.length;
             let bb = 1;
             let acount = item[0].length;
-            const attrval = attributeName(data.token[index]);
-            const m = attrval[1].replace(/\s+/g, " ");
-            let vi = 1;
-            let vt = attrval[0] + "=" + m.slice(0, 1);
-            let nt = 0;
-            do {
-              acount = acount + item[bb].length;
-              if (m[vi] === "{" && (m[vi + 1] === "{" || m[vi + 1] === "%")) {
-                nt = (m[vi + 1] === "%" ? m.indexOf("%}", vi + 1) : m.indexOf("}}", vi + 1)) + 2;
-                vt += m.slice(vi, nt);
-                vi = nt;
-              } else {
-                if (m[vi] === " ") {
-                  vt += "\n";
-                } else {
-                  vt += m[vi];
-                }
-                vi = vi + 1;
-              }
-            } while (vi < m.length);
-            data.token[index] = vt;
             do {
               if (acount + item[bb].length > options2.wrap) {
                 acount = item[bb].length;
@@ -6800,10 +6807,12 @@
             } else if (a < c - 1 && type.idx(a + 1, "attribute") > -1) {
               plural = true;
             }
-            if (type.is(next, "end") || type.is(next, "template_end"))
-              return indent + type.is(parent, "singleton") ? 2 : 1;
-            if (type.is(parent, "singleton"))
+            if (type.is(next, "end") || type.is(next, "template_end")) {
+              return indent + (type.is(parent, "singleton") ? 2 : 1);
+            }
+            if (type.is(parent, "singleton")) {
               return indent + 1;
+            }
             return indent;
           })();
           if (plural === false && type.is(a, "comment_attribute")) {
