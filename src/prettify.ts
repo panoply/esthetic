@@ -1,6 +1,5 @@
 import type { Options, Prettify } from 'types/prettify';
-import { prettify } from '@prettify/options';
-import { definitions } from '@options/definitions';
+import { prettify, definitions, grammar } from '@prettify/model';
 import { parse as parser } from '@parser/parse';
 import { mode } from '@parser/mode';
 import { keys, assign } from '@utils/native';
@@ -14,28 +13,32 @@ export { detect as language } from '@parser/language';
 /* -------------------------------------------- */
 /* FORMATTING HOOKS                             */
 /* -------------------------------------------- */
+format.before = (callback: Prettify['hooks']['before'][number]) => prettify.hooks.before.push(callback);
+format.after = (callback: Prettify['hooks']['after'][number]) => prettify.hooks.after.push(callback);
 
-format.before = function (callback: Prettify['hooks']['before'][number]) {
-  prettify.hooks.before.push(callback);
-};
+/* -------------------------------------------- */
+/* OPTIONS LISTENER                             */
+/* -------------------------------------------- */
 
-format.after = function (callback: Prettify['hooks']['after'][number]) {
-  prettify.hooks.after.push(callback);
-};
+options.listen = (callback: Prettify['hooks']['rules'][number]) => prettify.hooks.rules.push(callback);
 
-options.listen = function (callback: Prettify['hooks']['rules'][number]) {
-  prettify.hooks.rules.push(callback);
-};
+/* -------------------------------------------- */
+/* STATS GETTER                                 */
+/* -------------------------------------------- */
 
-Object.defineProperty(format, 'stats', {
-  get () { return prettify.stats; }
-});
+Object.defineProperty(format, 'stats', { get () { return prettify.stats; } });
 
-Object.defineProperty(options, 'rules', {
-  get () { return prettify.options; }
-});
+/* -------------------------------------------- */
+/* RULES GETTER                                 */
+/* -------------------------------------------- */
 
-function format (source: string, rules?: Options) {
+Object.defineProperty(options, 'rules', { get () { return prettify.options; } });
+
+/* -------------------------------------------- */
+/* FORMAT FUNCTION                              */
+/* -------------------------------------------- */
+
+function format (source: string | Buffer, rules?: Options) {
 
   prettify.source = source;
 
@@ -45,7 +48,7 @@ function format (source: string, rules?: Options) {
   //
   if (prettify.hooks.before.length > 0) {
     for (const cb of prettify.hooks.before) {
-      if (cb(prettify.options, source) === false) return source;
+      if (cb(prettify.options, source as string) === false) return source;
     }
   }
 
@@ -61,6 +64,8 @@ function format (source: string, rules?: Options) {
     }
   }
 
+  // console.log(prettify);
+
   // RESOLVE OUTPUT
   //
   return new Promise((resolve, reject) => {
@@ -74,15 +79,15 @@ function format (source: string, rules?: Options) {
 };
 
 /* -------------------------------------------- */
-/* OPTION HOOK                                  */
+/* OPTIONS FUNCTION                             */
 /* -------------------------------------------- */
 
 function options (rules: Options) {
 
-  for (const rule of keys(rules)) {
+  for (const rule of keys(rules) as Array<keyof Options>) {
 
     if (definitions?.[rule]?.lexer === 'auto') {
-      prettify.options[rule] = rules[rule];
+      prettify.options[rule as string] = rules[rule];
     } else if (rule === 'markup') {
       assign(prettify.options.markup, rules.markup);
     } else if (rule === 'script') {
@@ -90,9 +95,26 @@ function options (rules: Options) {
     } else if (rule === 'style') {
       assign(prettify.options.style, rules.style);
     } else if (rule === 'json') {
-      assign(prettify.options.script, rules.script);
+      assign(prettify.options.script, rules.json);
+    } else if (rule === 'grammar') {
+
+      if (rules.grammar?.html?.voids) {
+        assign(prettify.options.grammar.html, rules.grammar.html);
+        for (const token of rules.grammar.html.voids) grammar.html.voids.add(token);
+      }
+
+      if (rules.grammar?.liquid) {
+        if (rules.grammar?.liquid?.tags) {
+          prettify.options.grammar.liquid.tags = rules.grammar.liquid.tags;
+          for (const token of rules.grammar.liquid.tags) grammar.liquid.tags.add(token);
+        }
+        if (rules.grammar?.liquid?.singletons) {
+          prettify.options.grammar.liquid.singletons = rules.grammar.liquid.singletons;
+          for (const token of rules.grammar.liquid.singletons) grammar.liquid.singletons.add(token);
+        }
+      }
     } else if (rule in prettify.options) {
-      prettify.options[rule] = rules[rule];
+      prettify.options[rule as string] = rules[rule];
     }
   }
 
@@ -106,7 +128,11 @@ function options (rules: Options) {
 
 }
 
-function parse (source: string, rules?: Options) {
+/* -------------------------------------------- */
+/* PARSE FUNCTION                               */
+/* -------------------------------------------- */
+
+function parse (source: string | Buffer, rules?: Options) {
 
   prettify.source = source;
   prettify.mode = 'parse';
