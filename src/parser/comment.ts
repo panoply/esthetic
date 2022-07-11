@@ -2,6 +2,7 @@ import type { Prettify } from 'types/prettify';
 import * as language from '@parser/language';
 import { cc } from '@utils/enums';
 import { keys } from '@utils/native';
+import { definitions } from '@options/definitions';
 
 /**
  * Parses the inline comment settings. This has been adapted from
@@ -30,7 +31,6 @@ import { keys } from '@utils/native';
  */
 export function comment (prettify: Prettify) {
 
-  const definitions = prettify.definitions;
   const sindex = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify\s+(\w+)?\s*{\s+/);
   const signore = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify-ignore\b/);
   const k = keys(definitions);
