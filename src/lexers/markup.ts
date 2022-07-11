@@ -1,5 +1,5 @@
 import type { Record, Data, Types } from 'types/prettify';
-import { prettify } from '@prettify/options';
+import { prettify, grammar } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { is, not, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
@@ -23,92 +23,6 @@ import { create } from '@utils/native';
  * - Liquid.
  */
 prettify.lexers.markup = function markup (source: string) {
-
-  /**
-   * HTML Block reference map
-   */
-  const blocks = new Set([
-    'body',
-    'colgroup',
-    'dd',
-    'dt',
-    'head',
-    'html',
-    'li',
-    'option',
-    'p',
-    'tbody',
-    'td',
-    'tfoot',
-    'th',
-    'thead',
-    'tr'
-  ]);
-
-  /**
-   * HTML Void reference map
-   */
-  const voids = new Set([
-    'area',
-    'base',
-    'basefont',
-    'br',
-    'col',
-    'embed',
-    'eventsource',
-    'frame',
-    'hr',
-    'image',
-    'img',
-    'input',
-    'isindex',
-    'keygen',
-    'link',
-    'meta',
-    'path',
-    'param',
-    'progress',
-    'source',
-    'wbr',
-    'use'
-  ]);
-
-  /**
-   * Liquid Template reference map
-   */
-  const names = new Set([
-    'autoescape',
-    'case',
-    'capture',
-    'comment',
-    'embed',
-    'filter',
-    'for',
-    'form',
-    'if',
-    'macro',
-    'paginate',
-    'raw',
-    'switch',
-    'tablerow',
-    'unless',
-    'verbatim',
-    'schema',
-    'style',
-    'javascript',
-    'highlight',
-    'stylesheet'
-  ]);
-
-  const condelse = new Set(
-    [
-      'case',
-      'default',
-      'else',
-      'when',
-      'elsif'
-    ]
-  );
 
   const { options } = prettify;
 
@@ -203,7 +117,7 @@ prettify.lexers.markup = function markup (source: string) {
 
       if (token.startsWith('end')) return false;
 
-      return names.has(token);
+      return grammar.liquid.tags.has(token);
 
     }
 
@@ -415,7 +329,7 @@ prettify.lexers.markup = function markup (source: string) {
 
     recordpush(data, record, '');
 
-    if (blocks.has(parse.structure[parse.structure.length - 1][0]) && (
+    if (grammar.html.tags.has(parse.structure[parse.structure.length - 1][0]) && (
       (end === true && parse.structure.length > 1) ||
       (end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)
     )) {
@@ -428,7 +342,7 @@ prettify.lexers.markup = function markup (source: string) {
 
         recordpush(data, record, '');
 
-      } while (blocks.has(parse.structure[parse.structure.length - 1][0]) && (
+      } while (grammar.html.tags.has(parse.structure[parse.structure.length - 1][0]) && (
         (end === true && parse.structure.length > 1) ||
         (end === false && `/${parse.structure[parse.structure.length - 1][0]}` !== tname)
       ));
@@ -756,7 +670,7 @@ prettify.lexers.markup = function markup (source: string) {
 
           const ttname = getLiquidTagName(token);
 
-          if (names.has(ttname)) {
+          if (grammar.liquid.tags.has(ttname)) {
 
             record.types = 'template_attribute_start';
             record.stack = ttname;
@@ -939,11 +853,11 @@ prettify.lexers.markup = function markup (source: string) {
 
                   const ttname = getLiquidTagName(attstore[idx][0]);
 
-                  if (names.has(ttname)) {
+                  if (grammar.liquid.tags.has(ttname)) {
                     record.types = 'template_attribute_start';
                     record.stack = ttname;
                     parse.structure.push([ record.stack, parse.count ]);
-                  } else if (condelse.has(ttname)) {
+                  } else if (grammar.liquid.else.has(ttname)) {
                     record.types = 'template_attribute_else';
                   }
                 }
@@ -951,7 +865,7 @@ prettify.lexers.markup = function markup (source: string) {
 
               record.token = attstore[idx][0];
 
-              console.log(record);
+              // console.log(record);
               // console.log(attstore);
 
               convertq();
@@ -2388,7 +2302,7 @@ prettify.lexers.markup = function markup (source: string) {
 
       function peertest (n: string, i: string) {
 
-        if (!blocks.has(n)) return false;
+        if (!grammar.html.tags.has(n)) return false;
 
         if (n === i) return true;
         if (n === 'dd' && i === 'dt') return true;
@@ -2462,7 +2376,7 @@ prettify.lexers.markup = function markup (source: string) {
           element = element.toLowerCase();
         }
 
-        if (blocks.has(parse.structure[parse.structure.length - 1][0]) && peertest(
+        if (grammar.html.tags.has(parse.structure[parse.structure.length - 1][0]) && peertest(
           tname.slice(1),
           parse.structure[parse.structure.length - 2][0]
         )) {
@@ -2471,9 +2385,9 @@ prettify.lexers.markup = function markup (source: string) {
           addHtmlEnd(0);
         } else if (
           parse.structure.length > 3 &&
-          blocks.has(parse.structure[parse.structure.length - 1][0]) &&
-          blocks.has(parse.structure[parse.structure.length - 2][0]) &&
-          blocks.has(parse.structure[parse.structure.length - 3][0]) &&
+          grammar.html.tags.has(parse.structure[parse.structure.length - 1][0]) &&
+          grammar.html.tags.has(parse.structure[parse.structure.length - 2][0]) &&
+          grammar.html.tags.has(parse.structure[parse.structure.length - 3][0]) &&
           peertest(tname, parse.structure[parse.structure.length - 4][0]) === true
         ) {
 
@@ -2482,8 +2396,8 @@ prettify.lexers.markup = function markup (source: string) {
 
         } else if (
           parse.structure.length > 2 &&
-          blocks.has(parse.structure[parse.structure.length - 1][0]) &&
-          blocks.has(parse.structure[parse.structure.length - 2][0]) &&
+          grammar.html.tags.has(parse.structure[parse.structure.length - 1][0]) &&
+          grammar.html.tags.has(parse.structure[parse.structure.length - 2][0]) &&
           peertest(tname, parse.structure[parse.structure.length - 3][0]) === true
         ) {
 
@@ -2492,7 +2406,7 @@ prettify.lexers.markup = function markup (source: string) {
 
         } else if (
           parse.structure.length > 1 &&
-          blocks.has(parse.structure[parse.structure.length - 1][0]) &&
+          grammar.html.tags.has(parse.structure[parse.structure.length - 1][0]) &&
           peertest(tname, parse.structure[parse.structure.length - 2][0]) === true
         ) {
 
@@ -2505,7 +2419,7 @@ prettify.lexers.markup = function markup (source: string) {
           addHtmlEnd(0);
         } else if (
           tname.charCodeAt(0) === cc.FWS &&
-          blocks.has(parse.structure[parse.structure.length - 1][0]) &&
+          grammar.html.tags.has(parse.structure[parse.structure.length - 1][0]) &&
           parse.structure[parse.structure.length - 1][0] !== tname.slice(1)
         ) {
 
@@ -2523,7 +2437,7 @@ prettify.lexers.markup = function markup (source: string) {
         }
 
         // inserts a trailing slash into singleton tags if they do not already have it
-        if (voids.has(tname)) {
+        if (grammar.html.voids.has(tname)) {
 
           if (options.markup.correct === true && ender.test(element) === false) {
             element = element.slice(0, element.length - 1) + ' />';
@@ -2818,9 +2732,9 @@ prettify.lexers.markup = function markup (source: string) {
 
         } else {
 
-          if (names.has(tname)) {
+          if (grammar.liquid.tags.has(tname)) {
             record.types = 'template_start';
-          } else if (tname[0] === 'e' && tname[1] === 'n' && tname[2] === 'd' && names.has(tname.slice(3))) {
+          } else if (tname[0] === 'e' && tname[1] === 'n' && tname[2] === 'd' && grammar.liquid.tags.has(tname.slice(3))) {
             record.types = 'template_end';
           } else if (tname[0] === 'e' && tname[1] === 'n' && tname[2] === 'd') {
 
@@ -3662,7 +3576,7 @@ prettify.lexers.markup = function markup (source: string) {
 
   if (
     data.token[parse.count].charAt(0) !== '/' &&
-    blocks.has(parse.structure[parse.structure.length - 1][0])
+    grammar.html.tags.has(parse.structure[parse.structure.length - 1][0])
   ) {
 
     fixHtmlEnd(data.token[parse.count], true);
