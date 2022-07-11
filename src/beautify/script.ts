@@ -1,9 +1,9 @@
 import type { Options } from 'types/prettify';
-import { prettify } from '@prettify/options';
+import { prettify } from '@prettify/model';
 import { create } from '@utils/native';
 import { repeatChar } from '@utils/helpers';
 
-prettify.beautify.script = function script (options: Options) {
+prettify.beautify.script = (options: Options) => {
 
   /**
    * API Keywords, this can be web browser API keywords
