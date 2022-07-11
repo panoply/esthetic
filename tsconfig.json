@@ -23,10 +23,7 @@
       "@lexers/*": ["./src/lexers/*"],
       "@parser/*": ["./src/parser/*"],
       "@utils/*": ["./src/utils/*"],
-      "@prettify/*": [
-        "./src/options.ts",
-        "./src/prettify.ts"
-      ]
+      "@prettify/*": ["./src/model.ts", "./src/prettify.ts"]
     }
   }
 }
