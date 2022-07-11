@@ -1,13 +1,13 @@
 import { Options, TypeHelper, TokenHelper } from 'types/prettify';
-import { prettify } from '@prettify/options';
+import { prettify, grammar } from '@prettify/model';
 import { create } from '@utils/native';
-import { is, not } from '@utils/helpers';
+import { is, not, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
 /* -------------------------------------------- */
 
-prettify.beautify.markup = function markup (options: Options) {
+prettify.beautify.markup = (options: Options) => {
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
@@ -484,6 +484,9 @@ prettify.beautify.markup = function markup (options: Options) {
       /* CONSTANTS                                    */
       /* -------------------------------------------- */
 
+      /**
+       * Attribute Name - Splits the attribute name and attribute value
+       */
       function attributeName (x: string) {
 
         const eq = x.indexOf('=');
@@ -502,58 +505,104 @@ prettify.beautify.markup = function markup (options: Options) {
 
       };
 
+      /**
+       * Attribute Values - Beautification of attribute values.
+       */
       function attributeValues (input: string) {
 
         const attr = attributeName(input);
 
-        if (attr[1] === '') {
+        if (attr[1] === '' || attr[0] === 'href') {
           return input;
         } else if (options.markup.attributeValues === 'preserve') {
           return attr[0] + '=' + attr[1];
         } else if (options.markup.attributeValues === 'strip') {
           return attr[0].trimStart() + '=' + attr[1].replace(/\s+/g, ' ').replace(/^["']\s+/, '"');
         }
-        // const space = '\n' + repeatChar(options.indentSize, options.indentChar);
 
-        const m = options.markup.attributeValues === 'collapse' || options.markup.attributeValues === 'wrap'
-          ? attr[1].replace(/\s+/g, ' ')
-          : attr[1].replace(/\s+/g, x => /\n/.test(x) ? '\n' : x.replace(/\s+/, ' '));
+        const option = options.markup.attributeValues;
+        const attrarr: string[] = [];
+        const wrapper = options.wrap > 0 ? attr[1].length > options.wrap : false;
 
-        const attarr: any[] = [];
-        const wrp = options.wrap > 0 ? attr[1].length > options.wrap : false;
+        let text: string;
 
-        let vi = 0; // value item
-        let vt: number | string = ''; // value tag
-        let nt = 0; // next tag
+        let inside: boolean = false;
+        let toke = '';
+        let name = '';
+        let item = 0; // value item
+        let next = 0; // next tag
+
+        if (option === 'collapse') {
+          text = attr[1].replace(/\s+/g, ' ');
+        } else if (option === 'wrap') {
+          text = attr[1].replace(/\s+/g, x => /\n/.test(x) ? '\n' : x.replace(/\s+/, ' '));
+        }
 
         do {
 
-          if (is(m[vi], cc.LCB) && (is(m[vi + 1], cc.LCB) || is(m[vi + 1], cc.PER))) {
+          if (is(text[item], cc.LCB) && (is(text[item + 1], cc.LCB) || is(text[item + 1], cc.PER))) {
 
-            nt = (is(m[vi + 1], cc.PER) ? m.indexOf('%}', vi + 1) : m.indexOf('}}', vi + 1)) + 2;
-            vt = m.slice(vi, nt);
-            vi = nt;
-
-            attarr.push(vt);
-
-          } else {
-
-            if (m[vi] === ' ') {
-
-              if (options.markup.attributeValues === 'collapse') {
-                attarr.push('\n');
-              } else if (options.markup.attributeValues === 'wrap') {
-                if (wrp) attarr.push('\n');
+            if (option === 'collapse') {
+              if (ws(text[item - 1]) === false && attrarr[attrarr.length - 1] !== '\n') {
+                attrarr.push('\n');
               }
             }
 
-            attarr.push(m[vi]);
+            if (is(text[item + 1], cc.PER)) {
 
-            vi = vi + 1;
+              next = text.indexOf('%}', item + 1);
+              toke = text.slice(item, next + 2);
+              name = is(toke[2], cc.DSH) ? toke.slice(3).trimStart() : toke.slice(2).trimStart();
+              item = next + 2;
+
+              if (name.startsWith('end')) {
+                inside = false;
+              } else if (grammar.liquid.tags.has(name.slice(0, name.search(/\s/)))) {
+                inside = true;
+              }
+
+              attrarr.push(toke);
+
+            } else {
+              next = text.indexOf('}}', item + 1);
+              toke = text.slice(item, next + 2);
+              item = next + 2;
+              attrarr.push(toke);
+            }
+
+            if (option === 'collapse') {
+              if (ws(text[item]) === false && attrarr[attrarr.length - 1] !== '\n' && item < text.length - 1) {
+                attrarr.push('\n');
+              }
+            }
+
+          } else {
+
+            if (text[item] === ' ') {
+              if (option === 'collapse') {
+
+                if (attrarr[attrarr.length - 1] !== '\n') {
+                  attrarr.push('\n');
+                }
+
+              } else if (wrapper && option === 'wrap') {
+
+                if (inside === false) {
+                  attrarr.push('\n');
+                }
+
+              }
+            } else {
+
+              attrarr.push(text[item]);
+            }
+
+            item = item + 1;
+
           }
-        } while (vi < m.length);
+        } while (item < text.length);
 
-        return attr[0] + '=' + attarr.join('');
+        return attr[0] + '=' + attrarr.join('');
 
       }
 
@@ -569,36 +618,38 @@ prettify.beautify.markup = function markup (options: Options) {
       function wrap (index: number) {
 
         if (type.is(index, 'attribute') || type.idx(index, 'template_attribute') > -1) {
+
           data.token[index] = attributeValues(data.token[index]);
-          return;
+
+        } else {
+
+          const item = data.token[index].replace(/\s+/g, ' ').split(' ');
+          const size = item.length;
+
+          let bb = 1;
+          let acount = item[0].length;
+
+          do {
+
+            // bcount = anwl.indexOf(item[bb], acount);
+
+            if (acount + item[bb].length > options.wrap) {
+
+              acount = item[bb].length;
+              item[bb] = lf + item[bb];
+
+            } else {
+              item[bb] = ` ${item[bb]}`;
+              acount = acount + item[bb].length;
+            }
+
+            bb = bb + 1;
+
+          } while (bb < size);
+
+          data.token[index] = item.join('');
+
         }
-
-        const item = data.token[index].replace(/\s+/g, ' ').split(' ');
-        const ilen = item.length;
-
-        let bb = 1;
-        let acount = item[0].length;
-
-        do {
-
-          // bcount = anwl.indexOf(item[bb], acount);
-
-          if (acount + item[bb].length > options.wrap) {
-
-            acount = item[bb].length;
-            item[bb] = lf + item[bb];
-
-          } else {
-            item[bb] = ` ${item[bb]}`;
-            acount = acount + item[bb].length;
-          }
-
-          bb = bb + 1;
-
-        } while (bb < ilen);
-
-        data.token[index] = item.join('');
-
       };
 
       /* -------------------------------------------- */
@@ -815,6 +866,7 @@ prettify.beautify.markup = function markup (options: Options) {
             )
           ) {
             level.push(lev);
+            data.token[a] = attributeValues(data.token[a]);
           } else {
             level.push(-10);
           }
