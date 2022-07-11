@@ -683,6 +683,7 @@ export interface TokenHelper {
 }
 
 export interface IParse {
+
   /**
    * Parse Error
    */
@@ -763,6 +764,93 @@ export interface IParse {
    * Parsing block comments and applying word wrap
    */
   wrapCommentLine(config: WrapComment): [string, number];
+
+}
+
+export interface Grammars {
+  liquid: {
+    /**
+     * **Tags**
+     *
+     * String list of token names to be treated as tag blocks. These are tags,
+     * which require an `{% end %}` token be defined, like (for example) the
+     * `{% capture %}` token which requires `{% endcapture %}`.
+     *
+     * The Tags names you provide here will inform Prettify to cancel beautification
+     * when no ender can be found or the ender is in-correctly placed.
+     */
+    tags: Set<string>;
+
+    /**
+     * **Else Tags**
+     *
+     * String list of token names to be treated as else type control singletons. These are tags,
+     * which are used within control tags.
+     *
+     * The Tags names you provide here will inform Prettify to cancel beautification
+     * when no ender can be found or the ender is in-correctly placed.
+     */
+    else: Set<string>;
+
+    /**
+     * **Singletons**
+     *
+     * String list of token names to be treated as singletons. These are tags,
+     * which no require an `{% end %}` token to be defined, like (for example)
+     * the `{% assign %}` token is a singleton.
+     *
+     * The Tags names you provide here will inform Prettify to cancel beautification
+     * when if the token uses an ender.
+     */
+    singletons: Set<string>;
+
+    /**
+     * **Embedded**
+     *
+     * A list of token names who's inner contents should be formatted using a different
+     * lexer mode. Embedded tags will treat their contained content as external and allow
+     * you to apply region based beautification to custom tag blocks.
+     *
+     */
+    embedded?: { [K in LanguageNames]: Array<string | RegExp> }
+  };
+  html: {
+    /**
+     * HTML Tags
+     *
+     * String list of HTML tag blocks
+     */
+    tags: Set<string>
+    /**
+     * HTML Voids
+     *
+     * String list of additional or custom void type
+     * HTML tags.
+     */
+    voids: Set<string>
+
+    /**
+     * **Embedded**
+     *
+     * A list of token names who's inner contents should be formatted using a different
+     * lexer mode. Embedded tags will treat their contained content as external and allow
+     * you to apply region based beautification to custom tag blocks.
+     *
+     */
+    embedded?: { [K in LanguageNames]: Array<string | RegExp> }
+  }
+  script: {
+
+    /**
+     * **API Keywords**
+     *
+     * A list of API keywords
+     *
+     */
+    keywords: Set<string>
+
+  }
+
 }
 
 /* -------------------------------------------- */
@@ -880,7 +968,6 @@ export interface SharedOptions {
    * process custom tags in a specific manner.
    */
   grammar?: {
-
     liquid?: {
       /**
        * **Tags**
@@ -1160,36 +1247,75 @@ export interface MarkupOptions {
    *
    * ---
    *
-   * #### Disabled (default)
+   * #### Preserve (default)
    *
-   * *Attribute values are stripped and equally spaced. Any newline characters are
-   * removed and single whitespace separation is applied.*
+   * *Preserves the structre of attributes values provided. Whitespace, newlines and contents
+   * will be left intact.*
+   *
+   * ```html
+   *
+   * <!-- The attribute value before formatting -->
+   * <div class="one   two
+   *    {{ some.object }}"></div>
+   *
+   * <!-- The attribute value after formatting -->
+   * <div class="one   two
+   *    {{ some.object }}"></div>
+   * ```
+   *
+   * #### Strip
+   *
+   * *Strips newlines and equally distributes spacing by stripping out extraneous whitespaces
+   * and replacing them with a single space.*
    *
    * ```html
    * <!-- The attribute value before formatting -->
-   * <div class="one     two
+   * <div class="one   two
    *    {{ some.object }}"></div>
    *
    * <!-- The attribute value after formatting -->
    * <div class="one two {{ some.object }}"></div>
    * ```
    *
-   * #### Enabled
+   * #### Wrap
    *
-   * *The attribute values will not be touched, newlines, extraneous spacing will remain
-   * intact.*
+   * *Collapses attributes when wrap limit is exceeded. This option will preserve the inner
+   * content (spacing/newlines) of any contained Liquid expressions. Using the `wrap` option
+   * requires a `wrap` limit to be defined*
    *
    * ```html
+   *
    * <!-- The attribute value before formatting -->
-   * <div class="one   two
-   *    {{ some.object }}"></div>
+   * <div class="one two {{ some.object }} {% if x %} three {% endif %}"></div>
    *
    * <!-- The attribute value after formatting -->
-   * <div class="one   two
-   *    {{ some.object }}"></div>
+   * <div class="one
+   *      two
+   *      {{ some.object }}
+   *      {% if x %} three {% endif %}"></div>
+   * ```
+   *
+   * #### Collapse
+   *
+   * *Collapses all attribute values separated by space or newline onto their own line. This
+   * is typically undesirable for most cases.*
+   *
+   * ```html
+   *
+   * <!-- The attribute value before formatting -->
+   * <div class="one two {{ some.object }} {% if x %} three {% endif %}"></div>
+   *
+   * <!-- The attribute value after formatting -->
+   * <div class="
+   *      one
+   *      two
+   *      {{ some.object }}
+   *      {% if x %}
+   *      three
+   *      {% endif %}"></div>
    * ```
    */
-  attributeValues?: 'align' | 'preserve' | 'strip' | 'collapse' | 'wrap'
+  attributeValues?: 'preserve' | 'wrap' | 'strip' | 'collapse'
 
   /**
    * **Default** `false`
@@ -1771,12 +1897,13 @@ export interface ScriptOptions {
    *
    * ---
    *
-   * **Enabled**
+   * #### Enabled
    *
    * Below is an example when this option is set to `true` and each
    * object in the array starts on a newline.
    *
    * ```javascript
+   *
    * const obj = {
    *    array: [
    *      {
@@ -1792,14 +1919,13 @@ export interface ScriptOptions {
    * }
    * ```
    *
-   * ---
-   *
-   * **Disabled**
+   * #### Disabled
    *
    * Below is an example when this option is set to `false` and
    * each object in the array starts curly braces inline.
    *
    * ```javascript
+   *
    * const obj = {
    *    array: [
    *      {
@@ -1829,11 +1955,12 @@ export interface ScriptOptions {
    *
    * ---
    *
-   * **Enabled**
+   * #### Enabled
    *
    * Below is an example when this option is set to `true`
    *
    * ```javascript
+   *
    * const obj = {
    *
    *  foo: {
@@ -1847,11 +1974,10 @@ export interface ScriptOptions {
    * }
    * ```
    *
-   * ---
+   * #### Disabled
    *
-   * **Disabled**
-   *
-   * Below is an example when this option is set to `false`
+   * _Below is an example when this option is set to `false` - If `true` an empty
+   * line will be inserted after opening curly braces and before closing curly braces._
    *
    * ```javascript
    * const obj = {
@@ -1862,13 +1988,6 @@ export interface ScriptOptions {
    *   }
    * }
    * ```
-   *
-   * ---
-   *
-   * **Description**
-   *
-   * If true an empty line will be inserted after opening curly braces
-   * and before closing curly braces.
    *
    */
   bracePadding?: boolean,
@@ -2071,10 +2190,7 @@ export interface ScriptOptions {
    *   baz = 'x';
    * ```
    */
-  variableList?:
-  | 'none'
-  | 'each'
-  | 'list';
+  variableList?: 'none' | 'each' | 'list';
 
   /**
    * **Description**
@@ -2156,12 +2272,13 @@ export interface JSONOptions {
    *
    * ---
    *
-   * **Enabled**
+   * #### Enabled
    *
-   * Below is an example when this option is set to `true` and each
-   * object in the array starts on a newline.
+   * _Below is an example when this option is set to `true` and each
+   * object in the array starts on a newline._
    *
    * ```json
+   *
    * {
    *    "array": [
    *      {
@@ -2179,12 +2296,13 @@ export interface JSONOptions {
    *
    * ---
    *
-   * **Disabled**
+   * #### Disabled
    *
-   * Below is an example when this option is set to `false` and
-   * each object in the array starts curly braces inline.
+   * _Below is an example when this option is set to `false` and
+   * each object in the array starts curly braces inline._
    *
    * ```json
+   *
    * {
    *    "array": [
    *      {
@@ -2208,7 +2326,7 @@ export interface JSONOptions {
    *
    * ---
    *
-   * **Enabled**
+   * #### Enabled
    *
    * Below is an example when this option is set to `true`
    *
@@ -2226,13 +2344,12 @@ export interface JSONOptions {
    * }
    * ```
    *
-   * ---
-   *
-   * **Disabled**
+   * #### Disabled
    *
    * Below is an example when this option is set to `false`
    *
    * ```json
+   *
    * {
    *  "foo": {
    *   "bar": {
@@ -2318,15 +2435,17 @@ export interface Language {
 }
 
 export interface Prettify {
+  env: LiteralUnion<'node' | 'browser', string>;
+  data: Data;
   start: number;
   end: number;
   iterator: number;
-  source: string;
+  get source(): string;
+  set source(input: string | Buffer)
   scopes: Scopes;
-  mode: 'beautify' | 'parse'
+  mode: LiteralUnion<'beautify' | 'parse', string>
   parsed?: Data;
   options?: Options;
-  definitions?: Definitions;
   stats?: {
     time: number;
     size: LiteralUnion<`${string} ${'B' | 'KB' | 'MB' | 'TB'}`, string>;
