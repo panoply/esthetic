@@ -5,7 +5,7 @@ import './lexers/markup';
 import './beautify/markup';
 import './beautify/style';
 import './beautify/script';
-import './options';
+import './model';
 
 export { definitions } from './options/definitions';
 
