@@ -1,7 +1,7 @@
 import type { Options } from 'types/prettify';
-import { prettify } from '@prettify/options';
+import { prettify } from '@prettify/model';
 
-prettify.beautify.style = function style (options: Options) {
+prettify.beautify.style = (options: Options) => {
 
   const build = [];
   const data = prettify.parsed;
