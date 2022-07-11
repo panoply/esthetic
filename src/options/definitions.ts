@@ -183,6 +183,30 @@ export const definitions: Definitions = {
       }
     ]
   },
+  attributeValues: {
+    default: false,
+    description: 'Controls how attribute values should be formatter',
+    type: 'select',
+    lexer: 'markup',
+    values: [
+      {
+        rule: 'preserve',
+        description: 'Preserves attribute values, leaving them intact.'
+      },
+      {
+        rule: 'collapse',
+        description: 'Collapsed all space separated attributes values onto newlines'
+      },
+      {
+        rule: 'wrap',
+        description: 'Collapases attribute values when then exceed wrap limit'
+      },
+      {
+        rule: 'strip',
+        description: 'Strips newlines and extraneous whitespaces from attribute values'
+      }
+    ]
+  },
   delimiterSpacing: {
     default: true,
     description: 'Whether or not delimiter characters should apply a single space at the start and end point',
@@ -195,6 +219,12 @@ export const definitions: Definitions = {
     lexer: 'markup',
     type: 'boolean'
   },
+  forceLeadingAttribute: {
+    default: false,
+    description: 'Forces leading attribute onto a newline when using wrap based indentation',
+    lexer: 'markup',
+    type: 'boolean'
+  },
   forceIndent: {
     default: false,
     description: 'Will force indentation upon all content and tags without regard for the creation of new text nodes.',
@@ -204,12 +234,6 @@ export const definitions: Definitions = {
   preserveAttributes: {
     default: false,
     description: 'If markup tags should have their insides preserved. This option is only available to markup and does not support child tokens that require a different lexer.',
-    lexer: 'markup',
-    type: 'boolean'
-  },
-  preserveValues: {
-    default: false,
-    description: 'Whether or not attribute values should be preserved. When enabled, values will allow newline characters and processing on the contents will be skipped.',
     lexer: 'markup',
     type: 'boolean'
   },
