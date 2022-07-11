@@ -1,22 +1,23 @@
 /* eslint no-unmodified-loop-condition: "off" */
 import type { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
-import { prettify } from '@prettify/options';
-import { create } from '@utils/native';
+import { prettify } from '@prettify/model';
+import { create, isArray } from '@utils/native';
 import { cc } from '@utils/enums';
-import { is } from '@utils/helpers';
+import { is, safeSortAscend, safeSortDescend, safeSortNormal } from '@utils/helpers';
 
 export const parse = new class Parse implements IParse {
 
-  error = '';
-  data: Data = create(null);
-  references = [ [] ];
-  structure = [ [ 'global', -1 ] as Structure ];
-  datanames = [ 'begin', 'ender', 'lexer', 'lines', 'stack', 'token', 'types' ];
-  count = -1;
-  lineNumber = 1;
-  linesSpace = 0;
+  public data: Data = create(null);
+  public references = [ [] ];
+  public structure = [ [ 'global', -1 ] as Structure ];
+  public datanames = [ 'begin', 'ender', 'lexer', 'lines', 'stack', 'token', 'types' ];
+  public count = -1;
+  public lineNumber = 1;
+  public linesSpace = 0;
+  public error = '';
 
   constructor () {
+
     this.data.begin = [];
     this.data.ender = [];
     this.data.lexer = [];
@@ -24,6 +25,7 @@ export const parse = new class Parse implements IParse {
     this.data.stack = [];
     this.data.token = [];
     this.data.types = [];
+
   }
 
   /**
@@ -73,19 +75,14 @@ export const parse = new class Parse implements IParse {
     let keyend = 0;
     let keylen = 0;
 
-    const global = (data.lexer[cc] === 'style' && this.structure[this.structure.length - 1][0] === 'global');
     const keys = [];
-    const length = this.count;
     const begin = dd;
+    const global = data.lexer[cc] === 'style' && this.structure[this.structure.length - 1][0] === 'global';
     const style = data.lexer[cc] === 'style';
-    const delim = style === true
-      ? [ ';', 'separator' ]
-      : [ ',', 'separator' ];
-
+    const delim = style === true ? [ ';', 'separator' ] : [ ',', 'separator' ];
     const lines = this.linesSpace;
-    const stack = global === true
-      ? 'global'
-      : this.structure[this.structure.length - 1][0];
+    const length = this.count;
+    const stack = global === true ? 'global' : this.structure[this.structure.length - 1][0];
 
     function sort (x: number[], y: number[]) {
 
@@ -322,12 +319,7 @@ export const parse = new class Parse implements IParse {
               }
 
               // Remove extra commas
-              if (
-                data.token[ee] === delim[0] && (
-                  style === true ||
-                  data.begin[ee] === data.begin[keys[dd][0]]
-                )
-              ) {
+              if (data.token[ee] === delim[0] && (style === true || data.begin[ee] === data.begin[keys[dd][0]])) {
 
                 commaTest = true;
 
@@ -543,230 +535,15 @@ export const parse = new class Parse implements IParse {
 
   safeSort (array: [string, number][], operation: string, recursive: boolean): [string, number][] {
 
-    // parse_safeSort_extref
-    // worthless function for backwards compatibility with older versions of V8 node.
-    let extref = item => item;
+    if (isArray(array) === false) return array;
 
-    // parse_safeSort_arTest
-    const arTest = (item: [string, number][]) => Array.isArray(item) === true;
+    if (operation === 'normal') {
+      return safeSortNormal.apply({ array, recursive }, array);
+    } else if (operation === 'descend') {
+      return safeSortDescend.apply({ recursive }, array);
+    }
 
-    // parse_safeSort_normal
-    function safeSortNormal (item: any) {
-
-      let storeb = item;
-      const done = [ item[0] ];
-
-      // safeSort_normal_child
-      function safeSortNormalChild () {
-        let a = 0;
-        const len = storeb.length;
-        if (a < len) {
-          do {
-            if (arTest(storeb[a]) === true) storeb[a] = safeSortNormal(storeb[a]);
-            a = a + 1;
-          } while (a < len);
-        }
-      };
-
-      // parse_safeSort_normal_recurse
-      function safeSortNormalRecurse (x: any) {
-
-        let a = 0;
-
-        const storea = [];
-        const len = storeb.length;
-
-        if (a < len) {
-
-          do {
-
-            if (storeb[a] !== x) storea.push(storeb[a]);
-            a = a + 1;
-
-          } while (a < len);
-        }
-
-        storeb = storea;
-
-        if (storea.length > 0) {
-          done.push(storea[0]);
-          extref(storea[0]);
-        } else {
-          if (recursive === true) safeSortNormalChild();
-          item = storeb;
-        }
-      };
-
-      extref = safeSortNormalRecurse;
-      safeSortNormalRecurse(array[0] as any);
-
-      return item;
-    };
-
-    function safeSortDescend (item: any) {
-
-      let c = 0;
-      const len = item.length;
-      const storeb = item;
-
-      function safeSortDescendChild () {
-
-        let a = 0;
-        const lenc = storeb.length;
-
-        if (a < lenc) {
-          do {
-            if (arTest(storeb[a])) storeb[a] = safeSortDescend(storeb[a]);
-            a = a + 1;
-          } while (a < lenc);
-        }
-      };
-
-      function safeSortDescendRecurse (value: string) {
-
-        let a = c;
-        let b = 0;
-        let d = 0;
-        let e = 0;
-        let key = storeb[c];
-        let ind = [];
-        let tstore = '';
-
-        const tkey = typeof key;
-
-        if (a < len) {
-
-          do {
-            tstore = typeof storeb[a];
-
-            if (storeb[a] > key || (tstore > tkey)) {
-              key = storeb[a];
-              ind = [ a ];
-            } else if (storeb[a] === key) {
-              ind.push(a);
-            }
-
-            a = a + 1;
-
-          } while (a < len);
-        }
-
-        d = ind.length;
-        a = c;
-        b = d + c;
-
-        if (a < b) {
-
-          do {
-            storeb[ind[e]] = storeb[a];
-            storeb[a] = key;
-            e = e + 1;
-            a = a + 1;
-          } while (a < b);
-        }
-
-        c = c + d;
-
-        if (c < len) {
-          extref('');
-        } else {
-          if (recursive === true) safeSortDescendChild();
-          item = storeb;
-        }
-
-        return value;
-      };
-
-      extref = safeSortDescendRecurse;
-      safeSortDescendRecurse('');
-      return item as [string, number][];
-
-    };
-
-    function safeSortAscend (item) {
-
-      let c = 0;
-      const len = item.length;
-      const storeb = item;
-
-      function safeSortAscendChild () {
-        let a = 0;
-        const lenc = storeb.length;
-        if (a < lenc) {
-          do {
-            if (arTest(storeb[a]) === true) storeb[a] = safeSortAscend(storeb[a]);
-            a = a + 1;
-          } while (a < lenc);
-        }
-      };
-
-      function safeSortAscendRecurse (value) {
-
-        let a = c;
-        let b = 0;
-        let d = 0;
-        let e = 0;
-        let ind = [];
-        let key = storeb[c];
-        let tstore = '';
-
-        const tkey = typeof key;
-
-        if (a < len) {
-
-          do {
-
-            tstore = typeof storeb[a];
-
-            if (storeb[a] < key || tstore < tkey) {
-              key = storeb[a];
-              ind = [ a ];
-            } else if (storeb[a] === key) {
-              ind.push(a);
-            }
-
-            a = a + 1;
-
-          } while (a < len);
-        }
-
-        d = ind.length;
-        a = c;
-        b = d + c;
-
-        if (a < b) {
-          do {
-            storeb[ind[e]] = storeb[a];
-            storeb[a] = key;
-            e = e + 1;
-            a = a + 1;
-          } while (a < b);
-        }
-
-        c = c + d;
-
-        if (c < len) {
-          extref('');
-        } else {
-          if (recursive === true) safeSortAscendChild();
-          item = storeb;
-        }
-
-        return value;
-      };
-
-      extref = safeSortAscendRecurse;
-      safeSortAscendRecurse('');
-
-      return item;
-
-    };
-
-    if (arTest(array) === false) return array;
-    if (operation === 'normal') return safeSortNormal(array);
-    if (operation === 'descend') return safeSortDescend(array);
-
-    return safeSortAscend(array);
+    return safeSortAscend.apply({ recursive }, array);
 
   }
 
