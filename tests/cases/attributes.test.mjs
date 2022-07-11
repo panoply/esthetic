@@ -2,7 +2,7 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('attributeGlue: true', async t => {
+test.serial.skip('attributeGlue: true', async t => {
 
   const { source } = await samples.get('attributes/attribute-chain');
 
@@ -17,6 +17,7 @@ test.serial('attributeGlue: true', async t => {
 
   });
 
+  t.log(prettify.format.stats);
   t.log(output);
   // t.snapshot(output);
 
@@ -60,22 +61,17 @@ test.serial('attributeValueNewlines: "force"', async t => {
 
   return prettify.format(source, {
     wrap: 80,
+    language: 'liquid',
     markup: {
-      attributeValues: 'wrap'
+      attributeValues: 'collapse',
+      forceAttribute: true
     }
   }).then(v => {
 
-    return prettify.format(v, {
-      wrap: 80,
-      markup: {
-        attributeValueNewlines: 'align'
-      }
-    }).then(v => {
+    t.log(prettify.format.stats);
 
-      t.log(v);
-      t.pass();
-
-    }).catch(t.log);
+    t.log(v);
+    t.pass();
 
   }).catch(t.log);
 
