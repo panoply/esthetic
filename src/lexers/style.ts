@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import type { Record, Types } from 'types/prettify';
-import { prettify } from '@prettify/options';
+import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { create } from '@utils/native';
 
