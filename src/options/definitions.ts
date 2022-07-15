@@ -120,9 +120,15 @@ export const definitions: Definitions = {
     lexer: 'all',
     type: 'boolean'
   },
+  correct: {
+    default: false,
+    description: 'Automatically correct some sloppiness in code.',
+    lexer: 'all',
+    type: 'boolean'
+  },
   quoteConvert: {
     lexer: 'all',
-    description: 'If the quotes of markup attributes should be converted to single quotes or double quotes.',
+    description: 'If the quotes should be converted to single quotes or double quotes.',
     type: 'select',
     default: 'none',
     values: [
@@ -145,12 +151,6 @@ export const definitions: Definitions = {
   /* LEXER:MARKUP                                 */
   /* -------------------------------------------- */
 
-  correct: {
-    default: false,
-    description: 'Automatically correct some sloppiness in code.',
-    lexer: 'all',
-    type: 'boolean'
-  },
   attributeSort: {
     default: false,
     description: 'Alphanumerically sort markup attributes. Attribute sorting is ignored on tags that contain attributes template attributes.',
@@ -199,7 +199,7 @@ export const definitions: Definitions = {
       },
       {
         rule: 'wrap',
-        description: 'Collapases attribute values when then exceed wrap limit'
+        description: 'Collapase attribute values when then exceed wrap limit'
       },
       {
         rule: 'strip',
@@ -217,11 +217,11 @@ export const definitions: Definitions = {
     default: false,
     description: 'If all markup attributes should be indented each onto their own line.',
     lexer: 'markup',
-    type: 'boolean'
+    type: [ 'boolean' ]
   },
   forceLeadingAttribute: {
     default: false,
-    description: 'Forces leading attribute onto a newline when using wrap based indentation',
+    description: 'Forces leading attribute onto a newline when using wrap based indentation.',
     lexer: 'markup',
     type: 'boolean'
   },
@@ -229,7 +229,7 @@ export const definitions: Definitions = {
     default: false,
     description: 'Will force indentation upon all content and tags without regard for the creation of new text nodes.',
     lexer: 'markup',
-    type: 'boolean'
+    type: [ 'boolean', 'number' ]
   },
   preserveAttributes: {
     default: false,
@@ -450,6 +450,12 @@ export const definitions: Definitions = {
     type: 'boolean',
     default: false
   },
+  noCaseIndent: {
+    lexer: 'script',
+    description: 'If the colon separating a case\'s expression (of a switch/case block) from its statement should be followed by a space instead of indentation, thereby keeping the case on a single line of code.',
+    default: false,
+    type: 'boolean'
+  },
   noSemicolon: {
     lexer: 'script',
     description: 'Removes semicolons that would be inserted by ASI. This option is in conflict with option `attemptCorrection` and takes precedence over conflicting features. Use of this option is a possible security/stability risk.',
@@ -476,4 +482,5 @@ export const definitions: Definitions = {
       }
     ]
   }
+
 };
