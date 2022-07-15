@@ -86,13 +86,15 @@ test.serial('CSS language detection', async t => {
 
 });
 
-test.serial.skip('SCSS language detection', async t => {
+test.serial('SCSS language detection', async t => {
 
   const { source } = await samples.get('languages/scss');
 
-  prettify.language(source);
-
-  t.log(prettify.language(input.nospace));
+  t.deepEqual(prettify.language(source), {
+    language: 'scss',
+    lexer: 'style',
+    languageName: 'SCSS'
+  });
 
 });
 
