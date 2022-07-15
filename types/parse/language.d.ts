@@ -1,4 +1,4 @@
-import { LanguageProperName } from './prettify';
+import { LanguageProperName } from '../common';
 import { LiteralUnion } from 'type-fest';
 
 export type PatternTypes =

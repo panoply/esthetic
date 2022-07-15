@@ -10,15 +10,15 @@ import {
 
 export {
   Definitions,
-  Definition,
   Options,
-  Rules,
-  SharedOptions,
+  GlobalOptions,
   MarkupOptions,
   ScriptOptions,
   StyleOptions,
   JSONOptions,
+  Language,
   LanguageNames,
+  LanguageProperNames,
   LexerNames
 } from './types/prettify';
 
@@ -33,6 +33,7 @@ declare const prettify: {
    * - Liquid + XML
    * - Liquid + CSS
    * - Liquid + SCSS
+   * - Liquid + SASS
    * - Liquid + LESS
    * - Liquid + JavaScript
    * - Liquid + TypeScript
