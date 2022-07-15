@@ -1,7 +1,7 @@
-import { Options, TypeHelper, TokenHelper } from 'types/prettify';
+import { Options, Helper } from 'types/prettify';
 import { prettify, grammar } from '@prettify/model';
 import { create } from '@utils/native';
-import { is, not, ws } from '@utils/helpers';
+import { is, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
@@ -17,13 +17,13 @@ prettify.beautify.markup = (options: Options) => {
    * Type token helper utilities for querying
    * the `data.types` (options.parsed) AST tree.
    */
-  const type: TypeHelper = create(null);
+  const type: Helper.Type = create(null);
 
   /**
    * Token helper utilities for querying
    * the `data.token` (options.parsed) AST tree.
    */
-  const token: TokenHelper = create(null);
+  const token: Helper.Token = create(null);
 
   /**
    * External Lexer reference  when dealing with
@@ -677,6 +677,11 @@ prettify.beautify.markup = (options: Options) => {
       let attStart = false;
 
       /**
+       * The number of attributes contained on the tag
+       */
+      let attcount = 0;
+
+      /**
        * The token length
        */
       let len = data.token[parent].length + 1;
@@ -760,31 +765,54 @@ prettify.beautify.markup = (options: Options) => {
 
             } else {
 
+              let nested = 1;
+
               do {
+
+                if (nested === 0) break;
 
                 len = len + data.token[a].length + 1;
 
-                if (data.types[a] === 'template_attribute_end') break;
-
                 if (options.markup.attributeChain === 'inline') {
+
                   level.push(-20);
+
                 } else if (options.markup.attributeChain === 'collapse') {
+
                   level.push(lev);
+
                 } else if (options.markup.attributeChain === 'preserve') {
+
                   if (data.lines[a] === 0) {
+
                     level.push(-20);
+
                   } else if (data.lines[a] === 1) {
+
                     level.push(-10);
+
                   } else if (data.lines[a] > options.preserveLine) {
+
                     level.push(options.preserveLine);
+
                   } else {
+
                     level.push(lev);
+
                   }
                 }
 
+                // console.log('x', data);
                 a = a + 1;
 
-                count = count + data.token[a].length + 1;
+                if (type.is(a, 'template_attribute_start')) {
+                  nested = nested + 1;
+                } else if (type.is(a, 'template_attribute_end')) {
+                  nested = nested - 1;
+                }
+
+                // count = count + data.token[a].length + 1;
+                attcount = attcount + 1;
 
               } while (a < c);
 
@@ -865,8 +893,11 @@ prettify.beautify.markup = (options: Options) => {
               type.idx(a + 1, 'attribute') > 0
             )
           ) {
-            level.push(lev);
+
             data.token[a] = attributeValues(data.token[a]);
+
+            level.push(lev);
+
           } else {
             level.push(-10);
           }
@@ -878,6 +909,8 @@ prettify.beautify.markup = (options: Options) => {
         }
 
         a = a + 1;
+
+        attcount = attcount + 1;
 
       } while (a < c);
 
@@ -913,7 +946,7 @@ prettify.beautify.markup = (options: Options) => {
 
       } else if (options.markup.forceAttribute >= 1) {
 
-        if (level.length > (options.markup.forceAttribute as number)) {
+        if (attcount >= (options.markup.forceAttribute as number)) {
           level[parent] = lev;
         } else {
           level[parent] = -10;
@@ -951,17 +984,19 @@ prettify.beautify.markup = (options: Options) => {
 
           do {
 
-            if (data.token[w].length > options.wrap && (/\s/).test(data.token[w])) wrap(w);
+            if (data.token[w].length > options.wrap && ws(data.token[w])) wrap(w);
 
             level[w] = lev;
             w = w - 1;
+
           } while (w > parent);
+
         }
       } else if (
         options.wrap > 0 &&
         type.is(a, 'attribute') &&
         data.token[a].length > options.wrap &&
-        (/\s/).test(data.token[a])
+        ws(data.token[a])
       ) {
 
         wrap(a);
@@ -1437,10 +1472,13 @@ prettify.beautify.markup = (options: Options) => {
           build.push(data.token[a]);
 
           if (levels[a] === -10 && a < c - 1) {
+
             build.push(' ');
           } else if (levels[a] > -1) {
+
             build.push(newline(levels[a]));
             lastLevel = levels[a];
+
           }
 
         }
