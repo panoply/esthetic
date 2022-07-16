@@ -242,7 +242,6 @@ prettify.beautify.markup = (options: Options) => {
           type.is(x, 'template_attribute') ||
           type.is(x, 'jsx_attribute_start')
         ) {
-
           level[data.begin[x]] = ind;
         } else {
           level[x] = ind;
@@ -441,9 +440,21 @@ prettify.beautify.markup = (options: Options) => {
 
     };
 
+    /**
+     * External indentations
+     *
+     * Used when dealing with external lexed languages
+     * like JSX, applies indentation levels accordingly.
+     */
     function external () {
 
       const skip = a;
+
+      // HOT PATCH
+      // Inline embedded JSX expressions
+      if (data.types[skip - 1] === 'script_start' && data.token[skip - 1] === '{') {
+        level[skip - 1] = -20;
+      }
 
       do {
 
@@ -462,7 +473,14 @@ prettify.beautify.markup = (options: Options) => {
 
       externalIndex[skip] = a;
 
-      level.push(indent - 1);
+      // HOT PATCH
+      // Inline embedded JSX expressions
+      if (data.types[a + 1] === 'script_end' && data.token[a + 1] === '}') {
+        level.push(-20);
+      } else {
+        level.push(indent - 1);
+      }
+
       next = nextIndex();
 
       if (
@@ -472,7 +490,6 @@ prettify.beautify.markup = (options: Options) => {
           data.types[next] === 'template_end'
         )
       ) {
-
         indent = indent - 1;
       }
 
@@ -836,6 +853,8 @@ prettify.beautify.markup = (options: Options) => {
 
             attStart = true;
 
+            // Typically this condition when true infers the last attribute token
+            // in languages like JSX
             if (a < c - 2 && data.types[a + 2].indexOf('attribute') > 0) {
 
               level.push(-20);
@@ -847,9 +866,28 @@ prettify.beautify.markup = (options: Options) => {
             } else {
 
               if (parent === a - 1 && plural === false) {
-                level.push(lev);
+
+                // HOT PATCH
+                // Prevent embedded expression content being indented onto
+                // newlines.
+                //
+                if (options.language === 'jsx' || options.language === 'tsx') {
+                  level.push(-20);
+                } else {
+                  level.push(lev);
+                }
+
               } else {
-                level.push(lev + 1);
+
+                // HOT PATCH
+                // Prevent embedded expression content being indented onto newlines.
+                //
+                if (options.language === 'jsx' || options.language === 'tsx') {
+                  level.push(-20);
+                } else {
+                  level.push(lev + 1);
+                }
+
               }
 
               if (data.lexer[a + 1] !== lexer) {
@@ -933,9 +971,20 @@ prettify.beautify.markup = (options: Options) => {
           type.idx(parent, 'start') > -1 &&
           type.is(a + 1, 'script_start')
         ) {
+
           level[a] = lev;
         } else {
-          level[a] = level[parent];
+
+          // HOT PATCH
+          // We need to handle self closers if they get indentation
+          // likely hapening with JSX.
+          if (token.is(a, '/') && level[a - 1] !== 10) {
+            level[a - 1] = -10;
+          } else {
+            level[a] = level[parent];
+          }
+
+          console.log(data.token[a]);
         }
       }
 
@@ -1057,22 +1106,29 @@ prettify.beautify.markup = (options: Options) => {
 
           if (type.is(a, 'script_end') && type.is(a + 1, 'end')) {
 
-            if (data.lines[a + 1] < 1) {
+            // HOT PATCH
+            // Added `indent` level for lines more than 1 so
+            // JSX embedded expressions appear on newlines
+            if (data.lines[next] < 1) {
               level.push(-20);
+            } else if (data.lines[next] > 1) {
+              level.push(indent);
             } else {
               level.push(-10);
             }
 
-          } else if ((
-            options.markup.forceIndent === false || (
-              options.markup.forceIndent &&
-              type.is(next, 'script_start')
+          } else if (
+            (
+              options.markup.forceIndent === false || (
+                options.markup.forceIndent &&
+                type.is(next, 'script_start')
+              )
+            ) && (
+              type.is(a, 'content') ||
+              type.is(a, 'singleton') ||
+              type.is(a, 'template')
             )
-          ) && (
-            type.is(a, 'content') ||
-            type.is(a, 'singleton') ||
-            type.is(a, 'template')
-          )) {
+          ) {
 
             count = count + data.token[a].length;
 
@@ -1103,11 +1159,12 @@ prettify.beautify.markup = (options: Options) => {
 
                 } while (iidx < linez);
 
-                data.token[a] = data.token[a].replace(/^\s+/gm, '').replace(/\n/g, (n) => {
-                  return n + linesout.join('');
-                });
+                data.token[a] = data.token[a]
+                  .replace(/^\s+/gm, '')
+                  .replace(/\n/g, (n) => `${n}${linesout.join('')}`);
 
               }
+
             } else if (data.lines[next] > 0 && type.is(next, 'script_start')) {
 
               level.push(-10);
@@ -1146,8 +1203,13 @@ prettify.beautify.markup = (options: Options) => {
 
             if (options.language === 'jsx' && token.is(a + 1, '{')) {
 
-              if (data.lines[a + 1] === 0) {
+              // HOT PATCH
+              // Added `indent` level for lines more than 1 so
+              // JSX embedded expressions appear on newlines
+              if (data.lines[next] === 0) {
                 level.push(-20);
+              } else if (data.lines[next] > 1) {
+                level.push(indent);
               } else {
                 level.push(-10);
               }

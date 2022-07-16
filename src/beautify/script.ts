@@ -451,9 +451,9 @@ prettify.beautify.script = (options: Options) => {
         } else if (data.types[c] === 'start') {
           d = d - 1;
         }
-        if (data.stack[c] === 'global') {
-          break;
-        }
+
+        if (data.stack[c] === 'global') break;
+
         if (d === 0) {
 
           if (
@@ -595,6 +595,7 @@ prettify.beautify.script = (options: Options) => {
           c = c + 1;
 
           if (data.token[c] === '{') {
+            ;
             e = true;
             break;
           }
@@ -1353,7 +1354,7 @@ prettify.beautify.script = (options: Options) => {
       // and a newline is expressed this captures that and
       // eliminates the newline
       if (
-        options.script.inlineReturn && options.attemptCorrection === false &&
+        options.script.inlineReturn && options.script.correct === false &&
         ctoke === 'x}' &&
         (data.stack[a] === 'if' || data.stack[a] === 'else') &&
         data.token[data.begin[data.begin[a - 1] - 1] - 2] !== 'else'
@@ -3682,6 +3683,7 @@ prettify.beautify.script = (options: Options) => {
         }
 
       } else {
+
         external();
       }
 
@@ -3929,7 +3931,7 @@ prettify.beautify.script = (options: Options) => {
             let i = 1;
 
             do {
-              comm[i] = space + comm[i].trimLeft();
+              comm[i] = space + comm[i].trimStart();
               i = i + 1;
             } while (i < comm.length);
 
@@ -3969,6 +3971,8 @@ prettify.beautify.script = (options: Options) => {
             options.script.braceNewline === true
           ) {
 
+            // console.log(data.token[a]);
+
             // HOT PATCH
             //
             // We want to skip applying newline in braces when
@@ -3999,6 +4003,8 @@ prettify.beautify.script = (options: Options) => {
           prettify.end = externalIndex[a];
           prettify.start = a;
 
+          options.indentLevel = lastLevel;
+
           external = prettify.beautify[data.lexer[a]](options);
 
           build.push(external.replace(/\s+$/, ''));
@@ -4024,6 +4030,7 @@ prettify.beautify.script = (options: Options) => {
 
     prettify.iterator = b - 1;
 
+    // console.log(data);
     return build.join('');
 
   })();

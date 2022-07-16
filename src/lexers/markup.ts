@@ -103,6 +103,14 @@ prettify.lexers.markup = function markup (source: string) {
 
   }
 
+  function isLiquidOutput (input: string) {
+
+    const begin = input.indexOf('{');
+
+    return is(input[begin + 1], cc.LCB);
+
+  }
+
   function isLiquidStart (input: string) {
 
     const begin = input.indexOf('{');
@@ -715,7 +723,7 @@ prettify.lexers.markup = function markup (source: string) {
       if (attstore.length < 1) return;
 
       // fix for singleton tags, since "/" at the end of the tag is not an attribute
-      if (attstore[attstore.length - 1][0] === '/') {
+      if (is(attstore[attstore.length - 1][0], cc.FWS)) {
         attstore.pop();
         element = element.replace(/>$/, '/>');
       }
@@ -746,6 +754,7 @@ prettify.lexers.markup = function markup (source: string) {
       if (
         (options.markup.attributeSort === true) &&
         options.language !== 'jsx' &&
+        options.language !== 'tsx' &&
         jscom === false &&
         nosort === false
       ) {
@@ -827,6 +836,7 @@ prettify.lexers.markup = function markup (source: string) {
 
             record.types = 'comment_attribute';
             record.token = attstore[idx][0];
+
             convertq();
 
           } else if (eq < 0) {
@@ -840,42 +850,74 @@ prettify.lexers.markup = function markup (source: string) {
 
             if (isLiquid(attstore[idx][0], 5)) {
 
-              if (is(attstore[idx][0][1], cc.LCB)) {
+              if (is(attstore[idx][0][1], cc.LCB) || isLiquidOutput(attstore[idx][0])) {
 
                 record.types = 'template_attribute';
+                record.token = attstore[idx][0];
+                //  record.stack = parse.structure[parse.structure.length - 1][0];
+                // record.begin = parse.structure[parse.structure.length - 1][1];
+
+                //  record.begin = parse.structure[parse.structure.length - 1][1];
+                // record.stack = parse.structure[parse.structure.length - 1][0];
 
               } else {
 
                 if (isLiquidEnd(attstore[idx][0])) {
+
+                  record.token = attstore[idx][0];
                   record.types = 'template_attribute_end';
-                  parse.structure.pop();
+                  record.ender = record.begin;
+                  //   record.begin = parse.structure[parse.structure.length - 1][1];
+                  // record.stack = parse.structure[parse.structure.length - 1][0];
+
+                  //  parse.structure.pop();
+
                 } else {
 
                   const ttname = getLiquidTagName(attstore[idx][0]);
 
                   if (grammar.liquid.tags.has(ttname)) {
                     record.types = 'template_attribute_start';
-                    record.stack = ttname;
-                    parse.structure.push([ record.stack, parse.count ]);
+                    // record.stack = ttname;
+                    record.begin = parse.count;
+                    record.token = attstore[idx][0];
+                    // parse.structure.push([ record.stack, parse.count ]);
+
                   } else if (grammar.liquid.else.has(ttname)) {
+
                     record.types = 'template_attribute_else';
+                    // record.begin = parse.structure[parse.structure.length - 1][1];
+                    // record.stack = parse.structure[parse.structure.length - 1][0];
+                    record.token = attstore[idx][0];
+
+                    console.log('begin', parse.structure[parse.structure.length - 1][0]);
                   }
                 }
               }
 
-              record.token = attstore[idx][0];
+              recordpush(data, record, '');
 
-              // console.log(record);
               // console.log(attstore);
 
-              convertq();
+              // recordpush(data, record, '');
+              // console.log(record);
 
             } else {
 
               record.types = 'attribute';
-              record.token = '#[{('.indexOf(attstore[idx][0].charAt(0)) < 0
-                ? attstore[idx][0].toLowerCase()
-                : record.token = attstore[idx][0];
+
+              if (
+                is(attstore[idx][0], cc.HSH) ||
+                is(attstore[idx][0], cc.LSB) ||
+                is(attstore[idx][0], cc.LCB) ||
+                is(attstore[idx][0], cc.LPR) ||
+                options.language === 'jsx' ||
+                options.language === 'tsx'
+              ) {
+                record.token = attstore[idx][0];
+              } else {
+                record.token = attstore[idx][0].toLowerCase();
+              }
 
               convertq();
             }
@@ -887,7 +929,17 @@ prettify.lexers.markup = function markup (source: string) {
             name = attstore[idx][0].slice(0, eq);
             value = attstore[idx][0].slice(eq + 1);
 
-            if (options.markup.correct && '<{"\'='.indexOf(value[0]) < 0) value = '"' + value + '"';
+            if (
+              options.markup.correct && (
+                not(value[0], cc.LAN) ||
+                not(value[0], cc.LCB) ||
+                not(value[0], cc.EQS) ||
+                not(value[0], cc.DQO) ||
+                not(value[0], cc.SQO)
+              )
+            ) {
+              value = '"' + value + '"';
+            }
 
             if (options.language === 'jsx' && /^\s*\{/.test(value)) {
 
@@ -937,11 +989,22 @@ prettify.lexers.markup = function markup (source: string) {
             } else {
 
               record.types = 'attribute';
-              record.token = '#[{('.indexOf(attstore[idx][0].charAt(0)) < 0
-                ? attstore[idx][0].toLowerCase()
-                : record.token = attstore[idx][0];
+
+              if (
+                is(attstore[idx][0], cc.HSH) ||
+                is(attstore[idx][0], cc.LSB) ||
+                is(attstore[idx][0], cc.LCB) ||
+                is(attstore[idx][0], cc.LPR) ||
+                options.language === 'jsx' ||
+                options.language === 'tsx'
+              ) {
+                record.token = attstore[idx][0];
+              } else {
+                record.token = attstore[idx][0].toLowerCase();
+              }
 
               convertq();
+
             }
           }
 
@@ -1262,6 +1325,11 @@ prettify.lexers.markup = function markup (source: string) {
        * The quotation character store reference
        */
       let quote = '';
+
+      /**
+       * JSX template string
+       */
+      const jsxtemplate = false;
 
       /**
        * JSX quotataion character
@@ -1618,7 +1686,7 @@ prettify.lexers.markup = function markup (source: string) {
                   }
 
                   if (
-                    options.language !== 'jsx' && (
+                    (options.language !== 'jsx' || options.language !== 'tsx') && (
                       is(b[a], cc.LAN) ||
                       is(b[a], cc.RAN)
                     ) && (
@@ -1656,12 +1724,18 @@ prettify.lexers.markup = function markup (source: string) {
                       break;
                     }
 
-                    if (preserve === false && /^=?['"]?({[{%]|\/|\^|<)/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])) {
+                    if (preserve === false && /^=?['"]?({{|{%|\/|\^|<)/.test(b[a] + b[a + 1] + b[a + 2] + b[a + 3])) {
 
                       attribute.pop();
 
-                      if (attribute.length > 0 && not(b[a], cc.EQS) && ttexp) {
+                      if (
+                        attribute.length > 0 &&
+                        not(b[a], cc.EQS) &&
+                        not(b[a], cc.LCB) && (not(b[a + 1], cc.LCB) || not(b[a + 1], cc.PER))
+                      ) {
+
                         lexattr(false);
+
                       }
 
                       quote = '';
@@ -1808,6 +1882,7 @@ prettify.lexers.markup = function markup (source: string) {
                         }
 
                       }
+
                     } else if (
                       is(lex[0], cc.LCB) &&
                       is(b[a], cc.LCB) && (
@@ -1896,9 +1971,27 @@ prettify.lexers.markup = function markup (source: string) {
                     )
                   ) {
 
+                    if (b[a] === '`') {
+
+                      a = a + 1;
+
+                      do {
+
+                        attribute.push(b[a]);
+
+                        if (b[a] === '`') break;
+
+                        a = a + 1;
+
+                      } while (a < b.length);
+
+                      // jsxtemplate = true;
+                    }
+
                     // jsx attributes
                     if (is(quote, cc.RCB)) {
-                      if (is(b[a], cc.RCB)) {
+
+                      if (is(b[a], cc.RCB) && b[a] !== quote) {
 
                         bcount = bcount + 1;
 
@@ -1913,7 +2006,7 @@ prettify.lexers.markup = function markup (source: string) {
                           element = attribute.join('');
 
                           if (options.markup.preserveAttributes === false) {
-                            if (options.language === 'jsx') {
+                            if (options.language === 'jsx' || options.language === 'tsx') {
                               if ((/^\s*$/).test(element) === false) attstore.push([ element, lines ]);
                             } else {
                               element = element.replace(/\s+/g, ' ');
@@ -1995,6 +2088,7 @@ prettify.lexers.markup = function markup (source: string) {
                     if (lex.length > 1) {
                       tname = lex[1] + lex[2];
                       tname = tname.toLowerCase();
+
                     }
 
                     e = quote.length - 1;
@@ -2365,14 +2459,13 @@ prettify.lexers.markup = function markup (source: string) {
         // html gets tag names in lowercase, if you want to preserveLine case sensitivity
         // beautify as XML
         if (
-          element.charCodeAt(0) === cc.LAN &&
-          element.charCodeAt(1) !== cc.BNG &&
-          element.charCodeAt(1) !== cc.QWS && (
+          is(element[0], cc.LAN) &&
+          not(element[1], cc.BNG) &&
+          not(element[1], cc.QWS) && (
             parse.count < 0 ||
             data.types[parse.count].indexOf('template') < 0
           )
         ) {
-
           element = element.toLowerCase();
         }
 
@@ -2418,7 +2511,7 @@ prettify.lexers.markup = function markup (source: string) {
           // certain tags cannot contain other certain tags if such tags are peers
           addHtmlEnd(0);
         } else if (
-          tname.charCodeAt(0) === cc.FWS &&
+          is(tname[0], cc.FWS) &&
           grammar.html.tags.has(parse.structure[parse.structure.length - 1][0]) &&
           parse.structure[parse.structure.length - 1][0] !== tname.slice(1)
         ) {
@@ -2679,14 +2772,14 @@ prettify.lexers.markup = function markup (source: string) {
                 }
               }
 
-            } else if (b[a] === delim.charAt(delim.length - 1)) {
+            } else if (is(b[a], delim.charCodeAt(delim.length - 1))) {
 
               ff = 0;
               ee = delim.length - 1;
 
               if (ee > -1) {
                 do {
-                  if (b[a - ff] !== delim.charAt(ee)) break;
+                  if (not(b[a - ff], delim.charCodeAt(ee))) break;
                   ff = ff + 1;
                   ee = ee - 1;
                 } while (ee > -1);
@@ -2858,64 +2951,64 @@ prettify.lexers.markup = function markup (source: string) {
           current_length = data.token[cc].length + 1;
         }
 
-        if (current_length > options.wrap && data.lines[bb] === 1) {
+        /* if (current_length > options.wrap && data.lines[bb] === 1) {
 
-          record.begin = data.begin[bb];
-          record.ender = bb + 2;
-          record.lexer = data.lexer[bb];
-          record.lines = 1;
-          record.stack = data.stack[bb];
-          record.token = '{';
-          record.types = 'script_start';
+           record.begin = data.begin[bb];
+           record.ender = bb + 2;
+           record.lexer = data.lexer[bb];
+           record.lines = 1;
+           record.stack = data.stack[bb];
+           record.token = '{';
+           record.types = 'script_start';
 
-          parse.splice({
-            data,
-            howmany: 0,
-            index: bb,
-            record
-          });
+           parse.splice({
+             data,
+             howmany: 0,
+             index: bb,
+             record
+           });
 
-          record.begin = bb;
-          record.lexer = 'script';
-          record.lines = 0;
-          record.stack = 'script';
+           record.begin = bb;
+           record.lexer = 'script';
+           record.lines = 0;
+           record.stack = 'script';
 
-          if (options.markup.quoteConvert === 'single') {
-            record.token = "' '";
-          } else {
-            record.token = '" "';
-          }
+           if (options.markup.quoteConvert === 'single') {
+             record.token = "'";
+           } else {
+             record.token = '"';
+           }
 
-          record.types = 'string';
+           record.types = 'string';
 
-          parse.splice({
-            data,
-            howmany: 0,
-            index: bb + 1,
-            record
-          });
+           parse.splice({
+             data,
+             howmany: 0,
+             index: bb + 1,
+             record
+           });
 
-          record.lexer = 'markup';
-          record.token = '}';
-          record.types = 'script_end';
+           record.lexer = 'markup';
+           record.token = '}';
+           record.types = 'script_end';
 
-          parse.splice({
-            data,
-            howmany: 0,
-            index: bb + 2,
-            record
-          });
+           parse.splice({
+             data,
+             howmany: 0,
+             index: bb + 2,
+             record
+           });
 
-          data.ender[bb + 3] = data.ender[bb + 3] + 3;
+           data.ender[bb + 3] = data.ender[bb + 3] + 3;
 
-          bb = bb + 4;
+           bb = bb + 4;
 
-          do {
-            data.begin[bb] = data.begin[bb] + 3;
-            data.ender[bb] = data.ender[bb] + 3;
-            bb = bb + 1;
-          } while (bb < parse.count);
-        }
+           do {
+             data.begin[bb] = data.begin[bb] + 3;
+             data.ender[bb] = data.ender[bb] + 3;
+             bb = bb + 1;
+           } while (bb < parse.count);
+         } */
       }
     }
 
@@ -3022,6 +3115,7 @@ prettify.lexers.markup = function markup (source: string) {
 
               if (quotes === 0) {
 
+                // console.log(lex.join('').replace(/^(\s+)/, '').replace(/(\s+)$/, ''));
                 prettify.lexers.script(lex.join('').replace(/^(\s+)/, '').replace(/(\s+)$/, ''));
 
                 // Originally was:

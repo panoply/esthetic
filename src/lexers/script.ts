@@ -10,10 +10,7 @@ prettify.lexers.script = function script (source: string) {
 
   const { options } = prettify;
 
-  if (options.language === 'json') {
-    options.script.quoteConvert = 'double';
-
-  }
+  if (options.language === 'json') options.script.quoteConvert = 'double';
 
   /**
    * Advancement
@@ -156,7 +153,7 @@ prettify.lexers.script = function script (source: string) {
     record.token = data.token[parse.count];
     record.types = data.types[parse.count];
 
-    if ((/^(\/(\/|\*)\s*@ignore\s+start)/).test(ltoke)) return;
+    if ((/^(\/(\/|\*)\s*@prettify-ignore-start)/).test(ltoke)) return;
     if (ltype === 'start' || ltype === 'type_start') return;
     if (options.language === 'json') return;
     if (
@@ -1277,7 +1274,7 @@ prettify.lexers.script = function script (source: string) {
 
     if (comment[0] !== '') {
       ltoke = comment[0];
-      ltype = (/^(\/\/\s*@ignore:?\s+\bstart\b)/).test(ltoke)
+      ltype = (/^(\/\/\s*@prettify-ignore-start)/).test(ltoke)
         ? 'ignore'
         : 'comment';
       if (ltoke.indexOf('# sourceMappingURL=') === 2) {
@@ -1317,8 +1314,12 @@ prettify.lexers.script = function script (source: string) {
     const syntaxnum = '0123456789=<>+-*?|^:&.,;%(){}[]~';
 
     function applyMarkup () {
+
       if (ltoke === '(') parse.structure[parse.structure.length - 1] = [ 'paren', parse.count ];
+
+      // console.log(output.join(''));
       prettify.lexers.markup(output.join(''));
+
     };
 
     if (wordTest > -1) word();
@@ -1457,6 +1458,7 @@ prettify.lexers.script = function script (source: string) {
         } else if (c[a] === '}') {
 
           curlycount = curlycount - 1;
+
           if (curlycount === 0) curlytest = false;
 
         } else if (c[a] === '<' && curlytest === false) {
