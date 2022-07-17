@@ -77,6 +77,7 @@ export const parse = new class Parse implements IParse {
 
     const keys = [];
     const begin = dd;
+    const json = prettify.options.language === 'json';
     const global = data.lexer[cc] === 'style' && this.structure[this.structure.length - 1][0] === 'global';
     const style = data.lexer[cc] === 'style';
     const delim = style === true ? [ ';', 'separator' ] : [ ',', 'separator' ];
@@ -236,7 +237,10 @@ export const parse = new class Parse implements IParse {
 
     if (keys.length > 1) {
 
+      // HOT PATCH
+      // Fixes JSON embedded region and language object sorting
       if (
+        json === true ||
         style === true ||
         data.token[cc - 1] === '=' ||
         data.token[cc - 1] === ':' ||
@@ -416,8 +420,12 @@ export const parse = new class Parse implements IParse {
 
       if (
         (
-          (data.lexer[a] === 'script' || data.lexer[a] === 'style') &&
-          prettify.options[data.lexer[a]].objectSort === true
+          (data.lexer[a] === 'style' && prettify.options.style.sortProperties === true) ||
+          (data.lexer[a] === 'script' && (
+            prettify.options.script.objectSort === true ||
+            prettify.options.json.objectSort === true
+          )
+          )
         )
       ) {
 
@@ -438,7 +446,10 @@ export const parse = new class Parse implements IParse {
           )
         ) {
 
+          //  console.log(data.token[a], this.count);
+
           data.ender[a] = this.count;
+
         } else {
 
           a = data.begin[a];
@@ -456,19 +467,21 @@ export const parse = new class Parse implements IParse {
 
     if (data === this.data) {
 
+      // console.log(data);
       this.count = this.count + 1;
       this.linesSpace = 0;
 
       if (record.lexer !== 'style') {
         if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, '') === '') {
-          structure = record.types === 'else'
-            ? 'else'
-            : structure = record.token;
+          // console.log(structure);
+          structure = record.types === 'else' ? 'else' : structure = record.token;
+          // console.log(structure);
         }
       }
 
       if (record.types === 'start' || record.types.indexOf('_start') > 0) {
 
+        // console.log(structure);
         this.structure.push([ structure, this.count ]);
 
       } else if (record.types === 'end' || record.types.indexOf('_end') > 0) {
@@ -491,9 +504,11 @@ export const parse = new class Parse implements IParse {
         )) {
 
           this.structure.pop();
+
           data.begin[this.count] = this.structure[this.structure.length - 1][1];
           data.stack[this.count] = this.structure[this.structure.length - 1][0];
           data.ender[this.count - 1] = this.count;
+
           case_ender = data.ender[data.begin[this.count] + 1];
 
         }
@@ -504,10 +519,7 @@ export const parse = new class Parse implements IParse {
 
         this.structure.pop();
 
-      } else if (
-        record.types === 'else' ||
-        record.types.indexOf('_else') > 0
-      ) {
+      } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
 
         if (structure === '') structure = 'else';
         if (
@@ -518,6 +530,7 @@ export const parse = new class Parse implements IParse {
         ) {
 
           this.structure.push([ structure, this.count ]);
+
         } else {
 
           ender();
@@ -538,12 +551,12 @@ export const parse = new class Parse implements IParse {
     if (isArray(array) === false) return array;
 
     if (operation === 'normal') {
-      return safeSortNormal.apply({ array, recursive }, array);
+      return safeSortNormal.call({ array, recursive }, array);
     } else if (operation === 'descend') {
-      return safeSortDescend.apply({ recursive }, array);
+      return safeSortDescend.call({ recursive }, array);
     }
 
-    return safeSortAscend.apply({ recursive }, array);
+    return safeSortAscend.call({ recursive }, array);
 
   }
 
@@ -622,6 +635,7 @@ export const parse = new class Parse implements IParse {
       }
 
     } while (a > start);
+
   }
 
   spacer (args: Spacer): number {
@@ -664,7 +678,9 @@ export const parse = new class Parse implements IParse {
       }
 
       if (splice.data === this.data) {
+
         this.count = (this.count - splice.howmany) + 1;
+
         if (finalItem[0] !== this.data.begin[this.count] || finalItem[1] !== this.data.token[this.count]) {
           this.linesSpace = 0;
         }

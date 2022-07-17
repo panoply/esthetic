@@ -1,11 +1,9 @@
 
 ATTRIBUTE CHAINING
 
-{% for step in steps %}
-<div id="x" class="xxx xxx xxx" data-{% if x %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx" aria-x="foo">
+<div id="x" class="xxx xxx xxx" data-{% if one %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx" aria-x="foo">
 
 </div>
-{% endfor %}
 
 
 
@@ -15,7 +13,7 @@ ATTRIBUTE CHAINING NESTED EXPRESSIONS
  id="x"
  class="xxx xxx xxx"
  {% if x == 100 %}
- data-{% if x %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx"
+ data-{% if two %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx"
  {% elsif x != 200 %}
  {% unless u == 'foo' and x == 'bar' %}
  data-{{ object.prop | filter }}
@@ -29,25 +27,8 @@ ATTRIBUTE CHAINING NESTED EXPRESSIONS
 
 
 {% for step in steps %}
-    <div class="{% if loop.index < currentStep %}opacity-50{% elsif loop.index > currentStep %}font-bold{% endif %}">
+    <div  class="{% if loop.index < currentStep %}opacity-50{% elsif loop.index > currentStep %}font-bold{% endif %}">
         {{ loop.index }}.
         {{ step.title }}
     </div>
 {% endfor %}
-
-
-
-{% for step in steps %}
-    <div
-      class="
-      {% if loop.index < currentStep %}
-      opacity-50
-      {% elsif loop.index > currentStep %}
-      font-bold font-black
-      {% endif %}">
-
-        {{ loop.index }}.
-        {{ step.title }}
-    </div>
-{% endfor %}
-

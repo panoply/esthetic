@@ -3,6 +3,7 @@ import { prettify, grammar } from '@prettify/model';
 import { create } from '@utils/native';
 import { is, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
+import { parse } from '@parser/parse';
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
 /* -------------------------------------------- */
@@ -984,7 +985,7 @@ prettify.beautify.markup = (options: Options) => {
             level[a] = level[parent];
           }
 
-          console.log(data.token[a]);
+          // console.log(data.token[a]);
         }
       }
 
@@ -1355,6 +1356,7 @@ prettify.beautify.markup = (options: Options) => {
     function multiline () {
 
       let lines = data.token[a].split(lf);
+
       const line = data.lines[a + 1];
 
       if (type.is(a, 'comment')) lines = lines.map(l => l.trimStart());
@@ -1433,7 +1435,7 @@ prettify.beautify.markup = (options: Options) => {
 
       if (levels[a] === -10) {
         build.push(' ');
-      } else if (levels[a] > -1) {
+      } else if (levels[a] > 1) {
         build.push(newline(levels[a]));
       }
 
@@ -1494,7 +1496,6 @@ prettify.beautify.markup = (options: Options) => {
 
     a = prettify.start;
 
-    let ext: string = '';
     let lastLevel: number;
 
     lastLevel = options.indentLevel;
@@ -1536,10 +1537,11 @@ prettify.beautify.markup = (options: Options) => {
           if (levels[a] === -10 && a < c - 1) {
 
             build.push(' ');
+
           } else if (levels[a] > -1) {
 
-            build.push(newline(levels[a]));
             lastLevel = levels[a];
+            build.push(newline(levels[a]));
 
           }
 
@@ -1554,12 +1556,10 @@ prettify.beautify.markup = (options: Options) => {
         } else {
 
           prettify.end = externalIndex[a];
-          prettify.start = a;
           options.indentLevel = lastLevel;
+          prettify.start = a;
 
-          ext = prettify.beautify[data.lexer[a]](options).replace(/\s+$/, '');
-
-          build.push(ext);
+          build.push(prettify.beautify[data.lexer[a]](options).replace(/\s+$/, ''));
 
           if (levels[prettify.iterator] > -1 && externalIndex[a] > a) {
             build.push(newline(levels[prettify.iterator]));

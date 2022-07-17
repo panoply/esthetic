@@ -1,7 +1,10 @@
 /* eslint-disable no-unused-vars */
 
 export const enum cc {
-
+  /**
+   * `#` – Hashtag character
+   */
+  HSH = 35,
   /**
    * `(` – Left Parenthesis - Used in Liquid delimiters
    */
@@ -21,6 +24,16 @@ export const enum cc {
    * `}` – Right Curly Brace - Used in Liquid delimiters
    */
   RCB = 125,
+
+  /**
+   * `[` – Left Square Brace - Used in JavaScript
+   */
+  LSB = 91,
+
+  /**
+   * `]` – Right Square Brace - Used in JavaScript
+   */
+  RSB = 93,
 
   /**
    * `<` – Left Angle Bracket - Used in HTML delimiters

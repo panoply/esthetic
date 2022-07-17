@@ -95,7 +95,7 @@ function options (rules: Options) {
     } else if (rule === 'style') {
       assign(prettify.options.style, rules.style);
     } else if (rule === 'json') {
-      assign(prettify.options.script, rules.json);
+      assign(prettify.options.json, rules.json);
     } else if (rule === 'grammar') {
 
       if (rules.grammar?.html?.voids) {

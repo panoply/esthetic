@@ -79,6 +79,11 @@ prettify.lexers.markup = function markup (source: string) {
   let ext = false;
 
   /**
+   * External Tags embedded language
+   */
+  let extlang = 'javascript';
+
+  /**
    * HTML String
    */
   let html = 'html';
@@ -813,21 +818,12 @@ prettify.lexers.markup = function markup (source: string) {
 
           if (attstore[idx] === undefined) break;
 
-          // console.log(attstore[idx][0]);
-
           attstore[idx][0] = attstore[idx][0].replace(/\s+$/, '');
 
           record.lines = attstore[idx][1];
 
           eq = attstore[idx][0].indexOf('=');
           dq = attstore[idx][0].indexOf('"');
-
-          if (isLiquid(attstore[idx][0], 5)) {
-            if (eq > attstore[idx][0].indexOf('{') && eq < attstore[idx][0].indexOf('}')) {
-              eq = -1;
-            }
-
-          }
 
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           sq = attstore[idx][0].indexOf("'");
@@ -890,7 +886,7 @@ prettify.lexers.markup = function markup (source: string) {
                     // record.stack = parse.structure[parse.structure.length - 1][0];
                     record.token = attstore[idx][0];
 
-                    console.log('begin', parse.structure[parse.structure.length - 1][0]);
+                    // console.log('begin', parse.structure[parse.structure.length - 1][0]);
                   }
                 }
               }
@@ -1327,11 +1323,6 @@ prettify.lexers.markup = function markup (source: string) {
       let quote = '';
 
       /**
-       * JSX template string
-       */
-      const jsxtemplate = false;
-
-      /**
        * JSX quotataion character
        */
       let jsxquote = '';
@@ -1449,7 +1440,10 @@ prettify.lexers.markup = function markup (source: string) {
           }
         }
 
-        if (is(attr[0], cc.LCB) && is(attr[1], cc.PER)) nosort = true;
+        if ((
+          is(attr[0], cc.LCB) &&
+          is(attr[1], cc.PER)
+        )) nosort = true;
 
         if (ttexp === false && isLiquidStart(attr)) {
           ttexp = true;
@@ -2589,10 +2583,11 @@ prettify.lexers.markup = function markup (source: string) {
       // HOTFIX
       // Lets also capture JSON types which are defined
       // via application/json or application/ld+json
-      if (
-        liquid === false &&
-        tname === 'script' &&
-        (
+      if (liquid === false && tname === 'script') {
+
+        ext = true;
+
+        if (
           attValue === '' ||
           attValue === 'text/javascript' ||
           attValue === 'babel' ||
@@ -2601,34 +2596,31 @@ prettify.lexers.markup = function markup (source: string) {
           attValue === 'application/x-javascript' ||
           attValue === 'text/ecmascript' ||
           attValue === 'application/ecmascript' ||
-          attValue === 'text/jsx' ||
-          attValue === 'application/jsx' ||
-          attValue === 'text/cjs' ||
-          attValue === 'application/json' ||
-          attValue === 'application/ld+json'
-        )
-      ) {
+          attValue === 'text/cjs'
+        ) {
+          extlang = 'javascript';
+        } else if (attValue === 'text/jsx' || attValue === 'application/jsx') {
+          extlang = 'jsx';
+        } else if (attValue === 'application/json' || attValue === 'application/ld+json') {
+          extlang = 'json';
+        }
+
+      } else if (tname === 'style' && options.language !== 'jsx' && (attValue === '' || attValue === 'text/css')) {
+
+        ext = true;
+        extlang = 'css';
+
+      } else if (liquid === true) {
 
         ext = true;
 
-      } else if (
-        (tname === 'style') &&
-        options.language !== 'jsx' &&
-        (attValue === '' || attValue === 'text/css')
-      ) {
-
-        ext = true;
-
-      } else if (
-        liquid === true && (
-          tname === 'javascript' ||
-          tname === 'schema' ||
-          tname === 'style' ||
-          tname === 'stylesheet'
-        )
-      ) {
-
-        ext = true;
+        if (tname === 'javascript') {
+          extlang = 'javascript';
+        } else if (tname === 'style' || tname === 'stylesheet') {
+          extlang = 'javascript';
+        } else if (tname === 'schema') {
+          extlang = 'json';
+        }
 
       }
 
@@ -3045,7 +3037,7 @@ prettify.lexers.markup = function markup (source: string) {
       data.token[parse.count].charAt(data.token[parse.count].length - 1) === '['
     );
 
-    const record: Record = Object.create(null);
+    const record: Record = create(null);
 
     record.begin = parse.structure[parse.structure.length - 1][1];
     record.ender = -1;
@@ -3177,8 +3169,23 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else {
 
-                    // prettify.options.language = 'javascript';
+                    const curlang = prettify.options.language;
+
+                    prettify.options.language = extlang;
                     prettify.lexers.script(outside);
+
+                    if ((
+                      extlang === 'json' &&
+                      options[extlang].objectSort === true
+                    ) || (
+                      extlang !== 'json' &&
+                      options.script.objectSort === true
+                    )) {
+                      parse.sortCorrection(0, parse.count + 1);
+                    }
+
+                    prettify.options.language = curlang;
+
                     //   prettify.options.language = 'html';
                   }
 
@@ -3224,9 +3231,14 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else {
 
+                    const curlang = prettify.options.language;
+
+                    prettify.options.language = extlang;
                     prettify.lexers.style(outside);
 
                     if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
+
+                    prettify.options.language = curlang;
 
                   }
                   break;
@@ -3276,7 +3288,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                     prettify.lexers.script(outside);
 
-                    if (options.script.objectSort === true) parse.sortCorrection(0, parse.count + 1);
+                    if (options.json.objectSort === true) parse.sortCorrection(0, parse.count + 1);
 
                     prettify.options.language = 'liquid';
 

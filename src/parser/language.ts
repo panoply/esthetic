@@ -10,11 +10,11 @@ const lexmap = (function () {
   o.html = 'markup';
   o.liquid = 'markup';
   o.xml = 'markup';
-  o.jsx = 'markup';
-  o.tsx = 'markup';
 
   o.javascript = 'script';
   o.typescript = 'script';
+  o.jsx = 'script';
+  o.tsx = 'script';
   o.json = 'script';
 
   o.less = 'style';

@@ -90,8 +90,6 @@ export const prettify = (function () {
   /* -------------------------------------------- */
 
   model.options.mode = 'beautify';
-  model.options.tagMerge = false;
-  model.options.tagSort = false;
   model.options.indentLevel = 0;
 
   /* -------------------------------------------- */

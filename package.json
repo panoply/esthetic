@@ -29,12 +29,14 @@
     "play": "ava tests/play.test.mjs --color --watch",
     "test": "ava tests/cases/*.test.mjs --serial",
     "test:attributes": "ava tests/cases/attributes* ---",
+    "test:embedded": "ava tests/cases/embedded* ---",
     "test:ignores": "ava tests/cases/ignores* ---",
     "test:css": "ava tests/cases/css* ---",
     "test:liquid": "ava tests/cases/liquid* ---",
     "test:html": "ava tests/cases/html* ---",
     "test:language": "ava tests/cases/language* ---",
-    "test:javascript": "ava tests/cases/javascript* ---"
+    "test:javascript": "ava tests/cases/javascript* ---",
+    "test:jsx": "ava tests/cases/jsx* ---"
   },
   "ava": {
     "extensions": [

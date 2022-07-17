@@ -712,11 +712,15 @@ prettify.lexers.script = function script (source: string) {
 
       if (ltoke !== ',' && options.script.correct === true) plusplus();
       if (parse.structure.length > 0 && parse.structure[parse.structure.length - 1][0] !== 'object') asi(true);
-      if (
-        options.script.objectSort === true &&
-        parse.structure[parse.structure.length - 1][0] === 'object'
-      ) {
+      if ((
+        options.script.objectSort === true || (
+          options.language === 'json' &&
+          options.json.objectSort === true
+        )
+      ) && parse.structure[parse.structure.length - 1][0] === 'object') {
+
         parse.objectSort(data);
+
       }
 
       if (ltype === 'comment') {
