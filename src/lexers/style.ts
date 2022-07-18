@@ -3,20 +3,71 @@ import type { Record, Types } from 'types/prettify';
 import { prettify, grammar } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { create } from '@utils/native';
+import { is, not, ws } from '@utils/helpers';
+import { cc } from '@utils/enums';
 
+/* -------------------------------------------- */
+/* LEXER                                        */
+/* -------------------------------------------- */
+
+/**
+ * Style Lexer
+ *
+ * Used to parse style languages. This lexing algorithm supports
+ * the following languages
+ *
+ * - CSS
+ * - SCSS
+ * - LESS
+ * - Liquid.
+ */
 prettify.lexers.style = function style (source: string) {
 
   const { options } = prettify;
 
-  let a = 0;
-  let ltype = '';
-  let ltoke = '';
+  /**
+   * Parse data reference
+   */
+  const { data } = parse;
 
-  const data = parse.data;
+  /**
+   * The document source as an array list, ie: `source.split('')`
+   */
   const b = source.split('');
+
+  /**
+   * The input source string length
+   */
   const len = source.length;
-  const mapper = [];
-  const nosort = [];
+
+  /**
+   * Holds a _number_ array reference, (I am unsure of exact use)
+   */
+  const mapper: number[] = [];
+
+  /**
+   * Holds a _boolean_ reference to sorting
+   */
+  const nosort: boolean[] = [];
+
+  /* -------------------------------------------- */
+  /* LEXICAL SCOPES                               */
+  /* -------------------------------------------- */
+
+  /**
+   * Advancement reference
+   */
+  let a = 0;
+
+  /**
+   * Last Type, ie: `start`, `selector`, `template` etc etc
+   */
+  let ltype = '';
+
+  /**
+   * Last Token, ie: `.selector`, `font-size`, `:` etc etc
+   */
+  let ltoke = '';
 
   /**
    * Pushes a record into the parse table
@@ -40,34 +91,75 @@ prettify.lexers.style = function style (source: string) {
   function esctest (index: number) {
 
     const slashy = index;
-    do {
-      index = index - 1;
-    } while (b[index] === '\\' && index > 0);
+
+    do { index = index - 1; } while (b[index] === '\\' && index > 0);
 
     return (slashy - index) % 2 === 1;
 
   };
 
   /**
+   * CSS Values
+   *
+   * Handles the processing and beautification ammendments of CSS
+   * property values. See the below note from Austin.
+   *
+   * ---
+   *
+   * Original Note:
+   *
    * Since I am already identifying value types this is a good place to do some
    * quick analysis and clean up on certain value conditions.
    *
    * These things are being corrected:
    *
    * - Fractional values missing a leading `0` are provided a leading `0`
-   * - `0` values with a dimension indicator (px, em) have the dimension indicator removed
+   * - Zero (`0`) values with a dimension indicator (px, em) have the dimension indicator removed
    * - Eliminate unnecessary leading `0s`
    * - URL values that are not quoted are wrapped in double quote characters
    * - Color values are set to lowercase and reduced from `6` to `3` digits if appropriate
    */
-  function value (val: string) {
+  function value (input: string) {
 
-    const x = val.replace(/\s*!important/, ' !important').split('');
+    /**
+     * The values list - All `!important` extraneous whitespace is stripped.
+     */
+    const x = input.replace(/\s*!important/, ' !important').split('');
 
-    const values = [];
+    /**
+     * Whether or not we are dealing with a `transition` value
+     */
     const transition = (/-?transition$/).test(data.token[parse.count - 2]);
 
-    function colorPush (value: string) {
+    /**
+     * The CSS property values token list
+     */
+    const values: string[] = [];
+
+    /**
+     * Zero Dot Expression
+     */
+    const zerodot = (/(\s|\(|,)-?0+\.?\d+([a-z]|\)|,|\s)/g);
+
+    /**
+     * Dot Expression
+     */
+    const dot = (/(\s|\(|,)-?\.?\d+([a-z]|\)|,|\s)/g);
+
+    /* -------------------------------------------- */
+    /* LEXICAL SCOPES                               */
+    /* -------------------------------------------- */
+
+    let ii = 0;
+    let dd = 0;
+    let block = '';
+    let leng = x.length;
+    let items = [];
+
+    /**
+     * Color Push - NOT IN USE
+     */
+    const colorPush = (value: string) => {
 
       // const vl = value.toLowerCase();
       // if ((/^(#[0-9a-f]{3,6})$/).test(vl) === true) {
@@ -78,24 +170,37 @@ prettify.lexers.style = function style (source: string) {
       return value;
     };
 
-    function valueSpace (find: string) {
+    /**
+     * Property Value Spacing - Correctly formats values
+     */
+    const valuespace = (find: string) => {
 
       find = find.replace(/\s*/g, '');
-      if ((/\/\d/).test(find) === true && val.indexOf('url(') === 0) return find;
-      return ` ${find.charAt(0)} ${find.charAt(1)}`;
+
+      return /\/\d/.test(find) && input.indexOf('url(') === 0
+        ? find
+        : ` ${find.charAt(0)} ${find.charAt(1)}`;
+
     };
 
-    function zerofix (find: string) {
+    /**
+     * Zero fixes - Handles `noLeadZero` rule
+     */
+    const zerofix = (find: string) => {
 
       if (options.style.noLeadZero === true) {
-        const scrub = (search: string) => search.replace(/0+/, '');
-        return find.replace(/^-?\D0+(\.|\d)/, scrub);
-      }
 
-      if ((/0*\./).test(find) === true) return find.replace(/0*\./, '0.');
-      if ((/0+/).test((/\d+/).exec(find)[0]) === true) {
-        if ((/^\D*0+\D*$/).test(find) === true) return find.replace(/0+/, '0');
-        return find.replace((/\d+/).exec(find)[0], (/\d+/).exec(find)[0].replace(/^0+/, ''));
+        return find.replace(/^-?\D0+(\.|\d)/, (search: string) => search.replace(/0+/, ''));
+
+      } else if (/0*\./.test(find)) {
+
+        return find.replace(/0*\./, '0.');
+
+      } else if (/0+/.test((/\d+/).exec(find)[0])) {
+
+        return (/^\D*0+\D*$/).test(find)
+          ? find.replace(/0+/, '0')
+          : find.replace((/\d+/).exec(find)[0], (/\d+/).exec(find)[0].replace(/^0+/, ''));
       }
 
       return find;
@@ -104,183 +209,186 @@ prettify.lexers.style = function style (source: string) {
     /**
      * Commas Space
      */
-    function commaspace (find: string) {
-
-      return find.replace(',', ', ');
-    };
+    const commaspace = (find: string) => find.replace(',', ', ');
 
     /**
      * Unit Fixes (ie: dimensions)
      */
-    function unitFix (di: string) {
-      return `${di} `;
-    };
+    const units = (dimension: string) => `${dimension} `;
 
-    function slash () {
+    /**
+     * Slash handler - Escaped character processing
+     */
+    const slash = () => {
 
-      const start = cc - 1;
+      const start = ii - 1;
+
       let xx = start;
 
       if (start < 1) return true;
 
       do { xx = xx - 1; } while (xx > 0 && x[xx] === '\\');
 
-      // report true for odd numbers (escaped)
-      if ((start - xx) % 2 === 1) return true;
+      return (start - xx) % 2 === 1; // report true for odd numbers (escaped)
 
-      return false;
     };
-
-    const zerodotstart = (/^-?0+\.\d+[a-z]/);
-    const dotstart = (/^-?\.\d+[a-z]/);
-    const zerodot = (/(\s|\(|,)-?0+\.?\d+([a-z]|\)|,|\s)/g);
-    const dot = (/(\s|\(|,)-?\.?\d+([a-z]|\)|,|\s)/g);
-
-    let cc = 0;
-    let dd = 0;
-    let block = '';
-    let leng = x.length;
-    let items = [];
 
     // this loop identifies containment so that tokens/sub-tokens are correctly
     // taken
-    if (cc < leng) {
+    if (ii < leng) {
+
       do {
-        items.push(x[cc]);
-        if (x[cc - 1] !== '\\' || slash() === false) {
+
+        items.push(x[ii]);
+
+        if (x[ii - 1] !== '\\' || slash() === false) {
           if (block === '') {
-            if (x[cc] === '"') {
+
+            if (is(x[ii], cc.DQO)) {
+
               block = '"';
               dd = dd + 1;
-            } else if (x[cc] === "'") {
+
+            } else if (is(x[ii], cc.SQO)) {
+
               block = "'";
               dd = dd + 1;
-            } else if (x[cc] === '(') {
+
+            } else if (is(x[ii], cc.LPR)) {
+
               block = ')';
               dd = dd + 1;
-            } else if (x[cc] === '[') {
+
+            } else if (is(x[ii], cc.LSB)) {
+
               block = ']';
               dd = dd + 1;
+
             }
-          } else if ((x[cc] === '(' && block === ')') || (x[cc] ===
-            '[' && block === ']')) {
+
+          } else if ((
+            is(x[ii], cc.LPR) &&
+            is(block, cc.RPR)
+          ) || (
+            is(x[ii], cc.LSB) &&
+            is(block, cc.RSB)
+          )) {
+
             dd = dd + 1;
-          } else if (x[cc] === block) {
+
+          } else if (x[ii] === block) {
+
             dd = dd - 1;
-            if (dd === 0) {
-              block = '';
-            }
+            if (dd === 0) block = '';
+
           }
         }
-        if (block === '' && x[cc] === ' ') {
+
+        if (block === '' && x[ii] === ' ') {
           items.pop();
           values.push(colorPush(items.join('')));
           items = [];
         }
-        cc = cc + 1;
-      } while (cc < leng);
+
+        ii = ii + 1;
+
+      } while (ii < leng);
     }
 
     values.push(colorPush(items.join('')));
     leng = values.length;
 
     // This is where the rules mentioned above are applied
-    cc = 0;
+    ii = 0;
 
-    if (cc < leng) {
+    if (ii < leng) {
+
       do {
 
-        if (
-          options.style.noLeadZero === true &&
-          zerodotstart.test(values[cc]) === true
-        ) {
+        if (options.style.noLeadZero === true && /^-?0+\.\d+[a-z]/.test(values[ii]) === true) {
 
-          values[cc] = values[cc].replace(/0+\./, '.');
+          values[ii] = values[ii].replace(/0+\./, '.');
 
-        } else if (
-          dotstart.test(values[cc]) && (
-            options.style.noLeadZero === false ||
-            options.style.noLeadZero === undefined
-          )
-        ) {
+        } else if (options.style.noLeadZero === false && /^-?\.\d+[a-z]/.test(values[ii])) {
 
-          values[cc] = values[cc].replace('.', '0.');
+          values[ii] = values[ii].replace('.', '0.');
 
-        } else if (zerodot.test(values[cc]) || dot.test(values[cc])) {
+        } else if (zerodot.test(values[ii]) || dot.test(values[ii])) {
 
-          values[cc] = values[cc].replace(zerodot, zerofix).replace(dot, zerofix);
+          values[ii] = values[ii].replace(zerodot, zerofix).replace(dot, zerofix);
 
-        } else if ((/^(0+([a-z]{2,3}|%))$/).test(values[cc]) && transition === false) {
+        } else if (/^(0+([a-z]{2,3}|%))$/.test(values[ii]) && transition === false) {
 
-          values[cc] = '0';
+          values[ii] = '0';
 
-        } else if ((/^(0+)/).test(values[cc]) === true) {
+        } else if (/^(0+)/.test(values[ii])) {
 
-          values[cc] = values[cc].replace(/0+/, '0');
+          values[ii] = values[ii].replace(/0+/, '0');
 
-          if ((/\d/).test(values[cc].charAt(1))) values[cc] = values[cc].substr(1);
+          if ((/\d/).test(values[ii].charAt(1))) values[ii] = values[ii].substr(1);
 
-        } else if ((/^url\((?!('|"))/).test(values[cc]) && values[cc].charAt(values[cc].length - 1) === ')') {
+        } else if (/^url\((?!('|"))/.test(values[ii]) && values[ii].charCodeAt(values[ii].length - 1) === cc.RPR) {
 
-          block = values[cc].charAt(values[cc].indexOf('url(') + 4);
+          block = values[ii].charAt(values[ii].indexOf('url(') + 4);
 
-          if (block !== '@' && block !== '{' && block !== '<') {
-
+          if (block !== '@' && not(block, cc.LPR) && not(block, cc.LAN)) {
             if (options.style.quoteConvert === 'double') {
-              values[cc] = values[cc].replace(/url\(/, 'url("').replace(/\)$/, '")');
+              values[ii] = values[ii].replace(/url\(/, 'url("').replace(/\)$/, '")');
             } else {
-              values[cc] = values[cc].replace(/url\(/, "url('").replace(/\)$/, "')");
+              values[ii] = values[ii].replace(/url\(/, "url('").replace(/\)$/, "')");
             }
           }
         }
 
-        if ((/^(\+|-)?\d+(\.\d+)?(e-?\d+)?\D+$/).test(values[cc])) {
-          if (!grammar.style.units.has(values[cc].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, ''))) {
-            values[cc] = values[cc].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, unitFix);
+        if ((/^(\+|-)?\d+(\.\d+)?(e-?\d+)?\D+$/).test(values[ii])) {
+          if (!grammar.style.units.has(values[ii].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, ''))) {
+            values[ii] = values[ii].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, units);
           }
         }
 
-        if (
-          (/^\w+\(/).test(values[cc]) &&
-          values[cc].charAt(values[cc].length - 1) === ')' && (
-            values[cc].indexOf('url(') !== 0 || (
-              values[cc].indexOf('url(') === 0 &&
-              values[cc].indexOf(' ') > 0
-            )
+        if ((/^\w+\(/).test(values[ii]) && values[ii].charAt(values[ii].length - 1) === ')' && (
+          values[ii].indexOf('url(') !== 0 || (
+            values[ii].indexOf('url(') === 0 &&
+            values[ii].indexOf(' ') > 0
           )
-        ) {
-          values[cc] = values[cc].replace(/,\S/g, commaspace);
+        )) {
+
+          values[ii] = values[ii].replace(/,\S/g, commaspace);
         }
 
-        cc = cc + 1;
+        ii = ii + 1;
 
-      } while (cc < leng);
+      } while (ii < leng);
     }
 
     block = values.join(' ');
 
-    return block.charAt(0) + block.slice(1).replace(/\s*(\/|\+|\*)\s*(\d|\$)/, valueSpace);
+    return block.charAt(0) + block.slice(1).replace(/\s*(\/|\+|\*)\s*(\d|\$)/, valuespace);
 
   };
 
   // the generic token builder
-  const buildtoken = function lexer_style_build () {
+  function buildtoken () {
+
+    const block = [];
+    const out = [];
+    const qc = options.style.quoteConvert;
+
+    /* -------------------------------------------- */
+    /* LEXICAL SCOPES                               */
+    /* -------------------------------------------- */
 
     let aa = a;
     let bb = 0;
     let outy = '';
     let funk = null;
 
-    const block = [];
-    const out = [];
-    const qc = (options.style.quoteConvert === undefined) ? 'none' : options.style.quoteConvert;
-
-    function spacestart () {
+    const spacestart = () => {
 
       out.push(b[aa]);
 
-      if ((/\s/).test(b[aa + 1])) {
-        do { aa = aa + 1; } while (aa < len && (/\s/).test(b[aa + 1]) === true);
+      if (ws(b[aa + 1])) {
+        do { aa = aa + 1; } while (aa < len && ws(b[aa + 1]));
       }
     };
 
@@ -288,10 +396,12 @@ prettify.lexers.style = function style (source: string) {
 
       // this loop accounts for grouping mechanisms
       do {
-        if (b[aa] === '"' || b[aa] === "'") {
+        if (is(b[aa], cc.DQO) || is(b[aa], cc.SQO)) {
+
           if (funk === null) funk = false;
 
           if (block[block.length - 1] === b[aa] && (b[aa - 1] !== '\\' || esctest(aa - 1) === false)) {
+
             block.pop();
 
             if (qc === 'double') {
@@ -300,13 +410,10 @@ prettify.lexers.style = function style (source: string) {
               b[aa] = "'";
             }
 
-          } else if (
-            block[block.length - 1] !== '"' &&
-            block[block.length - 1] !== "'" && (
-              b[aa - 1] !== '\\' ||
-              esctest(aa - 1) === false
-            )
-          ) {
+          } else if (not(block[block.length - 1], cc.DQO) && not(block[block.length - 1], cc.SQO) && (
+            b[aa - 1] !== '\\' ||
+            esctest(aa - 1) === false
+          )) {
 
             block.push(b[aa]);
 
@@ -319,40 +426,37 @@ prettify.lexers.style = function style (source: string) {
           } else if (b[aa - 1] === '\\' && qc !== 'none') {
 
             if (esctest(aa - 1) === true) {
-              if (qc === 'double' && b[aa] === "'") {
+              if (qc === 'double' && is(b[aa], cc.SQO)) {
                 out.pop();
-              } else if (qc === 'single' && b[aa] === '"') {
+              } else if (qc === 'single' && is(b[aa], cc.DQO)) {
                 out.pop();
               }
             }
 
-          } else if (qc === 'double' && b[aa] === '"') {
+          } else if (qc === 'double' && is(b[aa], cc.DQO)) {
             b[aa] = '\\"';
-          } else if (qc === 'single' && b[aa] === "'") {
+          } else if (qc === 'single' && is(b[aa], cc.SQO)) {
             b[aa] = "\\'";
           }
 
           out.push(b[aa]);
 
-        } else if (
-          b[aa - 1] !== '\\' ||
-          esctest(aa - 1) === false
-        ) {
+        } else if (b[aa - 1] !== '\\' || esctest(aa - 1) === false) {
 
-          if (b[aa] === '(') {
+          if (is(b[aa], cc.LPR)) {
 
             if (funk === null) funk = true;
 
             block.push(')');
             spacestart();
 
-          } else if (b[aa] === '[') {
+          } else if (is(b[aa], cc.LSB)) {
 
             funk = false;
             block.push(']');
             spacestart();
 
-          } else if ((b[aa] === '#' || b[aa] === '@') && b[aa + 1] === '{') {
+          } else if ((is(b[aa], cc.HSH) || b[aa] === '@') && is(b[aa + 1], cc.LCB)) {
 
             funk = false;
             out.push(b[aa]);
@@ -374,15 +478,12 @@ prettify.lexers.style = function style (source: string) {
           out.push(b[aa]);
         }
 
-        if (
-          parse.structure[parse.structure.length - 1][0] === 'map' &&
-          block.length === 0 && (
-            b[aa + 1] === ',' ||
-            b[aa + 1] === ')'
-          )
-        ) {
+        if (parse.structure[parse.structure.length - 1][0] === 'map' && block.length === 0 && (
+          is(b[aa + 1], cc.COM) ||
+          is(b[aa + 1], cc.RPR)
+        )) {
 
-          if (b[aa + 1] === ')' && data.token[parse.count] === '(') {
+          if (is(b[aa + 1], cc.RPR) && is(data.token[parse.count], cc.LPR)) {
             parse.pop(data);
             parse.structure.pop();
             out.splice(0, 0, '(');
@@ -391,14 +492,11 @@ prettify.lexers.style = function style (source: string) {
           }
         }
 
-        if (b[aa + 1] === ':') {
+        if (is(b[aa + 1], cc.COL)) {
+
           bb = aa;
 
-          if ((/\s/).test(b[bb]) === true) {
-            do {
-              bb = bb - 1;
-            } while ((/\s/).test(b[bb]) === true);
-          }
+          if (ws(b[bb])) do { bb = bb - 1; } while (ws(b[bb]));
 
           outy = b.slice(bb - 6, bb + 1).join('');
 
@@ -409,38 +507,34 @@ prettify.lexers.style = function style (source: string) {
 
         if (block.length === 0) {
 
-          if (
-            (
-              b[aa + 1] === ';' && esctest(aa + 1) === true) || (
-              b[aa + 1] === ':' &&
-              b[aa] !== ':' &&
-              b[aa + 2] !== ':' &&
+          if ((
+            is(b[aa + 1], cc.SEM) && esctest(aa + 1) === true) || (
+            is(b[aa + 1], cc.COL) &&
+              not(b[aa], cc.COL) &&
+              not(b[aa + 2], cc.COL) &&
               outy !== 'filter' &&
               outy !== 'progid'
-            ) ||
-            b[aa + 1] === '}' ||
-            b[aa + 1] === '{' || (
-              b[aa + 1] === '/' && (
-                b[aa + 2] === '*' ||
-                b[aa + 2] === '/'
-              )
+          ) || is(b[aa + 1], cc.RCB) || is(b[aa + 1], cc.LCB) || (
+            is(b[aa + 1], cc.FWS) && (
+              is(b[aa + 2], cc.ARS) ||
+              is(b[aa + 2], cc.FWS)
             )
-          ) {
+          )) {
 
             bb = out.length - 1;
 
-            if ((/\s/).test(out[bb]) === true) {
+            if (ws(out[bb])) {
               do {
                 bb = bb - 1;
                 aa = aa - 1;
                 out.pop();
-              } while ((/\s/).test(out[bb]) === true);
+              } while (ws(out[bb]) === true);
             }
 
             break;
           }
 
-          if (b[aa + 1] === ',') break;
+          if (is(b[aa + 1], cc.COM)) break;
 
         }
         aa = aa + 1;
@@ -449,10 +543,7 @@ prettify.lexers.style = function style (source: string) {
 
     a = aa;
 
-    if (
-      parse.structure[parse.structure.length - 1][0] === 'map' &&
-      out[0] === '('
-    ) {
+    if (parse.structure[parse.structure.length - 1][0] === 'map' && is(out[0], cc.LPR)) {
       mapper[mapper.length - 1] = mapper[mapper.length - 1] - 1;
     }
 
@@ -463,7 +554,10 @@ prettify.lexers.style = function style (source: string) {
       .replace(/\s$/, '');
 
     if (funk === true) {
-      ltoke = ltoke.replace(/\s+\(/g, '(').replace(/\s+\)/g, ')').replace(/,\(/g, ', (');
+      ltoke = ltoke
+        .replace(/\s+\(/g, '(')
+        .replace(/\s+\)/g, ')')
+        .replace(/,\(/g, ', (');
     }
 
     if (parse.count > -1 && data.token[parse.count].indexOf('extend(') === 0) {
@@ -577,101 +671,90 @@ prettify.lexers.style = function style (source: string) {
 
     function selectorPretty (index: number) {
 
-      let cc = index;
+      let ss = index;
 
-      const dd = data.begin[cc];
+      const dd = data.begin[ss];
 
       data.token[index] = data.token[index]
         .replace(/\s*&/, ' &')
         .replace(/(\s*>\s*)/g, ' > ')
+        .replace(/(\s*\+\s*)/g, ' + ') // HOT PATCH - Included + for SCSS
         .replace(/:\s+/g, ': ')
         .replace(/^(\s+)/, '')
         .replace(/(\s+)$/, '')
         .replace(/\s+::\s+/, '::');
 
-      if (
-        data.token[cc - 1] === ',' ||
-        data.token[cc - 1] === ':' ||
-        data.types[cc - 1] === 'comment'
-      ) {
+      if (is(data.token[ss - 1], cc.COM) || is(data.token[ss - 1], cc.COL) || data.types[ss - 1] === 'comment') {
 
         do {
-          cc = cc - 1;
-          if (data.begin[cc] === dd) {
 
-            if (data.token[cc] === ';') break;
+          ss = ss - 1;
 
-            if (data.token[cc] !== ',' && data.types[cc] !== 'comment') {
-              data.types[cc] = 'selector';
-            }
+          if (data.begin[ss] === dd) {
 
-            if (data.token[cc] === ':') {
-              data.token[cc - 1] = `${data.token[cc - 1]}:${data.token[cc + 1]}`;
-              parse.splice({ data, howmany: 2, index: cc });
+            if (is(data.token[ss], cc.SEM)) break;
+            if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') data.types[ss] = 'selector';
+            if (is(data.token[ss], cc.COL)) {
+              data.token[ss - 1] = `${data.token[ss - 1]}:${data.token[ss + 1]}`;
+              parse.splice({ data, howmany: 2, index: ss });
             }
 
           } else {
+
             break;
           }
-        } while (cc > 0);
+
+        } while (ss > 0);
       }
 
       // sorts comma separated lists of selectors
-      cc = parse.count;
+      ss = parse.count;
 
-      if (options.style.sortSelectors === true && data.token[cc - 1] === ',') {
-        const store = [ data.token[cc] ];
+      if (options.style.sortSelectors === true && is(data.token[ss - 1], cc.COM)) {
+
+        const store = [ data.token[ss] ];
 
         do {
-          cc = cc - 1;
+          ss = ss - 1;
 
-          if (data.types[cc] === 'comment' || data.types[cc] === 'ignore') {
-            do { cc = cc - 1; } while (cc > 0 && (
-              data.types[cc] === 'comment' ||
-              data.types[cc] === 'ignore'
-            ));
+          if (data.types[ss] === 'comment' || data.types[ss] === 'ignore') {
+            do {
+              ss = ss - 1;
+            } while (ss > 0 && (data.types[ss] === 'comment' || data.types[ss] === 'ignore'));
           }
 
-          if (data.token[cc] === ',') cc = cc - 1;
+          if (is(data.token[ss], cc.COM)) ss = ss - 1;
 
-          store.push(data.token[cc]);
+          store.push(data.token[ss]);
 
-        } while (
-          cc > 0 && (
-            data.token[cc - 1] === ',' ||
-            data.types[cc - 1] === 'selector' ||
-            data.types[cc - 1] === 'comment' ||
-            data.types[cc - 1] === 'ignore'
-          )
-        );
+        } while (ss > 0 && (is(data.token[ss - 1], cc.COM) ||
+          data.types[ss - 1] === 'selector' ||
+          data.types[ss - 1] === 'comment' ||
+          data.types[ss - 1] === 'ignore'
+        ));
 
         store.sort();
-        cc = parse.count;
-        data.token[cc] = store.pop();
+        ss = parse.count;
+        data.token[ss] = store.pop();
 
         do {
-          cc = cc - 1;
-          if (data.types[cc] === 'comment' || data.types[cc] === 'ignore') {
-            do { cc = cc - 1; } while (
-              cc > 0 && (
-                data.types[cc] === 'comment' ||
-                data.types[cc] === 'ignore'
-              )
-            );
+          ss = ss - 1;
+
+          if (data.types[ss] === 'comment' || data.types[ss] === 'ignore') {
+            do {
+              ss = ss - 1;
+            } while (ss > 0 && (data.types[ss] === 'comment' || data.types[ss] === 'ignore'));
           }
 
-          if (data.token[cc] === ',') cc = cc - 1;
+          if (is(data.token[ss], cc.COM)) ss = ss - 1;
 
-          data.token[cc] = store.pop();
+          data.token[ss] = store.pop();
 
-        } while (
-          cc > 0 && (
-            data.token[cc - 1] === ',' ||
-            data.token[cc - 1] === 'selector' ||
-            data.types[cc - 1] === 'comment' ||
-            data.types[cc - 1] === 'ignore'
-          )
-        );
+        } while (ss > 0 && (is(data.token[ss - 1], cc.COM) ||
+          data.token[ss - 1] === 'selector' ||
+          data.types[ss - 1] === 'comment' ||
+          data.types[ss - 1] === 'ignore'
+        ));
       }
 
       aa = parse.count;
@@ -694,6 +777,7 @@ prettify.lexers.style = function style (source: string) {
           data.types[aa] = 'property';
         }
       } else if (data.lexer[aa] === 'style') {
+        console.log(data.token[aa]);
         data.types[aa] = 'selector';
         selectorPretty(aa);
       }
@@ -794,6 +878,7 @@ prettify.lexers.style = function style (source: string) {
           ) || data.types[bb - 1] === 'separator'
         )
       ) {
+
         data.types[bb] = 'variable';
         ltype = 'variable';
         data.token[bb] = value(data.token[bb]);
@@ -824,14 +909,19 @@ prettify.lexers.style = function style (source: string) {
       }
     });
   };
-  const template = function lexer_style_template (open, end) {
+
+  function template (open: string, end: string) {
+
     let quote = '';
     let name = '';
     let start = open.length;
     let endlen = 0;
     const store = [];
-    const exit = function lexer_style_template_exit (typename) {
+
+    const exit = (typename: Types) => {
+
       const endtype = data.types[parse.count - 1];
+
       if (ltype === 'item') {
         if (endtype === 'colon') {
           data.types[parse.count] = 'value';
@@ -839,7 +929,9 @@ prettify.lexers.style = function style (source: string) {
           item(endtype);
         }
       }
+
       ltype = typename;
+
       if (ltype.indexOf('start') > -1 || ltype.indexOf('else') > -1) {
         recordpush(ltoke);
       } else {
@@ -852,11 +944,13 @@ prettify.lexers.style = function style (source: string) {
     if (a < len) {
 
       do {
+
         store.push(b[a]);
 
         if (quote === '') {
 
           if (b[a] === '"') {
+
             quote = '"';
 
           } else if (b[a] === "'") {
@@ -874,9 +968,11 @@ prettify.lexers.style = function style (source: string) {
           } else if (b[a + 1] === end.charAt(0)) {
 
             do {
+
               endlen = endlen + 1;
               a = a + 1;
               store.push(b[a]);
+
             } while (
               a < len &&
               endlen < end.length &&
@@ -887,17 +983,13 @@ prettify.lexers.style = function style (source: string) {
 
               quote = store.join('');
 
-              if ((/\s/).test(quote.charAt(start)) === true) {
-                do {
-                  start = start + 1;
-                } while ((/\s/).test(quote.charAt(start)) === true);
+              if (ws(quote.charAt(start))) {
+                do { start = start + 1; } while (ws(quote.charAt(start)));
               }
 
               endlen = start;
 
-              do {
-                endlen = endlen + 1;
-              } while (endlen < end.length && (/\s/).test(quote.charAt(endlen)) === false);
+              do { endlen = endlen + 1; } while (endlen < end.length && !ws(quote.charAt(endlen)));
 
               if (endlen === quote.length) endlen = endlen - end.length;
 
@@ -906,18 +998,18 @@ prettify.lexers.style = function style (source: string) {
                 if (quote.indexOf('{%-') === 0) {
 
                   quote = quote
-                    .replace(/^(\{%-\s*)/, '{%- ')
-                    .replace(/(\s*-%\})$/, ' -%}')
-                    .replace(/(\s*%\})$/, ' %}');
+                    .replace(/^({%-\s*)/, '{%- ')
+                    .replace(/(\s*-%})$/, ' -%}')
+                    .replace(/(\s*%})$/, ' %}');
 
                   name = quote.slice(4);
 
                 } else {
 
                   quote = quote
-                    .replace(/^(\{%\s*)/, '{% ')
-                    .replace(/(\s*%\})$/, ' %}')
-                    .replace(/(\s*-%\})$/, ' -%}');
+                    .replace(/^({%\s*)/, '{% ')
+                    .replace(/(\s*%})$/, ' %}')
+                    .replace(/(\s*-%})$/, ' -%}');
 
                   name = quote.slice(3);
                 }
@@ -927,10 +1019,10 @@ prettify.lexers.style = function style (source: string) {
               // Prevent whitespace removals of output tag values
               if (open === '{{') {
                 quote = quote
-                  .replace(/^(\{\{\s*)/, '{{ ')
-                  .replace(/^(\{\{-\s*)/, '{{- ')
-                  .replace(/(\s*-\}\})$/, ' -}}')
-                  .replace(/(\s*\}\})$/, ' }}');
+                  .replace(/^({{\s*)/, '{{ ')
+                  .replace(/^({{-\s*)/, '{{- ')
+                  .replace(/(\s*-}})$/, ' -}}')
+                  .replace(/(\s*}})$/, ' }}');
               }
 
               if (
@@ -1003,15 +1095,19 @@ prettify.lexers.style = function style (source: string) {
 
                 if (namesLen > -1) {
                   do {
+
                     if (name === templateNames[namesLen]) {
                       exit('template_start');
                       return;
                     }
+
                     if (name === 'end' + templateNames[namesLen]) {
                       exit('template_end');
                       return;
                     }
+
                     namesLen = namesLen - 1;
+
                   } while (namesLen > -1);
                 }
 
@@ -1024,7 +1120,7 @@ prettify.lexers.style = function style (source: string) {
                 do {
                   begin = begin + 1;
                 } while (
-                  begin < ending && (/\s/).test(group.charAt(
+                  begin < ending && ws(group.charAt(
                     begin
                   )) === false &&
                   group.charAt(start) !== '('
@@ -1064,21 +1160,25 @@ prettify.lexers.style = function style (source: string) {
             endlen = 0;
           }
         } else if (quote === b[a]) {
+
           if (quote === '"' || quote === "'") {
             quote = '';
-          } else if (quote === '/' && (b[a] === '\r' || b[a] ===
-            '\n')) {
+          } else if (quote === '/' && (b[a] === '\r' || b[a] === '\n')) {
             quote = '';
           } else if (quote === '*' && b[a + 1] === '/') {
             quote = '';
           }
         }
+
         a = a + 1;
+
       } while (a < len);
     }
   };
 
-  // finds comments including those JS looking '//' comments
+  /**
+   * Finds comments, including those JS looking '//' commments
+   */
   function comment (line: boolean) {
 
     const comm = line ? parse.wrapCommentLine({
@@ -1104,7 +1204,9 @@ prettify.lexers.style = function style (source: string) {
     a = comm[1];
   };
 
-  // consolidate margin and padding values
+  /**
+   * Consolidate margin and padding values
+   */
   function marginPadding () {
 
     const lines = parse.linesSpace;
@@ -1345,47 +1447,50 @@ prettify.lexers.style = function style (source: string) {
     parse.linesSpace = lines;
   };
 
-  // token building loop
+  /* -------------------------------------------- */
+  /* TOKEN BUILD                                  */
+  /* -------------------------------------------- */
+
   do {
 
-    if ((/\s/).test(b[a]) === true) {
+    if (ws(b[a]) === true) {
 
       a = parse.spacer({ array: b, end: len, index: a });
 
-    } else if (b[a] === '/' && b[a + 1] === '*') {
+    } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.ARS)) {
 
       comment(false);
 
-    } else if (b[a] === '/' && b[a + 1] === '/') {
+    } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.FWS)) {
 
       comment(true);
 
-    } else if (b[a] === '{' && b[a + 1] === '%') {
+    } else if (is(b[a], cc.LCB) && is(b[a + 1], cc.PER)) {
 
       // Liquid
       template('{%', '%}');
 
-    } else if (b[a] === '{' && b[a + 1] === '{') {
+    } else if (is(b[a], cc.LCB) && is(b[a + 1], cc.LCB)) {
 
       // Liquid
       template('{{', '}}');
 
-    } else if (
-      b[a] === '{' || (
-        b[a] === '(' &&
-        data.token[parse.count] === ':' &&
-        data.types[parse.count - 1] === 'variable')
-    ) {
+    } else if ((
+      is(b[a], cc.LCB) && (not(b[a + 1], cc.LCB) || not(b[a + 1], cc.PER))
+    ) || (
+      is(b[a], cc.LPR) &&
+      is(data.token[parse.count], cc.COL) &&
+      data.types[parse.count - 1] === 'variable'
+    )) {
 
       item('start');
       ltype = 'start';
       ltoke = b[a];
 
-      if (b[a] === '(') {
+      if (is(b[a], cc.LPR)) {
         recordpush('map');
         mapper.push(0);
-      } else if (data.types[parse.count] === 'selector' || data.types[
-        parse.count] === 'variable') {
+      } else if (data.types[parse.count] === 'selector' || data.types[parse.count] === 'variable') {
         recordpush(data.token[parse.count]);
       } else if (data.types[parse.count] === 'colon') {
         recordpush(data.token[parse.count - 1]);
@@ -1396,7 +1501,7 @@ prettify.lexers.style = function style (source: string) {
       nosort.push(false);
 
     } else if (
-      b[a] === '}' || (
+      is(b[a], cc.RCB) || (
         b[a] === ')' &&
         parse.structure[parse.structure.length - 1][0] === 'map' &&
         mapper[mapper.length - 1] === 0
@@ -1404,9 +1509,9 @@ prettify.lexers.style = function style (source: string) {
     ) {
 
       if (
-        b[a] === '}' &&
+        is(b[a], cc.RCB) &&
+        is(data.token[parse.count - 1], cc.LCB) &&
         data.types[parse.count] === 'item' &&
-        data.token[parse.count - 1] === '{' &&
         data.token[parse.count - 2] !== undefined &&
         data.token[parse.count - 2].charAt(data.token[parse.count - 2].length - 1) === '@'
       ) {
@@ -1419,20 +1524,18 @@ prettify.lexers.style = function style (source: string) {
 
       } else {
 
-        if (b[a] === ')') mapper.pop();
+        if (is(b[a], cc.RPR)) mapper.pop();
 
         item('end');
 
-        if (b[a] === '}' && data.token[parse.count] !== ';') {
-          if (
-            data.types[parse.count] === 'value' ||
-            data.types[parse.count] === 'function' || (
-              data.types[parse.count] === 'variable' && (
-                data.token[parse.count - 1] === ':' ||
-                data.token[parse.count - 1] === ';'
-              )
+        if (is(b[a], cc.RCB) && not(data.token[parse.count], cc.SEM)) {
+
+          if (data.types[parse.count] === 'value' || data.types[parse.count] === 'function' || (
+            data.types[parse.count] === 'variable' && (
+              is(data.token[parse.count - 1], cc.COL) ||
+              is(data.token[parse.count - 1], cc.SEM)
             )
-          ) {
+          )) {
 
             if (options.style.correct === true) {
               ltoke = ';';
@@ -1446,25 +1549,24 @@ prettify.lexers.style = function style (source: string) {
           }
         }
 
-        ltype = 'end';
         nosort.pop();
+
         ltoke = b[a];
         ltype = 'end';
 
-        if (b[a] === '}') marginPadding();
-        if (options.style.sortProperties === true && b[a] === '}') parse.objectSort(data);
+        if (is(b[a], cc.RCB)) marginPadding();
+        if (options.style.sortProperties === true && is(b[a], cc.RCB)) parse.objectSort(data);
 
         recordpush('');
 
       }
-    } else if (b[a] === ';' || b[a] === ',') {
 
-      if (
-        data.types[parse.count - 1] === 'selector' || (
-          data.token[parse.count - 1] === '}' &&
-          data.types[parse.count] !== 'function'
-        )
-      ) {
+    } else if (is(b[a], cc.SEM) || is(b[a], cc.COM)) {
+
+      if (data.types[parse.count - 1] === 'selector' || (
+        data.types[parse.count] !== 'function' &&
+        is(data.token[parse.count - 1], cc.RCB)
+      )) {
 
         item('start');
 
@@ -1488,7 +1590,7 @@ prettify.lexers.style = function style (source: string) {
 
     } else {
 
-      if (parse.structure[parse.structure.length - 1][0] === 'map' && b[a] === '(') {
+      if (parse.structure[parse.structure.length - 1][0] === 'map' && is(b[a], cc.LPR)) {
         mapper[mapper.length - 1] = mapper[mapper.length - 1] + 1;
       }
 
