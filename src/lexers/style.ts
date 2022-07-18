@@ -396,6 +396,7 @@ prettify.lexers.style = function style (source: string) {
 
       // this loop accounts for grouping mechanisms
       do {
+
         if (is(b[aa], cc.DQO) || is(b[aa], cc.SQO)) {
 
           if (funk === null) funk = false;
@@ -507,14 +508,16 @@ prettify.lexers.style = function style (source: string) {
 
         if (block.length === 0) {
 
-          if ((
-            is(b[aa + 1], cc.SEM) && esctest(aa + 1) === true) || (
+          if ((is(b[aa + 1], cc.SEM) && esctest(aa + 1) === true) || (
             is(b[aa + 1], cc.COL) &&
-              not(b[aa], cc.COL) &&
-              not(b[aa + 2], cc.COL) &&
-              outy !== 'filter' &&
-              outy !== 'progid'
-          ) || is(b[aa + 1], cc.RCB) || is(b[aa + 1], cc.LCB) || (
+            not(b[aa], cc.COL) &&
+            not(b[aa + 2], cc.COL) &&
+            outy !== 'filter' &&
+            outy !== 'progid'
+          ) || (
+            is(b[aa + 1], cc.RCB) ||
+            is(b[aa + 1], cc.LCB)
+          ) || (
             is(b[aa + 1], cc.FWS) && (
               is(b[aa + 2], cc.ARS) ||
               is(b[aa + 2], cc.FWS)
@@ -528,7 +531,7 @@ prettify.lexers.style = function style (source: string) {
                 bb = bb - 1;
                 aa = aa - 1;
                 out.pop();
-              } while (ws(out[bb]) === true);
+              } while (ws(out[bb]));
             }
 
             break;
@@ -537,7 +540,9 @@ prettify.lexers.style = function style (source: string) {
           if (is(b[aa + 1], cc.COM)) break;
 
         }
+
         aa = aa + 1;
+
       } while (aa < len);
     }
 
@@ -554,6 +559,7 @@ prettify.lexers.style = function style (source: string) {
       .replace(/\s$/, '');
 
     if (funk === true) {
+
       ltoke = ltoke
         .replace(/\s+\(/g, '(')
         .replace(/\s+\)/g, ')')
@@ -694,13 +700,23 @@ prettify.lexers.style = function style (source: string) {
 
             // HOT PATCH
             // Fixes isolated Liquid tags, ie: {{ tag }}
+            //
             if (is(data.token[ss], cc.SEM) || data.types[ss].indexOf('template') > -1) break;
 
             if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') data.types[ss] = 'selector';
 
             if (is(data.token[ss], cc.COL)) {
-              data.token[ss - 1] = `${data.token[ss - 1]}:${data.token[ss + 1]}`;
-              parse.splice({ data, howmany: 2, index: ss });
+
+              if (data.token[ss + 1] === 'root') {
+                data.token[ss + 1] = ':root';
+                data.types[ss + 1] = 'selector';
+                data.lines[ss + 1] = data.lines[ss];
+
+                parse.splice({ data, howmany: 1, index: ss });
+              } else {
+                data.token[ss - 1] = `${data.token[ss - 1]}:${data.token[ss + 1]}`;
+                parse.splice({ data, howmany: 2, index: ss });
+              }
             }
 
           } else {
@@ -762,7 +778,7 @@ prettify.lexers.style = function style (source: string) {
       }
 
       aa = parse.count;
-      priors();
+      // priors();
     };
 
     priors();
@@ -874,9 +890,40 @@ prettify.lexers.style = function style (source: string) {
 
     let x = parse.count;
 
-    do { x = x - 1; } while (x > 0 && (data.types[x] === 'comment'));
+    do {
 
-    if (data.token[x] === ';') return;
+      if (is(data.token[x][0], cc.DSH) && is(data.token[x][1], cc.DSH)) {
+
+        data.types[x] = 'property';
+
+        if (is(data.token[x][data.token[x].length - 1], cc.SEM)) {
+
+          data.token[x] = data.token[x].slice(0, -1);
+
+          parse.splice({
+            data,
+            howmany: 0,
+            index: x + 1,
+            record: {
+              begin: parse.structure[parse.structure.length - 1][1],
+              ender: -1,
+              lexer: 'style',
+              lines: parse.linesSpace,
+              stack: parse.structure[parse.structure.length - 1][0],
+              token: ';',
+              types: 'separator'
+            }
+          });
+        }
+      }
+
+      x = x - 1;
+
+    } while (x > 0 && (data.types[x] === 'comment'));
+
+    console.log(data.token[x]);
+
+    if (data.token[x] === ';' || data.token[x] === '{') return;
 
     parse.splice({
       data,
@@ -974,7 +1021,9 @@ prettify.lexers.style = function style (source: string) {
 
               endlen = start;
 
-              do { endlen = endlen + 1; } while (endlen < end.length && !ws(quote.charAt(endlen)));
+              do {
+                endlen = endlen + 1;
+              } while (endlen < end.length && !ws(quote.charAt(endlen)));
 
               if (endlen === quote.length) endlen = endlen - end.length;
 
@@ -1440,7 +1489,7 @@ prettify.lexers.style = function style (source: string) {
 
     } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.ARS)) {
 
-      comment(false);
+      comment(true); // was false
 
     } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.FWS)) {
 
@@ -1457,7 +1506,7 @@ prettify.lexers.style = function style (source: string) {
       template('{{', '}}');
 
     } else if ((
-      is(b[a], cc.LCB) && (not(b[a + 1], cc.LCB) || not(b[a + 1], cc.PER))
+      is(b[a], cc.LCB)
     ) || (
       is(b[a], cc.LPR) &&
       is(data.token[parse.count], cc.COL) &&
@@ -1528,7 +1577,9 @@ prettify.lexers.style = function style (source: string) {
             recordpush('');
 
           } else if (data.types[parse.count] === 'comment') {
+
             semiComment();
+
           }
         }
 
@@ -1586,5 +1637,6 @@ prettify.lexers.style = function style (source: string) {
 
   if (options.style.sortProperties === true) parse.objectSort(data);
 
+  // console.log(data);
   return data;
 };
