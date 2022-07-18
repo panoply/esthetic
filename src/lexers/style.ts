@@ -62,7 +62,7 @@ prettify.lexers.style = function style (source: string) {
   /**
    * Last Type, ie: `start`, `selector`, `template` etc etc
    */
-  let ltype = '';
+  let ltype: Types = '';
 
   /**
    * Last Token, ie: `.selector`, `font-size`, `:` etc etc
@@ -381,7 +381,7 @@ prettify.lexers.style = function style (source: string) {
     let aa = a;
     let bb = 0;
     let outy = '';
-    let funk = null;
+    let func = null;
 
     const spacestart = () => {
 
@@ -399,7 +399,7 @@ prettify.lexers.style = function style (source: string) {
 
         if (is(b[aa], cc.DQO) || is(b[aa], cc.SQO)) {
 
-          if (funk === null) funk = false;
+          if (func === null) func = false;
 
           if (block[block.length - 1] === b[aa] && (b[aa - 1] !== '\\' || esctest(aa - 1) === false)) {
 
@@ -446,20 +446,20 @@ prettify.lexers.style = function style (source: string) {
 
           if (is(b[aa], cc.LPR)) {
 
-            if (funk === null) funk = true;
+            if (func === null) func = true;
 
             block.push(')');
             spacestart();
 
           } else if (is(b[aa], cc.LSB)) {
 
-            funk = false;
+            func = false;
             block.push(']');
             spacestart();
 
           } else if ((is(b[aa], cc.HSH) || b[aa] === '@') && is(b[aa + 1], cc.LCB)) {
 
-            funk = false;
+            func = false;
             out.push(b[aa]);
 
             aa = aa + 1;
@@ -558,7 +558,7 @@ prettify.lexers.style = function style (source: string) {
       .replace(/^\s/, '')
       .replace(/\s$/, '');
 
-    if (funk === true) {
+    if (func === true) {
 
       ltoke = ltoke
         .replace(/\s+\(/g, '(')
@@ -571,7 +571,7 @@ prettify.lexers.style = function style (source: string) {
       ltype = 'pseudo';
 
     } else if (
-      funk === true &&
+      func === true &&
       (/\d/).test(ltoke.charAt(0)) === false &&
       (/^rgba?\(/).test(ltoke) === false &&
       ltoke.indexOf('url(') !== 0 && (
@@ -637,15 +637,32 @@ prettify.lexers.style = function style (source: string) {
    */
   function item (type: string) {
 
+    /**
+     * Current character in sequence
+     */
     let aa = parse.count;
+
+    /**
+     * Previous character in sequence
+     */
     let bb = 0;
+
+    /**
+     * First character
+     */
     let first = '';
     const comsa = [];
 
-    function priors () {
+    /* -------------------------------------------- */
+    /* FUNCTIONS                                    */
+    /* -------------------------------------------- */
+
+    const priors = () => {
+
+      if (parse.count < 0) return;
 
       // backtrack through immediately prior comments to find the correct token
-      if (data.types[aa] === 'comment' || data.types[aa] === 'ignore') {
+      if (aa > 0 && (data.types[aa] === 'comment' || data.types[aa] === 'ignore')) {
         do {
           aa = aa - 1;
           comsa.push(data.token[aa]);
@@ -660,7 +677,7 @@ prettify.lexers.style = function style (source: string) {
 
       bb = aa - 1;
 
-      if (data.types[bb] === 'comment' || data.types[bb] === 'ignore') {
+      if (bb > 0 && (data.types[bb] === 'comment' || data.types[bb] === 'ignore')) {
         do {
           bb = bb - 1;
         } while (
@@ -672,10 +689,21 @@ prettify.lexers.style = function style (source: string) {
         );
       }
 
+      if (bb < 0) bb = 0;
+      if (aa < 0) aa = 0;
+
       first = data.token[aa].charAt(0);
+
     };
 
-    function selectorPretty (index: number) {
+    /**
+     * CSS Selectors
+     *
+     * Process the selector tokens and apply the various
+     * corrections. Pushes formatter token sequences in the
+     * data structure, everything else is handled by beautifier.
+     */
+    function selector (index: number) {
 
       let ss = index;
 
@@ -690,41 +718,72 @@ prettify.lexers.style = function style (source: string) {
         .replace(/(\s+)$/, '')
         .replace(/\s+::\s+/, '::');
 
-      if (is(data.token[ss - 1], cc.COM) || is(data.token[ss - 1], cc.COL) || data.types[ss - 1] === 'comment') {
+      if (
+        is(data.token[ss - 1], cc.COM) ||
+        is(data.token[ss - 1], cc.COL) ||
+        data.types[ss - 1] === 'comment' ||
+        data.types[ss - 1] === 'pseudo'
+      ) {
 
-        do {
+        if (data.types[ss - 1] === 'pseudo') {
 
-          ss = ss - 1;
+          data.token[ss - 1] = `${data.token[ss - 1]}${data.token[ss]}`;
+          data.types[ss - 1] = 'selector';
+          parse.splice({ data, howmany: 1, index: ss });
 
-          if (data.begin[ss] === dd) {
+        } else {
 
-            // HOT PATCH
-            // Fixes isolated Liquid tags, ie: {{ tag }}
-            //
-            if (is(data.token[ss], cc.SEM) || data.types[ss].indexOf('template') > -1) break;
+          do {
 
-            if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') data.types[ss] = 'selector';
+            ss = ss - 1;
 
-            if (is(data.token[ss], cc.COL)) {
+            if (data.begin[ss] === dd) {
 
-              if (data.token[ss + 1] === 'root') {
-                data.token[ss + 1] = ':root';
-                data.types[ss + 1] = 'selector';
-                data.lines[ss + 1] = data.lines[ss];
+              // HOT PATCH
+              // Fixes isolated Liquid tags, ie: {{ tag }}
+              //
+              if (is(data.token[ss], cc.SEM) || data.types[ss].indexOf('template') > -1) break;
 
-                parse.splice({ data, howmany: 1, index: ss });
-              } else {
-                data.token[ss - 1] = `${data.token[ss - 1]}:${data.token[ss + 1]}`;
-                parse.splice({ data, howmany: 2, index: ss });
+              if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') {
+                data.types[ss] = 'selector';
               }
+
+              if (is(data.token[ss], cc.COL)) {
+
+                // HOT PATCH
+                // Supports pseudo selectors in the global stack
+                //
+                if (not(data.token[ss - 1], cc.COL) && data.stack[aa] === 'global' && (
+                  data.types[ss - 1] === 'comment' ||
+                  data.types[ss - 1] === 'ignore' ||
+                  data.types[ss - 1].indexOf('template') > -1
+                )) {
+
+                  data.token[ss] = `${data.token[ss]}${data.token[ss + 1]}`;
+                  parse.pop(data);
+
+                } else if (parse.count === 1) {
+
+                  data.token[ss] = `${data.token[ss]}${data.token[ss + 1]}`;
+                  parse.pop(data);
+
+                } else {
+
+                  data.token[ss] = `${data.token[ss - 1]}:${data.token[ss + 1]}`;
+                  data.lines[ss] = data.lines[ss - 1];
+                  parse.splice({ data, howmany: 2, index: ss });
+
+                }
+
+              }
+
+            } else {
+
+              break;
             }
 
-          } else {
-
-            break;
-          }
-
-        } while (ss > 0);
+          } while (ss > 0);
+        }
       }
 
       // sorts comma separated lists of selectors
@@ -778,7 +837,7 @@ prettify.lexers.style = function style (source: string) {
       }
 
       aa = parse.count;
-      // priors();
+      priors();
     };
 
     priors();
@@ -794,27 +853,30 @@ prettify.lexers.style = function style (source: string) {
         if (first === '$' || first === '@') {
           data.types[aa] = 'variable';
         } else {
-          data.types[aa] = 'property';
+          if (data.stack[aa] !== 'global' && (data.types[aa] !== 'comment' || data.types[aa] !== 'ignore')) {
+            data.types[aa] = 'property';
+          }
         }
       } else if (data.lexer[aa] === 'style') {
         data.types[aa] = 'selector';
-        selectorPretty(aa);
+        selector(aa);
       }
 
     } else if (type === 'start' && data.types[aa] === 'function' && data.lexer[aa] === 'style') {
 
       data.types[aa] = 'selector';
-      selectorPretty(aa);
+      selector(aa);
 
     } else if (data.types[aa] === 'item' && data.lexer[aa] === 'style') {
 
       if (type === 'start') {
 
-        selectorPretty(aa);
+        selector(aa);
 
         data.types[aa] = 'selector';
 
         if (data.token[aa] === ':') data.types[bb] = 'selector';
+
         if (data.token[aa].indexOf('=\u201c') > 0) {
           parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.lineNumber}`;
         } else if (data.token[aa].indexOf('=\u201d') > 0) {
@@ -838,7 +900,7 @@ prettify.lexers.style = function style (source: string) {
           if (not(b[a], cc.SEM) && (data.types[bb] === 'selector' || is(data.token[bb], cc.LCB))) {
 
             data.types[aa] = 'selector';
-            selectorPretty(aa);
+            selector(aa);
 
           } else if (data.token[aa].charAt(0) === '$' || data.token[aa].charAt(0) === '@') {
             data.types[aa] = 'variable';
@@ -886,13 +948,16 @@ prettify.lexers.style = function style (source: string) {
     }
   };
 
-  const semiComment = function lexer_style_separatorComment () {
+  /**
+   * Original: lexer_style_separatorComment
+   */
+  function semiComment () {
 
     let x = parse.count;
 
     do {
 
-      if (is(data.token[x][0], cc.DSH) && is(data.token[x][1], cc.DSH)) {
+      /* if (is(data.token[x][0], cc.DSH) && is(data.token[x][1], cc.DSH)) {
 
         data.types[x] = 'property';
 
@@ -915,15 +980,15 @@ prettify.lexers.style = function style (source: string) {
             }
           });
         }
-      }
+      } */
 
       x = x - 1;
 
     } while (x > 0 && (data.types[x] === 'comment'));
 
-    console.log(data.token[x]);
+    // console.log(data.token[x]);
 
-    if (data.token[x] === ';' || data.token[x] === '{') return;
+    if (data.token[x] === ';') return;
 
     parse.splice({
       data,
@@ -1052,6 +1117,7 @@ prettify.lexers.style = function style (source: string) {
               // HOTFIX
               // Prevent whitespace removals of output tag values
               if (open === '{{') {
+
                 quote = quote
                   .replace(/^({{\s*)/, '{{ ')
                   .replace(/^({{-\s*)/, '{{- ')
@@ -1207,31 +1273,47 @@ prettify.lexers.style = function style (source: string) {
   };
 
   /**
-   * Finds comments, including those JS looking '//' commments
+   * Accepts a _boolean_ parameter value to infer whether or not
+   * we have encountered a JS looking '//' commment.
    */
-  function comment (line: boolean) {
+  function comment (isLineComment: boolean) {
 
-    const comm = line ? parse.wrapCommentLine({
-      chars: b
-      , end: len
-      , lexer: 'style'
-      , opening: '//'
-      , start: a
-      , terminator: '\n'
-    }) : parse.wrapCommentBlock({
-      chars: b
-      , end: len
-      , lexer: 'style'
-      , opening: '/*'
-      , start: a
-      , terminator: '\u002a/'
-    });
+    let comm: [string, number];
 
-    ltoke = comm[0];
-    ltype = ((/^(\/\*\s*@prettify-ignore-start)/).test(ltoke)) ? 'ignore' : 'comment';
+    if (isLineComment) {
+
+      comm = parse.wrapCommentLine({
+        chars: b,
+        end: len,
+        lexer: 'style',
+        opening: '//',
+        start: a,
+        terminator: '\n'
+      });
+
+      ltoke = comm[0];
+      ltype = ((/^(\/\/\s*@prettify-ignore-start)/).test(ltoke)) ? 'ignore' : 'comment';
+
+    } else {
+
+      comm = parse.wrapCommentBlock({
+        chars: b,
+        end: len,
+        lexer: 'style',
+        opening: '/*',
+        start: a,
+        terminator: '\u002a/'
+      });
+
+      ltoke = comm[0];
+      ltype = ((/^(\/\*\s*@prettify-ignore-start)/).test(ltoke)) ? 'ignore' : 'comment';
+
+    }
 
     recordpush('');
+
     a = comm[1];
+
   };
 
   /**
@@ -1483,13 +1565,13 @@ prettify.lexers.style = function style (source: string) {
 
   do {
 
-    if (ws(b[a]) === true) {
+    if (ws(b[a])) {
 
       a = parse.spacer({ array: b, end: len, index: a });
 
     } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.ARS)) {
 
-      comment(true); // was false
+      comment(false);
 
     } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.FWS)) {
 
@@ -1615,12 +1697,25 @@ prettify.lexers.style = function style (source: string) {
         recordpush('');
       }
 
-    } else if (b[a] === ':' && data.types[parse.count] !== 'end') {
+    } else if (is(b[a], cc.COL) && data.types[parse.count] !== 'end') {
 
-      item('colon');
-      ltoke = ':';
-      ltype = 'colon';
-      recordpush('');
+      if (is(b[a + 1], cc.COL)) {
+
+        a = a + 1;
+
+        item('pseudo');
+        ltoke = '::';
+        ltype = 'pseudo';
+        recordpush('');
+
+      } else {
+
+        item('colon');
+        ltoke = ':';
+        ltype = 'colon';
+        recordpush('');
+
+      }
 
     } else {
 
