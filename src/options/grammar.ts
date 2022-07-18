@@ -8,6 +8,7 @@ export const grammar = (function () {
   model.html = create(null);
   model.script = create(null);
   model.liquid = create(null);
+  model.style = create(null);
 
   /* -------------------------------------------- */
   /* HTML                                         */
@@ -180,6 +181,50 @@ export const grammar = (function () {
       'Web',
       'Window',
       'XMLHttpRequest'
+    ]
+  );
+
+  /* -------------------------------------------- */
+  /* STYLE                                        */
+  /* -------------------------------------------- */
+
+  model.style.units = new Set(
+    [
+      '%',
+      'cap',
+      'ch',
+      'cm',
+      'deg',
+      'dpcm',
+      'dpi',
+      'dppx',
+      'em',
+      'ex',
+      'fr',
+      'grad',
+      'Hz',
+      'ic',
+      'in',
+      'kHz',
+      'lh',
+      'mm',
+      'ms',
+      'mS',
+      'pc',
+      'pt',
+      'px',
+      'Q',
+      'rad',
+      'rem',
+      'rlh',
+      's',
+      'turn',
+      'vb',
+      'vh',
+      'vi',
+      'vmax',
+      'vmin',
+      'vw'
     ]
   );
 

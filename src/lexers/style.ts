@@ -109,7 +109,10 @@ prettify.lexers.style = function style (source: string) {
       return find.replace(',', ', ');
     };
 
-    function diFix (di: string) {
+    /**
+     * Unit Fixes (ie: dimensions)
+     */
+    function unitFix (di: string) {
       return `${di} `;
     };
 
@@ -132,7 +135,7 @@ prettify.lexers.style = function style (source: string) {
     const dotstart = (/^-?\.\d+[a-z]/);
     const zerodot = (/(\s|\(|,)-?0+\.?\d+([a-z]|\)|,|\s)/g);
     const dot = (/(\s|\(|,)-?\.?\d+([a-z]|\)|,|\s)/g);
-    const dimensions = '%|cap|ch|cm|deg|dpcm|dpi|dppx|em|ex|fr|grad|Hz|ic|in|kHz|lh|mm|ms|mS|pc|pt|px|Q|rad|rem|rlh|s|turn|vb|vh|vi|vmax|vmin|vw';
+
     let cc = 0;
     let dd = 0;
     let block = '';
@@ -232,8 +235,8 @@ prettify.lexers.style = function style (source: string) {
         }
 
         if ((/^(\+|-)?\d+(\.\d+)?(e-?\d+)?\D+$/).test(values[cc])) {
-          if (dimensions.indexOf(values[cc].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, '')) < 0) {
-            values[cc] = values[cc].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, diFix);
+          if (!grammar.style.units.has(values[cc].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, ''))) {
+            values[cc] = values[cc].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, unitFix);
           }
         }
 
@@ -1046,14 +1049,18 @@ prettify.lexers.style = function style (source: string) {
                   group === 'range' ||
                   group === 'with'
                 ) {
+
                   exit('template_start');
+
                   return;
                 }
               }
 
               exit('template');
+
               return;
             }
+
             endlen = 0;
           }
         } else if (quote === b[a]) {
@@ -1101,7 +1108,29 @@ prettify.lexers.style = function style (source: string) {
   function marginPadding () {
 
     const lines = parse.linesSpace;
-    const props = create(null);
+    const props: {
+      data: {
+        margin: [
+          top: string,
+          right: string,
+          bottom: string,
+          left: string,
+          semi: boolean
+        ];
+        padding: [
+          top: string,
+          right: string,
+          bottom: string,
+          left: string,
+          semi: boolean
+        ]
+      },
+      last: {
+        margin: number;
+        padding: number;
+      }
+      removes: any[]
+    } = create(null);
 
     props.data = create(null);
     props.data.margin = [ '', '', '', '', false ];
@@ -1111,7 +1140,7 @@ prettify.lexers.style = function style (source: string) {
     props.last.margin = 0;
     props.last.padding = 0;
 
-    props.remove = [];
+    props.removes = [];
 
     const begin = parse.structure[parse.structure.length - 1][1];
 
