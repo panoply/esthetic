@@ -32,6 +32,11 @@ export enum StyleTypes {
    * Describes a CSS selector.
    */
   selector = 'selector',
+
+  /**
+   * Describes a pseudo selector
+   */
+  pseudo = 'pseudo',
   /**
    * Describes a ; character. This types value exists to uniquely set semicolon
    * characters apart from other types values.
