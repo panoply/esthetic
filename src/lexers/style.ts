@@ -692,8 +692,12 @@ prettify.lexers.style = function style (source: string) {
 
           if (data.begin[ss] === dd) {
 
-            if (is(data.token[ss], cc.SEM)) break;
+            // HOT PATCH
+            // Fixes isolated Liquid tags, ie: {{ tag }}
+            if (is(data.token[ss], cc.SEM) || data.types[ss].indexOf('template') > -1) break;
+
             if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') data.types[ss] = 'selector';
+
             if (is(data.token[ss], cc.COL)) {
               data.token[ss - 1] = `${data.token[ss - 1]}:${data.token[ss + 1]}`;
               parse.splice({ data, howmany: 2, index: ss });
@@ -777,24 +781,16 @@ prettify.lexers.style = function style (source: string) {
           data.types[aa] = 'property';
         }
       } else if (data.lexer[aa] === 'style') {
-        console.log(data.token[aa]);
         data.types[aa] = 'selector';
         selectorPretty(aa);
       }
 
-    } else if (
-      type === 'start' &&
-      data.types[aa] === 'function' &&
-      data.lexer[aa] === 'style'
-    ) {
+    } else if (type === 'start' && data.types[aa] === 'function' && data.lexer[aa] === 'style') {
 
       data.types[aa] = 'selector';
       selectorPretty(aa);
 
-    } else if (
-      data.types[aa] === 'item' &&
-      data.lexer[aa] === 'style'
-    ) {
+    } else if (data.types[aa] === 'item' && data.lexer[aa] === 'style') {
 
       if (type === 'start') {
 
@@ -804,11 +800,9 @@ prettify.lexers.style = function style (source: string) {
 
         if (data.token[aa] === ':') data.types[bb] = 'selector';
         if (data.token[aa].indexOf('=\u201c') > 0) {
-          parse.error =
-            `Quote looking character (\u201c, \\201c) used instead of actual quotes on line number ${parse.lineNumber}`;
+          parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.lineNumber}`;
         } else if (data.token[aa].indexOf('=\u201d') > 0) {
-          parse.error =
-            `Quote looking character (\u201d, \\201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+          parse.error = `Invalid Quote (\u201d, \\201d) used on line number ${parse.lineNumber}`;
         }
 
       } else if (type === 'end') {
@@ -823,13 +817,9 @@ prettify.lexers.style = function style (source: string) {
 
       } else if (type === 'separator') {
 
-        if (
-          data.types[bb] === 'colon' ||
-          data.token[bb] === ',' ||
-          data.token[bb] === '{'
-        ) {
+        if (data.types[bb] === 'colon' || is(data.token[bb], cc.COM) || is(data.token[bb], cc.LCB)) {
 
-          if (b[a] !== ';' && (data.types[bb] === 'selector' || data.token[bb] === '{')) {
+          if (not(b[a], cc.SEM) && (data.types[bb] === 'selector' || is(data.token[bb], cc.LCB))) {
 
             data.types[aa] = 'selector';
             selectorPretty(aa);
@@ -843,11 +833,9 @@ prettify.lexers.style = function style (source: string) {
           data.token[aa] = value(data.token[aa]);
 
           if (data.token[aa].charAt(0) === '\u201c') {
-            parse.error =
-              `Quote looking character (\u201c, \\201c) used instead of actual quotes on line number ${parse.lineNumber}`;
+            parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.lineNumber}`;
           } else if (data.token[aa].charAt(0) === '\u201d') {
-            parse.error =
-              `Quote looking character (\u201d, \\201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+            parse.error = `Invalid (\u201d, \\201d) used on line number ${parse.lineNumber}`;
           }
 
         } else {
@@ -870,14 +858,10 @@ prettify.lexers.style = function style (source: string) {
           data.types[aa] = 'property';
         }
 
-      } else if (
-        data.token[bb].charAt(0) === '@' && (
-          (
-            data.types[bb - 2] !== 'variable' &&
-            data.types[bb - 2] !== 'property'
-          ) || data.types[bb - 1] === 'separator'
-        )
-      ) {
+      } else if (data.token[bb].charAt(0) === '@' && ((
+        data.types[bb - 2] !== 'variable' &&
+        data.types[bb - 2] !== 'property'
+      ) || data.types[bb - 1] === 'separator')) {
 
         data.types[bb] = 'variable';
         ltype = 'variable';
@@ -887,27 +871,28 @@ prettify.lexers.style = function style (source: string) {
   };
 
   const semiComment = function lexer_style_separatorComment () {
+
     let x = parse.count;
-    do {
-      x = x - 1;
-    } while (x > 0 && (data.types[x] === 'comment'));
-    if (data.token[x] === ';') {
-      return;
-    }
+
+    do { x = x - 1; } while (x > 0 && (data.types[x] === 'comment'));
+
+    if (data.token[x] === ';') return;
+
     parse.splice({
-      data
-      , howmany: 0
-      , index: x + 1
-      , record: {
-        begin: parse.structure[parse.structure.length - 1][1]
-        , ender: -1
-        , lexer: 'style'
-        , lines: parse.linesSpace
-        , stack: parse.structure[parse.structure.length - 1][0]
-        , token: ';'
-        , types: 'separator'
+      data,
+      howmany: 0,
+      index: x + 1,
+      record: {
+        begin: parse.structure[parse.structure.length - 1][1],
+        ender: -1,
+        lexer: 'style',
+        lines: parse.linesSpace,
+        stack: parse.structure[parse.structure.length - 1][0],
+        token: ';',
+        types: 'separator'
       }
     });
+
   };
 
   function template (open: string, end: string) {
@@ -1025,13 +1010,10 @@ prettify.lexers.style = function style (source: string) {
                   .replace(/(\s*}})$/, ' }}');
               }
 
-              if (
-                ltype === 'item' &&
-                data.types[parse.count - 1] === 'colon' && (
-                  data.types[parse.count - 2] === 'property' ||
-                  data.types[parse.count - 2] === 'variable'
-                )
-              ) {
+              if (ltype === 'item' && data.types[parse.count - 1] === 'colon' && (
+                data.types[parse.count - 2] === 'property' ||
+                data.types[parse.count - 2] === 'variable'
+              )) {
 
                 ltype = 'value';
                 data.types[parse.count] = 'value';
@@ -1120,10 +1102,9 @@ prettify.lexers.style = function style (source: string) {
                 do {
                   begin = begin + 1;
                 } while (
-                  begin < ending && ws(group.charAt(
-                    begin
-                  )) === false &&
-                  group.charAt(start) !== '('
+                  begin < ending &&
+                  ws(group.charAt(begin)) === false &&
+                  group.charCodeAt(start) !== cc.LPR
                 );
 
                 group = group.slice(0, begin);
@@ -1161,11 +1142,11 @@ prettify.lexers.style = function style (source: string) {
           }
         } else if (quote === b[a]) {
 
-          if (quote === '"' || quote === "'") {
+          if (is(quote, cc.DQO) || is(quote, cc.SQO)) {
             quote = '';
-          } else if (quote === '/' && (b[a] === '\r' || b[a] === '\n')) {
+          } else if (is(quote, cc.FWS) && (b[a] === '\r' || b[a] === '\n')) {
             quote = '';
-          } else if (quote === '*' && b[a + 1] === '/') {
+          } else if (is(quote, cc.ARS) && is(b[a + 1], cc.FWS)) {
             quote = '';
           }
         }
@@ -1542,8 +1523,10 @@ prettify.lexers.style = function style (source: string) {
             } else {
               ltoke = 'x;';
             }
+
             ltype = 'separator';
             recordpush('');
+
           } else if (data.types[parse.count] === 'comment') {
             semiComment();
           }
