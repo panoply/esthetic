@@ -3,7 +3,7 @@ import type { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splic
 import { prettify } from '@prettify/model';
 import { create, isArray } from '@utils/native';
 import { cc } from '@utils/enums';
-import { is, safeSortAscend, safeSortDescend, safeSortNormal } from '@utils/helpers';
+import { is, safeSortAscend, safeSortDescend, safeSortNormal, sanitizeComment, ws } from '@utils/helpers';
 
 export const parse = new class Parse implements IParse {
 
@@ -652,7 +652,7 @@ export const parse = new class Parse implements IParse {
         this.lineNumber = this.lineNumber + 1;
       }
 
-      if ((/\s/).test(args.array[args.index + 1]) === false) break;
+      if (ws(args.array[args.index + 1]) === false) break;
 
       args.index = args.index + 1;
 
@@ -702,6 +702,17 @@ export const parse = new class Parse implements IParse {
 
   wrapCommentBlock (config: WrapComment): [string, number] {
 
+    const { wrap, crlf, preserveComment } = prettify.options;
+    const build = [];
+    const second = [];
+    const lf = (crlf === true) ? '\r\n' : '\n';
+    const regEsc = (/(\/|\\|\||\*|\[|\]|\{|\})/g);
+    const regEndEsc = (/{%-?\s*|\s*-?%}/g);
+
+    /* -------------------------------------------- */
+    /* LEXICAL SCOPES                               */
+    /* -------------------------------------------- */
+
     let a = config.start;
     let b = 0;
     let c = 0;
@@ -718,37 +729,31 @@ export const parse = new class Parse implements IParse {
     let terml = config.terminator.length - 1;
     let term = config.terminator.charAt(terml);
     let twrap = 0;
+    let regEnd: RegExp;
 
-    const {
-      wrap,
-      crlf,
-      preserveComment
-    } = prettify.options;
-
-    const build = [];
-    const second = [];
-    const lf = (crlf === true) ? '\r\n' : '\n';
-
-    const sanitize = (input: string) => `\\${input}`;
-    const regEsc = (/(\/|\\|\||\*|\[|\]|\{|\})/g);
-    const regEndEsc = (/{%-?\s*|\s*-?%}/g);
-
-    const regEnd = new RegExp(`\\s*${config.terminator.replace(regEndEsc, input => {
-      if (input.charCodeAt(0) === cc.LCB) return '{%-?\\s*';
-      return '\\s*-?%}';
-    })}$`);
-
-    const opensan = config.opening.replace(regEsc, sanitize);
+    const opensan = config.opening.replace(regEsc, sanitizeComment);
     const regIgnore = new RegExp(`^(${opensan}\\s*@prettify-ignore-start)`);
     const regStart = new RegExp(`(${opensan}\\s*)`);
     const isLiquid = is(config.opening[0], cc.LCB) && is(config.opening[1], cc.PER);
 
-    function emptylines () {
+    if (isLiquid) {
+
+      regEnd = new RegExp(`\\s*${config.terminator.replace(regEndEsc, input => {
+        if (input.charCodeAt(0) === cc.LCB) return '{%-?\\s*';
+        return '\\s*-?%}';
+      })}$`);
+
+    }
+
+    const emptylines = () => {
 
       if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === '') {
         do {
           b = b + 1;
-        } while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === ''));
+        } while (b < len && (
+          /^\s+$/.test(lines[b + 1]) ||
+          lines[b + 1] === ''
+        ));
       }
 
       if (b < len - 1) second.push('');
@@ -799,7 +804,9 @@ export const parse = new class Parse implements IParse {
         // Supports comment start/end comment ignores using Liquid
         // tags. We don't have any knowledge of the comment formation
         // upon parse, this will re-assign the terminator
+        //
         if (build.slice(build.length - 20).join('') === '@prettify-ignore-end') {
+
           if (isLiquid) {
             const d = config.chars.indexOf('{', a);
             if (is(config.chars[d + 1], cc.PER)) {
@@ -827,7 +834,7 @@ export const parse = new class Parse implements IParse {
         if (
           config.opening === '/*' &&
           config.chars[b - 1] === '/' &&
-         (config.chars[b] === '*' || config.chars[b] === '/')) break; // for script
+         (config.chars[b] === '*' || config.chars[b] === '/')) break; // for script OR style
 
         if (
           config.opening !== '/*' &&
@@ -870,6 +877,7 @@ export const parse = new class Parse implements IParse {
       output = build.join('').replace(/\s+$/, '');
 
       // console.log(output);
+
       /* -------------------------------------------- */
       /* RETURN COMMENT                               */
       /* -------------------------------------------- */
@@ -877,18 +885,15 @@ export const parse = new class Parse implements IParse {
       return [ output, a ];
     }
 
-    if (
-      preserveComment === true ||
-      wrap < 1 ||
-      a === config.end || (
-        output.length <= wrap &&
-        output.indexOf('\n') < 0
-      ) || (
-        config.opening === '/*' &&
-        output.indexOf('\n') > 0 &&
-        output.replace('\n', '').indexOf('\n') > 0 &&
-        (/\n(?!(\s*\*))/).test(output) === false
-      )
+    if (preserveComment === true || wrap < 1 || a === config.end || (
+      output.length <= wrap &&
+      output.indexOf('\n') < 0
+    ) || (
+      config.opening === '/*' &&
+      output.indexOf('\n') > 0 &&
+      output.replace('\n', '').indexOf('\n') > 0 &&
+      (/\n(?!(\s*\*))/).test(output) === false
+    )
     ) {
 
       /* -------------------------------------------- */
@@ -900,10 +905,10 @@ export const parse = new class Parse implements IParse {
 
     b = config.start;
 
-    if (b > 0 && config.chars[b - 1] !== '\n' && (/\s/).test(config.chars[b - 1])) {
+    if (b > 0 && config.chars[b - 1] !== '\n' && ws(config.chars[b - 1])) {
       do {
         b = b - 1;
-      } while (b > 0 && config.chars[b - 1] !== '\n' && (/\s/).test(config.chars[b - 1]));
+      } while (b > 0 && config.chars[b - 1] !== '\n' && ws(config.chars[b - 1]));
     }
 
     space = config.chars.slice(b, config.start).join('');
@@ -971,7 +976,7 @@ export const parse = new class Parse implements IParse {
 
           do {
             c = c - 1;
-            if ((/\s/).test(lines[b].charAt(c)) && c <= wrap) break;
+            if (ws(lines[b].charAt(c)) && c <= wrap) break;
           } while (c > 0);
 
           if (
@@ -1042,7 +1047,6 @@ export const parse = new class Parse implements IParse {
             lines[b + 1] = lines[b].length > wrap
               ? lines[b].slice(c + 1) + lf + lines[b + 1]
               : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
-
           }
 
           if (
@@ -1110,17 +1114,9 @@ export const parse = new class Parse implements IParse {
 
             } else {
               if (config.opening === '/*' && lines[b].indexOf('/*') !== 0) {
-                second.push(`   ${lines[b]
-                  .replace(/^\s+/, '')
-                  .replace(/\s+$/, '')
-                  .replace(/\s+/g, ' ')
-                  }`);
+                second.push(`   ${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`);
               } else {
-                second.push(`${lines[b]
-                  .replace(/^\s+/, '')
-                  .replace(/\s+$/, '')
-                  .replace(/\s+/g, ' ')
-                  }`);
+                second.push(`${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`);
               }
             }
           }
@@ -1181,7 +1177,7 @@ export const parse = new class Parse implements IParse {
 
         if (config.chars[b + 1] === '\n') return;
 
-      } while (b < config.end && (/\s/).test(config.chars[b]) === true);
+      } while (b < config.end && ws(config.chars[b]) === true);
 
       if (config.chars[b] + config.chars[b + 1] === '//') {
 
