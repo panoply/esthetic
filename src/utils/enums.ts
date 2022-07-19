@@ -88,7 +88,7 @@ export const enum cc {
   /**
    * `/` – Forward Slash
    */
-  FWS = 45,
+  FWS = 47,
 
   /**
    * `?` – Question Mark
@@ -98,6 +98,21 @@ export const enum cc {
    * `*` – Asterix
    */
   ARS = 42,
+
+  /**
+   * `:` - Colon
+   */
+  COL = 58,
+
+  /**
+   * `;` - Semicolon
+   */
+  SEM = 59,
+
+  /**
+   * `,` - Comma
+   */
+  COM = 44
 }
 
 export const enum TagBlocks {
