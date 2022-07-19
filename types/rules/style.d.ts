@@ -9,6 +9,37 @@ export interface StyleOptions {
   correct?: boolean;
 
   /**
+   * **Default** `preserve`
+   *
+   * The option will indent CSS selector property values onto newlines in CSS,
+   * SCSS or LESS languages. The optional is particularly helpful when Liquid
+   * tags are used as property values as in most cases CSS property value lengths
+   * will rarely exceed wraps.
+   *
+   * ---
+   *
+   * #### Example
+   *
+   * *Below is an example of how this rule works if it's set to `wrap` or `collapse`*
+   *
+   * ```css
+   * .selector {
+   *  color:
+   *    rgb(211, 211, 211);
+   *  font-size:
+   *     {{- settings.type_body_font.size  | plus: 5 | at_most: 30 }};
+   *  font-weight:
+   *    {{- settings.type_body_font.weight  | plus: 300 | at_most: 1000 }};
+   *  font-family:
+   *    {{-  settings.prop  | default: settings.type_body_font.family  }};
+   *  background:
+   *     #ffffff;
+   * }
+   * ```
+   */
+  forceValue?: 'preserve' | 'collapse' | 'wrap';
+
+  /**
    * This option will alphabetically sort CSS properties contained
    * within classes.
    *

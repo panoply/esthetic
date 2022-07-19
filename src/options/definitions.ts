@@ -283,6 +283,26 @@ export const definitions: Definitions = {
     default: false,
     type: 'boolean'
   },
+  forceValue: {
+    lexer: 'style',
+    description: 'If CSS selector property values should be indented onto newlines',
+    default: 'preserve',
+    type: 'select',
+    values: [
+      {
+        rule: 'preserve',
+        description: 'Preserves property values, output does not augment provided structures'
+      },
+      {
+        rule: 'collapse',
+        description: 'Collapsed all selector property values onto newlines'
+      },
+      {
+        rule: 'wrap',
+        description: 'Collapase only selector property values which exceed wrap limit'
+      }
+    ]
+  },
 
   /* -------------------------------------------- */
   /* LEXER:SCRIPT                                 */
