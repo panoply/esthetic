@@ -200,6 +200,7 @@ Prettify provides a granular set of beautification options (rules). The projects
     sortSelectors: false,
     preserveLine: 3,
     quoteConvert: 'none',
+    forceValue: 'preserve'
     associate: []
   },
   script: {
@@ -292,6 +293,7 @@ Refer to the [typings](#) declaration file for description. Rules will be used w
   noLeadZero: false,
   sortProperties: false,
   sortSelectors: false,
+  forceValue: 'preserve',
   preserveLine: 3,
   quoteConvert: 'none',
   associate: []
