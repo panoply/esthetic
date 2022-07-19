@@ -430,7 +430,7 @@ prettify.lexers.markup = function markup (source: string) {
     let lastchar = '';
 
     /**
-     * Lexer Type, ie: `start`, `template` etc etc
+     * Last Type, ie: `start`, `template` etc etc
      */
     let ltype: Types = '';
 
@@ -3335,8 +3335,21 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else {
 
+                    const curlang = prettify.options.language;
+
+                    prettify.options.language = extlang;
+                    prettify.options.lexer = 'style';
+
                     prettify.lexers.style(outside);
 
+                    // console.log(prettify.options);
+
+                    if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
+
+                    prettify.options.language = curlang;
+                    prettify.options.lexer = 'markup';
+
+                    // console.log(prettify.options);
                   }
 
                   break;
