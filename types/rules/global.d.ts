@@ -73,6 +73,9 @@ export interface Grammars {
      */
     embedded?: { [K in LanguageNames]: Array<string | RegExp> }
   }
+  /**
+   * Internal Usage
+   */
   script: {
 
     /**
@@ -82,6 +85,20 @@ export interface Grammars {
      *
      */
     keywords: Set<string>
+
+  }
+  /**
+   * Internal Usage
+   */
+  style: {
+
+    /**
+     * Style Units
+     *
+     * String list of dimensions and units used in style
+     * languages like CSS and SCSS.
+     */
+    units: Set<string>
 
   }
 
