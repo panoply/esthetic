@@ -1008,12 +1008,16 @@ prettify.lexers.style = function style (source: string) {
   };
 
   function template (open: string, end: string) {
+    const store = [];
+
+    /* -------------------------------------------- */
+    /* LEXICAL SCOPES                               */
+    /* -------------------------------------------- */
 
     let quote = '';
     let name = '';
-    let start = open.length;
     let endlen = 0;
-    const store = [];
+    let start = open.length;
 
     const exit = (typename: Types) => {
 
@@ -1032,6 +1036,7 @@ prettify.lexers.style = function style (source: string) {
       if (ltype.indexOf('start') > -1 || ltype.indexOf('else') > -1) {
         recordpush(ltoke);
       } else {
+        // console.log(data.token[parse.count], data.lines[parse.count]);
         recordpush('');
       }
     };
@@ -1699,6 +1704,9 @@ prettify.lexers.style = function style (source: string) {
 
     } else if (is(b[a], cc.COL) && data.types[parse.count] !== 'end') {
 
+      // HOT PATCH
+      // Global pseudo selector support
+      //
       if (is(b[a + 1], cc.COL)) {
 
         a = a + 1;
