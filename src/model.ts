@@ -152,6 +152,7 @@ export const prettify = (function () {
   model.options.style.sortSelectors = false;
   model.options.style.sortProperties = false;
   model.options.style.quoteConvert = 'none';
+  model.options.style.forceValue = 'preserve';
 
   /* -------------------------------------------- */
   /* SCRIPT OPTIONS                               */
