@@ -25,6 +25,9 @@ export function notchar (string: string, code: number) {
 
 }
 
+/**
+ * Character Code is equal
+ */
 export function is (string: string, code: number) {
 
   if (!string) return false;
@@ -33,12 +36,20 @@ export function is (string: string, code: number) {
 
 }
 
+/**
+ * Character Code is not
+ */
 export function not (string: string, code: number) {
 
   return is(string, code) === false;
 
 }
 
+/**
+ * Whitespace
+ *
+ * Check is character is whitespace
+ */
 export function ws (string: string) {
 
   return /\s/.test(string);
@@ -61,6 +72,20 @@ export function size (bytes: number): string {
 
 };
 
+/**
+ * Sanitize Line comment
+ */
+export function sanitizeComment (input: string) {
+
+  return `\\${input}`;
+
+}
+
+/**
+ * Safe Sort Ascension
+ *
+ * Used to sort objects, properties and selectors
+ */
 export function safeSortAscend (this: { recursive: boolean;}, item: [string, number][]) {
 
   let c = 0;
@@ -68,12 +93,12 @@ export function safeSortAscend (this: { recursive: boolean;}, item: [string, num
   const storeb = item;
 
   /**
-       * Safe Sort (Ascend Child)
-       *
-       * ---
-       *
-       * original: parse_safeSort_ascend_child
-       */
+   * Safe Sort (Ascend Child)
+   *
+   * ---
+   *
+   * original: parse_safeSort_ascend_child
+   */
   const safeSortAscendChild = () => {
     let a = 0;
     const lenc = storeb.length;
@@ -153,6 +178,11 @@ export function safeSortAscend (this: { recursive: boolean;}, item: [string, num
 
 };
 
+/**
+ * Safe Sort Descension
+ *
+ * Used to sort objects, properties and selectors
+ */
 export function safeSortDescend (this: { recursive: boolean;}, item: [string, number][]) {
 
   let c = 0;
@@ -247,7 +277,10 @@ export function safeSortDescend (this: { recursive: boolean;}, item: [string, nu
 
 };
 
-export function safeSortNormal (this: { array: [string, number][], recursive: boolean;}, item: [string, number][]) {
+export function safeSortNormal (this: {
+  array: [string, number][],
+  recursive: boolean;
+}, item: [string, number][]) {
 
   let storeb = item;
   const done = [ item[0] ];
