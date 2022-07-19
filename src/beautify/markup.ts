@@ -3,7 +3,7 @@ import { prettify, grammar } from '@prettify/model';
 import { create } from '@utils/native';
 import { is, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
-import { parse } from '@parser/parse';
+
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
 /* -------------------------------------------- */
