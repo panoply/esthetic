@@ -1,5 +1,11 @@
 import type { Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
+import { is, ws, not, repeatChar } from '@utils/helpers';
+import { cc } from '@utils/enums';
+
+/* -------------------------------------------- */
+/* MARKUP BEAUTIFICATION                        */
+/* -------------------------------------------- */
 
 prettify.beautify.style = (options: Options) => {
 
@@ -8,8 +14,9 @@ prettify.beautify.style = (options: Options) => {
   const lf = (options.crlf === true) ? '\r\n' : '\n';
   const len = (prettify.end > 0) ? prettify.end + 1 : data.token.length;
 
+  // console.log(data);
   // a single unit of indentation
-  const tab = (function beautify_style_tab () {
+  const tab = (() => {
 
     let aa = 0;
     const bb = [];
@@ -20,30 +27,29 @@ prettify.beautify.style = (options: Options) => {
     } while (aa < options.indentSize);
 
     return bb.join('');
-  }());
+
+  })();
 
   const pres = options.preserveLine + 1;
+  const level = repeatChar(options.indentSize);
 
   let indent = options.indentLevel;
+  let wrap = 0;
   let a = prettify.start;
   let when = [ '', '' ];
 
   // new lines plus indentation
-  const nl = function beautify_style_nl (tabs: number) {
+  function nl (tabs: number) {
 
     const linesout = [];
+    const total = (function () {
 
-    const total = (function beautify_style_nl_total () {
-      if (a === len - 1) {
-        return 1;
-      }
-      if (data.lines[a + 1] - 1 > pres) {
-        return pres;
-      }
-      if (data.lines[a + 1] > 1) {
-        return data.lines[a + 1] - 1;
-      }
+      if (a === len - 1) return 1;
+      if (data.lines[a + 1] - 1 > pres) return pres;
+      if (data.lines[a + 1] > 1) return data.lines[a + 1] - 1;
+
       return 1;
+
     }());
 
     let index = 0;
@@ -53,6 +59,7 @@ prettify.beautify.style = (options: Options) => {
     do {
       linesout.push(lf);
       index = index + 1;
+      wrap = indent;
     } while (index < total);
 
     if (tabs > 0) {
@@ -67,7 +74,7 @@ prettify.beautify.style = (options: Options) => {
 
   };
 
-  const vertical = function beautify_style_vertical () {
+  function vertical () {
 
     const start = data.begin[a];
     const startChar = data.token[start];
@@ -76,7 +83,8 @@ prettify.beautify.style = (options: Options) => {
 
     let b = a;
     let c = 0;
-    let item; let longest = 0;
+    let item: [ number, number ];
+    let longest = 0;
 
     if (start < 0 || b <= start) return;
 
@@ -86,7 +94,7 @@ prettify.beautify.style = (options: Options) => {
 
       if (data.begin[b] === start) {
 
-        if (data.token[b] === ':') {
+        if (is(data.token[b], cc.COL)) {
           item = [ b - 1, 0 ];
 
           do {
@@ -96,10 +104,10 @@ prettify.beautify.style = (options: Options) => {
               (
                 (
                   (
-                    data.token[b] === ';' &&
+                    is(data.token[b], cc.SEM) &&
                     startChar === '{'
                   ) || (
-                    data.token[b] === ',' &&
+                    is(data.token[b], cc.COM) &&
                     startChar === '('
                   )
                 ) &&
@@ -163,7 +171,7 @@ prettify.beautify.style = (options: Options) => {
 
     do {
       a = a - 1;
-      if (data.token[a] === '}' || data.token[a] === ')') vertical();
+      if (is(data.token[a], cc.RCB) || is(data.token[a], cc.RPR)) vertical();
     } while (a > 0);
 
     a = prettify.start;
@@ -172,6 +180,11 @@ prettify.beautify.style = (options: Options) => {
 
   // beautification loop
   do {
+
+    // console.log(data.token[a], data.types[a], data.types[a + 1]);
+
+    if (data.types[a] === 'property') wrap = indent + data.token[a].length;
+
     if (
       data.types[a + 1] === 'end' ||
       data.types[a + 1] === 'template_end' ||
@@ -181,16 +194,76 @@ prettify.beautify.style = (options: Options) => {
       indent = indent - 1;
     }
 
-    if (data.types[a] === 'template' && data.lines[a] > 0) {
+    if (data.types[a] === 'template' && data.lines[a] === 0) {
 
       build.push(data.token[a]);
+
+      if (data.types[a + 1] === 'template' && data.lines[a + 1] > 0) nl(indent);
+
+    } else if (data.types[a] === 'template' && data.lines[a] > 0) {
 
       // HOTFIX
       //
       // Fixes semicolon newlines from occuring when output tag is used as a property
-      // value within classes, eg:
-      // .class { color: {{ foo}}; }
-      if (data.types[a - 2] !== 'property' && data.types[a - 1] !== 'colon') nl(indent);
+      // value within classes, eg: .class { color: {{ foo}}; }
+      // In addition we will also gracefully handle comma separated values
+      //
+      if (data.types[a - 2] !== 'property' && data.types[a - 1] !== 'colon') {
+
+        wrap = indent;
+
+        build.push(data.token[a]);
+        nl(indent);
+
+      } else if (
+        data.types[a - 2] === 'property' &&
+        data.types[a - 1] === 'colon' &&
+        data.types[a + 1] === 'separator' && is(data.token[a + 1], cc.COM)
+      ) {
+
+        wrap = wrap + data.token[a].length;
+
+        if (wrap > options.wrap) nl(indent);
+
+        build.push(data.token[a]);
+
+        do {
+
+          a = a + 1;
+
+          build.push(data.token[a]);
+
+          if (data.lines[a + 1] > 0) nl(indent);
+
+        } while (data.types[a] !== 'separator' && not(data.token[a], cc.SEM));
+
+        if (is(data.token[a], cc.SEM) && data.types[a] === 'separator') {
+
+          build.push(data.token[a]);
+
+          if (data.lines[a + 1] > 0) nl(indent);
+          a = a + 1;
+          continue;
+        }
+
+      } else {
+
+        wrap = wrap + data.token[a].length;
+
+        if (wrap > options.wrap || options.style.forceValue === 'collapse') {
+
+          nl(indent);
+
+          if (not(data.token[a][2], cc.DSH)) {
+            build.push(level, data.token[a].replace('{{', '{{-'));
+          } else {
+            build.push(level, data.token[a]);
+          }
+        } else {
+          build.push(data.token[a]);
+        }
+
+      }
 
     } else if (data.types[a] === 'template_else') {
 
@@ -220,7 +293,7 @@ prettify.beautify.style = (options: Options) => {
       }
 
     } else if ((
-      data.token[a] === ';' && (
+      is(data.token[a], cc.SEM) && (
         options.style.compressCSS === false || (
           options.style.compressCSS === true &&
           data.types[a + 1] === 'selector'
@@ -260,7 +333,7 @@ prettify.beautify.style = (options: Options) => {
         }
       }
 
-    } else if (data.token[a] === ':') {
+    } else if (is(data.token[a], cc.COL)) {
 
       build.push(data.token[a]);
 
@@ -301,9 +374,10 @@ prettify.beautify.style = (options: Options) => {
         }
       }
 
-    } else if (data.token[a] === ',') {
+    } else if (is(data.token[a], cc.COM)) {
 
       build.push(data.token[a]);
+
       if (data.types[a + 1] === 'selector' || data.types[a + 1] === 'property') {
         nl(indent);
       } else if (options.style.compressCSS === false) {
@@ -312,7 +386,7 @@ prettify.beautify.style = (options: Options) => {
 
     } else if (
       data.stack[a] === 'map' &&
-      data.token[a + 1] === ')' &&
+      is(data.token[a + 1], cc.RPR) &&
       a - data.begin[a] > 5
     ) {
 
@@ -332,21 +406,31 @@ prettify.beautify.style = (options: Options) => {
       data.types[a - 1] === 'end' &&
       data.lines[a] < 3
     ) {
+
       build.push(lf);
       build.push(data.token[a]);
 
-    } else if (
-      data.token[a] !== ';' || (
-        data.token[a] === ';' && (
-          options.style.compressCSS === false || (
-            options.style.compressCSS === true &&
-            data.token[a + 1] !== '}'
-          )
+    } else if (not(data.token[a], cc.SEM) || (
+      is(data.token[a], cc.SEM) && (
+        options.style.compressCSS === false || (
+          options.style.compressCSS === true &&
+          not(data.token[a + 1], cc.RCB)
         )
       )
-    ) {
+    )) {
 
-      build.push(data.token[a]);
+      if (options.style.forceValue === 'collapse') {
+
+        if (data.types[a] === 'value' && data.types[a - 1].indexOf('template') < 0) {
+          nl(indent);
+          build.push(level, data.token[a]);
+        } else {
+          build.push(data.token[a]);
+        }
+
+      } else {
+        build.push(data.token[a]);
+      }
 
     }
 
