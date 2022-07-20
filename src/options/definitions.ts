@@ -215,9 +215,19 @@ export const definitions: Definitions = {
   },
   forceAttribute: {
     default: false,
-    description: 'If all markup attributes should be indented each onto their own line.',
+    description: 'If all markup attributes should be indented each onto their own line. This option accepts either a boolean or number value, depending on your preferences you can either force attributes based a count limit, disable forcing or always enable enforcing.',
     lexer: 'markup',
-    type: [ 'boolean' ]
+    type: [ 'number', 'boolean' ],
+    multi: {
+      number: {
+        default: 1,
+        description: 'Optionally define an attribute force threshold. When the number of attributes exceeds this limit then they will be forced, otherwise they will be left intact.'
+      },
+      boolean: {
+        default: false,
+        description: 'Whether or not to enforce the rule. A value of true will always force attributes, whereas a value of false will never force attributes.'
+      }
+    }
   },
   forceLeadingAttribute: {
     default: false,
@@ -229,7 +239,7 @@ export const definitions: Definitions = {
     default: false,
     description: 'Will force indentation upon all content and tags without regard for the creation of new text nodes.',
     lexer: 'markup',
-    type: [ 'boolean', 'number' ]
+    type: 'boolean'
   },
   preserveAttributes: {
     default: false,
