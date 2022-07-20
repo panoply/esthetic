@@ -1,0 +1,52 @@
+
+/* Selects a shadow root host, only if it is a descendant of the selector argument given */
+
+::target-text {
+background-color: pink;
+}
+
+
+:root        {
+--font-body-family: 'Arial';
+
+--font-body-style: italic;
+--font-body-weight: 600;
+--font-body-weight-bold: 900;
+--font-heading-style: normal;
+--font-heading-weight: 100;
+
+--gradient-base-background-1: black;
+--gradient-base-background-2: #000;
+--gradient-base-accent-1: #f0f0f0;
+--gradient-base-accent-2: #cecece;
+
+--media-padding: 20px;
+--media-border-opacity: 0.1;
+--media-border-width: 2.5px;
+--media-radius: 50rem;
+--media-shadow-opacity: 0.005;
+--media-shadow-horizontal-offset: 55.5vw;
+--media-shadow-vertical-offset: 30vh;
+--media-shadow-blur-radius: 90deg;
+--media-shadow-visible: 1;
+}
+
+
+/* Selects a shadow root host, only if it is a descendant of the selector argument given */
+
+:host-context(h1) {font-weight: bold;
+}
+
+:host-context(main article) {
+font-weight: bold;
+}
+
+/* Changes paragraph text color from black to white when a .dark-theme class is applied to the document body */
+p {color: #000;
+}
+
+:host-context(body.dark-theme) p {color: #fff;
+}
+
+::target-text {background-color: pink;
+}
