@@ -3336,7 +3336,6 @@ prettify.lexers.markup = function markup (source: string) {
                     prettify.options.lexer = 'style';
                     prettify.lexers.style(outside);
 
-
                     if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
 
                     prettify.options.language = 'liquid';
