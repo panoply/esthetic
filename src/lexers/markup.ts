@@ -2605,7 +2605,11 @@ prettify.lexers.markup = function markup (source: string) {
           extlang = 'json';
         }
 
-      } else if (tname === 'style' && options.language !== 'jsx' && (attValue === '' || attValue === 'text/css')) {
+      } else if (
+        liquid === false &&
+        tname === 'style' &&
+        options.language !== 'jsx' && (attValue === '' || attValue === 'text/css')
+      ) {
 
         ext = true;
         extlang = 'css';
@@ -2617,7 +2621,7 @@ prettify.lexers.markup = function markup (source: string) {
         if (tname === 'javascript') {
           extlang = 'javascript';
         } else if (tname === 'style' || tname === 'stylesheet') {
-          extlang = 'javascript';
+          extlang = 'css';
         } else if (tname === 'schema') {
           extlang = 'json';
         }
@@ -2684,13 +2688,7 @@ prettify.lexers.markup = function markup (source: string) {
 
     // additional logic is required to find the end of a tag with the attribute
     // data-parse-ignore
-    if (
-      simple &&
-      preserve === false &&
-      ignoreme &&
-      is(end, cc.RAN) &&
-      element.slice(element.length - 2) !== '/>'
-    ) {
+    if (simple && preserve === false && ignoreme && is(end, cc.RAN) && element.slice(element.length - 2) !== '/>') {
 
       const tags = [];
       const atstring = [];
@@ -3077,7 +3075,7 @@ prettify.lexers.markup = function markup (source: string) {
 
       do {
 
-        if (b[a] === '\n') parse.lineNumber = parse.lineNumber + 1;
+        if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
 
         // external code requires additional parsing to look for the appropriate end
         // tag, but that end tag cannot be quoted or commented
@@ -3211,6 +3209,8 @@ prettify.lexers.markup = function markup (source: string) {
                     .replace(/^(\s+)/, '')
                     .replace(/(\s+)$/, '');
 
+                  console.log(b[a], end);
+
                   a = a - 1;
 
                   if (lex.length < 1) break;
@@ -3241,6 +3241,7 @@ prettify.lexers.markup = function markup (source: string) {
                     prettify.options.language = curlang;
 
                   }
+
                   break;
                 }
               }
@@ -3249,22 +3250,18 @@ prettify.lexers.markup = function markup (source: string) {
 
               if (name === 'schema') {
 
-                end = b.slice(a + 3, a + 14).join('').toLowerCase();
+                end = b.slice(a).join('').toLowerCase();
 
-                if (a === c - 12) {
-                  end = end.slice(0, end.length - 3);
-                } else {
-                  end = end.slice(0, end.length - 2);
-                }
+                if (/^{%-?\s*endschema/.test(end)) {
 
-                if (end === 'endschema') {
+                  end = end.slice(0, end.indexOf('%}') + 2);
 
                   let outside = lex
                     .join('')
                     .replace(/^(\s+)/, '')
                     .replace(/(\s+)$/, '');
 
-                  a = a - 1;
+                  a = a + end.length - 1;
 
                   if (lex.length < 1) break;
 
@@ -3292,30 +3289,30 @@ prettify.lexers.markup = function markup (source: string) {
 
                     prettify.options.language = 'liquid';
 
+                    record.token = end;
+                    record.types = 'template_end';
+
+                    recordpush(data, record, '');
+
                   }
 
                   break;
                 }
+
               } else if (name === 'style') {
 
-                end = b.slice(a + 4, a + 14).join('').toLowerCase();
+                end = b.slice(a).join('').toLowerCase();
 
-                if (a === c - 14) {
-                  end = end.slice(0, end.length - 4);
-                } else if (a === c - 13) {
-                  end = end.slice(0, end.length - 3);
-                } else {
-                  end = end.slice(0, end.length - 2);
-                }
+                if (/^{%-?\s*endstyle/.test(end)) {
 
-                if (end === 'endstyle') {
+                  end = end.slice(0, end.indexOf('%}') + 2);
 
                   let outside = lex
                     .join('')
                     .replace(/^(\s+)/, '')
                     .replace(/(\s+)$/, '');
 
-                  a = a - 1;
+                  a = a + end.length - 1;
 
                   if (lex.length < 1) break;
 
@@ -3335,45 +3332,39 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else {
 
-                    const curlang = prettify.options.language;
-
                     prettify.options.language = extlang;
                     prettify.options.lexer = 'style';
-
                     prettify.lexers.style(outside);
 
-                    // console.log(prettify.options);
 
                     if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
 
-                    prettify.options.language = curlang;
+                    prettify.options.language = 'liquid';
                     prettify.options.lexer = 'markup';
 
-                    // console.log(prettify.options);
+                    record.token = end;
+                    record.types = 'template_end';
+
+                    recordpush(data, record, '');
+
                   }
 
                   break;
                 }
               } else if (name === 'javascript') {
 
-                end = b.slice(a + 4, a + 19).join('').toLowerCase();
+                end = b.slice(a).join('').toLowerCase();
 
-                if (a === c - 19) {
-                  end = end.slice(0, end.length - 4);
-                } else if (a === c - 18) {
-                  end = end.slice(0, end.length - 3);
-                } else {
-                  end = end.slice(0, end.length - 2);
-                }
+                if (/^{%-?\s*endjavascript/.test(end)) {
 
-                if (end === 'endjavascript') {
+                  end = end.slice(0, end.indexOf('%}') + 2);
 
                   let outside = lex
                     .join('')
                     .replace(/^(\s+)/, '')
                     .replace(/(\s+)$/, '');
 
-                  a = a - 1;
+                  a = a + end.length - 1;
 
                   if (lex.length < 1) break;
 
@@ -3401,6 +3392,11 @@ prettify.lexers.markup = function markup (source: string) {
                     }
 
                     // prettify.options.language = 'html';
+
+                    record.token = end;
+                    record.types = 'template_end';
+
+                    recordpush(data, record, '');
 
                   }
 
@@ -3582,7 +3578,7 @@ prettify.lexers.markup = function markup (source: string) {
 
     if (a > now && a < c) {
 
-      if ((/\s/).test(b[a]) === true) {
+      if (ws(b[a])) {
 
         let x = a;
         parse.linesSpace = 1;
@@ -3592,12 +3588,13 @@ prettify.lexers.markup = function markup (source: string) {
           if (b[x] === '\n') parse.linesSpace = parse.linesSpace + 1;
           x = x - 1;
 
-        } while (x > now && (/\s/).test(b[x]) === true);
+        } while (x > now && ws(b[x]));
 
       } else {
 
         parse.linesSpace = 0;
       }
+
     } else if (a !== now || (a === now && ext === false)) {
 
       // regular content at the end of the supplied source
@@ -3636,7 +3633,7 @@ prettify.lexers.markup = function markup (source: string) {
 
   do {
 
-    if ((/\s/).test(b[a])) {
+    if (ws(b[a])) {
 
       if ((
         data.types[parse.count] === 'template_start' &&
@@ -3697,7 +3694,6 @@ prettify.lexers.markup = function markup (source: string) {
     data.token[parse.count].charAt(0) !== '/' &&
     grammar.html.tags.has(parse.structure[parse.structure.length - 1][0])
   ) {
-
     fixHtmlEnd(data.token[parse.count], true);
   }
 
