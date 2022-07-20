@@ -225,13 +225,12 @@ prettify.lexers.markup = function markup (source: string) {
 
     if (options.language !== 'xml' && options.language !== 'jsx') {
 
-      const spaceStart = (start: string) => start.replace(/\s*$/, ' ');
-      const spaceEnd = (end: string) => end.replace(/^\s*/, ' ');
-
       if ((/(?:{[=#/]|%[>\]])|\}%[>\]]/).test(input)) return input;
 
-      input = input.replace(/{[{%]-?\s*/g, spaceStart);
-      input = input.replace(/\s*-?[%}]}/g, spaceEnd);
+      if (options.markup.delimiterSpacing === true) {
+        input = input.replace(/{[{%]-?\s*/g, (start: string) => start.replace(/\s*$/, ' '));
+        input = input.replace(/\s*-?[%}]}/g, (end: string) => end.replace(/^\s*/, ' '));
+      }
 
       return input;
 
