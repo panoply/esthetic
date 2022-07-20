@@ -2,7 +2,7 @@
 import type { Record, Types } from 'types/prettify';
 import { prettify, grammar } from '@prettify/model';
 import { parse } from '@parser/parse';
-import { create } from '@utils/native';
+import { create, nil } from '@utils/native';
 import { is, not, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
 
@@ -31,9 +31,9 @@ prettify.lexers.style = function style (source: string) {
   const { data } = parse;
 
   /**
-   * The document source as an array list, ie: `source.split('')`
+   * The document source as an array list, ie: `source.split(nil)`
    */
-  const b = source.split('');
+  const b = source.split(nil);
 
   /**
    * The input source string length
@@ -62,12 +62,12 @@ prettify.lexers.style = function style (source: string) {
   /**
    * Last Type, ie: `start`, `selector`, `template` etc etc
    */
-  let ltype: Types = '';
+  let ltype: Types = nil;
 
   /**
    * Last Token, ie: `.selector`, `font-size`, `:` etc etc
    */
-  let ltoke = '';
+  let ltoke = nil;
 
   /**
    * Pushes a record into the parse table
@@ -124,7 +124,7 @@ prettify.lexers.style = function style (source: string) {
     /**
      * The values list - All `!important` extraneous whitespace is stripped.
      */
-    const x = input.replace(/\s*!important/, ' !important').split('');
+    const x = input.replace(/\s*!important/, ' !important').split(nil);
 
     /**
      * Whether or not we are dealing with a `transition` value
@@ -152,7 +152,7 @@ prettify.lexers.style = function style (source: string) {
 
     let ii = 0;
     let dd = 0;
-    let block = '';
+    let block = nil;
     let leng = x.length;
     let items = [];
 
@@ -175,7 +175,7 @@ prettify.lexers.style = function style (source: string) {
      */
     const valuespace = (find: string) => {
 
-      find = find.replace(/\s*/g, '');
+      find = find.replace(/\s*/g, nil);
 
       return /\/\d/.test(find) && input.indexOf('url(') === 0
         ? find
@@ -190,7 +190,7 @@ prettify.lexers.style = function style (source: string) {
 
       if (options.style.noLeadZero === true) {
 
-        return find.replace(/^-?\D0+(\.|\d)/, (search: string) => search.replace(/0+/, ''));
+        return find.replace(/^-?\D0+(\.|\d)/, (search: string) => search.replace(/0+/, nil));
 
       } else if (/0*\./.test(find)) {
 
@@ -200,7 +200,7 @@ prettify.lexers.style = function style (source: string) {
 
         return (/^\D*0+\D*$/).test(find)
           ? find.replace(/0+/, '0')
-          : find.replace((/\d+/).exec(find)[0], (/\d+/).exec(find)[0].replace(/^0+/, ''));
+          : find.replace((/\d+/).exec(find)[0], (/\d+/).exec(find)[0].replace(/^0+/, nil));
       }
 
       return find;
@@ -242,7 +242,7 @@ prettify.lexers.style = function style (source: string) {
         items.push(x[ii]);
 
         if (x[ii - 1] !== '\\' || slash() === false) {
-          if (block === '') {
+          if (block === nil) {
 
             if (is(x[ii], cc.DQO)) {
 
@@ -279,14 +279,14 @@ prettify.lexers.style = function style (source: string) {
           } else if (x[ii] === block) {
 
             dd = dd - 1;
-            if (dd === 0) block = '';
+            if (dd === 0) block = nil;
 
           }
         }
 
-        if (block === '' && x[ii] === ' ') {
+        if (block === nil && x[ii] === ' ') {
           items.pop();
-          values.push(colorPush(items.join('')));
+          values.push(colorPush(items.join(nil)));
           items = [];
         }
 
@@ -295,7 +295,7 @@ prettify.lexers.style = function style (source: string) {
       } while (ii < leng);
     }
 
-    values.push(colorPush(items.join('')));
+    values.push(colorPush(items.join(nil)));
     leng = values.length;
 
     // This is where the rules mentioned above are applied
@@ -325,7 +325,7 @@ prettify.lexers.style = function style (source: string) {
 
           values[ii] = values[ii].replace(/0+/, '0');
 
-          if ((/\d/).test(values[ii].charAt(1))) values[ii] = values[ii].substr(1);
+          if (/\d/.test(values[ii].charAt(1))) values[ii] = values[ii].substr(1);
 
         } else if (/^url\((?!('|"))/.test(values[ii]) && values[ii].charCodeAt(values[ii].length - 1) === cc.RPR) {
 
@@ -340,13 +340,13 @@ prettify.lexers.style = function style (source: string) {
           }
         }
 
-        if ((/^(\+|-)?\d+(\.\d+)?(e-?\d+)?\D+$/).test(values[ii])) {
-          if (!grammar.style.units.has(values[ii].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, ''))) {
+        if (/^(\+|-)?\d+(\.\d+)?(e-?\d+)?\D+$/.test(values[ii])) {
+          if (!grammar.style.units.has(values[ii].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, nil))) {
             values[ii] = values[ii].replace(/(\+|-)?\d+(\.\d+)?(e-?\d+)?/, units);
           }
         }
 
-        if ((/^\w+\(/).test(values[ii]) && values[ii].charAt(values[ii].length - 1) === ')' && (
+        if (/^\w+\(/.test(values[ii]) && values[ii].charAt(values[ii].length - 1) === ')' && (
           values[ii].indexOf('url(') !== 0 || (
             values[ii].indexOf('url(') === 0 &&
             values[ii].indexOf(' ') > 0
@@ -380,7 +380,7 @@ prettify.lexers.style = function style (source: string) {
 
     let aa = a;
     let bb = 0;
-    let outy = '';
+    let outy = nil;
     let func = null;
 
     const spacestart = () => {
@@ -457,7 +457,7 @@ prettify.lexers.style = function style (source: string) {
             block.push(']');
             spacestart();
 
-          } else if ((is(b[aa], cc.HSH) || b[aa] === '@') && is(b[aa + 1], cc.LCB)) {
+          } else if ((is(b[aa], cc.HSH) || is(b[aa], cc.ATT)) && is(b[aa + 1], cc.LCB)) {
 
             func = false;
             out.push(b[aa]);
@@ -499,7 +499,7 @@ prettify.lexers.style = function style (source: string) {
 
           if (ws(b[bb])) do { bb = bb - 1; } while (ws(b[bb]));
 
-          outy = b.slice(bb - 6, bb + 1).join('');
+          outy = b.slice(bb - 6, bb + 1).join(nil);
 
           if (outy.indexOf('filter') === outy.length - 6 || outy.indexOf('progid') === outy.length - 6) {
             outy = 'filter';
@@ -553,10 +553,10 @@ prettify.lexers.style = function style (source: string) {
     }
 
     ltoke = out
-      .join('')
+      .join(nil)
       .replace(/\s+/g, ' ')
-      .replace(/^\s/, '')
-      .replace(/\s$/, '');
+      .replace(/^\s/, nil)
+      .replace(/\s$/, nil);
 
     if (func === true) {
 
@@ -581,7 +581,7 @@ prettify.lexers.style = function style (source: string) {
       ltoke.charAt(ltoke.length - 1) === ')'
     ) {
 
-      if (data.token[parse.count] === ':') {
+      if (is(data.token[parse.count], cc.COL)) {
         ltype = 'value';
       } else {
         ltoke = ltoke.replace(/,\u0020?/g, ', ');
@@ -598,7 +598,7 @@ prettify.lexers.style = function style (source: string) {
 
       ltype = 'item';
 
-    } else if (out[0] === '@' || out[0] === '$') {
+    } else if (is(out[0], cc.ATT) || out[0] === '$') {
 
       if (
         data.types[parse.count] === 'colon' &&
@@ -616,7 +616,7 @@ prettify.lexers.style = function style (source: string) {
         outy = data.token[parse.count];
         aa = outy.indexOf('(');
 
-        if (outy.charAt(outy.length - 1) === ')' && aa > 0) {
+        if (is(outy[outy.length - 1], cc.RPR) && aa > 0) {
           outy = outy.slice(aa + 1, outy.length - 1);
           data.token[parse.count] = data.token[parse.count].slice(0, aa + 1) + value(outy) + ')';
         }
@@ -627,7 +627,7 @@ prettify.lexers.style = function style (source: string) {
       ltype = 'item';
     }
 
-    recordpush('');
+    recordpush(nil);
   };
 
   /**
@@ -650,7 +650,7 @@ prettify.lexers.style = function style (source: string) {
     /**
      * First character
      */
-    let first = '';
+    let first = nil;
     const comsa = [];
 
     /* -------------------------------------------- */
@@ -714,8 +714,8 @@ prettify.lexers.style = function style (source: string) {
         .replace(/(\s*>\s*)/g, ' > ')
         .replace(/(\s*\+\s*)/g, ' + ') // HOT PATCH - Included + for SCSS
         .replace(/:\s+/g, ': ')
-        .replace(/^(\s+)/, '')
-        .replace(/(\s+)$/, '')
+        .replace(/^(\s+)/, nil)
+        .replace(/(\s+)$/, nil)
         .replace(/\s+::\s+/, '::');
 
       if (
@@ -854,7 +854,7 @@ prettify.lexers.style = function style (source: string) {
     if (data.lexer[parse.count - 1] !== 'style' || bb < 0) {
 
       if (type === 'colon') {
-        if (first === '$' || first === '@') {
+        if (first === '$' || is(first, cc.ATT)) {
           data.types[aa] = 'variable';
         } else {
           if (data.stack[aa] !== 'global' && (data.types[aa] !== 'comment' || data.types[aa] !== 'ignore')) {
@@ -879,7 +879,7 @@ prettify.lexers.style = function style (source: string) {
 
         data.types[aa] = 'selector';
 
-        if (data.token[aa] === ':') data.types[bb] = 'selector';
+        if (is(data.token[aa], cc.COL)) data.types[bb] = 'selector';
 
         if (data.token[aa].indexOf('=\u201c') > 0) {
           parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.lineNumber}`;
@@ -889,7 +889,7 @@ prettify.lexers.style = function style (source: string) {
 
       } else if (type === 'end') {
 
-        if (first === '$' || first === '@') {
+        if (first === '$' || is(first, cc.ATT)) {
           data.types[aa] = 'variable';
         } else {
           data.types[aa] = 'value';
@@ -906,7 +906,7 @@ prettify.lexers.style = function style (source: string) {
             data.types[aa] = 'selector';
             selector(aa);
 
-          } else if (data.token[aa].charAt(0) === '$' || data.token[aa].charAt(0) === '@') {
+          } else if (data.token[aa].charAt(0) === '$' || is(data.token[aa], cc.ATT)) {
             data.types[aa] = 'variable';
           } else {
             data.types[aa] = 'value';
@@ -922,7 +922,7 @@ prettify.lexers.style = function style (source: string) {
 
         } else {
 
-          if (first === '$' || first === '@') {
+          if (first === '$' || is(first, cc.ATT)) {
             data.types[aa] = 'variable';
           } else if (data.types[bb] === 'value' || data.types[bb] === 'variable') {
             data.token[bb] = data.token[bb] + data.token[aa];
@@ -934,13 +934,13 @@ prettify.lexers.style = function style (source: string) {
 
       } else if (type === 'colon') {
 
-        if (first === '$' || first === '@') {
+        if (first === '$' || is(first, cc.ATT)) {
           data.types[aa] = 'variable';
         } else {
           data.types[aa] = 'property';
         }
 
-      } else if (data.token[bb].charAt(0) === '@' && ((
+      } else if (is(data.token[bb], cc.ATT) && ((
         data.types[bb - 2] !== 'variable' &&
         data.types[bb - 2] !== 'property'
       ) || data.types[bb - 1] === 'separator')) {
@@ -959,36 +959,7 @@ prettify.lexers.style = function style (source: string) {
 
     let x = parse.count;
 
-    do {
-
-      /* if (is(data.token[x][0], cc.DSH) && is(data.token[x][1], cc.DSH)) {
-
-        data.types[x] = 'property';
-
-        if (is(data.token[x][data.token[x].length - 1], cc.SEM)) {
-
-          data.token[x] = data.token[x].slice(0, -1);
-
-          parse.splice({
-            data,
-            howmany: 0,
-            index: x + 1,
-            record: {
-              begin: parse.structure[parse.structure.length - 1][1],
-              ender: -1,
-              lexer: 'style',
-              lines: parse.linesSpace,
-              stack: parse.structure[parse.structure.length - 1][0],
-              token: ';',
-              types: 'separator'
-            }
-          });
-        }
-      } */
-
-      x = x - 1;
-
-    } while (x > 0 && (data.types[x] === 'comment'));
+    do { x = x - 1; } while (x > 0 && (data.types[x] === 'comment'));
 
     // console.log(data.token[x]);
 
@@ -1018,8 +989,8 @@ prettify.lexers.style = function style (source: string) {
     /* LEXICAL SCOPES                               */
     /* -------------------------------------------- */
 
-    let quote = '';
-    let name = '';
+    let quote = nil;
+    let name = nil;
     let endlen = 0;
     let start = open.length;
 
@@ -1041,7 +1012,7 @@ prettify.lexers.style = function style (source: string) {
         recordpush(ltoke);
       } else {
         // console.log(data.token[parse.count], data.lines[parse.count]);
-        recordpush('');
+        recordpush(nil);
       }
     };
 
@@ -1053,7 +1024,7 @@ prettify.lexers.style = function style (source: string) {
 
         store.push(b[a]);
 
-        if (quote === '') {
+        if (quote === nil) {
 
           if (b[a] === '"') {
 
@@ -1087,7 +1058,7 @@ prettify.lexers.style = function style (source: string) {
 
             if (endlen === end.length) {
 
-              quote = store.join('');
+              quote = store.join(nil);
 
               if (ws(quote.charAt(start))) {
                 do { start = start + 1; } while (ws(quote.charAt(start)));
@@ -1267,11 +1238,11 @@ prettify.lexers.style = function style (source: string) {
         } else if (quote === b[a]) {
 
           if (is(quote, cc.DQO) || is(quote, cc.SQO)) {
-            quote = '';
-          } else if (is(quote, cc.FWS) && (b[a] === '\r' || b[a] === '\n')) {
-            quote = '';
+            quote = nil;
+          } else if (is(quote, cc.FWS) && (b[a] === '\r' || is(b[a], cc.NWL))) {
+            quote = nil;
           } else if (is(quote, cc.ARS) && is(b[a + 1], cc.FWS)) {
-            quote = '';
+            quote = nil;
           }
         }
 
@@ -1319,7 +1290,7 @@ prettify.lexers.style = function style (source: string) {
 
     }
 
-    recordpush('');
+    recordpush(nil);
 
     a = comm[1];
 
@@ -1356,8 +1327,8 @@ prettify.lexers.style = function style (source: string) {
     } = create(null);
 
     props.data = create(null);
-    props.data.margin = [ '', '', '', '', false ];
-    props.data.padding = [ '', '', '', '', false ];
+    props.data.margin = [ nil, nil, nil, nil, false ];
+    props.data.padding = [ nil, nil, nil, nil, false ];
 
     props.last = create(null);
     props.last.margin = 0;
@@ -1371,48 +1342,48 @@ prettify.lexers.style = function style (source: string) {
 
       if (data.token[aa - 2] === prop) {
 
-        const values = data.token[aa].replace(/\s*!important\s*/g, '').split(' ');
+        const values = data.token[aa].replace(/\s*!important\s*/g, nil).split(' ');
         const vlen = values.length;
 
         if (data.token[aa].indexOf('!important') > -1) props.data[prop[4]] = true;
 
         if (vlen > 3) {
 
-          if (props.data[prop][0] === '') props.data[prop][0] = values[0];
-          if (props.data[prop][1] === '') props.data[prop][1] = values[1];
-          if (props.data[prop][2] === '') props.data[prop][2] = values[2];
-          if (props.data[prop][3] === '') props.data[prop][3] = values[3];
+          if (props.data[prop][0] === nil) props.data[prop][0] = values[0];
+          if (props.data[prop][1] === nil) props.data[prop][1] = values[1];
+          if (props.data[prop][2] === nil) props.data[prop][2] = values[2];
+          if (props.data[prop][3] === nil) props.data[prop][3] = values[3];
 
         } else if (vlen > 2) {
 
-          if (props.data[prop][0] === '') props.data[prop][0] = values[0];
-          if (props.data[prop][1] === '') props.data[prop][1] = values[1];
-          if (props.data[prop][2] === '') props.data[prop][2] = values[2];
-          if (props.data[prop][3] === '') props.data[prop][3] = values[1];
+          if (props.data[prop][0] === nil) props.data[prop][0] = values[0];
+          if (props.data[prop][1] === nil) props.data[prop][1] = values[1];
+          if (props.data[prop][2] === nil) props.data[prop][2] = values[2];
+          if (props.data[prop][3] === nil) props.data[prop][3] = values[1];
 
         } else if (vlen > 1) {
 
-          if (props.data[prop][0] === '') props.data[prop][0] = values[0];
-          if (props.data[prop][1] === '') props.data[prop][1] = values[1];
-          if (props.data[prop][2] === '') props.data[prop][2] = values[0];
-          if (props.data[prop][3] === '') props.data[prop][3] = values[1];
+          if (props.data[prop][0] === nil) props.data[prop][0] = values[0];
+          if (props.data[prop][1] === nil) props.data[prop][1] = values[1];
+          if (props.data[prop][2] === nil) props.data[prop][2] = values[0];
+          if (props.data[prop][3] === nil) props.data[prop][3] = values[1];
 
         } else {
 
-          if (props.data[prop][0] === '') props.data[prop][0] = values[0];
-          if (props.data[prop][1] === '') props.data[prop][1] = values[0];
-          if (props.data[prop][2] === '') props.data[prop][2] = values[0];
-          if (props.data[prop][3] === '') props.data[prop][3] = values[0];
+          if (props.data[prop][0] === nil) props.data[prop][0] = values[0];
+          if (props.data[prop][1] === nil) props.data[prop][1] = values[0];
+          if (props.data[prop][2] === nil) props.data[prop][2] = values[0];
+          if (props.data[prop][3] === nil) props.data[prop][3] = values[0];
         }
 
       } else if (data.token[aa - 2] === `${prop}-bottom`) {
-        if (props.data[prop][2] === '') props.data[prop][2] = data.token[aa];
+        if (props.data[prop][2] === nil) props.data[prop][2] = data.token[aa];
       } else if (data.token[aa - 2] === `${prop}-left`) {
-        if (props.data[prop][3] === '') props.data[prop][3] = data.token[aa];
+        if (props.data[prop][3] === nil) props.data[prop][3] = data.token[aa];
       } else if (data.token[aa - 2] === `${prop}-right`) {
-        if (props.data[prop][1] === '') props.data[prop][1] = data.token[aa];
+        if (props.data[prop][1] === nil) props.data[prop][1] = data.token[aa];
       } else if (data.token[aa - 2] === `${prop}-top`) {
-        if (props.data[prop][0] === '') props.data[prop][0] = data.token[aa];
+        if (props.data[prop][0] === nil) props.data[prop][0] = data.token[aa];
       } else {
         return;
       }
@@ -1428,22 +1399,22 @@ prettify.lexers.style = function style (source: string) {
     function removes () {
 
       let cc = 0;
-      let values = '';
+      let values = nil;
 
-      const zero = (/^(0+([a-z]+|%))/);
+      const zero = /^(0+([a-z]+|%))/;
       const bb = props.removes.length;
       const tmargin = (
-        props.data.margin[0] !== '' &&
-        props.data.margin[1] !== '' &&
-        props.data.margin[2] !== '' &&
-        props.data.margin[3] !== ''
+        props.data.margin[0] !== nil &&
+        props.data.margin[1] !== nil &&
+        props.data.margin[2] !== nil &&
+        props.data.margin[3] !== nil
       );
 
       const tpadding = (
-        props.data.padding[0] !== '' &&
-        props.data.padding[1] !== '' &&
-        props.data.padding[2] !== '' &&
-        props.data.padding[3] !== ''
+        props.data.padding[0] !== nil &&
+        props.data.padding[1] !== nil &&
+        props.data.padding[2] !== nil &&
+        props.data.padding[3] !== nil
       );
 
       /**
@@ -1484,7 +1455,7 @@ prettify.lexers.style = function style (source: string) {
           values = `${props.data[prop][0]} ${props.data[prop][1]} ${props.data[prop][2]} ${props.data[prop][3]}`;
         }
 
-        if (props.data[prop[4]] === true) values = `${values.replace(' !important', '')} !important`;
+        if (props.data[prop[4]] === true) values = `${values.replace(' !important', nil)} !important`;
 
         if (props.last[prop] > parse.count) {
           cc = (begin < 1) ? 1 : begin + 1;
@@ -1665,7 +1636,7 @@ prettify.lexers.style = function style (source: string) {
             }
 
             ltype = 'separator';
-            recordpush('');
+            recordpush(nil);
 
           } else if (data.types[parse.count] === 'comment') {
 
@@ -1682,7 +1653,7 @@ prettify.lexers.style = function style (source: string) {
         if (is(b[a], cc.RCB)) marginPadding();
         if (options.style.sortProperties === true && is(b[a], cc.RCB)) parse.objectSort(data);
 
-        recordpush('');
+        recordpush(nil);
 
       }
 
@@ -1703,7 +1674,7 @@ prettify.lexers.style = function style (source: string) {
       if (data.types[parse.count] !== 'separator' && esctest(a) === true) {
         ltoke = b[a];
         ltype = 'separator';
-        recordpush('');
+        recordpush(nil);
       }
 
     } else if (is(b[a], cc.COL) && data.types[parse.count] !== 'end') {
@@ -1718,14 +1689,14 @@ prettify.lexers.style = function style (source: string) {
         item('pseudo');
         ltoke = '::';
         ltype = 'pseudo';
-        recordpush('');
+        recordpush(nil);
 
       } else {
 
         item('colon');
         ltoke = ':';
         ltype = 'colon';
-        recordpush('');
+        recordpush(nil);
 
       }
 
@@ -1744,6 +1715,5 @@ prettify.lexers.style = function style (source: string) {
 
   if (options.style.sortProperties === true) parse.objectSort(data);
 
-  // console.log(data);
   return data;
 };
