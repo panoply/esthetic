@@ -1,7 +1,17 @@
 import { LanguageNames, LexerNames } from '../common';
 import { LiteralUnion } from 'type-fest';
 
+export type Embedded = {
+  [K in LanguageNames]: Array<[string] | [RegExp] | [
+    tag: string | RegExp,
+    attribute: string | RegExp
+  ]>
+}
+
 export interface Grammars {
+  /**
+   * Extended token grammars for the Liquid Template Language
+   */
   liquid: {
     /**
      * **Tags**
@@ -41,13 +51,44 @@ export interface Grammars {
     /**
      * **Embedded**
      *
-     * A list of token names who's inner contents should be formatted using a different
+     * A list of Liquid token names who's inner contents should be formatted using a different
      * lexer mode. Embedded tags will treat their contained content as external and allow
      * you to apply region based beautification to custom tag blocks.
      *
+     * Embedded region grammar references expect an array list or strings, Regular Expressions
+     * or for more pricise control you can provide an array who's first value represets the
+     * tag name and second value an attribute.
+     *
+     * #### Example
+     *
+     * ```js
+     * prettify.options({
+     *  grammar: {
+     *    liquid: {
+     *      embedded: {
+     *        json: [
+     *          ['schema'],
+     *          ['capture', 'some_json']
+     *        ],
+     *        scss: [
+     *          ['style'],
+     *          ['stylesheet', /\s+['"]scss['"]/],
+     *        ],
+     *        javascript: [
+     *          ['capture', 'some_js']
+     *        ],
+     *      }
+     *    }
+     *  }
+     * })
+     * ```
+     *
      */
-    embedded?: { [K in LanguageNames]: Array<string | RegExp> }
+    embedded?: Embedded
   };
+  /**
+   * Extended token grammars for HTML
+   */
   html: {
     /**
      * HTML Tags
@@ -66,12 +107,34 @@ export interface Grammars {
     /**
      * **Embedded**
      *
-     * A list of token names who's inner contents should be formatted using a different
+     * A list of HTML token tag names who's inner contents should be formatted using a different
      * lexer mode. Embedded tags will treat their contained content as external and allow
      * you to apply region based beautification to custom tag blocks.
      *
+     * Embedded region grammar references expect an array list or strings, Regular Expressions
+     * or for more pricise control you can provide an array who's first value represets the
+     * tag name and second value an attribute.
+     *
+     * #### Example
+     *
+     * ```js
+     * prettify.options({
+     *  grammar: {
+     *    html: {
+     *      embedded: {
+     *        json: [
+     *          ['json-tag'],
+     *        ],
+     *        scss: [
+     *          ['style', 'type=["\']type/scss["\']'],
+     *        ],
+     *      }
+     *    }
+     *  }
+     * })
+     * ```
      */
-    embedded?: { [K in LanguageNames]: Array<string | RegExp> }
+    embedded?: Embedded
   }
   /**
    * Internal Usage
@@ -204,8 +267,21 @@ export interface GlobalOptions {
    * - _typescript_ > TypeScript
    * - _javascript_ > JavaScript
    *
-   * Typically used internally and with extension based tooling.
-   * In the future will be used in the CLI and reporting.
+   * Typically this can omitted as Prettify will automaticaly assign this
+   * when `language` is passed. - This is mostly used internally and with
+   * extension based tooling. In the future will be used in the CLI and reporting.
+   *
+   * **Note**
+   *
+   * In future version, the Language Name may also be used to infer specific
+   * Liquid variations, like for example:
+   *
+   * - `Liquid Shopify`
+   * - `Liquid Jekyll`
+   * - `Liquid 11ty`
+   *
+   * When such is defined it will help Prettify apply default grammar rules like
+   * beautification to certain embedded regions.
    */
   languageName?: string;
   /**
@@ -216,7 +292,7 @@ export interface GlobalOptions {
    */
   mode?: 'beautify' | 'parse';
   /**
-   * #### NOT YET AVAILABLE
+   * **EXPERIMENTAL**
    *
    * **This option is will be available in future releases and is currently
    * experimental and not fully operational.**
@@ -227,70 +303,8 @@ export interface GlobalOptions {
    *
    * Low level access to optionally extend the lexers tag handling algorithm.
    * This option allows you to inform Prettify of any custom or additional tokens
-   * for provide better context and handling. This is helpful when you need Prettify to
+   * to provide better context and handling. This is helpful when you need Prettify to
    * process custom tags in a specific manner and only available in markup based languages.
    */
-  grammar?: {
-    /**
-     * Extended token grammars for the Liquid Template Language
-     */
-    liquid?: {
-      /**
-       * **Tags**
-       *
-       * String list of token names to be treated as tag blocks. These are tags,
-       * which require an `{% end %}` token be defined, like (for example) the
-       * `{% capture %}` token which requires `{% endcapture %}`.
-       *
-       * The Tags names you provide here will inform Prettify to cancel beautification
-       * when no ender can be found or the ender is in-correctly placed.
-       *
-       * > _By default, Prettify will allow tags that it has no context of to be expressed
-       * as either a _singleton_ or _block_ but this might not always be ideal, especially
-       * in an SSG environment like 11ty or Jekyll where custom Liquid tags can be used._
-       */
-      tags?: string[];
-
-      /**
-       * **Singletons**
-       *
-       * String list of token names to be treated as singletons. These are tags,
-       * which no require an `{% end %}` token to be defined, like (for example)
-       * the `{% assign %}` token is a singleton.
-       *
-       * The Tags names you provide here will inform Prettify to cancel beautification
-       * when if the token uses an ender.
-       *
-       *
-       * > _By default, Prettify will allow tags that it has no context of to be expressed
-       * as either a _singleton_ or _block_ but this might not always be ideal, especially
-       * in an SSG environment like 11ty or Jekyll where custom Liquid tags can be used._
-       */
-      singletons?: string[];
-
-      /**
-       * **Embedded**
-       *
-       * A list of token names who's inner contents should be formatted using a different
-       * lexer mode. Embedded tags will treat their contained content as external and allow
-       * you to apply region based beautification to custom tag blocks.
-       *
-       */
-      embedded?: {
-        [K in LanguageNames]: Array<string | RegExp>
-      }
-    };
-    /**
-     * Extended token grammars for HTML
-     */
-    html: {
-      /**
-       * HTML Voids
-       *
-       * String list of additional or custom void type
-       * HTML tags.
-       */
-      voids?: string[];
-    }
-  }
+  grammar?: Grammars
 }
