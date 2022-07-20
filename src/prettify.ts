@@ -104,15 +104,19 @@ function options (rules: Options) {
       }
 
       if (rules.grammar?.liquid) {
+
         if (rules.grammar?.liquid?.tags) {
           prettify.options.grammar.liquid.tags = rules.grammar.liquid.tags;
           for (const token of rules.grammar.liquid.tags) grammar.liquid.tags.add(token);
         }
+
         if (rules.grammar?.liquid?.singletons) {
           prettify.options.grammar.liquid.singletons = rules.grammar.liquid.singletons;
           for (const token of rules.grammar.liquid.singletons) grammar.liquid.singletons.add(token);
         }
+
       }
+
     } else if (rule in prettify.options) {
       prettify.options[rule as string] = rules[rule];
     }
