@@ -750,7 +750,6 @@ prettify.lexers.style = function style (source: string) {
 
               if (is(data.token[ss], cc.COL)) {
 
-
                 // HOT PATCH
                 // Supports pseudo selectors in the global stack
                 //
