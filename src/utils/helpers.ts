@@ -1,4 +1,6 @@
 import { isArray } from './native';
+import { cc } from './enums';
+import { grammar } from '@options/grammar';
 
 /**
  * Repeats a character x amount of times.
@@ -78,6 +80,117 @@ export function size (bytes: number): string {
 export function sanitizeComment (input: string) {
 
   return `\\${input}`;
+
+}
+
+export function getLiquidTagName (input: string) {
+
+  const begin = input.indexOf('{');
+  const token = is(input[begin + 2], cc.DSH)
+    ? input.slice(begin + 3).trimStart()
+    : input.slice(begin + 2).trimStart();
+
+  return token.slice(0, token.search(/\s/));
+
+}
+
+export function isLiquidOutput (input: string) {
+
+  const begin = input.indexOf('{');
+
+  return is(input[begin + 1], cc.LCB);
+
+}
+
+export function isLiquidStart (input: string) {
+
+  const begin = input.indexOf('{');
+
+  if (is(input[begin + 1], cc.PER)) {
+
+    let token = is(input[begin + 2], cc.DSH)
+      ? input.slice(begin + 3).trimStart()
+      : input.slice(begin + 2).trimStart();
+
+    token = token.slice(0, token.search(/\s/));
+
+    if (token.startsWith('end')) return false;
+
+    return grammar.liquid.tags.has(token);
+
+  }
+
+  return false;
+}
+
+export function isLiquidEnd (input: string | string[]) {
+
+  let token = input as string;
+
+  if (Array.isArray(input)) token = input.join('');
+
+  const begin = token.indexOf('{');
+
+  if (is(token[begin + 1], cc.PER)) {
+    if (is(token[begin + 2], cc.DSH)) return token.slice(begin + 3).trimStart().startsWith('end');
+    return token.slice(begin + 2).trimStart().startsWith('end');
+  }
+
+  return false;
+
+}
+
+/**
+ * Checks where the provided string contains Liquid
+ * delimiters. Optionally accepts a `where` parameter
+ * which allows for checking start, end, both or containment.
+ *
+ * Where Parameter
+ *
+ * - `1` Check starting delimiters, eg: `{{`, `%}`
+ * - `2` Check ending delimiters, eg: `}}`, `%}`
+ * - `3` Check starting and ending delimiters
+ * - `4` Check if input contains starting delimiters
+ * - `5` Check if input contains starting and ending delimiters
+ */
+export function isLiquid (input: string, direction: 1 | 2 | 3 | 4 | 5): boolean {
+
+  if (direction === 1) {
+
+    return is(input[0], cc.LCB) && (
+      is(input[1], cc.PER) ||
+        is(input[1], cc.LCB)
+    );
+
+  } else if (direction === 2) {
+
+    return is(input[input.length - 1], cc.RCB) && (
+      is(input[input.length - 2], cc.PER) ||
+        is(input[input.length - 2], cc.LCB)
+    );
+
+  } else if (direction === 3) {
+    return (
+      is(input[0], cc.LCB) && (
+        is(input[1], cc.PER) ||
+          is(input[1], cc.LCB)
+      )
+    ) && (
+      is(input[input.length - 1], cc.RCB) && (
+        is(input[input.length - 2], cc.PER) ||
+          is(input[input.length - 2], cc.LCB)
+      )
+    );
+
+  } else if (direction === 4) {
+
+    return /{[{%}]/.test(input);
+
+  } else if (direction === 5) {
+
+    return (/{[{%]/.test(input) && /[%}]}/.test(input));
+
+  }
 
 }
 
