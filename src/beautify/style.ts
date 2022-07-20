@@ -34,7 +34,7 @@ prettify.beautify.style = (options: Options) => {
   const level = repeatChar(options.indentSize);
 
   let indent = options.indentLevel;
-  let wrap = 0;
+  let wrap = options.style.forceValue === 'wrap' && options.wrap > 0 ? options.wrap : 0;
   let a = prettify.start;
   let when = [ '', '' ];
 
@@ -419,18 +419,7 @@ prettify.beautify.style = (options: Options) => {
       )
     )) {
 
-      if (options.style.forceValue === 'collapse') {
-
-        if (data.types[a] === 'value' && data.types[a - 1].indexOf('template') < 0) {
-          nl(indent);
-          build.push(level, data.token[a]);
-        } else {
-          build.push(data.token[a]);
-        }
-
-      } else {
-        build.push(data.token[a]);
-      }
+      build.push(data.token[a]);
 
     }
 
