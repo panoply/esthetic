@@ -30,7 +30,26 @@ export interface Definition {
    * The lexer the rule pertains - Accepts an array of lexers when rule is used
    * in different language specific lexers.
    */
-  lexer: DefinitionLexerTypes | DefinitionLexerTypes[] ;
+  lexer: DefinitionLexerTypes | DefinitionLexerTypes[];
+  /**
+   * When multiple types are accepted this will contain the references of each type.
+   * The property should match the type name
+   */
+  multi?: {
+    /**
+     * The rule value
+     */
+    [K in DefinitionTypes]?: {
+      /**
+       * The default setting
+       */
+      default: boolean | string[] | string | number;
+      /**
+       * Rule value description
+       */
+      description: string;
+    }
+  };
   /**
    * An optional list of pre-selected rule values.
    */

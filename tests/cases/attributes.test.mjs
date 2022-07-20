@@ -2,13 +2,12 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('attributeSort: true', async t => {
+test.serial.skip('attributeSort: true', async t => {
 
   const { source } = await samples.get('attributes/attribute-sorting');
 
   const output = await prettify.format(source, {
     language: 'html',
-    // wrap: 80,
     markup: {
       forceAttribute: 2,
       attributeSort: true
@@ -16,12 +15,11 @@ test.serial('attributeSort: true', async t => {
     script: {
       objectSort: true
     }
-
   });
 
-  t.log(prettify.format.stats);
-  t.log(output);
-  // t.snapshot(output);
+  // t.log(prettify.format.stats);
+  // t.log(output);
+  t.snapshot(output);
 
 });
 
@@ -78,7 +76,7 @@ test.serial.skip('preserveAttributes: true', async t => {
 
 });
 
-test.serial.skip('attributeValueNewlines: "force"', async t => {
+test.serial('attributeValueNewlines: "force"', async t => {
 
   const { source } = await samples.get('attributes/attribute-values');
 
