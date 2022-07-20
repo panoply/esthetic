@@ -9,6 +9,7 @@ import {
 } from './types/prettify';
 
 export {
+  Definition,
   Definitions,
   Options,
   GlobalOptions,
