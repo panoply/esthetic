@@ -530,7 +530,7 @@ prettify.beautify.markup = (options: Options) => {
 
         const attr = attributeName(input);
 
-        if (attr[1] === '' || attr[0] === 'href') {
+        if (attr[1] === '' || attr[0] === 'href' || (attr[0][0] === 'o' && attr[0][1] === 'n')) {
           return input;
         } else if (options.markup.attributeValues === 'preserve') {
           return attr[0] + '=' + attr[1];
@@ -561,9 +561,11 @@ prettify.beautify.markup = (options: Options) => {
           if (is(text[item], cc.LCB) && (is(text[item + 1], cc.LCB) || is(text[item + 1], cc.PER))) {
 
             if (option === 'collapse') {
-              if (ws(text[item - 1]) === false && attrarr[attrarr.length - 1] !== '\n') {
+
+              if (ws(text[item - 1]) === true && attrarr[attrarr.length - 1] !== '\n') {
                 attrarr.push('\n');
               }
+
             }
 
             if (is(text[item + 1], cc.PER)) {
@@ -574,14 +576,29 @@ prettify.beautify.markup = (options: Options) => {
               item = next + 2;
 
               if (name.startsWith('end')) {
+
                 inside = false;
+
+                if (option === 'collapse' && attrarr[attrarr.length - 1] !== '\n') {
+                  attrarr.push('\n');
+                }
               } else if (grammar.liquid.tags.has(name.slice(0, name.search(/\s/)))) {
+
                 inside = true;
+
+                if (option === 'collapse' && attrarr[attrarr.length - 1] !== '\n') {
+                  attrarr.push('\n');
+                }
               }
 
               attrarr.push(toke);
 
             } else {
+
+              if (inside && option === 'collapse' && attrarr[attrarr.length - 1] !== '\n') {
+                attrarr.push('\n');
+              }
+
               next = text.indexOf('}}', item + 1);
               toke = text.slice(item, next + 2);
               item = next + 2;
@@ -589,7 +606,7 @@ prettify.beautify.markup = (options: Options) => {
             }
 
             if (option === 'collapse') {
-              if (ws(text[item]) === false && attrarr[attrarr.length - 1] !== '\n' && item < text.length - 1) {
+              if (ws(text[item]) === true && attrarr[attrarr.length - 1] !== '\n' && item < text.length - 1) {
                 attrarr.push('\n');
               }
             }
