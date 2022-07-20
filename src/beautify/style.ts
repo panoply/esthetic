@@ -1,6 +1,7 @@
 import type { Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { is, ws, not, repeatChar } from '@utils/helpers';
+import { is, not, repeatChar } from '@utils/helpers';
+import { nil } from '@utils/native';
 import { cc } from '@utils/enums';
 
 /* -------------------------------------------- */
@@ -9,13 +10,43 @@ import { cc } from '@utils/enums';
 
 prettify.beautify.style = (options: Options) => {
 
-  const build = [];
-  const data = prettify.parsed;
-  const lf = (options.crlf === true) ? '\r\n' : '\n';
-  const len = (prettify.end > 0) ? prettify.end + 1 : data.token.length;
+  /* -------------------------------------------- */
+  /* CONSTANTS                                    */
+  /* -------------------------------------------- */
 
-  // console.log(data);
-  // a single unit of indentation
+  /**
+   * The beautified result
+   */
+  const build = [];
+
+  /**
+   * Reference to `options.parsed`
+   */
+  const data = prettify.parsed;
+
+  /**
+   * Carriage return / Line Feed
+   */
+  const lf = options.crlf === true ? '\r\n' : '\n';
+
+  /**
+   * The input length
+   */
+  const len = prettify.end > 0 ? prettify.end + 1 : data.token.length;
+
+  /**
+   * Line preservation
+   */
+  const pres = options.preserveLine + 1;
+
+  /**
+   * Newline token indentation characters - This is used for `forceValue`
+   */
+  const nlsize = repeatChar(options.indentSize);
+
+  /**
+   * Single unit of indentation
+   */
   const tab = (() => {
 
     let aa = 0;
@@ -26,23 +57,45 @@ prettify.beautify.style = (options: Options) => {
       aa = aa + 1;
     } while (aa < options.indentSize);
 
-    return bb.join('');
+    return bb.join(nil);
 
   })();
 
-  const pres = options.preserveLine + 1;
-  const level = repeatChar(options.indentSize);
+  /* -------------------------------------------- */
+  /* LEXICAL SCOPES                               */
+  /* -------------------------------------------- */
 
+  /**
+   * Indentation level - References `options.indentLevel`
+   */
   let indent = options.indentLevel;
-  let wrap = options.style.forceValue === 'wrap' && options.wrap > 0 ? options.wrap : 0;
-  let a = prettify.start;
-  let when = [ '', '' ];
 
-  // new lines plus indentation
+  /**
+   * Word wrap - This is used for `forceValue`
+   */
+  let wrap = options.style.forceValue === 'wrap' && options.wrap > 0 ? options.wrap : 0;
+
+  /**
+   * Holds the current index position.
+   */
+  let a = prettify.start;
+
+  /**
+   * When store - Holds reference to something (unsure what this is for?)
+   */
+  let when = [ nil, nil ];
+
+  /* -------------------------------------------- */
+  /* FUNCTIONS                                    */
+  /* -------------------------------------------- */
+
+  /**
+   * Applies New lines plus indentation
+   */
   function nl (tabs: number) {
 
     const linesout = [];
-    const total = (function () {
+    const total = (() => {
 
       if (a === len - 1) return 1;
       if (data.lines[a + 1] - 1 > pres) return pres;
@@ -50,7 +103,7 @@ prettify.beautify.style = (options: Options) => {
 
       return 1;
 
-    }());
+    })();
 
     let index = 0;
 
@@ -70,10 +123,14 @@ prettify.beautify.style = (options: Options) => {
       } while (index < tabs);
     }
 
-    build.push(linesout.join(''));
+    build.push(linesout.join(nil));
 
   };
 
+  /**
+   * Vertical colon applier, used when `options.style.vertical`
+   * is provided. I will likely to deprecate or remove this.
+   */
   function vertical () {
 
     const start = data.begin[a];
@@ -175,23 +232,22 @@ prettify.beautify.style = (options: Options) => {
     } while (a > 0);
 
     a = prettify.start;
-
   }
 
-  // beautification loop
+  /* -------------------------------------------- */
+  /* BEAUTIFICATION LOOP                          */
+  /* -------------------------------------------- */
+
   do {
 
     // console.log(data.token[a], data.types[a], data.types[a + 1]);
 
     if (data.types[a] === 'property') wrap = indent + data.token[a].length;
 
-    if (
-      data.types[a + 1] === 'end' ||
-      data.types[a + 1] === 'template_end' ||
-      data.types[a + 1] === 'template_else'
-    ) {
+    if (data.types[a + 1] === 'end' || data.types[a + 1] === 'template_end' || data.types[a + 1] === 'template_else') {
 
       indent = indent - 1;
+
     }
 
     if (data.types[a] === 'template' && data.lines[a] === 0) {
@@ -242,6 +298,7 @@ prettify.beautify.style = (options: Options) => {
           build.push(data.token[a]);
 
           if (data.lines[a + 1] > 0) nl(indent);
+
           a = a + 1;
           continue;
         }
@@ -255,9 +312,9 @@ prettify.beautify.style = (options: Options) => {
           nl(indent);
 
           if (not(data.token[a][2], cc.DSH)) {
-            build.push(level, data.token[a].replace('{{', '{{-'));
+            build.push(nlsize, data.token[a].replace('{{', '{{-'));
           } else {
-            build.push(level, data.token[a]);
+            build.push(nlsize, data.token[a]);
           }
         } else {
           build.push(data.token[a]);
@@ -271,39 +328,30 @@ prettify.beautify.style = (options: Options) => {
       indent = indent + 1;
       nl(indent);
 
-    } else if (
-      data.types[a] === 'start' ||
-      data.types[a] === 'template_start'
-    ) {
+    } else if (data.types[a] === 'start' || data.types[a] === 'template_start') {
 
       indent = indent + 1;
       build.push(data.token[a]);
 
-      if (
-        data.types[a + 1] !== 'end' &&
-        data.types[a + 1] !== 'template_end' && (
-          options.style.compressCSS === false || (
-            options.style.compressCSS === true &&
-            data.types[a + 1] === 'selector'
-          )
-        )
-      ) {
-
-        nl(indent);
-      }
-
-    } else if ((
-      is(data.token[a], cc.SEM) && (
+      if (data.types[a + 1] !== 'end' && data.types[a + 1] !== 'template_end' && (
         options.style.compressCSS === false || (
           options.style.compressCSS === true &&
           data.types[a + 1] === 'selector'
-        )
+        ))
+      ) {
+        nl(indent);
+      }
+
+    } else if ((is(data.token[a], cc.SEM) && (
+      options.style.compressCSS === false || (
+        options.style.compressCSS === true &&
+        data.types[a + 1] === 'selector'
       )
-    ) ||
+    )) || (
       data.types[a] === 'end' ||
       data.types[a] === 'template_end' ||
       data.types[a] === 'comment'
-    ) {
+    )) {
 
       build.push(data.token[a]);
 
@@ -317,19 +365,10 @@ prettify.beautify.style = (options: Options) => {
 
       } else if (data.types[a + 1] !== 'separator') {
 
-        if (
-          data.types[a + 1] !== 'comment' || (
-            data.types[a + 1] === 'comment' &&
-            data.lines[a + 1] > 1
-          )
-        ) {
-
+        if (data.types[a + 1] !== 'comment' || (data.types[a + 1] === 'comment' && data.lines[a + 1] > 1)) {
           nl(indent);
-
         } else {
-
           build.push(' ');
-
         }
       }
 
@@ -357,7 +396,7 @@ prettify.beautify.style = (options: Options) => {
       } else if (data.token[a].indexOf('when(') > 0) {
 
         when = data.token[a].split('when(');
-        build.push(when[0].replace(/\s+$/, ''));
+        build.push(when[0].replace(/\s+$/, nil));
         nl(indent + 1);
         build.push(`when (${when[1]}`);
 
@@ -397,11 +436,7 @@ prettify.beautify.style = (options: Options) => {
 
       nl(indent);
 
-    } else if (
-      (
-        data.types[a] === 'variable' ||
-        data.types[a] === 'function'
-      ) &&
+    } else if ((data.types[a] === 'variable' || data.types[a] === 'function') &&
       options.style.classPadding === true &&
       data.types[a - 1] === 'end' &&
       data.lines[a] < 3
@@ -411,12 +446,10 @@ prettify.beautify.style = (options: Options) => {
       build.push(data.token[a]);
 
     } else if (not(data.token[a], cc.SEM) || (
-      is(data.token[a], cc.SEM) && (
-        options.style.compressCSS === false || (
-          options.style.compressCSS === true &&
-          not(data.token[a + 1], cc.RCB)
-        )
-      )
+      is(data.token[a], cc.SEM) && (options.style.compressCSS === false || (
+        options.style.compressCSS === true &&
+        not(data.token[a + 1], cc.RCB)
+      ))
     )) {
 
       build.push(data.token[a]);
@@ -429,6 +462,6 @@ prettify.beautify.style = (options: Options) => {
 
   prettify.iterator = len - 1;
 
-  return build.join('');
+  return build.join(nil);
 
 };
