@@ -2,9 +2,15 @@
 
 export const enum cc {
   /**
+   * `@` – The at character
+   */
+  ATT = 64,
+
+  /**
    * `#` – Hashtag character
    */
   HSH = 35,
+
   /**
    * `(` – Left Parenthesis - Used in Liquid delimiters
    */
@@ -76,6 +82,11 @@ export const enum cc {
   SQO = 39,
 
   /**
+   * ` - Template Quoted charactets
+   */
+  TQO = 96,
+
+  /**
    * ` ` – Whitespace Character
    */
   WSP = 32,
@@ -112,7 +123,12 @@ export const enum cc {
   /**
    * `,` - Comma
    */
-  COM = 44
+  COM = 44,
+
+  /**
+   * `+` - Plus
+   */
+  PLS = 43
 }
 
 export const enum TagBlocks {
