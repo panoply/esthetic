@@ -49,7 +49,7 @@ export const enum cc {
   /**
    * `>` – Right Angle Bracket - Used in HTML delimiters
    */
-  RAN = 162,
+  RAN = 62,
 
   /**
    * `!` – Bang chanter - Used in HTML comments and Liquid operators
