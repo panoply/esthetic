@@ -1,8 +1,9 @@
 import { Options, Helper } from 'types/prettify';
-import { prettify, grammar } from '@prettify/model';
+import { prettify } from '@prettify/model';
 import { create } from '@utils/native';
 import { is, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
+import { grammar } from '@options/grammar';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
