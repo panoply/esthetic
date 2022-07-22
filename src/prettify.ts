@@ -1,8 +1,10 @@
 import type { Options, Prettify } from 'types/prettify';
-import { prettify, definitions, grammar } from '@prettify/model';
+import { prettify } from '@prettify/model';
+import { definitions } from '@options/definitions';
+import { grammar } from '@options/grammar';
 import { parse as parser } from '@parser/parse';
 import { mode } from '@parser/mode';
-import { keys, assign } from '@utils/native';
+import { keys, assign, defineProperty } from '@utils/native';
 
 /* -------------------------------------------- */
 /* LANGUAGE EXPORT                              */
@@ -26,13 +28,14 @@ options.listen = (callback: Prettify['hooks']['rules'][number]) => prettify.hook
 /* STATS GETTER                                 */
 /* -------------------------------------------- */
 
-Object.defineProperty(format, 'stats', { get () { return prettify.stats; } });
+defineProperty(format, 'stats', { get () { return prettify.stats; } });
+defineProperty(parse, 'stats', { get () { return prettify.stats; } });
 
 /* -------------------------------------------- */
 /* RULES GETTER                                 */
 /* -------------------------------------------- */
 
-Object.defineProperty(options, 'rules', { get () { return prettify.options; } });
+defineProperty(options, 'rules', { get () { return prettify.options; } });
 
 /* -------------------------------------------- */
 /* FORMAT FUNCTION                              */
@@ -97,26 +100,7 @@ function options (rules: Options) {
     } else if (rule === 'json') {
       assign(prettify.options.json, rules.json);
     } else if (rule === 'grammar') {
-
-      if (rules.grammar?.html?.voids) {
-        assign(prettify.options.grammar.html, rules.grammar.html);
-        for (const token of rules.grammar.html.voids) grammar.html.voids.add(token);
-      }
-
-      if (rules.grammar?.liquid) {
-
-        if (rules.grammar?.liquid?.tags) {
-          prettify.options.grammar.liquid.tags = rules.grammar.liquid.tags;
-          for (const token of rules.grammar.liquid.tags) grammar.liquid.tags.add(token);
-        }
-
-        if (rules.grammar?.liquid?.singletons) {
-          prettify.options.grammar.liquid.singletons = rules.grammar.liquid.singletons;
-          for (const token of rules.grammar.liquid.singletons) grammar.liquid.singletons.add(token);
-        }
-
-      }
-
+      grammar.extend(rules.grammar);
     } else if (rule in prettify.options) {
       prettify.options[rule as string] = rules[rule];
     }
