@@ -2,7 +2,7 @@ import { create, assign } from '@utils/native';
 import { Language, LanguageNames, Prettify } from 'types/prettify';
 import { prettify } from '@prettify/model';
 
-const lexmap = (function () {
+export const lexmap = (function () {
 
   const o = create(null);
 
