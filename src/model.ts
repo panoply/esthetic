@@ -1,24 +1,22 @@
 /* eslint-disable no-lone-blocks */
 
 import { Prettify } from 'types/prettify';
-import { create, defineProperty } from '@utils/native';
+import { create, defineProperty, assign } from '@utils/native';
 
 /* -------------------------------------------- */
 /* EXPORT                                       */
 /* -------------------------------------------- */
-export { definitions } from '@options/definitions';
-export { grammar } from '@options/grammar';
 
 export const prettify = (function () {
 
-  const model: Prettify = create(null);
-
-  model.parsed = create(null);
-  model.options = create(null);
-  model.beautify = create(null);
-  model.lexers = create(null);
-  model.stats = create(null);
-  model.hooks = create(null);
+  const model: Prettify = assign(create(null), {
+    parsed: create(null),
+    options: create(null),
+    beautify: create(null),
+    lexers: create(null),
+    stats: create(null),
+    hooks: create(null)
+  });
 
   /* -------------------------------------------- */
   /* INPUT SOURCE                                 */
@@ -33,7 +31,9 @@ export const prettify = (function () {
         : input as string;
     },
     set (source: string | Buffer) {
-      input = model.env === 'node' ? Buffer.isBuffer(source) ? source : Buffer.from(source) : source;
+      input = model.env === 'node'
+        ? Buffer.isBuffer(source) ? source : Buffer.from(source)
+        : source;
     }
   });
 
@@ -98,7 +98,9 @@ export const prettify = (function () {
 
   model.options.grammar = create(null);
   model.options.grammar.html = create(null);
+  model.options.grammar.html.embedded = create(null);
   model.options.grammar.liquid = create(null);
+  model.options.grammar.liquid.embedded = create(null);
 
   /* -------------------------------------------- */
   /* LANGUAGE                                     */
@@ -126,6 +128,7 @@ export const prettify = (function () {
   /* -------------------------------------------- */
 
   model.options.markup = create(null);
+
   model.options.markup.correct = false;
   model.options.markup.commentNewline = false;
   model.options.markup.attributeChain = 'inline';
@@ -145,6 +148,7 @@ export const prettify = (function () {
   /* -------------------------------------------- */
 
   model.options.style = create(null);
+
   model.options.style.correct = false;
   model.options.style.compressCSS = false;
   model.options.style.classPadding = false;
@@ -159,6 +163,7 @@ export const prettify = (function () {
   /* -------------------------------------------- */
 
   model.options.script = create(null);
+
   model.options.script.correct = false;
   model.options.script.braceNewline = false;
   model.options.script.bracePadding = false;
@@ -189,6 +194,7 @@ export const prettify = (function () {
   /* -------------------------------------------- */
 
   model.options.json = create(null);
+
   model.options.json.arrayFormat = 'default';
   model.options.json.braceAllman = false;
   model.options.json.bracePadding = false;
