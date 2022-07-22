@@ -1,7 +1,8 @@
 /* eslint-disable no-use-before-define */
 import type { Record, Types } from 'types/prettify';
-import { prettify, grammar } from '@prettify/model';
+import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
+import { grammar } from '@options/grammar';
 import { create, nil } from '@utils/native';
 import { is, not, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
