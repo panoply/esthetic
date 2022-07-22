@@ -5,6 +5,8 @@ import type { Record, Structure } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { create } from '@utils/native';
+import { is, not } from '@utils/helpers';
+import { cc } from '@utils/enums';
 
 prettify.lexers.script = function script (source: string) {
 
@@ -71,7 +73,7 @@ prettify.lexers.script = function script (source: string) {
    * Reference to `parse.data` - Stores the various
    * data arrays of the parse table
    */
-  const data = parse.data;
+  const { data } = parse;
 
   /**
    * Reference to `parse.references` - Stores the declared
@@ -79,7 +81,7 @@ prettify.lexers.script = function script (source: string) {
    * outside the script lexer since some languages recursive
    * use of the script lexer
    */
-  const references = parse.references;
+  const { references } = parse;
 
   /**
    * The length of the document source,
@@ -157,8 +159,8 @@ prettify.lexers.script = function script (source: string) {
     if (ltype === 'start' || ltype === 'type_start') return;
     if (options.language === 'json') return;
     if (
-      record.token === ';' ||
-      record.token === ',' ||
+      is(record.token, cc.SEM) ||
+      is(record.token, cc.COM) ||
       record.stack === 'class' ||
       record.stack === 'map' ||
       record.stack === 'attribute' ||
@@ -171,7 +173,7 @@ prettify.lexers.script = function script (source: string) {
     }
 
     if (
-      record.token === '}' &&
+      is(record.token, cc.RCB) &&
       data.stack[record.begin - 1] === 'global' &&
       data.types[record.begin - 1] !== 'operator' &&
       record.stack === data.stack[parse.count - 1]
@@ -192,7 +194,7 @@ prettify.lexers.script = function script (source: string) {
       return;
     }
 
-    if (next === ';' && isEnd === false) return;
+    if (is(next, cc.SEM) && isEnd === false) return;
 
     if (data.lexer[parse.count - 1] !== 'script' && (
       (a < b && b === prettify.source.length - 1) ||
@@ -202,7 +204,7 @@ prettify.lexers.script = function script (source: string) {
       return;
     }
 
-    if (record.token === '}' && (
+    if (is(record.token, cc.RCB) && (
       record.stack === 'function' ||
       record.stack === 'if' ||
       record.stack === 'else' ||
@@ -232,7 +234,7 @@ prettify.lexers.script = function script (source: string) {
         aa = data.begin[record.begin - 1];
       }
 
-      if (data.token[aa] === '(') {
+      if (is(data.token[aa], cc.LPR)) {
         aa = aa - 1;
 
         if (data.token[aa - 1] === 'function') aa = aa - 1;
@@ -650,15 +652,15 @@ prettify.lexers.script = function script (source: string) {
       }
     }
 
-    if (x === ')' || x === 'x)' || x === ']') {
+    if (is(x, cc.RPR) || x === 'x)' || is(x, cc.RSB)) {
       if (options.script.correct === true) plusplus();
       asifix();
     }
 
-    if (x === ')' || x === 'x)') asi(false);
+    if (is(x, cc.RPR) || x === 'x)') asi(false);
 
     if (vart.len > -1) {
-      if (x === '}' && (
+      if (is(x, cc.RCB) && (
         (options.script.variableList === 'list' && vart.count[vart.len] === 0) ||
         (data.token[parse.count] === 'x;' && options.script.variableList === 'each')
       )) {
@@ -673,15 +675,15 @@ prettify.lexers.script = function script (source: string) {
     }
 
     if (
-      ltoke === ',' &&
+      is(ltoke, cc.COM) &&
       data.stack[parse.count] !== 'initializer' &&
-      ((x === ']' && data.token[parse.count - 1] === '[') || x === '}')
+      ((is(x, cc.RSB) && is(data.token[parse.count - 1], cc.LSB)) || is(x, cc.RCB))
     ) {
 
       tempstore = parse.pop(data);
     }
 
-    if (x === ')' || x === 'x)') {
+    if (is(x, cc.RPR) || x === 'x)') {
 
       ltoke = x;
 
@@ -690,7 +692,7 @@ prettify.lexers.script = function script (source: string) {
         pword = lword[lword.length - 1];
 
         if (pword.length > 1 &&
-          next !== '{' && (
+          not(next, cc.LCB) && (
           pword[0] === 'if' ||
             pword[0] === 'for' ||
             pword[0] === 'with' || (
@@ -704,13 +706,13 @@ prettify.lexers.script = function script (source: string) {
         }
       }
 
-    } else if (x === ']') {
+    } else if (is(x, cc.RSB)) {
 
       ltoke = ']';
 
-    } else if (x === '}') {
+    } else if (is(x, cc.RCB)) {
 
-      if (ltoke !== ',' && options.script.correct === true) plusplus();
+      if (not(ltoke, cc.COM) && options.script.correct === true) plusplus();
       if (parse.structure.length > 0 && parse.structure[parse.structure.length - 1][0] !== 'object') asi(true);
       if ((
         options.script.objectSort === true || (
@@ -741,10 +743,10 @@ prettify.lexers.script = function script (source: string) {
     pstack = parse.structure[parse.structure.length - 1];
 
     if (
-      x === ')' &&
+      is(x, cc.RPR) &&
       options.script.correct === true &&
       count - parse.count < 2 && (
-        data.token[parse.count] === '(' ||
+        is(data.token[parse.count], cc.LPR) ||
         data.types[parse.count] === 'number'
       ) && (
         data.token[count - 1] === 'Array' ||
@@ -756,13 +758,13 @@ prettify.lexers.script = function script (source: string) {
       newarr = true;
     }
 
-    if (brace[brace.length - 1] === 'x{' && x === '}') {
+    if (brace[brace.length - 1] === 'x{' && is(x, cc.RCB)) {
 
       blockinsert();
       brace.pop();
 
       if (data.stack[parse.count] !== 'try') {
-        if (next !== ':' && next !== ';' && data.token[data.begin[a] - 1] !== '?') blockinsert();
+        if (not(next, cc.COL) && not(next, cc.SEM) && data.token[data.begin[a] - 1] !== '?') blockinsert();
       }
 
       ltoke = '}';
@@ -791,7 +793,7 @@ prettify.lexers.script = function script (source: string) {
 
         do {
           if (data.begin[y] === begin) {
-            if (data.token[y] === ',') break;
+            if (is(data.token[y], cc.COM)) break;
           } else {
             y = data.begin[y];
           }
@@ -814,7 +816,7 @@ prettify.lexers.script = function script (source: string) {
           ltype = type;
         }
 
-      } else if (options.script.endComma === 'never' && data.token[parse.count] === ',') {
+      } else if (options.script.endComma === 'never' && is(data.token[parse.count], cc.COM)) {
 
         parse.pop(data);
       }
@@ -922,12 +924,12 @@ prettify.lexers.script = function script (source: string) {
         return input;
       };
 
-      if (starting === '"' && qc === 'single') {
+      if (is(starting, cc.DQO) && qc === 'single') {
 
         build[0] = "'";
         build[build.length - 1] = "'";
 
-      } else if (starting === "'" && qc === 'double') {
+      } else if (is(starting, cc.SQO) && qc === 'double') {
 
         build[0] = '"';
         build[build.length - 1] = '"';
@@ -951,8 +953,8 @@ prettify.lexers.script = function script (source: string) {
       ltoke = build.join('');
 
       if (
-        starting === '"' ||
-        starting === "'" ||
+        is(starting, cc.DQO) ||
+        is(starting, cc.SQO) ||
         starting === '{{' ||
         starting === '{%'
       ) {
@@ -1019,8 +1021,8 @@ prettify.lexers.script = function script (source: string) {
           parse.structure[parse.structure.length - 1][0] !== 'object' || (
             parse.structure[parse.structure.length - 1][0] === 'object' &&
             nextchar(1, false) !== ':' &&
-            data.token[parse.count] !== ',' &&
-            data.token[parse.count] !== '{'
+            not(data.token[parse.count], cc.COM) &&
+            not(data.token[parse.count], cc.LCB)
           )
         ) {
 
@@ -2488,7 +2490,7 @@ prettify.lexers.script = function script (source: string) {
 
     })();
 
-    if (ltoke === '{' && (data.types[aa] === 'word' || data.token[aa] === ']')) {
+    if (is(ltoke, cc.LCB) && (data.types[aa] === 'word' || data.token[aa] === ']')) {
 
       let bb = aa;
 
@@ -2512,7 +2514,7 @@ prettify.lexers.script = function script (source: string) {
 
       stack = 'data_type';
 
-    } else if (stack === '' && (ltoke === '{' || ltoke === 'x{')) {
+    } else if (stack === '' && (is(ltoke, cc.LCB) || ltoke === 'x{')) {
 
       if (
         wordx === 'else' ||
@@ -2569,8 +2571,8 @@ prettify.lexers.script = function script (source: string) {
         stack = 'initializer';
 
       } else if (
-        ltoke === '{' &&
-        (wordx === ')' || wordx === 'x)') &&
+        is(ltoke, cc.LCB) &&
+        (is(wordx, cc.RPR) || wordx === 'x)') &&
         (
           data.types[data.begin[aa] - 1] === 'word' ||
           data.types[data.begin[aa] - 1] === 'reference' ||
@@ -2607,12 +2609,12 @@ prettify.lexers.script = function script (source: string) {
           stack = 'function';
         }
 
-      } else if (ltoke === '{' && (wordx === ';' || wordx === 'x;')) {
+      } else if (is(ltoke, cc.LCB) && (wordx === ';' || wordx === 'x;')) {
 
         // ES6 block
         stack = 'block';
 
-      } else if (ltoke === '{' && data.token[aa] === ':' && data.stack[aa] === 'switch') {
+      } else if (is(ltoke, cc.LCB) && data.token[aa] === ':' && data.stack[aa] === 'switch') {
 
         // ES6 block
         stack = 'block';
@@ -2627,7 +2629,7 @@ prettify.lexers.script = function script (source: string) {
         stack = 'object';
 
       } else if (
-        wordx === ')' &&
+        is(wordx, cc.RPR) &&
         (
           pword[0] === 'function' ||
           pword[0] === 'if' ||
@@ -2691,7 +2693,7 @@ prettify.lexers.script = function script (source: string) {
         stack = 'function';
 
       } else if (
-        wordx === ')' &&
+        is(wordx, cc.RPR) &&
         data.stack[aa] === 'method' &&
         (
           data.types[data.begin[aa] - 1] === 'word' ||
@@ -2704,7 +2706,7 @@ prettify.lexers.script = function script (source: string) {
 
       } else if (
         data.types[aa] === 'word' &&
-        ltoke === '{' &&
+        is(ltoke, cc.LCB) &&
         data.token[aa] !== 'return' &&
         data.token[aa] !== 'in' &&
         data.token[aa] !== 'import' &&
@@ -2717,7 +2719,7 @@ prettify.lexers.script = function script (source: string) {
         stack = 'block';
 
       } else if (
-        ltoke === '{' &&
+        is(ltoke, cc.LCB) &&
         'if|else|for|while|function|class|switch|catch|finally'.indexOf(data.stack[aa]) > -1 &&
         (
           data.token[aa] === 'x}' ||
