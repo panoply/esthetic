@@ -1,0 +1,20 @@
+// INDENTATION CHARACTERS
+
+const foo = {
+first: {
+second: {
+third: [
+'one',
+'two',
+'three',
+'four',
+'fix',
+'six',
+'seven',
+'eight',
+'nine',
+'10'
+]
+}
+}
+}
