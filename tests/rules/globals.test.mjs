@@ -53,7 +53,7 @@ test.serial('CRLF Line Terminations', async t => {
   t.log('{ crlf: true }');
   t.snapshot(crlfTrue, '{ crlf: true }');
 
-  const crlfFalse = await prettify.format(source);
+  const crlfFalse = await prettify.format(source, { crlf: false });
 
   t.log('{ crlf: false }');
   t.snapshot(crlfFalse, '{ crlf: false } (default)');
