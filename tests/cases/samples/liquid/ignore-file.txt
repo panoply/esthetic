@@ -1,3 +1,0 @@
-{% comment %} @prettify-ignore {% endcomment %}
-
-<div>File should not be formatted</div>
