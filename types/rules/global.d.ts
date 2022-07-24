@@ -1,11 +1,35 @@
 import { LanguageNames, LexerNames } from '../common';
 import { LiteralUnion } from 'type-fest';
 
-export type Embedded = {
-  [K in LanguageNames]: Array<[string] | [RegExp] | [
-    tag: string | RegExp,
-    attribute: string | RegExp
-  ]>
+export type EmbeddedHTML = {
+  [tag: string]: {
+    /**
+     * The embedded language to refer
+     */
+    language: LanguageNames;
+    /**
+     * Attributes matchers
+     */
+    attribute?: {
+      /**
+       * Accepts an Regular expression string, or array of strings.
+       */
+      [attribute: string]: RegExp | string | string[]
+    }
+  }[]
+}
+
+export type EmbeddedLiquid = {
+  [tag: string]: {
+    /**
+     * The embedded language to refer
+     */
+    language: LanguageNames;
+    /**
+     * Accepts an Regular expression string, or array of strings.
+     */
+    argument?: RegExp | string | string[];
+  }[]
 }
 
 export interface Grammars {
@@ -23,7 +47,7 @@ export interface Grammars {
      * The Tags names you provide here will inform Prettify to cancel beautification
      * when no ender can be found or the ender is in-correctly placed.
      */
-    tags: Set<string>;
+    tags: string[];
 
     /**
      * **Else Tags**
@@ -34,7 +58,7 @@ export interface Grammars {
      * The Tags names you provide here will inform Prettify to cancel beautification
      * when no ender can be found or the ender is in-correctly placed.
      */
-    else: Set<string>;
+    else: string[];
 
     /**
      * **Singletons**
@@ -46,7 +70,7 @@ export interface Grammars {
      * The Tags names you provide here will inform Prettify to cancel beautification
      * when if the token uses an ender.
      */
-    singletons: Set<string>;
+    singletons: string[];
 
     /**
      * **Embedded**
@@ -66,16 +90,16 @@ export interface Grammars {
      *  grammar: {
      *    liquid: {
      *      embedded: {
-     *        json: [
-     *          ['schema'],
-     *          ['capture', 'some_json']
+     *        schema: [
+     *         { language: 'json' }
      *        ],
-     *        scss: [
-     *          ['style'],
-     *          ['stylesheet', /\s+['"]scss['"]/],
+     *        capture: [
+     *         { language: 'json', name: ['some_json', 'ld_json'] },
+     *         { language: 'css', name: ['some_css', 'css_example'] }
      *        ],
-     *        javascript: [
-     *          ['capture', 'some_js']
+     *        stylesheet: [
+     *          { language: 'css' },
+     *          { language: 'scss', match: /\\s*['"]scss['"]/ },
      *        ],
      *      }
      *    }
@@ -84,7 +108,7 @@ export interface Grammars {
      * ```
      *
      */
-    embedded?: Embedded
+    embedded?: EmbeddedLiquid
   };
   /**
    * Extended token grammars for HTML
@@ -95,14 +119,14 @@ export interface Grammars {
      *
      * String list of HTML tag blocks
      */
-    tags: Set<string>
+    tags: string[]
     /**
      * HTML Voids
      *
      * String list of additional or custom void type
      * HTML tags.
      */
-    voids: Set<string>
+    voids: string[]
 
     /**
      * **Embedded**
@@ -122,19 +146,19 @@ export interface Grammars {
      *  grammar: {
      *    html: {
      *      embedded: {
-     *        json: [
-     *          ['json-tag'],
+     *        script: [
+     *         { language: 'json', attribute: { type: ['application/json'] } }
      *        ],
-     *        scss: [
-     *          ['style', 'type=["\']type/scss["\']'],
-     *        ],
+     *        style: [
+     *         { language: 'scss', attribute: { type: 'type/scss' } }
+     *        ]
      *      }
      *    }
      *  }
      * })
      * ```
      */
-    embedded?: Embedded
+    embedded?: EmbeddedHTML
   }
   /**
    * Internal Usage
@@ -147,7 +171,7 @@ export interface Grammars {
      * A list of API keywords
      *
      */
-    keywords: Set<string>
+    keywords: string[]
 
   }
   /**
@@ -161,7 +185,7 @@ export interface Grammars {
      * String list of dimensions and units used in style
      * languages like CSS and SCSS.
      */
-    units: Set<string>
+    units: string[]
 
   }
 

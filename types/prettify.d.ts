@@ -51,6 +51,39 @@ export interface Language {
   languageName: ValueOf<LanguageProperNames>
 }
 
+export interface Grammar {
+  html: {
+    voids: Set<string>;
+    tags: Set<string>;
+    embed: {
+      [tagName: string]: {
+        language: LanguageProperName;
+        attribute?: string;
+        value?(token: string): boolean
+      }
+    }
+  };
+  liquid: {
+    tags: Set<string>;
+    else: Set<string>;
+    singletons: Set<string>;
+    embed: {
+      [tagName: string]: {
+        language: LanguageProperName;
+        attribute?(token: string): boolean
+        end(token: string): boolean
+      }
+    }
+  };
+  style: {
+    units: Set<string>
+  };
+  script: {
+    keywords: Set<string>
+  };
+  extend(options: Options['grammar']): void
+}
+
 /**
  * Prettify (Internal)
  *
@@ -59,23 +92,23 @@ export interface Language {
  * is internal facing.
  */
 export interface Prettify {
-  env: LiteralUnion<'node' | 'browser', string>;
-  data: Data;
-  start: number;
-  end: number;
-  iterator: number;
   get source(): string;
   set source(input: string | Buffer)
-  scopes: Scopes;
-  mode: LiteralUnion<'beautify' | 'parse', string>
-  parsed?: Data;
-  options?: Options;
   stats?: {
     time: number;
     size: LiteralUnion<`${string} ${'B' | 'KB' | 'MB' | 'TB'}`, string>;
     chars: number;
     language: LanguageProperName;
   }
+  env: LiteralUnion<'node' | 'browser', string>;
+  data: Data;
+  start: number;
+  end: number;
+  iterator: number;
+  scopes: Scopes;
+  mode: LiteralUnion<'beautify' | 'parse', string>
+  parsed?: Data;
+  options?: Options;
   hooks?: {
     before?: ((rules: Options, input: string) => void | false)[];
     language?: ((language: Language) => void | Language)[];
