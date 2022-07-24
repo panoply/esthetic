@@ -2,24 +2,35 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial.skip('preserveComment: false', async t => {
+test.serial('Preserve Comments', async t => {
 
-  const { source } = await samples.get('javascript/comment-indent');
+  const { source } = await samples.cases('javascript/comment-indent');
 
-  const output = await prettify.format(source, {
+  const preserveCommentFalse = await prettify.format(source, {
     preserveComment: false,
     script: {
       braceNewline: false
     }
   });
 
-  t.snapshot(output);
+  t.log('preserveComment: false');
+  t.snapshot(preserveCommentFalse);
+
+  const preserveCommentTrue = await prettify.format(source, {
+    preserveComment: true,
+    script: {
+      braceNewline: false
+    }
+  });
+
+  t.log('preserveComment: true');
+  t.snapshot(preserveCommentTrue);
 
 });
 
-test.serial.skip('inlineReturn: true', async t => {
+test.serial('Inline Return', async t => {
 
-  const { source } = await samples.get('javascript/inline-return');
+  const { source } = await samples.cases('javascript/inline-return');
 
   const attemptCorrectionFalse = await prettify.format(source, {
     attemptCorrection: false,
@@ -31,6 +42,7 @@ test.serial.skip('inlineReturn: true', async t => {
     }
   });
 
+  t.log('inlineReturn: false');
   t.snapshot(attemptCorrectionFalse);
 
   const attemptCorrectionTrue = await prettify.format(source, {
@@ -43,13 +55,14 @@ test.serial.skip('inlineReturn: true', async t => {
     }
   });
 
+  t.log('inlineReturn: true');
   t.snapshot(attemptCorrectionTrue);
 
 });
 
-test.serial('objectSort: true', async t => {
+test.serial('Object Sorting', async t => {
 
-  const { source } = await samples.get('javascript/object-sort');
+  const { source } = await samples.cases('javascript/object-sort');
 
   const objectSortTrue = await prettify.format(source, {
     indentSize: 2,
@@ -62,8 +75,9 @@ test.serial('objectSort: true', async t => {
     }
   });
 
-  t.log(objectSortTrue);
-  // t.snapshot(objectSortTrue);
+  // t.log(objectSortTrue);
+  t.log('objectSort: true');
+  t.snapshot(objectSortTrue);
 
   const objectSortFalse = await prettify.format(source, {
     attemptCorrection: false,
@@ -77,7 +91,8 @@ test.serial('objectSort: true', async t => {
     }
   });
 
-  t.log(objectSortFalse);
-  // t.snapshot(objectSortFalse);
+  // t.log(objectSortFalse);
+  t.log('objectSort: false');
+  t.snapshot(objectSortFalse);
 
 });

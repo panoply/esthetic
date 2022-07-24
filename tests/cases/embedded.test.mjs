@@ -4,7 +4,7 @@ import prettify from '@liquify/prettify';
 
 test.serial('HTML embedded script tag', async t => {
 
-  const { source } = await samples.get('embedded/html-script');
+  const source = await samples.cases('embedded/html-script');
 
   const input = await prettify.format(source, {
     language: 'html'
@@ -18,7 +18,7 @@ test.serial('HTML embedded script tag', async t => {
 
 test.serial.skip('HTML embedded application/json+ld script tag', async t => {
 
-  const { source } = await samples.get('embedded/html-json-ld');
+  const source = await samples.cases('embedded/html-json-ld');
 
   const input = await prettify.format(source, {
     language: 'html',
@@ -35,7 +35,7 @@ test.serial.skip('HTML embedded application/json+ld script tag', async t => {
 
 test.serial.skip('Liquid embedded JavaScript tag', async t => {
 
-  const { source } = await samples.get('liquid/javascript');
+  const source = await samples.cases('liquid/javascript');
 
   prettify.format(source, {
     script: {

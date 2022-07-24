@@ -2,31 +2,26 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('embedded expression', async t => {
+test.serial('Embedded JSX Expressions', async t => {
 
-  const { source } = await samples.get('jsx/embedded-expressions');
+  const source = await samples.cases('jsx/embedded-expressions');
 
   const output = await prettify.format(source, {
     language: 'jsx',
-    wrap: 80,
-    markup: {
-      forceAttribute: true
-    }
+    wrap: 80
   });
 
-  t.log(prettify.format.stats);
-  t.log(output);
-  // t.snapshot(output);
+  // t.log(output);
+  t.snapshot(output, 'Embedded Expression');
 
 });
 
-test.serial.skip('JSX Language', async t => {
+test.serial('Apply markup rules to content', async t => {
 
-  const { source } = await samples.get('languages/jsx');
+  const source = await samples.cases('jsx/embedded-expressions');
 
   const output = await prettify.format(source, {
     language: 'jsx',
-    // wrap: 80,
     markup: {
       forceAttribute: true
     },
@@ -37,8 +32,9 @@ test.serial.skip('JSX Language', async t => {
 
   });
 
-  t.log(prettify.format.stats);
-  t.log(output);
-  // t.snapshot(output);
+  // t.log(output);
+
+  t.log('{ markup: { forceAttribute: true }}');
+  t.snapshot(output, '{ markup: { forceAttribute: true }}');
 
 });

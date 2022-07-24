@@ -4,7 +4,7 @@ import prettify from '@liquify/prettify';
 
 test.serial.skip('attributeSort: true', async t => {
 
-  const { source } = await samples.get('attributes/attribute-sorting');
+  const source = await samples.cases('attributes/attribute-sorting');
 
   const output = await prettify.format(source, {
     language: 'html',
@@ -23,9 +23,9 @@ test.serial.skip('attributeSort: true', async t => {
 
 });
 
-test.serial.skip('attributeGlue: true', async t => {
+test.serial('attributeChain: true', async t => {
 
-  const { source } = await samples.get('attributes/attribute-chain');
+  const source = await samples.cases('attributes/attribute-chain');
 
   const output = await prettify.format(source, {
     language: 'html',
@@ -44,25 +44,9 @@ test.serial.skip('attributeGlue: true', async t => {
 
 });
 
-test.serial.skip('forceAttribute: 2', async t => {
-
-  const { source } = await samples.get('attributes/force-limits');
-
-  const output = await prettify.format(source, {
-    language: 'html',
-    lexer: 'markup',
-    markup: {
-      forceAttribute: 3
-    }
-  });
-
-  t.snapshot(output);
-
-});
-
 test.serial.skip('preserveAttributes: true', async t => {
 
-  const { source } = await samples.get('attributes/preserve-attributes');
+  const source = await samples.cases('attributes/preserve-attributes');
 
   const output = await prettify.format(source, {
     markup: {
@@ -76,9 +60,9 @@ test.serial.skip('preserveAttributes: true', async t => {
 
 });
 
-test.serial('attributeValueNewlines: "force"', async t => {
+test.serial.skip('attributeValueNewlines: "force"', async t => {
 
-  const { source } = await samples.get('attributes/attribute-values');
+  const source = await samples.cases('attributes/attribute-values');
 
   return prettify.format(source, {
     wrap: 80,
