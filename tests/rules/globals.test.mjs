@@ -158,3 +158,53 @@ test.serial('End with Newline', async t => {
   t.snapshot(endNewlineFalse, '{ endNewline: false } (default)');
 
 });
+
+test.todo('Comment Indentation: Rule is not being respected in Liquid');
+test.todo('Comment Indentation: HTML multiline comments fail');
+test.todo('Comment Preservation: Liquid and HTML comments do not respect preservation');
+
+test.serial.skip('Preserve Comments', async t => {
+
+  prettify.options({ language: 'liquid' });
+
+  /* SAMPLE ------------------------------------- */
+
+  const source = await samples.rules('global/comment-indent');
+
+  /* RULES -------------------------------------- */
+
+  for (const preserveComment of [ true, false ]) {
+
+    const output = await prettify.format(source, { preserveComment });
+
+    t.log(`{ preserveComment: ${preserveComment} }`, output);
+    /* t.snapshot(
+      output,
+      `{ commentIndent: ${commentIndent} } ${commentIndent === false ? '(default)' : ''}`
+    ); */
+
+  };
+});
+
+test.serial.skip('Comment Indentation', async t => {
+
+  prettify.options({ language: 'liquid' });
+
+  /* SAMPLE ------------------------------------- */
+
+  const source = await samples.rules('global/comment-indent');
+
+  /* RULES -------------------------------------- */
+
+  for (const commentIndent of [ true, false ]) {
+
+    const output = await prettify.format(source, { commentIndent });
+
+    t.log(`{ commentIndent: ${commentIndent} }`, output);
+    /* t.snapshot(
+      output,
+      `{ commentIndent: ${commentIndent} } ${commentIndent === false ? '(default)' : ''}`
+    ); */
+
+  };
+});
