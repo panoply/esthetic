@@ -4,7 +4,7 @@ import prettify from '@liquify/prettify';
 
 test.serial('HTML language detection', async t => {
 
-  const { source } = await samples.get('languages/html');
+  const source = await samples.cases('languages/html');
 
   t.deepEqual(prettify.language(source), {
     language: 'html',
@@ -16,55 +16,7 @@ test.serial('HTML language detection', async t => {
 
 test.serial('Liquid language detection', async t => {
 
-  const { source } = await samples.get('languages/liquid');
-
-  t.deepEqual(prettify.language(source), {
-    language: 'liquid',
-    lexer: 'markup',
-    languageName: 'Liquid'
-  });
-
-});
-
-test.serial('Liquid embedded region {% style %}', async t => {
-
-  const { source } = await samples.get('liquid/style');
-
-  t.deepEqual(prettify.language(source), {
-    language: 'liquid',
-    lexer: 'markup',
-    languageName: 'Liquid'
-  });
-
-});
-
-test.serial('Liquid embedded region {% stylesheet %}', async t => {
-
-  const { source } = await samples.get('liquid/style');
-
-  t.deepEqual(prettify.language(source), {
-    language: 'liquid',
-    lexer: 'markup',
-    languageName: 'Liquid'
-  });
-
-});
-
-test.serial('Liquid embedded region {% schema %}', async t => {
-
-  const { source } = await samples.get('liquid/schema');
-
-  t.deepEqual(prettify.language(source), {
-    language: 'liquid',
-    lexer: 'markup',
-    languageName: 'Liquid'
-  });
-
-});
-
-test.serial('Liquid embedded region {% javascript %}', async t => {
-
-  const { source } = await samples.get('liquid/javascript');
+  const source = await samples.cases('languages/liquid');
 
   t.deepEqual(prettify.language(source), {
     language: 'liquid',
@@ -76,7 +28,7 @@ test.serial('Liquid embedded region {% javascript %}', async t => {
 
 test.serial('CSS language detection', async t => {
 
-  const { source } = await samples.get('languages/css');
+  const source = await samples.cases('languages/css');
 
   t.deepEqual(prettify.language(source), {
     language: 'css',
@@ -88,7 +40,7 @@ test.serial('CSS language detection', async t => {
 
 test.serial('SCSS language detection', async t => {
 
-  const { source } = await samples.get('languages/scss');
+  const source = await samples.cases('languages/scss');
 
   t.deepEqual(prettify.language(source), {
     language: 'scss',
@@ -100,7 +52,7 @@ test.serial('SCSS language detection', async t => {
 
 test.serial('JSON language detection', async t => {
 
-  const { source } = await samples.get('languages/json');
+  const source = await samples.cases('languages/json');
 
   t.deepEqual(prettify.language(source), {
     language: 'json',
@@ -112,7 +64,7 @@ test.serial('JSON language detection', async t => {
 
 test.serial('JavaScript language detection', async t => {
 
-  const { source } = await samples.get('languages/javascript');
+  const source = await samples.cases('languages/javascript');
 
   t.deepEqual(prettify.language(source), {
     language: 'javascript',
@@ -124,7 +76,7 @@ test.serial('JavaScript language detection', async t => {
 
 test.serial('TypeScript language detection', async t => {
 
-  const { source } = await samples.get('languages/typescript');
+  const source = await samples.cases('languages/typescript');
 
   t.deepEqual(prettify.language(source), {
     language: 'typescript',
@@ -136,7 +88,7 @@ test.serial('TypeScript language detection', async t => {
 
 test.serial('Language Detection hooks', async t => {
 
-  const { source } = await samples.get('languages/liquid');
+  const source = await samples.cases('languages/liquid');
 
   prettify.language.listen(({ language, languageName, lexer }) => {
 
