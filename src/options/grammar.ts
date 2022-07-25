@@ -204,7 +204,6 @@ export const grammar = new class Grammar {
         'stylesheet'
       ],
       else: [
-        'case',
         'default',
         'else',
         'when',
@@ -265,6 +264,12 @@ export const grammar = new class Grammar {
     this.liquid.singletons = new Set(Grammar.defaults.liquid.singletons);
     this.liquid.embed = create(null);
     this.defaults();
+
+  }
+
+  embed (language: 'html' | 'liquid', tag: string) {
+
+    return tag in this[language].embed;
 
   }
 
