@@ -1,21 +1,165 @@
 /* eslint-disable no-lone-blocks */
 
-import { Prettify } from 'types/prettify';
-import { create, defineProperty, assign } from '@utils/native';
+import { PartialDeep } from 'type-fest';
+import { Prettify, MarkupOptions, StyleOptions, ScriptOptions, JSONOptions } from 'types/prettify';
+import { object } from '@utils/helpers';
+import { create, defineProperty } from '@utils/native';
 
 /* -------------------------------------------- */
 /* EXPORT                                       */
 /* -------------------------------------------- */
 
-export const prettify = (function () {
+export const prettify: Prettify = (function () {
 
-  const model: Prettify = assign(create(null), {
-    parsed: create(null),
-    options: create(null),
+  const model = object<PartialDeep<Prettify>>({
+    env: (typeof process !== 'undefined' && process.versions != null) ? 'node' : 'browser',
+    mode: 'beautify',
+    end: 0,
+    iterator: 0,
+    start: 0,
+    scopes: [],
     beautify: create(null),
     lexers: create(null),
-    stats: create(null),
-    hooks: create(null)
+    parsed: object<Prettify['parsed']>(
+      {
+        begin: [],
+        ender: [],
+        lexer: [],
+        lines: [],
+        stack: [],
+        token: [],
+        types: []
+      }
+    ),
+    hooks: object<Prettify['hooks']>(
+      {
+        before: [],
+        language: [],
+        rules: [],
+        after: []
+      }
+    ),
+    stats: object<Prettify['stats']>(
+      {
+        chars: -1,
+        time: -1,
+        size: '',
+        language: ''
+      }
+    ),
+    options: object<Prettify['options']>(
+      {
+        lexer: 'auto',
+        language: 'text',
+        languageName: 'Plain Text',
+        mode: 'beautify',
+        indentLevel: 0,
+        crlf: false,
+        commentIndent: true,
+        endNewline: false,
+        indentChar: ' ',
+        indentSize: 2,
+        preserveComment: false,
+        preserveLine: 2,
+        wrap: 0,
+        grammar: object<Prettify['options']['grammar']>(
+          {
+            html: object<Prettify['options']['grammar']['html']>(
+              {
+                tags: [],
+                voids: [],
+                embedded: create(null)
+              }
+            ),
+            liquid: object<Prettify['options']['grammar']['liquid']>(
+              {
+                tags: [],
+                else: [],
+                singletons: [],
+                embedded: create(null)
+              }
+            ),
+            script: object<Prettify['options']['grammar']['script']>(
+              {
+                keywords: []
+              }
+            ),
+            style: object<Prettify['options']['grammar']['style']>(
+              {
+                units: []
+              }
+            )
+
+          }
+        ),
+        markup: object<MarkupOptions>(
+          {
+            correct: false,
+            commentNewline: false,
+            attributeChain: 'inline',
+            attributeValues: 'preserve',
+            attributeSort: false,
+            attributeSortList: [],
+            forceAttribute: false,
+            forceLeadAttribute: false,
+            preserveText: false,
+            preserveAttributes: false,
+            selfCloseSpace: false,
+            forceIndent: false,
+            quoteConvert: 'none'
+          }
+        ),
+        style: object<StyleOptions>(
+          {
+            correct: false,
+            compressCSS: false,
+            classPadding: false,
+            noLeadZero: false,
+            sortSelectors: false,
+            sortProperties: false,
+            quoteConvert: 'none',
+            forceValue: 'preserve'
+          }
+        ),
+        script: object<ScriptOptions>(
+          {
+            correct: false,
+            braceNewline: false,
+            bracePadding: false,
+            braceStyle: 'none',
+            braceAllman: false,
+            commentNewline: false,
+            caseSpace: false,
+            inlineReturn: true,
+            elseNewline: false,
+            endComma: 'never',
+            arrayFormat: 'default',
+            objectSort: false,
+            objectIndent: 'default',
+            functionNameSpace: false,
+            functionSpace: false,
+            styleGuide: 'none',
+            ternaryLine: false,
+            methodChain: 4,
+            neverFlatten: false,
+            noCaseIndent: false,
+            noSemicolon: false,
+            quoteConvert: 'none',
+            variableList: 'none',
+            vertical: false
+          }
+        ),
+        json: object<JSONOptions>(
+          {
+            arrayFormat: 'default',
+            braceAllman: false,
+            bracePadding: false,
+            objectIndent: 'default',
+            objectSort: false
+          }
+        )
+      }
+    )
   });
 
   /* -------------------------------------------- */
@@ -37,170 +181,6 @@ export const prettify = (function () {
     }
   });
 
-  /* -------------------------------------------- */
-  /* PARSER                                       */
-  /* -------------------------------------------- */
-
-  model.mode = 'beautify';
-  model.end = 0;
-  model.iterator = 0;
-  model.start = 0;
-  model.scopes = [];
-
-  /* -------------------------------------------- */
-  /* ENVIRONMENT                                  */
-  /* -------------------------------------------- */
-
-  model.env = (typeof process !== 'undefined' && process.versions != null && process.versions.node != null)
-    ? 'node'
-    : 'browser';
-
-  /* -------------------------------------------- */
-  /* DATA STRUCTURE                               */
-  /* -------------------------------------------- */
-
-  model.parsed.begin = [];
-  model.parsed.ender = [];
-  model.parsed.lexer = [];
-  model.parsed.lines = [];
-  model.parsed.stack = [];
-  model.parsed.token = [];
-  model.parsed.types = [];
-
-  /* -------------------------------------------- */
-  /* STATISTICS                                   */
-  /* -------------------------------------------- */
-
-  model.stats.chars = -1;
-  model.stats.time = -1;
-  model.stats.size = '';
-  model.stats.language = '';
-
-  /* -------------------------------------------- */
-  /* HOOKS                                        */
-  /* -------------------------------------------- */
-
-  model.hooks.before = [];
-  model.hooks.language = [];
-  model.hooks.rules = [];
-  model.hooks.after = [];
-
-  /* -------------------------------------------- */
-  /* BASE                                         */
-  /* -------------------------------------------- */
-
-  model.options.mode = 'beautify';
-  model.options.indentLevel = 0;
-
-  /* -------------------------------------------- */
-  /* GRAMMAR                                      */
-  /* -------------------------------------------- */
-
-  model.options.grammar = create(null);
-  model.options.grammar.html = create(null);
-  model.options.grammar.html.embedded = create(null);
-  model.options.grammar.liquid = create(null);
-  model.options.grammar.liquid.embedded = create(null);
-
-  /* -------------------------------------------- */
-  /* LANGUAGE                                     */
-  /* -------------------------------------------- */
-
-  model.options.lexer = 'auto';
-  model.options.language = 'text';
-  model.options.languageName = 'Plain Text';
-
-  /* -------------------------------------------- */
-  /* GLOBAL OPTIONS                               */
-  /* -------------------------------------------- */
-
-  model.options.crlf = false;
-  model.options.commentIndent = true;
-  model.options.endNewline = false;
-  model.options.indentChar = ' ';
-  model.options.indentSize = 2;
-  model.options.preserveComment = false;
-  model.options.preserveLine = 2;
-  model.options.wrap = 0;
-
-  /* -------------------------------------------- */
-  /* MARKUP OPTIONS                               */
-  /* -------------------------------------------- */
-
-  model.options.markup = create(null);
-
-  model.options.markup.correct = false;
-  model.options.markup.commentNewline = false;
-  model.options.markup.attributeChain = 'inline';
-  model.options.markup.attributeValues = 'preserve';
-  model.options.markup.attributeSort = false;
-  model.options.markup.attributeSortList = [];
-  model.options.markup.forceAttribute = false;
-  model.options.markup.forceLeadingAttribute = false;
-  model.options.markup.preserveText = false;
-  model.options.markup.preserveAttributes = false;
-  model.options.markup.selfCloseSpace = false;
-  model.options.markup.forceIndent = false;
-  model.options.markup.quoteConvert = 'none';
-
-  /* -------------------------------------------- */
-  /* STYLE OPTIONS                                */
-  /* -------------------------------------------- */
-
-  model.options.style = create(null);
-
-  model.options.style.correct = false;
-  model.options.style.compressCSS = false;
-  model.options.style.classPadding = false;
-  model.options.style.noLeadZero = false;
-  model.options.style.sortSelectors = false;
-  model.options.style.sortProperties = false;
-  model.options.style.quoteConvert = 'none';
-  model.options.style.forceValue = 'preserve';
-
-  /* -------------------------------------------- */
-  /* SCRIPT OPTIONS                               */
-  /* -------------------------------------------- */
-
-  model.options.script = create(null);
-
-  model.options.script.correct = false;
-  model.options.script.braceNewline = false;
-  model.options.script.bracePadding = false;
-  model.options.script.braceStyle = 'none';
-  model.options.script.braceAllman = false;
-  model.options.script.commentNewline = false;
-  model.options.script.caseSpace = false;
-  model.options.script.inlineReturn = true;
-  model.options.script.elseNewline = false;
-  model.options.script.endComma = 'never';
-  model.options.script.arrayFormat = 'default';
-  model.options.script.objectSort = false;
-  model.options.script.objectIndent = 'default';
-  model.options.script.functionNameSpace = false;
-  model.options.script.functionSpace = false;
-  model.options.script.styleGuide = 'none';
-  model.options.script.ternaryLine = false;
-  model.options.script.methodChain = 4;
-  model.options.script.neverFlatten = false;
-  model.options.script.noCaseIndent = false;
-  model.options.script.noSemicolon = false;
-  model.options.script.quoteConvert = 'none';
-  model.options.script.variableList = 'none';
-  model.options.script.vertical = false;
-
-  /* -------------------------------------------- */
-  /* JSON OPTIONS                                 */
-  /* -------------------------------------------- */
-
-  model.options.json = create(null);
-
-  model.options.json.arrayFormat = 'default';
-  model.options.json.braceAllman = false;
-  model.options.json.bracePadding = false;
-  model.options.json.objectIndent = 'default';
-  model.options.json.objectSort = false;
-
-  return model;
+  return model as Prettify;
 
 })();
