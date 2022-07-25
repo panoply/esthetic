@@ -1,6 +1,18 @@
-import { isArray } from './native';
+import { isArray, create, assign } from './native';
 import { cc } from './enums';
 import { grammar } from '@options/grammar';
+
+/**
+ * Creates a null prototypical object
+ */
+export function object<T> (initial?: T): T {
+
+  const o = create(null);
+
+  if (initial) return assign(o, initial);
+
+  return o;
+}
 
 /**
  * Repeats a character x amount of times.
