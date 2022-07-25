@@ -501,7 +501,7 @@ export interface MarkupOptions {
    *
    * ```
    */
-  forceLeadingAttribute?: boolean | number;
+  forceLeadAttribute?: boolean | number;
 
   /**
    * **Default** `false`
