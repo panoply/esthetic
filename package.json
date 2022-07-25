@@ -28,6 +28,8 @@
     "pack": "cd versions; pnpm pack ../ && cd ..",
     "play": "ava tests/play.test.mjs --color --watch",
     "test": "ava tests/cases/*.test.mjs --serial",
+    "test:rules": "ava tests/rules/markup.test.mjs ---",
+    "test:units": "ava tests/units/*.test.mjs ---",
     "test:attributes": "ava tests/cases/attributes* ---",
     "test:embedded": "ava tests/cases/embedded* ---",
     "test:ignores": "ava tests/cases/ignores* ---",
@@ -98,6 +100,7 @@
     "@liquify/eslint-config": "workspace:*",
     "@liquify/test-utils": "workspace:^1.0.0",
     "ava": "^4.2.0",
+    "benchmark": "^2.1.4",
     "tsup": "^6.1.0",
     "type-fest": "^2.13.0"
   }
