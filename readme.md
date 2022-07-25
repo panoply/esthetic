@@ -4,20 +4,20 @@ _This module is still in development but approaching a stable release. Prettify 
 
 # Prettify 💅
 
-The new generation code beautification tool for formatting HTML, Liquid, JavaScript, TypeScript, CSS/SCSS and more! Prettify is built atop of the Sparser lexing engines and its parse approach was adapted from the distributed source code of the late and powerful PrettyDiff.
+The new generation code beautification tool for formatting HTML, Liquid, JavaScript, TypeScript, CSS/SCSS and more! Prettify is built atop of the Sparser lexing algorithm and its parse approach was adapted from the distributed source code of the late and powerful PrettyDiff.
 
 ### Features
 
 - Fast, performant and lightweight (40kb gzip).
-- Cross platform support or (browser/node).
+- Cross platform support. Browser and Node environments.
 - Language aware. Automatically infers handling.
 - Provides a granular set of formatting rules.
-- Single parse tree with incremental beautification capabilities
+- Uniformed array data structures
 - Drop-in solution with no complexities (boomer friendly)
 
 ### Why Prettify?
 
-Prettify is mostly geared towards projects using Liquid as the consumer facing language and exists an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/). It's the perfect choice for projects that leverage the [Liquid](https://shopify.github.io/liquid/) template language and was developed for usage in the [Liquify](https://liquify.dev) text editor extension/plugin. Prettify allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support, it intends to be the solution you'd employ when working with the template language.
+Prettify is mostly geared towards web projects and exists an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/). It's the perfect choice for projects that leverage the [Liquid](https://shopify.github.io/liquid/) template language and was developed for usage in the [Liquify](https://liquify.dev) text editor extension/plugin. Prettify allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support, it intends to be the solution you'd employ when working with the template language.
 
 ### Supported Languages
 
@@ -166,6 +166,7 @@ Prettify provides a granular set of beautification options (rules). The projects
 
 ```typescript
 {
+  grammar: {},
   language: 'auto',
   lexer: 'auto',
   indentSize: 2,
@@ -183,7 +184,7 @@ Prettify provides a granular set of beautification options (rules). The projects
     delimiterSpacing: true,
     commentNewline: false,
     forceAttribute: false,
-    forceLeadingAttribute: false,
+    forceLeadAttribute: false,
     forceIndent: false,
     preserveAttributes: false,
     preserveComment: true,
@@ -201,7 +202,6 @@ Prettify provides a granular set of beautification options (rules). The projects
     preserveLine: 3,
     quoteConvert: 'none',
     forceValue: 'preserve'
-    associate: []
   },
   script: {
     arrayFormat: 'default',
@@ -229,8 +229,7 @@ Prettify provides a granular set of beautification options (rules). The projects
     ternaryLine: false,
     variableList: 'none',
     vertical: false,
-    styleGuide: 'none',
-    associate: []
+    styleGuide: 'none'
   },
   json: {
     arrayFormat: 'default',
@@ -239,8 +238,7 @@ Prettify provides a granular set of beautification options (rules). The projects
     correct: true,
     objectIndent: 'indent',
     objectSort: false,
-    preserveLine: 2,
-    associate: []
+    preserveLine: 2
   }
 }
 ```
@@ -373,7 +371,7 @@ The `format` method returns a promise, so when beautification fails and a parse 
 
 <!-- prettier-ignore -->
 ```typescript
-import * as prettify from '@liquify/prettify';
+import prettify from '@liquify/prettify';
 
 // Invalid code
 const code = '{% if x %} {{ x }} {% endunless %}';
@@ -394,6 +392,7 @@ prettify.format(code).then(output => console.log(output)).catch(error => {
 Inline control is supported and can be applied within comments. Inline control allows your to ignore files, code regions or apply custom formatting options. Comments use the following structures:
 
 - `@prettify-ignore`
+- `@prettify-ignore-next`
 - `@prettify-ignore-start`
 - `@prettify-ignore-end`
 - `@prettify: ....`
