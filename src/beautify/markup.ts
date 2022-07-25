@@ -1,6 +1,6 @@
 import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { create } from '@utils/native';
+import { create, nil } from '@utils/native';
 import { is, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
 import { grammar } from '@options/grammar';
@@ -9,6 +9,18 @@ import { grammar } from '@options/grammar';
 /* MARKUP BEAUTIFICATION                        */
 /* -------------------------------------------- */
 
+/**
+ * Markup Beautification
+ *
+ * Used to beautify markup languages. Digests the data structure
+ * created by the markup lexer.
+ *
+ * - HTML
+ * - XML
+ * - JSX
+ * - XHTML
+ * - Liquid.
+ */
 prettify.beautify.markup = (options: Options) => {
 
   /* -------------------------------------------- */
@@ -32,7 +44,7 @@ prettify.beautify.markup = (options: Options) => {
    * markup elements that require external handling.
    * ie: `<script>` tags etc etc.
    */
-  const externalIndex = create(null);
+  const extidx = create(null);
 
   /**
    * The name of the lexer used
@@ -45,9 +57,19 @@ prettify.beautify.markup = (options: Options) => {
   const data = prettify.parsed;
 
   /**
+   * Whether or not language mode is TSX / JSX
+   */
+  const jsx = options.language === 'jsx' || options.language === 'tsx';
+
+  /**
    * Carriage return / Line Feed
    */
   const lf = options.crlf === true ? String.fromCharCode(13, 10) : String.fromCharCode(10);
+
+  /**
+   * Cached option markup beautification rules
+   */
+  const rules = options.markup;
 
   /**
    * Source count. This holds reference to data token
@@ -63,7 +85,7 @@ prettify.beautify.markup = (options: Options) => {
 
   type.is = (index: number, name: string) => data.types[index] === name;
   type.not = (index: number, name: string) => data.types[index] !== name;
-  type.idx = (index: number, name: string) => index > -1 && data.types[index].indexOf(name);
+  type.idx = (index: number, name: string) => index > -1 && (data.types[index] || nil).indexOf(name);
   token.is = (index: number, tag: string) => data.token[index] === tag;
   token.not = (index: number, tag: string) => data.token[index] !== tag;
 
@@ -100,13 +122,27 @@ prettify.beautify.markup = (options: Options) => {
   /* FUNCTIONS                                    */
   /* -------------------------------------------- */
 
+  /**
+   * Levels
+   *
+   * This IIFE is responsible for composing the indentations,
+   * newlines and spacing. The next function will reference the
+   * return value applied here.
+   */
   const levels = (() => {
 
-    const level = (prettify.start > 0)
-      ? Array(prettify.start).fill(0, 0, prettify.start)
-      : [];
+    /**
+     * The newline / spacing store reference
+     */
+    const level = prettify.start > 0 ? Array(prettify.start).fill(0, 0, prettify.start) : [];
 
-    function nextIndex () {
+    /**
+     * Next Index
+     *
+     * Advances the structure to the next index
+     * in the uniform.
+     */
+    function forward () {
 
       let x = a + 1;
       let y = 0;
@@ -139,7 +175,13 @@ prettify.beautify.markup = (options: Options) => {
 
     };
 
-    function anchorList () {
+    /**
+     * Anchors
+     *
+     * Tokens like `<a>` and `<li>` or link lists
+     * handling - I am unsure of the exact use for this.
+     */
+    function anchorlist () {
 
       const stop = data.begin[a];
 
@@ -187,6 +229,8 @@ prettify.beautify.markup = (options: Options) => {
     };
 
     /**
+     * Comments
+     *
      * HTML / Liquid Comment Identation for markup
      * and template tags.
      */
@@ -195,7 +239,7 @@ prettify.beautify.markup = (options: Options) => {
       let x = a;
       let test = false;
 
-      if (data.lines[a + 1] === 0 && options.markup.forceIndent === false) {
+      if (data.lines[a + 1] === 0 && rules.forceIndent === false) {
 
         do {
 
@@ -264,19 +308,22 @@ prettify.beautify.markup = (options: Options) => {
 
     };
 
+    /**
+     * Content
+     *
+     * Processes document content that is otherwise
+     * not a token tag, like (for example) text.
+     */
     function content () {
 
       let ind = indent;
 
-      if (options.markup.forceIndent === true || options.markup.forceAttribute === true) {
+      if (rules.forceIndent === true || rules.forceAttribute === true) {
         level.push(indent);
         return;
       }
 
-      if (next < c &&
-        (type.idx(next, 'end') > -1 || type.idx(next, 'start') > -1) &&
-        data.lines[next] > 0
-      ) {
+      if (next < c && (type.idx(next, 'end') > -1 || type.idx(next, 'start') > -1) && data.lines[next] > 0) {
 
         level.push(indent);
         ind = ind + 1;
@@ -319,8 +366,9 @@ prettify.beautify.markup = (options: Options) => {
           ) > options.wrap
           ) || (
             (
-              data.token[a].length
-            + data.token[a + 1] ? data.token[a + 1].length : 0
+              data.token[a].length + data.token[a + 1]
+                ? data.token[a + 1].length
+                : 0
             ) > options.wrap
           )
         ) && (
@@ -353,11 +401,13 @@ prettify.beautify.markup = (options: Options) => {
         let d = a;
         let e = Math.max(data.begin[a], 0);
 
-        if (type.is(a, 'content') && options.markup.preserveText === false) {
+        if (type.is(a, 'content') && rules.preserveText === false) {
 
           let countx = 0;
 
-          const chars = data.token[a].replace(/\s+/g, ' ').split(' ');
+          const chars = data.token[a]
+            .replace(/\s+/g, ' ')
+            .split(' ');
 
           do {
 
@@ -388,11 +438,11 @@ prettify.beautify.markup = (options: Options) => {
 
           } while (d < e);
 
-          if (chars[0].charAt(0) === ' ') {
-            data.token[a] = chars.join('').slice(1);
+          if (is(chars[0], cc.WSP)) {
+            data.token[a] = chars.join(nil).slice(1);
           } else {
             level[a - 1] = ind;
-            data.token[a] = chars.join('').replace(lf, '');
+            data.token[a] = chars.join(nil).replace(lf, nil);
           }
 
           if (data.token[a].indexOf(lf) > 0) {
@@ -412,21 +462,19 @@ prettify.beautify.markup = (options: Options) => {
               return;
             }
 
-            if (data.types[d].indexOf('start') > -1) {
+            if (type.idx(d, 'start') > -1) {
               count = 0;
               return;
             }
 
             if (data.lines[d + 1] > 0 && (
-              type.not(d, 'attribute') ||
-              (type.is(d, 'attribute') && type.is(d + 1, 'attribute'))
+              type.not(d, 'attribute') || (
+                type.is(d, 'attribute') &&
+                type.is(d + 1, 'attribute')
+              )
             )) {
 
-              if (
-                type.not(d, 'singleton') ||
-                (type.is(d, 'attribute') && type.is(d + 1, 'attribute'))
-              ) {
-
+              if (type.not(d, 'singleton') || (type.is(d, 'attribute') && type.is(d + 1, 'attribute'))) {
                 count = data.token[a].length;
                 if (data.lines[a + 1] > 0) count = count + 1;
                 break;
@@ -454,7 +502,7 @@ prettify.beautify.markup = (options: Options) => {
 
       // HOT PATCH
       // Inline embedded JSX expressions
-      if (data.types[skip - 1] === 'script_start' && data.token[skip - 1] === '{') {
+      if (data.types[skip - 1] === 'script_start' && is(data.token[skip - 1], cc.LCB)) {
         level[skip - 1] = -20;
       }
 
@@ -473,7 +521,7 @@ prettify.beautify.markup = (options: Options) => {
 
       } while (a < c);
 
-      externalIndex[skip] = a;
+      extidx[skip] = a;
 
       // HOT PATCH
       // Inline embedded JSX expressions
@@ -483,7 +531,7 @@ prettify.beautify.markup = (options: Options) => {
         level.push(indent - 1);
       }
 
-      next = nextIndex();
+      next = forward();
 
       if (
         data.lexer[next] === lexer &&
@@ -497,6 +545,13 @@ prettify.beautify.markup = (options: Options) => {
 
     };
 
+    /**
+     * Attributes
+     *
+     * Used in the final beautification cycle to beautify
+     * attributes and attribute values in accordance with
+     * levels that were defined earlier.
+     */
     function attribute () {
 
       /* -------------------------------------------- */
@@ -520,7 +575,7 @@ prettify.beautify.markup = (options: Options) => {
           ];
         }
 
-        return [ x, '' ];
+        return [ x, nil ];
 
       };
 
@@ -531,23 +586,30 @@ prettify.beautify.markup = (options: Options) => {
 
         const attr = attributeName(input);
 
-        if (attr[1] === '' || attr[0] === 'href' || (attr[0][0] === 'o' && attr[0][1] === 'n')) {
+        // Exclude all href attribute values and all JavaScript "on" attributes
+        if (
+          attr[1] === nil ||
+          attr[0] === 'href' || (
+            attr[0].charCodeAt(0) === 111 && // o
+            attr[0].charCodeAt(1) === 110 // n
+          )
+        ) {
           return input;
-        } else if (options.markup.attributeValues === 'preserve') {
+        } else if (rules.attributeValues === 'preserve') {
           return attr[0] + '=' + attr[1];
-        } else if (options.markup.attributeValues === 'strip') {
-          return attr[0].trimStart() + '=' + attr[1].replace(/\s+/g, ' ').replace(/^["']\s+/, '"');
+        } else if (rules.attributeValues === 'strip') {
+          return `${attr[0].trimStart()}=${attr[1].replace(/\s+/g, ' ').replace(/^["']\s+/, '"')}`;
         }
 
-        const option = options.markup.attributeValues;
+        const option = rules.attributeValues;
         const attrarr: string[] = [];
         const wrapper = options.wrap > 0 ? attr[1].length > options.wrap : false;
 
         let text: string;
 
         let inside: boolean = false;
-        let toke = '';
-        let name = '';
+        let toke = nil;
+        let name = nil;
         let item = 0; // value item
         let next = 0; // next tag
 
@@ -638,7 +700,7 @@ prettify.beautify.markup = (options: Options) => {
           }
         } while (item < text.length);
 
-        return attr[0] + '=' + attrarr.join('');
+        return attr[0] + '=' + attrarr.join(nil);
 
       }
 
@@ -683,7 +745,7 @@ prettify.beautify.markup = (options: Options) => {
 
           } while (bb < size);
 
-          data.token[index] = item.join('');
+          data.token[index] = item.join(nil);
 
         }
       };
@@ -751,12 +813,14 @@ prettify.beautify.markup = (options: Options) => {
         }
 
         if (type.is(next, 'end') || type.is(next, 'template_end')) {
-          return indent + (type.is(parent, 'singleton') ? 2 : 1);
+          return indent + (
+            type.is(parent, 'singleton')
+              ? 2
+              : 1
+          );
         }
 
-        if (type.is(parent, 'singleton')) {
-          return indent + 1;
-        }
+        if (type.is(parent, 'singleton')) return indent + 1;
 
         return indent;
 
@@ -766,12 +830,10 @@ prettify.beautify.markup = (options: Options) => {
 
         // lev must be indent unless the "next" type is end then its indent + 1
         level.push(indent);
+        level[parent] = data.types[parent] === 'singleton'
+          ? indent + 1
+          : indent;
 
-        if (data.types[parent] === 'singleton') {
-          level[parent] = indent + 1;
-        } else {
-          level[parent] = indent;
-        }
         return;
       }
 
@@ -786,16 +848,19 @@ prettify.beautify.markup = (options: Options) => {
       // attributes we handle them in a similar manner
       // as HTML attributes, with only slight differences.
       //
-      // first, set levels and determine if there are template attributes
       do {
 
         count = count + data.token[a].length + 1;
 
         if (data.types[a].indexOf('attribute') > 0) {
 
+          // Token with type value of template_attribute_start
+          // infers a Liquid control tag is contained in the
+          // HTML tag. We need to handle this accordingly
+          //
           if (data.types[a] === 'template_attribute_start') {
 
-            if (options.markup.preserveAttributes === true) {
+            if (rules.preserveAttributes === true) {
 
               level.push(-10);
 
@@ -803,21 +868,23 @@ prettify.beautify.markup = (options: Options) => {
 
               let nested = 1;
 
-              do {
+              // console.log(data.token[a], data.lines[a]);
 
-                if (nested === 0) break;
+              do {
 
                 len = len + data.token[a].length + 1;
 
-                if (options.markup.attributeChain === 'inline') {
+                if (rules.attributeChain === 'inline') {
 
                   level.push(-20);
 
-                } else if (options.markup.attributeChain === 'collapse') {
+                } else if (rules.attributeChain === 'collapse') {
 
                   level.push(lev);
 
-                } else if (options.markup.attributeChain === 'preserve') {
+                } else if (rules.attributeChain === 'preserve') {
+
+                  // console.log(lev, level[a], data.token[a], data.lines[a]);
 
                   if (data.lines[a] === 0) {
 
@@ -827,6 +894,30 @@ prettify.beautify.markup = (options: Options) => {
 
                     level.push(-10);
 
+                  } else {
+
+                    level.push(lev);
+
+                  }
+
+                  /* if (is(data.token[a + 1], cc.DSH)) {
+
+                    level.push(-20);
+
+                  } else if (data.lines[a] === 0) {
+
+                    level.push(-20);
+
+                  } else if (data.lines[a] === 1) {
+
+                    // Token start with - thus we want chaining
+                    //
+                    if (is(data.token[a], cc.DSH)) {
+                      level.push(-20);
+                    } else {
+                      level.push(-10);
+                    }
+
                   } else if (data.lines[a] > options.preserveLine) {
 
                     level.push(options.preserveLine);
@@ -835,8 +926,10 @@ prettify.beautify.markup = (options: Options) => {
 
                     level.push(lev);
 
-                  }
+                  } */
                 }
+
+                if (nested === 0) break;
 
                 // console.log('x', data);
                 a = a + 1;
@@ -862,7 +955,13 @@ prettify.beautify.markup = (options: Options) => {
 
           } else if (data.types[a] === 'template_attribute') {
 
-            level.push(-10);
+            // console.log(data.token[a], data.lines[a]);
+
+            if (rules.forceAttribute === true) {
+              level.push(lev);
+            } else {
+              level.push(-10);
+            }
 
           } else if (data.types[a] === 'comment_attribute') {
 
@@ -880,7 +979,7 @@ prettify.beautify.markup = (options: Options) => {
 
               a = a + 1;
 
-              externalIndex[a] = a;
+              extidx[a] = a;
 
             } else {
 
@@ -890,7 +989,7 @@ prettify.beautify.markup = (options: Options) => {
                 // Prevent embedded expression content being indented onto
                 // newlines.
                 //
-                if (options.language === 'jsx' || options.language === 'tsx') {
+                if (jsx) {
                   level.push(-20);
                 } else {
                   level.push(lev);
@@ -901,7 +1000,7 @@ prettify.beautify.markup = (options: Options) => {
                 // HOT PATCH
                 // Prevent embedded expression content being indented onto newlines.
                 //
-                if (options.language === 'jsx' || options.language === 'tsx') {
+                if (jsx) {
                   level.push(-20);
                 } else {
                   level.push(lev + 1);
@@ -937,19 +1036,15 @@ prettify.beautify.markup = (options: Options) => {
 
           len = len + data.token[a].length + 1;
 
-          if (options.markup.preserveAttributes === true) {
+          if (rules.preserveAttributes === true) {
 
             level.push(-10);
 
-          } else if (
-            options.markup.forceAttribute === true ||
-            options.markup.forceAttribute >= 1 ||
-            attStart === true || (
-              a < c - 1 &&
-              type.not(a + 1, 'template_attribute') &&
-              type.idx(a + 1, 'attribute') > 0
-            )
-          ) {
+          } else if (rules.forceAttribute === true || rules.forceAttribute >= 1 || attStart === true || (
+            a < c - 1 &&
+            type.not(a + 1, 'template_attribute') &&
+            type.idx(a + 1, 'attribute') > 0
+          )) {
 
             data.token[a] = attributeValues(data.token[a]);
 
@@ -974,47 +1069,50 @@ prettify.beautify.markup = (options: Options) => {
       a = a - 1;
 
       if (
-        level[a - 1] > 0 &&
         type.idx(a, 'end') > 0 &&
         type.idx(a, 'attribute') > 0 &&
         type.not(parent, 'singleton') &&
+        type.not(a, 'template_attribute_end') &&
+        level[a - 1] > 0 &&
         plural === true
       ) {
+
         level[a - 1] = level[a - 1] - 1;
       }
 
       if (level[a] !== -20) {
 
-        if (
-          options.language === 'jsx' &&
-          type.idx(parent, 'start') > -1 &&
-          type.is(a + 1, 'script_start')
-        ) {
+        if (jsx === true && type.idx(parent, 'start') > -1 && type.is(a + 1, 'script_start')) {
 
           level[a] = lev;
+
         } else {
 
           // HOT PATCH
+          //
           // We need to handle self closers if they get indentation
           // likely hapening with JSX.
+          //
           if (token.is(a, '/') && level[a - 1] !== 10) {
             level[a - 1] = -10;
           } else {
+
             level[a] = level[parent];
+
           }
 
           // console.log(data.token[a]);
         }
       }
 
-      if (options.markup.forceAttribute === true) {
+      if (rules.forceAttribute === true) {
 
         count = 0;
         level[parent] = lev;
 
-      } else if (options.markup.forceAttribute >= 1) {
+      } else if (rules.forceAttribute >= 1) {
 
-        if (attcount >= (options.markup.forceAttribute as number)) {
+        if (attcount >= (rules.forceAttribute as number)) {
           level[parent] = lev;
         } else {
           level[parent] = -10;
@@ -1026,7 +1124,7 @@ prettify.beautify.markup = (options: Options) => {
 
       if (
         earlyexit === true ||
-        options.markup.preserveAttributes === true ||
+        rules.preserveAttributes === true ||
         token.is(parent, '<%xml%>') ||
         token.is(parent, '<?xml?>')
       ) {
@@ -1036,17 +1134,13 @@ prettify.beautify.markup = (options: Options) => {
 
       w = a;
 
-      // second, ensure tag contains more than one attribute
+      // Second, ensure tag contains more than one attribute
       if (w > parent + 1) {
 
         // finally, indent attributes if tag length exceeds the wrap limit
-        if (options.markup.selfCloseSpace === false) len = len - 1;
+        if (rules.selfCloseSpace === false) len = len - 1;
 
-        if (
-          len > options.wrap &&
-          options.wrap > 0 &&
-          options.markup.forceAttribute === false
-        ) {
+        if (len > options.wrap && options.wrap > 0 && rules.forceAttribute === false) {
 
           count = data.token[a].length;
 
@@ -1098,15 +1192,15 @@ prettify.beautify.markup = (options: Options) => {
 
         } else if (type.not(a, 'comment')) {
 
-          next = nextIndex();
+          next = forward();
 
           if (type.is(next, 'end') || type.is(next, 'template_end')) {
 
             indent = indent - 1;
 
-            if (type.is(next, 'template_end') && type.is(data.begin[next] + 1, 'template_else')) {
-              indent = indent - 1;
-            }
+            if (
+              type.is(next, 'template_end') &&
+              type.is(data.begin[next] + 1, 'template_else')) indent = indent - 1;
 
             // HOT PATCH
             //
@@ -1116,11 +1210,8 @@ prettify.beautify.markup = (options: Options) => {
             if (
               token.is(a, '</ol>') ||
               token.is(a, '</ul>') ||
-              token.is(a, '</dl>')
-            ) {
+              token.is(a, '</dl>')) anchorlist();
 
-              anchorList();
-            }
           }
 
           if (type.is(a, 'script_end') && type.is(a + 1, 'end')) {
@@ -1136,18 +1227,16 @@ prettify.beautify.markup = (options: Options) => {
               level.push(-10);
             }
 
-          } else if (
-            (
-              options.markup.forceIndent === false || (
-                options.markup.forceIndent &&
-                type.is(next, 'script_start')
-              )
-            ) && (
-              type.is(a, 'content') ||
-              type.is(a, 'singleton') ||
-              type.is(a, 'template')
+          } else if ((
+            rules.forceIndent === false || (
+              rules.forceIndent &&
+              type.is(next, 'script_start')
             )
-          ) {
+          ) && (
+            type.is(a, 'content') ||
+            type.is(a, 'singleton') ||
+            type.is(a, 'template')
+          )) {
 
             count = count + data.token[a].length;
 
@@ -1160,13 +1249,13 @@ prettify.beautify.markup = (options: Options) => {
 
               if (pos > 0) {
 
-                const linez = (level[a - 1] * options.indentSize) + (
-                  data.token[a].charCodeAt(2) === 45
-                    ? options.indentSize
-                    : options.indentSize - 1
-                );
-
                 const linesout = [];
+                const offset = (
+                  level[a - 1] *
+                  options.indentSize
+                ) + data.token[a].charCodeAt(2) === cc.DSH
+                  ? options.indentSize
+                  : options.indentSize - 1;
 
                 let iidx = 0;
 
@@ -1176,11 +1265,11 @@ prettify.beautify.markup = (options: Options) => {
 
                   iidx = iidx + 1;
 
-                } while (iidx < linez);
+                } while (iidx < offset);
 
                 data.token[a] = data.token[a]
-                  .replace(/^\s+/gm, '')
-                  .replace(/\n/g, (n) => `${n}${linesout.join('')}`);
+                  .replace(/^\s+/gm, nil)
+                  .replace(/\n/g, (n) => `${n}${linesout.join(nil)}`);
 
               }
 
@@ -1189,13 +1278,19 @@ prettify.beautify.markup = (options: Options) => {
               level.push(-10);
 
             } else if (options.wrap > 0 && (
-              type.idx(a, 'template') < 0 ||
-              (next < c && type.idx(a, 'template') > -1 && type.idx(a, 'template') < 0)
+              type.idx(a, 'template') < 0 || (
+                next < c &&
+                type.idx(a, 'template') > -1 &&
+                type.idx(a, 'template') < 0
+              )
             )) {
 
               content();
 
-            } else if (next < c && (type.idx(next, 'end') > -1 || type.idx(next, 'start') > -1) && (
+            } else if (next < c && (
+              type.idx(next, 'end') > -1 ||
+              type.idx(next, 'start') > -1
+            ) && (
               data.lines[next] > 0 ||
               type.idx(a, 'template_') > -1
             )) {
@@ -1220,11 +1315,12 @@ prettify.beautify.markup = (options: Options) => {
               indent = indent + 1;
             }
 
-            if (options.language === 'jsx' && token.is(a + 1, '{')) {
+            if (jsx === true && token.is(a + 1, '{')) {
 
               // HOT PATCH
               // Added `indent` level for lines more than 1 so
               // JSX embedded expressions appear on newlines
+              //
               if (data.lines[next] === 0) {
                 level.push(-20);
               } else if (data.lines[next] > 1) {
@@ -1241,7 +1337,7 @@ prettify.beautify.markup = (options: Options) => {
 
               level.push(-10);
 
-            } else if (options.markup.forceIndent === true) {
+            } else if (rules.forceIndent === true) {
 
               level.push(indent);
 
@@ -1264,7 +1360,7 @@ prettify.beautify.markup = (options: Options) => {
               level.push(indent);
 
             }
-          } else if (options.markup.forceIndent === false && data.lines[next] === 0 && (
+          } else if (rules.forceIndent === false && data.lines[next] === 0 && (
             type.is(next, 'content') ||
             type.is(next, 'singleton')
           )) {
@@ -1313,7 +1409,10 @@ prettify.beautify.markup = (options: Options) => {
 
   })();
 
-  //  beautify_markup_apply
+  /* -------------------------------------------- */
+  /* APPLY BEAUTIFICATION                         */
+  /* -------------------------------------------- */
+
   return (() => {
 
     const build = [];
@@ -1331,15 +1430,15 @@ prettify.beautify.markup = (options: Options) => {
         } while (aa < size);
       }
 
-      return indy.join('');
+      return indy.join(nil);
 
     })();
 
     /**
+     * Newline
+     *
      * Applies a new line character plus the correct
      * amount of identation for the given line of code
-     * ---
-     * Original: beautify_markup_apply_nl
      */
     function newline (tabs: number) {
 
@@ -1367,10 +1466,16 @@ prettify.beautify.markup = (options: Options) => {
 
       }
 
-      return linesout.join('');
+      return linesout.join(nil);
 
     };
 
+    /**
+     * Multiline
+     *
+     * Behaves similar to newline but does some extra processing.
+     * Its here were we apply various augmentations
+     */
     function multiline () {
 
       let lines = data.token[a].split(lf);
@@ -1379,43 +1484,38 @@ prettify.beautify.markup = (options: Options) => {
 
       if (type.is(a, 'comment')) lines = lines.map(l => l.trimStart());
 
-      const lev = ((levels[a - 1] > -1)
-        ? type.is(a, 'attribute')
-          ? levels[a - 1] + 1
-          : levels[a - 1]
-        : (() => {
+      const lev = (levels[a - 1] > -1) ? type.is(a, 'attribute')
+        ? levels[a - 1] + 1
+        : levels[a - 1] : (() => {
 
-          let bb = a - 1; // add + 1 for inline comment formats
-          let start = (bb > -1 && type.idx(bb, 'start') > -1);
+        let bb = a - 1; // add + 1 for inline comment formats
+        let start = (bb > -1 && type.idx(bb, 'start') > -1);
 
-          if (levels[a] > -1 && type.is(a, 'attribute')) {
-            return levels[a] + 1;
+        if (levels[a] > -1 && type.is(a, 'attribute')) return levels[a] + 1;
+
+        do {
+
+          bb = bb - 1;
+
+          if (levels[bb] > -1) {
+            return type.is(a, 'content') && start === false ? levels[bb] : levels[bb] + 1;
           }
 
-          do {
+          if (type.idx(bb, 'start') > -1) start = true;
 
-            bb = bb - 1;
+        } while (bb > 0);
 
-            if (levels[bb] > -1) {
-              if (type.is(a, 'content') && start === false) {
-                return levels[bb];
-              } else {
-                return levels[bb] + 1;
-              }
-            }
+        // HOT PATCH
+        // Prevent indenting when document has no levels
+        // The value of bb will be -2 when no content is first
+        //
+        return bb === -2 ? 0 : 1;
 
-            if (type.idx(bb, 'start') > -1) start = true;
-
-          } while (bb > 0);
-
-          return 1;
-
-        })()
-      );
-
-      data.lines[a + 1] = 0;
+      })();
 
       let aa = 0;
+
+      data.lines[a + 1] = 0;
       const len = lines.length - 1;
 
       do {
@@ -1423,22 +1523,24 @@ prettify.beautify.markup = (options: Options) => {
         // HOT PATCH
         // Fixes newlines in comments
         // opposed to generation '\n     ' a newline character is applied
+        //
         if (type.is(a, 'comment')) {
-          if (lines[aa] !== '') {
-            if (lines[aa + 1].trimStart() !== '') {
+          if (lines[aa] !== nil) {
+            if (lines[aa + 1].trimStart() !== nil) {
               build.push(lines[aa], newline(lev));
             } else {
               build.push(lines[aa], '\n');
             }
           } else {
-            if (lines[aa + 1].trimStart() === '') {
+            if (lines[aa + 1].trimStart() === nil) {
               build.push('\n');
             } else {
               build.push(newline(lev));
             }
           }
         } else {
-          build.push(lines[aa], newline(lev));
+          build.push(lines[aa]);
+          build.push(newline(lev));
         }
 
         aa = aa + 1;
@@ -1459,37 +1561,43 @@ prettify.beautify.markup = (options: Options) => {
 
     };
 
-    function attributeEnd () {
+    /**
+     * Attribute End
+     *
+     * The final process for attributes and tokens. It's
+     * here were the cycle is concluded for tags.
+     */
+    function endattr () {
 
+      const regend = /(\/|\?)?>$/;
       const parent = data.token[a];
-      const regend = (/(\/|\?)?>$/);
       const end = regend.exec(parent);
 
       let y = a + 1;
-      let jsx = false;
-      let space = (options.markup.selfCloseSpace === true && end !== null && end[0] === '/>')
+      let isjsx = false;
+      let space = (rules.selfCloseSpace === true && end !== null && end[0] === '/>')
         ? ' '
-        : '';
+        : nil;
 
       if (end === null) return;
 
-      data.token[a] = parent.replace(regend, '');
+      data.token[a] = parent.replace(regend, nil);
 
       do {
 
         if (type.is(y, 'jsx_attribute_end') && data.begin[data.begin[y]] === a) {
 
-          jsx = false;
+          isjsx = false;
 
         } else if (data.begin[y] === a) {
 
           if (type.is(y, 'jsx_attribute_start')) {
-            jsx = true;
-          } else if (type.idx(y, 'attribute') < 0 && jsx === false) {
+            isjsx = true;
+          } else if (type.idx(y, 'attribute') < 0 && isjsx === false) {
             break;
           }
 
-        } else if (jsx === false && (data.begin[y] < a || type.idx(y, 'attribute') < 0)) {
+        } else if (isjsx === false && (data.begin[y] < a || type.idx(y, 'attribute') < 0)) {
           break;
         }
 
@@ -1501,9 +1609,10 @@ prettify.beautify.markup = (options: Options) => {
 
       data.token[y - 1] = data.token[y - 1] + space + end[0];
 
-      // PATCH
+      // HOT PATCH
       //
       // Fixes attributes being forced when proceeded by a comment
+      //
       if (type.is(y, 'comment') && data.lines[a + 1] < 2) levels[a] = -10;
 
     };
@@ -1514,9 +1623,7 @@ prettify.beautify.markup = (options: Options) => {
 
     a = prettify.start;
 
-    let lastLevel: number;
-
-    lastLevel = options.indentLevel;
+    let lastLevel = options.indentLevel;
 
     do {
 
@@ -1533,14 +1640,14 @@ prettify.beautify.markup = (options: Options) => {
           type.idx(a + 1, 'attribute') > -1
         ) {
 
-          attributeEnd();
+          endattr();
 
         }
 
         if (
           token.not(a, undefined) &&
           data.token[a].indexOf(lf) > 0 &&
-          ((type.is(a, 'content') && options.markup.preserveText === false) ||
+          ((type.is(a, 'content') && rules.preserveText === false) ||
           type.is(a, 'comment') ||
           type.is(a, 'attribute')
           )
@@ -1567,19 +1674,19 @@ prettify.beautify.markup = (options: Options) => {
 
       } else {
 
-        if (externalIndex[a] === a && type.not(a, 'reference')) {
+        if (extidx[a] === a && type.not(a, 'reference')) {
 
           build.push(data.token[a]);
 
         } else {
 
-          prettify.end = externalIndex[a];
+          prettify.end = extidx[a];
           options.indentLevel = lastLevel;
           prettify.start = a;
 
-          build.push(prettify.beautify[data.lexer[a]](options).replace(/\s+$/, ''));
+          build.push(prettify.beautify[data.lexer[a]](options).replace(/\s+$/, nil));
 
-          if (levels[prettify.iterator] > -1 && externalIndex[a] > a) {
+          if (levels[prettify.iterator] > -1 && extidx[a] > a) {
             build.push(newline(levels[prettify.iterator]));
           }
 
@@ -1599,10 +1706,10 @@ prettify.beautify.markup = (options: Options) => {
     // console.log(prettify);
     prettify.iterator = c - 1;
 
-    if (build[0] === lf || build[0] === ' ') build[0] = '';
+    if (build[0] === lf || is(build[0], cc.WSP)) build[0] = nil;
 
     // console.log('TOKE', build);
-    return build.join('');
+    return build.join(nil);
 
   })();
 
