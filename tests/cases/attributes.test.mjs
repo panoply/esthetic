@@ -2,6 +2,36 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
+test.serial('PLAY', async t => {
+
+  const source = await samples.cases('liquid/document-sample');
+
+  return prettify.format(source, {
+    language: 'liquid',
+    wrap: 50,
+    preserveLine: 2,
+    markup: {
+      forceLeadAttribute: true,
+      forceAttribute: true,
+      attributeChain: 'preserve',
+      preserveText: true
+    }
+
+  }).then(output => {
+
+    t.log(prettify.format.stats);
+    t.log(output);
+
+  }).catch(e => {
+
+    throw e;
+
+  });
+
+  // t.snapshot(output);
+
+});
+
 test.serial.skip('attributeSort: true', async t => {
 
   const source = await samples.cases('attributes/attribute-sorting');
@@ -20,27 +50,6 @@ test.serial.skip('attributeSort: true', async t => {
   // t.log(prettify.format.stats);
   // t.log(output);
   t.snapshot(output);
-
-});
-
-test.serial('attributeChain: true', async t => {
-
-  const source = await samples.cases('attributes/attribute-chain');
-
-  const output = await prettify.format(source, {
-    language: 'html',
-    lexer: 'markup',
-    // wrap: 80,
-    markup: {
-      forceAttribute: 2,
-      attributeChain: 'preserve'
-    }
-
-  });
-
-  t.log(prettify.format.stats);
-  t.log(output);
-  // t.snapshot(output);
 
 });
 
