@@ -886,11 +886,13 @@ prettify.lexers.markup = function markup (source: string) {
 
             } else {
 
-              if (isLiquidEnd(attrstore[idx][0])) {
+              if (isLiquidEnd(name) || ((not(value, cc.SQO) || not(value, cc.DQO)) && isLiquidEnd(value))) {
+
                 record.token = attrstore[idx][0];
                 record.types = 'template_attribute_end';
                 record.ender = record.begin;
-              } else if (isLiquid(attrstore[idx][0], 5)) {
+
+              } else if (isLiquid(name, 5) && (not(value, cc.SQO) || not(value, cc.DQO)) && isLiquid(name, 5)) {
 
                 const tag = getLiquidTagName(attrstore[idx][0]);
 
@@ -2728,7 +2730,7 @@ prettify.lexers.markup = function markup (source: string) {
       // Liquid Tags and other items are pushed here
       recordpush(data, record, tname);
 
-      console.log(data);
+      // console.log(data);
 
     }
 
