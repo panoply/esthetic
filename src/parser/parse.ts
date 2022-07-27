@@ -1,32 +1,43 @@
 /* eslint no-unmodified-loop-condition: "off" */
 import type { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { create, isArray } from '@utils/native';
+import { isArray, nil } from '@utils/native';
 import { cc } from '@utils/enums';
 import { is, safeSortAscend, safeSortDescend, safeSortNormal, sanitizeComment, ws } from '@utils/helpers';
 
 export const parse = new class Parse implements IParse {
 
-  public data: Data = create(null);
+  public datanames = [
+    'begin',
+    'ender',
+    'lexer',
+    'lines',
+    'stack',
+    'token',
+    'types'
+  ];
+
+  public data: Data = {
+    begin: [],
+    ender: [],
+    lexer: [],
+    lines: [],
+    stack: [],
+    token: [],
+    types: []
+  };
+
+  public structure: Structure[] = [
+    [
+      'global', -1
+    ]
+  ];
+
   public references = [ [] ];
-  public structure = [ [ 'global', -1 ] as Structure ];
-  public datanames = [ 'begin', 'ender', 'lexer', 'lines', 'stack', 'token', 'types' ];
   public count = -1;
   public lineNumber = 1;
   public linesSpace = 0;
   public error = '';
-
-  constructor () {
-
-    this.data.begin = [];
-    this.data.ender = [];
-    this.data.lexer = [];
-    this.data.lines = [];
-    this.data.stack = [];
-    this.data.token = [];
-    this.data.types = [];
-
-  }
 
   /**
    * Returns the last known record within `data` set.
@@ -55,6 +66,33 @@ export const parse = new class Parse implements IParse {
       types: types[begin.length - 1]
     };
 
+  }
+
+  init () {
+
+    this.error = '';
+    this.count = -1;
+    this.linesSpace = 0;
+    this.lineNumber = 1;
+    this.references = [ [] ];
+
+    this.data.begin = [];
+    this.data.ender = [];
+    this.data.lexer = [];
+    this.data.lines = [];
+    this.data.stack = [];
+    this.data.token = [];
+    this.data.types = [];
+
+    this.structure = [ [ 'global', -1 ] ];
+    this.structure.pop = () => {
+      const len = this.structure.length - 1;
+      const arr = this.structure[len];
+      if (len > 0) this.structure.splice(len, 1);
+      return arr;
+    };
+
+    return this.data;
   }
 
   concat (data: Data, array: Data) {
@@ -128,15 +166,15 @@ export const parse = new class Parse implements IParse {
 
     }
 
-    const store = create(null);
-
-    store.begin = [];
-    store.ender = [];
-    store.lexer = [];
-    store.lines = [];
-    store.stack = [];
-    store.token = [];
-    store.types = [];
+    const store: Data = {
+      begin: [],
+      ender: [],
+      lexer: [],
+      lines: [],
+      stack: [],
+      token: [],
+      types: []
+    };
 
     behind = cc;
 
@@ -307,17 +345,15 @@ export const parse = new class Parse implements IParse {
 
               } else {
 
-                const o = create(null);
-
-                o.begin = data.begin[ee];
-                o.ender = data.ender[ee];
-                o.lexer = data.lexer[ee];
-                o.lines = data.lines[ee];
-                o.stack = data.stack[ee];
-                o.token = data.token[ee];
-                o.types = data.types[ee];
-
-                this.push(store, o, '');
+                this.push(store, {
+                  begin: data.begin[ee],
+                  ender: data.ender[ee],
+                  lexer: data.lexer[ee],
+                  lines: data.lines[ee],
+                  stack: data.stack[ee],
+                  token: data.token[ee],
+                  types: data.types[ee]
+                });
 
                 ff = ff + 1;
               }
@@ -366,10 +402,10 @@ export const parse = new class Parse implements IParse {
               index: ee,
               record: {
                 begin,
+                stack,
                 ender: this.count,
                 lexer: store.lexer[ee - 1],
                 lines: 0,
-                stack,
                 token: delim[0],
                 types: delim[1] as Types
               }
@@ -394,15 +430,15 @@ export const parse = new class Parse implements IParse {
 
   pop (data: Data): Record {
 
-    const output: Record = create(null);
-
-    output.begin = data.begin.pop();
-    output.ender = data.ender.pop();
-    output.lexer = data.lexer.pop();
-    output.lines = data.lines.pop();
-    output.stack = data.stack.pop();
-    output.token = data.token.pop();
-    output.types = data.types.pop();
+    const output = {
+      begin: data.begin.pop(),
+      ender: data.ender.pop(),
+      lexer: data.lexer.pop(),
+      lines: data.lines.pop(),
+      stack: data.stack.pop(),
+      token: data.token.pop(),
+      types: data.types.pop()
+    };
 
     if (data === this.data) this.count = this.count - 1;
 
@@ -410,7 +446,7 @@ export const parse = new class Parse implements IParse {
 
   }
 
-  push (data: Data, record: Record, structure: string) {
+  push (data: Data, record: Record, structure: string = '') {
 
     const ender = () => {
 
@@ -1206,12 +1242,12 @@ export const parse = new class Parse implements IParse {
     const wordWrap = () => {
 
       const lines = [];
-      const record = create(null);
-
-      record.ender = -1;
-      record.types = 'comment';
-      record.lexer = config.lexer;
-      record.lines = this.linesSpace;
+      const record: Partial<Record> = {
+        ender: -1,
+        types: 'comment',
+        lexer: config.lexer,
+        lines: this.linesSpace
+      };
 
       if (this.count > -1) {
         record.begin = this.structure[this.structure.length - 1][1];
@@ -1260,7 +1296,7 @@ export const parse = new class Parse implements IParse {
       do {
 
         record.token = lines[c];
-        this.push(this.data, record, '');
+        this.push(this.data, record as Record, nil);
         record.lines = 2;
         this.linesSpace = 2;
         c = c + 1;
