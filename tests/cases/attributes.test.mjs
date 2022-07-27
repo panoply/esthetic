@@ -2,37 +2,139 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('PLAY', async t => {
+test.serial.skip('Preserve Liquid attribute structures', async t => {
 
-  const source = await samples.cases('liquid/document-sample');
+  const source = await samples.cases('attributes/preserve-liquid-attributes');
+  const output = await prettify.format(source, {
+    language: 'liquid',
+    preserveLine: 2,
+    wrap: 0,
+    markup: {
+      forceLeadAttribute: false,
+      forceAttribute: false,
+      preserveText: true
+    }
+  });
 
-  return prettify.format(source, {
+  // t.log(output);
+
+  t.snapshot(output, 'Rules are using defaults, `forceLeadAttribute`, `forceAttribute` are `false`');
+
+});
+
+test.serial.skip('Force Liquid attribute structures', async t => {
+
+  const source = await samples.cases('attributes/force-attribute');
+
+  const output = await prettify.format(source, {
+    language: 'liquid',
+    preserveLine: 2,
+    markup: {
+      forceLeadAttribute: false,
+      forceAttribute: true,
+      preserveText: true
+    }
+
+  });
+
+  // t.log(output);
+
+  t.snapshot(output, 'Forcing all attributes, `{ markup: { forceAttribute: true} }`');
+
+});
+
+test.serial('Handle Liquid attributes with HTML delimiter characters', async t => {
+
+  const source = await samples.cases('attributes/attribute-delimiters');
+
+  const output = await prettify.format(source, {
+    language: 'liquid',
+    preserveLine: 2,
+    markup: {
+      forceLeadAttribute: false,
+      forceAttribute: true,
+      preserveText: true
+    }
+
+  });
+
+  t.log(output);
+
+  // t.snapshot(output, 'Forcing all attributes, `{ markup: { forceAttribute: true} }`');
+
+});
+
+test.serial.skip('Force attributes using limit', async t => {
+
+  const source = await samples.cases('attributes/force-using-limit');
+
+  for (const forceAttribute of [ 5, 3, 4, 1, 5 ]) {
+
+    const output = await prettify.format(source, {
+      language: 'liquid',
+      preserveLine: 2,
+      wrap: 0,
+      markup: {
+        forceLeadAttribute: false,
+        forceAttribute,
+        preserveText: true
+      }
+
+    });
+
+    t.log(output);
+
+    // t.snapshot(output, `Forcing when ${forceAttribute}  or more attributes`);
+
+  }
+
+});
+
+test.serial.skip('Wrap Liquid attribute structures using force', async t => {
+
+  const source = await samples.cases('attributes/force-wrap-attribute');
+
+  const output = await prettify.format(source, {
     language: 'liquid',
     wrap: 50,
     preserveLine: 2,
     markup: {
-      forceLeadAttribute: true,
-      forceAttribute: true,
-      attributeChain: 'preserve',
+      forceLeadAttribute: false,
+      forceAttribute: false,
       preserveText: true
     }
 
-  }).then(output => {
-
-    t.log(prettify.format.stats);
-    t.log(output);
-
-  }).catch(e => {
-
-    throw e;
-
   });
 
-  // t.snapshot(output);
+  // t.log(output);
+
+  t.snapshot(output, 'Forcing based on wrap limits, `{ wrap: 50 }`');
 
 });
 
-test.serial.skip('attributeSort: true', async t => {
+test.serial.skip('Wrap Liquid attribute structures using force lead', async t => {
+
+  const source = await samples.cases('attributes/force-wrap-attribute');
+
+  const output = await prettify.format(source, {
+    language: 'liquid',
+    wrap: 40,
+    preserveLine: 2,
+    markup: {
+      forceLeadAttribute: true,
+      forceAttribute: false,
+      preserveText: true
+    }
+
+  });
+
+  // t.log(output);
+
+  t.snapshot(output, 'Forcing based on wrap limits, including lead attributes');
+
+});
+
+test.serial.skip('Sorting attributes alphanumerically', async t => {
 
   const source = await samples.cases('attributes/attribute-sorting');
 
@@ -41,19 +143,14 @@ test.serial.skip('attributeSort: true', async t => {
     markup: {
       forceAttribute: 2,
       attributeSort: true
-    },
-    script: {
-      objectSort: true
     }
   });
 
-  // t.log(prettify.format.stats);
-  // t.log(output);
-  t.snapshot(output);
+  t.snapshot(output, 'Using `{ markup: { attributeSort: true } }`');
 
 });
 
-test.serial.skip('preserveAttributes: true', async t => {
+test.serial.skip('Preserving attributes, leaving input instact', async t => {
 
   const source = await samples.cases('attributes/preserve-attributes');
 
@@ -65,7 +162,9 @@ test.serial.skip('preserveAttributes: true', async t => {
 
   // t.log(output);
 
-  t.snapshot(output);
+  t.snapshot(output, 'Attributes are ignored, using `{ markup: { preserveAttributes: true } }`');
+
+  prettify.options({ markup: { preserveAttributes: false, forceAttribute: false } });
 
 });
 
