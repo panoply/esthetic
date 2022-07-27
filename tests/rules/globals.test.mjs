@@ -29,8 +29,9 @@ test.serial('Word Wrap limit', async t => {
 
     const output = await prettify.format(source, { wrap });
 
-    t.log(`{ wrap: ${wrap} }`);
-    t.snapshot(output, `{ wrap: ${wrap} } ${wrap === 0 ? '(default)' : ''}`);
+    // t.log(output);
+
+    t.snapshot(output, `Global Option { wrap: ${wrap} } ${wrap === 0 ? '(default)' : ''}`);
 
   };
 
@@ -48,19 +49,19 @@ test.serial('CRLF Line Terminations', async t => {
 
   /* RULES -------------------------------------- */
 
-  const crlfTrue = await prettify.format(source, { crlf: true });
+  for (const crlf of [ true, false ]) {
 
-  t.log('{ crlf: true }');
-  t.snapshot(crlfTrue, '{ crlf: true }');
+    const output = await prettify.format(source, { crlf });
 
-  const crlfFalse = await prettify.format(source, { crlf: false });
+    // t.log(output);
 
-  t.log('{ crlf: false }');
-  t.snapshot(crlfFalse, '{ crlf: false } (default)');
+    t.snapshot(output, `Global Option { crlf: ${crlf}  ${crlf === false ? '(default)' : ''}`);
+
+  };
 
 });
 
-test.serial('Indentation Characters', async t => {
+test.serial('Indent Characters', async t => {
 
   /* OPTIONS ------------------------------------ */
 
@@ -72,20 +73,26 @@ test.serial('Indentation Characters', async t => {
 
   /* RULES -------------------------------------- */
 
-  const indentCharTab = await prettify.format(source, { indentSize: 1, indentChar: '\t' });
+  for (const { indentChar, indentSize } of [
+    {
+      indentSize: 1,
+      indentChar: '\t'
+    }, {
+      indentSize: 2,
+      indentChar: 'x'
+    }, {
+      indentSize: 2,
+      indentChar: ' '
+    }
+  ]) {
 
-  t.log('{ indentChar: "\\t" }');
-  t.snapshot(indentCharTab, '{ indentChar: "\t", indentSize: 1 }');
+    const output = await prettify.format(source, { indentChar, indentSize });
 
-  const indentCharX = await prettify.format(source, { indentSize: 2, indentChar: 'x' });
+    // t.log(output, indentChar);
 
-  t.log('{ indentChar: "x" }');
-  t.snapshot(indentCharX, '{ indentChar: "x", indentSize: 2 }');
+    t.snapshot(output, `Global Option { indentChar: ${indentChar} } ${indentChar === ' ' ? '(default)' : ''}`);
 
-  const indentChar = await prettify.format(source, { indentChar: ' ' });
-
-  t.log('{ indentChar: " " }');
-  t.snapshot(indentChar, '{ indentChar: " " } (default)');
+  };
 
 });
 
@@ -105,8 +112,9 @@ test.serial('Identation Size', async t => {
 
     const output = await prettify.format(source, { indentSize });
 
-    t.log(`{ indentSize: ${indentSize} }`);
-    t.snapshot(output, `{ indentSize: ${indentSize} } ${indentSize === 2 ? '(default)' : ''}`);
+    // t.log(output);
+
+    t.snapshot(output, `Global Option { indentSize: ${indentSize} } ${indentSize === 2 ? '(default)' : ''}`);
 
   };
 
@@ -124,12 +132,21 @@ test.serial('Preserve Newlines', async t => {
 
   /* RULES -------------------------------------- */
 
-  for (const preserveLine of [ 6, 4, 5, 1, 3, 0, 2 ]) {
+  for (const preserveLine of [
+    6,
+    4,
+    5,
+    1,
+    3,
+    0,
+    2
+  ]) {
 
     const output = await prettify.format(source, { preserveLine });
 
-    t.log(`{ preserveLine: ${preserveLine} }`);
-    t.snapshot(output, `{ preserveLine: ${preserveLine} } ${preserveLine === 2 ? '(default)' : ''}`);
+    // t.log(output);
+
+    t.snapshot(output, `Global Option { preserveLine: ${preserveLine} } ${preserveLine === 2 ? '(default)' : ''}`);
 
   };
 
@@ -147,15 +164,15 @@ test.serial('End with Newline', async t => {
 
   /* RULES -------------------------------------- */
 
-  const endNewlineTrue = await prettify.format(source, { endNewline: true });
+  for (const endNewline of [ true, false ]) {
 
-  t.log('{ endNewline: true }');
-  t.snapshot(endNewlineTrue, '{ endNewline: true }');
+    const output = await prettify.format(source, { endNewline });
 
-  const endNewlineFalse = await prettify.format(source, { endNewline: false });
+    // t.log(output);
 
-  t.log('{ endNewline: false }');
-  t.snapshot(endNewlineFalse, '{ endNewline: false } (default)');
+    t.snapshot(output, `Global Option { endNewline: ${endNewline} } ${endNewline === false ? '(default)' : ''}`);
+
+  };
 
 });
 
