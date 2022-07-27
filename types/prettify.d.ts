@@ -107,7 +107,6 @@ export interface Prettify {
   iterator: number;
   scopes: Scopes;
   mode: LiteralUnion<'beautify' | 'parse', string>
-  parsed?: Data;
   options?: Options;
   hooks?: {
     before?: ((rules: Options, input: string) => void | false)[];
