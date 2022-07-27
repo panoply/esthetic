@@ -1,9 +1,23 @@
-<ul>
-  <li
-  class="x"
-  id={{ some.object }}
 
-  data-{% if x %}id="foo"{% else %}name{% endif %}
+FORCE LIQUID ATTRIBUTE STRUCTURES
 
-  ></li>
-</ul>
+This sample will test the forceAttribute option when Liquid attributes are infused
+within the tag token. All Liquid structures which contain whitespace characters will
+be forced but those without whitespaces will be preserved and treated as a single attribute.
+
+CASE 1
+
+<div id="foo" {% if foo %} data-{% if x %}-foo{% else %}-bar{% endif %}="{{ x }}" {% endif %} class="bar">
+</div>
+
+CASE 2
+
+<div id="foo" {% if x  %} data-attr="x" {% elsif %} data-id="x" {% endif %}></div>
+
+CASE 3
+
+<div data-{% if x %}id="foo"{% else %}name{% endif %}></div>
+
+CASE 4
+
+<div id="foo" data-bar {{ output.attr | filter: '' }} id="foo" {% if x  %}{{ attr.2 }}{% endif %}></div>

@@ -1,0 +1,30 @@
+
+FORCE WRAP LIQUID ATTRIBUTE STRUCTURES
+
+This sample will test wrap based attribute forcing option when Liquid attributes are infused
+within the tag token. All Liquid structures which contain whitespace characters will
+be forced but those without whitespaces will be preserved and treated as a single attribute.
+
+<div></div>
+<div class=""></div>
+
+CASE 1
+
+<div id="foo" data-att {% if foo %} data-{% if x %}-foo{% else %}-bar{% endif %}="{{ x }}" {% endif %} class="bar"></div>
+
+CASE 2
+
+<div id="foo" {% if x  %} data-attr="x" {% elsif %} data-id="x" {% endif %}>
+foo </div>
+
+CASE 3
+
+<div data-{% if x %}id="foo"{% else %}name{% endif %}></div>
+
+CASE 4
+
+<div id="foo" data-bar {{ output.attr | filter: '' }} id="foo" {% if x  %}{{ attr.2 }}{% endif %}></div>
+
+CASE 5
+
+<div id="foo" class="xxx" data-attr="some-long-attribute" data-x-foo="xxxxxxxxxxxxxxxx"> foo </div>

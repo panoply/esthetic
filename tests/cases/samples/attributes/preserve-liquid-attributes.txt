@@ -1,10 +1,7 @@
 
 PRESERVE CHAIN - CASE 1
 
-This attribute tests the preservation formation of all tags contained in the token.
-This structure is one of the more complex ones that might be encountered.
-
-
+The id="foo" attribute will be move inline. The Liquid statement will be preserved as is.
 
 
 <div
@@ -29,8 +26,7 @@ passed, whereas CASE 1 uses an infusion approach.
 id="foo"
 {% if x  %}data-attr="x"
 {% elsif %}
-data-id="x"
-{% endif %}
+data-id="x"{% endif %}
 
 ></div>
 
@@ -44,4 +40,23 @@ result in either a boolean attribute type or attribute value.
 
 data-{% if x %}id="foo"{% else %}name{% endif %}
 
+></div>
+
+PRESERVE CHAIN - CASE 4
+
+This chain contains output Liquid tokens as boolean type attributes and conditionally
+passes them.
+
+<div
+
+id="foo"
+data-bar
+
+{{ output.attr | filter: '' }}
+data-id="foo"
+{% if x  %}
+{{ attr.2 }}
+{% endif %}
+
+{% if x  %}data-x={{ foo }}{% else %}{{ attr.3 }}{% endif %}
 ></div>
