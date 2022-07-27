@@ -1,68 +1,53 @@
-import { create, assign } from '@utils/native';
+import { assign, nil } from '@utils/native';
+import { cc } from '@utils/enums';
+import { is } from '@utils/helpers';
 import { Language, LanguageNames, Prettify } from 'types/prettify';
 import { prettify } from '@prettify/model';
 
-export const lexmap = (function () {
+export const lexmap = {
+  markup: 'markup',
+  html: 'markup',
+  liquid: 'markup',
+  xml: 'markup',
+  javascript: 'script',
+  typescript: 'script',
+  jsx: 'script',
+  tsx: 'script',
+  json: 'script',
+  less: 'style',
+  scss: 'style',
+  sass: 'style',
+  css: 'style',
+  text: 'text'
+};
 
-  const o = create(null);
-
-  o.markup = 'markup';
-  o.html = 'markup';
-  o.liquid = 'markup';
-  o.xml = 'markup';
-
-  o.javascript = 'script';
-  o.typescript = 'script';
-  o.jsx = 'script';
-  o.tsx = 'script';
-  o.json = 'script';
-
-  o.less = 'style';
-  o.scss = 'style';
-  o.sass = 'style';
-  o.css = 'style';
-
-  o.text = 'text';
-
-  return o;
-
-})();
-
-const map = (function () {
-
-  const o = create(null);
-
-  o.html = 'HTML';
-  o.xhtml = 'XHTML';
-  o.liquid = 'Liquid';
-  o.xml = 'XML';
-  o.jsx = 'JSX';
-  o.tsx = 'TSX';
-
-  o.json = 'JSON';
-  o.yaml = 'YAML';
-
-  o.css = 'CSS';
-  o.scss = 'SCSS';
-  o.sass = 'SASS';
-  o.less = 'LESS';
-
-  o.text = 'Plain Text';
-
-  o.javascript = 'JavaScript';
-  o.typescript = 'TypeScript';
-
-  return o;
-
-})();
+const map = {
+  html: 'HTML',
+  xhtml: 'XHTML',
+  liquid: 'Liquid',
+  xml: 'XML',
+  jsx: 'JSX',
+  tsx: 'TSX',
+  json: 'JSON',
+  yaml: 'YAML',
+  css: 'CSS',
+  scss: 'SCSS',
+  sass: 'SASS',
+  less: 'LESS',
+  text: 'Plain Text',
+  javascript: 'JavaScript',
+  typescript: 'TypeScript'
+};
 
 export function setLexer (input: string) {
 
-  if (typeof input !== 'string') return 'markup';
-  if (input.indexOf('html') > -1) return 'markup';
-  if (lexmap[input] === undefined) return 'script';
+  return (
+    typeof input !== 'string' ||
+    input.indexOf('html') > -1
+  ) || (
+    lexmap[input] === undefined
+  ) ? 'markup' : lexmap[input];
 
-  return lexmap[input];
 }
 
 function setLanguageName (input: string) {
@@ -73,9 +58,9 @@ function setLanguageName (input: string) {
 
 }
 
-export function reference (language: LanguageNames) {
+export function reference (language: LanguageNames): Language {
 
-  const result: Language = create(null);
+  const result: Partial<Language> = {};
 
   if (language === 'unknown') {
     result.language = language as any;
@@ -93,12 +78,12 @@ export function reference (language: LanguageNames) {
 
   if (prettify.hooks.language.length > 0) {
     for (const hook of prettify.hooks.language) {
-      const langhook = hook(result);
+      const langhook = hook(result as Language);
       if (typeof langhook === 'object') assign(result, langhook);
     }
   }
 
-  return result;
+  return result as Language;
 
 }
 
@@ -144,7 +129,7 @@ export function detect (sample: string): Language {
   function notMarkup (): Language {
 
     let d: number = 1;
-    let join: string = '';
+    let join: string = nil;
     let flaga:boolean = false;
     let flagb: boolean = false;
 
@@ -267,39 +252,39 @@ export function detect (sample: string): Language {
       do {
         if (flaga === false) {
 
-          if (b[d] === '*' && b[d - 1] === '/') {
-            b[d - 1] = '';
+          if (is(b[d], cc.ARS) && is(b[d - 1], cc.FWS)) {
+            b[d - 1] = nil;
             flaga = true;
           } else if (
             flagb === false &&
-            b[d] === 'f' &&
             d < c - 6 &&
-            b[d + 1] === 'i' &&
-            b[d + 2] === 'l' &&
-            b[d + 3] === 't' &&
-            b[d + 4] === 'e' &&
-            b[d + 5] === 'r' &&
-            b[d + 6] === ':'
+            b[d].charCodeAt(0) === 102 && // f
+            b[d + 1].charCodeAt(0) === 105 && // i
+            b[d + 2].charCodeAt(0) === 108 && // l
+            b[d + 3].charCodeAt(0) === 116 && // t
+            b[d + 4].charCodeAt(0) === 101 && // e
+            b[d + 5].charCodeAt(0) === 114 && // r
+            is(b[d + 6], cc.COL)
           ) {
             flagb = true;
           }
 
-        } else if (flaga === true && b[d] === '*' && d !== c - 1 && b[d + 1] === '/') {
+        } else if (flaga === true && is(b[d], cc.ARS) && d !== c - 1 && is(b[d + 1], cc.FWS)) {
           flaga = false;
-          b[d] = '';
-          b[d + 1] = '';
-        } else if (flagb === true && b[d] === ';') {
+          b[d] = nil;
+          b[d + 1] = nil;
+        } else if (flagb === true && is(b[d], cc.SEM)) {
           flagb = false;
-          b[d] = '';
+          b[d] = nil;
         }
 
-        if (flaga === true || flagb === true) b[d] = '';
+        if (flaga === true || flagb === true) b[d] = nil;
 
         d = d + 1;
       } while (d < c);
     }
 
-    join = b.join('');
+    join = b.join(nil);
 
     /* -------------------------------------------- */
     /* JSON                                         */
@@ -407,7 +392,7 @@ export function detect (sample: string): Language {
 
   };
 
-  if (sample === null || sample.replace(/\s+/g, '') === '') return reference('unknown');
+  if (sample === null || sample.replace(/\s+/g, nil) === nil) return reference('unknown');
 
   /* -------------------------------------------- */
   /* MARKDOWN                                     */
@@ -456,7 +441,7 @@ export function detect (sample: string): Language {
     )
   ) return isStyle();
 
-  b = sample.replace(/\[[a-zA-Z][\w-]*=['"]?[a-zA-Z][\w-]*['"]?\]/g, '').split('');
+  b = sample.replace(/\[[a-zA-Z][\w-]*=['"]?[a-zA-Z][\w-]*['"]?\]/g, nil).split(nil);
   c = b.length;
 
   /* -------------------------------------------- */
