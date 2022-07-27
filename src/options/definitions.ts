@@ -163,26 +163,6 @@ export const definitions: Definitions = {
     lexer: 'markup',
     type: 'array'
   },
-  attributeChain: {
-    default: 'inline',
-    description: 'Controls how Liquid tags contained within HTML attributed should be formatted.',
-    type: 'select',
-    lexer: 'markup',
-    values: [
-      {
-        rule: 'inline',
-        description: 'Liquid tag block contents are chained together'
-      },
-      {
-        rule: 'collapse',
-        description: 'Liquid tag block contents are split onto newlines'
-      },
-      {
-        rule: 'preserve',
-        description: 'Liquid tag block contents are preserved'
-      }
-    ]
-  },
   attributeValues: {
     default: false,
     description: 'Controls how attribute values should be formatter',
@@ -229,7 +209,7 @@ export const definitions: Definitions = {
       }
     }
   },
-  forceLeadingAttribute: {
+  forceLeadAttribute: {
     default: false,
     description: 'Forces leading attribute onto a newline when using wrap based indentation.',
     lexer: 'markup',
