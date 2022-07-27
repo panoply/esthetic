@@ -27,6 +27,11 @@ prettify.lexers.style = function style (source: string) {
   const { options } = prettify;
 
   /**
+   * Cached option style beautification rules
+   */
+  const rules = options.style;
+
+  /**
    * Parse data reference
    */
   const { data } = parse;
@@ -189,7 +194,7 @@ prettify.lexers.style = function style (source: string) {
      */
     const zerofix = (find: string) => {
 
-      if (options.style.noLeadZero === true) {
+      if (rules.noLeadZero === true) {
 
         return find.replace(/^-?\D0+(\.|\d)/, (search: string) => search.replace(/0+/, nil));
 
@@ -306,11 +311,11 @@ prettify.lexers.style = function style (source: string) {
 
       do {
 
-        if (options.style.noLeadZero === true && /^-?0+\.\d+[a-z]/.test(values[ii]) === true) {
+        if (rules.noLeadZero === true && /^-?0+\.\d+[a-z]/.test(values[ii]) === true) {
 
           values[ii] = values[ii].replace(/0+\./, '.');
 
-        } else if (options.style.noLeadZero === false && /^-?\.\d+[a-z]/.test(values[ii])) {
+        } else if (rules.noLeadZero === false && /^-?\.\d+[a-z]/.test(values[ii])) {
 
           values[ii] = values[ii].replace('.', '0.');
 
@@ -333,7 +338,7 @@ prettify.lexers.style = function style (source: string) {
           block = values[ii].charAt(values[ii].indexOf('url(') + 4);
 
           if (block !== '@' && not(block, cc.LPR) && not(block, cc.LAN)) {
-            if (options.style.quoteConvert === 'double') {
+            if (rules.quoteConvert === 'double') {
               values[ii] = values[ii].replace(/url\(/, 'url("').replace(/\)$/, '")');
             } else {
               values[ii] = values[ii].replace(/url\(/, "url('").replace(/\)$/, "')");
@@ -373,7 +378,7 @@ prettify.lexers.style = function style (source: string) {
 
     const block = [];
     const out = [];
-    const qc = options.style.quoteConvert;
+    const qc = rules.quoteConvert;
 
     /* -------------------------------------------- */
     /* LEXICAL SCOPES                               */
@@ -794,7 +799,7 @@ prettify.lexers.style = function style (source: string) {
       // sorts comma separated lists of selectors
       ss = parse.count;
 
-      if (options.style.sortSelectors === true && is(data.token[ss - 1], cc.COM)) {
+      if (rules.sortSelectors === true && is(data.token[ss - 1], cc.COM)) {
 
         const store = [ data.token[ss] ];
 
@@ -1630,7 +1635,7 @@ prettify.lexers.style = function style (source: string) {
             )
           )) {
 
-            if (options.style.correct === true) {
+            if (rules.correct === true) {
               ltoke = ';';
             } else {
               ltoke = 'x;';
@@ -1652,7 +1657,7 @@ prettify.lexers.style = function style (source: string) {
         ltype = 'end';
 
         if (is(b[a], cc.RCB)) marginPadding();
-        if (options.style.sortProperties === true && is(b[a], cc.RCB)) parse.objectSort(data);
+        if (rules.sortProperties === true && is(b[a], cc.RCB)) parse.objectSort(data);
 
         recordpush(nil);
 
@@ -1714,7 +1719,7 @@ prettify.lexers.style = function style (source: string) {
 
   } while (a < len);
 
-  if (options.style.sortProperties === true) parse.objectSort(data);
+  if (rules.sortProperties === true) parse.objectSort(data);
 
   return data;
 };
