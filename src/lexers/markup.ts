@@ -4,7 +4,7 @@ import { grammar } from '@options/grammar';
 import { parse } from '@parser/parse';
 import { lexmap } from '@parser/language';
 import { cc } from '@utils/enums';
-import { create, nil } from '@utils/native';
+import { nil } from '@utils/native';
 import {
   is,
   not,
@@ -72,17 +72,17 @@ prettify.lexers.markup = function markup (source: string) {
    * Count reference to be assigned to the
    * generated tree.
    */
-  const count = object<{
+  const count: {
     end: number;
     start: number;
     index: number,
     line: number;
-  }>({
+  } = {
     end: 0,
     index: -1,
     start: 0,
     line: 1
-  });
+  };
 
   /**
    * The document source as an array list,
@@ -331,7 +331,7 @@ prettify.lexers.markup = function markup (source: string) {
     /* CONSTANTS                                    */
     /* -------------------------------------------- */
 
-    const record = object<Record>({
+    const record: Record = {
       begin: parse.structure[parse.structure.length - 1][1],
       ender: -1,
       lexer: 'markup',
@@ -339,7 +339,7 @@ prettify.lexers.markup = function markup (source: string) {
       stack: parse.structure[parse.structure.length - 1][0],
       token: nil,
       types: nil
-    });
+    };
 
     /* -------------------------------------------- */
     /* LOCAL SCOPES                                 */
@@ -1374,6 +1374,7 @@ prettify.lexers.markup = function markup (source: string) {
 
           attr = attribute.join(nil);
           name = attrname(attr);
+
           quote = nil;
 
           // HOT PATCH
@@ -1399,10 +1400,12 @@ prettify.lexers.markup = function markup (source: string) {
 
         if (is(attr[0], cc.LCB) && is(attr[1], cc.PER)) nosort = true;
 
-        if (isLiquidStart(attr)) {
-          ttexp = ttexp + 1;
-        } else if (isLiquidEnd(attr)) {
-          ttexp = ttexp - 1;
+        if (quotes === false) {
+          if (isLiquidStart(attr)) {
+            ttexp = ttexp + 1;
+          } else if (isLiquidEnd(attr)) {
+            ttexp = ttexp - 1;
+          }
         }
 
         attr = attr
@@ -1617,7 +1620,7 @@ prettify.lexers.markup = function markup (source: string) {
                     }
                   }
 
-                  if (jsx === false && qattr === false && liquid === true) {
+                  if (jsx === false && qattr === false && liquid === true && rules.preserveAttributes === false) {
 
                     const isval = is(attribute[0], cc.EQS);
 
@@ -1685,7 +1688,6 @@ prettify.lexers.markup = function markup (source: string) {
                           quote = nil;
                           igcount = 0;
                           lexattr(false);
-
                           break;
                         }
                       }
@@ -1935,7 +1937,7 @@ prettify.lexers.markup = function markup (source: string) {
                     not(quote, cc.SQO)
                   ))) {
 
-                    // terminate attribute at the conclusion of a quote pair
+                    // Terminate attribute at the conclusion of a quote pair
                     f = 0;
                     e = quote.length - 1;
 
@@ -1954,7 +1956,6 @@ prettify.lexers.markup = function markup (source: string) {
                     if (e < 0 && liquid === false && qattr === true) {
                       qattr = false;
                       lexattr(true);
-
                       if (b[a + 1] === lastchar) break;
                     }
 
@@ -2064,8 +2065,22 @@ prettify.lexers.markup = function markup (source: string) {
                 } while (e > -1);
               }
 
-              if (e < 0) break;
+              if (e < 0) {
 
+                // HOT PATCH
+                //
+                // This condition will fix incorrect line spaces applied
+                // on template attributes that are contained in the attribute store
+                //
+                if (is(lex[f], cc.RAN) && is(b[a], cc.RAN) && attrstore.length > 0) {
+                  if (attrstore[attrstore.length - 1][1] === 0 && is(b[a - 1], cc.RCB) && ws(b[a + 1])) {
+                    attrstore[attrstore.length - 1][1] = is(b[a + 1], cc.WSP) ? 1 : 2;
+                  }
+                }
+
+                break;
+
+              }
             }
           } else if (
             b[a].charCodeAt(0) === quote.charCodeAt(quote.length - 1) && ((
@@ -2713,6 +2728,8 @@ prettify.lexers.markup = function markup (source: string) {
       // Liquid Tags and other items are pushed here
       recordpush(data, record, tname);
 
+      console.log(data);
+
     }
 
     attrecord();
@@ -2793,15 +2810,15 @@ prettify.lexers.markup = function markup (source: string) {
       data.token[parse.count].charCodeAt(data.token[parse.count].length - 1) === cc.LSB
     );
 
-    const record: Record = create(null);
-
-    record.begin = parse.structure[parse.structure.length - 1][1];
-    record.ender = -1;
-    record.lexer = 'markup';
-    record.lines = liner;
-    record.stack = parse.structure[parse.structure.length - 1][0];
-    record.token = nil;
-    record.types = 'content';
+    const record: Record = {
+      begin: parse.structure[parse.structure.length - 1][1],
+      ender: -1,
+      lexer: 'markup',
+      lines: liner,
+      stack: parse.structure[parse.structure.length - 1][0],
+      token: nil,
+      types: 'content'
+    };
 
     function esctest () {
 
@@ -3136,33 +3153,7 @@ prettify.lexers.markup = function markup (source: string) {
           if (parse.structure[parse.structure.length - 1][0] === 'comment') {
             ltoke = lex.join(nil);
           } else {
-
-            // HOT PATCH
-            // Prevents stripping of text content newlines when wrap is 0
-            // and preserveText is false.
-            //
-            if (options.wrap === 0 && rules.preserveText === false) {
-
-              if (is(lex[lex.length - 1], cc.NWL)) {
-
-                let nwl = lex.length - 1;
-
-                while (is(lex[nwl - 1], cc.NWL)) nwl = nwl - 1;
-
-                if (nwl > options.preserveLine) {
-                  ltoke = lex
-                    .join(nil)
-                    .slice(0, nwl + options.preserveLine);
-                } else {
-                  ltoke = lex.join(nil);
-                }
-              }
-
-            } else {
-
-              ltoke = lex.join(nil).replace(/\s+$/g, nil);
-
-            }
+            ltoke = lex.join(nil).replace(/\s+$/, nil);
           }
 
           ltoke = bracketSpace(ltoke);
