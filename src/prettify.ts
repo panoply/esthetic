@@ -3,7 +3,7 @@ import { prettify } from '@prettify/model';
 import { definitions } from '@options/definitions';
 import { grammar } from '@options/grammar';
 import { parse as parser } from '@parser/parse';
-import { mode } from '@parser/mode';
+import { execute } from '@parser/mode';
 import { keys, assign, defineProperty } from '@utils/native';
 
 /* -------------------------------------------- */
@@ -57,15 +57,17 @@ function format (source: string | Buffer, rules?: Options) {
 
   // BEAUTIFY
   //
-  const output = mode(prettify);
+  const output = execute(prettify);
 
   // TRIGGER AFTER HOOKS
   //
   if (prettify.hooks.after.length > 0) {
     for (const cb of prettify.hooks.after) {
-      if (cb.call(prettify.parsed, output, prettify.options) === false) return source;
+      if (cb.call(parser.data, output, prettify.options) === false) return source;
     }
   }
+
+  // console.log(prettify);
 
   // console.log(prettify);
 
@@ -127,7 +129,7 @@ function parse (source: string | Buffer, rules?: Options) {
 
   if (typeof rules === 'object') prettify.options = options(rules);
 
-  const formatted = mode(prettify);
+  const formatted = execute(prettify);
 
   return new Promise((resolve, reject) => {
 
