@@ -1,4 +1,4 @@
-import { isArray, create, assign } from './native';
+import { isArray, create, assign, nil } from './native';
 import { cc } from './enums';
 import { grammar } from '@options/grammar';
 
@@ -23,7 +23,7 @@ export function repeatChar (count: number, ch: string = ' ') {
 
   if (count === 0) return ch;
 
-  let char = '';
+  let char = nil;
   let i = 1;
 
   do { char += ch; } while (i++ < count);
