@@ -888,6 +888,7 @@ prettify.lexers.markup = function markup (source: string) {
               prettify.lexers.script(value.slice(1, value.length - 1));
               record.begin = parse.count;
 
+              console.log(data);
               if (/\s\}$/.test(value)) {
 
                 value = value.slice(0, value.length - 1);
@@ -2375,8 +2376,8 @@ prettify.lexers.markup = function markup (source: string) {
 
         }
 
-        // inserts a trailing slash into singleton tags if they do not already have it
-        if (grammar.html.voids.has(tname)) {
+        // Inserts a trailing slash into singleton tags if they do not already have it
+        if (jsx === false && grammar.html.voids.has(tname)) {
 
           if (
             rules.correct === true &&
