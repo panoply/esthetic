@@ -3617,8 +3617,8 @@ prettify.lexers.script = function script (source: string) {
       // comment line
       lineComment();
 
-    } else if (c[a] === '`' || (
-      c[a] === '}' &&
+    } else if (is(c[a], cc.TQO) || (
+      is(c[a], cc.RCB) &&
       parse.structure[parse.structure.length - 1][0] === 'template_string'
     )) {
 
@@ -3627,7 +3627,7 @@ prettify.lexers.script = function script (source: string) {
 
       ltoke = tempstring();
 
-      if (ltoke.charAt(0) === '}' && ltoke.slice(ltoke.length - 2) === '${') {
+      if (is(ltoke, cc.RCB) && ltoke.slice(ltoke.length - 2) === '${') {
 
         ltype = 'template_string_else';
         recordPush('template_string');
@@ -3637,7 +3637,7 @@ prettify.lexers.script = function script (source: string) {
         ltype = 'template_string_start';
         recordPush('template_string');
 
-      } else if (ltoke.charAt(0) === '}') {
+      } else if (is(ltoke, cc.RCB)) {
 
         ltype = 'template_string_end';
         recordPush('');
