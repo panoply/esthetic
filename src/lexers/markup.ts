@@ -888,7 +888,7 @@ prettify.lexers.markup = function markup (source: string) {
               prettify.lexers.script(value.slice(1, value.length - 1));
               record.begin = parse.count;
 
-              console.log(data);
+              // console.log(data);
               if (/\s\}$/.test(value)) {
 
                 value = value.slice(0, value.length - 1);
