@@ -1,3 +1,6 @@
+Testing property sorting. This beautification option will alphabetically sort selector properties.
+---
+
 img {
 padding-top: 40px;
 padding-right: 25px;
