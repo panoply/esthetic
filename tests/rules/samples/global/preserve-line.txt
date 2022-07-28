@@ -1,4 +1,6 @@
-/* Preserving newlines */
+Testing newline preservation
+
+---
 
 .class {
   font-size: 10px;

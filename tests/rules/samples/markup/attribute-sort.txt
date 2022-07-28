@@ -1,3 +1,6 @@
+Testing attribute sorting. This rule sorts markup attributes alphanumerically.
+
+---
 <div
 
 data-c="3"
@@ -22,14 +25,14 @@ data-f="8"
 data-e="5"
 data-g="9"
 data-h-attr="10"
-data-h-b-attr="11"
-data-h-b-attr="10"
+data-h-b-2-attr="12"
+data-h-b-1-attr="10"
 data-i="12"
 data-e="7"
 data-e="6"
 data-a="1"
   >
-  The attributes of this tag will be sorted
+
   </li>
 </ul>
 

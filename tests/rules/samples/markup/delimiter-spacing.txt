@@ -1,3 +1,6 @@
+Testing delimiter spacing. This is a Liquid specific beautification option.
+---
+
 {{output.name | filter: 'something'}}
 {{-output.name | filter: 'something'-}}
 {{   output.name | filter: 'something'}}
