@@ -4,7 +4,7 @@ import prettify from '@liquify/prettify';
 
 test.serial('Preserve Comments', async t => {
 
-  const { source } = await samples.cases('javascript/comment-indent');
+  const source = await samples.cases('javascript/comment-indent');
 
   const preserveCommentFalse = await prettify.format(source, {
     preserveComment: false,
@@ -30,7 +30,7 @@ test.serial('Preserve Comments', async t => {
 
 test.serial('Inline Return', async t => {
 
-  const { source } = await samples.cases('javascript/inline-return');
+  const source = await samples.cases('javascript/inline-return');
 
   const attemptCorrectionFalse = await prettify.format(source, {
     attemptCorrection: false,
@@ -62,7 +62,7 @@ test.serial('Inline Return', async t => {
 
 test.serial('Object Sorting', async t => {
 
-  const { source } = await samples.cases('javascript/object-sort');
+  const source = await samples.cases('javascript/object-sort');
 
   const objectSortTrue = await prettify.format(source, {
     indentSize: 2,

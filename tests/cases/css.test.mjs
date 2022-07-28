@@ -2,124 +2,105 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.todo('Pseudo Selectors: This rule is error prone and needs fixing');
+test('Code Corrections applied to CSS', async t => {
 
-test.serial.skip('Global Pseudo selector', async t => {
+  await samples.forTest('cases')(
+    [
+      'css/correct-1'
+    ]
+    , async function (description, source) {
 
-  const source = await samples.cases('css/pseudo-selectors');
+      const output = await prettify.format(source, {
+        language: 'css',
+        preserveLine: 2
 
-  const pseudoSelectors = await prettify.format(source, {
-    language: 'css'
-  }).catch(e => console.error(e));
+      });
 
-  t.snapshot(pseudoSelectors);
+      t.snapshot(output, description);
 
-});
+      // t.log(output);
 
-test.serial('CSS Variables', async t => {
-
-  const source = await samples.cases('css/css-vars');
-
-  const cssVars = await prettify.format(source, {
-    language: 'css'
-  }).catch(e => console.error(e));
-
-  t.snapshot(cssVars);
-
-  // t.log(cssVars);
-
-});
-
-test.serial.skip('play', async t => {
-
-  const source = await samples.cases('css/basic-styles');
-
-  const basic = await prettify.format(source, {
-    language: 'css'
-  }).catch(e => console.error(e));
-
-  t.log(basic);
-
-});
-
-test.serial.skip('Liquid in CSS', async t => {
-
-  const source = await samples.cases('liquid/document-sample');
-
-  const liquidInCSS = await prettify.format(source, {
-    language: 'css',
-    wrap: 50,
-    style: {
-      forceValue: 'collapse'
     }
-  });
+  );
 
-  // t.snapshot(sortPropertiesFalse);
+});
 
-  t.log(liquidInCSS);
+test('CSS variable expressions', async t => {
 
+  await samples.forTest('cases')(
+    [
+      'css/css-vars-1',
+      'css/css-vars-2'
+    ]
+    , async function (description, source) {
+
+      const output = await prettify.format(source, {
+        language: 'css',
+        preserveLine: 2
+      });
+
+      t.snapshot(output, description);
+
+      // t.log(output);
+
+    }
+  );
+
+});
+
+test('Sorting selector class names', async t => {
+
+  await samples.forTest('cases')(
+    [
+      'css/sort-selectors'
+    ]
+    , async function (description, source) {
+
+      const output = await prettify.format(source, {
+        language: 'css',
+        preserveLine: 2,
+        style: {
+          sortSelectors: true
+        }
+      });
+
+      t.snapshot(output, description);
+
+      // t.log(output);
+
+    }
+  );
+
+  prettify.options({ style: { sortSelectors: false } });
+
+});
+
+test('Sorting selector properties', async t => {
+
+  await samples.forTest('cases')(
+    [
+      'css/sort-properties'
+    ]
+    , async function (description, source) {
+
+      const output = await prettify.format(source, {
+        language: 'css',
+        preserveLine: 2,
+        style: {
+          sortProperties: true
+        }
+      });
+
+      t.snapshot(output, description);
+
+      // t.log(output);
+
+    }
+  );
+
+  prettify.options({ style: { sortProperties: false } });
 });
 
 /* -------------------------------------------- */
 /* RULES                                        */
 /* -------------------------------------------- */
-
-test.serial('sortSelector: true', async t => {
-
-  const source = await samples.cases('css/sort-selectors');
-
-  const sortSelectorsTrue = await prettify.format(source, {
-    language: 'css',
-    style: {
-      sortSelectors: true
-    }
-  });
-
-  t.snapshot(sortSelectorsTrue);
-
-});
-
-test.serial('sortSelector: false', async t => {
-
-  const source = await samples.cases('css/sort-selectors');
-
-  const sortSelectorsFalse = await prettify.format(source, {
-    language: 'css',
-    style: {
-      sortSelectors: false
-    }
-  });
-
-  t.snapshot(sortSelectorsFalse);
-
-});
-
-test.serial('sortProperties: true', async t => {
-
-  const source = await samples.cases('css/sort-properties');
-
-  const sortPropertiesTrue = await prettify.format(source, {
-    language: 'css',
-    style: {
-      sortProperties: true
-    }
-  });
-
-  t.snapshot(sortPropertiesTrue);
-
-});
-
-test.serial('sortProperties: false', async t => {
-
-  const source = await samples.cases('css/sort-properties');
-
-  const sortPropertiesFalse = await prettify.format(source, {
-    language: 'css',
-    style: {
-      sortProperties: false
-    }
-  });
-
-  t.snapshot(sortPropertiesFalse);
-
-});

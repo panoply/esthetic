@@ -2,39 +2,58 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('Embedded JSX Expressions', async t => {
+test('Embedded Template string expression', async t => {
 
-  const source = await samples.cases('jsx/embedded-expressions');
+  await samples.forTest('cases')(
+    [
+      'jsx/template-literal-1'
+    ]
+    , async function (description, source) {
 
-  const output = await prettify.format(source, {
-    language: 'jsx',
-    wrap: 80
-  });
+      const output = await prettify.format(source, {
+        language: 'jsx',
+        markup: {
+          forceAttribute: false,
+          selfCloseSpace: true
+        },
+        script: {
+          braceAllman: false,
+          braceNewline: false,
+          bracePadding: false,
+          methodChain: 0
+        }
+      });
 
-  // t.log(output);
-  t.snapshot(output, 'Embedded Expression');
+      t.log(output);
 
-});
-
-test.serial('Apply markup rules to content', async t => {
-
-  const source = await samples.cases('jsx/embedded-expressions');
-
-  const output = await prettify.format(source, {
-    language: 'jsx',
-    markup: {
-      forceAttribute: true
-    },
-    script: {
-      objectIndent: true,
-      ternaryLine: true
     }
-
-  });
-
-  // t.log(output);
-
-  t.log('{ markup: { forceAttribute: true }}');
-  t.snapshot(output, '{ markup: { forceAttribute: true }}');
+  );
 
 });
+/*
+test.skip('Embedded JSX Expressions', async t => {
+
+  await samples.forTest('cases')(
+    [
+      'jsx/embedded-exp-1',
+      'jsx/embedded-exp-2'
+    ]
+    , async function (description, source) {
+
+      const output = await prettify.format(source, {
+        language: 'jsx',
+        markup: {
+          forceAttribute: true,
+          selfCloseSpace: true
+        }
+      });
+
+      t.snapshot(output, description);
+
+      t.log(output);
+
+    }
+  );
+
+});
+*/

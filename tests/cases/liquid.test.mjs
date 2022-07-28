@@ -2,7 +2,7 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('Conditional Structures', async t => {
+test.serial.skip('Conditional Structures', async t => {
 
   const { source } = await samples.cases('liquid/conditional-structure');
 
