@@ -13,161 +13,249 @@ import prettify from '@liquify/prettify';
 /* TESTS                                        */
 /* -------------------------------------------- */
 
-test.todo('TODO: Attribute Sorting with Liquid Attributes');
 test.todo('TODO: Force Attribute Indentation Limits');
 
 test.serial('Attribute Sorting (Alphanumeric)', async t => {
 
   console.log('\n');
 
-  /* OPTIONS ------------------------------------ */
+  prettify.options({
+    language: 'liquid',
+    markup: {
+      forceAttribute: true,
+      forceIndent: true
+    }
+  });
 
-  prettify.options({ language: 'liquid', markup: { forceAttribute: true, forceIndent: true } });
+  await samples.getRule('markup/attribute-sort')(
+    [
+      true,
+      false
+    ]
+    , async function (source, attributeSort, label) {
 
-  /* SAMPLE ------------------------------------- */
+      const output = await prettify.format(source, { markup: { attributeSort } });
 
-  const source = await samples.rules('markup/attribute-sort');
+      t.snapshot(output, label({ markup: { attributeSort } }));
 
-  /* RULES -------------------------------------- */
-
-  const attributeSortTrue = await prettify.format(source, { markup: { attributeSort: true } });
-
-  t.log('{ markup: { attributeSort: true } }');
-  t.snapshot(attributeSortTrue, '{ markup: { attributeSort: true } }');
-
-  const attributeSortFalse = await prettify.format(source, { markup: { attributeSort: false } });
-
-  t.log('{ markup: { attributeSort: false } }');
-  t.snapshot(attributeSortFalse, '{ markup: { attributeSort: false } }');
+      // t.log(output);
+    }
+  );
 
 });
 
 test.serial('Attribute Sort List', async t => {
 
-  /* OPTIONS ------------------------------------ */
-
-  prettify.options({ language: 'liquid', markup: { forceAttribute: true, forceIndent: true } });
-
-  /* SAMPLE ------------------------------------- */
-
-  const source = await samples.rules('markup/attribute-sort-list');
-
-  /* RULES -------------------------------------- */
-
-  const attributeSortList = await prettify.format(source, {
+  prettify.options({
+    language: 'liquid',
     markup: {
-      attributeSort: true,
-      attributeSortList: [ 'class', 'data-b', 'data-a', 'data-c', 'data-e' ]
+      forceAttribute: true,
+      forceIndent: true
     }
   });
 
-  const option = `{
-    markup: {
-      attributeSort: true,
-      attributeSortList: [
-        'class',
-        'data-b',
-        'data-a',
-        'data-c',
-        'data-e'
-      ]
+  await samples.getRule('markup/attribute-sort-list')(
+    [
+      [ 'class', 'data-b', 'data-a', 'data-c', 'data-e' ],
+      [ 'first', 'second', 'third', 'fourth' ],
+      [ 'data-a', 'data-b', 'data-c', 'data-e', 'data-f' ]
+    ]
+    , async function (source, attributeSortList, label) {
+
+      const output = await prettify.format(source, {
+        markup: {
+          attributeSort: true,
+          attributeSortList
+        }
+      });
+
+      t.snapshot(output, label({ markup: { attributeSort: true, attributeSortList } }));
+
+      // t.log(output);
     }
-  }`;
+  );
 
-  t.log(option.replace(/\n/g, '').replace(/\s+/g, ' '));
-  t.snapshot(attributeSortList, option);
-
-  const attributeSortFalse = await prettify.format(source, { markup: { attributeSort: false } });
-
-  t.log('{ markup: { attributeSort: false } }');
-  t.snapshot(attributeSortFalse, '{ markup: { attributeSort: false } } (default)');
+  prettify.options({ attributeSort: false, attributeSortList: [] });
 
 });
 
-test.serial('Force Attribute Indentation', async t => {
+test.serial('Force Attribute', async t => {
 
-  /* SAMPLE ------------------------------------- */
+  prettify.options({
+    language: 'liquid',
+    preserveLine: 0,
+    markup: {
+      forceAttribute: false,
+      forceIndent: false
+    }
+  });
 
-  const source = await samples.rules('markup/force-attribute');
+  await samples.getRule('markup/force-attribute')(
+    [
+      true,
+      false
+    ]
+    , async function (source, forceAttribute, label) {
 
-  /* RULES -------------------------------------- */
+      const output = await prettify.format(source, { markup: { forceAttribute } });
 
-  for (const forceAttribute of [ true, false ]) {
+      t.snapshot(output, label({ markup: { forceAttribute } }));
 
-    const output = await prettify.format(source, { markup: { forceAttribute } });
+      // t.log(output);
+    }
+  );
 
-    t.log(`{ markup: { forceAttribute: ${forceAttribute} } }`);
-    t.snapshot(
-      output,
-      `{ markup: { forceAttribute: ${forceAttribute} } } ${forceAttribute === false ? '(default)' : ''}`
-    );
+  prettify.options({ preserveLine: 2 });
 
-  };
+});
+
+test.serial('Force Attribute (Wrap)', async t => {
+
+  prettify.options({
+    language: 'liquid',
+    preserveLine: 0,
+    markup: {
+      forceAttribute: false,
+      forceIndent: false
+    }
+  });
+
+  await samples.getRule('markup/force-attribute-wrap')(
+    [
+      30,
+      50,
+      80,
+      100,
+      0
+    ]
+    , async function (source, wrap, label) {
+
+      const output = await prettify.format(source, { wrap });
+
+      t.snapshot(output, label({ wrap, markup: { forceAttribute: false } }));
+
+      // t.log(output);
+    }
+  );
+
+  prettify.options({ preserveLine: 2 });
+
+});
+
+test.serial('Force Lead Attribute (Wrap)', async t => {
+
+  prettify.options({
+    language: 'liquid',
+    preserveLine: 0,
+    markup: {
+      forceAttribute: false,
+      forceIndent: false
+    }
+  });
+
+  await samples.getRule('markup/force-lead-attribute')(
+    [
+      30,
+      50,
+      80,
+      100,
+      0
+    ]
+    , async function (source, wrap, label) {
+
+      const output = await prettify.format(source, { wrap, markup: { forceLeadAttribute: true } });
+
+      t.snapshot(output, label({
+        wrap,
+        markup: {
+          forceLeadAttribute: true,
+          forceAttribute: false
+        }
+      }));
+
+      // t.log(output);
+
+    }
+  );
+
+  prettify.options({ preserveLine: 2, markup: { forceLeadAttribute: false } });
 
 });
 
 test.serial('Force Content Indentation', async t => {
 
-  /* SAMPLE ------------------------------------- */
+  await samples.getRule('markup/force-indent')(
+    [
+      true,
+      false
+    ]
+    , async function (source, forceIndent, label) {
 
-  const source = await samples.rules('markup/force-indent');
+      const output = await prettify.format(source, { markup: { forceIndent } });
 
-  /* RULES -------------------------------------- */
+      t.snapshot(output, label({ markup: { forceIndent } }));
 
-  for (const forceIndent of [ false, true ]) {
-
-    const output = await prettify.format(source, { markup: { forceIndent } });
-
-    t.log(`{ markup: { forceIndent: ${forceIndent} } }`);
-    t.snapshot(
-      output,
-      `{ markup: { forceIndent: ${forceIndent} } } ${forceIndent === true ? '(default)' : ''}`
-    );
-
-  };
+      // t.log(output);
+    }
+  );
 
 });
 
 test.serial('Delimiter Spacing', async t => {
 
-  /* SAMPLE ------------------------------------- */
+  await samples.getRule('markup/delimiter-spacing')(
+    [
+      false,
+      true
+    ]
+    , async function (source, delimiterSpacing, label) {
 
-  const source = await samples.rules('markup/delimiter-spacing');
+      const output = await prettify.format(source, { markup: { delimiterSpacing } });
 
-  /* RULES -------------------------------------- */
+      t.snapshot(output, label({ markup: { delimiterSpacing } }));
 
-  for (const delimiterSpacing of [ false, true ]) {
-
-    const output = await prettify.format(source, { markup: { delimiterSpacing } });
-
-    t.log(`{ markup: { delimiterSpacing: ${delimiterSpacing} } }`);
-    t.snapshot(
-      output,
-      `{ markup: { delimiterSpacing: ${delimiterSpacing} } } ${delimiterSpacing === true ? '(default)' : ''}`
-    );
-
-  };
+      // t.log(output);
+    }
+  );
 
 });
 
 test.serial('Quote Convert', async t => {
 
-  /* SAMPLE ------------------------------------- */
+  await samples.getRule('markup/quote-convert')(
+    [
+      'single',
+      'double',
+      'none'
+    ]
+    , async function (source, quoteConvert, label) {
 
-  const source = await samples.rules('markup/quote-convert');
+      const output = await prettify.format(source, { markup: { quoteConvert } });
 
-  /* RULES -------------------------------------- */
+      t.snapshot(output, label({ markup: { quoteConvert } }));
 
-  for (const quoteConvert of [ 'single', 'double', 'none' ]) {
+      // t.log(output);
+    }
+  );
 
-    const output = await prettify.format(source, { markup: { quoteConvert } });
+});
 
-    t.log(`{ markup: { quoteConvert: "${quoteConvert}" } }`);
-    t.snapshot(
-      output,
-      `{ markup: { quoteConvert: "${quoteConvert}" } } ${quoteConvert === 'none' ? '(default)' : ''}`
-    );
+test.serial('Self Close Space', async t => {
 
-  };
+  await samples.getRule('markup/self-close-space')(
+    [
+      true,
+      false
+    ]
+    , async function (source, selfCloseSpace, label) {
+
+      const output = await prettify.format(source, { markup: { selfCloseSpace } });
+
+      t.snapshot(output, label({ markup: { selfCloseSpace } }));
+
+      // t.log(output);
+
+    }
+  );
 
 });
