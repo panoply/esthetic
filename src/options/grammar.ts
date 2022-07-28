@@ -1,5 +1,4 @@
 import { Grammars, Options, LanguageProperName } from 'types/prettify';
-import { create } from '@utils/native';
 
 export const grammar = new class Grammar {
 
@@ -115,12 +114,32 @@ export const grammar = new class Grammar {
     html: {
       embedded: {
         script: [
-          { language: 'javascript' },
-          { language: 'json', attribute: { type: [ 'application/json', 'application/ld+json' ] } },
-          { language: 'jsx', attribute: { type: [ 'text/jsx', 'application/jsx' ] } }
+          {
+            language: 'javascript'
+          },
+          {
+            language: 'json',
+            attribute: {
+              type: [
+                'application/json',
+                'application/ld+json'
+              ]
+            }
+          },
+          {
+            language: 'jsx',
+            attribute: {
+              type: [
+                'text/jsx',
+                'application/jsx'
+              ]
+            }
+          }
         ],
         style: [
-          { language: 'css' }
+          {
+            language: 'css'
+          }
         ]
       },
       voids: [
@@ -220,37 +239,37 @@ export const grammar = new class Grammar {
   };
 
   html: {
-    tags: Set<string>;
-    voids: Set<string>;
-    embed: {
+    tags?: Set<string>;
+    voids?: Set<string>;
+    embed?: {
       [tagName: string]: {
-        language: LanguageProperName;
+        language?: LanguageProperName;
         attribute?: string;
         value?(token: string):boolean
       }
     }
-  } = create(null);
+  } = {};
 
   liquid: {
-    tags: Set<string>;
-    singletons: Set<string>;
-    else: Set<string>;
-    embed: {
+    tags?: Set<string>;
+    singletons?: Set<string>;
+    else?: Set<string>;
+    embed?: {
       [tagName: string]: {
-        language: LanguageProperName;
+        language?: LanguageProperName;
         attribute?(token: string): boolean
-        end(token: string): boolean
+        end?(token: string): boolean
       }
     }
-  } = create(null);
+  } = {};
 
   script: {
-    keywords: Set<string>;
-  } = create(null);
+    keywords?: Set<string>;
+  } = {};
 
   style: {
-    units: Set<string>;
-  } = create(null);
+    units?: Set<string>;
+  } = {};
 
   constructor () {
 
@@ -258,11 +277,11 @@ export const grammar = new class Grammar {
     this.style.units = new Set(Grammar.defaults.style.units);
     this.html.tags = new Set(Grammar.defaults.html.tags);
     this.html.voids = new Set(Grammar.defaults.html.voids);
-    this.html.embed = create(null);
+    this.html.embed = {};
     this.liquid.tags = new Set(Grammar.defaults.liquid.tags);
     this.liquid.else = new Set(Grammar.defaults.liquid.else);
     this.liquid.singletons = new Set(Grammar.defaults.liquid.singletons);
-    this.liquid.embed = create(null);
+    this.liquid.embed = {};
     this.defaults();
 
   }
@@ -277,7 +296,7 @@ export const grammar = new class Grammar {
 
     for (const tag in Grammar.defaults.html.embedded) {
 
-      this.html.embed[tag] = create(null);
+      this.html.embed[tag] = {};
 
       for (const { language, attribute = null } of Grammar.defaults.html.embedded[tag]) {
 
@@ -302,8 +321,9 @@ export const grammar = new class Grammar {
 
     for (const tag in Grammar.defaults.liquid.embedded) {
 
-      this.liquid.embed[tag] = create(null);
-      this.liquid.embed[tag].end = (v) => new RegExp(`^{%-?\\s*end${tag}`).test(v);
+      this.liquid.embed[tag] = {
+        end: (v) => new RegExp(`^{%-?\\s*end${tag}`).test(v)
+      };
 
       for (const { language, argument } of Grammar.defaults.liquid.embedded[tag]) {
 
@@ -372,8 +392,9 @@ export const grammar = new class Grammar {
           for (const tag in rules[rule].embedded) {
 
             if (!(tag in this.liquid.embed)) {
-              this.liquid.embed[tag] = create(null);
-              this.liquid.embed[tag].end = (v) => new RegExp(`{%-?\\s*end${tag}`).test(v);
+              this.liquid.embed[tag] = {
+                end: (v) => new RegExp(`{%-?\\s*end${tag}`).test(v)
+              };
             }
 
             for (const { language, argument } of rules[rule].embedded[tag]) {
