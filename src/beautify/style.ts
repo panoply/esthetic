@@ -22,7 +22,7 @@ prettify.beautify.style = (options: Options) => {
   /**
    * Reference to `options.parsed`
    */
-  const data = prettify.parsed;
+  const data = prettify.data;
 
   /**
    * Carriage return / Line Feed
@@ -98,6 +98,7 @@ prettify.beautify.style = (options: Options) => {
     const total = (() => {
 
       if (a === len - 1) return 1;
+
       if (data.lines[a + 1] - 1 > pres) return pres;
       if (data.lines[a + 1] > 1) return data.lines[a + 1] - 1;
 
