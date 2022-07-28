@@ -1,6 +1,7 @@
 import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { create, nil } from '@utils/native';
+import { parse } from '@parser/parse';
+import { nil } from '@utils/native';
 import { is, ws } from '@utils/helpers';
 import { cc } from '@utils/enums';
 import { grammar } from '@options/grammar';
@@ -28,23 +29,11 @@ prettify.beautify.markup = (options: Options) => {
   /* -------------------------------------------- */
 
   /**
-   * Type token helper utilities for querying
-   * the `data.types` (options.parsed) AST tree.
-   */
-  const type: Helper.Type = create(null);
-
-  /**
-   * Token helper utilities for querying
-   * the `data.token` (options.parsed) AST tree.
-   */
-  const token: Helper.Token = create(null);
-
-  /**
    * External Lexer reference  when dealing with
    * markup elements that require external handling.
    * ie: `<script>` tags etc etc.
    */
-  const extidx = create(null);
+  const extidx = {};
 
   /**
    * The name of the lexer used
@@ -54,7 +43,7 @@ prettify.beautify.markup = (options: Options) => {
   /**
    * Reference to `options.parsed`
    */
-  const data = prettify.parsed;
+  const { data } = parse;
 
   /**
    * Whether or not language mode is TSX / JSX
@@ -83,11 +72,24 @@ prettify.beautify.markup = (options: Options) => {
   /* UTILITIES                                    */
   /* -------------------------------------------- */
 
-  type.is = (index: number, name: string) => data.types[index] === name;
-  type.not = (index: number, name: string) => data.types[index] !== name;
-  type.idx = (index: number, name: string) => index > -1 && (data.types[index] || nil).indexOf(name);
-  token.is = (index: number, tag: string) => data.token[index] === tag;
-  token.not = (index: number, tag: string) => data.token[index] !== tag;
+  /**
+   * Type token helper utilities for querying
+   * the `data.types` (options.parsed) AST tree.
+   */
+  const type: Helper.Type = {
+    is: (index: number, name: string) => data.types[index] === name,
+    not: (index: number, name: string) => data.types[index] !== name,
+    idx: (index: number, name: string) => index > -1 && (data.types[index] || nil).indexOf(name)
+  };
+
+  /**
+   * Token helper utilities for querying
+   * the `data.token` (options.parsed) AST tree.
+   */
+  const token: Helper.Token = {
+    is: (index: number, tag: string) => data.token[index] === tag,
+    not: (index: number, tag: string) => data.token[index] !== tag
+  };
 
   /* -------------------------------------------- */
   /* LOCAL SCOPES                                 */
@@ -323,22 +325,20 @@ prettify.beautify.markup = (options: Options) => {
         return;
       }
 
-      if (next < c && (type.idx(next, 'end') > -1 || type.idx(next, 'start') > -1) && data.lines[next] > 0) {
+      if (next < c && (
+        type.idx(next, 'end') > -1 ||
+        type.idx(next, 'start') > -1) && data.lines[next] > 0) {
 
         level.push(indent);
         ind = ind + 1;
 
         if (
-          data.types[a] === 'singleton' &&
+          type.is(a, 'singleton') &&
           a > 0 &&
           type.idx(a - 1, 'attribute') > -1 &&
           type.is(data.begin[a - 1], 'singleton')
         ) {
-
-          if (data.begin[a] < 0 || (
-            type.is(data.begin[a - 1], 'singleton') &&
-            data.begin[data.ender[a] - 1] !== a
-          )) {
+          if (data.begin[a] < 0 || (type.is(data.begin[a - 1], 'singleton') && data.begin[data.ender[a] - 1] !== a)) {
             level[a - 1] = indent;
           } else {
             level[a - 1] = indent + 1;
@@ -358,23 +358,25 @@ prettify.beautify.markup = (options: Options) => {
 
         level.push(-20);
 
-      } else if (
-        (
-          options.wrap === 0 || (a < c - 2 && type.idx(a + 2, 'attribute') > -1 &&
-          (
-            data.token[a].length + data.token[a + 1].length // + data.token[a + 2].length + 1
-          ) > options.wrap
-          ) || (
-            (
-              data.token[a].length + data.token[a + 1]
-                ? data.token[a + 1].length
-                : 0
-            ) > options.wrap
-          )
-        ) && (
-          type.is(a + 1, 'singleton') ||
-          type.is(a + 1, 'template')
-        )) {
+      } else if ((
+        options.wrap === 0 || (
+          a < c - 2 &&
+          data.token[a] !== undefined &&
+          data.token[a + 1] !== undefined &&
+          data.token[a + 2] !== undefined &&
+          data.token[a].length
+          + data.token[a + 1].length
+          + data.token[a + 2].length
+          + 1 > options.wrap && type.idx(a + 2, 'attribute') > -1
+        ) || (
+          data.token[a] !== undefined &&
+          data.token[a + 1] !== undefined &&
+          data.token[a].length + data.token[a + 1].length > options.wrap
+        )
+      ) && (
+        type.is(a + 1, 'singleton') ||
+        type.is(a + 1, 'template')
+      )) {
 
         // Wrap if
         // 1. options.wrap is 0
@@ -705,15 +707,10 @@ prettify.beautify.markup = (options: Options) => {
       }
 
       /**
-       * The parent node
-       */
-      const parent = a - 1;
-
-      /**
        * This function is responsible for wrapping
        * applied to attributes.
        */
-      function wrap (index: number) {
+      function attributeWrap (index: number) {
 
         if (type.is(index, 'attribute') || type.idx(index, 'template_attribute') > -1) {
 
@@ -760,19 +757,19 @@ prettify.beautify.markup = (options: Options) => {
       let w = a;
 
       /**
-       * Plural
+       * The parent node - used to determine forced leading attribute
+       */
+      const parent = a - 1;
+
+      /**
+       * Plural - Unsure what this does, I assume it determines more than 1 attribute
        */
       let plural = false;
 
       /**
-       * Whether or not the exit the walk early
-       */
-      let earlyexit = false;
-
-      /**
        * Whether or not the attribute is a start type
        */
-      let attStart = false;
+      let attrstart: boolean = false;
 
       /**
        * The number of attributes contained on the tag
@@ -807,17 +804,11 @@ prettify.beautify.markup = (options: Options) => {
           } while (x < c);
 
         } else if (a < c - 1 && type.idx(a + 1, 'attribute') > -1) {
-
           plural = true;
-
         }
 
         if (type.is(next, 'end') || type.is(next, 'template_end')) {
-          return indent + (
-            type.is(parent, 'singleton')
-              ? 2
-              : 1
-          );
+          return indent + (type.is(parent, 'singleton') ? 2 : 1);
         }
 
         if (type.is(parent, 'singleton')) return indent + 1;
@@ -868,70 +859,28 @@ prettify.beautify.markup = (options: Options) => {
 
               let nested = 1;
 
-              // console.log(data.token[a], data.lines[a]);
-
               do {
 
-                len = len + data.token[a].length + 1;
-
-                if (rules.attributeChain === 'inline') {
+                if (data.lines[a] === 0) {
 
                   level.push(-20);
 
-                } else if (rules.attributeChain === 'collapse') {
+                } else if (data.lines[a] === 1) {
+
+                  if (rules.forceAttribute === true) {
+                    level.push(lev);
+                  } else {
+                    level.push(-10);
+                  }
+
+                } else {
 
                   level.push(lev);
 
-                } else if (rules.attributeChain === 'preserve') {
-
-                  // console.log(lev, level[a], data.token[a], data.lines[a]);
-
-                  if (data.lines[a] === 0) {
-
-                    level.push(-20);
-
-                  } else if (data.lines[a] === 1) {
-
-                    level.push(-10);
-
-                  } else {
-
-                    level.push(lev);
-
-                  }
-
-                  /* if (is(data.token[a + 1], cc.DSH)) {
-
-                    level.push(-20);
-
-                  } else if (data.lines[a] === 0) {
-
-                    level.push(-20);
-
-                  } else if (data.lines[a] === 1) {
-
-                    // Token start with - thus we want chaining
-                    //
-                    if (is(data.token[a], cc.DSH)) {
-                      level.push(-20);
-                    } else {
-                      level.push(-10);
-                    }
-
-                  } else if (data.lines[a] > options.preserveLine) {
-
-                    level.push(options.preserveLine);
-
-                  } else {
-
-                    level.push(lev);
-
-                  } */
                 }
 
                 if (nested === 0) break;
 
-                // console.log('x', data);
                 a = a + 1;
 
                 if (type.is(a, 'template_attribute_start')) {
@@ -940,16 +889,14 @@ prettify.beautify.markup = (options: Options) => {
                   nested = nested - 1;
                 }
 
-                // count = count + data.token[a].length + 1;
                 attcount = attcount + 1;
 
+                if (data.token[a] !== undefined) {
+                  count = count + data.token[a].length + 1;
+                  len = len + data.token[a].length + 1;
+                }
+
               } while (a < c);
-
-              if (len > options.wrap) {
-
-                //  console.log('WRAP EXCEEDED', len, count);
-
-              }
 
             }
 
@@ -969,7 +916,7 @@ prettify.beautify.markup = (options: Options) => {
 
           } else if (data.types[a].indexOf('start') > 0) {
 
-            attStart = true;
+            attrstart = true;
 
             // Typically this condition when true infers the last attribute token
             // in languages like JSX
@@ -1030,8 +977,6 @@ prettify.beautify.markup = (options: Options) => {
 
           }
 
-          earlyexit = true;
-
         } else if (type.is(a, 'attribute')) {
 
           len = len + data.token[a].length + 1;
@@ -1040,17 +985,32 @@ prettify.beautify.markup = (options: Options) => {
 
             level.push(-10);
 
-          } else if (rules.forceAttribute === true || rules.forceAttribute >= 1 || attStart === true || (
-            a < c - 1 &&
-            type.not(a + 1, 'template_attribute') &&
-            type.idx(a + 1, 'attribute') > 0
-          )) {
+          } else if (
+            rules.forceAttribute === true ||
+            rules.forceAttribute >= 1 ||
+            attrstart === true || (
+              a < c - 1 && ((
+                type.idx(a + 1, 'template_attribute_') > -1 &&
+                data.lines[a + 1] !== -20
+              ) || (
+                type.idx(a + 1, 'attribute') > 0
+              ))
+            )) {
 
             data.token[a] = attributeValues(data.token[a]);
 
-            level.push(lev);
+            if (rules.forceAttribute === false && data.lines[a] === 1) {
+              if (type.is(a + 1, 'template_attribute_start') && data.lines[a + 1] > 1) {
+                level.push(lev);
+              } else {
+                level.push(-10);
+              }
+            } else {
+              level.push(lev);
+            }
 
           } else {
+
             level.push(-10);
           }
 
@@ -1069,14 +1029,13 @@ prettify.beautify.markup = (options: Options) => {
       a = a - 1;
 
       if (
+        type.idx(a, 'template') < 0 &&
         type.idx(a, 'end') > 0 &&
         type.idx(a, 'attribute') > 0 &&
         type.not(parent, 'singleton') &&
-        type.not(a, 'template_attribute_end') &&
         level[a - 1] > 0 &&
         plural === true
       ) {
-
         level[a - 1] = level[a - 1] - 1;
       }
 
@@ -1096,9 +1055,7 @@ prettify.beautify.markup = (options: Options) => {
           if (token.is(a, '/') && level[a - 1] !== 10) {
             level[a - 1] = -10;
           } else {
-
             level[a] = level[parent];
-
           }
 
           // console.log(data.token[a]);
@@ -1123,7 +1080,6 @@ prettify.beautify.markup = (options: Options) => {
       }
 
       if (
-        earlyexit === true ||
         rules.preserveAttributes === true ||
         token.is(parent, '<%xml%>') ||
         token.is(parent, '<?xml?>')
@@ -1142,13 +1098,23 @@ prettify.beautify.markup = (options: Options) => {
 
         if (len > options.wrap && options.wrap > 0 && rules.forceAttribute === false) {
 
+          if (rules.forceLeadAttribute === true) {
+            level[parent] = lev;
+            w = w - 1;
+          }
+
           count = data.token[a].length;
 
           do {
 
-            if (data.token[w].length > options.wrap && ws(data.token[w])) wrap(w);
+            if (data.token[w].length > options.wrap && ws(data.token[w])) attributeWrap(w);
 
-            level[w] = lev;
+            if (type.idx(w, 'template') > -1 && level[w] === -10) {
+              level[w] = lev;
+            } else if (type.is(w, 'attribute') && level[w] === -10) {
+              level[w] = lev;
+            }
+
             w = w - 1;
 
           } while (w > parent);
@@ -1161,7 +1127,7 @@ prettify.beautify.markup = (options: Options) => {
         ws(data.token[a])
       ) {
 
-        wrap(a);
+        attributeWrap(a);
 
       }
     };
@@ -1198,19 +1164,14 @@ prettify.beautify.markup = (options: Options) => {
 
             indent = indent - 1;
 
-            if (
-              type.is(next, 'template_end') &&
-              type.is(data.begin[next] + 1, 'template_else')) indent = indent - 1;
+            if (type.is(next, 'template_end') && type.is(data.begin[next] + 1, 'template_else')) indent = indent - 1;
 
             // HOT PATCH
             //
             // Support <dl></dl> anchor list tags,
             // previously only ol and ul were supported
             //
-            if (
-              token.is(a, '</ol>') ||
-              token.is(a, '</ul>') ||
-              token.is(a, '</dl>')) anchorlist();
+            if (token.is(a, '</ol>') || token.is(a, '</ul>') || token.is(a, '</dl>')) anchorlist();
 
           }
 
@@ -1228,10 +1189,7 @@ prettify.beautify.markup = (options: Options) => {
             }
 
           } else if ((
-            rules.forceIndent === false || (
-              rules.forceIndent &&
-              type.is(next, 'script_start')
-            )
+            rules.forceIndent === false || (rules.forceIndent === true && type.is(next, 'script_start'))
           ) && (
             type.is(a, 'content') ||
             type.is(a, 'singleton') ||
@@ -1415,7 +1373,14 @@ prettify.beautify.markup = (options: Options) => {
 
   return (() => {
 
+    /**
+     * The constructed output
+     */
     const build = [];
+
+    /**
+     * Indentation level / character
+     */
     const ind = (() => {
 
       const indy = [ options.indentChar ];
@@ -1491,14 +1456,18 @@ prettify.beautify.markup = (options: Options) => {
         let bb = a - 1; // add + 1 for inline comment formats
         let start = (bb > -1 && type.idx(bb, 'start') > -1);
 
-        if (levels[a] > -1 && type.is(a, 'attribute')) return levels[a] + 1;
+        if (levels[a] > -1 && type.is(a, 'attribute')) {
+          return levels[a] + 1;
+        }
 
         do {
 
           bb = bb - 1;
 
           if (levels[bb] > -1) {
-            return type.is(a, 'content') && start === false ? levels[bb] : levels[bb] + 1;
+            return type.is(a, 'content') && start === false
+              ? levels[bb]
+              : levels[bb] + 1;
           }
 
           if (type.idx(bb, 'start') > -1) start = true;
@@ -1569,9 +1538,11 @@ prettify.beautify.markup = (options: Options) => {
      */
     function endattr () {
 
-      const regend = /(\/|\?)?>$/;
+      const regend = /\/?>$/;
       const parent = data.token[a];
       const end = regend.exec(parent);
+
+      if (end === null) return;
 
       let y = a + 1;
       let isjsx = false;
@@ -1579,13 +1550,13 @@ prettify.beautify.markup = (options: Options) => {
         ? ' '
         : nil;
 
-      if (end === null) return;
-
       data.token[a] = parent.replace(regend, nil);
 
       do {
 
         if (type.is(y, 'jsx_attribute_end') && data.begin[data.begin[y]] === a) {
+
+          // console.log(data.token[y], JSON.stringify(space), end[0], parent);
 
           isjsx = false;
 
@@ -1607,7 +1578,8 @@ prettify.beautify.markup = (options: Options) => {
 
       if (type.is(y - 1, 'comment_attribute')) space = newline(levels[y - 2] - 1);
 
-      data.token[y - 1] = data.token[y - 1] + space + end[0];
+      // Connects the ending delimiter of HTML tags, eg: >
+      data.token[y - 1] = `${data.token[y - 1]}${space}${end[0]}`;
 
       // HOT PATCH
       //
@@ -1632,8 +1604,7 @@ prettify.beautify.markup = (options: Options) => {
         if ((
           type.is(a, 'start') ||
           type.is(a, 'singleton') ||
-          type.is(a, 'xml') ||
-          type.is(a, 'sgml')
+          type.is(a, 'xml')
         ) &&
           type.idx(a, 'attribute') < 0 &&
           a < c - 1 && data.types[a + 1] !== undefined &&
@@ -1644,14 +1615,11 @@ prettify.beautify.markup = (options: Options) => {
 
         }
 
-        if (
-          token.not(a, undefined) &&
-          data.token[a].indexOf(lf) > 0 &&
-          ((type.is(a, 'content') && rules.preserveText === false) ||
+        if (token.not(a, undefined) && data.token[a].indexOf(lf) > 0 && (
+          (type.is(a, 'content') && rules.preserveText === false) ||
           type.is(a, 'comment') ||
           type.is(a, 'attribute')
-          )
-        ) {
+        )) {
 
           multiline();
 
@@ -1664,7 +1632,6 @@ prettify.beautify.markup = (options: Options) => {
             build.push(' ');
 
           } else if (levels[a] > -1) {
-
             lastLevel = levels[a];
             build.push(newline(levels[a]));
 
