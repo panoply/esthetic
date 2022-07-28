@@ -17,23 +17,30 @@ test.serial('Word Wrap limit', async t => {
 
   /* OPTIONS ------------------------------------ */
 
-  prettify.options({ language: 'xml', markup: { forceIndent: true } });
+  prettify.options({
+    language: 'xml',
+    markup: {
+      forceIndent: true
+    }
+  });
 
-  /* SAMPLE ------------------------------------- */
+  await samples.getRule('global/wrap')(
+    [
+      80,
+      100,
+      120,
+      30,
+      0
+    ]
+    , async function (source, wrap, label) {
 
-  const source = await samples.rules('global/wrap');
+      const output = await prettify.format(source, { wrap });
 
-  /* RULES -------------------------------------- */
+      t.snapshot(output, label({ wrap }));
 
-  for (const wrap of [ 80, 100, 120, 30, 0 ]) {
-
-    const output = await prettify.format(source, { wrap });
-
-    // t.log(output);
-
-    t.snapshot(output, `Global Option { wrap: ${wrap} } ${wrap === 0 ? '(default)' : ''}`);
-
-  };
+      // t.log(output);
+    }
+  );
 
 });
 
@@ -43,21 +50,20 @@ test.serial('CRLF Line Terminations', async t => {
 
   prettify.options({ language: 'html' });
 
-  /* SAMPLE ------------------------------------- */
+  await samples.getRule('global/crlf')(
+    [
+      true,
+      false
+    ]
+    , async function (source, crlf, label) {
 
-  const source = await samples.rules('global/crlf');
+      const output = await prettify.format(source, { crlf });
 
-  /* RULES -------------------------------------- */
+      t.snapshot(output, label({ crlf }));
 
-  for (const crlf of [ true, false ]) {
-
-    const output = await prettify.format(source, { crlf });
-
-    // t.log(output);
-
-    t.snapshot(output, `Global Option { crlf: ${crlf}  ${crlf === false ? '(default)' : ''}`);
-
-  };
+      // t.log(output);
+    }
+  );
 
 });
 
@@ -67,32 +73,30 @@ test.serial('Indent Characters', async t => {
 
   prettify.options({ language: 'javascript' });
 
-  /* SAMPLE ------------------------------------- */
+  await samples.getRule('global/indent-char')(
+    [
+      {
+        indentSize: 1,
+        indentChar: '\t'
+      },
+      {
+        indentSize: 2,
+        indentChar: 'x'
+      },
+      {
+        indentSize: 2,
+        indentChar: ' '
+      }
+    ]
+    , async function (source, { indentChar, indentSize }, label) {
 
-  const source = await samples.rules('global/indent-char');
+      const output = await prettify.format(source, { indentChar, indentSize });
 
-  /* RULES -------------------------------------- */
+      t.snapshot(output, label({ indentChar }));
 
-  for (const { indentChar, indentSize } of [
-    {
-      indentSize: 1,
-      indentChar: '\t'
-    }, {
-      indentSize: 2,
-      indentChar: 'x'
-    }, {
-      indentSize: 2,
-      indentChar: ' '
+      // t.log(output);
     }
-  ]) {
-
-    const output = await prettify.format(source, { indentChar, indentSize });
-
-    // t.log(output, indentChar);
-
-    t.snapshot(output, `Global Option { indentChar: ${indentChar} } ${indentChar === ' ' ? '(default)' : ''}`);
-
-  };
+  );
 
 });
 
@@ -102,21 +106,24 @@ test.serial('Identation Size', async t => {
 
   prettify.options({ language: 'liquid' });
 
-  /* SAMPLE ------------------------------------- */
+  await samples.getRule('global/indent-size')(
+    [
+      6,
+      4,
+      5,
+      3,
+      1,
+      2
+    ]
+    , async function (source, indentSize, label) {
 
-  const source = await samples.rules('global/indent-size');
+      const output = await prettify.format(source, { indentSize });
 
-  /* RULES -------------------------------------- */
+      t.snapshot(output, label({ indentSize }));
 
-  for (const indentSize of [ 6, 4, 5, 3, 1, 2 ]) {
-
-    const output = await prettify.format(source, { indentSize });
-
-    // t.log(output);
-
-    t.snapshot(output, `Global Option { indentSize: ${indentSize} } ${indentSize === 2 ? '(default)' : ''}`);
-
-  };
+      // t.log(output);
+    }
+  );
 
 });
 
@@ -128,27 +135,24 @@ test.serial('Preserve Newlines', async t => {
 
   /* SAMPLE ------------------------------------- */
 
-  const source = await samples.rules('global/preserve-line');
+  await samples.getRule('global/preserve-line')(
+    [
+      5,
+      4,
+      1,
+      3,
+      0,
+      2
+    ]
+    , async function (source, preserveLine, label) {
 
-  /* RULES -------------------------------------- */
+      const output = await prettify.format(source, { preserveLine });
 
-  for (const preserveLine of [
-    6,
-    4,
-    5,
-    1,
-    3,
-    0,
-    2
-  ]) {
+      t.snapshot(output, label({ preserveLine }));
 
-    const output = await prettify.format(source, { preserveLine });
-
-    // t.log(output);
-
-    t.snapshot(output, `Global Option { preserveLine: ${preserveLine} } ${preserveLine === 2 ? '(default)' : ''}`);
-
-  };
+      // t.log(output);
+    }
+  );
 
 });
 
@@ -158,22 +162,20 @@ test.serial('End with Newline', async t => {
 
   prettify.options({ language: 'text' });
 
-  /* SAMPLE ------------------------------------- */
+  await samples.getRule('global/end-newline')(
+    [
+      true,
+      false
+    ]
+    , async function (source, endNewline, label) {
 
-  const source = await samples.rules('global/end-newline');
+      const output = await prettify.format(source, { endNewline });
 
-  /* RULES -------------------------------------- */
+      t.snapshot(output, label({ endNewline }));
 
-  for (const endNewline of [ true, false ]) {
-
-    const output = await prettify.format(source, { endNewline });
-
-    // t.log(output);
-
-    t.snapshot(output, `Global Option { endNewline: ${endNewline} } ${endNewline === false ? '(default)' : ''}`);
-
-  };
-
+      // t.log(output);
+    }
+  );
 });
 
 test.todo('Comment Indentation: Rule is not being respected in Liquid');
