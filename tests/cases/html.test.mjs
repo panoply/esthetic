@@ -2,7 +2,7 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('attribute keywords', async t => {
+test.serial.skip('attribute keywords', async t => {
 
   const source = await samples.cases('markup/attribute-keyword');
 

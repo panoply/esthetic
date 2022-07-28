@@ -15,8 +15,6 @@ import prettify from '@liquify/prettify';
 
 test.serial('Class Padding', async t => {
 
-  console.log('\n');
-
   prettify.options({
     language: 'css'
   });

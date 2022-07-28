@@ -24,8 +24,9 @@ test('Embedded Template string expression', async t => {
         }
       });
 
-      t.log(output);
+      // t.log(output);
 
+      t.pass();
     }
   );
 

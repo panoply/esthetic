@@ -2,7 +2,7 @@ import test from 'ava';
 import { samples } from '@liquify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('HTML embedded script tag', async t => {
+test.serial.skip('HTML embedded script tag', async t => {
 
   const source = await samples.cases('embedded/html-script');
 

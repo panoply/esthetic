@@ -13,7 +13,7 @@ test.serial('Preserve Comments', async t => {
     }
   });
 
-  t.log('preserveComment: false');
+  // t.log('preserveComment: false');
   t.snapshot(preserveCommentFalse);
 
   const preserveCommentTrue = await prettify.format(source, {
@@ -23,7 +23,7 @@ test.serial('Preserve Comments', async t => {
     }
   });
 
-  t.log('preserveComment: true');
+  // t.log('preserveComment: true');
   t.snapshot(preserveCommentTrue);
 
 });
@@ -42,7 +42,7 @@ test.serial('Inline Return', async t => {
     }
   });
 
-  t.log('inlineReturn: false');
+  // t.log('inlineReturn: false');
   t.snapshot(attemptCorrectionFalse);
 
   const attemptCorrectionTrue = await prettify.format(source, {
@@ -55,7 +55,7 @@ test.serial('Inline Return', async t => {
     }
   });
 
-  t.log('inlineReturn: true');
+  // t.log('inlineReturn: true');
   t.snapshot(attemptCorrectionTrue);
 
 });
@@ -76,7 +76,7 @@ test.serial('Object Sorting', async t => {
   });
 
   // t.log(objectSortTrue);
-  t.log('objectSort: true');
+  // t.log('objectSort: true');
   t.snapshot(objectSortTrue);
 
   const objectSortFalse = await prettify.format(source, {
@@ -92,7 +92,7 @@ test.serial('Object Sorting', async t => {
   });
 
   // t.log(objectSortFalse);
-  t.log('objectSort: false');
+  // t.log('objectSort: false');
   t.snapshot(objectSortFalse);
 
 });

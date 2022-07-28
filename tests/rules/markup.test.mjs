@@ -17,8 +17,6 @@ test.todo('TODO: Force Attribute Indentation Limits');
 
 test.serial('Attribute Sorting (Alphanumeric)', async t => {
 
-  console.log('\n');
-
   prettify.options({
     language: 'liquid',
     markup: {
