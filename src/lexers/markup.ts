@@ -533,12 +533,11 @@ prettify.lexers.markup = function markup (source: string) {
        */
       function convertq () {
 
-        if (
-          ignoreme === true ||
-          qc === 'none' ||
-          record.types !== 'attribute' ||
-          (qc === 'single' && record.token.indexOf('"') < 0) ||
-          (qc === 'double' && record.token.indexOf("'") < 0)
+        let lq = isLiquid(record.token, 5);
+
+        if (ignoreme === true || qc === 'none' || record.types.indexOf('attribute') < 0 ||
+          (lq === false && qc === 'single' && record.token.indexOf('"') < 0) ||
+          (lq === false && qc === 'double' && record.token.indexOf("'") < 0)
         ) {
 
           recordpush(data, record, nil);
@@ -548,22 +547,24 @@ prettify.lexers.markup = function markup (source: string) {
           let ee = 0;
           let inner = false;
 
-          const chars = record.token.split(nil);
+          const ch = record.token.split(nil);
           const eq = record.token.indexOf('=');
-          const len = chars.length - 1;
+          const ln = ch.length - 1;
 
           if (
-            not(chars[eq + 1], cc.DQO) &&
-            not(chars[chars.length - 1], cc.DQO) &&
-            qc === 'single'
+            not(ch[eq + 1], cc.DQO) &&
+            not(ch[ch.length - 1], cc.DQO) &&
+            qc === 'single' &&
+            lq === false
           ) {
 
             recordpush(data, record, nil);
 
           } else if (
-            not(chars[eq + 1], cc.SQO) &&
-            not(chars[chars.length - 1], cc.SQO) &&
-            qc === 'double'
+            not(ch[eq + 1], cc.SQO) &&
+            not(ch[ch.length - 1], cc.SQO) &&
+            qc === 'double' &&
+            lq === false
           ) {
 
             recordpush(data, record, nil);
@@ -573,30 +574,54 @@ prettify.lexers.markup = function markup (source: string) {
             ee = eq + 2;
 
             if (qc === 'double') {
-              if (record.token.slice(eq + 2, len).indexOf('"') > -1) inner = true;
-              chars[eq + 1] = '"';
-              chars[chars.length - 1] = '"';
-            } else {
-              if (record.token.slice(eq + 2, len).indexOf("'") > -1) inner = true;
-              chars[eq + 1] = "'";
-              chars[chars.length - 1] = "'";
+              if (record.token.slice(eq + 2, ln).indexOf('"') > -1) inner = true;
+              ch[eq + 1] = '"';
+              ch[ch.length - 1] = '"';
+            } else if (qc === 'single') {
+              if (record.token.slice(eq + 2, ln).indexOf("'") > -1) inner = true;
+              ch[eq + 1] = "'";
+              ch[ch.length - 1] = "'";
             }
 
-            if (inner === true) {
+            if (inner === true || lq === true) {
+
+              lq = false;
+
               do {
 
-                if (chars[ee] === "'" && qc === 'single') {
-                  chars[ee] = '"';
-                } else if (chars[ee] === '"' && qc === 'double') {
-                  chars[ee] = "'";
+                if (is(ch[ee - 1], cc.LCB) && (
+                  is(ch[ee], cc.PER) ||
+                  is(ch[ee], cc.LCB)
+                )) {
+                  lq = true;
+                } else if (is(ch[ee], cc.RCB) && (
+                  is(ch[ee - 1], cc.PER) ||
+                  is(ch[ee - 1], cc.RCB)
+                )) {
+                  lq = false;
+                }
+
+                if (lq === true) {
+
+                  if (is(ch[ee], cc.DQO) && qc === 'double') {
+                    ch[ee] = "'";
+                  } else if (is(ch[ee], cc.SQO) && qc === 'single') {
+                    ch[ee] = '"';
+                  }
+                } else {
+                  if (is(ch[ee], cc.SQO) && qc === 'double') {
+                    ch[ee] = '"';
+                  } else if (is(ch[ee], cc.DQO) && qc === 'single') {
+                    ch[ee] = "'";
+                  }
                 }
 
                 ee = ee + 1;
 
-              } while (ee < len);
+              } while (ee < ln);
             }
 
-            record.token = chars.join(nil);
+            record.token = ch.join(nil);
             recordpush(data, record, nil);
 
           }
@@ -1431,16 +1456,14 @@ prettify.lexers.markup = function markup (source: string) {
         attr = bracketSpace(attr);
 
         if (ttexp >= 1 || isLiquid(attr, 1)) {
-
-          lines = is(b[a + 1], cc.NWL) ? 2 : not(b[a + 1], cc.WSP) ? 0 : lines;
-
+          if (isLiquid(attr, 5) === false) {
+            lines = is(b[a + 1], cc.NWL) || is(b[a], cc.NWL)
+              ? 2
+              : is(b[a], cc.WSP) && not(b[a + 1], cc.WSP) ? 1 : 0;
+          } else {
+            lines = is(b[a + 1], cc.NWL) ? 2 : not(b[a + 1], cc.WSP) ? 0 : lines;
+          }
         }
-
-        // console.log('LEXER', ttexp, lines, attr, attrstore, JSON.stringify(b[a]));
-
-        // console.log('LEXER', lines, attr, attrstore);
-
-        // if (isLiquid(attr, 2) && not(b[a + 1], cc.WSP)) lines = 0;
 
         if (attr === '=') {
 
@@ -2683,6 +2706,12 @@ prettify.lexers.markup = function markup (source: string) {
             .slice(0, tname.indexOf('('))
             .replace(/\s+/, nil);
         }
+      }
+
+      if (rules.quoteConvert === 'double') {
+        record.token = record.token.replace(/'/g, '"');
+      } else if (rules.quoteConvert === 'single') {
+        record.token = record.token.replace(/"/g, "'");
       }
     }
 
