@@ -3637,7 +3637,7 @@ prettify.lexers.script = function script (source: string) {
         ltype = 'template_string_start';
         recordPush('template_string');
 
-      } else if (is(ltoke, cc.RCB)) {
+      } else if (is(ltoke[0], cc.RCB)) {
 
         ltype = 'template_string_end';
         recordPush('');
