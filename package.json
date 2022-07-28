@@ -1,9 +1,21 @@
 {
   "name": "@liquify/prettify",
-  "version": "0.1.0",
+  "version": "0.0.1-beta.1",
   "license": "MIT",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <n.savvidis@gmx.com>",
-  "description": "🩸 Prettify language beautification support for multiple languages.",
+  "description": "Prettify 🎀  Language beautification support for multiple languages.",
+  "keywords": [
+    "formatting",
+    "prettify",
+    "beautification",
+    "liquid",
+    "shopify",
+    "liquify",
+    "format",
+    "formatter",
+    "prettydiff",
+    "prettier"
+  ],
   "engines": {
     "pnpm": ">=4",
     "node": ">=12"
@@ -26,6 +38,7 @@
     "dev": "tsup --watch",
     "build": "tsup --minify-identifiers --minify-whitespace",
     "pack": "cd versions; pnpm pack ../ && cd ..",
+    "test:dev": "ava tests/dev.test.mjs",
     "test": "ava tests/**/*.test.mjs --serial",
     "test:units": "ava tests/units/*.test.mjs ---",
     "test:units:chars": "ava tests/units/chars.test.mjs ---",
@@ -104,9 +117,9 @@
     "@liquify/eslint-config": "workspace:*",
     "@liquify/test-utils": "workspace:^1.0.0",
     "@types/benchmark": "^2.1.1",
-    "ava": "^4.2.0",
+    "ava": "^4.3.1",
     "benchmark": "^2.1.4",
-    "tsup": "^6.1.0",
-    "type-fest": "^2.13.0"
+    "tsup": "^6.2.0",
+    "type-fest": "^2.17.0"
   }
 }

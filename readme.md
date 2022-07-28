@@ -1,10 +1,12 @@
-### WIP - RELEASE CANDIDATE ALMOST COMPLETE
+### v0.0.1-beta.1
 
-_This module is still in development but approaching a stable release. Prettify is not yet available for consumption on the NPM Registry and the playground is still not complete nor using most recent version._
+_This module is in its infancy and working towards an official release candidate. Refer to the [Language Support](#language-support) before using the module._
 
-# Prettify 💅
+# Prettify 🎀
 
 The new generation code beautification tool for formatting HTML, Liquid, JavaScript, TypeScript, CSS/SCSS and more! Prettify is built atop of the Sparser lexing algorithm and its parse approach was adapted from the distributed source code of the late and powerful PrettyDiff.
+
+Visit the [Playground](https://liquify.dev/prettify)
 
 ### Features
 
@@ -19,22 +21,29 @@ The new generation code beautification tool for formatting HTML, Liquid, JavaScr
 
 Prettify is mostly geared towards web projects and exists an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/). It's the perfect choice for projects that leverage the [Liquid](https://shopify.github.io/liquid/) template language and was developed for usage in the [Liquify](https://liquify.dev) text editor extension/plugin. Prettify allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support, it intends to be the solution you'd employ when working with the template language.
 
-### Supported Languages
+### Language Support
 
-- Liquid + HTML
-- Liquid + CSS/SCSS/LESS
-- Liquid + JavaScript/TypeScript
-- Liquid + JSX/TSX
-- HTML
-- CSS
-- SCSS
-- LESS
-- JavaScript
-- TypeScript
-- JSX
-- TSX
-- JSON
-- YAML
+Below is current support list of languages, their completion status and whether you can run Prettify for beautification. You can leverage on languages above 80% completion, anything below that is not yet ready for the big time.
+
+| Language            | Status       | Operational |
+| ------------------- | ------------ | ----------- |
+| XML                 | 95% Complete | ✓           |
+| HTML                | 95% Complete | ✓           |
+| Liquid + HTML       | 95% Complete | ✓           |
+| Liquid + CSS        | 90% Complete | ✓           |
+| Liquid + JSON       | 95% Complete | ✓           |
+| Liquid + JavaScript | 80% Complete | ✓           |
+| CSS                 | 95% Complete | ✓           |
+| SCSS                | 75% Complete | 𐄂           |
+| LESS                | 60% Complete | 𐄂           |
+| JSX                 | 70% Complete | 𐄂           |
+| TSX                 | 40% Complete | 𐄂           |
+| JavaScript          | 85% Complete | ✓           |
+| TypeScript          | 70% Complete | 𐄂           |
+| JSON                | 95% Complete | ✓           |
+| YAML                | 50% Complete | 𐄂           |
+
+> Please report any bugs or defects you encounter.
 
 # Installation
 
@@ -44,7 +53,7 @@ This module is used by the [Liquify IDE](https://liquify.dev) extension.
 pnpm add @liquify/prettify -D
 ```
 
-> Prettify is not yet available for consumption on the NPM register
+_Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
 
 # Usage
 
@@ -121,7 +130,7 @@ prettify.options.rules: Rules
 
 ### Parse
 
-The parse method can be used to inspect the data structures the Prettify constructs. Prettify is using the sparser lexing engines under the hood, the generated parse tree returned by this method is representative of sparser's data structures. The method also exposes an additional `stats` getter which returns some execution information pertaining to the parse process.
+The parse method can be used to inspect the data structures the Prettify constructs. Prettify is using the sparser lexing algorithm under the hood, the generated parse tree returned by this method is representative of sparser's data structures. The method also exposes an additional `stats` getter which returns some execution information pertaining to the parse process.
 
 ```typescript
 import prettify from "@liquify/prettify";
@@ -162,7 +171,7 @@ console.log(definitions);
 
 # Options
 
-Prettify provides a granular set of beautification options (rules). The projects [Typings](#) explains in good detail the effect each available rule has on code. You can also checkout the [Playground](https://liquify.dev/prettify) to get a better idea of how code will be beautified.
+Prettify provides a granular set of beautification options (rules). The projects [Typings](https://github.com/panoply/prettify/tree/pre-release/types/rules) explains in good detail the effect each available rule has on code. You can also checkout the [Playground](https://liquify.dev/prettify) to get a better idea of how code will be beautified.
 
 ```typescript
 {
@@ -245,7 +254,7 @@ Prettify provides a granular set of beautification options (rules). The projects
 
 ### Markup Rules
 
-Refer to the [typings](#) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/markup.d.ts) declaration file for description. Rules will be used when formatting the following languages:
 
 - Liquid
 - HTML
@@ -264,7 +273,7 @@ Refer to the [typings](#) declaration file for description. Rules will be used w
   delimiterSpacing: true,
   commentNewline: false,
   forceAttribute: false,
-  forceLeadingAttribute: false,
+  forceLeadAttribute: false,
   forceIndent: false,
   preserveValues: true,
   preserveAttributes: false,
@@ -278,7 +287,7 @@ Refer to the [typings](#) declaration file for description. Rules will be used w
 
 ### Style Rules
 
-Refer to the [typings](#) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/style.d.ts) declaration file for description. Rules will be used when formatting the following languages:
 
 - CSS
 - SCSS/SASS
@@ -293,8 +302,7 @@ Refer to the [typings](#) declaration file for description. Rules will be used w
   sortSelectors: false,
   forceValue: 'preserve',
   preserveLine: 3,
-  quoteConvert: 'none',
-  associate: []
+  quoteConvert: 'none'
 }
 ```
 
@@ -302,7 +310,7 @@ Refer to the [typings](#) declaration file for description. Rules will be used w
 
 ### Script Rules
 
-Refer to the [typings](#) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/script.d.ts) declaration file for description. Rules will be used when formatting the following languages:
 
 - JavaScript
 - TypeScript
@@ -334,8 +342,7 @@ Refer to the [typings](#) declaration file for description. Rules will be used w
   ternaryLine: false,
   variableList: 'none',
   vertical: false,
-  styleGuide: 'none',
-  associate: []
+  styleGuide: 'none'
 }
 ```
 
@@ -343,7 +350,7 @@ Refer to the [typings](#) declaration file for description. Rules will be used w
 
 ### JSON Rules
 
-Refer to the [typings](#) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/json.d.ts) declaration file for description. Rules will be used when formatting the following languages:
 
 - JSON
 
@@ -465,60 +472,6 @@ Lexer modes provide inline comments control and support ignoring regions (blocks
 - `// @prettify-ignore-start`
 - `// @prettify-ignore-end`
 
-# Examples
-
-Prettify operates rather effectively and can interpret otherwise unpredictable or chaotic code.
-
-### Demonstration
-
-Take the following (markup) code. This example is doing everything wrong. You'd actually be surprised how many folks would commit code like this when working with Liquid. This is actually because it's novice appealing in nature.
-
-<!-- prettier-ignore -->
-```liquid
-
-<div id="x"
-  class
-="xxx xxx xxx"   data-
-{% if x %} {{ x }}
-         {%- else -%}foo{%- endif %}-id   ="within"
-  aria-x =  "foo">
-
-Hello world!
-
-<div {{ attr }}="example"   {% if xx -%}data-{{ xx }}{%- else -%}
-id{%- endif %}="prepended"
-   aria-x="foo"           class={{ no_quotations }}
->
-
-I am using Prettify! </div></div>
-```
-
-The above code is some wild stuff. It is using Liquid to output HTML attributes (conditionally), it is using output tags as attributes/values and infuses tags between attribute definitions. Prettify is able to handle this and can quickly reason about what and how the intended structure should be output. The above would format as follows:
-
-<!-- prettier-ignore -->
-```liquid
-
-<div
-  id="x"
-  class="xxx xxx xxx"
-  data-{% if x %}{{ x }}{%- else -%}foo{%- endif %}-id="xxx"
-  aria-x="foo">
-
-  Hello world!
-
-  <div
-    {{ attr }}="example"
-    {% if xx -%}data-{{ xx }}{%- else -%}id="xxx"{%- endif %}
-    aria-x="foo"
-    class="{{ no_quotations }}">
-
-    I am using Prettify!
-    </div>
-</div>
-```
-
-As you can see, the utter fucking insanity has been reasoned with. Code is beautified and structure is applied. Prettify even handles infusion within attributes and understands the intention of the developer.
-
 # Caveats
 
 Prettify is comparatively _recluse_ in terms of PnP integrations/extensibility. Depending on your stack and development preferences you may wish to use Prettify together with additional tools like [eslint](https://eslint.org/), [stylelint](https://stylelint.io/) or even [Prettier](https://prettier.io/). There are a few notable caveats you should be aware before running Prettify, most of which are trivial.
@@ -541,7 +494,7 @@ Shopify recently shipped a Liquid prettier plugin but it does not really do much
 
 Prettify takes a complete different approach and is leveraging the sparser lexing engines under the hood. Sparser along side PrettyDiff at the time I adapted them into Prettify were efficient at handling Liquid and a multitude of other template languages. I chose to build Prettify atop of these projects opposed to developing a Prettier plugin for a multitude of reasons but mostly because the sparser lexers understood Liquid infusion within languages other than Markup.
 
-Below is a formatting specific feature comparison as of June 2022 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities.
+Below is a formatting specific feature comparison as of June 2022 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities, overall Shopify's solution offers 1/10th of what Prettify provides and because its a Prettier plugin it's 7x slower than Prettify.
 
 | Feature                         | Prettify | Liquid Prettier Plugin |
 | ------------------------------- | -------- | ---------------------- |
