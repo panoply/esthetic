@@ -2,8 +2,8 @@
   "name": "@liquify/prettify",
   "version": "0.1.0",
   "license": "MIT",
-  "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <nicos@gmx.com>",
-  "description": "🩸 Liquid Language beautification support for multiple languages.",
+  "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <n.savvidis@gmx.com>",
+  "description": "🩸 Prettify language beautification support for multiple languages.",
   "engines": {
     "pnpm": ">=4",
     "node": ">=12"
@@ -26,19 +26,24 @@
     "dev": "tsup --watch",
     "build": "tsup --minify-identifiers --minify-whitespace",
     "pack": "cd versions; pnpm pack ../ && cd ..",
-    "play": "ava tests/play.test.mjs --color --watch",
-    "test": "ava tests/cases/*.test.mjs --serial",
-    "test:rules": "ava tests/rules/markup.test.mjs ---",
+    "test": "ava tests/**/*.test.mjs --serial",
     "test:units": "ava tests/units/*.test.mjs ---",
-    "test:attributes": "ava tests/cases/attributes* ---",
-    "test:embedded": "ava tests/cases/embedded* ---",
-    "test:ignores": "ava tests/cases/ignores* ---",
-    "test:css": "ava tests/cases/css* ---",
-    "test:liquid": "ava tests/cases/liquid* ---",
-    "test:html": "ava tests/cases/html* ---",
-    "test:language": "ava tests/cases/language* ---",
-    "test:javascript": "ava tests/cases/javascript* ---",
-    "test:jsx": "ava tests/cases/jsx* ---"
+    "test:units:chars": "ava tests/units/chars.test.mjs ---",
+    "test:rules": "ava tests/rules/*.test.mjs ---",
+    "test:rules:globals": "ava tests/rules/globals.test.mjs ---",
+    "test:rules:markup": "ava tests/rules/markup.test.mjs ---",
+    "test:rules:script": "ava tests/rules/script.test.mjs ---",
+    "test:rules:style": "ava tests/rules/style.test.mjs ---",
+    "test:cases": "ava tests/cases/*.test.mjs ---",
+    "test:cases:attributes": "ava tests/cases/attributes.test.mjs  ---",
+    "test:cases:embedded": "ava tests/cases/embedded.test.mjs  ---",
+    "test:cases:ignores": "ava tests/cases/ignores.test.mjs  ---",
+    "test:cases:css": "ava tests/cases/css.test.mjs  ---",
+    "test:cases:liquid": "ava tests/cases/liquid.test.mjs  ---",
+    "test:cases:html": "ava tests/cases/html.test.mjs  ---",
+    "test:cases:language": "ava tests/cases/language.test.mjs ---",
+    "test:cases:javascript": "ava tests/cases/javascript.test.mjs ---",
+    "test:cases:jsx": "ava tests/cases/jsx.test.mjs ---"
   },
   "ava": {
     "extensions": [
@@ -59,8 +64,7 @@
     "splitting": false,
     "format": [
       "cjs",
-      "esm",
-      "iife"
+      "esm"
     ]
   },
   "prettier": "@liquify/prettier-config",
@@ -99,6 +103,7 @@
   "devDependencies": {
     "@liquify/eslint-config": "workspace:*",
     "@liquify/test-utils": "workspace:^1.0.0",
+    "@types/benchmark": "^2.1.1",
     "ava": "^4.2.0",
     "benchmark": "^2.1.4",
     "tsup": "^6.1.0",
