@@ -178,7 +178,7 @@ export function isLiquid (input: string, direction: 1 | 2 | 3 | 4 | 5): boolean 
 
     return is(input[input.length - 1], cc.RCB) && (
       is(input[input.length - 2], cc.PER) ||
-        is(input[input.length - 2], cc.LCB)
+      is(input[input.length - 2], cc.RCB)
     );
 
   } else if (direction === 3) {
