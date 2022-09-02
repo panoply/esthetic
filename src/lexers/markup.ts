@@ -826,8 +826,30 @@ prettify.lexers.markup = function markup (source: string) {
                 record.types = 'template_attribute_else';
                 record.token = attrstore[idx][0];
               } else {
-                record.types = 'template_attribute';
-                record.token = attrstore[idx][0];
+
+                // HOT PATCH
+                //
+                // Fixes situations where the next Liquid attribute token starts with dash -
+                // and current token ends with closing delimiter. For example:
+                //
+                // <div data-{{ current_attr }}-{% if x %}{{ foo }}{% else %}{{ bar }}="xxx"></div>
+                //
+                // Where the "-" following `{{ current_attr }}` would be contained in attrstore
+                // as a separate token. We will look ahead here and instead connect it.
+                //
+                if (is(attrstore[idx + 1][0][0], cc.DSH)) {
+                  record.token = attrstore[idx][0] + attrstore[idx + 1][0][0];
+                  record.types = grammar.liquid.tags.has(getLiquidTagName(attrstore[idx + 1][0]))
+                    ? 'template_attribute_start'
+                    : 'template_attribute';
+
+                  convertq();
+                  idx = idx + 2;
+                  continue;
+                } else {
+                  record.types = 'template_attribute';
+                  record.token = attrstore[idx][0];
+                }
               }
             }
 
