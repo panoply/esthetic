@@ -178,11 +178,11 @@ export const definitions: Definitions = {
         description: 'All tag attribute keys/values are converted to lowercase'
       },
       {
-        rule: 'lowercase-keys',
+        rule: 'lowercase-name',
         description: 'Only attribute keys are converted to lowercase'
       },
       {
-        rule: 'lowercase-values',
+        rule: 'lowercase-value',
         description: 'Only attribute values are converted to lowercase'
       }
     ]
