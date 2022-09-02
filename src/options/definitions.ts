@@ -163,6 +163,30 @@ export const definitions: Definitions = {
     lexer: 'markup',
     type: 'array'
   },
+  attributeCasing: {
+    default: 'preserve',
+    description: 'Controls the casing of attribute values and keys.',
+    type: 'select',
+    lexer: 'markup',
+    values: [
+      {
+        rule: 'preserve',
+        description: 'All tag attribute keys/values are preserved and left intact.'
+      },
+      {
+        rule: 'lowercase',
+        description: 'All tag attribute keys/values are converted to lowercase'
+      },
+      {
+        rule: 'lowercase-keys',
+        description: 'Only attribute keys are converted to lowercase'
+      },
+      {
+        rule: 'lowercase-values',
+        description: 'Only attribute values are converted to lowercase'
+      }
+    ]
+  },
   attributeValues: {
     default: false,
     description: 'Controls how attribute values should be formatter',

@@ -876,7 +876,11 @@ prettify.lexers.markup = function markup (source: string) {
             ) {
               record.token = attrstore[idx][0];
             } else {
-              record.token = attrstore[idx][0].toLowerCase();
+              if (rules.attributeCasing === 'preserve') {
+                record.token = attrstore[idx][0];
+              } else {
+                record.token = attrstore[idx][0].toLowerCase();
+              }
             }
 
             convertq();
@@ -972,9 +976,20 @@ prettify.lexers.markup = function markup (source: string) {
                   is(attrstore[idx][0], cc.LPR) ||
                   jsx === true
                 ) {
+
                   record.token = attrstore[idx][0];
+
                 } else {
-                  record.token = attrstore[idx][0].toLowerCase();
+
+                  if (rules.attributeCasing === 'preserve') {
+                    record.token = attrstore[idx][0];
+                  } else if (rules.attributeCasing === 'lowercase') {
+                    record.token = attrstore[idx][0].toLowerCase();
+                  } else if (rules.attributeCasing === 'lowercase-keys') {
+                    record.token = name.toLowerCase() + '=' + value;
+                  } else if (rules.attributeCasing === 'lowercase-values') {
+                    record.token = name + '=' + value.toLowerCase();
+                  }
                 }
               }
 
