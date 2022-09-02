@@ -186,9 +186,9 @@ Prettify provides a granular set of beautification options (rules). The projects
   commentIndent: false,
   markup: {
     correct: false,
+    attributeCasing: 'preserve',
     attributeSort: false,
     attributeSortList: [],
-    attributeChain: 'preserve',
     attributeValues: 'align',
     delimiterSpacing: true,
     commentNewline: false,
@@ -266,9 +266,9 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
 ```ts
 {
   correct: false,
+  attributeCasing: 'preserve',
   attributeSort: false,
   attributeSortList: [],
-  attributeChain: 'preserve',
   attributeValues: 'align',
   delimiterSpacing: true,
   commentNewline: false,
