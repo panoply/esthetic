@@ -504,6 +504,7 @@ Below is a formatting specific feature comparison as of June 2022 for Markup (Li
 | Content Indentation             | ✓        | 𐄂                      |
 | Delimiter Spacing               | ✓        | 𐄂                      |
 | Wrapping Indentation            | ✓        | 𐄂                      |
+| Attribute Casing                | ✓        | 𐄂                      |
 | Attribute Sorting               | ✓        | 𐄂                      |
 | Attribute Indentation (Liquid)  | ✓        | 𐄂                      |
 | Attribute Value Formatting      | ✓        | 𐄂                      |
