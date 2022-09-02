@@ -16,6 +16,13 @@ export interface MarkupOptions {
   correct?: boolean;
 
   /**
+   * **Default** `preserve`
+   *
+   * How attribute keys and value casing should be processed. This defaults to
+   * `preserve` which will leave casing intact.
+   */
+  attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value'
+  /**
    * **Default** `false`
    *
    * HTML Attribute sorting. When enabled it will sort attributes
@@ -190,7 +197,7 @@ export interface MarkupOptions {
    *
    * If a blank new line should be forced above comments.
    */
-  commentNewline?: boolean
+  commentNewline?: boolean;
 
   /**
    * **Default** `false`
