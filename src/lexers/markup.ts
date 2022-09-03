@@ -456,6 +456,44 @@ prettify.lexers.markup = function markup (source: string) {
 
     };
 
+    /**
+     * Liquid Attribute Casing
+     *
+     * Walks over Liquid attributes and applies lowercasing
+     * ammendments to contained attribute names. For example:
+     *
+     * ```html
+     * <div {% if x %}DATA-ATTR-{{ xx }}{% else %}ID="foo"{% endif %}></div>
+     * ```
+     *
+     * Where the `DATA-ATTR-` and `ID` will be converted to lowercase.
+     * This function is only called when certain rule conditions are passed
+     * and when Liquid attributes are contained.
+     */
+    function liqattrcase (attr: string) {
+
+      const len = attr.length;
+
+      let i: number = 0; // index
+      let t: number = -1; // token
+
+      do {
+
+        t = attr.indexOf('{', i);
+
+        if (t < 0) t = len;
+        if (t > 0 && i > 0) attr = attr.slice(0, i) + attr.slice(i, t).toLowerCase() + attr.slice(t);
+        if (t > -1 && is(attr[t + 1], cc.PER)) t = attr.indexOf('%}', t + 2) + 2;
+        if (t > -1 && is(attr[t + 1], cc.LCB)) t = attr.indexOf('}}', t + 2) + 2;
+
+        i = t === -1 ? len : t;
+
+      } while (i < len);
+
+      return attr;
+
+    }
+
     // attribute parser
     // lexer_markup_tag_attributeRecord
     function attrecord () {
@@ -837,7 +875,7 @@ prettify.lexers.markup = function markup (source: string) {
                 // Where the "-" following `{{ current_attr }}` would be contained in attrstore
                 // as a separate token. We will look ahead here and instead connect it.
                 //
-                if (is(attrstore[idx + 1][0][0], cc.DSH)) {
+                if ((len > idx + 1) && is(attrstore[idx + 1][0][0], cc.DSH)) {
                   record.token = attrstore[idx][0] + attrstore[idx + 1][0][0];
                   record.types = grammar.liquid.tags.has(getLiquidTagName(attrstore[idx + 1][0]))
                     ? 'template_attribute_start'
@@ -876,6 +914,7 @@ prettify.lexers.markup = function markup (source: string) {
             ) {
               record.token = attrstore[idx][0];
             } else {
+
               if (rules.attributeCasing === 'preserve') {
                 record.token = attrstore[idx][0];
               } else {
