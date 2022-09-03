@@ -88,6 +88,7 @@ export const prettify: Prettify = (function () {
       markup: {
         correct: false,
         commentNewline: false,
+        attributeCasing: 'preserve',
         attributeValues: 'preserve',
         attributeSort: false,
         attributeSortList: [],
