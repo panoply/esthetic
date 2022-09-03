@@ -4,7 +4,7 @@
 import type { Record, Structure } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
-import { create } from '@utils/native';
+import { create, nil } from '@utils/native';
 import { is, not } from '@utils/helpers';
 import { cc } from '@utils/enums';
 
@@ -865,7 +865,7 @@ prettify.lexers.script = function script (source: string) {
     let build = [ starting ];
     let temp: string[];
 
-    const ender = ending.split('');
+    const ender = ending.split(nil);
     const endlen = ender.length;
     const start = a;
     const base = a + starting.length;
@@ -896,12 +896,12 @@ prettify.lexers.script = function script (source: string) {
 
     function finish () {
 
-      let str = '';
+      let str = nil;
 
       /**
        * Pads certain template tag delimiters with a space
        */
-      function bracketSpace (input) {
+      function bracketSpace (input: string) {
 
         if (
           options.language !== 'javascript' &&
@@ -950,7 +950,7 @@ prettify.lexers.script = function script (source: string) {
         build.pop();
       }
 
-      ltoke = build.join('');
+      ltoke = build.join(nil);
 
       if (
         is(starting, cc.DQO) ||
@@ -1103,18 +1103,18 @@ prettify.lexers.script = function script (source: string) {
                 ltoke = segment;
                 ltype = 'string';
 
-                recordPush('');
+                recordPush(nil);
 
                 parse.linesSpace = 0;
                 ltoke = '+';
                 ltype = 'operator';
 
-                recordPush('');
+                recordPush(nil);
 
               } while (item.length > limit);
             }
 
-            if (item === '') {
+            if (item === nil) {
               ltoke = q + q;
             } else {
               ltoke = q + item + q;
@@ -1129,10 +1129,11 @@ prettify.lexers.script = function script (source: string) {
         ltype = 'template_start';
 
       } else {
+
         ltype = type;
       }
 
-      if (ltoke.length > 0) recordPush('');
+      if (ltoke.length > 0) recordPush(nil);
 
     };
 
@@ -1178,9 +1179,12 @@ prettify.lexers.script = function script (source: string) {
       do {
 
         if (
-          data.token[0] !== '{' &&
-          data.token[0] !== '[' &&
-          qc !== 'none' && (c[ee] === '"' || c[ee] === "'")
+          not(data.token[0], cc.LCB) &&
+          not(data.token[0], cc.LSB) &&
+          qc !== 'none' && (
+            is(c[ee], cc.DQO) ||
+            is(c[ee], cc.SQO)
+          )
         ) {
 
           if (c[ee - 1] === '\\') {
@@ -1204,20 +1208,19 @@ prettify.lexers.script = function script (source: string) {
 
           ext = true;
 
-          if (c[ee] === '{' && c[ee + 1] === '%' && c[ee + 2] !== starting) {
+          if (is(c[ee], cc.LCB) && is(c[ee + 1], cc.PER) && c[ee + 2] !== starting) {
 
             finish();
             general('{%', '%}', 'template');
             cleanUp();
 
-          } else if (c[ee] === '{' && c[ee + 1] === '{' && c[ee + 2] !== starting) {
+          } else if (is(c[ee], cc.LCB) && is(c[ee + 1], cc.LCB) && c[ee + 2] !== starting) {
 
             finish();
             general('{{', '}}', 'template');
             cleanUp();
 
           } else {
-
             ext = false;
             build.push(c[ee]);
           }
@@ -1228,16 +1231,19 @@ prettify.lexers.script = function script (source: string) {
         }
 
         if (
-          (starting === '"' || starting === "'") &&
-          (ext === true || ee > start) && options.language !== 'json' &&
+          (is(starting, cc.DQO) || is(starting, cc.SQO)) &&
+          (ext === true || ee > start) &&
+          options.language !== 'json' &&
+          options.language !== 'javascript' &&
           c[ee - 1] !== '\\' &&
-          c[ee] !== '"' &&
-          c[ee] !== "'" &&
-          (c[ee] === '\n' || ee === b - 1)
+          not(c[ee], cc.DQO) &&
+          not(c[ee], cc.SQO) &&
+          (is(c[ee], cc.NWL) || (ee === b - 1) === true)
         ) {
 
           parse.error = 'Unterminated string in script on line number ' + parse.lineNumber;
           break;
+
         }
 
         if (c[ee] === ender[endlen - 1] && (c[ee - 1] !== '\\' || slashes(ee - 1) === false)) {
