@@ -1,6 +1,6 @@
+---
 Testing nested conditional Liquid expressions with infused `style=""` attribute that is using liquid output tokens
 as values.
-
 ---
 
 <div id={{ x }}>

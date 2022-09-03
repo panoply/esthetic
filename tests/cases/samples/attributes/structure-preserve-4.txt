@@ -1,6 +1,6 @@
+---
 Testing Liquid attribute structures wherein the chain contains output Liquid tokens as boolean type attributes.
 The output tokens are conditionally structured. All expression will remain intact.
-
 ---
 
 <div

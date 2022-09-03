@@ -1,3 +1,6 @@
+---
+Testing region ignores using JavaScript block comments
+---
 
 /* @prettify-ignore-start */
 

@@ -1,5 +1,5 @@
+---
 Testing wrap based attribute forcing with lead attributes of tags being output onto new lines. This rule behaves that same as `forceAttribute` but uses `wrap` limit as the trigger.
-
 ---
 
 <div id="{{ xxx | filter: 'xxx' }}" class="{{ foo.bar }}"

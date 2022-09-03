@@ -1,13 +1,20 @@
 import test from 'ava';
+import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
-import { samples } from '@liquify/test-utils';
 
-test('Develop', async t => {
+test('develop', async t => {
 
-  const source = await samples.dev();
-  const output = await prettify.format(source, {
-    language: 'liquid'
+  await util.dev(async (source, highlight) => {
+
+    const output = await prettify.format(source, {
+      language: 'liquid',
+      markup: {
+        attributeCasing: 'lowercase-value'
+      }
+    });
+
+    t.log(highlight(output));
+
   });
 
-  t.log(output);
 });

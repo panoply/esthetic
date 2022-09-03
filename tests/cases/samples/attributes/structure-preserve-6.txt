@@ -1,6 +1,6 @@
+---
 Testing various attribute structures both Liquid and HTML types. Double quoted, Single quoted and no quoted attribute
 expression. This is an extreme edge case.
-
 ---
 
 <div

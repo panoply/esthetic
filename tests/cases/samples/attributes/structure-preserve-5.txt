@@ -1,3 +1,4 @@
+---
 Testing conditional attribute structures with unquoted Liquid value and attribute containing liquid
 conditionals with both unquoted and quoted liquid values.
 ---

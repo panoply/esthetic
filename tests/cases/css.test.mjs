@@ -1,14 +1,14 @@
 import test from 'ava';
-import { samples } from '@liquify/test-utils';
+import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
 
 test('Code Corrections applied to CSS', async t => {
 
-  await samples.forTest('cases')(
+  await util.forSample('cases/css')(
     [
-      'css/correct-1'
+      'correct-1'
     ]
-    , async function (description, source) {
+    , async function (source, label) {
 
       const output = await prettify.format(source, {
         language: 'css',
@@ -16,7 +16,7 @@ test('Code Corrections applied to CSS', async t => {
 
       });
 
-      t.snapshot(output, description);
+      t.snapshot(output, label.description);
 
       // t.log(output);
 
@@ -27,19 +27,19 @@ test('Code Corrections applied to CSS', async t => {
 
 test('CSS variable expressions', async t => {
 
-  await samples.forTest('cases')(
+  await util.forSample('cases/css')(
     [
-      'css/css-vars-1',
-      'css/css-vars-2'
+      'css-vars-1',
+      'css-vars-2'
     ]
-    , async function (description, source) {
+    , async function (source, label) {
 
       const output = await prettify.format(source, {
         language: 'css',
         preserveLine: 2
       });
 
-      t.snapshot(output, description);
+      t.snapshot(output, label.description);
 
       // t.log(output);
 
@@ -50,11 +50,11 @@ test('CSS variable expressions', async t => {
 
 test('Sorting selector class names', async t => {
 
-  await samples.forTest('cases')(
+  await util.forSample('cases/css')(
     [
-      'css/sort-selectors'
+      'sort-selectors'
     ]
-    , async function (description, source) {
+    , async function (source, label) {
 
       const output = await prettify.format(source, {
         language: 'css',
@@ -64,7 +64,7 @@ test('Sorting selector class names', async t => {
         }
       });
 
-      t.snapshot(output, description);
+      t.snapshot(output, label.description);
 
       // t.log(output);
 
@@ -77,11 +77,11 @@ test('Sorting selector class names', async t => {
 
 test('Sorting selector properties', async t => {
 
-  await samples.forTest('cases')(
+  await util.forSample('cases/css')(
     [
-      'css/sort-properties'
+      'sort-properties'
     ]
-    , async function (description, source) {
+    , async function (source, label) {
 
       const output = await prettify.format(source, {
         language: 'css',
@@ -91,7 +91,7 @@ test('Sorting selector properties', async t => {
         }
       });
 
-      t.snapshot(output, description);
+      t.snapshot(output, label.description);
 
       // t.log(output);
 

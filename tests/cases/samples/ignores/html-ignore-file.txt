@@ -1,3 +1,7 @@
+---
+Testing file exclusion using HTML comment ignores. This entire file will be left intact and have no formatting applied.
+---
+
 <!-- @prettify-ignore -->
 
 <h1>Ignore formatting on this file</h1>

@@ -1,5 +1,5 @@
+---
 Testing Liquid token containing HTML tag delimiter characters `>` and `<` within attribute values
-
 ---
 
 <div

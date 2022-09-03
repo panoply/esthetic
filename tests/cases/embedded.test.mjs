@@ -1,50 +1,79 @@
 import test from 'ava';
-import { samples } from '@liquify/test-utils';
+import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
 
 test.serial.skip('HTML embedded script tag', async t => {
 
-  const source = await samples.cases('embedded/html-script');
+  await util.forRule('cases/embedded', {
+    'html-script-js-1': [
+      {
+        language: 'html'
+      },
+      {
+        language: 'html'
+      }
+    ],
+    'html-script-js-2': [
 
-  const input = await prettify.format(source, {
-    language: 'html'
+    ]
+  }
+  , async function (source, rule, label) {
+
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label.description);
+
+    // t.log(input);
+
   });
-
-  t.log(input);
-
-  t.pass();
 
 });
 
 test.serial.skip('HTML embedded application/json+ld script tag', async t => {
 
-  const source = await samples.cases('embedded/html-json-ld');
+  await util.forRule('cases/embedded', {
+    'html-script-json-1': [
+      {
+        language: 'html'
+      },
+      {
+        language: 'html'
+      }
+    ],
+    'html-script-json-2': [
 
-  const input = await prettify.format(source, {
-    language: 'html',
-    json: {
-      objectSort: true
-    }
+    ]
+  }
+  , async function (source, rule, label) {
+
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label.description);
+
+    // t.log(input);
+
   });
-
-  t.log(input);
-
-  t.pass();
 
 });
 
 test.serial.skip('Liquid embedded JavaScript tag', async t => {
 
-  const source = await samples.cases('liquid/javascript');
+  await util.forRule('cases/embedded', {
+    'liquid-javascript': [
+      {
+        language: 'html'
+      }
 
-  prettify.format(source, {
-    script: {
-      objectSort: true
-    }
+    ]
+  }
+  , async function (source, rule, label) {
+
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label.description);
+
+    // t.log(input);
+
   });
-
-  t.log();
-
-  t.pass();
 
 });

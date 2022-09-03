@@ -1,143 +1,206 @@
 import test from 'ava';
-import { samples } from '@liquify/test-utils';
+import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('Ignore file using Liquid comment', async t => {
+test('Ignore file using Liquid comment', async t => {
 
-  const source = await samples.cases('ignores/liquid-ignore-file');
+  await util.forRule('cases/ignores')({
+    'liquid-ignore-file': [
+      {
+        language: 'liquid'
+      },
+      {
+        language: 'html'
+      }
+    ]
+  }
+  , async function (source, rule, label) {
 
-  const output = await prettify.format(source, {
-    language: 'liquid',
-    markup: {
-      forceIndent: true
-    }
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label(rule));
+
   });
-
-  // t.log(output);
-
-  // t.log('{% comment %} @prettify-ignore {% endcomment %}');
-  t.snapshot(output, '{% comment %} @prettify-ignore {% endcomment %}');
 
 });
 
-test.serial('Ignore file using HTML comment', async t => {
+test('Ignore file using HTML comment', async t => {
 
-  const source = await samples.cases('ignores/html-ignore-file');
+  await util.forRule('cases/ignores')({
+    'html-ignore-file': [
+      {
+        language: 'liquid'
+      },
+      {
+        language: 'html'
+      }
+    ]
+  }
+  , async function (source, rule, label) {
 
-  const output = await prettify.format(source, {
-    language: 'liquid',
-    markup: {
-      forceIndent: true
-    }
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label(rule));
+
+    // t.log(input);
+
   });
-
-  // t.log(output);
-
-  t.snapshot(output, '<!-- @prettify-ignore -->');
 
 });
 
-test.serial('Ignore file using line comment', async t => {
+test('Ignore file using line comment', async t => {
 
-  const source = await samples.cases('ignores/javascript-ignore-file-2');
-  const output = await prettify.format(source, {
-    lexer: 'script',
-    language: 'javascript',
-    script: {
-      arrayFormat: 'inline'
-    }
+  await util.forRule('cases/ignores')({
+    'javascript-ignore-file-2': [
+      {
+        lexer: 'script',
+        language: 'javascript'
+      }
+    ]
+  }
+  , async function (source, rule, label) {
+
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label(rule));
+
+    // t.log(input);
+
   });
-
-  // t.log(output);
-
-  t.snapshot(output, '// @prettify-ignore');
 
 });
 
-test.serial('Ignore file using line block comment', async t => {
+test('Ignore file using line block comment', async t => {
 
-  const source = await samples.cases('ignores/javascript-ignore-file-1');
+  await util.forRule('cases/ignores')({
+    'javascript-ignore-file-1': [
+      {
+        lexer: 'script',
+        language: 'javascript'
+      },
+      {
+        lexer: 'script',
+        language: 'javascript',
+        script: {
+          arrayFormat: 'inline'
+        }
+      }
+    ]
+  }
+  , async function (source, rule, label) {
 
-  const output = await prettify.format(source, {
-    lexer: 'script',
-    language: 'javascript',
-    script: {
-      arrayFormat: 'inline'
-    }
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label(rule));
+
+    // t.log(input);
+
   });
-
-  // t.log(output);
-
-  t.snapshot(output, '/* @prettify-ignore */');
 
 });
 
-test.serial('Ignore code regions using Liquid comments ', async t => {
+test('Ignore code regions using Liquid comments ', async t => {
 
-  const source = await samples.cases('ignores/liquid-ignore-region');
+  await util.forRule('cases/ignores')({
+    'liquid-ignore-region': [
+      {
+        language: 'liquid',
+        markup: {
+          forceIndent: true
+        }
+      }
+    ]
+  }
+  , async function (source, rule, label) {
 
-  const output = await prettify.format(source, {
-    language: 'liquid',
-    markup: {
-      forceIndent: true
-    }
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label(rule));
+
+    // t.log(input);
+
   });
-
-  // t.log(output);
-
-  t.snapshot(output, '{% comment %} @prettify-ignore-* {% endcomment %}');
 
 });
 
-test.serial('Ignore code regions using HTML comments', async t => {
+test('Ignore code regions using HTML comments', async t => {
 
-  const source = await samples.cases('ignores/html-ignore-region');
+  await util.forRule('cases/ignores')({
+    'html-ignore-region': [
+      {
+        language: 'html',
+        markup: {
+          forceIndent: true
+        }
+      },
+      {
+        language: 'liquid',
+        markup: {
+          forceIndent: true
+        }
+      }
+    ]
+  }
+  , async function (source, rule, label) {
 
-  const output = await prettify.format(source, {
-    language: 'liquid',
-    markup: {
-      forceIndent: true
-    }
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label(rule));
+
+    // t.log(input);
+
   });
-
-  //  t.log(output);
-
-  t.snapshot(output, '<!-- @prettify-ignore-* -->');
 
 });
 
 test.todo('Ignores: Block and Line inline region ignores are not respected');
 
-test.serial.skip('Ignore code regions using JS/TS/CSS block comments', async t => {
+test.skip('Ignore code regions using JS/TS/CSS block comments', async t => {
 
-  const source = await samples.cases('ignores/javascript-ignore-region-1');
+  await util.forRule('cases/ignores')({
+    'javascript-ignore-region-1': [
+      {
+        language: 'javascript',
+        script: {
+          arrayFormat: 'inline'
+        }
+      }
 
-  const output = await prettify.format(source, {
-    language: 'javascript',
-    script: {
-      arrayFormat: 'inline'
-    }
+    ]
+  }
+  , async function (source, rule, label) {
+
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label(rule));
+
+    t.log(input);
+
   });
-
-  // t.log(output);
-
-  t.snapshot(output, '/* @prettify-ignore-* */');
 
 });
 
-test.serial.skip('Ignore code regions using JS/TS/SCSS line comments', async t => {
+test.skip('Ignore code regions using JS/TS/SCSS line comments', async t => {
 
-  const source = await samples.cases('ignores/javascript-ignore-region-2');
+  await util.forRule('cases/ignores')({
+    'javascript-ignore-region-2': [
+      {
+        language: 'javascript',
+        script: {
+          arrayFormat: 'inline'
+        }
+      }
 
-  const output = await prettify.format(source, {
-    language: 'javascript',
-    script: {
-      arrayFormat: 'inline'
-    }
+    ]
+  }
+  , async function (source, rule, label) {
+
+    const input = await prettify.format(source, rule);
+
+    t.snapshot(input, label(rule));
+
+    // t.log(input);
+
   });
-
-  // t.log(output);
-
-  t.snapshot(output, '// @prettify-ignore-start');
 
 });

@@ -1,3 +1,7 @@
+---
+Testing file ignores using CSS block comments. This entire code snippet with be left intact and exluded from formatting.
+---
+
 /* @prettify-ignore */
 
 

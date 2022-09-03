@@ -1,6 +1,8 @@
 
+---
 Test CSS selector sorting. Class selector sorting will be applied in alphabetical order. The first snapshot has sorting enabled, the second snapshot has it disabled.
 ---
+
 .v,
 .z,
 .y,

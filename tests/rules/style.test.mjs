@@ -1,9 +1,9 @@
 import test from 'ava';
-import { samples } from '@liquify/test-utils';
+import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
 
 /* -------------------------------------------- */
-/* STYL RULE TESTS                              */
+/* STYLE RULE TESTS                             */
 /* -------------------------------------------- */
 
 // ALL PRETTIFY OPTIONS MUST END WITH THE DEFAULTS
@@ -13,157 +13,136 @@ import prettify from '@liquify/prettify';
 /* TESTS                                        */
 /* -------------------------------------------- */
 
-test.serial('Class Padding', async t => {
+test.before('Setup Tests', () => {
 
   prettify.options({
-    language: 'css'
+    language: 'css',
+    lexer: 'style'
   });
 
-  await samples.getRule('style/class-padding')(
-    [
-      true,
-      false
-    ]
-    , async function (source, classPadding, label) {
+});
 
-      const output = await prettify.format(source, { style: { classPadding } });
+test.serial('Class Padding', async t => {
 
-      t.snapshot(output, label({ style: { classPadding } }));
+  await util.forRule('rules/style/class-padding')([
+    true,
+    false
+  ]
+  , async function (source, classPadding, label) {
 
-      // t.log(output);
-    }
-  );
+    const output = await prettify.format(source, { style: { classPadding } });
+
+    t.snapshot(output, label({ style: { classPadding } }));
+
+    // t.log(output);
+
+  });
 
 });
 
 test.serial('Correct', async t => {
 
-  prettify.options({ language: 'css' });
+  await util.forRule('rules/style/correct')([
+    true,
+    false
+  ]
+  , async function (source, correct, label) {
 
-  await samples.getRule('style/correct')(
-    [
-      true,
-      false
-    ]
-    , async function (source, correct, label) {
+    const output = await prettify.format(source, { style: { correct } });
 
-      const output = await prettify.format(source, { style: { correct } });
+    t.snapshot(output, label({ style: { correct } }));
 
-      t.snapshot(output, label({ style: { correct } }));
+    // t.log(output);
+  });
 
-      // t.log(output);
-    }
-  );
-
-  prettify.options({ language: 'css', style: { correct: false } });
 });
 
 test.serial('No Leading Zero', async t => {
 
-  prettify.options({ language: 'css' });
+  await util.forRule('rules/style/no-lead-zero')([
+    true,
+    false
+  ]
+  , async function (source, noLeadZero, label) {
 
-  await samples.getRule('style/no-lead-zero')(
-    [
-      true,
-      false
-    ]
-    , async function (source, noLeadZero, label) {
+    const output = await prettify.format(source, { style: { noLeadZero } });
 
-      const output = await prettify.format(source, { style: { noLeadZero } });
+    t.snapshot(output, label({ style: { noLeadZero } }));
 
-      t.snapshot(output, label({ style: { noLeadZero } }));
+    // t.log(output);
 
-      // t.log(output);
-    }
-  );
+  });
 
-  prettify.options({ language: 'css', style: { noLeadZero: false } });
 });
 
 test.serial('Quotation Conversion', async t => {
 
-  prettify.options({ language: 'css' });
+  await util.forRule('rules/style/quote-convert')([
+    'single',
+    'double',
+    'none'
+  ]
+  , async function (source, quoteConvert, label) {
 
-  await samples.getRule('style/quote-convert')(
-    [
-      'single',
-      'double',
-      'none'
-    ]
-    , async function (source, quoteConvert, label) {
+    const output = await prettify.format(source, { style: { quoteConvert } });
 
-      const output = await prettify.format(source, { style: { quoteConvert } });
+    t.snapshot(output, label({ style: { quoteConvert } }));
 
-      t.snapshot(output, label({ style: { quoteConvert } }));
-
-      // t.log(output);
-    }
-  );
+    // t.log(output);
+  });
 
   prettify.options({ language: 'css', style: { correct: false } });
 });
 
 test.serial('Sort Selectors (Alphabetical)', async t => {
 
-  prettify.options({ language: 'css' });
+  await util.forRule('rules/style/sort-selectors')([
+    true,
+    false
+  ]
+  , async function (source, sortSelectors, label) {
 
-  await samples.getRule('style/sort-selectors')(
-    [
-      true,
-      false
-    ]
-    , async function (source, sortSelectors, label) {
+    const output = await prettify.format(source, { style: { sortSelectors } });
 
-      const output = await prettify.format(source, { style: { sortSelectors } });
+    t.snapshot(output, label({ style: { sortSelectors } }));
 
-      t.snapshot(output, label({ style: { sortSelectors } }));
+    // t.log(output);
 
-      // t.log(output);
-    }
-  );
+  });
 
-  prettify.options({ language: 'css', style: { sortProperties: false, sortSelectors: false } });
 });
 
 test.serial('Sort Properties (Alphabetical)', async t => {
 
-  prettify.options({ language: 'css' });
+  await util.forRule('rules/style/sort-properties')([
+    true,
+    false
+  ]
+  , async function (source, sortProperties, label) {
 
-  await samples.getRule('style/sort-properties')(
-    [
-      true,
-      false
-    ]
-    , async function (source, sortProperties, label) {
+    const output = await prettify.format(source, { style: { sortProperties } });
 
-      const output = await prettify.format(source, { style: { sortProperties } });
+    t.snapshot(output, label({ style: { sortProperties } }));
 
-      t.snapshot(output, label({ style: { sortProperties } }));
+    // t.log(output);
+  });
 
-      // t.log(output);
-    }
-  );
-
-  prettify.options({ language: 'css', style: { sortProperties: false } });
 });
 
 test.serial('Compress CSS', async t => {
 
-  prettify.options({ language: 'css' });
+  await util.forRule('rules/style/compress-css')([
+    true,
+    false
+  ]
+  , async function (source, compressCSS, label) {
 
-  await samples.getRule('style/compress-css')(
-    [
-      true,
-      false
-    ]
-    , async function (source, compressCSS, label) {
+    const output = await prettify.format(source, { style: { compressCSS } });
 
-      const output = await prettify.format(source, { style: { compressCSS } });
+    t.snapshot(output, label({ style: { compressCSS } }));
 
-      t.snapshot(output, label({ style: { compressCSS } }));
+    // t.log(output);
 
-      // t.log(output);
-    }
-  );
+  });
 
 });

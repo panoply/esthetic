@@ -1,5 +1,5 @@
+---
 Testing single chained structure which will result in either a boolean attribute type or attribute value.
-
 ---
 
 <div

@@ -1,5 +1,5 @@
+---
 Testing forced attribute indentation. We have provided a complex series of attributes. The **cases/attributes** tests deal with a lot of this logic.
-
 ---
 
 <div id="{{ xxx | filter: 'xxx' }}" class="{{ foo.bar }}"

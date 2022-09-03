@@ -1,3 +1,6 @@
+---
+Testing region ignores using CSS block comments. This case excludes certain fragments or blocks from beautification.
+---
 .will-format  {
 
   color:      white;

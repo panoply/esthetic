@@ -1,3 +1,4 @@
+---
 Testing wrap based attribute forcing. When word wrap limit is exceeded then attributes will be forced. This beautification rule requires `forceAttribute` to be `false` and `wrap` to be higher than `0`
 ---
 

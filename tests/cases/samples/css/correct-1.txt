@@ -1,5 +1,5 @@
+---
 Tests whether the last property of selector is missing a semicolon. When no semicolon is detected it will be applied.
-
 ---
 
 /* Adds a semicolon to the last property (display: flex) */

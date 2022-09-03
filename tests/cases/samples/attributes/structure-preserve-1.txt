@@ -1,5 +1,5 @@
+---
 Testing Liquid attribute structures. The `id="foo"` attribute will be moved inline. The Liquid statement will be preserved and left intact as no space separators are passed.
-
 ---
 
 <div

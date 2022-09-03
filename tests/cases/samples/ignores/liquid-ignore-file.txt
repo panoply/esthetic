@@ -1,3 +1,6 @@
+---
+Testing file exclusion using Liquid comment ignores. This entire file will be left intact and have no formatting applied.
+---
 {% comment %} @prettify-ignore {% endcomment %}
 
 <h1>Ignore formatting on this file</h1>

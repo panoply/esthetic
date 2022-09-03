@@ -1,3 +1,6 @@
+---
+Tests `object` sorting or property keys. Sorting will apply alphabetical ordering. This case also tests against non-english letters.
+---
 
 const A_Z = {
 v: 1,

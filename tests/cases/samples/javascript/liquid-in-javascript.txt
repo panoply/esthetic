@@ -1,3 +1,7 @@
+---
+Test Liquid infused JavaScript.
+---
+
 {% if exists %}
 (function($) {
 'use strict';

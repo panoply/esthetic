@@ -1,16 +1,45 @@
 import test from 'ava';
-import { samples } from '@liquify/test-utils';
+import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
 
-test('Delimiter handling', async t => {
+test.serial('Attribute Casing Preserved', async t => {
 
-  await samples.forTest('cases')(
-    [
-      'attributes/delimiter-handling-1',
-      'attributes/delimiter-handling-2',
-      'attributes/delimiter-handling-3'
+  await util.forRule('cases/attributes', { lexer: 'markup' })({
+    'casing-1': [
+      { attributeCasing: 'preserve' },
+      { attributeCasing: 'lowercase' },
+      { attributeCasing: 'lowercase-name' },
+      { attributeCasing: 'lowercase-value' }
+    ],
+    'casing-2': [
+      { attributeCasing: 'preserve' },
+      { attributeCasing: 'lowercase' },
+      { attributeCasing: 'lowercase-name' },
+      { attributeCasing: 'lowercase-value' }
     ]
-    , async function (description, source) {
+  }
+  , async function (source, rule, label) {
+
+    const output = await prettify.format(source, rule);
+
+    t.snapshot(output, label(rule));
+
+    // t.log(output);
+
+  });
+
+  prettify.options({ markup: { attributeCasing: 'preserve' } });
+
+});
+
+test.serial('Quote handling', async t => {
+
+  await util.forSample('cases/attributes')(
+    [
+      'quote-handling-1',
+      'quote-handling-2'
+    ]
+    , async function (source, label) {
 
       const output = await prettify.format(source, {
         language: 'liquid',
@@ -23,7 +52,7 @@ test('Delimiter handling', async t => {
         }
       });
 
-      t.snapshot(output, description);
+      t.snapshot(output, label.description);
 
       // t.log(output);
 
@@ -32,14 +61,19 @@ test('Delimiter handling', async t => {
 
 });
 
-test('Quote handling', async t => {
+test.serial('Preserve attribute structures', async t => {
 
-  await samples.forTest('cases')(
+  await util.forSample('cases/attributes')(
     [
-      'attributes/quote-handling-1',
-      'attributes/quote-handling-2'
+      'structure-preserve-1',
+      'structure-preserve-2',
+      'structure-preserve-3',
+      'structure-preserve-4',
+      'structure-preserve-5',
+      'structure-preserve-6',
+      'structure-preserve-7'
     ]
-    , async function (description, source) {
+    , async function (source, label) {
 
       const output = await prettify.format(source, {
         language: 'liquid',
@@ -52,7 +86,7 @@ test('Quote handling', async t => {
         }
       });
 
-      t.snapshot(output, description);
+      t.snapshot(output, label.description);
 
       // t.log(output);
 
@@ -61,19 +95,17 @@ test('Quote handling', async t => {
 
 });
 
-test('Preserve attribute structures', async t => {
+test.serial('Force attributes', async t => {
 
-  await samples.forTest('cases')(
+  await util.forSample('cases/attributes')(
     [
-      'attributes/structure-preserve-1',
-      'attributes/structure-preserve-2',
-      'attributes/structure-preserve-3',
-      'attributes/structure-preserve-4',
-      'attributes/structure-preserve-5',
-      'attributes/structure-preserve-6',
-      'attributes/structure-preserve-7'
+      'force-attributes-1',
+      'force-attributes-2',
+      'force-attributes-3',
+      'force-attributes-4',
+      'force-attributes-5'
     ]
-    , async function (description, source) {
+    , async function (source, label) {
 
       const output = await prettify.format(source, {
         language: 'liquid',
@@ -86,39 +118,7 @@ test('Preserve attribute structures', async t => {
         }
       });
 
-      t.snapshot(output, description);
-
-      // t.log(output);
-
-    }
-  );
-
-});
-
-test('Force attributes', async t => {
-
-  await samples.forTest('cases')(
-    [
-      'attributes/force-attributes-1',
-      'attributes/force-attributes-2',
-      'attributes/force-attributes-3',
-      'attributes/force-attributes-4',
-      'attributes/force-attributes-5'
-    ]
-    , async function (description, source) {
-
-      const output = await prettify.format(source, {
-        language: 'liquid',
-        preserveLine: 2,
-        wrap: 0,
-        markup: {
-          forceLeadAttribute: false,
-          forceAttribute: true,
-          preserveText: true
-        }
-      });
-
-      t.snapshot(output, description);
+      t.snapshot(output, label.description);
 
       // t.log(output);
 

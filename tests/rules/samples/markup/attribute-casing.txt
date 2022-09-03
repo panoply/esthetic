@@ -1,9 +1,6 @@
-<div class="HelloWorld" data-VaLuE="eXampLE">
-
-  <div CLASS="UPPERCASE" data-VaLuE="UPPERCASE">
-    <div DATA-{{ SOME_TAG }}-{% if x %}BaR{% else %}bAZ{% endif%}="XxXxX"></div>
-  </div>
-</div>
+---
+Testing HTML (markup) `attributeCasing` rule.
+---
 
 <div
 

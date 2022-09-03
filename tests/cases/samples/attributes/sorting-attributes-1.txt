@@ -1,3 +1,7 @@
+---
+Testing attribute sorting. All Attributes will sorted in alphabetical order.
+---
+
 <h1>Attribute Sorting Sample</h1>
 
 <p>

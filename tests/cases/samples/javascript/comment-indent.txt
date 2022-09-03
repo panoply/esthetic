@@ -1,7 +1,11 @@
+---
+Tests block comment indentations. All block comments should indent and align with the tokens the exist above of.
+---
+
 const object = {
-  /**
-  * Some comment
-  */
+/**
+* Some comment
+*/
   foo: 'bar',
 
   /** nested comment */

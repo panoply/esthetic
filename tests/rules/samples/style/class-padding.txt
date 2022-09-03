@@ -1,3 +1,4 @@
+---
 Testing class padding beautification option. The option will place newlines between selectors
 ---
 

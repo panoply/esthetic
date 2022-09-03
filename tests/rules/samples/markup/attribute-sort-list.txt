@@ -1,5 +1,7 @@
+---
 Testing attribute sorting list accordance. Attributes will sorted according to the names provided to `attributeSortList[]` and alphanumerically thereafter. This rule requires `attributeSort` to be `true`
 ---
+
 <div
 
 data-c="3"

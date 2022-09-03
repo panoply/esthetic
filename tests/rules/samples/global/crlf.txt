@@ -1,5 +1,5 @@
+---
 Testing CRLF line termination. Unix (LF) format is the default.
-
 ---
 
 <h1>Testing CRLF</h1>

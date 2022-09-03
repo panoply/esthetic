@@ -1,3 +1,4 @@
+---
 Testing Liquid infused CSS variables passed in via the `:root{}` selector.
 ---
 

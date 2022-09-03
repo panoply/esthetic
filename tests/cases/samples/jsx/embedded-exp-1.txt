@@ -1,3 +1,4 @@
+---
 Testing JSX embedded expression beautification
 ---
 function HelloWorld() {

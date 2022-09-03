@@ -1,3 +1,4 @@
+---
 Testing delimiter spacing. This is a Liquid specific beautification option.
 ---
 

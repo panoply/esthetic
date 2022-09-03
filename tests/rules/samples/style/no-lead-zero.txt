@@ -1,3 +1,4 @@
+---
 Testing unit based beautification rule which will remove leading zeros `0` from number values. The option will preserve some units (like `%`)
 ---
 

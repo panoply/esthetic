@@ -1,3 +1,4 @@
+---
 Testing selector sorting. This beautification option will alphabetically sort selectors.
 ---
 

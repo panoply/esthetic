@@ -1,6 +1,7 @@
-Testing attribute sorting. This rule sorts markup attributes alphanumerically.
-
 ---
+Testing attribute sorting. This rule sorts markup attributes alphanumerically.
+---
+
 <div
 
 data-c="3"

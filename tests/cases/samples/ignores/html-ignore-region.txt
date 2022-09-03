@@ -1,3 +1,6 @@
+---
+Testing region ignores using HTML comments. This case excludes certain fragments or blocks from beautification.
+---
 <ul>
 <li>
 

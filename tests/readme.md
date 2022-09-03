@@ -20,9 +20,9 @@ A little utility module is included to help normalize a couple of operations in 
 You can pass in snapshot assertion descriptions at the top of code sample files. Append a triple tilde `~~~` to inform where the snapshot code sample begins and the description ends.
 
 ```txt
+---
 Test description which will be passed in as the snapshot label
-
-~~~
+---
 
 // code sample goes here
 

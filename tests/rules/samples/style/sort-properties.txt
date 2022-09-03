@@ -1,5 +1,7 @@
+---
 Test CSS selector property sorting. Property sorting will be applied in alphabetical order. The first snapshot has sorting enabled, the second snapshot has it disabled.
 ---
+
 img {
 padding-top: 40px;
 padding-right: 25px;

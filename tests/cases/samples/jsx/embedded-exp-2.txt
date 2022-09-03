@@ -1,3 +1,4 @@
+---
 Testing a JSX sample that applies the markdown rule `forceAttribute` and generally just little more complex structure
 ---
 export function ProductCard({product, label, className, loading, onClick}) {

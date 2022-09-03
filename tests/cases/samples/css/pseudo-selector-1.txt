@@ -1,3 +1,6 @@
+---
+Pseudo selectors which tend to use different characters and formations
+---
 
 /* Selects a shadow root host, only if it is a descendant of the selector argument given */
 

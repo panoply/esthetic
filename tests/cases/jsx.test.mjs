@@ -1,16 +1,16 @@
 import test from 'ava';
-import { samples } from '@liquify/test-utils';
+import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
 
 test('Embedded Template string expression', async t => {
 
-  await samples.forTest('cases')(
+  await util.forSample('cases/jsx')(
     [
-      'jsx/template-literal-1'
+      'template-literal-1'
     ]
-    , async function (description, source) {
+    , async function (source) {
 
-      const output = await prettify.format(source, {
+      await prettify.format(source, {
         language: 'jsx',
         markup: {
           forceAttribute: false,

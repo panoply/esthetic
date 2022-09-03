@@ -1,6 +1,6 @@
+---
 Testing nested attribute forcing. This case is rather common and intends to affirm the correct output structures
 typical in most projects but also an exteme edge case scenario.
-
 ---
 
 <div id="foo" data-bar class="xxxxx" {{ output.attr | filter: '' }}>
