@@ -4,13 +4,16 @@ import prettify from '@liquify/prettify';
 
 test('develop', async t => {
 
-  await util.dev(async (source, highlight) => {
+  await util.dev(t)(async (source, highlight) => {
 
     const output = await prettify.format(source, {
       language: 'liquid',
       markup: {
-        attributeCasing: 'lowercase-value'
+        correct: true,
+        attributeCasing: 'lowercase',
+        forceAttribute: true
       }
+
     });
 
     t.log(highlight(output));

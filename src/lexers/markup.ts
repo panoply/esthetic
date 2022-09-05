@@ -15,6 +15,7 @@ import {
   getLiquidTagName,
   object
 } from '@utils/helpers';
+
 /* -------------------------------------------- */
 /* LEXER                                        */
 /* -------------------------------------------- */
@@ -865,6 +866,9 @@ prettify.lexers.markup = function markup (source: string) {
                 record.token = attrstore[idx][0];
               } else {
 
+                record.types = 'template_attribute';
+                record.token = attrstore[idx][0];
+
                 // HOT PATCH
                 //
                 // Fixes situations where the next Liquid attribute token starts with dash -
@@ -875,19 +879,18 @@ prettify.lexers.markup = function markup (source: string) {
                 // Where the "-" following `{{ current_attr }}` would be contained in attrstore
                 // as a separate token. We will look ahead here and instead connect it.
                 //
-                if ((len > idx + 1) && is(attrstore[idx + 1][0][0], cc.DSH)) {
+                /* if ((len > idx + 1) && is(attrstore[idx + 1][0][0], cc.DSH)) {
                   record.token = attrstore[idx][0] + attrstore[idx + 1][0][0];
                   record.types = grammar.liquid.tags.has(getLiquidTagName(attrstore[idx + 1][0]))
                     ? 'template_attribute_start'
                     : 'template_attribute';
 
-                  convertq();
-                  idx = idx + 2;
-                  continue;
+                  record.token = attrstore[idx][0];
+
                 } else {
                   record.types = 'template_attribute';
                   record.token = attrstore[idx][0];
-                }
+                } */
               }
             }
 
@@ -1020,15 +1023,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                 } else {
 
-                  if (rules.attributeCasing === 'preserve') {
-                    record.token = attrstore[idx][0];
-                  } else if (rules.attributeCasing === 'lowercase') {
-                    record.token = attrstore[idx][0].toLowerCase();
-                  } else if (rules.attributeCasing === 'lowercase-name') {
-                    record.token = name.toLowerCase() + '=' + value;
-                  } else if (rules.attributeCasing === 'lowercase-value') {
-                    record.token = name + '=' + value.toLowerCase();
-                  }
+                  record.token = attrstore[idx][0];
                 }
               }
 

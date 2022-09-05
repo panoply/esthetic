@@ -1,20 +1,11 @@
-<div class="HelloWorld" data-VaLuE="eXampLE">
+<div {{ xx }}-ID="FOO" class="HelloWorld" data-VaLuE="eXampLE" DATA-BOOLEAN>
 
   <div CLASS="UPPERCASE" data-VaLuE="UPPERCASE">
-    <div DATA-{{ SOME_TAG }}-{% if x %}BaR{% else %}bAZ{% endif%}="XxXxX"></div>
+
+     <div DATA-{{ some_tag }}-{% if x %}BAR{% else %}BAZ{% endif%}="XXXXX">
+
+     </div>
+
   </div>
-</div>
-
-<div
-
-ID="FOO"
-class="HelloWorld"
-data-VaLuE="eXampLE"
-DATA-BOOLEAN>
-
-<div CLASS="UPPERCASE" data-VaLuE="UPPERCASE">
-  <div DATA-{{ SOME_TAG }}-{% if x %}baR{% else %}baz{% endif%}="XxXxX"></div>
-</div>
-
 </div>
 

@@ -1,6 +1,18 @@
-# Wiki
+# Prettify 💅
 
-Prettify is built atop of the Sparser lexing algorithm and PrettyDiff parser. The original algorithm written by the talented Austin Cheney has been refactored in order to provide a more refined data structure wheres the the parser (PrettyDiff) and be overhauled and improved upon for usage within Prettify. Prettify focuses largely on supporting the Liquid template language and as such the data types and various processes handled by the lexers produce different output from that users may be accustomed to they've used the original version of these tools. In addition to the various bug fixes, improvements and new features the tools are no longer language aware and only support the following languages:
+The new generation code beautification tool for formatting HTML, Liquid, JavaScript, TypeScript, CSS/SCSS and more! Prettify is built atop of the Sparser lexing algorithms and its parse approach was adapted from the distributed source code of the late and powerful PrettyDiff originally written by the talented [Austin Cheney](#).
+
+### History and Backstory
+
+A few years ago I was tasked with developing a Shopify theme and I quickly discovered that there was very little infrastructure and editor tooling available for building out projects leveraging the Liquid Template Language. I was rather baffled given that it was the backbone of a multi-billion dollar e-commerce SaaS and yet despite this very little effort had been made by the Shopify team or anyone else to facilitate the modern expectations of developers. The main issue I wanted to solve was formatting and beautification for Liquid and this is when I discovered Sparser and PrettyDiff.
+
+These 2 brilliant tools had seemingly gone widely unnoticed but were being used by millions of developers everyday and are still used in the core of projects like [Atom Beautify](https://github.com/Glavin001/atom-beautify) and [UniBeautify](https://unibeautify.com/). Both Sparser and PrettyDiff supported something that Prettier, JSBeautify and others did not, Liquid and HTML formatting.
+
+In 2019 the projects were abandoned but I was already using them in another project and ongoing support would require maintenance. I began studying the code bases of Sparser/PrettyDiff and slowly was able to understand the techniques that had been employed in order to achieve language aware parsing but in order to continue leveraging the tools I needed to apply some major refactors and refine the existing logic and thus Prettify was born.
+
+# Differences
+
+Prettify provides more refined data structures in its Sparser adaptation, whereas the the parser (PrettyDiff) was largely overhauled and improved upon for usage within Prettify. Prettify focuses largely on supporting the Liquid template language and as such the data types and various processes handled by the lexers produce different output than that of the original version of these tools. In addition to the various bug fixes, improvements and new features the tools are no longer language aware and only support the following languages:
 
 - Liquid + HTML
 - Liquid + CSS/SCSS/LESS
