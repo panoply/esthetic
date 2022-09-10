@@ -224,6 +224,11 @@ export enum ScriptTypes {
 export enum MarkupTypes {
   /**
    * The doctype tag
+   *
+   * ---
+   * @example
+   *
+   * <!doctype>
    */
   doctype = 'doctype',
   /**
@@ -262,7 +267,26 @@ export enum MarkupTypes {
    */
   content_preserve = 'content_preserve',
   /**
+   * A start tag of a tag pair.
+   * ---
+   * @example
+   *
+   * <main>
+   * <div>
+   * <style>
+   * <script>
+   */
+  start = 'start',
+  /**
    * An end tag of a tag pair.
+   *
+   * ---
+   * @example
+   *
+   * </main>
+   * </div>
+   * </style>
+   * </script>
    */
   end = 'end',
   /**
@@ -271,31 +295,61 @@ export enum MarkupTypes {
    */
   ignore = 'ignore',
   /**
-   * The end of an curly brace delimited escape, stated as a tag attribute, that
-   * allows JavaScript inside the markup tag of a JSX markup element.
-   */
-  jsx_attribute_end = 'jsx_attribute_end',
-  /**
    * The start of an curly brace delimited escape, stated as a tag attribute, that
    * allows JavaScript inside the markup tag of a JSX markup element.
+   *
+   *
+   * ---
+   * @example
+   *
+   * <img id={}>  // Before { character
    */
   jsx_attribute_start = 'jsx_attribute_start',
   /**
-   * A curly brace indicating the contents that need to be passed to the script lexer for
-   * JSX language.
+   * The end of an curly brace delimited escape, stated as a tag attribute, that
+   * allows JavaScript inside the markup tag of a JSX markup element.
+   *
+   * ---
+   * @example
+   *
+   * <img id={}>  // After } character
+   */
+  jsx_attribute_end = 'jsx_attribute_end',
+  /**
+   * A curly brace indicating the contents that need to be passed to the script
+   * lexer for JSX language.
+   *
+   * ---
+   * @example
+   *
+   * <img id={}>  // After { character
    */
   script_start = 'script_start',
   /**
-   * A curly brace indicating a script string has concluded.
+   * A curly brace indicating a script string has concluded for JSX Language
+   *
+   * ---
+   * @example
+   *
+   * <img id={}> // Before } character
    */
   script_end = 'script_end',
   /**
-   * A curly brace indicating the contents that need to be passed to the script lexer for
-   * JSX language.
+   * Starting embedded Liquid tag containing JSON for Liquid Language
+   *
+   * ---
+   * @example
+   *
+   * {% schema %}
    */
   schema_start = 'schema_start',
   /**
-   * A curly brace indicating a schema string has concluded.
+   * Ending embedded Liquid tag containing JSON for Liquid Language
+   *
+   * ---
+   * @example
+   *
+   * {% endschema %}
    */
   schema_end = 'schema_end',
   /**
@@ -307,32 +361,28 @@ export enum MarkupTypes {
   sgml = 'sgml',
   /**
    * A self-closing tag.
+   *
+   * ---
+   * @example
+   *
+   * <br>
+   * <input>
+   * <hr>
    */
   singleton = 'singleton',
-  /**
-   * A start tag of a tag pair.
-   */
-  start = 'start',
   /**
    * A tag indicating it may contain contents that need to be passed to the style lexer.
    */
   style = 'style',
   /**
    * A tag attribute from a regular start or singular tag type.
-   */
-  attribute = 'attribute',
-  /**
-   * A tag delimited by a known convention of an external template language.
-   * This is typically going to represent singleton Liquid tags or Liquid objects,
-   * but could also represent unknown Liquid tags.
-   *
    * ---
    * @example
    *
-   * {{ object }}
-   * {% tag %} // singleton
+   * <div id="foo-bar"> // id="foo-bar"
+   * <div data-id="xx"> // data-id="xx"
    */
-  template = 'template',
+  attribute = 'attribute',
   /**
    * A start template tag being used within an attribute
    *
@@ -374,33 +424,53 @@ export enum MarkupTypes {
    */
   template_attribute = 'template_attribute',
   /**
-   * A template tag acting as the else block of a condition.
+   * A tag delimited by a known convention of an external template language.
+   * This is typically going to represent singleton Liquid tags or Liquid objects,
+   * but could also represent unknown Liquid tags.
    *
    * ---
-   * @prettify
+   * @example
    *
-   * This is representative of Liquid tags like `{% else %}` or `{% when %}` etc
+   * {{ object }}
+   * {% tag %} // singleton
+   */
+  template = 'template',
+  /**
+   * A template tag that contains content or other tags not associated with
+   * the template language and expects a closing tag. This is representative of
+   * Liquid tags.
+   *
+   * ---
+   * @example
+   *
+   * {% for %}
+   * {% unless %}
+   * {% if %}
+   */
+  template_start = 'template_start',
+  /**
+   * A template tag acting as the else block of a condition. This is representative of
+   * Liquid tags.
+   *
+   * ---
+   * @example
+   *
+   * {% else %}
+   * {% elsif %}
+   * {% when %}
    */
   template_else = 'template_else',
   /**
    * A closing template tag associated with a prior template_start tag type.
    *
    * ---
-   * @prettify
+   * @example
    *
-   * This is representative of Liquid tags like `{% endif %}` or `{% endfor %}` etc
+   * {% endfor %}
+   * {% endunless %}
+   * {% endif %}
    */
   template_end = 'template_end',
-  /**
-   * A template tag that contains content or other tags not associated with
-   * the template language and expects a closing tag.
-   *
-   * ---
-   * @prettify
-   *
-   * This is representative of Liquid tags like `{% if %}` or `{% for %}` etc
-   */
-  template_start = 'template_start',
   /**
    *  XML pragmas. Typically used to declare the document for an XML interpreter,
    * but otherwise not widely used.
