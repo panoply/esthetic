@@ -1,9 +1,4 @@
 /**
- * Empty String
- */
-export const nil = '';
-
-/**
  * Native object assign
  */
 export const assign = Object.assign;
