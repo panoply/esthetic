@@ -1,9 +1,10 @@
 /* eslint no-unmodified-loop-condition: "off" */
 import type { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { isArray, nil } from '@utils/native';
-import { cc } from '@utils/enums';
+import { isArray } from '@utils/native';
+import { cc, NIL, NWL, WSP } from '@utils/chars';
 import { is, safeSortAscend, safeSortDescend, safeSortNormal, sanitizeComment, ws } from '@utils/helpers';
+import { StripEnd, StripLead } from '@utils/regex';
 
 export const parse = new class Parse implements IParse {
 
@@ -37,7 +38,7 @@ export const parse = new class Parse implements IParse {
   public count = -1;
   public lineNumber = 1;
   public linesSpace = 0;
-  public error = '';
+  public error = NIL;
 
   /**
    * Returns the last known record within `data` set.
@@ -70,7 +71,7 @@ export const parse = new class Parse implements IParse {
 
   init () {
 
-    this.error = '';
+    this.error = NIL;
     this.count = -1;
     this.linesSpace = 0;
     this.lineNumber = 1;
@@ -446,7 +447,7 @@ export const parse = new class Parse implements IParse {
 
   }
 
-  push (data: Data, record: Record, structure: string = '') {
+  push (data: Data, record: Record, structure: string = NIL) {
 
     const ender = () => {
 
@@ -508,7 +509,7 @@ export const parse = new class Parse implements IParse {
       this.linesSpace = 0;
 
       if (record.lexer !== 'style') {
-        if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, '') === '') {
+        if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, NIL) === NIL) {
           // console.log(structure);
           structure = record.types === 'else' ? 'else' : structure = record.token;
           // console.log(structure);
@@ -557,7 +558,7 @@ export const parse = new class Parse implements IParse {
 
       } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
 
-        if (structure === '') structure = 'else';
+        if (structure === NIL) structure = 'else';
         if (
           this.count > 0 && (
             data.types[this.count - 1] === 'start' ||
@@ -571,7 +572,7 @@ export const parse = new class Parse implements IParse {
 
           ender();
 
-          if (structure === '') {
+          if (structure === NIL) {
             this.structure[this.structure.length - 1] = [ 'else', this.count ];
           } else {
             this.structure[this.structure.length - 1] = [ structure, this.count ];
@@ -683,7 +684,7 @@ export const parse = new class Parse implements IParse {
 
     do {
 
-      if (args.array[args.index] === '\n') {
+      if (args.array[args.index] === NWL) {
         this.linesSpace = this.linesSpace + 1;
         this.lineNumber = this.lineNumber + 1;
       }
@@ -706,7 +707,7 @@ export const parse = new class Parse implements IParse {
     // * howmany - How many indexes to remove
     // * index   - The index where to start
     // * record  - A new record to insert
-    if (splice.record !== undefined && splice.record.token !== '') {
+    if (splice.record !== undefined && splice.record.token !== NIL) {
 
       // parse_splice_datanames
       for (const value of this.datanames) {
@@ -741,7 +742,7 @@ export const parse = new class Parse implements IParse {
     const { wrap, crlf, preserveComment } = prettify.options;
     const build = [];
     const second = [];
-    const lf = (crlf === true) ? '\r\n' : '\n';
+    const lf = (crlf === true) ? '\r\n' : NWL;
     const regEsc = (/(\/|\\|\||\*|\[|\]|\{|\})/g);
     const regEndEsc = (/{%-?\s*|\s*-?%}/g);
 
@@ -755,13 +756,13 @@ export const parse = new class Parse implements IParse {
     let d = 0;
     let len = 0;
     let lines = [];
-    let space = '';
-    let bline = '';
+    let space = NIL;
+    let bline = NIL;
     let emptyLine = false;
     let bulletLine = false;
     let numberLine = false;
     let bigLine = false;
-    let output = '';
+    let output = NIL;
     let terml = config.terminator.length - 1;
     let term = config.terminator.charAt(terml);
     let twrap = 0;
@@ -783,16 +784,16 @@ export const parse = new class Parse implements IParse {
 
     const emptylines = () => {
 
-      if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === '') {
+      if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL) {
         do {
           b = b + 1;
         } while (b < len && (
           /^\s+$/.test(lines[b + 1]) ||
-          lines[b + 1] === ''
+          lines[b + 1] === NIL
         ));
       }
 
-      if (b < len - 1) second.push('');
+      if (b < len - 1) second.push(NIL);
 
     };
 
@@ -800,8 +801,8 @@ export const parse = new class Parse implements IParse {
 
       build.push(config.chars[a]);
 
-      if (config.chars[a] === '\n') this.lineNumber = this.lineNumber + 1;
-      if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join('') === config.terminator) break;
+      if (config.chars[a] === NWL) this.lineNumber = this.lineNumber + 1;
+      if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === config.terminator) break;
       /* console.log(JSON.stringify([
         config.chars[config.start - 3]
         , config.chars[config.start - 2]
@@ -824,11 +825,11 @@ export const parse = new class Parse implements IParse {
 
     } while (a < config.end);
 
-    output = build.join('');
+    output = build.join(NIL);
 
     if (regIgnore.test(output) === true) {
 
-      let termination = '\n';
+      let termination = NWL;
 
       a = a + 1;
 
@@ -841,12 +842,12 @@ export const parse = new class Parse implements IParse {
         // tags. We don't have any knowledge of the comment formation
         // upon parse, this will re-assign the terminator
         //
-        if (build.slice(build.length - 20).join('') === '@prettify-ignore-end') {
+        if (build.slice(build.length - 20).join(NIL) === '@prettify-ignore-end') {
 
           if (isLiquid) {
             const d = config.chars.indexOf('{', a);
             if (is(config.chars[d + 1], cc.PER)) {
-              const ender = config.chars.slice(d, config.chars.indexOf('}', d + 1) + 1).join('');
+              const ender = config.chars.slice(d, config.chars.indexOf('}', d + 1) + 1).join(NIL);
               if (regEnd.test(ender)) config.terminator = ender;
             }
           }
@@ -875,7 +876,7 @@ export const parse = new class Parse implements IParse {
         if (
           config.opening !== '/*' &&
           config.chars[b] === term &&
-          config.chars.slice(b - terml, b + 1).join('') === config.opening) break; // for markup
+          config.chars.slice(b - terml, b + 1).join(NIL) === config.opening) break; // for markup
 
         b = b - 1;
 
@@ -890,17 +891,17 @@ export const parse = new class Parse implements IParse {
       terml = termination.length - 1;
       term = termination.charAt(terml);
 
-      if (termination !== '\n' || config.chars[a] !== '\n') {
+      if (termination !== NWL || config.chars[a] !== NWL) {
 
         do {
 
           build.push(config.chars[a]);
 
-          if (termination === '\n' && config.chars[a + 1] === '\n') break;
+          if (termination === NWL && config.chars[a + 1] === NWL) break;
 
           if (
             config.chars[a] === term &&
-            config.chars.slice(a - terml, a + 1).join('') === termination) break;
+            config.chars.slice(a - terml, a + 1).join(NIL) === termination) break;
 
           a = a + 1;
 
@@ -908,9 +909,9 @@ export const parse = new class Parse implements IParse {
 
       }
 
-      if (config.chars[a] === '\n') a = a - 1;
+      if (config.chars[a] === NWL) a = a - 1;
 
-      output = build.join('').replace(/\s+$/, '');
+      output = build.join(NIL).replace(StripEnd, NIL);
 
       // console.log(output);
 
@@ -923,11 +924,11 @@ export const parse = new class Parse implements IParse {
 
     if (preserveComment === true || wrap < 1 || a === config.end || (
       output.length <= wrap &&
-      output.indexOf('\n') < 0
+      output.indexOf(NWL) < 0
     ) || (
       config.opening === '/*' &&
-      output.indexOf('\n') > 0 &&
-      output.replace('\n', '').indexOf('\n') > 0 &&
+      output.indexOf(NWL) > 0 &&
+      output.replace(NWL, NIL).indexOf(NWL) > 0 &&
       (/\n(?!(\s*\*))/).test(output) === false
     )
     ) {
@@ -941,24 +942,24 @@ export const parse = new class Parse implements IParse {
 
     b = config.start;
 
-    if (b > 0 && config.chars[b - 1] !== '\n' && ws(config.chars[b - 1])) {
+    if (b > 0 && config.chars[b - 1] !== NWL && ws(config.chars[b - 1])) {
       do {
         b = b - 1;
-      } while (b > 0 && config.chars[b - 1] !== '\n' && ws(config.chars[b - 1]));
+      } while (b > 0 && config.chars[b - 1] !== NWL && ws(config.chars[b - 1]));
     }
 
-    space = config.chars.slice(b, config.start).join('');
+    space = config.chars.slice(b, config.start).join(NIL);
 
-    const spaceLine = new RegExp('\n' + space, 'g');
+    const spaceLine = new RegExp(NWL + space, 'g');
 
-    lines = output.replace(/\r\n/g, '\n').replace(spaceLine, '\n').split('\n');
+    lines = output.replace(/\r\n/g, NWL).replace(spaceLine, NWL).split(NWL);
     len = lines.length;
-    lines[0] = lines[0].replace(regStart, '');
-    lines[len - 1] = lines[len - 1].replace(regEnd, '');
+    lines[0] = lines[0].replace(regStart, NIL);
+    lines[len - 1] = lines[len - 1].replace(regEnd, NIL);
 
-    if (len < 2) lines = lines[0].split(' ');
+    if (len < 2) lines = lines[0].split(WSP);
 
-    if (lines[0] === '') {
+    if (lines[0] === NIL) {
       lines[0] = config.opening;
     } else {
       lines.splice(0, 0, config.opening);
@@ -969,9 +970,9 @@ export const parse = new class Parse implements IParse {
 
     do {
 
-      bline = (b < len - 1) ? lines[b + 1].replace(/^\s+/, '') : '';
+      bline = (b < len - 1) ? lines[b + 1].replace(StripLead, NIL) : NIL;
 
-      if ((/^\s+$/).test(lines[b]) === true || lines[b] === '') {
+      if ((/^\s+$/).test(lines[b]) === true || lines[b] === NIL) {
 
         emptylines();
 
@@ -980,12 +981,12 @@ export const parse = new class Parse implements IParse {
         second.push(lines[b]);
 
       } else if (
-        lines[b].replace(/^\s+/, '').length > wrap &&
-        lines[b].replace(/^\s+/, '').indexOf(' ') > wrap
+        lines[b].replace(StripLead, NIL).length > wrap &&
+        lines[b].replace(StripLead, NIL).indexOf(WSP) > wrap
       ) {
 
-        lines[b] = lines[b].replace(/^\s+/, '');
-        c = lines[b].indexOf(' ');
+        lines[b] = lines[b].replace(StripLead, NIL);
+        c = lines[b].indexOf(WSP);
         second.push(lines[b].slice(0, c));
         lines[b] = lines[b].slice(c + 1);
         b = b - 1;
@@ -996,15 +997,15 @@ export const parse = new class Parse implements IParse {
           config.opening === '/*' &&
           lines[b].indexOf('/*') !== 0
         )
-          ? `   ${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`
-          : `${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`;
+          ? `   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`
+          : `${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`;
 
         twrap = (b < 1)
           ? wrap - (config.opening.length + 1)
           : wrap;
 
         c = lines[b].length;
-        d = lines[b].replace(/^\s+/, '').indexOf(' ');
+        d = lines[b].replace(StripLead, NIL).indexOf(WSP);
 
         if (c > twrap && d > 0 && d < twrap) {
 
@@ -1044,7 +1045,7 @@ export const parse = new class Parse implements IParse {
             bigLine = true;
             b = b - 1;
 
-          } else if ((/^\s+$/).test(lines[b + 1]) === true || lines[b + 1] === '') {
+          } else if ((/^\s+$/).test(lines[b + 1]) === true || lines[b + 1] === NIL) {
 
             second.push(lines[b].slice(0, c));
             lines[b] = lines[b].slice(c + 1);
@@ -1072,14 +1073,14 @@ export const parse = new class Parse implements IParse {
             bigLine = true;
             b = b - 1;
 
-          } else if (c + bline.length > wrap && bline.indexOf(' ') < 0) {
+          } else if (c + bline.length > wrap && bline.indexOf(WSP) < 0) {
 
             second.push(lines[b].slice(0, c));
             lines[b] = lines[b].slice(c + 1);
             bigLine = true;
             b = b - 1;
 
-          } else if (lines[b].replace(/^\s+/, '').indexOf(' ') < wrap) {
+          } else if (lines[b].replace(StripLead, NIL).indexOf(WSP) < wrap) {
             lines[b + 1] = lines[b].length > wrap
               ? lines[b].slice(c + 1) + lf + lines[b + 1]
               : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
@@ -1097,11 +1098,11 @@ export const parse = new class Parse implements IParse {
         } else if (
           lines[b + 1] !== undefined && (
             (
-              lines[b].length + bline.indexOf(' ') > wrap &&
-              bline.indexOf(' ') > 0
+              lines[b].length + bline.indexOf(WSP) > wrap &&
+              bline.indexOf(WSP) > 0
             ) || (
               lines[b].length + bline.length > wrap &&
-              bline.indexOf(' ') < 0
+              bline.indexOf(WSP) < 0
             )
           )
         ) {
@@ -1113,7 +1114,7 @@ export const parse = new class Parse implements IParse {
         } else if (
           lines[b + 1] !== undefined &&
           (/^\s+$/).test(lines[b + 1]) === false &&
-          lines[b + 1] !== '' &&
+          lines[b + 1] !== NIL &&
           lines[b + 1].slice(0, 4) !== '    ' &&
           (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
         ) {
@@ -1136,7 +1137,7 @@ export const parse = new class Parse implements IParse {
 
             if (
               b < len - 1 &&
-              lines[b + 1] !== '' &&
+              lines[b + 1] !== NIL &&
               (/^\s+$/).test(lines[b]) === false &&
               lines[b + 1].slice(0, 4) !== '    ' &&
               (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
@@ -1150,9 +1151,9 @@ export const parse = new class Parse implements IParse {
 
             } else {
               if (config.opening === '/*' && lines[b].indexOf('/*') !== 0) {
-                second.push(`   ${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`);
+                second.push(`   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`);
               } else {
-                second.push(`${lines[b].replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ')}`);
+                second.push(`${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`);
               }
             }
           }
@@ -1198,20 +1199,20 @@ export const parse = new class Parse implements IParse {
 
     let a = config.start;
     let b = 0;
-    let output = '';
+    let output = NIL;
     let build = [];
 
     const { wrap, preserveComment } = prettify.options;
 
     function recurse () {
 
-      let line = '';
+      let line = NIL;
 
       do {
 
         b = b + 1;
 
-        if (config.chars[b + 1] === '\n') return;
+        if (is(config.chars[b + 1], cc.NWL)) return;
 
       } while (b < config.end && ws(config.chars[b]) === true);
 
@@ -1222,16 +1223,16 @@ export const parse = new class Parse implements IParse {
         do {
           build.push(config.chars[b]);
           b = b + 1;
-        } while (b < config.end && config.chars[b] !== '\n');
+        } while (b < config.end && config.chars[b] !== NWL);
 
-        line = build.join('');
+        line = build.join(NIL);
 
         if (
           (/^\/\/ (\*|-|(\d+\.))/).test(line) === false &&
           line.slice(0, 6) !== '//    ' &&
           (/^\/\/\s*$/).test(line) === false
         ) {
-          output = `${output} ${line.replace(/(^\/\/\s*)/, '').replace(/\s+$/, '')}`;
+          output = `${output} ${line.replace(/(^\/\/\s*)/, NIL).replace(StripEnd, NIL)}`;
           a = b - 1;
           recurse();
         }
@@ -1256,13 +1257,13 @@ export const parse = new class Parse implements IParse {
       } else {
         record.begin = -1;
         record.stack = 'global';
-        record.token = '';
+        record.token = NIL;
       };
 
       let c = 0;
       let d = 0;
 
-      output = output.replace(/\s+/g, ' ').replace(/\s+$/, '');
+      output = output.replace(/\s+/g, WSP).replace(StripEnd, NIL);
 
       d = output.length;
 
@@ -1271,21 +1272,21 @@ export const parse = new class Parse implements IParse {
       do {
         c = wrap;
 
-        if (output.charAt(c) !== ' ') {
+        if (output.charAt(c) !== WSP) {
           do {
             c = c - 1;
-          } while (c > 0 && output.charAt(c) !== ' ');
+          } while (c > 0 && output.charAt(c) !== WSP);
           if (c < 3) {
             c = wrap;
             do {
               c = c + 1;
-            } while (c < d - 1 && output.charAt(c) !== ' ');
+            } while (c < d - 1 && output.charAt(c) !== WSP);
           }
         }
 
         lines.push(output.slice(0, c));
 
-        output = `// ${output.slice(c).replace(/^\s+/, '')}`;
+        output = `// ${output.slice(c).replace(StripLead, NIL)}`;
         d = output.length;
 
       } while (wrap < d);
@@ -1296,7 +1297,7 @@ export const parse = new class Parse implements IParse {
       do {
 
         record.token = lines[c];
-        this.push(this.data, record as Record, nil);
+        this.push(this.data, record as Record, NIL);
         record.lines = 2;
         this.linesSpace = 2;
         c = c + 1;
@@ -1308,22 +1309,22 @@ export const parse = new class Parse implements IParse {
     do {
       build.push(config.chars[a]);
       a = a + 1;
-    } while (a < config.end && config.chars[a] !== '\n');
+    } while (a < config.end && config.chars[a] !== NWL);
 
     if (a === config.end) {
 
       // Necessary because the wrapping logic expects line termination
-      config.chars.push('\n');
+      config.chars.push(NWL);
 
     } else {
       a = a - 1;
     }
 
-    output = build.join('').replace(/\s+$/, '');
+    output = build.join(NIL).replace(StripEnd, NIL);
 
     if ((/^(\/\/\s*@prettify-ignore-start\b)/).test(output) === true) {
 
-      let termination = '\n';
+      let termination = NWL;
       a = a + 1;
 
       do {
@@ -1337,7 +1338,7 @@ export const parse = new class Parse implements IParse {
           config.chars[a - 1] !== 'd' ||
           (
             config.chars[a - 1] === 'd' &&
-            build.slice(build.length - 20).join('') !== '@prettify-ignore-end'
+            build.slice(build.length - 20).join(NIL) !== '@prettify-ignore-end'
           )
         )
       );
@@ -1351,14 +1352,14 @@ export const parse = new class Parse implements IParse {
       ));
 
       if (config.chars[b] === '*') termination = '\u002a/';
-      if (termination !== '\n' || config.chars[a] !== '\n') {
+      if (termination !== NWL || config.chars[a] !== NWL) {
 
         do {
           build.push(config.chars[a]);
-          if (termination === '\n' && config.chars[a + 1] === '\n') break;
+          if (termination === NWL && config.chars[a + 1] === NWL) break;
           a = a + 1;
         } while (a < config.end && (
-          termination === '\n' || (termination === '\u002a/' && (
+          termination === NWL || (termination === '\u002a/' && (
             config.chars[a - 1] !== '*' ||
             config.chars[a] !== '/'
           ))
@@ -1366,9 +1367,9 @@ export const parse = new class Parse implements IParse {
 
       }
 
-      if (config.chars[a] === '\n') a = a - 1;
+      if (config.chars[a] === NWL) a = a - 1;
 
-      output = build.join('').replace(/\s+$/, '');
+      output = build.join(NIL).replace(StripEnd, NIL);
 
       /* -------------------------------------------- */
       /* RETURN COMMENT                               */
