@@ -9,9 +9,8 @@ test('develop', async t => {
     const output = await prettify.format(source, {
       language: 'liquid',
       markup: {
-        correct: true,
-        attributeCasing: 'lowercase',
-        forceAttribute: true
+        forceIndent: false,
+        forceAttribute: 3
       }
 
     });
