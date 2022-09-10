@@ -1,9 +1,9 @@
 import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
-import { nil } from '@utils/native';
-import { is, ws } from '@utils/helpers';
-import { cc } from '@utils/enums';
+import { StripEnd } from '@utils/regex';
+import { is, repeatChar, ws } from '@utils/helpers';
+import { cc, WSP, NIL, NWL } from '@utils/chars';
 import { grammar } from '@options/grammar';
 
 /* -------------------------------------------- */
@@ -79,7 +79,7 @@ prettify.beautify.markup = (options: Options) => {
   const type: Helper.Type = {
     is: (index: number, name: string) => data.types[index] === name,
     not: (index: number, name: string) => data.types[index] !== name,
-    idx: (index: number, name: string) => index > -1 && (data.types[index] || nil).indexOf(name)
+    idx: (index: number, name: string) => index > -1 && (data.types[index] || NIL).indexOf(name)
   };
 
   /**
@@ -408,8 +408,8 @@ prettify.beautify.markup = (options: Options) => {
           let countx = 0;
 
           const chars = data.token[a]
-            .replace(/\s+/g, ' ')
-            .split(' ');
+            .replace(/\s+/g, WSP)
+            .split(WSP);
 
           do {
 
@@ -441,10 +441,10 @@ prettify.beautify.markup = (options: Options) => {
           } while (d < e);
 
           if (is(chars[0], cc.WSP)) {
-            data.token[a] = chars.join(nil).slice(1);
+            data.token[a] = chars.join(NIL).slice(1);
           } else {
             level[a - 1] = ind;
-            data.token[a] = chars.join(nil).replace(lf, nil);
+            data.token[a] = chars.join(NIL).replace(lf, NIL);
           }
 
           if (data.token[a].indexOf(lf) > 0) {
@@ -531,6 +531,7 @@ prettify.beautify.markup = (options: Options) => {
         level.push(-20);
       } else {
         level.push(indent - 1);
+        // level.push(indent - 1);
       }
 
       next = forward();
@@ -542,6 +543,7 @@ prettify.beautify.markup = (options: Options) => {
           data.types[next] === 'template_end'
         )
       ) {
+
         indent = indent - 1;
       }
 
@@ -577,7 +579,7 @@ prettify.beautify.markup = (options: Options) => {
           ];
         }
 
-        return [ x, nil ];
+        return [ x, NIL ];
 
       };
 
@@ -590,7 +592,7 @@ prettify.beautify.markup = (options: Options) => {
 
         // Exclude all href attribute values and all JavaScript "on" attributes
         if (
-          attr[1] === nil ||
+          attr[1] === NIL ||
           attr[0] === 'href' || (
             attr[0].charCodeAt(0) === 111 && // o
             attr[0].charCodeAt(1) === 110 // n
@@ -600,7 +602,7 @@ prettify.beautify.markup = (options: Options) => {
         } else if (rules.attributeValues === 'preserve') {
           return attr[0] + '=' + attr[1];
         } else if (rules.attributeValues === 'strip') {
-          return `${attr[0].trimStart()}=${attr[1].replace(/\s+/g, ' ').replace(/^["']\s+/, '"')}`;
+          return `${attr[0].trimStart()}=${attr[1].replace(/\s+/g, WSP).replace(/^["']\s+/, '"')}`;
         }
 
         const option = rules.attributeValues;
@@ -610,15 +612,15 @@ prettify.beautify.markup = (options: Options) => {
         let text: string;
 
         let inside: boolean = false;
-        let toke = nil;
-        let name = nil;
+        let toke = NIL as string;
+        let name = NIL as string;
         let item = 0; // value item
         let next = 0; // next tag
 
         if (option === 'collapse') {
-          text = attr[1].replace(/\s+/g, ' ');
+          text = attr[1].replace(/\s+/g, WSP);
         } else if (option === 'wrap') {
-          text = attr[1].replace(/\s+/g, x => /\n/.test(x) ? '\n' : x.replace(/\s+/, ' '));
+          text = attr[1].replace(/\s+/g, x => /\n/.test(x) ? NWL : x.replace(/\s+/, WSP));
         }
 
         do {
@@ -627,8 +629,8 @@ prettify.beautify.markup = (options: Options) => {
 
             if (option === 'collapse') {
 
-              if (ws(text[item - 1]) === true && attrarr[attrarr.length - 1] !== '\n') {
-                attrarr.push('\n');
+              if (ws(text[item - 1]) === true && attrarr[attrarr.length - 1] !== NWL) {
+                attrarr.push(NWL);
               }
 
             }
@@ -644,15 +646,15 @@ prettify.beautify.markup = (options: Options) => {
 
                 inside = false;
 
-                if (option === 'collapse' && attrarr[attrarr.length - 1] !== '\n') {
-                  attrarr.push('\n');
+                if (option === 'collapse' && attrarr[attrarr.length - 1] !== NWL) {
+                  attrarr.push(NWL);
                 }
               } else if (grammar.liquid.tags.has(name.slice(0, name.search(/\s/)))) {
 
                 inside = true;
 
-                if (option === 'collapse' && attrarr[attrarr.length - 1] !== '\n') {
-                  attrarr.push('\n');
+                if (option === 'collapse' && attrarr[attrarr.length - 1] !== NWL) {
+                  attrarr.push(NWL);
                 }
               }
 
@@ -660,8 +662,8 @@ prettify.beautify.markup = (options: Options) => {
 
             } else {
 
-              if (inside && option === 'collapse' && attrarr[attrarr.length - 1] !== '\n') {
-                attrarr.push('\n');
+              if (inside && option === 'collapse' && attrarr[attrarr.length - 1] !== NWL) {
+                attrarr.push(NWL);
               }
 
               next = text.indexOf('}}', item + 1);
@@ -671,24 +673,24 @@ prettify.beautify.markup = (options: Options) => {
             }
 
             if (option === 'collapse') {
-              if (ws(text[item]) === true && attrarr[attrarr.length - 1] !== '\n' && item < text.length - 1) {
-                attrarr.push('\n');
+              if (ws(text[item]) === true && attrarr[attrarr.length - 1] !== NWL && item < text.length - 1) {
+                attrarr.push(NWL);
               }
             }
 
           } else {
 
-            if (text[item] === ' ') {
+            if (text[item] === WSP) {
               if (option === 'collapse') {
 
-                if (attrarr[attrarr.length - 1] !== '\n') {
-                  attrarr.push('\n');
+                if (attrarr[attrarr.length - 1] !== NWL) {
+                  attrarr.push(NWL);
                 }
 
               } else if (wrapper && option === 'wrap') {
 
                 if (inside === false) {
-                  attrarr.push('\n');
+                  attrarr.push(NWL);
                 }
 
               }
@@ -702,7 +704,7 @@ prettify.beautify.markup = (options: Options) => {
           }
         } while (item < text.length);
 
-        return attr[0] + '=' + attrarr.join(nil);
+        return attr[0] + '=' + attrarr.join(NIL);
 
       }
 
@@ -718,7 +720,7 @@ prettify.beautify.markup = (options: Options) => {
 
         } else {
 
-          const item = data.token[index].replace(/\s+/g, ' ').split(' ');
+          const item = data.token[index].replace(/\s+/g, WSP).split(WSP);
           const size = item.length;
 
           let bb = 1;
@@ -726,7 +728,7 @@ prettify.beautify.markup = (options: Options) => {
 
           do {
 
-            // bcount = anwl.indexOf(item[bb], acount);
+            // bcount = aNWL.indexOf(item[bb], acount);
 
             if (acount + item[bb].length > options.wrap) {
 
@@ -742,7 +744,7 @@ prettify.beautify.markup = (options: Options) => {
 
           } while (bb < size);
 
-          data.token[index] = item.join(nil);
+          data.token[index] = item.join(NIL);
 
         }
       };
@@ -1147,39 +1149,53 @@ prettify.beautify.markup = (options: Options) => {
 
         if (data.token[a].toLowerCase().indexOf('<!doctype') === 0) level[a - 1] = indent;
 
-        if (data.types[a].indexOf('attribute') > -1) {
+        if (type.idx(a, 'attribute') > -1) {
 
           attribute();
 
         } else if (type.is(a, 'comment')) {
 
           if (comstart < 0) comstart = a;
+
           if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) comment();
 
         } else if (type.not(a, 'comment')) {
 
           next = forward();
 
-          if (type.is(next, 'end') || type.is(next, 'template_end')) {
+          if (type.is(next, 'end')) {
 
             indent = indent - 1;
-
-            if (type.is(next, 'template_end') && type.is(data.begin[next] + 1, 'template_else')) indent = indent - 1;
 
             // HOT PATCH
             //
             // Support <dl></dl> anchor list tags,
             // previously only ol and ul were supported
             //
-            if (token.is(a, '</ol>') || token.is(a, '</ul>') || token.is(a, '</dl>')) anchorlist();
+            if (
+              token.is(a, '</ol>') ||
+              token.is(a, '</ul>') ||
+              token.is(a, '</dl>')) anchorlist();
 
           }
 
-          if (type.is(a, 'script_end') && type.is(a + 1, 'end')) {
+          if (type.is(next, 'template_end')) {
+
+            indent = indent - 1;
+
+            if (
+              type.is(next, 'template_end') &&
+              type.is(data.begin[next] + 1, 'template_else')) indent = indent - 1;
+
+          }
+
+          if (type.is(a, 'script_end') && type.is(next, 'end')) {
 
             // HOT PATCH
+            //
             // Added `indent` level for lines more than 1 so
             // JSX embedded expressions appear on newlines
+            //
             if (data.lines[next] < 1) {
               level.push(-20);
             } else if (data.lines[next] > 1) {
@@ -1188,9 +1204,10 @@ prettify.beautify.markup = (options: Options) => {
               level.push(-10);
             }
 
-          } else if ((
-            rules.forceIndent === false || (rules.forceIndent === true && type.is(next, 'script_start'))
-          ) && (
+          } else if ((rules.forceIndent === false || (
+            rules.forceIndent === true &&
+            type.is(next, 'script_start')
+          )) && (
             type.is(a, 'content') ||
             type.is(a, 'singleton') ||
             type.is(a, 'template')
@@ -1219,19 +1236,20 @@ prettify.beautify.markup = (options: Options) => {
 
                 do {
 
-                  linesout.push(' ');
+                  linesout.push(WSP);
 
                   iidx = iidx + 1;
 
                 } while (iidx < offset);
 
-                data.token[a] = data.token[a]
-                  .replace(/^\s+/gm, nil)
-                  .replace(/\n/g, (n) => `${n}${linesout.join(nil)}`);
+                data.token[a] = data.token[a].trimStart().replace(/\n/g, (n) => `${n}${linesout.join(NIL)}`);
 
               }
 
-            } else if (data.lines[next] > 0 && type.is(next, 'script_start')) {
+            } else if (
+              data.lines[next] > 0 &&
+              type.is(next, 'script_start')
+            ) {
 
               level.push(-10);
 
@@ -1267,9 +1285,15 @@ prettify.beautify.markup = (options: Options) => {
 
           } else if (type.is(a, 'start') || type.is(a, 'template_start')) {
 
+            // Indents the content from the left, for example:
+            //
+            // <div>
+            //   ^here
+            // </div>
+            //
             indent = indent + 1;
 
-            if (type.is(a, 'template_start') && type.is(a + 1, 'template_else')) {
+            if (type.is(a, 'template_start') && type.is(next, 'template_else')) {
               indent = indent + 1;
             }
 
@@ -1289,6 +1313,10 @@ prettify.beautify.markup = (options: Options) => {
 
             } else if (type.is(a, 'start') && type.is(next, 'end')) {
 
+              // Empty token, for example:
+              //
+              // <div></div>
+              //
               level.push(-20);
 
             } else if (type.is(a, 'start') && type.is(next, 'script_start')) {
@@ -1307,8 +1335,10 @@ prettify.beautify.markup = (options: Options) => {
 
             } else if (data.lines[next] === 0 && (
               type.is(next, 'content') ||
-              type.is(next, 'singleton') ||
-              (type.is(next, 'start') && type.is(next, 'template'))
+              type.is(next, 'singleton') || (
+                type.is(a, 'start') &&
+                type.is(next, 'template')
+              )
             )) {
 
               level.push(-20);
@@ -1342,6 +1372,7 @@ prettify.beautify.markup = (options: Options) => {
           } else {
 
             level.push(indent);
+
           }
         }
 
@@ -1357,6 +1388,7 @@ prettify.beautify.markup = (options: Options) => {
       } else {
         count = 0;
         external();
+
       }
 
       a = a + 1;
@@ -1395,7 +1427,7 @@ prettify.beautify.markup = (options: Options) => {
         } while (aa < size);
       }
 
-      return indy.join(nil);
+      return indy.join(NIL);
 
     })();
 
@@ -1431,7 +1463,7 @@ prettify.beautify.markup = (options: Options) => {
 
       }
 
-      return linesout.join(nil);
+      return linesout.join(NIL);
 
     };
 
@@ -1494,15 +1526,15 @@ prettify.beautify.markup = (options: Options) => {
         // opposed to generation '\n     ' a newline character is applied
         //
         if (type.is(a, 'comment')) {
-          if (lines[aa] !== nil) {
-            if (lines[aa + 1].trimStart() !== nil) {
+          if (lines[aa] !== NIL) {
+            if (lines[aa + 1].trimStart() !== NIL) {
               build.push(lines[aa], newline(lev));
             } else {
-              build.push(lines[aa], '\n');
+              build.push(lines[aa], NWL);
             }
           } else {
-            if (lines[aa + 1].trimStart() === nil) {
-              build.push('\n');
+            if (lines[aa + 1].trimStart() === NIL) {
+              build.push(NWL);
             } else {
               build.push(newline(lev));
             }
@@ -1523,7 +1555,7 @@ prettify.beautify.markup = (options: Options) => {
       build.push(lines[len]);
 
       if (levels[a] === -10) {
-        build.push(' ');
+        build.push(WSP);
       } else if (levels[a] > 1) {
         build.push(newline(levels[a]));
       }
@@ -1547,10 +1579,10 @@ prettify.beautify.markup = (options: Options) => {
       let y = a + 1;
       let isjsx = false;
       let space = (rules.selfCloseSpace === true && end !== null && end[0] === '/>')
-        ? ' '
-        : nil;
+        ? WSP as string
+        : NIL;
 
-      data.token[a] = parent.replace(regend, nil);
+      data.token[a] = parent.replace(regend, NIL);
 
       do {
 
@@ -1596,6 +1628,7 @@ prettify.beautify.markup = (options: Options) => {
     a = prettify.start;
 
     let lastLevel = options.indentLevel;
+    let embedded: string = NIL;
 
     do {
 
@@ -1615,8 +1648,8 @@ prettify.beautify.markup = (options: Options) => {
 
         }
 
-        if (token.not(a, undefined) && data.token[a].indexOf(lf) > 0 && (
-          (type.is(a, 'content') && rules.preserveText === false) ||
+        if (token.not(a, undefined) && data.token[a].indexOf(lf) > 0 && ((
+          type.is(a, 'content') && rules.preserveText === false) ||
           type.is(a, 'comment') ||
           type.is(a, 'attribute')
         )) {
@@ -1628,42 +1661,38 @@ prettify.beautify.markup = (options: Options) => {
           build.push(data.token[a]);
 
           if (levels[a] === -10 && a < c - 1) {
-
-            build.push(' ');
-
+            build.push(WSP);
           } else if (levels[a] > -1) {
             lastLevel = levels[a];
             build.push(newline(levels[a]));
-
           }
 
         }
 
       } else {
 
-        if (extidx[a] === a && type.not(a, 'reference')) {
+        prettify.start = a;
+        prettify.end = extidx[a];
+        options.indentLevel = lastLevel;
 
-          build.push(data.token[a]);
+        embedded = prettify.beautify[data.lexer[a]](options).replace(StripEnd, NIL);
 
+        build.push(embedded);
+
+        if (embedded.endsWith(NWL)) {
+          if (lastLevel - 1 > 0) build.push(repeatChar(lastLevel - 1, ind));
         } else {
-
-          prettify.end = extidx[a];
-          options.indentLevel = lastLevel;
-          prettify.start = a;
-
-          build.push(prettify.beautify[data.lexer[a]](options).replace(/\s+$/, nil));
-
-          if (levels[prettify.iterator] > -1 && extidx[a] > a) {
+          if (rules.forceIndent === true || (levels[prettify.iterator] > -1 && extidx[a] > a)) {
             build.push(newline(levels[prettify.iterator]));
           }
-
-          a = prettify.iterator;
-
-          // HOT PATCH
-          // Reset indentation level, if not reset to 0 then
-          // content will shift on save
-          options.indentLevel = 0;
         }
+
+        a = prettify.iterator;
+
+        // Reset indentation level, if not reset to 0 then
+        // content will shift on save
+        options.indentLevel = 0;
+
       }
 
       a = a + 1;
@@ -1673,10 +1702,10 @@ prettify.beautify.markup = (options: Options) => {
     // console.log(prettify);
     prettify.iterator = c - 1;
 
-    if (build[0] === lf || is(build[0], cc.WSP)) build[0] = nil;
+    if (build[0] === lf || is(build[0], cc.WSP)) build[0] = NIL;
 
     // console.log('TOKE', build);
-    return build.join(nil);
+    return build.join(NIL);
 
   })();
 
