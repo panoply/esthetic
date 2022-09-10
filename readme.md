@@ -409,7 +409,7 @@ Inline control is supported and can be applied within comments. Inline control a
 You can prevent Prettify from formatting a file by placing an inline control comment at the type of the document.
 
 ```html
-{% comment %} @prettify-ignore {% endcomment %}
+{% # @prettify-ignore %}
 
 <div>
   <ul>
@@ -428,12 +428,18 @@ Prettify provides inline formatting support via comments. Inline formatting adop
 <!-- @prettify forceAttribute: true, indentLevel: 4 -->
 ```
 
-#### Liquid Comments
+#### Liquid Block Comments
 
 ```liquid
 {% comment %}
   @prettify forceAttribute: true, indentLevel: 4
 {% endcomment %}
+```
+
+#### Liquid Line Comments
+
+```liquid
+{% # @prettify forceAttribute: true, indentLevel: 4 %}
 ```
 
 #### Block comment
@@ -457,10 +463,15 @@ Lexer modes provide inline comments control and support ignoring regions (blocks
 - `<!-- @prettify-ignore-start -->`
 - `<!-- @prettify-ignore-end -->`
 
-#### Liquid Comments
+#### Liquid Block Comments
 
 - `{% comment %} @prettify-ignore-start {% endcomment %}`
 - `{% comment %} @prettify-ignore-end {% endcomment %}`
+
+#### Liquid Line Comments
+
+- `{% # @prettify-ignore-start %}`
+- `{% # @prettify-ignore-end %}`
 
 #### Block Comments
 
@@ -494,30 +505,32 @@ Shopify recently shipped a Liquid prettier plugin but it does not really do much
 
 Prettify takes a complete different approach and is leveraging the sparser lexing algorithm under the hood (a data structures are generated, not an AST). Sparser along side PrettyDiff at the time I adapted them into Prettify were efficient at handling Liquid and a multitude of other template languages. I chose to build Prettify atop of these projects opposed to developing a Prettier plugin for many reasons but mostly because the sparser lexers understood Liquid infusion within languages other than Markup.
 
-Below is a formatting specific feature comparison as of June 2022 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities, overall Shopify's solution offers 1/10th of what Prettify provides and because its a Prettier plugin it's 7x slower than Prettify.
+### Comparison
 
-| Feature                         | Prettify | Liquid Prettier Plugin |
-| ------------------------------- | -------- | ---------------------- |
-| Tag Indentation                 | ✓        | ✓                      |
-| HTML Attribute Indentation      | ✓        | ✓                      |
-| Comment Formatting              | ✓        | ✓                      |
-| Content Indentation             | ✓        | 𐄂                      |
-| Delimiter Spacing               | ✓        | 𐄂                      |
-| Wrapping Indentation            | ✓        | 𐄂                      |
-| Attribute Casing                | ✓        | 𐄂                      |
-| Attribute Sorting               | ✓        | 𐄂                      |
-| Attribute Indentation (Liquid)  | ✓        | 𐄂                      |
-| Attribute Value Formatting      | ✓        | 𐄂                      |
-| Liquid + CSS/SCSS               | ✓        | 𐄂                      |
-| Liquid + JS/TS                  | ✓        | 𐄂                      |
-| Liquid Newline Filters          | ✓        | 𐄂                      |
-| Frontmatter Support             | ✓        | 𐄂                      |
-| Embedded `{% style %}`          | ✓        | 𐄂                      |
-| Embedded `{% stylesheet %}`     | ✓        | 𐄂                      |
-| Embedded `{% javascript %}`     | ✓        | 𐄂                      |
-| Embedded `{% schema %}`         | ✓        | ✓                      |
-| Embedded CSS + Liquid `<style>` | ✓        | 𐄂                      |
-| Embedded JS + Liquid `<script>` | ✓        | 𐄂                      |
+Below is a formatting specific feature comparison as of September 2022 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities, overall Shopify's solution offers 1/10th of what Prettify provides and because its a Prettier plugin it's 7x slower than Prettify.
+
+| Feature                         | Prettify | Liquid Prettier Plugin                |
+| ------------------------------- | -------- | ------------------------------------- |
+| Tag Indentation                 | ✓        | ✓                                     |
+| HTML Attribute Indentation      | ✓        | ✓                                     |
+| Comment Formatting              | ✓        | ✓                                     |
+| Content Indentation             | ✓        | 𐄂                                     |
+| Delimiter Spacing               | ✓        | 𐄂                                     |
+| Wrapping Indentation            | ✓        | 𐄂                                     |
+| Attribute Casing                | ✓        | 𐄂                                     |
+| Attribute Sorting               | ✓        | 𐄂                                     |
+| Attribute Indentation (Liquid)  | ✓        | 𐄂                                     |
+| Attribute Value Formatting      | ✓        | 𐄂                                     |
+| Liquid + CSS/SCSS               | ✓        | 𐄂                                     |
+| Liquid + JS/TS                  | ✓        | 𐄂                                     |
+| Liquid Newline Filters          | ✓        | 𐄂                                     |
+| Frontmatter Support             | ✓        | 𐄂                                     |
+| Embedded `{% style %}`          | ✓        | ✓ _does not support contained liquid_ |
+| Embedded `{% stylesheet %}`     | ✓        | ✓ _does not support contained liquid_ |
+| Embedded `{% javascript %}`     | ✓        | ✓ _does not support contained liquid_ |
+| Embedded `{% schema %}`         | ✓        | ✓                                     |
+| Embedded CSS + Liquid `<style>` | ✓        | 𐄂 _does not support contained liquid_ |
+| Embedded JS + Liquid `<script>` | ✓        | 𐄂 _does not support contained liquid_ |
 
 # Credits
 
