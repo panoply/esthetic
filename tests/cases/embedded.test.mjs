@@ -2,19 +2,36 @@ import test from 'ava';
 import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial.skip('HTML embedded script tag', async t => {
+test('HTML embedded script tag', async t => {
 
-  await util.forRule('cases/embedded', {
+  await util.forRule('cases/embedded')({
     'html-script-js-1': [
       {
-        language: 'html'
+        language: 'html',
+        markup: {
+          forceIndent: false
+        }
       },
       {
-        language: 'html'
+        language: 'html',
+        markup: {
+          forceIndent: true
+        }
       }
     ],
     'html-script-js-2': [
-
+      {
+        language: 'html',
+        markup: {
+          forceIndent: false
+        }
+      },
+      {
+        language: 'html',
+        markup: {
+          forceIndent: true
+        }
+      }
     ]
   }
   , async function (source, rule, label) {
@@ -23,9 +40,11 @@ test.serial.skip('HTML embedded script tag', async t => {
 
     t.snapshot(input, label.description);
 
-    // t.log(input);
+    t.log(input);
 
   });
+
+  prettify.options({ markup: { forceIndent: false } });
 
 });
 
