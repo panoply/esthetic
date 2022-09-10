@@ -1,6 +1,7 @@
 import type { Prettify } from 'types/prettify';
 import * as language from '@parser/language';
-import { cc } from '@utils/enums';
+import { CommControl, CommIgnoreFile } from '@utils/regex';
+import { cc, NIL } from '@utils/chars';
 import { keys } from '@utils/native';
 import { definitions } from '@options/definitions';
 
@@ -16,10 +17,12 @@ import { definitions } from '@options/definitions';
  *
  * Examples:
  *
- * - `/* @prettify width: 80 preserveLine: 4 } *\/`
+ * - `/* @prettify width: 80 preserveLine: 4 *\/`
  * - `// @prettify width: 80 preserveLine: 4`
  * - `<!-- @prettify width: 80 preserveLine: 4 -->`
- * - `{% comment %} @prettify width:40 preserveLine:2 {% endcomment %}`
+ * - `{% # @prettify width: 80 preserveLine: 4 %}`
+ * - `{% comment %} @prettify width: 40 preserveLine: 2 {% endcomment %}`
+ * - `# @prettify width: 80 preserveLine: 4`
  *
  * Parsing Considerations:
  *
@@ -31,15 +34,15 @@ import { definitions } from '@options/definitions';
  */
 export function comment (prettify: Prettify) {
 
-  const sindex = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify\s+(\w+)?\s*{\s+/);
-  const signore = prettify.source.search(/((\/(\*|\/))|{%-?\s*comment\s*-?%}|<!--)\s*@prettify-ignore\b/);
+  const sindex = prettify.source.search(CommControl);
+  const signore = prettify.source.search(CommIgnoreFile);
   const k = keys(definitions);
   const len = k.length;
 
   let a = 0;
   let b = 0;
 
-  if (signore > -1 && prettify.source.slice(0, signore).trimStart() === '') return false;
+  if (signore > -1 && prettify.source.slice(0, signore).trimStart() === NIL) return false;
 
   if ((sindex > -1 && (sindex === 0 || "\"':".indexOf(prettify.source.charAt(sindex - 1)) < 0))) {
 
@@ -50,10 +53,10 @@ export function comment (prettify: Prettify) {
 
     let a = pdcom;
     let b = 0;
-    let quote = '';
-    let item = '';
-    let lang = '';
-    let lex = '';
+    let quote = NIL;
+    let item = NIL;
+    let lang = NIL;
+    let lex = NIL;
     let valkey = [];
     let op = [];
     let rcb: number;
@@ -92,7 +95,7 @@ export function comment (prettify: Prettify) {
 
       if (esc() === false) {
 
-        if (quote === '') {
+        if (quote === NIL) {
 
           if (source.charAt(a) === '"' || source.charAt(a) === "'" || source.charAt(a) === '`') {
 
@@ -150,7 +153,7 @@ export function comment (prettify: Prettify) {
           ) break;
 
         } else if (source.charAt(a) === quote && quote !== '${') {
-          quote = '';
+          quote = NIL;
         } else if (quote === '`' && source.slice(a, a + 2) === '${') {
           quote = '${';
         } else if (quote === '${' && source.charAt(a) === '}') {
@@ -166,9 +169,9 @@ export function comment (prettify: Prettify) {
 
       quote = source.slice(b, a + 1);
 
-      if (comment === '<!--') quote = quote.replace(/\s*-+>$/, '');
-      else if (comment === '//') quote = quote.replace(/\s+$/, '');
-      else quote = quote.replace(/\s*\u002a\/$/, '');
+      if (comment === '<!--') quote = quote.replace(/\s*-+>$/, NIL);
+      else if (comment === '//') quote = quote.replace(/\s+$/, NIL);
+      else quote = quote.replace(/\s*\u002a\/$/, NIL);
 
       ops.push(quote);
     }
@@ -239,7 +242,7 @@ export function comment (prettify: Prettify) {
         }
       } while (a > 0);
 
-      if (lex === '' && lang !== '') lex = language.setLexer(lang);
+      if (lex === NIL && lang !== NIL) lex = language.setLexer(lang);
 
     }
   }
