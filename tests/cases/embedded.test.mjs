@@ -40,7 +40,7 @@ test('HTML embedded script tag', async t => {
 
     t.snapshot(input, label.description);
 
-    t.log(input);
+    // t.log(input);
 
   });
 
