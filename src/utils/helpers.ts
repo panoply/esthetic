@@ -1,5 +1,5 @@
-import { isArray, create, assign, nil } from './native';
-import { cc } from './enums';
+import { isArray, create, assign } from './native';
+import { cc, NIL, WSP } from '@utils/chars';
 import { grammar } from '@options/grammar';
 
 /**
@@ -19,14 +19,14 @@ export function object<T> (initial?: T): T {
  * Used for generating repeating characters
  * and is merely a wraper around `''.repeat()`
  */
-export function repeatChar (count: number, ch: string = ' ') {
+export function repeatChar (count: number, character: string = WSP) {
 
-  if (count === 0) return ch;
+  if (count === 0) return character;
 
-  let char = nil;
+  let char = NIL;
   let i = 1;
 
-  do { char += ch; } while (i++ < count);
+  do { char += character; } while (i++ < count);
 
   return char;
 }
@@ -62,7 +62,7 @@ export function not (string: string, code: number) {
 /**
  * Whitespace
  *
- * Check is character is whitespace
+ * Check if character is whitespace
  */
 export function ws (string: string) {
 

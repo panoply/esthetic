@@ -1,5 +1,5 @@
-import { assign, nil } from '@utils/native';
-import { cc } from '@utils/enums';
+import { assign } from '@utils/native';
+import { cc, NIL } from '@utils/chars';
 import { is } from '@utils/helpers';
 import { Language, LanguageNames, Prettify } from 'types/prettify';
 import { prettify } from '@prettify/model';
@@ -129,7 +129,7 @@ export function detect (sample: string): Language {
   function notMarkup (): Language {
 
     let d: number = 1;
-    let join: string = nil;
+    let join: string = NIL;
     let flaga:boolean = false;
     let flagb: boolean = false;
 
@@ -253,7 +253,7 @@ export function detect (sample: string): Language {
         if (flaga === false) {
 
           if (is(b[d], cc.ARS) && is(b[d - 1], cc.FWS)) {
-            b[d - 1] = nil;
+            b[d - 1] = NIL;
             flaga = true;
           } else if (
             flagb === false &&
@@ -271,20 +271,20 @@ export function detect (sample: string): Language {
 
         } else if (flaga === true && is(b[d], cc.ARS) && d !== c - 1 && is(b[d + 1], cc.FWS)) {
           flaga = false;
-          b[d] = nil;
-          b[d + 1] = nil;
+          b[d] = NIL;
+          b[d + 1] = NIL;
         } else if (flagb === true && is(b[d], cc.SEM)) {
           flagb = false;
-          b[d] = nil;
+          b[d] = NIL;
         }
 
-        if (flaga === true || flagb === true) b[d] = nil;
+        if (flaga === true || flagb === true) b[d] = NIL;
 
         d = d + 1;
       } while (d < c);
     }
 
-    join = b.join(nil);
+    join = b.join(NIL);
 
     /* -------------------------------------------- */
     /* JSON                                         */
@@ -392,7 +392,7 @@ export function detect (sample: string): Language {
 
   };
 
-  if (sample === null || sample.replace(/\s+/g, nil) === nil) return reference('unknown');
+  if (sample === null || sample.replace(/\s+/g, NIL) === NIL) return reference('unknown');
 
   /* -------------------------------------------- */
   /* MARKDOWN                                     */
@@ -441,7 +441,7 @@ export function detect (sample: string): Language {
     )
   ) return isStyle();
 
-  b = sample.replace(/\[[a-zA-Z][\w-]*=['"]?[a-zA-Z][\w-]*['"]?\]/g, nil).split(nil);
+  b = sample.replace(/\[[a-zA-Z][\w-]*=['"]?[a-zA-Z][\w-]*['"]?\]/g, NIL).split(NIL);
   c = b.length;
 
   /* -------------------------------------------- */

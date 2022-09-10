@@ -2,7 +2,8 @@ import type { Prettify, LanguageProperName } from 'types/prettify';
 import { comment } from '@parser/comment';
 import { parse } from '@parser/parse';
 import { size, repeatChar } from '@utils/helpers';
-import { keys, nil } from '@utils/native';
+import { NIL } from '@utils/chars';
+import { keys } from '@utils/native';
 import { detect, reference } from '@parser/language';
 
 /**
@@ -107,7 +108,7 @@ function blank (prettify: Prettify) {
   const input = prettify.source.match(/\n/g);
   const timer = stats(languageName);
 
-  let output: string = nil;
+  let output: string = NIL;
 
   if (input === null) {
 
@@ -198,7 +199,7 @@ export function execute (prettify: Prettify) {
   output = prettify.beautify[prettify.options.lexer](prettify.options);
   output = prettify.options.endNewline === true
     ? output.replace(/\s*$/, crlf)
-    : output.replace(/\s+$/, nil);
+    : output.replace(/\s+$/, NIL);
 
   prettify.stats = time(output.length);
   prettify.end = 0;
