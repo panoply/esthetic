@@ -1,8 +1,7 @@
 import type { Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { is, not, repeatChar } from '@utils/helpers';
-import { nil } from '@utils/native';
-import { cc } from '@utils/enums';
+import { cc, NIL } from '@utils/chars';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
@@ -57,7 +56,7 @@ prettify.beautify.style = (options: Options) => {
       aa = aa + 1;
     } while (aa < options.indentSize);
 
-    return bb.join(nil);
+    return bb.join(NIL);
 
   })();
 
@@ -83,7 +82,7 @@ prettify.beautify.style = (options: Options) => {
   /**
    * When store - Holds reference to something (unsure what this is for?)
    */
-  let when = [ nil, nil ];
+  let when = [ NIL, NIL ];
 
   /* -------------------------------------------- */
   /* FUNCTIONS                                    */
@@ -124,7 +123,7 @@ prettify.beautify.style = (options: Options) => {
       } while (index < tabs);
     }
 
-    build.push(linesout.join(nil));
+    build.push(linesout.join(NIL));
 
   };
 
@@ -397,7 +396,7 @@ prettify.beautify.style = (options: Options) => {
       } else if (data.token[a].indexOf('when(') > 0) {
 
         when = data.token[a].split('when(');
-        build.push(when[0].replace(/\s+$/, nil));
+        build.push(when[0].replace(/\s+$/, NIL));
         nl(indent + 1);
         build.push(`when (${when[1]}`);
 
@@ -463,6 +462,6 @@ prettify.beautify.style = (options: Options) => {
 
   prettify.iterator = len - 1;
 
-  return build.join(nil);
+  return build.join(NIL);
 
 };

@@ -2,6 +2,8 @@ import type { Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { create } from '@utils/native';
 import { repeatChar } from '@utils/helpers';
+import { NIL, NWL, WSP } from '@utils/chars';
+import { StripEnd } from '@utils/regex';
 
 prettify.beautify.script = (options: Options) => {
 
@@ -3226,6 +3228,7 @@ prettify.beautify.script = (options: Options) => {
         }
 
       } else if (ctype === 'template') {
+
         if (data.lines[a] > 0) {
           level.push(indent);
         } else {
@@ -3670,7 +3673,7 @@ prettify.beautify.script = (options: Options) => {
           } else if (
             level[a] > -1 || (
               data.token[a].charAt(0) === '`' &&
-              data.token[a].indexOf('\n') > 0
+              data.token[a].indexOf(NWL) > 0
             )
           ) {
 
@@ -3717,7 +3720,7 @@ prettify.beautify.script = (options: Options) => {
 
     })();
 
-    const lf = (options.crlf === true) ? '\r\n' : '\n';
+    const lf = (options.crlf === true) ? '\r\n' : NWL;
     const pres = options.preserveLine + 1;
     const invisibles = [ 'x;', 'x}', 'x{', 'x(', 'x)' ];
 
@@ -3875,7 +3878,7 @@ prettify.beautify.script = (options: Options) => {
 
             if (bb < longest) {
               do {
-                data.token[list[aa][0]] = data.token[list[aa][0]] + ' ';
+                data.token[list[aa][0]] = data.token[list[aa][0]] + WSP;
                 bb = bb + 1;
               } while (bb < longest);
             }
@@ -3935,7 +3938,7 @@ prettify.beautify.script = (options: Options) => {
               i = i + 1;
             } while (i < comm.length);
 
-            data.token.splice(a, 1, comm.join('\n'));
+            data.token.splice(a, 1, comm.join(NWL));
 
           }
         }
@@ -3958,7 +3961,7 @@ prettify.beautify.script = (options: Options) => {
           data.token[a] !== ','
         ) {
 
-          build.push(' ');
+          build.push(WSP);
 
         } else if (levels[a] > -1) {
 
@@ -3987,7 +3990,7 @@ prettify.beautify.script = (options: Options) => {
 
         } else if (levels[a] === -10) {
 
-          build.push(' ');
+          build.push(WSP);
 
           if (data.lexer[a + 1] !== lexer) lastLevel = lastLevel + 1;
 
@@ -4005,14 +4008,14 @@ prettify.beautify.script = (options: Options) => {
 
           options.indentLevel = lastLevel;
 
-          external = prettify.beautify[data.lexer[a]](options);
+          external = prettify.beautify[data.lexer[a]](options).replace(StripEnd, NIL);
 
-          build.push(external.replace(/\s+$/, ''));
+          build.push(external);
 
           a = prettify.iterator;
 
           if (levels[a] === -10) {
-            build.push(' ');
+            build.push(WSP);
           } else if (levels[a] > -1) {
             build.push(nl(levels[a]));
           }
@@ -4031,7 +4034,7 @@ prettify.beautify.script = (options: Options) => {
     prettify.iterator = b - 1;
 
     // console.log(data);
-    return build.join('');
+    return build.join(NIL);
 
   })();
 

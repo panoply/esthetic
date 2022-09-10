@@ -4,9 +4,9 @@
 import type { Record, Structure } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
-import { create, nil } from '@utils/native';
+import { create } from '@utils/native';
 import { is, not } from '@utils/helpers';
-import { cc } from '@utils/enums';
+import { cc, NIL } from '@utils/chars';
 
 prettify.lexers.script = function script (source: string) {
 
@@ -865,7 +865,7 @@ prettify.lexers.script = function script (source: string) {
     let build = [ starting ];
     let temp: string[];
 
-    const ender = ending.split(nil);
+    const ender = ending.split(NIL);
     const endlen = ender.length;
     const start = a;
     const base = a + starting.length;
@@ -896,7 +896,7 @@ prettify.lexers.script = function script (source: string) {
 
     function finish () {
 
-      let str = nil;
+      let str = NIL;
 
       /**
        * Pads certain template tag delimiters with a space
@@ -950,7 +950,7 @@ prettify.lexers.script = function script (source: string) {
         build.pop();
       }
 
-      ltoke = build.join(nil);
+      ltoke = build.join(NIL);
 
       if (
         is(starting, cc.DQO) ||
@@ -1103,18 +1103,18 @@ prettify.lexers.script = function script (source: string) {
                 ltoke = segment;
                 ltype = 'string';
 
-                recordPush(nil);
+                recordPush(NIL);
 
                 parse.linesSpace = 0;
                 ltoke = '+';
                 ltype = 'operator';
 
-                recordPush(nil);
+                recordPush(NIL);
 
               } while (item.length > limit);
             }
 
-            if (item === nil) {
+            if (item === NIL) {
               ltoke = q + q;
             } else {
               ltoke = q + item + q;
@@ -1133,7 +1133,7 @@ prettify.lexers.script = function script (source: string) {
         ltype = type;
       }
 
-      if (ltoke.length > 0) recordPush(nil);
+      if (ltoke.length > 0) recordPush(NIL);
 
     };
 
