@@ -1008,7 +1008,11 @@ prettify.beautify.markup = (options: Options) => {
                 level.push(-10);
               }
             } else {
-              level.push(lev);
+              if (rules.forceAttribute === true) {
+                level.push(lev);
+              } else {
+                level.push(-10);
+              }
             }
 
           } else {
@@ -1072,8 +1076,25 @@ prettify.beautify.markup = (options: Options) => {
       } else if (rules.forceAttribute >= 1) {
 
         if (attcount >= (rules.forceAttribute as number)) {
+
           level[parent] = lev;
+
+          let fa = a - 1;
+
+          do {
+
+            if (type.is(fa, 'template') && level[fa] === -10) {
+              level[fa] = lev;
+            } else if (type.is(fa, 'attribute') && level[fa] === -10) {
+              level[fa] = lev;
+            }
+
+            fa = fa - 1;
+
+          } while (fa > parent);
+
         } else {
+
           level[parent] = -10;
         }
 
@@ -1132,6 +1153,7 @@ prettify.beautify.markup = (options: Options) => {
         attributeWrap(a);
 
       }
+
     };
 
     /* -------------------------------------------- */
