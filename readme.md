@@ -1,4 +1,4 @@
-### v0.0.1-beta.1
+### v0.1.0-beta.1
 
 _This module is in its infancy and working towards an official release candidate. Refer to the [Language Support](#language-support) before using the module._
 
@@ -27,10 +27,10 @@ Below is current support list of languages, their completion status and whether 
 
 | Language            | Status       | Operational |
 | ------------------- | ------------ | ----------- |
-| XML                 | 95% Complete | ✓           |
-| HTML                | 95% Complete | ✓           |
-| Liquid + HTML       | 95% Complete | ✓           |
-| Liquid + CSS        | 90% Complete | ✓           |
+| XML                 | 96% Complete | ✓           |
+| HTML                | 96% Complete | ✓           |
+| Liquid + HTML       | 96% Complete | ✓           |
+| Liquid + CSS        | 91% Complete | ✓           |
 | Liquid + JSON       | 95% Complete | ✓           |
 | Liquid + JavaScript | 80% Complete | ✓           |
 | CSS                 | 95% Complete | ✓           |
