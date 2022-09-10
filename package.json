@@ -115,7 +115,7 @@
   },
   "devDependencies": {
     "@liquify/eslint-config": "workspace:*",
-    "@prettify/test-utils": "workspace:^1.0.0",
+    "@prettify/test-utils": "workspace:*",
     "@types/benchmark": "^2.1.2",
     "ava": "^4.3.3",
     "benchmark": "^2.1.4",
