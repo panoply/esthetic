@@ -2,9 +2,8 @@ import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { StripEnd } from '@utils/regex';
-import { is, isLiquid, repeatChar, ws } from '@utils/helpers';
+import { is, repeatChar, ws } from '@utils/helpers';
 import { cc, WSP, NIL, NWL } from '@utils/chars';
-import { assign } from '@utils/native';
 import { grammar } from '@options/grammar';
 
 /* -------------------------------------------- */
