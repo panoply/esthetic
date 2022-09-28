@@ -162,9 +162,8 @@ export const grammar = new class Grammar {
         'path',
         'param',
         'progress',
-        'source',
-        'wbr',
-        'use'
+        'wbr'
+
       ],
       tags: [
         'body',
@@ -321,9 +320,7 @@ export const grammar = new class Grammar {
 
     for (const tag in Grammar.defaults.liquid.embedded) {
 
-      this.liquid.embed[tag] = {
-        end: (v) => new RegExp(`^{%-?\\s*end${tag}`).test(v)
-      };
+      this.liquid.embed[tag] = { end: (v) => new RegExp(`^{%-?\\s*end${tag}`).test(v) };
 
       for (const { language, argument } of Grammar.defaults.liquid.embedded[tag]) {
 
