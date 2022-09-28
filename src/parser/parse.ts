@@ -816,7 +816,7 @@ export const parse = new class Parse implements IParse {
         , config.chars[config.start + 7]
       ])); */
 
-      // console.log(config.chars[a - 4], config.chars[a - 3], config.chars[a - 2], config.chars[a - 1]);
+      /// console.log(config.chars[a - 4], config.chars[a - 3], config.chars[a - 2], config.chars[a - 1]);
       // console.log(config);
       // build.push(config.chars[a]);
 
@@ -931,6 +931,8 @@ export const parse = new class Parse implements IParse {
       (/\n(?!(\s*\*))/).test(output) === false
     )
     ) {
+
+      // console.log(output);
 
       /* -------------------------------------------- */
       /* RETURN COMMENT                               */

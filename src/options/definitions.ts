@@ -273,26 +273,6 @@ export const definitions: Definitions = {
     default: false,
     type: 'boolean'
   },
-  forceValue: {
-    lexer: 'style',
-    description: 'If CSS selector property values should be indented onto newlines',
-    default: 'preserve',
-    type: 'select',
-    values: [
-      {
-        rule: 'preserve',
-        description: 'Preserves property values, output does not augment provided structures'
-      },
-      {
-        rule: 'collapse',
-        description: 'Collapsed all selector property values onto newlines'
-      },
-      {
-        rule: 'wrap',
-        description: 'Collapase only selector property values which exceed wrap limit'
-      }
-    ]
-  },
 
   /* -------------------------------------------- */
   /* LEXER:SCRIPT                                 */
@@ -410,12 +390,7 @@ export const definitions: Definitions = {
     description: 'If the colon separating a case\'s expression (of a switch/case block) from its statement should be followed by a space instead of indentation thereby keeping the case on a single line of code.',
     lexer: 'script'
   },
-  inlineReturn: {
-    lexer: 'script',
-    default: true,
-    type: 'boolean',
-    description: 'Inlines return statements contained within `if` and `else` conditions. This rules also augments code and will reason about your structure to output the best and most readable results.'
-  },
+
   elseNewline: {
     lexer: 'script',
     default: false,
