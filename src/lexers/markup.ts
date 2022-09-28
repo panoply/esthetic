@@ -1070,7 +1070,8 @@ prettify.lexers.markup = function markup (source: string) {
     if (end === '---') {
 
       start = '---';
-      ltype = 'comment';
+      ltype = 'ignore';
+      preserve = true;
 
     } else if (is(b[a], cc.LAN)) {
 
