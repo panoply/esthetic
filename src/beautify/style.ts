@@ -1,6 +1,6 @@
 import type { Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { is, not, repeatChar } from '@utils/helpers';
+import { is, not } from '@utils/helpers';
 import { cc, NIL } from '@utils/chars';
 
 /* -------------------------------------------- */
@@ -39,11 +39,6 @@ prettify.beautify.style = (options: Options) => {
   const pres = options.preserveLine + 1;
 
   /**
-   * Newline token indentation characters - This is used for `forceValue`
-   */
-  const nlsize = repeatChar(options.indentSize);
-
-  /**
    * Single unit of indentation
    */
   const tab = (() => {
@@ -72,7 +67,7 @@ prettify.beautify.style = (options: Options) => {
   /**
    * Word wrap - This is used for `forceValue`
    */
-  let wrap = options.style.forceValue === 'wrap' && options.wrap > 0 ? options.wrap : 0;
+  let wrap = options.wrap > 0 ? options.wrap : 0;
 
   /**
    * Holds the current index position.
@@ -307,15 +302,12 @@ prettify.beautify.style = (options: Options) => {
 
         wrap = wrap + data.token[a].length;
 
-        if (wrap > options.wrap || options.style.forceValue === 'collapse') {
+        if (options.wrap > 0 && wrap > options.wrap) {
 
           nl(indent);
 
-          if (not(data.token[a][2], cc.DSH)) {
-            build.push(nlsize, data.token[a].replace('{{', '{{-'));
-          } else {
-            build.push(nlsize, data.token[a]);
-          }
+          build.push(data.token[a]);
+
         } else {
           build.push(data.token[a]);
         }
