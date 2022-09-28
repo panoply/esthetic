@@ -3144,10 +3144,8 @@ prettify.lexers.markup = function markup (source: string) {
 
                   if (lex.length < 1) break;
 
-                  const modeName = grammar.liquid.embed[name].language;
-                  const mode = lexmap[modeName];
-
-                  options.language = modeName;
+                  const mode = lexmap[grammar.liquid.embed[name].language];
+                  options.language = extlang;
                   prettify.lexers[mode](output);
 
                   if (
@@ -3166,7 +3164,6 @@ prettify.lexers.markup = function markup (source: string) {
 
                   record.token = end;
                   record.types = 'template_end';
-
                   recordpush(data, record, NIL);
 
                 }

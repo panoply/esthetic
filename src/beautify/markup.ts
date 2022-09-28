@@ -2,8 +2,9 @@ import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { StripEnd } from '@utils/regex';
-import { is, repeatChar, ws } from '@utils/helpers';
+import { is, isLiquid, repeatChar, ws } from '@utils/helpers';
 import { cc, WSP, NIL, NWL } from '@utils/chars';
+import { assign } from '@utils/native';
 import { grammar } from '@options/grammar';
 
 /* -------------------------------------------- */
@@ -563,190 +564,37 @@ prettify.beautify.markup = (options: Options) => {
       /* -------------------------------------------- */
 
       /**
-       * Attribute Name - Splits the attribute name and attribute value
-       */
-      function attributeName (x: string) {
-
-        const eq = x.indexOf('=');
-
-        if (eq > 0 && (
-          (eq < x.indexOf('"') && x.indexOf('"') > 0) ||
-          (eq < x.indexOf("'") && x.indexOf("'") > 0)
-        )) {
-          return [
-            x.slice(0, eq),
-            x.slice(eq + 1)
-          ];
-        }
-
-        return [ x, NIL ];
-
-      };
-
-      /**
-       * Attribute Values - Beautification of attribute values.
-       */
-      function attributeValues (input: string) {
-
-        const attr = attributeName(input);
-
-        // Exclude all href attribute values and all JavaScript "on" attributes
-        if (
-          attr[1] === NIL ||
-          attr[0] === 'href' || (
-            attr[0].charCodeAt(0) === 111 && // o
-            attr[0].charCodeAt(1) === 110 // n
-          )
-        ) {
-          return input;
-        } else if (rules.attributeValues === 'preserve') {
-          return attr[0] + '=' + attr[1];
-        } else if (rules.attributeValues === 'strip') {
-          return `${attr[0].trimStart()}=${attr[1].replace(/\s+/g, WSP).replace(/^["']\s+/, '"')}`;
-        }
-
-        const option = rules.attributeValues;
-        const attrarr: string[] = [];
-        const wrapper = options.wrap > 0 ? attr[1].length > options.wrap : false;
-
-        let text: string;
-
-        let inside: boolean = false;
-        let toke = NIL as string;
-        let name = NIL as string;
-        let item = 0; // value item
-        let next = 0; // next tag
-
-        if (option === 'collapse') {
-          text = attr[1].replace(/\s+/g, WSP);
-        } else if (option === 'wrap') {
-          text = attr[1].replace(/\s+/g, x => /\n/.test(x) ? NWL : x.replace(/\s+/, WSP));
-        }
-
-        do {
-
-          if (is(text[item], cc.LCB) && (is(text[item + 1], cc.LCB) || is(text[item + 1], cc.PER))) {
-
-            if (option === 'collapse') {
-
-              if (ws(text[item - 1]) === true && attrarr[attrarr.length - 1] !== NWL) {
-                attrarr.push(NWL);
-              }
-
-            }
-
-            if (is(text[item + 1], cc.PER)) {
-
-              next = text.indexOf('%}', item + 1);
-              toke = text.slice(item, next + 2);
-              name = is(toke[2], cc.DSH) ? toke.slice(3).trimStart() : toke.slice(2).trimStart();
-              item = next + 2;
-
-              if (name.startsWith('end')) {
-
-                inside = false;
-
-                if (option === 'collapse' && attrarr[attrarr.length - 1] !== NWL) {
-                  attrarr.push(NWL);
-                }
-              } else if (grammar.liquid.tags.has(name.slice(0, name.search(/\s/)))) {
-
-                inside = true;
-
-                if (option === 'collapse' && attrarr[attrarr.length - 1] !== NWL) {
-                  attrarr.push(NWL);
-                }
-              }
-
-              attrarr.push(toke);
-
-            } else {
-
-              if (inside && option === 'collapse' && attrarr[attrarr.length - 1] !== NWL) {
-                attrarr.push(NWL);
-              }
-
-              next = text.indexOf('}}', item + 1);
-              toke = text.slice(item, next + 2);
-              item = next + 2;
-              attrarr.push(toke);
-            }
-
-            if (option === 'collapse') {
-              if (ws(text[item]) === true && attrarr[attrarr.length - 1] !== NWL && item < text.length - 1) {
-                attrarr.push(NWL);
-              }
-            }
-
-          } else {
-
-            if (text[item] === WSP) {
-              if (option === 'collapse') {
-
-                if (attrarr[attrarr.length - 1] !== NWL) {
-                  attrarr.push(NWL);
-                }
-
-              } else if (wrapper && option === 'wrap') {
-
-                if (inside === false) {
-                  attrarr.push(NWL);
-                }
-
-              }
-            } else {
-
-              attrarr.push(text[item]);
-            }
-
-            item = item + 1;
-
-          }
-        } while (item < text.length);
-
-        return attr[0] + '=' + attrarr.join(NIL);
-
-      }
-
-      /**
        * This function is responsible for wrapping
        * applied to attributes.
        */
       function attributeWrap (index: number) {
 
-        if (type.is(index, 'attribute') || type.idx(index, 'template_attribute') > -1) {
+        const item = data.token[index].replace(/\s+/g, WSP).split(WSP);
+        const size = item.length;
 
-          data.token[index] = attributeValues(data.token[index]);
+        let bb = 1;
+        let acount = item[0].length;
 
-        } else {
+        do {
 
-          const item = data.token[index].replace(/\s+/g, WSP).split(WSP);
-          const size = item.length;
+          // bcount = aNWL.indexOf(item[bb], acount);
 
-          let bb = 1;
-          let acount = item[0].length;
+          if (acount + item[bb].length > options.wrap) {
 
-          do {
+            acount = item[bb].length;
+            item[bb] = lf + item[bb];
 
-            // bcount = aNWL.indexOf(item[bb], acount);
+          } else {
+            item[bb] = ` ${item[bb]}`;
+            acount = acount + item[bb].length;
+          }
 
-            if (acount + item[bb].length > options.wrap) {
+          bb = bb + 1;
 
-              acount = item[bb].length;
-              item[bb] = lf + item[bb];
+        } while (bb < size);
 
-            } else {
-              item[bb] = ` ${item[bb]}`;
-              acount = acount + item[bb].length;
-            }
+        data.token[index] = item.join(NIL);
 
-            bb = bb + 1;
-
-          } while (bb < size);
-
-          data.token[index] = item.join(NIL);
-
-        }
       };
 
       /* -------------------------------------------- */
@@ -998,8 +846,6 @@ prettify.beautify.markup = (options: Options) => {
                 type.idx(a + 1, 'attribute') > 0
               ))
             )) {
-
-            data.token[a] = attributeValues(data.token[a]);
 
             if (rules.forceAttribute === false && data.lines[a] === 1) {
               if (type.is(a + 1, 'template_attribute_start') && data.lines[a + 1] > 1) {
@@ -1697,6 +1543,12 @@ prettify.beautify.markup = (options: Options) => {
         prettify.end = extidx[a];
         options.indentLevel = lastLevel;
 
+        const lang = options.language;
+        const id = is(data.token[a], cc.LCB) ? 'liquid' : 'html';
+        const isjson = grammar[id].embed[data.stack[a]].language === 'json';
+
+        if (isjson) options.language = 'json';
+
         embedded = prettify.beautify[data.lexer[a]](options).replace(StripEnd, NIL);
 
         build.push(embedded);
@@ -1715,6 +1567,7 @@ prettify.beautify.markup = (options: Options) => {
         // content will shift on save
         options.indentLevel = 0;
 
+        if (isjson) options.language = lang;
       }
 
       a = a + 1;
