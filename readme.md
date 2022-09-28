@@ -17,6 +17,16 @@ Visit the [Playground](https://liquify.dev/prettify)
 - Uniformed array data structures
 - Drop-in solution with no complexities (boomer friendly)
 
+### Documentation
+
+Currently working on documentation to better inform upon rules and overall architecture.
+
+- Rules
+  - Markup
+  - Style
+  - Script
+  - [JSON](https://github.com/panoply/prettify/blob/pre-release/docs/rules/json.md)
+
 ### Why Prettify?
 
 Prettify is mostly geared towards web projects and exists an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/). It's the perfect choice for projects that leverage the [Liquid](https://shopify.github.io/liquid/) template language and was developed for usage in the [Liquify](https://liquify.dev) text editor extension/plugin. Prettify allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support, it intends to be the solution you'd employ when working with the template language.
@@ -381,7 +391,7 @@ The `format` method returns a promise, so when beautification fails and a parse 
 import prettify from '@liquify/prettify';
 
 // Invalid code
-const code = '{% if x %} {{ x }} {% endunless %}';
+const code = '{% if x %} {{ x }} {% endless %}';
 
 prettify.format(code).then(output => console.log(output)).catch(error => {
 
