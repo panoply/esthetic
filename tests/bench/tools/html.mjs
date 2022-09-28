@@ -2,7 +2,6 @@ import Benchmark from 'benchmark';
 import Prettify from '@liquify/prettify';
 import Prettier from 'prettier';
 import JSBeautify from 'js-beautify';
-import PrettyDiff from 'prettydiff';
 import path from 'path';
 import fs from 'fs';
 
@@ -30,30 +29,16 @@ suite.add('JSBeautify', function () {
   async: false
 });
 
-suite.add('PrettyDiff', function () {
-
-  PrettyDiff.options.mode = 'beautify';
-  PrettyDiff.options.lexer = 'markup';
-  PrettyDiff.options.source = html;
-  PrettyDiff.options.wrap = 80;
-
-  return PrettyDiff();
-
-}, {
-  async: false,
-  initCount: 1
-});
-
 suite.add('Prettify', function () {
 
-  return Prettify.format(html, {
+  return Prettify.formatSync(html, {
     language: 'html',
     lexer: 'markup',
     wrap: 80
   });
 
 }, {
-  async: true
+  async: false
 });
 
 suite.on('cycle', function (event) {
@@ -66,47 +51,18 @@ suite.on('complete', async function () {
 
   console.log('\nBeautification Times:', '\n');
 
-  console.time(
-    'Prettier'
-  );
-  await Prettier.format(html, { parser: 'html' });
-  console.timeEnd(
-    'Prettier'
-  );
+  console.time('Prettier');
+  Prettier.format(html, { parser: 'html' });
+  console.timeEnd('Prettier');
 
-  console.time(
-    'JSBeautify'
-  );
-  JSBeautify.html_beautify(html, {
-    wrap_line_length: 80
-  });
-  console.timeEnd(
-    'JSBeautify'
-  );
+  console.time('JSBeautify');
+  JSBeautify.html_beautify(html, { wrap_line_length: 80 });
+  console.timeEnd('JSBeautify');
 
-  console.time(
-    'PrettyDiff'
-  );
-  PrettyDiff.options.mode = 'beautify';
-  PrettyDiff.options.lexer = 'markup';
-  PrettyDiff.options.source = html;
-  PrettyDiff.options.wrap = 80;
-  PrettyDiff();
-  console.timeEnd(
-    'PrettyDiff'
-  );
+  console.time('Prettify');
+  Prettify.formatSync(html, { language: 'html', lexer: 'markup', wrap: 80 });
+  console.timeEnd('Prettify');
 
-  console.time(
-    'Prettify'
-  );
-  await Prettify.format(html, {
-    language: 'html',
-    lexer: 'markup',
-    wrap: 80
-  });
-  console.timeEnd(
-    'Prettify'
-  );
 });
 
 suite.run();
