@@ -1551,6 +1551,9 @@ prettify.beautify.markup = (options: Options) => {
           data.stack[a] in grammar[id].embed &&
           'language' in grammar[id].embed[data.stack[a]]) {
           isjson = grammar[id].embed[data.stack[a]].language === 'json';
+          if (isjson) {
+            options.language = 'json';
+          }
         }
 
         embedded = prettify.beautify[data.lexer[a]](options).replace(StripEnd, NIL);

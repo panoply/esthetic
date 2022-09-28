@@ -1,4 +1,4 @@
-import type { Options } from 'types/prettify';
+import type { JSONOptions, Options, ScriptOptions } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { assign, create } from '@utils/native';
 import { repeatChar } from '@utils/helpers';
@@ -7,10 +7,19 @@ import { StripEnd } from '@utils/regex';
 
 prettify.beautify.script = (options: Options) => {
 
-  const cacheOptions = assign({}, options.script);
+  const cloneopts = assign({}, options.script);
 
   if (options.language === 'json') {
-    options.script = assign(options.script, options.json, { quoteCovert: 'double' });
+    options.script = assign<ScriptOptions, JSONOptions, ScriptOptions>(
+      options.script,
+      options.json,
+      {
+        quoteConvert: 'double',
+        endComma: 'never',
+        noSemicolon: true,
+        vertical: false
+      }
+    );
   }
 
   /**
@@ -3942,7 +3951,7 @@ prettify.beautify.script = (options: Options) => {
   })();
 
   if (options.language === 'json') {
-    options.script = assign(options.script, cacheOptions);
+    options.script = assign(options.script, cloneopts);
   }
 
   return output;

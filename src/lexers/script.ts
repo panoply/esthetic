@@ -1,7 +1,7 @@
 /* eslint-disable no-mixed-operators */
 /* eslint-disable no-control-regex */
 
-import type { Record, Structure } from 'types/prettify';
+import { JSONOptions, Record, ScriptOptions, Structure } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { assign, create } from '@utils/native';
@@ -11,11 +11,19 @@ import { cc, NIL } from '@utils/chars';
 prettify.lexers.script = function script (source: string) {
 
   const { options } = prettify;
-  const cacheOptions = assign({}, options.script);
+  const cloneopts = assign({}, options.script);
 
   if (options.language === 'json') {
-    options.script = assign(options.script, options.json, { quoteCovert: 'double' });
-    console.log(options.script);
+    options.script = assign<ScriptOptions, JSONOptions, ScriptOptions>(
+      options.script,
+      options.json,
+      {
+        quoteConvert: 'double',
+        endComma: 'never',
+        noSemicolon: true,
+        vertical: false
+      }
+    );
   }
 
   /**
@@ -3966,7 +3974,7 @@ prettify.lexers.script = function script (source: string) {
     parse.pop(data);
   }
 
-  options.script = cacheOptions;
+  options.script = cloneopts;
 
   return data;
 
