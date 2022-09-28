@@ -125,3 +125,48 @@ export interface Prettify {
     script?(options: Options): string,
   },
 }
+
+export interface Format<T> {
+  (source: string, rules?: Options): T;
+  /**
+   * **Before Format**
+   *
+   * Trigger a callback to execute right before beautification
+   * begins. The function will be invoked in an isolated manner.
+   */
+  before?: (callback: (rules: Options, input: string) => void | false) => void;
+  /**
+   * **After Format**
+   *
+   * Trigger a callback to execute immeadiatly after beautification
+   * has completed. The function will trigger before the returning
+   * promise has fulfilled and is invoked in an isolated nammer.
+   */
+  after?: (callback: (output: string, rules: Options) => void | false) => void
+  /**
+   * **Format Stats**
+   *
+   * Trigger a callback to execute immeadiatly after beautification
+   * has completed. The function will trigger before the returning
+   * promise has fulfilled and is invoked in an isolated nammer.
+   */
+  get stats(): {
+    /**
+     * Beautification processing time in miliseconds
+     */
+    time: number;
+    /**
+     * The output size, ie: bytes, kb or mb
+     */
+    size: number;
+    /**
+     * The number of characters contained in the output string.
+     */
+    chars: number;
+    /**
+     * The offical language name that was beautified
+     */
+    language: LanguageProperName
+  };
+
+}
