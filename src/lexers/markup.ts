@@ -611,14 +611,16 @@ prettify.lexers.markup = function markup (source: string) {
 
             ee = eq + 2;
 
-            if (qc === 'double') {
-              if (record.token.slice(eq + 2, ln).indexOf('"') > -1) inner = true;
-              ch[eq + 1] = '"';
-              ch[ch.length - 1] = '"';
-            } else if (qc === 'single') {
-              if (record.token.slice(eq + 2, ln).indexOf("'") > -1) inner = true;
-              ch[eq + 1] = "'";
-              ch[ch.length - 1] = "'";
+            if (lq === false) {
+              if (qc === 'double') {
+                if (record.token.slice(eq + 2, ln).indexOf('"') > -1) inner = true;
+                ch[eq + 1] = '"';
+                ch[ch.length - 1] = '"';
+              } else if (qc === 'single') {
+                if (record.token.slice(eq + 2, ln).indexOf("'") > -1) inner = true;
+                ch[eq + 1] = "'";
+                ch[ch.length - 1] = "'";
+              }
             }
 
             if (inner === true || lq === true) {
@@ -2784,6 +2786,7 @@ prettify.lexers.markup = function markup (source: string) {
       } else if (rules.quoteConvert === 'single') {
         record.token = record.token.replace(/"/g, "'");
       }
+
     }
 
     // identify script and style hidden within a CDATA escape
