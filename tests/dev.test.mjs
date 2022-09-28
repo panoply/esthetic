@@ -8,11 +8,18 @@ test('develop', async t => {
 
     const output = await prettify.format(source, {
       language: 'liquid',
+      preserveLine: 0,
       markup: {
+        quoteConvert: 'double',
         forceIndent: false,
-        forceAttribute: 3
+        forceAttribute: 3,
+        attributeSort: true
+      },
+      json: {
+        braceAllman: true,
+        objectIndent: 'indent',
+        arrayFormat: 'indent'
       }
-
     });
 
     t.log(highlight(output));
