@@ -41,6 +41,40 @@ defineProperty(options, 'rules', { get () { return prettify.options; } });
 /* FORMAT FUNCTION                              */
 /* -------------------------------------------- */
 
+function formatSync (source: string | Buffer, rules?: Options) {
+
+  prettify.source = source;
+
+  if (typeof rules === 'object') prettify.options = options(rules);
+
+  // TRIGGER BEFORE HOOKS
+  //
+  if (prettify.hooks.before.length > 0) {
+    for (const cb of prettify.hooks.before) {
+      if (cb(prettify.options, source as string) === false) return source;
+    }
+  }
+
+  // BEAUTIFY
+  //
+  const output = execute(prettify);
+
+  // TRIGGER AFTER HOOKS
+  //
+  if (prettify.hooks.after.length > 0) {
+    for (const cb of prettify.hooks.after) {
+      if (cb.call(parser.data, output, prettify.options) === false) return source;
+    }
+  }
+
+  if (parser.error.length) return new Error(parser.error);
+
+  // RESOLVE OUTPUT
+  //
+  return output;
+
+}
+
 function format (source: string | Buffer, rules?: Options) {
 
   prettify.source = source;
@@ -141,4 +175,4 @@ function parse (source: string | Buffer, rules?: Options) {
 
 };
 
-export { format, options, parse };
+export { formatSync, format, options, parse };
