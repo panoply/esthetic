@@ -118,7 +118,6 @@ export const prettify: Prettify = (function () {
         braceAllman: false,
         commentNewline: false,
         caseSpace: false,
-        inlineReturn: true,
         elseNewline: false,
         endComma: 'never',
         arrayFormat: 'default',
