@@ -461,8 +461,7 @@ export const parse = new class Parse implements IParse {
           (data.lexer[a] === 'script' && (
             prettify.options.script.objectSort === true ||
             prettify.options.json.objectSort === true
-          )
-          )
+          ))
         )
       ) {
 
