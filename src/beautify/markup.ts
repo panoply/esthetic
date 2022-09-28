@@ -1544,9 +1544,14 @@ prettify.beautify.markup = (options: Options) => {
 
         const lang = options.language;
         const id = is(data.token[a], cc.LCB) ? 'liquid' : 'html';
-        const isjson = grammar[id].embed[data.stack[a]].language === 'json';
+        let isjson = false;
 
-        if (isjson) options.language = 'json';
+        if (
+          id === 'liquid' &&
+          data.stack[a] in grammar[id].embed &&
+          'language' in grammar[id].embed[data.stack[a]]) {
+          isjson = grammar[id].embed[data.stack[a]].language === 'json';
+        }
 
         embedded = prettify.beautify[data.lexer[a]](options).replace(StripEnd, NIL);
 
