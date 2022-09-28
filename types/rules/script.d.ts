@@ -250,43 +250,6 @@ export interface ScriptOptions {
   /**
    * **Description**
    *
-   * Inlines `return` calls when contained within conditionals. This rule
-   * will also correct conditions.
-   *
-   * ---
-   *
-   * **Example**
-   *
-   * Below is an example of how this rule works if it's enabled, ie: `true`
-   *
-   * **Before Formatting:**
-   *
-   * ```js
-   * function fn (x) {
-   *
-   *  if(x === true)
-   *     return 'Hello!'
-   *
-   * }
-   *
-   * ```
-   *
-   * **After Formatting:**
-   *
-   * ```js
-   * function fn (x) {
-   *
-   *  if(x === true) return 'Hello!'
-   *
-   * }
-   *
-   * ```
-   */
-  inlineReturn?: boolean,
-
-  /**
-   * **Description**
-   *
    * If else_line is true then the keyword 'else' is
    * forced onto a new line.
    */
