@@ -470,7 +470,7 @@ prettify.lexers.markup = function markup (source: string) {
      * This function is only called when certain rule conditions are passed
      * and when Liquid attributes are contained.
      */
-    function liqattrcase (attr: string) {
+    /* function liqattrcase (attr: string) {
 
       const len = attr.length;
 
@@ -492,7 +492,7 @@ prettify.lexers.markup = function markup (source: string) {
 
       return attr;
 
-    }
+    } */
 
     // attribute parser
     // lexer_markup_tag_attributeRecord
