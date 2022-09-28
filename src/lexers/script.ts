@@ -4,15 +4,19 @@
 import type { Record, Structure } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
-import { create } from '@utils/native';
+import { assign, create } from '@utils/native';
 import { is, not } from '@utils/helpers';
 import { cc, NIL } from '@utils/chars';
 
 prettify.lexers.script = function script (source: string) {
 
   const { options } = prettify;
+  const cacheOptions = assign({}, options.script);
 
-  if (options.language === 'json') options.script.quoteConvert = 'double';
+  if (options.language === 'json') {
+    options.script = assign(options.script, options.json, { quoteCovert: 'double' });
+    console.log(options.script);
+  }
 
   /**
    * Advancement
@@ -22,12 +26,12 @@ prettify.lexers.script = function script (source: string) {
   /**
    * Last Token
    */
-  let ltoke = '';
+  let ltoke = NIL;
 
   /**
    * Last Type
    */
-  let ltype = '';
+  let ltype = NIL;
 
   /**
    * Parse Word, ie: `for`, `if` `while` etc etc
@@ -92,11 +96,11 @@ prettify.lexers.script = function script (source: string) {
    * The document source as an array list,
    * ie: source.split('')
    */
-  const c = source.split('');
+  const c = source.split(NIL);
   const lword = [];
   const brace = [];
   const classy = [];
-  const sourcemap = [ 0, '' ];
+  const sourcemap = [ 0, NIL ];
   const datatype = [ false ];
 
   /**
@@ -129,7 +133,12 @@ prettify.lexers.script = function script (source: string) {
   /**
    * Identify variable declarations
    */
-  const vart: { count: number[], index: number[]; len: number; word: string[]; } = create(null);
+  const vart: {
+    count?: number[],
+    index?: number[];
+    len?: number;
+    word?: string[];
+  } = {};
 
   vart.count = [];
   vart.index = [];
@@ -428,7 +437,7 @@ prettify.lexers.script = function script (source: string) {
     } else if (comment[0] !== '') {
 
       ltoke = comment[0];
-      ltype = (/^\/\*\s*@ignore\s*\bstart\b/).test(ltoke) ? 'ignore' : 'comment';
+      ltype = (/^\/\*\s*@prettify-ignore-start/).test(ltoke) ? 'ignore' : 'comment';
 
       if (ltoke.indexOf('# sourceMappingURL=') === 2) {
         sourcemap[0] = parse.count + 1;
@@ -1141,12 +1150,12 @@ prettify.lexers.script = function script (source: string) {
 
     // This insanity is for JSON where all the
     // required quote characters are escaped.
-    if (c[a - 1] === '\\' && slashes(a - 1) === true && (c[a] === '"' || c[a] === "'")) {
+    if (c[a - 1] === '\\' && slashes(a - 1) === true && (is(c[a], cc.DQO) || is(c[a], cc.SQO))) {
 
       parse.pop(data);
 
-      if (data.token[0] === '{') {
-        if (c[a] === '"') {
+      if (is(data.token[0], cc.LCB)) {
+        if (is(c[a], cc.DQO)) {
           starting = '"';
           ending = '\\"';
           build = [ '"' ];
@@ -1160,7 +1169,7 @@ prettify.lexers.script = function script (source: string) {
 
       } else {
 
-        if (c[a] === '"') {
+        if (is(c[a], cc.DQO)) {
           build = [ '\\"' ];
           finish();
           return;
@@ -1189,16 +1198,16 @@ prettify.lexers.script = function script (source: string) {
 
           if (c[ee - 1] === '\\') {
             if (slashes(ee - 1) === true) {
-              if (qc === 'double' && c[ee] === "'") {
+              if (qc === 'double' && is(c[ee], cc.SQO)) {
                 build.pop();
-              } else if (qc === 'single' && c[ee] === '"') {
+              } else if (qc === 'single' && is(c[ee], cc.DQO)) {
                 build.pop();
               }
             }
 
-          } else if (qc === 'double' && c[ee] === '"' && c[a] === "'") {
+          } else if (qc === 'double' && is(c[ee], cc.DQO) && is(c[a], cc.SQO)) {
             c[ee] = '\\"';
-          } else if (qc === 'single' && c[ee] === "'" && c[a] === '"') {
+          } else if (qc === 'single' && is(c[ee], cc.SQO) && is(c[a], cc.DQO)) {
             c[ee] = "\\'";
           }
 
@@ -1231,10 +1240,10 @@ prettify.lexers.script = function script (source: string) {
         }
 
         if (
-          (is(starting, cc.DQO) || is(starting, cc.SQO)) &&
-          (ext === true || ee > start) &&
           options.language !== 'json' &&
           options.language !== 'javascript' &&
+          (is(starting, cc.DQO) || is(starting, cc.SQO)) &&
+          (ext === true || ee > start) &&
           c[ee - 1] !== '\\' &&
           not(c[ee], cc.DQO) &&
           not(c[ee], cc.SQO) &&
@@ -2208,17 +2217,15 @@ prettify.lexers.script = function script (source: string) {
    */
   function recordPush (structure: string) {
 
-    const record = create(null);
-
-    record.begin = parse.structure[parse.structure.length - 1][1];
-    record.ender = -1;
-    record.lexer = 'script';
-    record.lines = parse.linesSpace;
-    record.stack = parse.structure[parse.structure.length - 1][0];
-    record.token = ltoke;
-    record.types = ltype;
-
-    parse.push(data, record, structure);
+    parse.push(data, {
+      begin: parse.structure[parse.structure.length - 1][1],
+      ender: -1,
+      lexer: 'script',
+      lines: parse.linesSpace,
+      stack: parse.structure[parse.structure.length - 1][0],
+      token: ltoke,
+      types: ltype
+    }, structure);
 
   };
 
@@ -2226,6 +2233,7 @@ prettify.lexers.script = function script (source: string) {
    * A tokenizer for regular expressions
    */
   function regex () {
+
     let ee = a + 1;
     let h = 0;
     let i = 0;
@@ -3556,6 +3564,7 @@ prettify.lexers.script = function script (source: string) {
         }
       }
     }
+
   };
 
   /* -------------------------------------------- */
@@ -3956,6 +3965,8 @@ prettify.lexers.script = function script (source: string) {
 
     parse.pop(data);
   }
+
+  options.script = cacheOptions;
 
   return data;
 

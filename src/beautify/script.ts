@@ -1,11 +1,17 @@
 import type { Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { create } from '@utils/native';
+import { assign, create } from '@utils/native';
 import { repeatChar } from '@utils/helpers';
 import { NIL, NWL, WSP } from '@utils/chars';
 import { StripEnd } from '@utils/regex';
 
 prettify.beautify.script = (options: Options) => {
+
+  const cacheOptions = assign({}, options.script);
+
+  if (options.language === 'json') {
+    options.script = assign(options.script, options.json, { quoteCovert: 'double' });
+  }
 
   /**
    * API Keywords, this can be web browser API keywords
@@ -1350,19 +1356,6 @@ prettify.beautify.script = (options: Options) => {
       }
 
       if (data.types[a - 1] === 'comment') level[a - 1] = indent;
-
-      // HOT FIX
-      // When attempting correction in an else condition
-      // and a newline is expressed this captures that and
-      // eliminates the newline
-      if (
-        options.script.inlineReturn && options.script.correct === false &&
-        ctoke === 'x}' &&
-        (data.stack[a] === 'if' || data.stack[a] === 'else') &&
-        data.token[data.begin[data.begin[a - 1] - 1] - 2] !== 'else'
-      ) {
-        level[a - 1] = -20;
-      }
 
       endExtraInd();
 
@@ -3506,96 +3499,6 @@ prettify.beautify.script = (options: Options) => {
       /* INLINE RETURNS LOGIC                         */
       /* -------------------------------------------- */
 
-      if (options.script.inlineReturn) {
-
-        if (
-          data.stack[a] === 'if' &&
-          ctoke === 'return' &&
-          (ltoke === 'x{' || ltoke === '{')
-        ) {
-
-          const lastelse = data.begin.lastIndexOf(data.begin[a - 1], a - 3);
-
-          if (data.token[lastelse - 2] === 'else') {
-
-            if (ltoke === 'x{') data.token[a - 1] = '{';
-            if (data.token[data.ender[a]] === 'x}') data.token[data.ender[a]] = '}';
-
-            data.lines[data.ender[a]] = data.lines[data.ender[a]] - 1;
-
-          } else {
-
-            if (
-              data.token[data.ender[a - 1] + 2] !== 'if' &&
-              data.token[data.ender[a - 1] + 1] !== 'else'
-            ) {
-
-              level[a - 1] = -20;
-
-              if (ltoke === '{') data.token[a - 1] = 'x{';
-              if (data.token[data.ender[a]] === '}') data.token[data.ender[a]] = 'x}';
-
-            } else if (
-              data.token[data.ender[a - 1] + 2] !== 'if' &&
-              data.token[data.ender[a - 1] + 1] !== 'x{'
-            ) {
-
-              level[a - 1] = -20;
-              data.lines[data.ender[a - 1] + 2] = data.lines[data.ender[a - 1] + 2] - 1;
-
-              if (data.token[a - 1] === '{') data.token[a - 1] = 'x{';
-
-              if (data.token[data.ender[a]] === '}') data.token[data.ender[a]] = 'x}';
-              if (data.token[data.ender[a - 1] + 2] === '{') data.token[data.ender[a - 1] + 2] = 'x{';
-
-            }
-          }
-        }
-
-        if (
-          (
-            ltoke === 'x}' ||
-            ltoke === '}'
-          ) && (
-            data.stack[a - 1] === 'if' &&
-            ctoke === 'else' &&
-            (data.token[a + 1] === '{' || data.token[a + 1] === 'x{') &&
-            data.token[a + 2] === 'return'
-          )
-        ) {
-
-          if (data.token[a - 2] === 'x;') data.token[a - 2] = ';';
-
-        }
-
-        if (
-          ltoke === 'x{' &&
-          ctoke === 'return' &&
-          data.stack[a] === 'else'
-        ) {
-
-          level[a - 1] = -20;
-
-          if (data.token[data.ender[a - 1] - 1] === 'x;') data.token[data.ender[a - 1] - 1] = ';';
-
-          data.lines[data.ender[a - 1]] = data.lines[data.ender[a - 1]] - 1;
-          data.lines[data.ender[a] + 1] = data.lines[data.ender[a] + 1] - 1;
-
-        }
-
-        if (
-          ltoke === 'x}' &&
-          ctoke === 'else' &&
-          data.token[a + 1] === 'x{' &&
-          data.token[a + 2] === 'return' &&
-          data.token[data.ender[a] - 1] === '}'
-        ) {
-
-          data.token[data.ender[a] - 1] = 'x}';
-
-        }
-      }
-
       level.push(-10);
     };
 
@@ -4037,6 +3940,10 @@ prettify.beautify.script = (options: Options) => {
     return build.join(NIL);
 
   })();
+
+  if (options.language === 'json') {
+    options.script = assign(options.script, cacheOptions);
+  }
 
   return output;
 
