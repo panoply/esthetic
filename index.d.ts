@@ -5,7 +5,8 @@ import {
   Definitions,
   Language,
   Data,
-  LanguageProperName
+  LanguageProperName,
+  Format
 } from './types/prettify';
 
 export {
@@ -25,9 +26,10 @@ export {
 
 declare const prettify: {
   /**
-   * **PRETTIFY 💅**
+   * **PRETTIFY 🎀**
    *
-   * The new generation beautification tool for Liquid.
+   * The new generation beautification tool for Liquid. Async
+   * export which resolves a promise.
    *
    * - Liquid + HTML
    * - Liquid + XHTML
@@ -42,50 +44,27 @@ declare const prettify: {
    * - Liquid + TSX
    * - JSON
    */
-  format?: {
-    (source: string, rules?: Options): Promise<string>;
-    /**
-     * **Before Format**
-     *
-     * Trigger a callback to execute right before beautification
-     * begins. The function will be invoked in an isolated manner.
-     */
-    before?: (callback: (rules: Options, input: string) => void | false) => void;
-    /**
-     * **After Format**
-     *
-     * Trigger a callback to execute immeadiatly after beautification
-     * has completed. The function will trigger before the returning
-     * promise has fulfilled and is invoked in an isolated nammer.
-     */
-    after?: (callback: (output: string, rules: Options) => void | false) => void
-    /**
-     * **Format Stats**
-     *
-     * Trigger a callback to execute immeadiatly after beautification
-     * has completed. The function will trigger before the returning
-     * promise has fulfilled and is invoked in an isolated nammer.
-     */
-    get stats(): {
-      /**
-       * Beautification processing time in miliseconds
-       */
-      time: number;
-      /**
-       * The output size, ie: bytes, kb or mb
-       */
-      size: number;
-      /**
-       * The number of characters contained in the output string.
-       */
-      chars: number;
-      /**
-       * The offical language name that was beautified
-       */
-      language: LanguageProperName
-    };
-
-  };
+  format?: Format<Promise<string>>
+  /**
+   * **PRETTIFY 🎀**
+   *
+   * The new generation beautification tool for Liquid. Sync
+   * export which throws if error.
+   *
+   * - Liquid + HTML
+   * - Liquid + XHTML
+   * - Liquid + XML
+   * - Liquid + CSS
+   * - Liquid + SCSS
+   * - Liquid + SASS
+   * - Liquid + LESS
+   * - Liquid + JavaScript
+   * - Liquid + TypeScript
+   * - Liquid + JSX
+   * - Liquid + TSX
+   * - JSON
+   */
+  formatSync?: Format<string>
   /**
    * **Parse**
    *
