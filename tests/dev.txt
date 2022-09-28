@@ -1,1 +1,20 @@
-<div  {{ object.prop.prop[string][10] | filter: false }}></div>
+<!doctype>
+<html>
+<head>
+<title>Some Example</title>
+<script> {%- render 'shop.js' -%} </script>
+<script>{%- render 'shop.js' -%} </script>
+<script> {%- render 'shop.js' -%}</script>
+<script>window.app()</script>
+<script>function(){ return 'foo' }</script>
+</head>
+<body>
+<main>
+<script> {%- render 'shop.js' -%} </script>
+<script>{%- render 'shop.js' -%} </script>
+<script> {%- render 'shop.js' -%}</script>
+<script>window.app()</script>
+<script>function(){ return 'foo' }</script>
+</main>
+</body>
+</html>
