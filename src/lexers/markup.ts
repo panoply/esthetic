@@ -183,7 +183,7 @@ prettify.lexers.markup = function markup (source: string) {
     count.index = parse.count;
     count.line = parse.lineNumber;
 
-    // console.log(record);
+    //    console.log(record);
 
     parse.push(target, record, structure);
 
@@ -2885,10 +2885,10 @@ prettify.lexers.markup = function markup (source: string) {
   // parses everything other than markup tags
   function content () {
 
-    const lex = [];
     const now = a;
     const jsxbrace = is(data.token[parse.count], cc.LCB) && jsx === true;
 
+    let lex = [];
     let ltoke = NIL;
     let liner = parse.linesSpace;
     let name: string = NIL;
@@ -2949,6 +2949,9 @@ prettify.lexers.markup = function markup (source: string) {
       let quotes = 0;
 
       do {
+
+        // console.time('markup');
+        // console.timeEnd('markup');
 
         if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
 
@@ -3018,8 +3021,6 @@ prettify.lexers.markup = function markup (source: string) {
               // script requires use of the script lexer
               if (name === 'script') {
 
-                // console.log(data.types[parse.count]);
-
                 end = a === c - 9
                   ? end.slice(0, end.length - 1)
                   : end.slice(0, end.length - 2);
@@ -3052,7 +3053,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else {
 
-                    prettify.options.language = extlang;
+                    options.language = extlang;
                     prettify.lexers.script(output);
 
                     if (
@@ -3063,7 +3064,7 @@ prettify.lexers.markup = function markup (source: string) {
                       )
                     ) parse.sortCorrection(0, parse.count + 1);
 
-                    prettify.options.language = 'html';
+                    options.language = 'html';
 
                   }
 
@@ -3110,12 +3111,12 @@ prettify.lexers.markup = function markup (source: string) {
 
                   } else {
 
-                    prettify.options.language = extlang;
+                    options.language = extlang;
                     prettify.lexers.style(outside);
 
                     if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
 
-                    prettify.options.language = 'html';
+                    options.language = 'html';
 
                   }
 
@@ -3127,70 +3128,50 @@ prettify.lexers.markup = function markup (source: string) {
 
               if (grammar.embed('liquid', name)) {
 
-                end = b
-                  .slice(a)
-                  .join(NIL)
-                  .toLowerCase();
+                const inner = b.slice(a).join(NIL);
+                const ender = inner.search(new RegExp(`{%-?\\s*end${name}`));
+
+                lex = lex.length > 0 ? lex.concat(lex, b.slice(a, a + ender)) : b.slice(a, a + ender);
+                a = a + ender;
+                end = b.slice(a).join(NIL).toLowerCase();
 
                 if (grammar.liquid.embed[name].end(end)) {
 
                   end = end.slice(0, end.indexOf('%}') + 2);
-
-                  output = lex
-                    .join(NIL)
-                    .replace(/^\s+/, NIL)
-                    .replace(/\s+$/, NIL);
+                  output = lex.join(NIL).replace(/^\s+/, NIL).replace(/\s+$/, NIL);
 
                   a = a + end.length - 1;
 
                   if (lex.length < 1) break;
 
-                  const mode = lexmap[grammar.liquid.embed[name].language];
+                  const modeName = grammar.liquid.embed[name].language;
+                  const mode = lexmap[modeName];
 
-                  if ((/^<!--+/).test(output) && /--+>$/.test(output)) {
+                  options.language = modeName;
+                  prettify.lexers[mode](output);
 
-                    record.token = '<!--';
-                    record.types = 'comment';
-
-                    recordpush(data, record, NIL);
-
-                    output = output
-                      .replace(/^<!--+/, NIL)
-                      .replace(/--+>$/, NIL);
-
-                    prettify.lexers[mode](output);
-                    record.token = '-->';
-
-                    recordpush(data, record, NIL);
-
-                  } else {
-
-                    prettify.options.language = grammar.liquid.embed[name].language;
-                    prettify.lexers[mode](output);
-
-                    if (
-                      (
-                        (extlang === 'json') && options.json.objectSort === true
-                      ) || (
-                        (extlang === 'javascript') && options.script.objectSort === true
-                      ) || (
-                        (extlang === 'css' || extlang === 'scss') && options.style.sortProperties === true
-                      )
-                    ) parse.sortCorrection(0, parse.count + 1);
-
-                    prettify.options.language = 'liquid';
-
-                    record.token = end;
-                    record.types = 'template_end';
-
-                    recordpush(data, record, NIL);
-
+                  if (
+                    (
+                      (extlang === 'json') && options.json.objectSort === true
+                    ) || (
+                      (extlang === 'javascript') && options.script.objectSort === true
+                    ) || (
+                      (extlang === 'css' || extlang === 'scss') && options.style.sortProperties === true
+                    )
+                  ) {
+                    parse.sortCorrection(0, parse.count + 1);
                   }
 
-                  break;
+                  options.language = 'liquid';
+
+                  record.token = end;
+                  record.types = 'template_end';
+
+                  recordpush(data, record, NIL);
 
                 }
 
+                break;
               }
 
             }
@@ -3314,6 +3295,7 @@ prettify.lexers.markup = function markup (source: string) {
                 aa = wrap;
 
               }
+
             };
 
             // HTML anchor lists do not get wrapping unless the content itself exceeds
