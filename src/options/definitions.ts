@@ -187,30 +187,6 @@ export const definitions: Definitions = {
       }
     ]
   },
-  attributeValues: {
-    default: false,
-    description: 'Controls how attribute values should be formatter',
-    type: 'select',
-    lexer: 'markup',
-    values: [
-      {
-        rule: 'preserve',
-        description: 'Preserves attribute values, leaving them intact.'
-      },
-      {
-        rule: 'collapse',
-        description: 'Collapsed all space separated attributes values onto newlines'
-      },
-      {
-        rule: 'wrap',
-        description: 'Collapase attribute values when then exceed wrap limit'
-      },
-      {
-        rule: 'strip',
-        description: 'Strips newlines and extraneous whitespaces from attribute values'
-      }
-    ]
-  },
   delimiterSpacing: {
     default: true,
     description: 'Whether or not delimiter characters should apply a single space at the start and end point',
