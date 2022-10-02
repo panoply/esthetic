@@ -657,6 +657,7 @@ prettify.lexers.style = function style (source: string) {
      * First character
      */
     let first = NIL;
+
     const comsa = [];
 
     /* -------------------------------------------- */
@@ -719,7 +720,7 @@ prettify.lexers.style = function style (source: string) {
         .replace(/\s*&/, ' &')
         .replace(/(\s*>\s*)/g, ' > ')
         .replace(/(\s*\+\s*)/g, ' + ') // HOT PATCH - Included + for SCSS
-        .replace(/:\s+/g, ': ')
+        .replace(/:\s{2,}/g, ': ')
         .replace(/^(\s+)/, NIL)
         .replace(/(\s+)$/, NIL)
         .replace(/\s+::\s+/, '::');
@@ -860,13 +861,18 @@ prettify.lexers.style = function style (source: string) {
     if (data.lexer[parse.count - 1] !== 'style' || bb < 0) {
 
       if (type === 'colon') {
+
         if (first === '$' || is(first, cc.ATT)) {
           data.types[aa] = 'variable';
         } else {
-          if (data.stack[aa] !== 'global' && (data.types[aa] !== 'comment' || data.types[aa] !== 'ignore')) {
+          if (data.stack[aa] !== 'global' && (
+            data.types[aa] !== 'comment' ||
+            data.types[aa] !== 'ignore'
+          )) {
             data.types[aa] = 'property';
           }
         }
+
       } else if (data.lexer[aa] === 'style') {
         data.types[aa] = 'selector';
         selector(aa);
@@ -885,7 +891,17 @@ prettify.lexers.style = function style (source: string) {
 
         data.types[aa] = 'selector';
 
-        if (is(data.token[aa], cc.COL)) data.types[bb] = 'selector';
+        // HOT PATCH
+        //
+        // Nested pseudo selectors should not be converted to selector
+        // types and instead maintain there start type status.
+        //
+        if (
+          is(data.token[aa], cc.COL) &&
+          /:[a-zA-Z]+/.test(data.token[aa]) === false &&
+          is(data.token[aa - 1], cc.LCB) &&
+          data.types[aa - 1] !== 'start'
+        ) data.types[bb] = 'selector';
 
         if (data.token[aa].indexOf('=\u201c') > 0) {
           parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.lineNumber}`;
@@ -1683,7 +1699,7 @@ prettify.lexers.style = function style (source: string) {
         recordpush(NIL);
       }
 
-    } else if (is(b[a], cc.COL) && data.types[parse.count] !== 'end') {
+    } else if (parse.count > -1 && is(b[a], cc.COL) && data.types[parse.count] !== 'end') {
 
       // HOT PATCH
       // Global pseudo selector support
