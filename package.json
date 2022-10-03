@@ -115,11 +115,12 @@
   },
   "devDependencies": {
     "@liquify/eslint-config": "workspace:*",
+    "@liquify/liquid-language-specs": "workspace:^0.1.6",
     "@prettify/test-utils": "workspace:*",
     "@types/benchmark": "^2.1.2",
     "ava": "^4.3.3",
     "benchmark": "^2.1.4",
     "tsup": "^6.2.3",
-    "type-fest": "^2.19.0"
+    "type-fest": "^3.0.0"
   }
 }
