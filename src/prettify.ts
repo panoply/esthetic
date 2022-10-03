@@ -67,7 +67,7 @@ function formatSync (source: string | Buffer, rules?: Options) {
     }
   }
 
-  if (parser.error.length) return new Error(parser.error);
+  if (parser.error.length) throw new Error(parser.error);
 
   // RESOLVE OUTPUT
   //
@@ -100,10 +100,6 @@ function format (source: string | Buffer, rules?: Options) {
       if (cb.call(parser.data, output, prettify.options) === false) return source;
     }
   }
-
-  // console.log(prettify);
-
-  // console.log(prettify);
 
   // RESOLVE OUTPUT
   //
@@ -175,4 +171,19 @@ function parse (source: string | Buffer, rules?: Options) {
 
 };
 
-export { formatSync, format, options, parse };
+function parseSync (source: string | Buffer, rules?: Options) {
+
+  prettify.source = source;
+  prettify.mode = 'parse';
+
+  if (typeof rules === 'object') prettify.options = options(rules);
+
+  const parsed = execute(prettify);
+
+  if (parser.error.length) throw new Error(parser.error);
+
+  return parsed;
+
+};
+
+export { formatSync, format, options, parse, parseSync };
