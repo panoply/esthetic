@@ -5,6 +5,15 @@ import { grammar } from '@options/grammar';
 /**
  * Creates a null prototypical object
  */
+export function set (initial: string[]): Set<string> {
+
+  return new Set(initial);
+
+}
+
+/**
+ * Creates a null prototypical object
+ */
 export function object<T> (initial?: T): T {
 
   const o = create(null);
