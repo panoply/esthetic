@@ -180,12 +180,65 @@ export interface Grammars {
   style: {
 
     /**
+     * At-rules are CSS statements that instruct CSS how to behave.
+     * They begin with an at sign, `@`, followed by an identifier and
+     * includes everything up to the next semicolon, `;` or the next CSS block,
+     * whichever comes first.
+     *
+     * @see
+     * https://developer.mozilla.org/en-US/docs/Web/CSS/At-rule
+     *
+     */
+    atrules: string[];
+    /**
      * Style Units
      *
      * String list of dimensions and units used in style
      * languages like CSS and SCSS.
      */
-    units: string[]
+    units: string[];
+
+    /**
+     * Style Pseudo Selectors
+     *
+     * String list of psuedo selectors used in style languages
+     * like CSS and SCSS
+     */
+    pseudo: {
+      /**
+       * List of CSS pseudo-class keywords added to a selector that
+       * specify a special state on selected element(s).
+       *
+       * @see
+       * https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes
+       *
+       * @example
+       * :root {}
+       */
+      classes: string[];
+      /**
+       * List of CSS pseudo-element keyword added to a selector that
+       * style a specific part of a selected element(s).
+       *
+       * @see
+       * https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements
+       *
+       * @example
+       * p::first-line {}
+       */
+      elements: string[];
+      /**
+       * List of CSS pseudo selector functions. This pseudo selector can
+       * accept arguments within parenthesis
+       *
+       * @see
+       * https://developer.mozilla.org/en-US/docs/Web/CSS/:host_function
+       *
+       * @example
+       * :host(.special-custom-element)
+       */
+      functions: string[];
+    }
 
   }
 

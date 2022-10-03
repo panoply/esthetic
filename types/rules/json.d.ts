@@ -1,10 +1,26 @@
 export interface JSONOptions {
+
   /**
-   * **Default:** `false`
+   * **Default:** `default`
    *
-   * This option will alphabetically sort object properties in JSON objects.
+   * Controls how arrays on objects are formatted. This rules will
+   * determines if all array indexes should be indented, never indented,
+   * or left to the default.
+   *
+   * **Options**
+   *
+   * - `default`
+   *  Default formatting (default)
+   *
+   * - `indent`
+   *  "Always indent each index of an array
+   *
+   * - `inline`
+   *  Ensure all array indexes appear on a single line
+   *
+   * @default 'default'
    */
-  objectSort?: boolean
+  arrayFormat?: 'default' | 'indent' | 'inline';
 
   /**
    * **Default:** `true`
@@ -60,7 +76,7 @@ export interface JSONOptions {
    * }
    * ```
    */
-  braceAllman?: boolean,
+  braceAllman?: boolean;
 
   /**
    * **Default:** `false`
@@ -70,62 +86,39 @@ export interface JSONOptions {
    *
    * ---
    *
-   * #### Enabled
+   * **Enabled**
    *
    * Below is an example when this option is set to `true`
    *
    * ```json
+   *
    * {
    *
    *  "foo": {
    *
-   *   "bar": {
-   *      "baz": 0
-   *    }
-   *
-   *   }
+   *    "bar": {}
    *
    * }
+   *
    * ```
    *
-   * #### Disabled
+   * ---
+   *
+   * **Disabled**
    *
    * Below is an example when this option is set to `false`
    *
    * ```json
    *
    * {
-   *  "foo": {
-   *   "bar": {
-   *      "baz": 0
-   *    }
+   *   "foo": {
+   *     "bar": {}
    *   }
    * }
+   *
    * ```
    */
-  bracePadding?: boolean,
-
-  /**
-   * **Default:** `default`
-   *
-   * Controls how arrays on objects are formatted. This rules will
-   * determines if all array indexes should be indented, never indented,
-   * or left to the default.
-   *
-   * **Options**
-   *
-   * - `default`
-   *  Default formatting (default)
-   *
-   * - `indent`
-   *  "Always indent each index of an array
-   *
-   * - `inline`
-   *  Ensure all array indexes appear on a single line
-   *
-   * @default 'default'
-   */
-  arrayFormat?: 'default' | 'indent' | 'inline',
+  bracePadding?: boolean;
 
   /**
    * **Default:** `default`
@@ -142,5 +135,49 @@ export interface JSONOptions {
    * > `indent`
    *  "Always indent each index of an array
    */
-  objectIndent?: 'default' | 'indent',
+  objectIndent?: 'default' | 'indent';
+
+  /**
+   * **Default:** `false`
+   *
+   * This option will alphabetically sort object properties in JSON objects.
+   * When JSON objects have more than 2k keys then this will be an expensive
+   * operation, but in most cases is fine to use.
+   *
+   * ---
+   *
+   * **Enabled**
+   *
+   * Below is an example when this option is set to `true`
+   *
+   * ```json
+   *
+   * {
+   *   "e": 5,
+   *   "d": 4,
+   *   "b": 2,
+   *   "c": 3,
+   *   "a": 1
+   * }
+   * ```
+   *
+   * ---
+   *
+   * **Disabled**
+   *
+   * Below is an example when this option is set to `false`
+   *
+   * ```json
+   *
+   * {
+   *   "a": 1,
+   *   "b": 2,
+   *   "c": 3,
+   *   "d": 4,
+   *   "e": 5
+   * }
+   *
+   * ```
+   */
+  objectSort?: boolean;
 }
