@@ -34,9 +34,23 @@ export enum StyleTypes {
   selector = 'selector',
 
   /**
-   * Describes a pseudo selector
+   * Describes a pseudo selector of either class or element type.
    */
   pseudo = 'pseudo',
+  /**
+   * Describes a pseudo selector. This is a selector with a single colon prefix,
+   * eg: `:root {}` - see: https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes
+   *
+   * > When used with `correct` and 2 colons are expressed, it will be replaced with 1.
+   */
+  pseudo_class = 'pseudo_class',
+  /**
+   * Describes a pseudo element. This is a selector which uses 2 colon prefixes,
+   * eg: `::last-child` - see: https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements
+   *
+   * > When used with `correct` and a single colon is expressed, it will be replaced with 2.
+   */
+  pseudo_element = 'pseudo_element',
   /**
    * Describes a ; character. This types value exists to uniquely set semicolon
    * characters apart from other types values.
