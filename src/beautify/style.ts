@@ -1,7 +1,7 @@
 import type { Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { is, not } from '@utils/helpers';
-import { cc, NIL } from '@utils/chars';
+import { cc, NIL, WSP } from '@utils/chars';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
@@ -235,8 +235,6 @@ prettify.beautify.style = (options: Options) => {
 
   do {
 
-    // console.log(data.token[a], data.types[a], data.types[a + 1]);
-
     if (data.types[a] === 'property') wrap = indent + data.token[a].length;
 
     if (data.types[a + 1] === 'end' || data.types[a + 1] === 'template_end' || data.types[a + 1] === 'template_else') {
@@ -256,7 +254,7 @@ prettify.beautify.style = (options: Options) => {
       // HOTFIX
       //
       // Fixes semicolon newlines from occuring when output tag is used as a property
-      // value within classes, eg: .class { color: {{ foo}}; }
+      // value within classes, eg: .class { color: {{ foo }}; }
       // In addition we will also gracefully handle comma separated values
       //
       if (data.types[a - 2] !== 'property' && data.types[a - 1] !== 'colon') {
@@ -264,12 +262,16 @@ prettify.beautify.style = (options: Options) => {
         wrap = indent;
 
         build.push(data.token[a]);
-        nl(indent);
+
+        if (data.types[a + 1] !== 'separator' && not(data.token[a + 1], cc.SEM)) {
+          nl(indent);
+        }
 
       } else if (
         data.types[a - 2] === 'property' &&
         data.types[a - 1] === 'colon' &&
-        data.types[a + 1] === 'separator' && is(data.token[a + 1], cc.COM)
+        data.types[a + 1] === 'separator' &&
+        is(data.token[a + 1], cc.COM)
       ) {
 
         wrap = wrap + data.token[a].length;
@@ -317,12 +319,14 @@ prettify.beautify.style = (options: Options) => {
     } else if (data.types[a] === 'template_else') {
 
       build.push(data.token[a]);
+
       indent = indent + 1;
       nl(indent);
 
     } else if (data.types[a] === 'start' || data.types[a] === 'template_start') {
 
       indent = indent + 1;
+
       build.push(data.token[a]);
 
       if (data.types[a + 1] !== 'end' && data.types[a + 1] !== 'template_end' && (
@@ -331,6 +335,7 @@ prettify.beautify.style = (options: Options) => {
           data.types[a + 1] === 'selector'
         ))
       ) {
+
         nl(indent);
       }
 
@@ -360,15 +365,21 @@ prettify.beautify.style = (options: Options) => {
         if (data.types[a + 1] !== 'comment' || (data.types[a + 1] === 'comment' && data.lines[a + 1] > 1)) {
           nl(indent);
         } else {
-          build.push(' ');
+          build.push(WSP);
         }
       }
 
     } else if (is(data.token[a], cc.COL)) {
 
+      // console.log(data.token[a], data.types[a], data.types[a - 1]);
+
       build.push(data.token[a]);
 
-      if (options.style.compressCSS === false) build.push(' ');
+      // console.log(data.types[a]);
+
+      if (options.style.compressCSS === false) {
+        if (data.types[a] !== 'selector' && not(data.token[a + 1], cc.COM)) build.push(WSP);
+      }
 
     } else if (data.types[a] === 'selector') {
 
@@ -398,9 +409,11 @@ prettify.beautify.style = (options: Options) => {
       }
 
       if (data.types[a + 1] === 'start') {
-        if (options.script.braceAllman === true) {
-          nl(indent);
-        } else if (options.style.compressCSS === false) {
+        // if (options.style.braceAllman === true) {
+        //   nl(indent);
+        // } else
+
+        if (options.style.compressCSS === false) {
           build.push(' ');
         }
       }

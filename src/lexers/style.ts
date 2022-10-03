@@ -1,11 +1,11 @@
 /* eslint-disable no-use-before-define */
-import type { Record, Types } from 'types/prettify';
+import type { Types } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { grammar } from '@options/grammar';
 import { create } from '@utils/native';
 import { is, not, ws } from '@utils/helpers';
-import { cc, NIL } from '@utils/chars';
+import { cc, NIL, WSP } from '@utils/chars';
 
 /* -------------------------------------------- */
 /* LEXER                                        */
@@ -80,17 +80,15 @@ prettify.lexers.style = function style (source: string) {
    */
   function recordpush (structure: string) {
 
-    const record: Record = create(null);
-
-    record.begin = parse.structure[parse.structure.length - 1][1];
-    record.ender = -1;
-    record.lexer = 'style';
-    record.lines = parse.linesSpace;
-    record.stack = parse.structure[parse.structure.length - 1][0];
-    record.token = ltoke;
-    record.types = ltype as Types;
-
-    parse.push(data, record, structure);
+    parse.push(data, {
+      begin: parse.structure[parse.structure.length - 1][1],
+      ender: -1,
+      lexer: 'style',
+      lines: parse.linesSpace,
+      stack: parse.structure[parse.structure.length - 1][0],
+      token: ltoke,
+      types: ltype as Types
+    }, structure);
 
   };
 
@@ -179,7 +177,7 @@ prettify.lexers.style = function style (source: string) {
     /**
      * Property Value Spacing - Correctly formats values
      */
-    const valuespace = (find: string) => {
+    function valueSpace (find: string) {
 
       find = find.replace(/\s*/g, NIL);
 
@@ -192,7 +190,7 @@ prettify.lexers.style = function style (source: string) {
     /**
      * Zero fixes - Handles `noLeadZero` rule
      */
-    const zerofix = (find: string) => {
+    function zeroFix (find: string) {
 
       if (rules.noLeadZero === true) {
 
@@ -215,17 +213,25 @@ prettify.lexers.style = function style (source: string) {
     /**
      * Commas Space
      */
-    const commaspace = (find: string) => find.replace(',', ', ');
+    function commaSpace (find: string) {
+
+      return find.replace(',', ', ');
+
+    }
 
     /**
      * Unit Fixes (ie: dimensions)
      */
-    const units = (dimension: string) => `${dimension} `;
+    function units (dimension: string) {
+
+      return `${dimension} `;
+
+    }
 
     /**
      * Slash handler - Escaped character processing
      */
-    const slash = () => {
+    function safeSlash () {
 
       const start = ii - 1;
 
@@ -239,15 +245,15 @@ prettify.lexers.style = function style (source: string) {
 
     };
 
-    // this loop identifies containment so that tokens/sub-tokens are correctly
-    // taken
+    // This loop identifies containment so that tokens/sub-tokens are correctly taken
     if (ii < leng) {
 
       do {
 
         items.push(x[ii]);
 
-        if (x[ii - 1] !== '\\' || slash() === false) {
+        if (x[ii - 1] !== '\\' || safeSlash() === false) {
+
           if (block === NIL) {
 
             if (is(x[ii], cc.DQO)) {
@@ -285,12 +291,13 @@ prettify.lexers.style = function style (source: string) {
           } else if (x[ii] === block) {
 
             dd = dd - 1;
+
             if (dd === 0) block = NIL;
 
           }
         }
 
-        if (block === NIL && x[ii] === ' ') {
+        if (block === NIL && is(x[ii], cc.WSP)) {
           items.pop();
           values.push(colorPush(items.join(NIL)));
           items = [];
@@ -302,6 +309,7 @@ prettify.lexers.style = function style (source: string) {
     }
 
     values.push(colorPush(items.join(NIL)));
+
     leng = values.length;
 
     // This is where the rules mentioned above are applied
@@ -321,7 +329,7 @@ prettify.lexers.style = function style (source: string) {
 
         } else if (zerodot.test(values[ii]) || dot.test(values[ii])) {
 
-          values[ii] = values[ii].replace(zerodot, zerofix).replace(dot, zerofix);
+          values[ii] = values[ii].replace(zerodot, zeroFix).replace(dot, zeroFix);
 
         } else if (/^(0+([a-z]{2,3}|%))$/.test(values[ii]) && transition === false) {
 
@@ -359,7 +367,7 @@ prettify.lexers.style = function style (source: string) {
           )
         )) {
 
-          values[ii] = values[ii].replace(/,\S/g, commaspace);
+          values[ii] = values[ii].replace(/,\S/g, commaSpace);
         }
 
         ii = ii + 1;
@@ -369,12 +377,12 @@ prettify.lexers.style = function style (source: string) {
 
     block = values.join(' ');
 
-    return block.charAt(0) + block.slice(1).replace(/\s*(\/|\+|\*)\s*(\d|\$)/, valuespace);
+    return block.charAt(0) + block.slice(1).replace(/\s*(\/|\+|\*)\s*(\d|\$)/, valueSpace);
 
   };
 
   // the generic token builder
-  function buildtoken () {
+  function buildToken () {
 
     const block = [];
     const out = [];
@@ -389,13 +397,12 @@ prettify.lexers.style = function style (source: string) {
     let outy = NIL;
     let func = null;
 
-    const spacestart = () => {
+    function spaceStart () {
 
       out.push(b[aa]);
 
-      if (ws(b[aa + 1])) {
-        do { aa = aa + 1; } while (aa < len && ws(b[aa + 1]));
-      }
+      if (ws(b[aa + 1])) do { aa = aa + 1; } while (aa < len && ws(b[aa + 1]));
+
     };
 
     if (aa < len) {
@@ -455,13 +462,13 @@ prettify.lexers.style = function style (source: string) {
             if (func === null) func = true;
 
             block.push(')');
-            spacestart();
+            spaceStart();
 
           } else if (is(b[aa], cc.LSB)) {
 
             func = false;
             block.push(']');
-            spacestart();
+            spaceStart();
 
           } else if ((is(b[aa], cc.HSH) || is(b[aa], cc.ATT)) && is(b[aa + 1], cc.LCB)) {
 
@@ -470,7 +477,7 @@ prettify.lexers.style = function style (source: string) {
 
             aa = aa + 1;
             block.push('}');
-            spacestart();
+            spaceStart();
 
           } else if (b[aa] === block[block.length - 1]) {
 
@@ -503,7 +510,7 @@ prettify.lexers.style = function style (source: string) {
 
           bb = aa;
 
-          if (ws(b[bb])) do { bb = bb - 1; } while (ws(b[bb]));
+          if ((/\s/).test(b[bb])) do { bb = bb - 1; } while ((/\s/).test(b[bb]));
 
           outy = b.slice(bb - 6, bb + 1).join(NIL);
 
@@ -532,12 +539,12 @@ prettify.lexers.style = function style (source: string) {
 
             bb = out.length - 1;
 
-            if (ws(out[bb])) {
+            if ((/\s/).test(out[bb])) {
               do {
                 bb = bb - 1;
                 aa = aa - 1;
                 out.pop();
-              } while (ws(out[bb]));
+              } while ((/\s/).test(out[bb]));
             }
 
             break;
@@ -629,7 +636,9 @@ prettify.lexers.style = function style (source: string) {
       }
 
       ltoke = value(ltoke);
+
     } else {
+
       ltype = 'item';
     }
 
@@ -664,7 +673,7 @@ prettify.lexers.style = function style (source: string) {
     /* FUNCTIONS                                    */
     /* -------------------------------------------- */
 
-    const priors = () => {
+    function priors () {
 
       if (parse.count < 0) return;
 
@@ -718,12 +727,17 @@ prettify.lexers.style = function style (source: string) {
 
       data.token[index] = data.token[index]
         .replace(/\s*&/, ' &')
-        .replace(/(\s*>\s*)/g, ' > ')
-        .replace(/(\s*\+\s*)/g, ' + ') // HOT PATCH - Included + for SCSS
-        .replace(/:\s{2,}/g, ': ')
-        .replace(/^(\s+)/, NIL)
-        .replace(/(\s+)$/, NIL)
+        .replace(/\s*&\s*{/, ' & {')
+        .replace(/\s*>\s*/g, ' > ')
+        .replace(/\s*\+\s*/g, ' + ') // HOT PATCH - Included + for SCSS
+        .replace(/:\s+/g, ': ')
+        .replace(/^\s+/, NIL)
+        .replace(/\s+$/, NIL)
         .replace(/\s+::\s+/, '::');
+
+      if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') {
+        data.types[ss] = 'selector';
+      }
 
       if (
         is(data.token[ss - 1], cc.COM) ||
@@ -732,7 +746,19 @@ prettify.lexers.style = function style (source: string) {
         data.types[ss - 1] === 'pseudo'
       ) {
 
-        if (data.types[ss - 1] === 'pseudo') {
+        if (data.types[ss - 1] === 'colon' && data.types[ss] === 'selector' && (
+          data.types[ss - 2] === 'template' ||
+          data.types[ss - 2] === 'template_start' ||
+          data.types[ss - 2] === 'template_else' ||
+          data.types[ss - 2] === 'template_end'
+        )) {
+
+          data.token[ss - 1] = ':' + data.token[ss] + WSP;
+          data.types[ss - 1] = 'selector';
+
+          parse.splice({ data, howmany: 1, index: ss });
+
+        } else if (data.types[ss - 1] === 'pseudo') {
 
           data.token[ss - 1] = `${data.token[ss - 1]}${data.token[ss]}`;
           data.types[ss - 1] = 'selector';
@@ -745,55 +771,26 @@ prettify.lexers.style = function style (source: string) {
             ss = ss - 1;
 
             if (data.begin[ss] === dd) {
+              if (is(data.token[ss], cc.SEM)) break;
+              if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') data.types[ss] = 'selector';
+              if (data.token[ss] === ':') {
 
-              // HOT PATCH
-              // Fixes isolated Liquid tags, ie: {{ tag }}
-              //
-              if (is(data.token[ss], cc.SEM) || data.types[ss].indexOf('template') > -1) break;
+                data.token[ss - 1] = `${data.token[ss - 1]}:${data.token[ss + 1]}`
+                  .replace(/\s*&/, ' &')
+                  .replace(/\s*&\s*{/, ' & {')
+                  .replace(/\s*>\s*/g, ' > ')
+                  .replace(/\s*\+\s*/g, ' + ');
 
-              if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') {
-                data.types[ss] = 'selector';
-              }
-
-              if (is(data.token[ss], cc.COL)) {
-
-                // HOT PATCH
-                // Supports pseudo selectors in the global stack
-                //
-                if (not(data.token[ss - 1], cc.COL) && data.stack[aa] === 'global' && (
-                  data.types[ss - 1] === 'comment' ||
-                  data.types[ss - 1] === 'ignore' ||
-                  data.types[ss - 1].indexOf('template') > -1
-                )) {
-
-                  data.token[ss] = `${data.token[ss]}${data.token[ss + 1]}`;
-                  parse.pop(data);
-
-                } else if (parse.count === 1) {
-
-                  data.token[ss] = `${data.token[ss]}${data.token[ss + 1]}`;
-                  parse.pop(data);
-
-                } else if (data.types[ss] === 'selector' && data.types[ss + 1] === 'item') {
-                  data.token[ss] = `${data.token[ss]}${data.token[ss + 1]}`;
-                  parse.pop(data);
-
-                } else {
-
-                  data.token[ss] = `${data.token[ss - 1]}:${data.token[ss + 1]}`;
-                  data.lines[ss] = data.lines[ss - 1];
-                  parse.splice({ data, howmany: 2, index: ss });
-
-                }
+                parse.splice({ data, howmany: 2, index: ss });
 
               }
-
             } else {
 
               break;
-            }
 
+            }
           } while (ss > 0);
+
         }
       }
 
@@ -864,13 +861,8 @@ prettify.lexers.style = function style (source: string) {
 
         if (first === '$' || is(first, cc.ATT)) {
           data.types[aa] = 'variable';
-        } else {
-          if (data.stack[aa] !== 'global' && (
-            data.types[aa] !== 'comment' ||
-            data.types[aa] !== 'ignore'
-          )) {
-            data.types[aa] = 'property';
-          }
+        } else if (data.stack[aa] !== 'global' && (data.types[aa] !== 'comment' || data.types[aa] !== 'ignore')) {
+          data.types[aa] = 'property';
         }
 
       } else if (data.lexer[aa] === 'style') {
@@ -891,17 +883,7 @@ prettify.lexers.style = function style (source: string) {
 
         data.types[aa] = 'selector';
 
-        // HOT PATCH
-        //
-        // Nested pseudo selectors should not be converted to selector
-        // types and instead maintain there start type status.
-        //
-        if (
-          is(data.token[aa], cc.COL) &&
-          /:[a-zA-Z]+/.test(data.token[aa]) === false &&
-          is(data.token[aa - 1], cc.LCB) &&
-          data.types[aa - 1] !== 'start'
-        ) data.types[bb] = 'selector';
+        if (data.token[aa] === ':') data.types[bb] = 'selector';
 
         if (data.token[aa].indexOf('=\u201c') > 0) {
           parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.lineNumber}`;
@@ -1005,6 +987,7 @@ prettify.lexers.style = function style (source: string) {
   };
 
   function template (open: string, end: string) {
+
     const store = [];
 
     /* -------------------------------------------- */
@@ -1016,7 +999,7 @@ prettify.lexers.style = function style (source: string) {
     let endlen = 0;
     let start = open.length;
 
-    const exit = (typename: Types) => {
+    function exit (typeName: Types) {
 
       const endtype = data.types[parse.count - 1];
 
@@ -1028,7 +1011,7 @@ prettify.lexers.style = function style (source: string) {
         }
       }
 
-      ltype = typename;
+      ltype = typeName;
 
       if (ltype.indexOf('start') > -1 || ltype.indexOf('else') > -1) {
         recordpush(ltoke);
@@ -1036,6 +1019,7 @@ prettify.lexers.style = function style (source: string) {
         // console.log(data.token[parse.count], data.lines[parse.count]);
         recordpush(NIL);
       }
+
     };
 
     nosort[nosort.length - 1] = true;
@@ -1048,19 +1032,19 @@ prettify.lexers.style = function style (source: string) {
 
         if (quote === NIL) {
 
-          if (b[a] === '"') {
+          if (is(b[a], cc.DQO)) {
 
             quote = '"';
 
-          } else if (b[a] === "'") {
+          } else if (is(b[a], cc.SQO)) {
 
             quote = "'";
 
-          } else if (b[a] === '/') {
+          } else if (is(b[a], cc.FWS)) {
 
-            if (b[a + 1] === '/') {
+            if (is(b[a + 1], cc.FWS)) {
               quote = '/';
-            } else if (b[a + 1] === '*') {
+            } else if (is(b[a + 1], cc.ARS)) {
               quote = '*';
             }
 
@@ -1072,11 +1056,7 @@ prettify.lexers.style = function style (source: string) {
               a = a + 1;
               store.push(b[a]);
 
-            } while (
-              a < len &&
-              endlen < end.length &&
-              b[a + 1] === end.charAt(endlen)
-            );
+            } while (a < len && endlen < end.length && b[a + 1] === end.charAt(endlen));
 
             if (endlen === end.length) {
 
@@ -1096,35 +1076,46 @@ prettify.lexers.style = function style (source: string) {
 
               if (open === '{%') {
 
-                if (quote.indexOf('{%-') === 0) {
+                if (is(quote[2], cc.DSH)) {
 
-                  quote = quote
-                    .replace(/^({%-\s*)/, '{%- ')
-                    .replace(/(\s*-%})$/, ' -%}')
-                    .replace(/(\s*%})$/, ' %}');
+                  quote = quote.replace(/^{%-\s*/, '{%- ');
+                  quote = quote.endsWith('-%}')
+                    ? quote.replace(/\s*-%}$/, ' -%}')
+                    : quote.replace(/\s*%}$/, ' %}');
 
                   name = quote.slice(4);
 
                 } else {
 
-                  quote = quote
-                    .replace(/^({%\s*)/, '{% ')
-                    .replace(/(\s*%})$/, ' %}')
-                    .replace(/(\s*-%})$/, ' -%}');
-
+                  quote = quote.replace(/^{%\s*/, '{% ');
+                  quote = quote.endsWith('-%}')
+                    ? quote.replace(/\s*-%}$/, ' -%}')
+                    : quote.replace(/\s*%}$/, ' %}');
                   name = quote.slice(3);
                 }
+
               }
 
               // HOTFIX
               // Prevent whitespace removals of output tag values
               if (open === '{{') {
 
-                quote = quote
-                  .replace(/^({{\s*)/, '{{ ')
-                  .replace(/^({{-\s*)/, '{{- ')
-                  .replace(/(\s*-}})$/, ' -}}')
-                  .replace(/(\s*}})$/, ' }}');
+                if (is(quote[2], cc.DSH)) {
+
+                  quote = quote.replace(/^{{-\s*/, '{{- ');
+                  quote = quote.endsWith('-}}')
+                    ? quote.replace(/\s*-}}$/, ' -}}')
+                    : quote.replace(/\s*}}$/, ' }}');
+
+                } else {
+
+                  quote = quote.replace(/^{{\s*/, '{{ ');
+                  quote = quote.endsWith('-}}')
+                    ? quote.replace(/\s*-}}$/, ' -}}')
+                    : quote.replace(/\s*%}}$/, ' }}');
+
+                }
+
               }
 
               if (ltype === 'item' && data.types[parse.count - 1] === 'colon' && (
@@ -1141,7 +1132,7 @@ prettify.lexers.style = function style (source: string) {
                 ) {
                   data.token[parse.count] = data.token[parse.count] + quote;
                 } else {
-                  data.token[parse.count] = data.token[parse.count] + ' ' + quote;
+                  data.token[parse.count] = data.token[parse.count] + WSP + quote;
                 }
 
                 return;
@@ -1151,27 +1142,7 @@ prettify.lexers.style = function style (source: string) {
 
               if (open === '{%') {
 
-                const templateNames = [
-                  'autoescape'
-                  , 'block'
-                  , 'capture'
-                  , 'case'
-                  , 'comment'
-                  , 'embed'
-                  , 'filter'
-                  , 'for'
-                  , 'form'
-                  , 'if'
-                  , 'macro'
-                  , 'paginate'
-                  , 'raw'
-                  , 'sandbox'
-                  , 'spaceless'
-                  , 'tablerow'
-                  , 'unless'
-                  , 'verbatim'
-                ];
-
+                const templateNames = Array.from(grammar.liquid.tags);
                 let namesLen = templateNames.length - 1;
 
                 name = name.slice(0, name.indexOf(' '));
@@ -1180,12 +1151,7 @@ prettify.lexers.style = function style (source: string) {
                   name = name.slice(0, name.indexOf('('));
                 }
 
-                if (
-                  name === 'else' ||
-                  name === 'elseif' ||
-                  name === 'when' ||
-                  name === 'elsif'
-                ) {
+                if (grammar.liquid.else.has(name)) {
                   exit('template_else');
                   return;
                 }
@@ -1235,19 +1201,6 @@ prettify.lexers.style = function style (source: string) {
                   return;
                 }
 
-                if (
-                  group === 'block' ||
-                  group === 'define' ||
-                  group === 'form' ||
-                  group === 'if' ||
-                  group === 'range' ||
-                  group === 'with'
-                ) {
-
-                  exit('template_start');
-
-                  return;
-                }
               }
 
               exit('template');
@@ -1420,7 +1373,7 @@ prettify.lexers.style = function style (source: string) {
      */
     function removes () {
 
-      let cc = 0;
+      let ii = 0;
       let values = NIL;
 
       const zero = /^(0+([a-z]+|%))/;
@@ -1480,18 +1433,18 @@ prettify.lexers.style = function style (source: string) {
         if (props.data[prop[4]] === true) values = `${values.replace(' !important', NIL)} !important`;
 
         if (props.last[prop] > parse.count) {
-          cc = (begin < 1) ? 1 : begin + 1;
+          ii = (begin < 1) ? 1 : begin + 1;
           do {
             if (
-              data.begin[cc] === begin &&
-                data.types[cc] === 'value' &&
-                data.token[cc - 2].indexOf(prop) === 0
+              data.begin[ii] === begin &&
+                data.types[ii] === 'value' &&
+                data.token[ii - 2].indexOf(prop) === 0
             ) {
-              props.last[prop] = cc;
+              props.last[prop] = ii;
               break;
             }
-            cc = cc + 1;
-          } while (cc < parse.count);
+            ii = ii + 1;
+          } while (ii < parse.count);
         }
 
         data.token[props.last[prop]] = values;
@@ -1502,25 +1455,25 @@ prettify.lexers.style = function style (source: string) {
       if (bb > 1 && (tmargin === true || tpadding === true)) {
         do {
           if (
-            props.removes[cc][0] !== props.last.margin &&
-            props.removes[cc][0] !== props.last.padding && ((
+            props.removes[ii][0] !== props.last.margin &&
+            props.removes[ii][0] !== props.last.padding && ((
               tmargin === true &&
-              props.removes[cc][1] === 'margin'
+              props.removes[ii][1] === 'margin'
             ) || (
               tpadding === true &&
-              props.removes[cc][1] === 'padding'
+              props.removes[ii][1] === 'padding'
             ))
           ) {
 
             parse.splice({
               data,
-              howmany: (data.types[props.removes[cc][0] + 1] === 'separator') ? 4 : 3,
-              index: props.removes[cc][0] - 2
+              howmany: (data.types[props.removes[ii][0] + 1] === 'separator') ? 4 : 3,
+              index: props.removes[ii][0] - 2
             });
           }
 
-          cc = cc + 1;
-        } while (cc < bb - 1);
+          ii = ii + 1;
+        } while (ii < bb - 1);
       }
 
       if (tmargin === true) applyValues('margin');
@@ -1701,26 +1654,10 @@ prettify.lexers.style = function style (source: string) {
 
     } else if (parse.count > -1 && is(b[a], cc.COL) && data.types[parse.count] !== 'end') {
 
-      // HOT PATCH
-      // Global pseudo selector support
-      //
-      if (is(b[a + 1], cc.COL)) {
-
-        a = a + 1;
-
-        item('pseudo');
-        ltoke = '::';
-        ltype = 'pseudo';
-        recordpush(NIL);
-
-      } else {
-
-        item('colon');
-        ltoke = ':';
-        ltype = 'colon';
-        recordpush(NIL);
-
-      }
+      item('colon');
+      ltoke = ':';
+      ltype = 'colon';
+      recordpush(NIL);
 
     } else {
 
@@ -1728,7 +1665,7 @@ prettify.lexers.style = function style (source: string) {
         mapper[mapper.length - 1] = mapper[mapper.length - 1] + 1;
       }
 
-      buildtoken();
+      buildToken();
     }
 
     a = a + 1;
