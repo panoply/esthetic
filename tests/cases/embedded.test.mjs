@@ -50,7 +50,7 @@ test('HTML embedded script tag', async t => {
 
 test.serial.skip('HTML embedded application/json+ld script tag', async t => {
 
-  await util.forRule('cases/embedded', {
+  return util.forRule('cases/embedded', {
     'html-script-json-1': [
       {
         language: 'html'
@@ -77,7 +77,7 @@ test.serial.skip('HTML embedded application/json+ld script tag', async t => {
 
 test.serial.skip('Liquid embedded JavaScript tag', async t => {
 
-  await util.forRule('cases/embedded', {
+  return util.forRule('cases/embedded', {
     'liquid-javascript': [
       {
         language: 'html'

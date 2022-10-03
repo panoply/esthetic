@@ -101,6 +101,31 @@ test('Sorting selector properties', async t => {
   prettify.options({ style: { sortProperties: false } });
 });
 
+test('Pseudo selector properties', async t => {
+
+  await util.forSample('cases/css')(
+    [
+      'pseudo-selector-1',
+      'pseudo-selector-2',
+      'pseudo-selector-3'
+    ]
+    , async function (source, label) {
+
+      const output = await prettify.format(source, {
+        language: 'css',
+        preserveLine: 2
+
+      });
+
+      t.snapshot(output, label.description);
+
+      // t.log(output);
+
+    }
+  );
+
+});
+
 /* -------------------------------------------- */
 /* RULES                                        */
 /* -------------------------------------------- */
