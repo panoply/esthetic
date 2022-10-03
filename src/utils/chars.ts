@@ -24,7 +24,10 @@ export const enum cc {
    * `@` – The at character
    */
   ATT = 64,
-
+  /**
+   * `.` – The dot character
+   */
+  DOT = 46,
   /**
    * `#` – Hashtag character
    */
