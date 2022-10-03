@@ -2,6 +2,21 @@
 
 Prettify supports beautification of JSON structures. The exposed rules are forwarded to the `script` lexer for handling. Below is the different styles that can be produced with the available formatting options.
 
+### Rule Configuration
+
+```js
+{
+  json: {
+    arrayFormat: 'default',
+    braceAllman: false,
+    bracePadding: false,
+    braceNewline: false,
+    objectIndent: false,
+    objectSort: false
+  }
+}
+```
+
 ### Beautification Options
 
 - [Array Format](#array-format)
