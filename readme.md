@@ -121,6 +121,18 @@ prettify.format.stats: Stats
 
 > Returning `false` in either the `prettify.format.before` or `prettify.format.after` will cancel beautification.
 
+### Format Sync
+
+Prettify also exposes a synchronous formatting method on the default. This option is similar to `prettify.format` but when an error occurs the `prettify.formatSync` method throws an instance of an Error.
+
+```typescript
+import prettify from "@liquify/prettify";
+
+// Formatting Code using Sync
+prettify.formatSync(source: string, rules?: Options): string;
+
+```
+
 ### Options
 
 The options methods will augment formatting options (rules). Formatting options are persisted, so when you apply changes they are used for every beautification process thereafter. The `prettify.options(rules)` method also exposes 2 _hook_ methods. The `prettify.options.listen` method allows you to listen for changes applied to options and the `prettify.options.rules` getter returns a **readonly** reference of the current formatting options.
@@ -146,10 +158,22 @@ The parse method can be used to inspect the data structures the Prettify constru
 import prettify from "@liquify/prettify";
 
 // The generated sparser data structure
-prettify.parse(source: string): ParseTree
+prettify.parse(source: string): Promise<ParseTree>
 
 // Returns some statistical information related to the parse
 prettify.parse.stats: Stats
+```
+
+### Parse Sync
+
+Prettify also exposes a synchronous parse method on the default. This option is similar to `prettify.parse` but when an error occurs the `prettify.parseSync` method throws an instance of an Error.
+
+```typescript
+import prettify from "@liquify/prettify";
+
+// Parsing code using Sync
+prettify.parseSync(source: string, rules?: Options): ParseTree
+
 ```
 
 ### Language
@@ -360,21 +384,18 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
 
 ### JSON Rules
 
-Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/json.d.ts) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [JSON](/docs/rules/json.md) declaration file for description. Rules will be used when formatting the following languages:
 
 - JSON
 
 ```ts
 {
   arrayFormat: 'default',
-  bracesAllman: false,
+  braceAllman: false,
   bracePadding: false,
-  indentSize: 2,
-  indentLevel: 0,
-  newLineEnd: true,
-  objectSort: false,
-  objectArrays: 'default',
-  preserveLines: 3
+  braceNewline: false,
+  objectIndent: false,
+  objectSort: false
 }
 ```
 
@@ -418,7 +439,7 @@ Inline control is supported and can be applied within comments. Inline control a
 
 You can prevent Prettify from formatting a file by placing an inline control comment at the type of the document.
 
-```html
+```liquid
 {% # @prettify-ignore %}
 
 <div>
