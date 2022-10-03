@@ -10,8 +10,8 @@
  *
  * @example
  *
- * BEFORE: '  foo  \n  '
- * AFTER:  '  foo\n' // leading whitespace and newlines are preserved
+ * BEFORE: '  foo'
+ * AFTER:  'foo' // leading whitespace and newlines are preserved
  */
 export const StripLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
 
