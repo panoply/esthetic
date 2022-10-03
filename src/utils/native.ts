@@ -14,6 +14,11 @@ export const create = Object.create;
 export const keys = Object.keys;
 
 /**
+ * Native object values
+ */
+export const values = Object.values;
+
+/**
  * Native object define property
  */
 export const defineProperty = Object.defineProperty;
