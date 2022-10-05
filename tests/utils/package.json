@@ -1,6 +1,6 @@
 {
   "name": "@prettify/test-utils",
-  "version": "1.1.0",
+  "version": "1.1.21",
   "description": "Helper utilities for working with the AVA test runner in Prettify",
   "author": {
     "name": "Νίκος Σαβίδης ",

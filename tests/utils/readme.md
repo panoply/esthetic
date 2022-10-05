@@ -1,4 +1,4 @@
-# @prettify/test-utils
+# @prettify/tests
 
 Test utilities for [Prettify](https://prettify.dev). This module exports trivial or otherwise frivolous helpers which make writing tests for Prettify an easier operation. Prettify uses the powerful [AVA](https://github.com/avajs) test runner and as such this module is developed for usage within that tool.
 
@@ -13,7 +13,7 @@ There is very little reason you'd want to use this module in your project. It is
 The module has a peer dependency on [AVA](https://github.com/avajs) and [Prettify](https://github.com/panoply/prettify)
 
 ```bash
-pnpm add @prettify/test ava -D
+pnpm add @prettify/tests ava -D
 ```
 
 # Usage

@@ -45,7 +45,25 @@ interface Label {
     (options?: Options): string;
 }
 interface DevCallback {
-    (source: string, highlight: (source: string, options?: HighlightOptions) => string): void;
+    (source: string, highlight: (source: string, options?: HighlightOptions) => string): void | Promise<{
+        /**
+         * Repeat the test function to simulate a persisted environment
+         * like that found in text-editors when formatting onSave.
+         */
+        repeat: number;
+        /**
+         * Provide the output source which was beautified
+         */
+        source: string;
+        /**
+         * Whether or not to log output of each repeat
+         */
+        logger?: boolean;
+        /**
+         * A callback function to run after repeats finished
+         */
+        finish: () => void;
+    }>;
 }
 declare const getSample: (sample: Files) => Promise<string>;
 /**
