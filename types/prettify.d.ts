@@ -126,6 +126,33 @@ export interface Prettify {
   },
 }
 
+export interface Parse<T> {
+  (source: string): T;
+  /**
+   * **Parse Stats**
+   *
+   * Return some execution information
+   */
+  get stats(): {
+    /**
+     * Parse processing time in miliseconds
+     */
+    time: number;
+    /**
+     * The source string size, ie: bytes, kb or mb
+     */
+    size: number;
+    /**
+     * The number of characters contained in the source string.
+     */
+    chars: number;
+    /**
+     * The offical language name that was parsed
+     */
+    language: LanguageProperName
+  };
+}
+
 export interface Format<T> {
   (source: string, rules?: Options): T;
   /**
@@ -133,6 +160,8 @@ export interface Format<T> {
    *
    * Trigger a callback to execute right before beautification
    * begins. The function will be invoked in an isolated manner.
+   *
+   * > _Returning `false` will cancel formatting._
    */
   before?: (callback: (rules: Options, input: string) => void | false) => void;
   /**
@@ -141,6 +170,8 @@ export interface Format<T> {
    * Trigger a callback to execute immeadiatly after beautification
    * has completed. The function will trigger before the returning
    * promise has fulfilled and is invoked in an isolated nammer.
+   *
+   * > _Returning `false` will cancel formatting._
    */
   after?: (callback: (output: string, rules: Options) => void | false) => void
   /**
