@@ -36,7 +36,7 @@ export interface Grammars {
   /**
    * Extended token grammars for the Liquid Template Language
    */
-  liquid: {
+  liquid?: {
     /**
      * **Tags**
      *
@@ -47,7 +47,7 @@ export interface Grammars {
      * The Tags names you provide here will inform Prettify to cancel beautification
      * when no ender can be found or the ender is in-correctly placed.
      */
-    tags: string[];
+    tags?: string[];
 
     /**
      * **Else Tags**
@@ -58,7 +58,7 @@ export interface Grammars {
      * The Tags names you provide here will inform Prettify to cancel beautification
      * when no ender can be found or the ender is in-correctly placed.
      */
-    else: string[];
+    else?: string[];
 
     /**
      * **Singletons**
@@ -70,7 +70,7 @@ export interface Grammars {
      * The Tags names you provide here will inform Prettify to cancel beautification
      * when if the token uses an ender.
      */
-    singletons: string[];
+    singletons?: string[];
 
     /**
      * **Embedded**
@@ -113,20 +113,20 @@ export interface Grammars {
   /**
    * Extended token grammars for HTML
    */
-  html: {
+  html?: {
     /**
      * HTML Tags
      *
      * String list of HTML tag blocks
      */
-    tags: string[]
+    tags?: string[]
     /**
      * HTML Voids
      *
      * String list of additional or custom void type
      * HTML tags.
      */
-    voids: string[]
+    voids?: string[]
 
     /**
      * **Embedded**
@@ -163,7 +163,7 @@ export interface Grammars {
   /**
    * Internal Usage
    */
-  script: {
+  script?: {
 
     /**
      * **API Keywords**
@@ -171,13 +171,13 @@ export interface Grammars {
      * A list of API keywords
      *
      */
-    keywords: string[]
+    keywords?: string[]
 
   }
   /**
    * Internal Usage
    */
-  style: {
+  style?: {
 
     /**
      * At-rules are CSS statements that instruct CSS how to behave.
@@ -189,14 +189,14 @@ export interface Grammars {
      * https://developer.mozilla.org/en-US/docs/Web/CSS/At-rule
      *
      */
-    atrules: string[];
+    atrules?: string[];
     /**
      * Style Units
      *
      * String list of dimensions and units used in style
      * languages like CSS and SCSS.
      */
-    units: string[];
+    units?: string[];
 
     /**
      * Style Pseudo Selectors
@@ -204,7 +204,7 @@ export interface Grammars {
      * String list of psuedo selectors used in style languages
      * like CSS and SCSS
      */
-    pseudo: {
+    pseudo?: {
       /**
        * List of CSS pseudo-class keywords added to a selector that
        * specify a special state on selected element(s).
@@ -215,7 +215,7 @@ export interface Grammars {
        * @example
        * :root {}
        */
-      classes: string[];
+      classes?: string[];
       /**
        * List of CSS pseudo-element keyword added to a selector that
        * style a specific part of a selected element(s).
@@ -226,7 +226,7 @@ export interface Grammars {
        * @example
        * p::first-line {}
        */
-      elements: string[];
+      elements?: string[];
       /**
        * List of CSS pseudo selector functions. This pseudo selector can
        * accept arguments within parenthesis
@@ -237,7 +237,7 @@ export interface Grammars {
        * @example
        * :host(.special-custom-element)
        */
-      functions: string[];
+      functions?: string[];
     }
 
   }
