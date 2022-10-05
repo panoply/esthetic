@@ -187,6 +187,34 @@ export const definitions: Definitions = {
       }
     ]
   },
+  delimiterTrims: {
+    default: 'preserve',
+    description: 'How delimiter whitespace trim dashes should handled on Liquid tokens. You should avoid setting this to force in order to avoid stripping whitespace between text content.',
+    lexer: 'markup',
+    type: 'select',
+    values: [
+      {
+        rule: 'preserve',
+        description: 'All trim dash occurances of trims intact'
+      },
+      {
+        rule: 'strip',
+        description: 'Removes all trim dash occurances for tags and output tokens'
+      },
+      {
+        rule: 'force',
+        description: 'Applies trime dashes to all tags and output tokens'
+      },
+      {
+        rule: 'tags',
+        description: 'Applies trim dashes to tags tokens only'
+      },
+      {
+        rule: 'output',
+        description: 'Applies trim dashes to output object tokens only'
+      }
+    ]
+  },
   delimiterSpacing: {
     default: true,
     description: 'Whether or not delimiter characters should apply a single space at the start and end point',
@@ -236,6 +264,24 @@ export const definitions: Definitions = {
   selfCloseSpace: {
     default: false,
     description: 'Markup self-closing tags end will end with " />" instead of "/>".',
+    lexer: 'markup',
+    type: 'boolean'
+  },
+  ignoreScripts: {
+    default: false,
+    description: 'Whether to ignore embedded regions of tags identified to contain JavaScript',
+    lexer: 'markup',
+    type: 'boolean'
+  },
+  ignoreStyles: {
+    default: false,
+    description: 'Whether to ignore embedded regions of tags identified to contain CSS',
+    lexer: 'markup',
+    type: 'boolean'
+  },
+  ignoreJson: {
+    default: false,
+    description: 'Whether to ignore embedded regions of tags identified to contain JSON',
     lexer: 'markup',
     type: 'boolean'
   },
