@@ -1,11 +1,10 @@
 import { Grammars, Options, LanguageProperName } from 'types/prettify';
 import { set } from '@utils/helpers';
-import { html, liquid, Type } from '@liquify/liquid-language-specs';
 import { isArray } from '@utils/native';
 
 export const grammar = new class Grammar {
 
-  private static script: Grammars['script'] = {
+  static script: Grammars['script'] = {
     keywords: [
       'ActiveXObject',
       'ArrayBuffer',
@@ -75,7 +74,7 @@ export const grammar = new class Grammar {
     ]
   };
 
-  private static html: Grammars['html'] = {
+  static html: Grammars['html'] = {
     embedded: {
       script: [
         {
@@ -106,11 +105,45 @@ export const grammar = new class Grammar {
         }
       ]
     },
-    voids: html.voids,
-    tags: []
+    voids: [
+      'area',
+      'base',
+      'br',
+      'col',
+      'embed',
+      'hr',
+      'img',
+      'input',
+      'keygen',
+      'link',
+      'menuitem',
+      'meta',
+      'param',
+      'path',
+      'circle',
+      'source',
+      'track',
+      'wbr'
+    ],
+    tags: [
+      'body',
+      'colgroup',
+      'dd',
+      'dt',
+      'head',
+      'html',
+      'li',
+      'option',
+      'tbody',
+      'td',
+      'tfoot',
+      'th',
+      'thead',
+      'tr'
+    ]
   };
 
-  private static liquid: Grammars['liquid'] = {
+  static liquid: Grammars['liquid'] = {
     embedded: {
       schema: [
         { language: 'json' }
@@ -126,12 +159,40 @@ export const grammar = new class Grammar {
         { language: 'javascript' }
       ]
     },
-    tags: [],
-    else: [],
-    singletons: []
+    tags: [
+      'form',
+      'paginate',
+      'capture',
+      'case',
+      'comment',
+      'for',
+      'if',
+      'liquid',
+      'raw',
+      'tablerow',
+      'unless'
+    ],
+    else: [
+      'else',
+      'elsif',
+      'when'
+    ],
+    singletons: [
+      'include',
+      'layout',
+      'section',
+      'assign',
+      'break',
+      'continue',
+      'cycle',
+      'decrement',
+      'echo',
+      'increment',
+      'render'
+    ]
   };
 
-  private static style: Grammars['style'] = {
+  static style: Grammars['style'] = {
     units: [
       '%',
       'cap',
@@ -312,8 +373,6 @@ export const grammar = new class Grammar {
 
   constructor () {
 
-    console.log(Grammar.html.tags);
-    this.runtime();
     this.script.keywords = set(Grammar.script.keywords);
     this.style.units = set(Grammar.style.units);
     this.style.atrules = set(Grammar.style.atrules);
@@ -325,31 +384,8 @@ export const grammar = new class Grammar {
     this.liquid.tags = set(Grammar.liquid.tags);
     this.liquid.else = set(Grammar.liquid.else);
     this.liquid.singletons = set(Grammar.liquid.singletons);
+
     this.defaults();
-  }
-
-  runtime () {
-
-    for (const name in html.tags) {
-      const tag = html.tags[name];
-      if (tag.void !== true) Grammar.html.tags.push(name);
-    }
-
-    for (const name in liquid.shopify.tags) {
-
-      const tag = liquid.shopify.tags[name];
-
-      if (tag.singular === true) {
-        if (tag.type === Type.control) {
-          Grammar.liquid.else.push(name);
-        } else {
-          Grammar.liquid.singletons.push(name);
-        }
-      } else if (tag.type !== Type.embedded) {
-        Grammar.liquid.tags.push(name);
-      }
-    }
-
   }
 
   defaults () {
