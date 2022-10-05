@@ -66,30 +66,13 @@ export const prettify: Prettify = (function () {
       preserveComment: false,
       preserveLine: 2,
       wrap: 0,
-      grammar: {
-        html: {
-          tags: [],
-          voids: [],
-          embedded: {}
-        },
-        liquid: {
-          tags: [],
-          else: [],
-          singletons: [],
-          embedded: {}
-        },
-        script: {
-          keywords: []
-        },
-        style: {
-          units: []
-        }
-      },
+      grammar: {},
       markup: {
         correct: false,
         commentNewline: false,
+        delimiterTrims: 'preserve',
+        delimiterSpacing: false,
         attributeCasing: 'preserve',
-        attributeValues: 'preserve',
         attributeSort: false,
         attributeSortList: [],
         forceAttribute: false,
@@ -98,7 +81,10 @@ export const prettify: Prettify = (function () {
         preserveText: false,
         preserveAttributes: false,
         selfCloseSpace: false,
-        quoteConvert: 'none'
+        quoteConvert: 'none',
+        ignoreJson: false,
+        ignoreStyles: false,
+        ignoreScripts: true
       },
       style: {
         correct: false,
