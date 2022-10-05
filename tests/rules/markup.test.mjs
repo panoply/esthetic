@@ -231,6 +231,27 @@ test.serial('Delimiter Spacing', async t => {
 
 });
 
+test.serial('Delimiter Trims', async t => {
+
+  await util.forRule('rules/markup/delimiter-trims')([
+    'strip',
+    'force',
+    'tags',
+    'outputs',
+    'preserve'
+  ]
+  , async function (source, delimiterTrims, label) {
+
+    const output = await prettify.format(source, { markup: { delimiterTrims } });
+
+    t.snapshot(output, label({ markup: { delimiterTrims } }));
+
+    // t.log(output);
+
+  });
+
+});
+
 test.serial('Quote Convert', async t => {
 
   await util.forRule('rules/markup/quote-convert')([
