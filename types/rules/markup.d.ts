@@ -3,27 +3,111 @@ export interface MarkupOptions {
   /**
    * **Default** `false`
    *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
    * Automatically correct some sloppiness in code and allow Prettify to
    * reason with the intended structures in order to reduce chaos in otherwise
    * unreadble and terrible code like that of Shopify's Dawn theme. The option acts
    * as a very mild form of linting, wherein invalid code will be attempt to be
    * corrected.
    *
-   * The option enables Prettify to go about fixing your shitty code. It's not
+   * _The option enables Prettify to go about fixing your shitty code. It's not
    * going to produce miracles and for the most part it will have little effect
-   * overall but can help in some situations.
+   * overall but can help in some situations._
+   *
+   * ---
    */
   correct?: boolean;
 
   /**
    * **Default** `preserve`
    *
-   * How attribute keys and value casing should be processed. This defaults to
-   * `preserve` which will leave casing intact.
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `preserve`
+   *
+   * How attribute keys and value casing should be processed. This defaults to `preserve`
+   * which will leave casing intact and _typically_ the best option to use. Accepts one
+   * of the following options:
+   *
+   * - `preserve`
+   * - `lowercase`
+   * - `lowercase-name`
+   * - `lowercase-value`
+   *
+   * ---
+   *
+   * #### Preserve Example
+   *
+   * *Below is an example of how this rule works when it is set to `preserve`. This is
+   * the default and the safest option to use.*
+   *
+   * ```html
+   *
+   * <!-- Before Formatting -->
+   * <div dAtA-AtTr="FoO-bAr"></div>
+   *
+   * <!-- After Formatting -->
+   * <div dAtA-AtTr="FoO-bAr"></div>
+   *
+   * ```
+   *
+   * ---
+   *
+   * #### Lowercase Example
+   *
+   * *Below is an example of how this rule work it it's set to `lowercase`. This might
+   * be problematic to use projects where casing needs to be respected as both attribute
+   * names and values will be converted to lowercase*
+   *
+   * ```html
+   *
+   * <!-- Before Formatting -->
+   * <div DATA-ATTR="FOO-BAR"></div>
+   *
+   * <!-- After Formatting -->
+   * <div data-attr="foo-bar"></div>
+   *
+   * ```
+   *
+   * ---
+   *
+   * #### Lowercase Name Example
+   *
+   * *Below is an example of how this rule work it it's set to `lowercase-name`. This will
+   * ensure the the attribute names are always converted to lowercase*
+   *
+   * ```html
+   *
+   * <!-- Before Formatting -->
+   * <div DATA-ATTR="FOO-BAR"></div>
+   *
+   * <!-- After Formatting -->
+   * <div class="FOO-BAR"></div>
+   *
+   * ```
+   *
+   * ---
+   *
+   * #### Lowercase Value Example
+   *
+   * *Below is an example of how this rule work it it's set to `lowercase-value`. This will
+   * ensure the the attribute values are always converted to lowercase*
+   *
+   * ```html
+   *
+   * <!-- Before Formatting -->
+   * <div DATA-ATTR="FOO-BAR"></div>
+   *
+   * <!-- After Formatting -->
+   * <div DATA-ATTR="foo-bar"></div>
+   *
+   * ```
    */
   attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value'
+
   /**
    * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
    *
    * HTML Attribute sorting. When enabled it will sort attributes
    * alphabetically. Attribute sorting is ignored on tags that contain
@@ -64,6 +148,8 @@ export interface MarkupOptions {
 
   /**
    * **Default** `[]`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `[]`
    *
    * A comma separated list of attribute names. Attributes will be sorted according to
    * this list and then alphanumerically. This option requires `attributeSort` have
@@ -116,12 +202,139 @@ export interface MarkupOptions {
   /**
    * **Default** `false`
    *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
    * If a blank new line should be forced above comments.
    */
   commentNewline?: boolean;
 
   /**
+   * **Default** `preserve`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `tags`
+   *
+   * How delimiter whitespace trim dashes should handled on
+   * Liquid tokens. You should avoid setting this to `force` in order to
+   * avoid stripping whitespace between text content. The rule accepts one
+   * of the following options:
+   *
+   * - `preserve`
+   * - `strip`
+   * - `force`
+   * - `tags`
+   * - `outputs`
+   *
+   * ---
+   *
+   * #### Preserve Example
+   *
+   * *Below is an example of how this rule works if set to `preserve` which is
+   * the default and leaves all occurances of trims intact*
+   *
+   * ```liquid
+   *
+   * <!-- Before formatting -->
+   * {% if x -%}
+   *   {{- foo_bar }} {{- trims }}
+   * {% endof -%}
+   *
+   * <!-- Before formatting -->
+   * {% if x -%}
+   *   {{- foo_bar }} {{- trims }}
+   * {% endof -%}
+   * ```
+   *
+   * ---
+   *
+   * #### Strip Example
+   *
+   * *Below is an example of how this rule works if set to `strip` which will
+   * remove all occurances of trims from Liquid tokens.*
+   *
+   * ```liquid
+   *
+   * <!-- Before formatting -->
+   * {%- if x -%}
+   *   {{- foo_bar -}}
+   * {%- endof -%}
+   *
+   * <!-- Before formatting -->
+   * {% if x %}
+   *   {{ foo_bar }}
+   * {% endof %}
+   *
+   * ```
+   *
+   * ---
+   *
+   * #### Force Example
+   *
+   * *Below is an example of how this rule works if set to `force` which will
+   * apply trims on all Liquid tokens.*
+   *
+   * ```liquid
+   *
+   * <!-- Before formatting -->
+   * {% if x %}
+   *   {{ foo_bar }}
+   * {% endof %}
+   *
+   * <!-- Before formatting -->
+   * {%- if x -%}
+   *   {{- foo_bar -}}
+   * {%- endof -%}
+   *
+   * ```
+   *
+   *
+   * ---
+   *
+   * #### Tags Example
+   *
+   * *Below is an example of how this rule works if set to `tags` which will
+   * apply trims to Liquid tag tokens but leave object output tokens intact.*
+   *
+   * ```liquid
+   *
+   * <!-- Before formatting -->
+   * {% if x %}
+   *  {{ foo_bar -}} {{ no_trims }}
+   * {% endof %}
+   *
+   * <!-- After formatting -->
+   * {%- if x -%}
+   *   {{ foo_bar -}} {{ no_trims }}
+   * {%- endof -%}
+   *
+   * ```
+   *
+   * ---
+   *
+   * #### Outputs Example
+   *
+   * *Below is an example of how this rule works if set to `outputs` which will
+   * apply trims to Liquid object output tokens but leave tag tokens intact.*
+   *
+   * ```liquid
+   *
+   * <!-- Before formatting -->
+   * {% if x -%}
+   *  {{ foo_bar }} {{ trims }}
+   * {%- endof %}
+   *
+   * <!-- After formatting -->
+   * {% if x -%}
+   *   {{- foo_bar -}} {{- trims -}}
+   * {%- endof %}
+   *
+   * ```
+   */
+  delimiterTrims?: 'preserve' | 'strip' | 'force' | 'tags' | 'outputs'
+
+  /**
    * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
    *
    * Whether or not delimiter characters should apply
    * a single space at the start and end point. For example:
@@ -168,6 +381,8 @@ export interface MarkupOptions {
   /**
    * **Default** `false`
    *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
    * Markup self-closing tags end will end with `' />'` instead of `'/>'`
    *
    * ---
@@ -196,6 +411,8 @@ export interface MarkupOptions {
   /**
    * **Default** `false`
    *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
    * If text in the provided markup code should be preserved exactly as provided.
    * This option eliminates beautification and wrapping of text content.
    */
@@ -203,6 +420,8 @@ export interface MarkupOptions {
 
   /**
    * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `3`
    *
    * If all markup attributes should be indented each onto their own line. You
    * can optionally provide an integer value of `1` or more. When an integer value
@@ -276,6 +495,8 @@ export interface MarkupOptions {
   /**
    * **Default** `false`
    *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
    * Whether the leading attribute should be forced onto a newline when
    * word `wrap` limit is exceeded or if it should be preserved. By default,
    * Prettify preserves the leading attribute when applying wrap indentation.
@@ -332,6 +553,8 @@ export interface MarkupOptions {
   /**
    * **Default** `false`
    *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
    * Will force indentation upon all content and tags without regard for the
    * text nodes.
    *
@@ -366,6 +589,8 @@ export interface MarkupOptions {
   /**
    * **Default** `none`
    *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `double`
+   *
    * If the quotes of markup attributes should be converted to single quotes
    * or double quotes. Don't be a fucking hero with this option. Markup content
    * should use double quotations, it's the standard.
@@ -380,6 +605,8 @@ export interface MarkupOptions {
 
   /**
    * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
    *
    * If markup tags should have their insides preserved.
    * This option is only available to markup and does not support
@@ -406,8 +633,48 @@ export interface MarkupOptions {
    * <div
    *  id="x"    data-x="foo"
    * class="xx"></div>
+   *
    * ```
    */
   preserveAttributes?: boolean;
 
+  /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
+   * Whether HTML and Liquid tags identified to be containing CSS or SCSS
+   * should be ignored from beautification. When enabled, formatting will
+   * be applied in accordance with rules defined in the `style` lexer.
+   *
+   */
+  ignoreStyles?: boolean;
+
+  /**
+   * **Default** `true`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
+   * Whether HTML and Liquid tags identified to be containing JavaScript
+   * should be ignored from beautification. When enabled, formatting will
+   * be applied in accordance with rules defined in the `script` lexer.
+   *
+   * _This rules is currently set to `true` by default as JavaScript formatting
+   * is not yet production ready, but still operational to an extent. Enable at
+   * your on discretion_
+   *
+   */
+  ignoreScripts?: boolean;
+
+  /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
+   * Whether HTML and Liquid tags identified to be containing JSON
+   * should be ignored from beautification. When enabled, formatting will
+   * be applied in accordance with rules defined in the `json` lexer.
+   *
+   */
+  ignoreJson?: boolean;
 }
