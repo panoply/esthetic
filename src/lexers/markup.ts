@@ -3297,7 +3297,7 @@ prettify.lexers.markup = function markup (source: string) {
             let aa = wrap;
             let len = ltoke.length;
 
-            const wrapper = () => {
+            function wrapper () {
 
               if (ltoke.charCodeAt(aa) === cc.WSP) {
                 store.push(ltoke.slice(0, aa));
@@ -3350,7 +3350,7 @@ prettify.lexers.markup = function markup (source: string) {
               break;
             }
 
-            if (parse.linesSpace < 1) {
+            if (parse.linesSpace < 1 && parse.count > -1) {
 
               let bb = parse.count;
 
@@ -3402,6 +3402,7 @@ prettify.lexers.markup = function markup (source: string) {
       if (ws(b[a])) {
 
         let x = a;
+
         parse.linesSpace = 1;
 
         do {
@@ -3419,10 +3420,7 @@ prettify.lexers.markup = function markup (source: string) {
     } else if (a !== now || (a === now && ext === false)) {
 
       // regular content at the end of the supplied source
-      ltoke = lex
-        .join(NIL)
-        .replace(/\s+$/, NIL);
-
+      ltoke = lex.join(NIL).replace(/\s+$/, NIL);
       liner = 0;
 
       // this condition prevents adding content that was just added in the loop above
@@ -3525,6 +3523,7 @@ prettify.lexers.markup = function markup (source: string) {
 
   }
 
+  // console.log(data);
   return data;
 
 };

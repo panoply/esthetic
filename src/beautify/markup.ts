@@ -1081,44 +1081,88 @@ prettify.beautify.markup = (options: Options) => {
 
             count = count + data.token[a].length;
 
-            if (type.is(a, 'template')) {
+            if (type.is(next, 'template')) {
 
               // PRESERVE INLINE
               //
               // This logic is so content can remain inline and not be indented.
               // It only applied to singleton template tags and text content
               //
-              if (data.lines[next] > 1) {
-                level.push(indent);
-              } else if (data.lines[next] === 1) {
-                level.push(-10);
-              } else {
+              if (data.lines[next] < 1) {
                 level.push(-20);
+              } else if (data.lines[next] > 1) {
+                level.push(indent);
+              } else {
+                level.push(-10);
               }
 
-              // FILTER ALIGN
-              const pos: number = data.token[a].indexOf(lf);
+              if (type.is(a, 'template')) {
 
-              if (pos > 0) {
+                // FILTER ALIGN
+                const pos: number = data.token[a].indexOf(lf);
 
-                const offset = repeatChar(indent * options.indentSize);
-                const token = data.token[a].split(NWL);
+                if (pos > 0) {
 
-                // console.log(first);
-                let idx = 0;
+                  // console.log(first);
+                  let idx = 0;
+                  let ind = '';
+                  let tok = '';
+                  let chr = '';
 
-                do {
+                  if (is(data.token[a][2], cc.DSH)) {
+                    ind = repeatChar((indent + 2) * options.indentSize);
+                  } else {
+                    ind = repeatChar((indent + 1) * options.indentSize - 1);
+                  }
 
-                  if (idx > 0) token[idx] = offset + token[idx].replace(StripLead, NIL);
+                  const token = data.token[a].split(NWL);
 
-                  idx = idx + 1;
+                  do {
 
-                } while (idx < token.length);
+                    if (idx === 0) {
 
-                data.token[a] = token.join(NWL);
+                      tok = token[idx].trimEnd();
 
+                      if (tok.endsWith(',')) {
+                        chr = ',' + WSP;
+                        token[idx] = tok.slice(0, -1);
+                      } else if (tok.endsWith('|')) {
+                        chr = '|' + WSP;
+                        token[idx] = tok.slice(0, -1);
+                      }
+
+                      idx = idx + 1;
+                      continue;
+                    }
+
+                    tok = token[idx].trim();
+
+                    if (tok.length === 0) {
+                      idx = idx + 1;
+                      continue;
+                    }
+
+                    if (tok.endsWith(',')) {
+                      token[idx] = ind + chr + tok.slice(0, -1);
+                      chr = ',' + WSP;
+                    } else if (tok.endsWith('|')) {
+                      token[idx] = ind + chr + tok.slice(0, -1);
+                      chr = ind + '|' + WSP;
+                    } else {
+                      token[idx] = ind + chr + tok;
+                      chr = '';
+                    }
+
+                    idx = idx + 1;
+
+                  } while (idx < token.length);
+
+                  data.token[a] = token
+                    .join(NWL)
+                    .replace(/\s*-?[%}]}$/, m => m.replace(/^\s*/, WSP));
+
+                }
               }
-
             } else if (
               data.lines[next] > 0 &&
               type.is(next, 'script_start')
@@ -1241,6 +1285,27 @@ prettify.beautify.markup = (options: Options) => {
             }
 
             level.push(indent);
+
+          } else if (
+            (
+              type.is(a, 'content') &&
+              type.is(next, 'template')
+            ) || (
+              type.is(a, 'template') &&
+              type.is(next, 'content')
+
+            )
+          ) {
+
+            // console.log(data.types[a], data.token[a]);
+
+            if (data.lines[a] > 1) {
+              level.push(indent);
+            } else if (data.lines[a] === 1) {
+              level.push(-10);
+            } else {
+              level.push(-20);
+            }
 
           } else {
 
@@ -1550,14 +1615,16 @@ prettify.beautify.markup = (options: Options) => {
 
         const lang = options.language;
         const id = is(data.token[a], cc.LCB) ? 'liquid' : 'html';
-        let isjson = false;
+
+        let json = false;
 
         if (
           id === 'liquid' &&
           data.stack[a] in grammar[id].embed &&
           'language' in grammar[id].embed[data.stack[a]]) {
-          isjson = grammar[id].embed[data.stack[a]].language === 'json';
-          if (isjson) options.language = 'json';
+
+          json = grammar[id].embed[data.stack[a]].language === 'json';
+          if (json) options.language = 'json';
 
         }
 
@@ -1579,7 +1646,8 @@ prettify.beautify.markup = (options: Options) => {
         // content will shift on save
         options.indentLevel = 0;
 
-        if (isjson) options.language = lang;
+        if (json) options.language = lang;
+
       }
 
       a = a + 1;
