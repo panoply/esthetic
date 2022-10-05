@@ -6,8 +6,8 @@ _This module is in its infancy and working towards an official release candidate
 
 The new generation code beautification tool for formatting HTML, Liquid, CSS/SCSS, JavaScript, TypeScript and more! Prettify is built atop of the Sparser lexing algorithm and its parse approach was adapted from the distributed source code of the late and powerful PrettyDiff.
 
-- Visit the [playground](https://liquify.dev/prettify)
-- Usage via [vscode-liquid](https://github.com/panoply/vscode-liquid)
+- [playground](https://liquify.dev/prettify)
+- [vscode-liquid](https://github.com/panoply/vscode-liquid)
 
 ### Features
 
@@ -628,11 +628,11 @@ Prettify takes a complete different approach and is leveraging the Sparser lexin
 
 ### Intention vs Impedance.
 
-The Liquid Prettier Plugin appropriates the opinionated conventions of Prettier so when producing output the solution is indirectly impeding itself into your workflow. The restrictions of Prettier is great in a lot of cases but god forbid you need to defer for the status-quo, it's either the way of Prettier or the highway. This is a double edged sword and problematic when working with a template language like Liquid due to manner in which folks infuse it. Prettify takes a different approach - it uses the developers intent and refines its result in accordance allowing you determine what works best for the project at hand, while still respecting correctness. The granular set of beautification rules exposed by Prettify makes it feel like a "Linter" more than "Formatter" but make no mistake, it is the latter but just with far more control.
+The Liquid Prettier Plugin appropriates the opinionated conventions of Prettier so when producing output the solution is indirectly impeding itself into your workflow. The restrictions of Prettier is great in a lot of cases but god forbid you need to defer for the status-quo, it's either the way of Prettier or the highway. This is a double edged sword and problematic when working with a template language like Liquid due to manner in which folks infuse it. Prettify takes a different approach - it uses the developers intent and refines its result in accordance allowing you determine what works best for the project at hand, while still respecting correctness. The granular set of beautification rules exposed by Prettify makes it feel like a "Linter" more than a "Formatter" but make no mistake, it is the latter but just with far more control.
 
 ### Standard Markup Comparison
 
-Below is a formatting specific feature comparison as of October 2022 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities, overall Shopify's Prettier based solution offers 1/10th of what Prettify currently provides and because its a running atop of Prettier, it makes it up to 7x slower than Prettify.
+Below is a formatting specific feature comparison as of October 2022 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities, overall Shopify's Prettier based solution offers 1/10th of what Prettify currently provides and is around 7x slower.
 
 | Feature                        | Liquid Prettier Plugin | Prettify |
 | ------------------------------ | ---------------------- | -------- |
