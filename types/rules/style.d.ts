@@ -95,7 +95,7 @@ export interface StyleOptions {
   sortSelectors?: boolean
 
   /**
-   * This will create a newline before and after objects values, for example:
+   * This will create a newline before and after property values begin and end
    *
    * **Enabled**
    *
@@ -103,8 +103,17 @@ export interface StyleOptions {
    *
    * ```css
    *
-   * .class-a { width: 100px; }
-   * .class-b { width: 100px; }
+   * .class-a {
+   *
+   *  width: 100px;
+   *
+   * }
+   *
+   * .class-b {
+   *
+   *   width: 100px;
+   *
+   * }
    * ```
    *
    * ---
