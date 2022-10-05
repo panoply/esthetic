@@ -2,15 +2,75 @@ import test from 'ava';
 import util from '@prettify/test-utils';
 import prettify from '@liquify/prettify';
 
-test.serial('Comment Preservation', async t => {
+test.serial('Delimiter Trims Cases', async t => {
+
+  await util.forRule('cases/liquid')(
+    {
+      'delimiter-trims-force': [
+        {
+          language: 'liquid',
+          markup: {
+            delimiterTrims: 'force'
+          }
+        }
+      ],
+      'delimiter-trims-strip': [
+        {
+          language: 'liquid',
+          markup: {
+            delimiterTrims: 'strip'
+          }
+        }
+      ],
+      'delimiter-trims-tags': [
+        {
+          language: 'liquid',
+          markup: {
+            delimiterTrims: 'tags'
+          }
+        }
+      ],
+      'delimiter-trims-outputs': [
+        {
+          language: 'liquid',
+          markup: {
+            delimiterTrims: 'outputs'
+          }
+        }
+      ],
+      'delimiter-trims-preserve': [
+        {
+          language: 'liquid',
+          markup: {
+            delimiterTrims: 'preserve'
+          }
+        }
+      ]
+    }
+    , async function (source, rule, label) {
+
+      const input = await prettify.format(source, rule);
+
+      t.snapshot(input, label.description);
+
+      // t.log(input);
+
+    }
+  );
+
+  t.pass();
+
+});
+
+test.serial.skip('Comment Preservation', async t => {
 
   const source = await util.getSample('cases/liquid/comment-preserve');
 
-  await prettify.format(source, {
+  const output = await prettify.format(source, {
     language: 'liquid'
   });
 
-  // t.log(output);
+  t.log(output);
   t.pass();
 
 });
