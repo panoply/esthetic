@@ -1,6 +1,6 @@
 {
   "name": "@liquify/prettify",
-  "version": "0.1.6-beta.1",
+  "version": "0.2.0-beta.1",
   "license": "MIT",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <n.savvidis@gmx.com>",
   "description": "Prettify 🎀 Language beautification support for multiple languages.",
@@ -37,6 +37,7 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup --minify-identifiers --minify-whitespace",
+    "specs": "node ./scripts/specs.cjs",
     "pack": "cd versions; pnpm pack ../ && cd ..",
     "test:dev": "ava tests/dev.test.mjs",
     "test": "ava tests/**/*.test.mjs --serial",
