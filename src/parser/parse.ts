@@ -499,7 +499,11 @@ export const parse = new class Parse implements IParse {
     };
 
     // parse_push_datanames
-    this.datanames.forEach(value => data[value].push(record[value]));
+    this.datanames.forEach(value => {
+
+      data[value].push(record[value]);
+
+    });
 
     if (data === this.data) {
 
