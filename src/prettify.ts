@@ -30,11 +30,6 @@ options.listen = (callback: Prettify['hooks']['rules'][number]) => prettify.hook
 
 defineProperty(format, 'stats', { get () { return prettify.stats; } });
 defineProperty(parse, 'stats', { get () { return prettify.stats; } });
-
-/* -------------------------------------------- */
-/* RULES GETTER                                 */
-/* -------------------------------------------- */
-
 defineProperty(options, 'rules', { get () { return prettify.options; } });
 
 /* -------------------------------------------- */
