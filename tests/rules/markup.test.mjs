@@ -13,8 +13,6 @@ import prettify from '@liquify/prettify';
 /* TESTS                                        */
 /* -------------------------------------------- */
 
-test.todo('TODO: Force Attribute Indentation Limits');
-
 test.serial('Attribute Sorting (Alphanumeric)', async t => {
 
   prettify.options({
@@ -111,6 +109,37 @@ test.serial('Force Attribute', async t => {
 
   await util.forRule('rules/markup/force-attribute')([
     true,
+    false
+  ]
+  , async function (source, forceAttribute, label) {
+
+    const output = await prettify.format(source, { markup: { forceAttribute } });
+
+    t.snapshot(output, label({ markup: { forceAttribute } }));
+
+    // t.log(output);
+  });
+
+  prettify.options({ preserveLine: 2 });
+
+});
+
+test.serial('Force Attribute (Limit)', async t => {
+
+  prettify.options({
+    language: 'liquid',
+    preserveLine: 0,
+    markup: {
+      forceAttribute: false,
+      forceIndent: false
+    }
+  });
+
+  await util.forRule('rules/markup/force-attribute')([
+    1,
+    2,
+    3,
+    4,
     false
   ]
   , async function (source, forceAttribute, label) {
