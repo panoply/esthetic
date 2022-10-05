@@ -1,7 +1,7 @@
 import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
-import { StripEnd } from '@utils/regex';
+import { StripEnd, StripLead } from '@utils/regex';
 import { is, repeatChar, ws } from '@utils/helpers';
 import { cc, WSP, NIL, NWL } from '@utils/chars';
 import { grammar } from '@options/grammar';
@@ -378,7 +378,8 @@ prettify.beautify.markup = (options: Options) => {
         type.is(a + 1, 'template')
       )) {
 
-        // Wrap if
+        // Wrap
+        //
         // 1. options.wrap is 0
         // 2. next token is singleton with an attribute and exceeds wrap
         // 3. next token is template or singleton and exceeds wrap
@@ -407,9 +408,7 @@ prettify.beautify.markup = (options: Options) => {
 
           let countx = 0;
 
-          const chars = data.token[a]
-            .replace(/\s+/g, WSP)
-            .split(WSP);
+          const chars = data.token[a].replace(/\s+/g, WSP).split(WSP);
 
           do {
 
@@ -1084,32 +1083,39 @@ prettify.beautify.markup = (options: Options) => {
 
             if (type.is(a, 'template')) {
 
-              level.push(indent);
+              // PRESERVE INLINE
+              //
+              // This logic is so content can remain inline and not be indented.
+              // It only applied to singleton template tags and text content
+              //
+              if (data.lines[next] > 1) {
+                level.push(indent);
+              } else if (data.lines[next] === 1) {
+                level.push(-10);
+              } else {
+                level.push(-20);
+              }
 
               // FILTER ALIGN
               const pos: number = data.token[a].indexOf(lf);
 
               if (pos > 0) {
 
-                const linesout = [];
-                const offset = (
-                  level[a - 1] *
-                  options.indentSize
-                ) + data.token[a].charCodeAt(2) === cc.DSH
-                  ? options.indentSize
-                  : options.indentSize - 1;
+                const offset = repeatChar(indent * options.indentSize);
+                const token = data.token[a].split(NWL);
 
-                let iidx = 0;
+                // console.log(first);
+                let idx = 0;
 
                 do {
 
-                  linesout.push(WSP);
+                  if (idx > 0) token[idx] = offset + token[idx].replace(StripLead, NIL);
 
-                  iidx = iidx + 1;
+                  idx = idx + 1;
 
-                } while (iidx < offset);
+                } while (idx < token.length);
 
-                data.token[a] = data.token[a].trimStart().replace(/\n/g, (n) => `${n}${linesout.join(NIL)}`);
+                data.token[a] = token.join(NWL);
 
               }
 
@@ -1363,12 +1369,7 @@ prettify.beautify.markup = (options: Options) => {
 
           bb = bb - 1;
 
-          if (levels[bb] > -1) {
-            return type.is(a, 'content') && start === false
-              ? levels[bb]
-              : levels[bb] + 1;
-          }
-
+          if (levels[bb] > -1) return type.is(a, 'content') && start === false ? levels[bb] : levels[bb] + 1;
           if (type.idx(bb, 'start') > -1) start = true;
 
         } while (bb > 0);
@@ -1528,10 +1529,15 @@ prettify.beautify.markup = (options: Options) => {
           build.push(data.token[a]);
 
           if (levels[a] === -10 && a < c - 1) {
+
             build.push(WSP);
+
           } else if (levels[a] > -1) {
+
             lastLevel = levels[a];
+
             build.push(newline(levels[a]));
+
           }
 
         }
@@ -1551,9 +1557,8 @@ prettify.beautify.markup = (options: Options) => {
           data.stack[a] in grammar[id].embed &&
           'language' in grammar[id].embed[data.stack[a]]) {
           isjson = grammar[id].embed[data.stack[a]].language === 'json';
-          if (isjson) {
-            options.language = 'json';
-          }
+          if (isjson) options.language = 'json';
+
         }
 
         embedded = prettify.beautify[data.lexer[a]](options).replace(StripEnd, NIL);
