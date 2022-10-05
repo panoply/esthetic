@@ -4,9 +4,8 @@ import {
   Options,
   Definitions,
   Language,
-  Data,
-  LanguageProperName,
-  Format
+  Format,
+  Parse
 } from './types/prettify';
 
 export {
@@ -68,34 +67,17 @@ declare const prettify: {
   /**
    * **Parse**
    *
-   * Returns the Sparser data~structure.
+   * Returns the Sparser data~structure. Async
+   * export which resolves a promise.
    */
-  parse?: {
-    (source: string): Promise<Data>;
-    /**
-     * **Parse Stats**
-     *
-     * Return some execution information
-     */
-    get stats(): {
-      /**
-       * Parse processing time in miliseconds
-       */
-      time: number;
-      /**
-       * The source string size, ie: bytes, kb or mb
-       */
-      size: number;
-      /**
-       * The number of characters contained in the source string.
-       */
-      chars: number;
-      /**
-       * The offical language name that was parsed
-       */
-      language: LanguageProperName
-    };
-  }
+  parse?: Parse<string>;
+  /**
+   * **Parse**
+   *
+   * Returns the Sparser data~structure. Async
+   * export which resolves a promise.
+   */
+  parseSync?: Parse<Promise<string>>
   /**
    * **Options**
    *
