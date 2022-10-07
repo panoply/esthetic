@@ -2,9 +2,9 @@
 import type { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { isArray } from '@utils/native';
-import { cc, NIL, NWL, WSP } from '@utils/chars';
-import { is, safeSortAscend, safeSortDescend, safeSortNormal, sanitizeComment, ws } from '@utils/helpers';
-import { StripEnd, StripLead } from '@utils/regex';
+import { cc as ch, NIL, NWL, WSP } from '@utils/chars';
+import { is, not, safeSortAscend, safeSortDescend, safeSortNormal, sanitizeComment, ws } from '@utils/helpers';
+import { StripEnd, StripLead, LiquidTagDelimiters, CharEscape } from '@utils/regex';
 
 export const parse = new class Parse implements IParse {
 
@@ -69,6 +69,12 @@ export const parse = new class Parse implements IParse {
 
   }
 
+  /**
+   * Initialize
+   *
+   * Sets up the runtime and data structures that will be populated
+   * during lexical walk. Invoked each time `parse` or `format` happens.
+   */
   init () {
 
     this.error = NIL;
@@ -76,7 +82,6 @@ export const parse = new class Parse implements IParse {
     this.linesSpace = 0;
     this.lineNumber = 1;
     this.references = [ [] ];
-
     this.data.begin = [];
     this.data.ender = [];
     this.data.lexer = [];
@@ -84,7 +89,6 @@ export const parse = new class Parse implements IParse {
     this.data.stack = [];
     this.data.token = [];
     this.data.types = [];
-
     this.structure = [ [ 'global', -1 ] ];
     this.structure.pop = () => {
       const len = this.structure.length - 1;
@@ -101,6 +105,11 @@ export const parse = new class Parse implements IParse {
     if (data === this.data) this.count = data.token.length - 1;
   }
 
+  /**
+   * Object Sorting
+   *
+   * Applies alphanumeric sorting for objects.
+   */
   objectSort (data: Data) {
 
     let cc = this.count;
@@ -109,33 +118,39 @@ export const parse = new class Parse implements IParse {
     let ff = 0;
     let gg = 0;
     let behind = 0;
-    let commaTest = true;
     let front = 0;
     let keyend = 0;
     let keylen = 0;
+    let comma = true;
 
     const keys = [];
     const begin = dd;
-    const json = prettify.options.language === 'json';
-    const global = data.lexer[cc] === 'style' && this.structure[this.structure.length - 1][0] === 'global';
-    const style = data.lexer[cc] === 'style';
-    const delim = style === true ? [ ';', 'separator' ] : [ ',', 'separator' ];
+    const struc = this.structure[this.structure.length - 1][0];
     const lines = this.linesSpace;
     const length = this.count;
-    const stack = global === true ? 'global' : this.structure[this.structure.length - 1][0];
+    const json = prettify.options.language === 'json';
+    const global = data.lexer[cc] === 'style' && struc === 'global';
+    const style = data.lexer[cc] === 'style';
+    const delim = style === true ? [ ';', 'separator' ] : [ ',', 'separator' ];
+    const stack = global === true ? 'global' : struc;
+    const store: Data = {
+      begin: [],
+      ender: [],
+      lexer: [],
+      lines: [],
+      stack: [],
+      token: [],
+      types: []
+    };
 
-    function sort (x: number[], y: number[]) {
+    const sort = (x: number[], y: number[]) => {
 
       let xx = x[0];
       let yy = y[0];
 
       if (data.types[xx] === 'comment') {
-        do {
-          xx = xx + 1;
-        } while (xx < length && (data.types[xx] === 'comment'));
-        if (data.token[xx] === undefined) {
-          return 1;
-        }
+        do { xx = xx + 1; } while (xx < length && (data.types[xx] === 'comment'));
+        if (data.token[xx] === undefined) return 1;
       }
 
       if (data.types[yy] === 'comment') {
@@ -165,88 +180,66 @@ export const parse = new class Parse implements IParse {
 
       return -1;
 
-    }
-
-    const store: Data = {
-      begin: [],
-      ender: [],
-      lexer: [],
-      lines: [],
-      stack: [],
-      token: [],
-      types: []
     };
 
     behind = cc;
 
     do {
 
-      if (
-        data.begin[cc] === dd || (
-          global === true &&
-          cc < behind &&
-          data.token[cc] === '}' &&
-          data.begin[data.begin[cc]] === -1
-        )
-      ) {
+      if (data.begin[cc] === dd || (
+        global === true &&
+        cc < behind &&
+        is(data.token[cc], ch.RCB) &&
+        data.begin[data.begin[cc]] === -1
+      )) {
 
         if (data.types[cc].indexOf('template') > -1) return;
 
-        if (
-          data.token[cc] === delim[0] || (
-            style === true &&
-            data.token[cc] === '}' &&
-            data.token[cc + 1] !== ';'
-          )
-        ) {
+        if (data.token[cc] === delim[0] || (
+          style === true &&
+          is(data.token[cc], ch.RCB) &&
+          not(data.token[cc + 1], ch.SEM)
+        )) {
 
-          commaTest = true;
+          comma = true;
           front = cc + 1;
 
-        } else if (
-          style === true &&
-          data.token[cc - 1] === '}'
-        ) {
+        } else if (style === true && is(data.token[cc - 1], ch.RCB)) {
 
-          commaTest = true;
+          comma = true;
           front = cc;
         }
 
         if (front === 0 && data.types[0] === 'comment') {
 
-          // keep top comments at the top
+          // Keep top comments at the top
           do { front = front + 1; } while (data.types[front] === 'comment');
 
         } else if (data.types[front] === 'comment' && data.lines[front] < 2) {
 
-          // If a comment follows code on the same line then
+          // When a comment follows code on the same line then
           // keep the comment next to the code it follows
           front = front + 1;
         }
 
-        if (
-          commaTest === true && (
-            data.token[cc] === delim[0] || (
-              style === true &&
-              data.token[cc - 1] === '}'
-            )
-          ) && front <= behind
-        ) {
+        if (comma === true && (data.token[cc] === delim[0] || (
+          style === true &&
+          is(data.token[cc - 1], ch.RCB)
+        )) && front <= behind) {
 
           if (style === true && '};'.indexOf(data.token[behind]) < 0) {
             behind = behind + 1;
-          } else if (style === false && data.token[behind] !== ',') {
+          } else if (style === false && not(data.token[behind], ch.COM)) {
             behind = behind + 1;
           }
 
           keys.push([ front, behind ]);
 
-          if (style === true && data.token[front] === '}') {
+          if (style === true && is(data.token[front], ch.RCB)) {
             behind = front;
           } else {
             behind = front - 1;
           }
-
         }
       }
 
@@ -259,16 +252,12 @@ export const parse = new class Parse implements IParse {
       ee = keys[keys.length - 1][0] - 1;
 
       if (data.types[ee] === 'comment' && data.lines[ee] > 1) {
-        do {
-          ee = ee - 1;
-        } while (ee > 0 && data.types[ee] === 'comment');
+        do { ee = ee - 1; } while (ee > 0 && data.types[ee] === 'comment');
         keys[keys.length - 1][0] = ee + 1;
       }
 
       if (data.types[cc + 1] === 'comment' && cc === -1) {
-        do {
-          cc = cc + 1;
-        } while (data.types[cc + 1] === 'comment');
+        do { cc = cc + 1; } while (data.types[cc + 1] === 'comment');
       }
 
       keys.push([ cc + 1, ee ]);
@@ -281,11 +270,11 @@ export const parse = new class Parse implements IParse {
       if (
         json === true ||
         style === true ||
-        data.token[cc - 1] === '=' ||
-        data.token[cc - 1] === ':' ||
-        data.token[cc - 1] === '(' ||
-        data.token[cc - 1] === '[' ||
-        data.token[cc - 1] === ',' ||
+        is(data.token[cc - 1], ch.EQS) ||
+        is(data.token[cc - 1], ch.COL) ||
+        is(data.token[cc - 1], ch.LPR) ||
+        is(data.token[cc - 1], ch.LSB) ||
+        is(data.token[cc - 1], ch.COM) ||
         data.types[cc - 1] === 'word' ||
         cc === 0
       ) {
@@ -293,7 +282,7 @@ export const parse = new class Parse implements IParse {
         keys.sort(sort);
 
         keylen = keys.length;
-        commaTest = false;
+        comma = false;
         dd = 0;
 
         do {
@@ -304,7 +293,7 @@ export const parse = new class Parse implements IParse {
             gg = keyend;
 
             if (data.types[gg] === 'comment') gg = gg - 1;
-            if (data.token[gg] === '}') {
+            if (is(data.token[gg], ch.RCB)) {
               keyend = keyend + 1;
               delim[0] = '}';
               delim[1] = 'end';
@@ -336,7 +325,7 @@ export const parse = new class Parse implements IParse {
                 style === false &&
                 dd === keylen - 1 &&
                 ee === keyend - 2 &&
-                data.token[ee] === ',' &&
+                is(data.token[ee], ch.COM) &&
                 data.lexer[ee] === 'script' &&
                 data.types[ee + 1] === 'comment'
               ) {
@@ -362,14 +351,11 @@ export const parse = new class Parse implements IParse {
               // Remove extra commas
               if (data.token[ee] === delim[0] && (style === true || data.begin[ee] === data.begin[keys[dd][0]])) {
 
-                commaTest = true;
+                comma = true;
 
-              } else if (
-                data.token[ee] !== delim[0] &&
-                data.types[ee] !== 'comment'
-              ) {
+              } else if (data.token[ee] !== delim[0] && data.types[ee] !== 'comment') {
 
-                commaTest = false;
+                comma = false;
               }
 
               ee = ee + 1;
@@ -379,20 +365,15 @@ export const parse = new class Parse implements IParse {
           }
 
           // Injecting the list delimiter
-          if (
-            commaTest === false &&
-            store.token[store.token.length - 1] !== 'x;' && (
-              style === true ||
-              dd < keylen - 1
-            )
-          ) {
+          if (comma === false && store.token[store.token.length - 1] !== 'x;' && (
+            style === true ||
+            dd < keylen - 1
+          )) {
 
             ee = store.types.length - 1;
 
             if (store.types[ee] === 'comment') {
-              do {
-                ee = ee - 1;
-              } while (ee > 0 && (store.types[ee] === 'comment'));
+              do { ee = ee - 1; } while (ee > 0 && (store.types[ee] === 'comment'));
             }
 
             ee = ee + 1;
@@ -455,15 +436,14 @@ export const parse = new class Parse implements IParse {
 
       const begin = data.begin[a];
 
-      if (
-        (
-          (data.lexer[a] === 'style' && prettify.options.style.sortProperties === true) ||
-          (data.lexer[a] === 'script' && (
+      if ((
+        (data.lexer[a] === 'style' && prettify.options.style.sortProperties === true) || (
+          data.lexer[a] === 'script' && (
             prettify.options.script.objectSort === true ||
             prettify.options.json.objectSort === true
-          ))
+          )
         )
-      ) {
+      )) {
 
         // Sorting can result in a token whose begin value is greater than either
         // Its current index or the index of the end token, which results in
@@ -499,11 +479,7 @@ export const parse = new class Parse implements IParse {
     };
 
     // parse_push_datanames
-    this.datanames.forEach(value => {
-
-      data[value].push(record[value]);
-
-    });
+    for (const value of this.datanames) data[value].push(record[value]);
 
     if (data === this.data) {
 
@@ -513,9 +489,7 @@ export const parse = new class Parse implements IParse {
 
       if (record.lexer !== 'style') {
         if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, NIL) === NIL) {
-          // console.log(structure);
           structure = record.types === 'else' ? 'else' : structure = record.token;
-          // console.log(structure);
         }
       }
 
@@ -537,10 +511,10 @@ export const parse = new class Parse implements IParse {
           data.types[this.structure[this.structure.length - 1][1]].indexOf('_else') > 0
         ) && (
           data.types[this.structure[this.structure.length - 2][1]] === 'start' ||
-            data.types[this.structure[this.structure.length - 2][1]].indexOf('_start') > 0
+          data.types[this.structure[this.structure.length - 2][1]].indexOf('_start') > 0
         ) && (
           data.types[this.structure[this.structure.length - 2][1] + 1] === 'else' ||
-            data.types[this.structure[this.structure.length - 2][1] + 1].indexOf('_else') > 0
+          data.types[this.structure[this.structure.length - 2][1] + 1].indexOf('_else') > 0
         )) {
 
           this.structure.pop();
@@ -562,12 +536,10 @@ export const parse = new class Parse implements IParse {
       } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
 
         if (structure === NIL) structure = 'else';
-        if (
-          this.count > 0 && (
-            data.types[this.count - 1] === 'start' ||
-            data.types[this.count - 1].indexOf('_start') > 0
-          )
-        ) {
+        if (this.count > 0 && (
+          data.types[this.count - 1] === 'start' ||
+          data.types[this.count - 1].indexOf('_start') > 0
+        )) {
 
           this.structure.push([ structure, this.count ]);
 
@@ -575,11 +547,9 @@ export const parse = new class Parse implements IParse {
 
           ender();
 
-          if (structure === NIL) {
-            this.structure[this.structure.length - 1] = [ 'else', this.count ];
-          } else {
-            this.structure[this.structure.length - 1] = [ structure, this.count ];
-          }
+          this.structure[this.structure.length - 1] = structure === NIL
+            ? [ 'else', this.count ]
+            : [ structure, this.count ];
 
         }
       }
@@ -590,11 +560,8 @@ export const parse = new class Parse implements IParse {
 
     if (isArray(array) === false) return array;
 
-    if (operation === 'normal') {
-      return safeSortNormal.call({ array, recursive }, array);
-    } else if (operation === 'descend') {
-      return safeSortDescend.call({ recursive }, array);
-    }
+    if (operation === 'normal') return safeSortNormal.call({ array, recursive }, array);
+    if (operation === 'descend') return safeSortDescend.call({ recursive }, array);
 
     return safeSortAscend.call({ recursive }, array);
 
@@ -633,11 +600,7 @@ export const parse = new class Parse implements IParse {
       }
 
       if (data.begin[a] !== structure[structure.length - 1]) {
-        if (structure.length > 0) {
-          data.begin[a] = structure[structure.length - 1];
-        } else {
-          data.begin[a] = -1;
-        }
+        data.begin[a] = structure.length > 0 ? structure[structure.length - 1] : -1;
       }
 
       if (data.types[a].indexOf('else') > -1) {
@@ -704,7 +667,8 @@ export const parse = new class Parse implements IParse {
 
   splice (splice: Splice) {
 
-    const finalItem = [ this.data.begin[this.count], this.data.token[this.count] ];
+    const { data } = this;
+    const finalItem = [ data.begin[this.count], data.token[this.count] ];
 
     // * data    - The data object to alter
     // * howmany - How many indexes to remove
@@ -717,11 +681,9 @@ export const parse = new class Parse implements IParse {
         splice.data[value].splice(splice.index, splice.howmany, splice.record[value]);
       }
 
-      if (splice.data === this.data) {
-
+      if (splice.data === data) {
         this.count = (this.count - splice.howmany) + 1;
-
-        if (finalItem[0] !== this.data.begin[this.count] || finalItem[1] !== this.data.token[this.count]) {
+        if (finalItem[0] !== data.begin[this.count] || finalItem[1] !== data.token[this.count]) {
           this.linesSpace = 0;
         }
       }
@@ -733,7 +695,7 @@ export const parse = new class Parse implements IParse {
       splice.data[value].splice(splice.index, splice.howmany);
     }
 
-    if (splice.data === this.data) {
+    if (splice.data === data) {
       this.count = this.count - splice.howmany;
       this.linesSpace = 0;
     }
@@ -745,9 +707,7 @@ export const parse = new class Parse implements IParse {
     const { wrap, crlf, preserveComment } = prettify.options;
     const build = [];
     const second = [];
-    const lf = (crlf === true) ? '\r\n' : NWL;
-    const regEsc = (/(\/|\\|\||\*|\[|\]|\{|\})/g);
-    const regEndEsc = (/{%-?\s*|\s*-?%}/g);
+    const lf = crlf === true ? '\r\n' : NWL;
 
     /* -------------------------------------------- */
     /* LEXICAL SCOPES                               */
@@ -771,29 +731,27 @@ export const parse = new class Parse implements IParse {
     let twrap = 0;
     let regEnd: RegExp;
 
-    const opensan = config.opening.replace(regEsc, sanitizeComment);
+    const opensan = config.opening.replace(CharEscape, sanitizeComment);
     const regIgnore = new RegExp(`^(${opensan}\\s*@prettify-ignore-start)`);
     const regStart = new RegExp(`(${opensan}\\s*)`);
-    const isLiquid = is(config.opening[0], cc.LCB) && is(config.opening[1], cc.PER);
+    const isLiquid = is(config.opening[0], ch.LCB) && is(config.opening[1], ch.PER);
 
     if (isLiquid) {
 
-      regEnd = new RegExp(`\\s*${config.terminator.replace(regEndEsc, input => {
-        if (input.charCodeAt(0) === cc.LCB) return '{%-?\\s*';
-        return '\\s*-?%}';
-      })}$`);
+      const capture = '\\s*' + config.terminator.replace(LiquidTagDelimiters, input => {
+        return input.charCodeAt(0) === ch.LCB
+          ? '{%-?\\s*'
+          : '\\s*-?%}';
+      }) + '$';
+
+      regEnd = new RegExp(capture);
 
     }
 
     const emptylines = () => {
 
       if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL) {
-        do {
-          b = b + 1;
-        } while (b < len && (
-          /^\s+$/.test(lines[b + 1]) ||
-          lines[b + 1] === NIL
-        ));
+        do { b = b + 1; } while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL));
       }
 
       if (b < len - 1) second.push(NIL);
@@ -849,7 +807,7 @@ export const parse = new class Parse implements IParse {
 
           if (isLiquid) {
             const d = config.chars.indexOf('{', a);
-            if (is(config.chars[d + 1], cc.PER)) {
+            if (is(config.chars[d + 1], ch.PER)) {
               const ender = config.chars.slice(d, config.chars.indexOf('}', d + 1) + 1).join(NIL);
               if (regEnd.test(ender)) config.terminator = ender;
             }
@@ -873,8 +831,8 @@ export const parse = new class Parse implements IParse {
 
         if (
           config.opening === '/*' &&
-          config.chars[b - 1] === '/' &&
-         (config.chars[b] === '*' || config.chars[b] === '/')) break; // for script OR style
+          is(config.chars[b - 1], ch.FWS) &&
+         (is(config.chars[b], ch.ARS) || is(config.chars[b], ch.FWS))) break; // for script OR style
 
         if (
           config.opening !== '/*' &&
@@ -885,7 +843,7 @@ export const parse = new class Parse implements IParse {
 
       } while (b > config.start);
 
-      if (config.opening === '/*' && config.chars[b] === '*') {
+      if (config.opening === '/*' && is(config.chars[b], ch.ARS)) {
         termination = '\u002a/';
       } else if (config.opening !== '/*') {
         termination = config.terminator;
@@ -913,6 +871,8 @@ export const parse = new class Parse implements IParse {
       }
 
       if (config.chars[a] === NWL) a = a - 1;
+
+      // console.log(output);
 
       output = build.join(NIL).replace(StripEnd, NIL);
 
@@ -998,17 +958,11 @@ export const parse = new class Parse implements IParse {
 
       } else {
 
-        lines[b] = (
-          config.opening === '/*' &&
-          lines[b].indexOf('/*') !== 0
-        )
+        lines[b] = (config.opening === '/*' && lines[b].indexOf('/*') !== 0)
           ? `   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`
           : `${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`;
 
-        twrap = (b < 1)
-          ? wrap - (config.opening.length + 1)
-          : wrap;
-
+        twrap = b < 1 ? wrap - (config.opening.length + 1) : wrap;
         c = lines[b].length;
         d = lines[b].replace(StripLead, NIL).indexOf(WSP);
 
@@ -1217,7 +1171,7 @@ export const parse = new class Parse implements IParse {
 
         b = b + 1;
 
-        if (is(config.chars[b + 1], cc.NWL)) return;
+        if (is(config.chars[b + 1], ch.NWL)) return;
 
       } while (b < config.end && ws(config.chars[b]) === true);
 
@@ -1283,9 +1237,7 @@ export const parse = new class Parse implements IParse {
           } while (c > 0 && output.charAt(c) !== WSP);
           if (c < 3) {
             c = wrap;
-            do {
-              c = c + 1;
-            } while (c < d - 1 && output.charAt(c) !== WSP);
+            do { c = c + 1; } while (c < d - 1 && output.charAt(c) !== WSP);
           }
         }
 
