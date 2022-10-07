@@ -3,6 +3,7 @@ import * as language from '@parser/language';
 import { CommControl, CommIgnoreFile } from '@utils/regex';
 import { cc, NIL } from '@utils/chars';
 import { keys } from '@utils/native';
+import { is, ws } from '@utils/helpers';
 import { definitions } from '@options/definitions';
 
 /**
@@ -62,13 +63,13 @@ export function comment (prettify: Prettify) {
     let rcb: number;
     let comment: string;
 
-    if (source.charAt(a) === '<') {
+    if (is(source[a], cc.LAN)) {
       comment = '<!--';
-    } else if (source.charAt(a + 1) === '/') {
+    } else if (is(source[a + 1], cc.FWS)) {
       comment = '//';
-    } else if (source.charAt(a + 1) === '%') {
+    } else if (is(source[a + 1], cc.PER)) {
       rcb = source.indexOf('}', a + 1);
-      if (source[rcb - 1].charCodeAt(0) === cc.PER) comment = source.slice(a, rcb + 1);
+      if (is(source[rcb - 1], cc.PER)) comment = source.slice(a, rcb + 1);
     } else {
       comment = '/\u002a';
     }
@@ -97,7 +98,7 @@ export function comment (prettify: Prettify) {
 
         if (quote === NIL) {
 
-          if (source.charAt(a) === '"' || source.charAt(a) === "'" || source.charAt(a) === '`') {
+          if (is(source[a], cc.DQO) || is(source[a], cc.SQO) || is(source[a], cc.TQO)) {
 
             quote = source.charAt(a);
 
@@ -107,13 +108,13 @@ export function comment (prettify: Prettify) {
 
             b = a;
 
-          } else if (source.charAt(a) === ',' || ((/\s/).test(source.charAt(a)) === true && b > 0)) {
+          } else if (is(source[a], cc.COM) || (ws(source.charAt(a)) === true && b > 0)) {
 
             item = source.slice(b, a);
 
             if (ops.length > 0) {
 
-              if (ops.length > 0 && item === ':' && ops[ops.length - 1].indexOf(':') < 0) {
+              if (ops.length > 0 && is(item, cc.COL) && ops[ops.length - 1].indexOf(':') < 0) {
 
                 // For cases where white space is between option name
                 // and  assignment operator
