@@ -13,7 +13,7 @@ import {
   isLiquidStart,
   getLiquidTagName
 } from '@utils/helpers';
-import { StripEnd, StripLead } from '@utils/regex';
+import { StripEnd, StripLead, SpaceLead, SpaceEnd } from '@utils/regex';
 
 /* -------------------------------------------- */
 /* LEXER                                        */
@@ -96,11 +96,6 @@ prettify.lexers.markup = function markup (source: string) {
    * Advancement reference
    */
   let a = 0;
-
-  /**
-   * Line Number of the source string
-   */
-  const line = 0;
 
   /**
    * External Tag, eg: <script> or {% schema %} etc
@@ -234,12 +229,12 @@ prettify.lexers.markup = function markup (source: string) {
      * Delimeter expression match
      *
      */
-    const reg: RegExp = (/^(?:<|{%-?|{{-?)=?\s*/);
+    const reg: RegExp = (/^(?:<|{%-?|{{-?)\s*/);
 
     if (typeof tag !== 'string') return NIL;
 
-    space = tag.replace(reg, '%').replace(/\s+/, ' ').indexOf(' ');
-    name = tag.replace(reg, ' ');
+    space = tag.replace(reg, '%').replace(/\s+/, WSP).indexOf(WSP);
+    name = tag.replace(reg, WSP);
     name = (space < 0) ? name.slice(1, tag.length - 1) : name.slice(1, space);
 
     if (html === 'html') name = name.toLowerCase();
@@ -789,7 +784,7 @@ prettify.lexers.markup = function markup (source: string) {
 
           record.lines = attrstore[idx][1];
 
-          attrstore[idx][0] = attrstore[idx][0].replace(/\s+$/, NIL);
+          attrstore[idx][0] = attrstore[idx][0].replace(SpaceEnd, NIL);
 
           if (jsx === true && /^\/(\/|\*)/.test(attrstore[idx][0])) {
 
@@ -984,7 +979,7 @@ prettify.lexers.markup = function markup (source: string) {
               if (/\s\}$/.test(value)) {
 
                 value = value.slice(0, value.length - 1);
-                value = /\s+$/.exec(value)[0];
+                value = SpaceEnd.exec(value)[0];
 
                 record.lines = value.indexOf('\n') < 0 ? 1 : value.split('\n').length;
               } else {
@@ -1063,7 +1058,7 @@ prettify.lexers.markup = function markup (source: string) {
       }
 
       if (store.length > 0) {
-        record.token = store.join(' ');
+        record.token = store.join(WSP);
         convertq();
       }
 
@@ -1295,6 +1290,10 @@ prettify.lexers.markup = function markup (source: string) {
 
               }
             }
+          } else if (t === '#') {
+            ltype = 'comment';
+            ltype = 'template';
+            end = '%}';
           }
 
         } else {
@@ -1512,7 +1511,7 @@ prettify.lexers.markup = function markup (source: string) {
           attr = attribute.join(NIL);
 
           if (jsx === false || (jsx && not(attr[attr.length - 1], cc.RCB))) {
-            attr = attr.replace(/\s+/g, ' ');
+            attr = attr.replace(/\s+/g, WSP);
           }
 
           name = attrname(attr);
@@ -1590,7 +1589,7 @@ prettify.lexers.markup = function markup (source: string) {
           // If an attribute follows an attribute ending with `=` then adjoin it to the last attribute
           attrstore[attrstore.length - 1][0] = attrstore[attrstore.length - 1][0] + attr;
 
-        } else if (attr !== NIL && attr !== ' ') {
+        } else if (attr !== NIL && attr !== WSP) {
 
           attrstore.push([ attr, lines ]);
 
@@ -1996,8 +1995,8 @@ prettify.lexers.markup = function markup (source: string) {
                             if (jsx) {
                               if (!/^\s*$/.test(element)) attrstore.push([ element, lines ]);
                             } else {
-                              element = element.replace(/\s+/g, ' ');
-                              if (element !== ' ') attrstore.push([ element, lines ]);
+                              element = element.replace(/\s+/g, WSP);
+                              if (element !== WSP) attrstore.push([ element, lines ]);
                             }
                           }
 
@@ -2013,7 +2012,7 @@ prettify.lexers.markup = function markup (source: string) {
                       jscom = true;
                       element = attribute.join(NIL);
 
-                      if (element !== ' ') attrstore.push([ element, lines ]);
+                      if (element !== WSP) attrstore.push([ element, lines ]);
 
                       attribute = [];
                       lines = is(quote, cc.NWL) ? 2 : 1;
@@ -2150,7 +2149,7 @@ prettify.lexers.markup = function markup (source: string) {
 
               // JSX Comment immediately following tag name
               stest = true;
-              lex[lex.length - 1] = ' ';
+              lex[lex.length - 1] = WSP;
               jsxquote = is(b[a + 1], cc.ARS) ? '\u002a/' : '\n';
 
               attribute.push(b[a]);
@@ -2276,7 +2275,7 @@ prettify.lexers.markup = function markup (source: string) {
     record.types = ltype as any;
     tname = tagName(element);
 
-    if (preserve === false && jsx === false) element = element.replace(/\s+/g, ' ');
+    if (preserve === false && jsx === false) element = element.replace(/\s+/g, WSP);
 
     // a quick hack to inject records for a type of template comments
     if (tname === 'comment' && isLiquid(element, 2)) {
@@ -2730,7 +2729,7 @@ prettify.lexers.markup = function markup (source: string) {
       }
 
       element = element + tags.join(NIL);
-      element = element.replace('>', ` ${atstring.join(' ')}>`);
+      element = element.replace('>', ` ${atstring.join(WSP)}>`);
 
       record.token = element;
       record.types = 'content-ignore' as any;
@@ -2770,11 +2769,7 @@ prettify.lexers.markup = function markup (source: string) {
 
             record.types = 'template_end';
 
-          } else if (
-            tname.charCodeAt(0) === 101 && // e
-            tname.charCodeAt(1) === 110 && // n
-            tname.charCodeAt(2) === 100 // d
-          ) {
+          } else if (tname.startsWith('end')) {
 
             record.types = 'template_end';
             record.stack = tname.slice(3);
@@ -2807,7 +2802,7 @@ prettify.lexers.markup = function markup (source: string) {
           tname = tname + element
             .slice(1)
             .replace(tname, NIL)
-            .replace(/^\s+/, NIL);
+            .replace(SpaceLead, NIL);
 
           tname = tname
             .slice(0, tname.indexOf('('))
@@ -3021,8 +3016,8 @@ prettify.lexers.markup = function markup (source: string) {
 
                 output = lex
                   .join(NIL)
-                  .replace(/^\s+/, NIL)
-                  .replace(/\s+$/, NIL);
+                  .replace(SpaceLead, NIL)
+                  .replace(SpaceEnd, NIL);
 
                 prettify.lexers.script(output);
                 parse.structure[parse.structure.length - 1][1] += 1; // Added incremental
@@ -3066,8 +3061,8 @@ prettify.lexers.markup = function markup (source: string) {
 
                   output = lex
                     .join(NIL)
-                    .replace(/^\s+/, NIL)
-                    .replace(/\s+$/, NIL);
+                    .replace(SpaceLead, NIL)
+                    .replace(SpaceEnd, NIL);
 
                   a = a - 1;
 
@@ -3124,8 +3119,8 @@ prettify.lexers.markup = function markup (source: string) {
 
                   let outside = lex
                     .join(NIL)
-                    .replace(/^\s+/, NIL)
-                    .replace(/\s+$/, NIL);
+                    .replace(SpaceLead, NIL)
+                    .replace(SpaceEnd, NIL);
 
                   a = a - 1;
 
@@ -3175,7 +3170,7 @@ prettify.lexers.markup = function markup (source: string) {
                 if (grammar.liquid.embed[name].end(end)) {
 
                   end = end.slice(0, end.indexOf('%}') + 2);
-                  output = lex.join(NIL).replace(/^\s+/, NIL).replace(/\s+$/, NIL);
+                  output = lex.join(NIL).replace(SpaceLead, NIL).replace(SpaceEnd, NIL);
 
                   a = a + (end.length - 1);
 
@@ -3249,7 +3244,7 @@ prettify.lexers.markup = function markup (source: string) {
 
           liner = 0;
           ltoke = lex.join(NIL);
-          ltoke = ltoke.replace(/\s+$/, NIL);
+          ltoke = ltoke.replace(SpaceEnd, NIL);
 
           record.token = ltoke;
           recordPush(data, record, NIL);
@@ -3261,7 +3256,7 @@ prettify.lexers.markup = function markup (source: string) {
         if (ext === false && lex.length > 0 && (
           (
             is(b[a], cc.LAN) &&
-            not(b[a + 1], cc.EQS) && !(/\s|\d/).test(b[a + 1])) ||
+            not(b[a + 1], cc.EQS) && !/\s|\d/.test(b[a + 1])) ||
             (is(b[a], cc.LSB) && is(b[a + 1], cc.PER)) ||
             (is(b[a], cc.LCB) && (jsx === true || is(b[a + 1], cc.LCB) || is(b[a + 1], cc.PER)))
         )) {
@@ -3272,10 +3267,11 @@ prettify.lexers.markup = function markup (source: string) {
           if (parse.structure[parse.structure.length - 1][0] === 'comment') {
             ltoke = lex.join(NIL);
           } else {
-            ltoke = lex.join(NIL).replace(/\s+$/, NIL);
+            ltoke = lex.join(NIL).replace(SpaceEnd, NIL);
           }
 
-          ltoke = bracketSpace(ltoke);
+          // ltoke = bracketSpace(ltoke);
+
           liner = 0;
           record.token = ltoke;
 
@@ -3286,8 +3282,6 @@ prettify.lexers.markup = function markup (source: string) {
             /* -------------------------------------------- */
 
             const { wrap } = options;
-            const startSpace = NIL;
-            const endSpace = NIL;
             const store = [];
 
             /* -------------------------------------------- */
@@ -3299,7 +3293,7 @@ prettify.lexers.markup = function markup (source: string) {
 
             function wrapper () {
 
-              if (ltoke.charCodeAt(aa) === cc.WSP) {
+              if (is(ltoke[aa], cc.WSP)) {
                 store.push(ltoke.slice(0, aa));
                 ltoke = ltoke.slice(aa + 1);
                 len = ltoke.length;
@@ -3307,7 +3301,7 @@ prettify.lexers.markup = function markup (source: string) {
                 return;
               }
 
-              do { aa = aa - 1; } while (aa > 0 && ltoke.charCodeAt(aa) !== cc.WSP);
+              do { aa = aa - 1; } while (aa > 0 && not(ltoke[aa], cc.WSP));
 
               if (aa > 0) {
 
@@ -3320,7 +3314,7 @@ prettify.lexers.markup = function markup (source: string) {
 
                 aa = wrap;
 
-                do { aa = aa + 1; } while (aa < len && ltoke.charCodeAt(aa) !== cc.WSP);
+                do { aa = aa + 1; } while (aa < len && not(ltoke[aa], cc.WSP));
 
                 store.push(ltoke.slice(0, aa));
 
@@ -3365,23 +3359,36 @@ prettify.lexers.markup = function markup (source: string) {
 
               } while (bb > 0 && aa > 0);
 
-              if (aa < 1) aa = ltoke.indexOf(' ');
+              if (aa < 1) aa = ltoke.indexOf(WSP);
 
             }
 
-            ltoke = lex.join(NIL);
-            ltoke = ltoke
-              .replace(/^\s+/, NIL)
-              .replace(/\s+$/, NIL)
-              .replace(/\s+/g, ' ');
+            ltoke = lex
+              .join(NIL)
+              .replace(SpaceLead, NIL)
+              .replace(SpaceEnd, NIL)
+              .replace(/\s+/g, WSP);
 
             do { wrapper(); } while (aa < len);
 
             if (ltoke !== NIL && not(ltoke, cc.WSP)) store.push(ltoke);
 
             ltoke = options.crlf === true ? store.join('\r\n') : store.join('\n');
-            ltoke = startSpace + ltoke + endSpace;
+            ltoke = NIL + ltoke + NIL;
 
+          } else {
+
+            const nwl = ltoke.indexOf(NWL);
+
+            if (nwl > -1) {
+
+              record.token = ltoke.slice(0, nwl);
+              recordPush(data, record, NIL);
+
+              record.lines = ltoke.split(NWL).length;
+              ltoke = ltoke.slice(ltoke.lastIndexOf(NWL) + 1).replace(StripLead, NIL);
+
+            }
           }
 
           liner = 0;
@@ -3407,7 +3414,7 @@ prettify.lexers.markup = function markup (source: string) {
 
         do {
 
-          if (b[x] === '\n') parse.linesSpace = parse.linesSpace + 1;
+          if (is(b[x], cc.NWL)) parse.linesSpace = parse.linesSpace + 1;
           x = x - 1;
 
         } while (x > now && ws(b[x]));
@@ -3420,7 +3427,7 @@ prettify.lexers.markup = function markup (source: string) {
     } else if (a !== now || (a === now && ext === false)) {
 
       // regular content at the end of the supplied source
-      ltoke = lex.join(NIL).replace(/\s+$/, NIL);
+      ltoke = lex.join(NIL).replace(SpaceEnd, NIL);
       liner = 0;
 
       // this condition prevents adding content that was just added in the loop above
