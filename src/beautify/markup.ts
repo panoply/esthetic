@@ -1,7 +1,7 @@
 import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
-import { StripEnd, StripLead } from '@utils/regex';
+import { StripEnd } from '@utils/regex';
 import { is, repeatChar, ws } from '@utils/helpers';
 import { cc, WSP, NIL, NWL } from '@utils/chars';
 import { grammar } from '@options/grammar';
@@ -265,12 +265,7 @@ prettify.beautify.markup = (options: Options) => {
       //
       if (test === true) {
 
-        const ind = (
-          type.is(next, 'comment') ||
-          type.is(next, 'end') ||
-          type.is(next, 'template_end')
-        ) ? indent + 1
-          : indent;
+        const ind = (type.is(next, 'end') || type.is(next, 'template_end')) ? indent + 1 : indent;
 
         do {
           level.push(ind);
@@ -327,28 +322,30 @@ prettify.beautify.markup = (options: Options) => {
 
       if (next < c && (
         type.idx(next, 'end') > -1 ||
-        type.idx(next, 'start') > -1) && data.lines[next] > 0) {
+        type.idx(next, 'start') > -1
+      ) && data.lines[next] > 0) {
 
         level.push(indent);
         ind = ind + 1;
 
         if (
-          type.is(a, 'singleton') &&
           a > 0 &&
+          type.is(a, 'singleton') &&
           type.idx(a - 1, 'attribute') > -1 &&
           type.is(data.begin[a - 1], 'singleton')
         ) {
-          if (data.begin[a] < 0 || (type.is(data.begin[a - 1], 'singleton') && data.begin[data.ender[a] - 1] !== a)) {
+
+          if (data.begin[a] < 0 || (
+            type.is(data.begin[a - 1], 'singleton') &&
+            data.begin[data.ender[a] - 1] !== a
+          )) {
             level[a - 1] = indent;
           } else {
             level[a - 1] = indent + 1;
           }
         }
-      } else if (
-        a > 0 &&
-        type.is(a, 'singleton') &&
-        type.idx(a - 1, 'attribute') > -1
-      ) {
+
+      } else if (a > 0 && type.is(a, 'singleton') && type.idx(a - 1, 'attribute') > -1) {
 
         level[a - 1] = indent;
         count = data.token[a].length;
@@ -358,22 +355,21 @@ prettify.beautify.markup = (options: Options) => {
 
         level.push(-20);
 
-      } else if ((
-        options.wrap === 0 || (
-          a < c - 2 &&
+      } else if ((options.wrap === 0 || (
+        a < c - 2 &&
           data.token[a] !== undefined &&
           data.token[a + 1] !== undefined &&
-          data.token[a + 2] !== undefined &&
+          data.token[a + 2] !== undefined && (
           data.token[a].length
           + data.token[a + 1].length
           + data.token[a + 2].length
-          + 1 > options.wrap && type.idx(a + 2, 'attribute') > -1
-        ) || (
-          data.token[a] !== undefined &&
-          data.token[a + 1] !== undefined &&
-          data.token[a].length + data.token[a + 1].length > options.wrap
-        )
-      ) && (
+          + 1
+        ) > options.wrap && type.idx(a + 2, 'attribute') > -1
+      ) || (
+        data.token[a] !== undefined &&
+        data.token[a + 1] !== undefined &&
+        data.token[a].length + data.token[a + 1].length > options.wrap
+      )) && (
         type.is(a + 1, 'singleton') ||
         type.is(a + 1, 'template')
       )) {
@@ -1013,7 +1009,7 @@ prettify.beautify.markup = (options: Options) => {
 
       if (data.lexer[a] === lexer) {
 
-        if (data.token[a].toLowerCase().indexOf('<!doctype') === 0) level[a - 1] = indent;
+        if (type.is(a, 'doctype')) level[a - 1] = indent;
 
         if (type.idx(a, 'attribute') > -1) {
 
@@ -1023,35 +1019,23 @@ prettify.beautify.markup = (options: Options) => {
 
           if (comstart < 0) comstart = a;
 
-          if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) comment();
+          if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) {
+            comment();
+          }
 
         } else if (type.not(a, 'comment')) {
 
           next = forward();
 
-          if (type.is(next, 'end')) {
+          if (type.is(next, 'end') || type.is(next, 'template_end')) {
 
             indent = indent - 1;
 
-            // HOT PATCH
-            //
-            // Support <dl></dl> anchor list tags,
-            // previously only ol and ul were supported
-            //
-            if (
-              token.is(a, '</ol>') ||
-              token.is(a, '</ul>') ||
-              token.is(a, '</dl>')) anchorlist();
+            if (type.is(next, 'template_end') && type.is(data.begin[next] + 1, 'template_else')) {
+              indent = indent - 1;
+            }
 
-          }
-
-          if (type.is(next, 'template_end')) {
-
-            indent = indent - 1;
-
-            if (
-              type.is(next, 'template_end') &&
-              type.is(data.begin[next] + 1, 'template_else')) indent = indent - 1;
+            if (token.is(a, '</ol>') || token.is(a, '</ul>') || token.is(a, '</dl>')) anchorlist();
 
           }
 
@@ -1071,8 +1055,7 @@ prettify.beautify.markup = (options: Options) => {
             }
 
           } else if ((rules.forceIndent === false || (
-            rules.forceIndent === true &&
-            type.is(next, 'script_start')
+            rules.forceIndent === true && type.is(next, 'script_start')
           )) && (
             type.is(a, 'content') ||
             type.is(a, 'singleton') ||
@@ -1081,101 +1064,14 @@ prettify.beautify.markup = (options: Options) => {
 
             count = count + data.token[a].length;
 
-            if (type.is(next, 'template')) {
-
-              // PRESERVE INLINE
-              //
-              // This logic is so content can remain inline and not be indented.
-              // It only applied to singleton template tags and text content
-              //
-              if (data.lines[next] < 1) {
-                level.push(-20);
-              } else if (data.lines[next] > 1) {
-                level.push(indent);
-              } else {
-                level.push(-10);
-              }
-
-              if (type.is(a, 'template')) {
-
-                // FILTER ALIGN
-                const pos: number = data.token[a].indexOf(lf);
-
-                if (pos > 0) {
-
-                  // console.log(first);
-                  let idx = 0;
-                  let ind = '';
-                  let tok = '';
-                  let chr = '';
-
-                  if (is(data.token[a][2], cc.DSH)) {
-                    ind = repeatChar((indent + 2) * options.indentSize);
-                  } else {
-                    ind = repeatChar((indent + 1) * options.indentSize - 1);
-                  }
-
-                  const token = data.token[a].split(NWL);
-
-                  do {
-
-                    if (idx === 0) {
-
-                      tok = token[idx].trimEnd();
-
-                      if (tok.endsWith(',')) {
-                        chr = ',' + WSP;
-                        token[idx] = tok.slice(0, -1);
-                      } else if (tok.endsWith('|')) {
-                        chr = '|' + WSP;
-                        token[idx] = tok.slice(0, -1);
-                      }
-
-                      idx = idx + 1;
-                      continue;
-                    }
-
-                    tok = token[idx].trim();
-
-                    if (tok.length === 0) {
-                      idx = idx + 1;
-                      continue;
-                    }
-
-                    if (tok.endsWith(',')) {
-                      token[idx] = ind + chr + tok.slice(0, -1);
-                      chr = ',' + WSP;
-                    } else if (tok.endsWith('|')) {
-                      token[idx] = ind + chr + tok.slice(0, -1);
-                      chr = ind + '|' + WSP;
-                    } else {
-                      token[idx] = ind + chr + tok;
-                      chr = '';
-                    }
-
-                    idx = idx + 1;
-
-                  } while (idx < token.length);
-
-                  data.token[a] = token
-                    .join(NWL)
-                    .replace(/\s*-?[%}]}$/, m => m.replace(/^\s*/, WSP));
-
-                }
-              }
-            } else if (
-              data.lines[next] > 0 &&
-              type.is(next, 'script_start')
-            ) {
+            if (data.lines[next] > 0 && type.is(next, 'script_start')) {
 
               level.push(-10);
 
-            } else if (options.wrap > 0 && (
-              type.idx(a, 'template') < 0 || (
-                next < c &&
-                type.idx(a, 'template') > -1 &&
-                type.idx(a, 'template') < 0
-              )
+            } else if (options.wrap > 0 && (type.idx(a, 'template') < 0 || (
+              next < c &&
+              type.idx(a, 'template') > -1 &&
+              type.idx(next, 'template') < 0)
             )) {
 
               content();
@@ -1194,6 +1090,10 @@ prettify.beautify.markup = (options: Options) => {
 
               level.push(-20);
 
+            } else if (data.lines[next] === 1) {
+
+              level.push(-10);
+
             } else {
 
               level.push(indent);
@@ -1210,13 +1110,12 @@ prettify.beautify.markup = (options: Options) => {
             //
             indent = indent + 1;
 
-            if (type.is(a, 'template_start') && type.is(next, 'template_else')) {
-              indent = indent + 1;
-            }
+            if (type.is(a, 'template_start') && type.is(next, 'template_else')) indent = indent + 1;
 
             if (jsx === true && token.is(a + 1, '{')) {
 
               // HOT PATCH
+              //
               // Added `indent` level for lines more than 1 so
               // JSX embedded expressions appear on newlines
               //
@@ -1228,27 +1127,43 @@ prettify.beautify.markup = (options: Options) => {
                 level.push(-10);
               }
 
-            } else if (type.is(a, 'start') && type.is(next, 'end')) {
+            } else if ((
+              type.is(a, 'start') &&
+              type.is(next, 'end')
+            ) || (
+              type.is(a, 'template_start') &&
+              type.is(next, 'template_end')
+            )) {
 
-              // Empty token, for example:
+              // EMPTY TOKENS
+              //
+              // This level of indentation is applied whe no content exists
+              // within the expressed tokens, ie: They are empty. For example:
+              //
+              // <div>
+              //
+              // </div>
+              //
+              // {% if x %}
+              //
+              // {% endif %}
+              //
+              // The above structures contain no content and thus formatting
+              // will strip the whitespace and newlines, resulting in this:
               //
               // <div></div>
               //
+              // {% if x %}{% endif %}
+              //
               level.push(-20);
 
-            } else if (type.is(a, 'start') && type.is(next, 'script_start')) {
+            } else if ((type.is(a, 'start') && type.is(next, 'script_start'))) {
 
               level.push(-10);
 
             } else if (rules.forceIndent === true) {
 
               level.push(indent);
-
-            } else if (type.is(a, 'template_start') && type.is(next, 'template_end')) {
-
-              // Applied a single line when tag is empty
-              //
-              level.push(-20);
 
             } else if (data.lines[next] === 0 && (
               type.is(next, 'content') ||
@@ -1265,6 +1180,7 @@ prettify.beautify.markup = (options: Options) => {
               level.push(indent);
 
             }
+
           } else if (rules.forceIndent === false && data.lines[next] === 0 && (
             type.is(next, 'content') ||
             type.is(next, 'singleton')
@@ -1278,33 +1194,58 @@ prettify.beautify.markup = (options: Options) => {
 
           } else if (type.is(a, 'template_else')) {
 
-            if (type.is(next, 'template_end')) {
-              level[a - 1] = indent + 1;
-            } else {
-              level[a - 1] = indent - 1;
-            }
+            level[a - 1] = type.is(next, 'template_end')
+              ? indent + 1
+              : indent - 1;
 
             level.push(indent);
 
-          } else if (
+          } else if (rules.forceIndent === true && (
             (
-              type.is(a, 'content') &&
-              type.is(next, 'template')
+              type.is(a, 'content') && (
+                type.is(next, 'template') ||
+                type.is(next, 'content')
+              )
             ) || (
-              type.is(a, 'template') &&
-              type.is(next, 'content')
-
+              type.is(a, 'template') && (
+                type.is(next, 'content') ||
+                type.is(next, 'template')
+              )
             )
-          ) {
+          )) {
 
-            // console.log(data.types[a], data.token[a]);
-
-            if (data.lines[a] > 1) {
-              level.push(indent);
-            } else if (data.lines[a] === 1) {
-              level.push(-10);
-            } else {
+            // CONTENT INDENTATION
+            //
+            // Respects text content and template tokens when forceIndent
+            // is enabled. Tokens like {{ output }} encapsulated (surrounded) by
+            // text nodes will be be excluded from forced indentations. The following
+            // structure will be respected and left intact:
+            //
+            // Hello {{ world }}, how are you?
+            //
+            // The following structure will apply force indentation because content is
+            // not encapsulated by template tokens or text content, instead it is encapsulted
+            // by tag types:
+            //
+            // BEFORE FORMATTING
+            //
+            // <div>Hello {{ world }}, how are you?</div>
+            //
+            // AFTER FORMATTING
+            //
+            // <div>
+            //   Hello {{ world }}, how are you?
+            // </div>
+            //
+            // The same logic will follow when Liquid tags are like {% if %}, {% for %} etc
+            // are the parent of the text or template (output object) token.
+            //
+            if (data.lines[next] < 1) {
               level.push(-20);
+            } else if (data.lines[next] > 1) {
+              level.push(indent);
+            } else {
+              level.push(-10);
             }
 
           } else {
@@ -1341,7 +1282,7 @@ prettify.beautify.markup = (options: Options) => {
   /* APPLY BEAUTIFICATION                         */
   /* -------------------------------------------- */
 
-  return (() => {
+  return (function () {
 
     /**
      * The constructed output
@@ -1351,7 +1292,7 @@ prettify.beautify.markup = (options: Options) => {
     /**
      * Indentation level / character
      */
-    const ind = (() => {
+    const ind = (function () {
 
       const indy = [ options.indentChar ];
       const size = options.indentSize - 1;
@@ -1367,7 +1308,7 @@ prettify.beautify.markup = (options: Options) => {
 
       return indy.join(NIL);
 
-    })();
+    }());
 
     /**
      * Newline
@@ -1481,13 +1422,15 @@ prettify.beautify.markup = (options: Options) => {
 
       } while (aa < len);
 
-      // console.log(build, lines[line]);
-
       data.lines[a + 1] = line;
 
       build.push(lines[len]);
 
-      if (levels[a] === -10) {
+      if (type.is(a, 'comment') && type.is(a + 1, 'template_end')) {
+        build.push(newline(levels[a]));
+      } else if (type.is(a - 1, 'template_end') && type.is(a, 'comment')) {
+        build.push(newline(levels[a]));
+      } else if (levels[a] === -10) {
         build.push(WSP);
       } else if (levels[a] > 1) {
         build.push(newline(levels[a]));
@@ -1511,9 +1454,7 @@ prettify.beautify.markup = (options: Options) => {
 
       let y = a + 1;
       let isjsx = false;
-      let space = (rules.selfCloseSpace === true && end !== null && end[0] === '/>')
-        ? WSP as string
-        : NIL;
+      let space = rules.selfCloseSpace === true && end !== null && end[0] === '/>' ? WSP : NIL;
 
       data.token[a] = parent.replace(regend, NIL);
 
@@ -1662,6 +1603,6 @@ prettify.beautify.markup = (options: Options) => {
     // console.log('TOKE', build);
     return build.join(NIL);
 
-  })();
+  }());
 
 };
