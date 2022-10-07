@@ -167,10 +167,14 @@ export const grammar = new class Grammar {
       'comment',
       'for',
       'if',
-      'liquid',
       'raw',
       'tablerow',
-      'unless'
+      'unless',
+      'schema',
+      'style',
+      'script',
+      'stylesheet',
+      'javascript'
     ],
     else: [
       'else',
@@ -182,6 +186,7 @@ export const grammar = new class Grammar {
       'layout',
       'section',
       'assign',
+      'liquid',
       'break',
       'continue',
       'cycle',
