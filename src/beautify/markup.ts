@@ -1248,6 +1248,65 @@ prettify.beautify.markup = (options: Options) => {
               level.push(-10);
             }
 
+          } else if (type.is(a, 'template') && data.token[a].indexOf(lf) > 0) {
+
+            let idx = 0;
+            let tok = NIL;
+            let chr = NIL;
+
+            const token = data.token[a].split(NWL);
+            const ind = is(data.token[a][2], cc.DSH)
+              ? repeatChar((indent + 2) * options.indentSize)
+              : repeatChar((indent + 1) * options.indentSize - 1);
+
+            do {
+
+              if (idx === 0) {
+
+                tok = token[idx].trimEnd();
+
+                if (tok.endsWith(',')) {
+                  chr = ',' + WSP;
+                  token[idx] = tok.slice(0, -1);
+                } else if (tok.endsWith('|')) {
+                  chr = '|' + WSP;
+                  token[idx] = tok.slice(0, -1);
+                }
+
+                idx = idx + 1;
+                continue;
+              }
+
+              tok = token[idx].trim();
+
+              if (tok.length === 0) {
+                idx = idx + 1;
+                continue;
+              }
+
+              if (tok.endsWith(',')) {
+                token[idx] = ind + chr + tok.slice(0, -1);
+                chr = ',' + WSP;
+              } else if (tok.endsWith('|')) {
+                token[idx] = ind + chr + tok.slice(0, -1);
+                chr = ind + '|' + WSP;
+              } else {
+                token[idx] = ind + chr + tok;
+                chr = NIL;
+              }
+
+              idx = idx + 1;
+
+            } while (idx < token.length);
+
+            // TODO
+            //
+            // This enforced delimiterSpacing, should maybe consider making this optional
+            //
+            data.token[a] = token
+              .join(NWL)
+              .replace(/\s*-?[%}]}$/, m => m.replace(/^\s*/, WSP));
+
           } else {
 
             level.push(indent);
