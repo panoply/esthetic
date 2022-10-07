@@ -1,4 +1,31 @@
 /**
+ * Strip the leading whitespace and newlines.
+ *
+ * ---
+ *
+ * @example
+ *
+ * BEFORE: '  \n  foo  '
+ * AFTER:  'foo  ' // leading whitespace and newlines are preserved
+ */
+export const SpaceLead = /^\s+/;
+
+/**
+ * Strip the ending whitespace excluding newlines.
+ *
+ *
+ * ---
+ *
+ * @see https://stackoverflow.com/a/3873354/2021554
+ *
+ * @example
+ *
+ * BEFORE: '  foo  \n  '
+ * AFTER:  '  foo' // leading whitespace and newlines are preserved
+ */
+export const SpaceEnd = /\s+$/;
+
+/**
  * Strip the leading whitespace excluding newlines.
  *
  * This will remove carriage returns (`\r`), so if the input contains
@@ -62,3 +89,60 @@ export const CommControl = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@pre
  * YAML COMMENT:    # @prettify-ignore
  */
 export const CommIgnoreFile = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@prettify-ignore\b/;
+
+/**
+ * Captures Prettify inline comment ignore starters
+ *
+ * ---
+ * @see https://regex101.com/r/QWwU3p/1
+ * @example
+ *
+ * LINE COMMENT:    // @prettify-ignore-start
+ * BLOCK COMMENT:   /* @prettify-ignore-start
+ * LINE LIQUID:     {% # @prettify-ignore-start
+ * BLOCK LIQUID:    {% comment %} @prettify-ignore-start
+ * HTML COMMENT:    <!-- @prettify-ignore-start
+ * YAML COMMENT:    # @prettify-ignore-start
+ */
+export const CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@prettify-ignore-start\b/;
+
+/**
+ * Captures Prettify inline comment ignore enders
+ *
+ * ---
+ * @see https://regex101.com/r/sVwE1z/1
+ * @example
+ *
+ * LINE COMMENT:    // @prettify-ignore-end
+ * BLOCK COMMENT:   /* @prettify-ignore-end
+ * LINE LIQUID:     {% # @prettify-ignore-end
+ * BLOCK LIQUID:    {% comment %} @prettify-ignore-end
+ * HTML COMMENT:    <!-- @prettify-ignore-end
+ * YAML COMMENT:    # @prettify-ignore-end
+ */
+export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@prettify-ignore-end\b/;
+
+/**
+ * Liquid Tag Delimiters
+ *
+ * Used in the `wrapCommentBlock` method of the `Parser` class, captures
+ * Liquid Tag delimiters, see example.
+ *
+ * ---
+ *
+ * @example /{%-?\s*|\s*-?%}/g
+ *
+ */
+export const LiquidTagDelimiters = /{%-?\s*|\s*-?%}/g;
+
+/**
+ * Character Escape
+ *
+ * Used in the `wrapCommentBlock` method of the `Parser` class.
+ *
+ * ---
+ *
+ * @example /(\/|\\|\||\*|\[|\]|\{|\})/g
+ *
+ */
+export const CharEscape = /(\/|\\|\||\*|\[|\]|\{|\})/g;
