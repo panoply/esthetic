@@ -2,7 +2,6 @@
 Testing Liquid `delimiterTrims` in `tags` mode. All Liquid tags will have trim dashes applied and output object tokens will be preserved.
 ---
 
-
 {% for x in no_trims %}
 
 <div class="{{ right_trims -}}">
@@ -17,7 +16,7 @@ Testing Liquid `delimiterTrims` in `tags` mode. All Liquid tags will have trim d
 {{ no_trims | filter: 'something' }}
 
 {% if full_trims %}
- {{ no_trims | filter: 'something' }}
+{{ no_trims | filter: 'something' }}
 {% endif %}
 
 </li>

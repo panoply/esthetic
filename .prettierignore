@@ -1,1 +1,2 @@
 schema/rules/**
+tests/cases/**/*.md

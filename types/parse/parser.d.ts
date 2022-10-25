@@ -1,4 +1,4 @@
-import { Types, Structure } from '../common';
+import { Types, Structure } from '@liquify/prettify/types/common';
 
 /* -------------------------------------------- */
 /* DATA STRUCTURE                               */

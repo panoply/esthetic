@@ -608,6 +608,17 @@ export interface MarkupOptions {
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
    *
+   * Whether or not to apply formatting on the inner contents of Liquid `{% capture %}` tags.
+   * When disabled, the contained contents of capture tags will excluded from beautification.
+   *
+   */
+  preserveCaptures?: boolean;
+
+  /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
    * If markup tags should have their insides preserved.
    * This option is only available to markup and does not support
    * child tokens that require a different lexer. When enabled, this
@@ -637,6 +648,17 @@ export interface MarkupOptions {
    * ```
    */
   preserveAttributes?: boolean;
+
+  /**
+   * **Default** `default`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `before`
+   *
+   * Controls the placement of Liquid tag operator type characters in newline structures.
+   * In situations where you write a multiline tag expression this rule can augment the
+   * order of leading operator characters such as the parameter comma `,` separator.
+   */
+  lineBreakOperator: 'default' | 'before' | 'after';
 
   /**
    * **Default** `false`
@@ -677,4 +699,5 @@ export interface MarkupOptions {
    *
    */
   ignoreJson?: boolean;
+
 }

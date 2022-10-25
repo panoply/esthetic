@@ -11,13 +11,14 @@ Testing Liquid `delimiterTrims` in `force` mode. All Liquid output object tokens
 
 <li class="{% if no_trims %}{{ right_trim -}}{% endif %}">
 
+
 {{- full_trims | filter: 'something' -}}
 {{- left_trim | filter: 'something'}}
 {{ right_trim | filter: 'something' -}}
 {{ no_trims | filter: 'something' }}
 
 {% if no_trims %}
- {{ no_trims | filter: 'something' }}
+{{ no_trims | filter: 'something' }}
 {% endif %}
 
 </li>
@@ -26,3 +27,5 @@ Testing Liquid `delimiterTrims` in `force` mode. All Liquid output object tokens
 </div>
 
 {% endif %}
+
+

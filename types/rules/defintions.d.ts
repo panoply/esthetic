@@ -1,4 +1,4 @@
-import { RuleNames } from '../common';
+import { RuleNames } from '@liquify/prettify/types/common';
 
 /**
  * Option defintion type string Literal

@@ -1,5 +1,5 @@
 import test from 'ava';
-import util from '@prettify/test-utils';
+import util from '@prettify/tests';
 import prettify from '@liquify/prettify';
 
 test('develop', async t => {
@@ -8,21 +8,25 @@ test('develop', async t => {
 
     const output = await prettify.format(source, {
       language: 'liquid',
-      preserveLine: 0,
+      wrap: 0,
       markup: {
-        quoteConvert: 'double',
+      //  delimiterTrims: 'tags',
+        preserveText: true,
         forceIndent: false,
-        forceAttribute: 3,
-        attributeSort: true
+        forceAttribute: 3
       },
       json: {
         braceAllman: true,
-        objectIndent: 'indent',
-        arrayFormat: 'indent'
+        objectSort: true
       }
     });
 
-    t.log(highlight(output));
+    return {
+      repeat: 4,
+      source: output,
+      logger: false,
+      finish: () => t.log(output)
+    };
 
   });
 

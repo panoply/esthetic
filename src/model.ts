@@ -78,10 +78,12 @@ export const prettify: Prettify = (function () {
         forceAttribute: false,
         forceLeadAttribute: false,
         forceIndent: false,
+        preserveCaptures: false,
         preserveText: false,
         preserveAttributes: false,
         selfCloseSpace: false,
         quoteConvert: 'none',
+        lineBreakOperator: 'default',
         ignoreJson: false,
         ignoreStyles: false,
         ignoreScripts: true

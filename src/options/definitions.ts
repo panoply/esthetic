@@ -249,6 +249,12 @@ export const definitions: Definitions = {
     lexer: 'markup',
     type: 'boolean'
   },
+  preserveCaptures: {
+    default: false,
+    description: 'Whether or not to apply formatting on the inner contents of Liquid capture tags.',
+    lexer: 'markup',
+    type: 'boolean'
+  },
   preserveAttributes: {
     default: false,
     description: 'If markup tags should have their insides preserved. This option is only available to markup and does not support child tokens that require a different lexer.',
@@ -266,6 +272,26 @@ export const definitions: Definitions = {
     description: 'Markup self-closing tags end will end with " />" instead of "/>".',
     lexer: 'markup',
     type: 'boolean'
+  },
+  lineBreakOperator: {
+    default: 'default',
+    description: 'Controls the placement of Liquid tag operator type characters in newline structures.',
+    lexer: 'markup',
+    type: 'select',
+    values: [
+      {
+        rule: 'default',
+        description: 'Leave line break character intace'
+      },
+      {
+        rule: 'before',
+        description: 'Place line break character at the start of expressions'
+      },
+      {
+        rule: 'after',
+        description: 'Place line break character at the end of expressions'
+      }
+    ]
   },
   ignoreScripts: {
     default: false,

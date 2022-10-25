@@ -265,12 +265,24 @@ prettify.beautify.markup = (options: Options) => {
       //
       if (test === true) {
 
+        // Ensure newline when template singleton tag is followed
+        // by a comment tag, eg:
+        //
+        // {% section 'foo' %} {% comment %}
+        //
+        if(type.is(data.begin[x] -1, 'template')) {
+          level[data.begin[x] - 1] = indent;
+        }
+
+
         const ind = (type.is(next, 'end') || type.is(next, 'template_end')) ? indent + 1 : indent;
+
 
         do {
           level.push(ind);
           x = x - 1;
         } while (x > comstart);
+
 
         // Indent correction so that a following end tag
         // is not indented 1 too much
@@ -288,7 +300,9 @@ prettify.beautify.markup = (options: Options) => {
           level[data.begin[x]] = ind;
         } else {
           level[x] = ind;
+
         }
+
 
       } else {
 
@@ -996,6 +1010,149 @@ prettify.beautify.markup = (options: Options) => {
 
     };
 
+
+    function linebreaks () {
+
+
+
+      const offset = level[level.length - 2] + 1
+      const token = data.token[a].split(NWL);
+      const trims = is(data.token[a][2], cc.DSH)
+
+      let idx = 0;
+      let nls = 0;
+      let tok = NIL;
+      let chr = NIL;
+      let ind = trims
+        ? repeatChar(offset * options.indentSize)
+        : repeatChar(offset * options.indentSize - 1);
+
+      do {
+
+        if (idx === 0) {
+
+
+          tok = token[idx].trimEnd();
+
+          if (tok.endsWith(',')) {
+            chr = ',' + WSP;
+            token[idx] = tok.slice(0, -1);
+          } else if (tok.endsWith('|')) {
+            chr = '|' + WSP;
+            token[idx] = tok.slice(0, -1);
+          } else if(/^{[{%]-?$/.test(tok)) {
+
+            // NEWLINE NAME STRUCTURE
+            //
+            // Newline structure is inferred - according to input
+            // the object name or tag name is expressed on newline.
+            // Delimiter characters likely look like this:
+            //
+            // {{
+            //   object
+            //
+            // OR
+            //
+            // {%-
+            //   tag
+            //
+
+            token[idx] = tok
+            idx = idx + 1;
+
+            // Safetey check incase empty line is present
+            do {
+
+              tok = token[idx].trim();
+
+              if(tok.length > 0) {
+                break;
+              } else {
+                token.splice(idx, 1)
+                if(idx > token.length) break
+              }
+
+            } while(idx < token.length)
+
+            const close = token[token.length - 1].trim()
+
+            if(/^-?[%}]}$/.test(close)) {
+
+              nls = 1
+
+              if(trims) {
+                token[idx] = ind + tok
+                token[token.length - 1] = ind.slice(2) + close
+                ind = ind.slice(2) + repeatChar(options.indentSize)
+              } else {
+                token[idx] = ind + repeatChar(options.indentSize) + tok
+                token[token.length - 1] = ind.slice(1) + close
+                ind = ind + repeatChar(options.indentSize)
+              }
+
+
+
+
+            } else {
+              token[idx] = ind + repeatChar(options.indentSize) + tok
+            }
+
+          }
+
+          idx = idx + 1;
+
+          continue;
+        }
+
+        tok = token[idx].trim();
+
+        if (tok.length === 0) {
+          token.splice(idx, 1)
+          continue;
+        }
+
+        if (idx === token.length - 1 && nls === 1) break
+
+
+        if (tok.endsWith(',')) {
+          token[idx] = ind + chr + tok.slice(0, -1);
+          chr = ',' + WSP;
+        } else if (tok.endsWith('|')) {
+          token[idx] = ind + chr + tok.slice(0, -1);
+          chr = ind + '|' + WSP;
+        } else {
+          token[idx] = ind + chr + tok;
+          chr = NIL;
+        }
+
+        idx = idx + 1;
+
+
+      } while (idx < token.length);
+
+
+      // TODO
+      //
+      // This enforced delimiterSpacing, should maybe consider making this optional
+      //
+      data.token[a] = token
+        .join(NWL)
+        //.replace(/\s*-?[%}]}$/, m => m.replace(/^\s*/, WSP));
+
+
+
+    }
+
+    function isLineBreak (idx: number) {
+
+     return (
+        type.is(idx, 'template') &&
+        data.token[idx].indexOf(lf) > 0 &&
+        /{%-?\s*\bliquid/.test(data.token[idx]) === false
+       )
+
+    }
+
     /* -------------------------------------------- */
     /* SPACING AND INDENTATION                      */
     /* -------------------------------------------- */
@@ -1054,9 +1211,10 @@ prettify.beautify.markup = (options: Options) => {
               level.push(-10);
             }
 
-          } else if ((rules.forceIndent === false || (
-            rules.forceIndent === true && type.is(next, 'script_start')
-          )) && (
+          } else if ((
+            rules.forceIndent === false ||
+            (rules.forceIndent === true && type.is(next, 'script_start'))
+          ) && (
             type.is(a, 'content') ||
             type.is(a, 'singleton') ||
             type.is(a, 'template')
@@ -1084,19 +1242,28 @@ prettify.beautify.markup = (options: Options) => {
               type.idx(a, 'template_') > -1
             )) {
 
+
+
               level.push(indent);
 
+              if (isLineBreak(a)) linebreaks()
+
             } else if (data.lines[next] === 0) {
+
 
               level.push(-20);
 
             } else if (data.lines[next] === 1) {
+
 
               level.push(-10);
 
             } else {
 
               level.push(indent);
+
+              if (isLineBreak(a)) linebreaks()
+
 
             }
 
@@ -1173,7 +1340,10 @@ prettify.beautify.markup = (options: Options) => {
               )
             )) {
 
+
               level.push(-20);
+
+
 
             } else {
 
@@ -1185,6 +1355,7 @@ prettify.beautify.markup = (options: Options) => {
             type.is(next, 'content') ||
             type.is(next, 'singleton')
           )) {
+
 
             level.push(-20);
 
@@ -1213,6 +1384,7 @@ prettify.beautify.markup = (options: Options) => {
               )
             )
           )) {
+
 
             // CONTENT INDENTATION
             //
@@ -1247,65 +1419,6 @@ prettify.beautify.markup = (options: Options) => {
             } else {
               level.push(-10);
             }
-
-          } else if (type.is(a, 'template') && data.token[a].indexOf(lf) > 0) {
-
-            let idx = 0;
-            let tok = NIL;
-            let chr = NIL;
-
-            const token = data.token[a].split(NWL);
-            const ind = is(data.token[a][2], cc.DSH)
-              ? repeatChar((indent + 2) * options.indentSize)
-              : repeatChar((indent + 1) * options.indentSize - 1);
-
-            do {
-
-              if (idx === 0) {
-
-                tok = token[idx].trimEnd();
-
-                if (tok.endsWith(',')) {
-                  chr = ',' + WSP;
-                  token[idx] = tok.slice(0, -1);
-                } else if (tok.endsWith('|')) {
-                  chr = '|' + WSP;
-                  token[idx] = tok.slice(0, -1);
-                }
-
-                idx = idx + 1;
-                continue;
-              }
-
-              tok = token[idx].trim();
-
-              if (tok.length === 0) {
-                idx = idx + 1;
-                continue;
-              }
-
-              if (tok.endsWith(',')) {
-                token[idx] = ind + chr + tok.slice(0, -1);
-                chr = ',' + WSP;
-              } else if (tok.endsWith('|')) {
-                token[idx] = ind + chr + tok.slice(0, -1);
-                chr = ind + '|' + WSP;
-              } else {
-                token[idx] = ind + chr + tok;
-                chr = NIL;
-              }
-
-              idx = idx + 1;
-
-            } while (idx < token.length);
-
-            // TODO
-            //
-            // This enforced delimiterSpacing, should maybe consider making this optional
-            //
-            data.token[a] = token
-              .join(NWL)
-              .replace(/\s*-?[%}]}$/, m => m.replace(/^\s*/, WSP));
 
           } else {
 
@@ -1449,6 +1562,8 @@ prettify.beautify.markup = (options: Options) => {
 
       let aa = 0;
 
+      // console.log(data.token[a - 1]);
+
       data.lines[a + 1] = 0;
       const len = lines.length - 1;
 
@@ -1485,9 +1600,10 @@ prettify.beautify.markup = (options: Options) => {
 
       build.push(lines[len]);
 
-      if (type.is(a, 'comment') && type.is(a + 1, 'template_end')) {
-        build.push(newline(levels[a]));
-      } else if (type.is(a - 1, 'template_end') && type.is(a, 'comment')) {
+      if (type.is(a, 'comment') && (
+        type.is(a + 1, 'template_end') ||
+        type.is(a - 1, 'template_end')
+      )) {
         build.push(newline(levels[a]));
       } else if (levels[a] === -10) {
         build.push(WSP);

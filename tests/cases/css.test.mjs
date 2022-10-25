@@ -1,5 +1,5 @@
 import test from 'ava';
-import util from '@prettify/test-utils';
+import util from '@prettify/tests';
 import prettify from '@liquify/prettify';
 
 test('Code Corrections applied to CSS', async t => {

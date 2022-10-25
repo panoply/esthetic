@@ -1,5 +1,5 @@
 {
-  "name": "tests",
+  "name": "@prettify/schema",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,9 +8,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@liquify/prettify": "link:..",
-    "@prettify/tests": "link:../packages/tests"
-  }
+  "license": "ISC"
 }

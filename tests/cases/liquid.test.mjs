@@ -1,5 +1,5 @@
 import test from 'ava';
-import util from '@prettify/test-utils';
+import util from '@prettify/tests';
 import prettify from '@liquify/prettify';
 
 test.serial('Delimiter Trims Cases', async t => {
@@ -7,53 +7,92 @@ test.serial('Delimiter Trims Cases', async t => {
   await util.forRule('cases/liquid')(
     {
       'delimiter-trims-force': [
-        {
-          language: 'liquid',
-          markup: {
-            delimiterTrims: 'force'
-          }
-        }
+        { delimiterTrims: 'force', delimiterSpacing: true },
+        { delimiterTrims: 'force', delimiterSpacing: false }
       ],
       'delimiter-trims-strip': [
-        {
-          language: 'liquid',
-          markup: {
-            delimiterTrims: 'strip'
-          }
-        }
+        { delimiterTrims: 'strip', delimiterSpacing: true },
+        { delimiterTrims: 'strip', delimiterSpacing: false }
       ],
       'delimiter-trims-tags': [
-        {
-          language: 'liquid',
-          markup: {
-            delimiterTrims: 'tags'
-          }
-        }
+        { delimiterTrims: 'tags', delimiterSpacing: true },
+        { delimiterTrims: 'tags', delimiterSpacing: false }
       ],
       'delimiter-trims-outputs': [
-        {
-          language: 'liquid',
-          markup: {
-            delimiterTrims: 'outputs'
-          }
-        }
+        { delimiterTrims: 'outputs', delimiterSpacing: true },
+        { delimiterTrims: 'outputs', delimiterSpacing: false }
       ],
       'delimiter-trims-preserve': [
-        {
-          language: 'liquid',
-          markup: {
-            delimiterTrims: 'preserve'
-          }
-        }
+        { delimiterTrims: 'preserve', delimiterSpacing: true },
+        { delimiterTrims: 'preserve', delimiterSpacing: false }
       ]
     }
-    , async function (source, rule, label) {
+    , async function (source, markup, label) {
 
-      const input = await prettify.format(source, rule);
+      const output = await prettify.format(source, { language: 'liquid', markup });
 
-      t.snapshot(input, label.description);
+      t.snapshot(output, label.description);
 
       // t.log(input);
+
+    }
+  );
+
+  t.pass();
+
+});
+
+test.serial('Preserve Inlined Outputs in Text Nodes', async t => {
+
+  await util.forRule('cases/liquid')(
+    {
+      'preserve-inline-1': [
+        { forceIndent: true },
+        { forceIndent: true, preserveText: true },
+        { forceIndent: true, preserveText: false },
+        { forceIndent: false },
+        { forceIndent: false, preserveText: true },
+        { forceIndent: false, preserveText: false }
+      ],
+      'preserve-inline-2': [
+        { forceIndent: true },
+        { forceIndent: true, preserveText: true },
+        { forceIndent: true, preserveText: false },
+        { forceIndent: false },
+        { forceIndent: false, preserveText: true },
+        { forceIndent: false, preserveText: false }
+      ]
+    }
+    , async function (source, markup, label) {
+
+      const output = await prettify.format(source, { language: 'liquid', markup });
+
+      t.snapshot(output, label.description);
+      // t.log(output);
+
+    }
+  );
+
+  t.pass();
+
+});
+
+test.serial('Multilined Tags', async t => {
+
+  await util.forSample('cases/liquid')(
+    [
+      'multiline-tag-1'
+    ]
+    , async function (source, label) {
+
+      const output = await prettify.format(source, {
+        language: 'liquid',
+        preserveLine: 3
+      });
+
+      t.snapshot(output, label.description);
+
+      // t.log(output);
 
     }
   );
