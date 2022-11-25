@@ -181,4 +181,4 @@ function parseSync (source: string | Buffer, rules?: Options) {
 
 };
 
-export { formatSync, format, options, parse, parseSync };
+export { formatSync, format, options, parse, parseSync, definitions };
