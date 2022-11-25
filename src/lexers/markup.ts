@@ -11,8 +11,7 @@ import {
   isLiquid,
   isLiquidEnd,
   isLiquidStart,
-  getLiquidTagName,
-  repeatChar
+  getLiquidTagName
 } from '@utils/helpers';
 import { StripEnd, StripLead, SpaceLead, SpaceEnd } from '@utils/regex';
 
@@ -99,7 +98,7 @@ prettify.lexers.markup = function markup (source: string) {
   let a = 0;
 
   /**
-   * External Tag, eg: <script> or {% schema %} etc
+   * External Tag, eg: <scrip> or {% schema %} etc
    */
   let ext = false;
 
@@ -1187,6 +1186,26 @@ prettify.lexers.markup = function markup (source: string) {
         end = '</pre>';
         ltype = 'ignore';
         preserve = true;
+
+      } else if (
+        rules.ignoreScripts === true &&
+        b.slice(a + 1, a + 7).join(NIL).toLowerCase() === 'script'
+      ) {
+
+        end = '</script>';
+        ltype = 'ignore';
+        preserve = true;
+        ignoreme = true;
+
+      } else if (
+        rules.ignoreStyles === true &&
+        b.slice(a + 1, a + 6).join(NIL).toLowerCase() === 'style'
+      ) {
+
+        end = '</style>';
+        ltype = 'ignore';
+        preserve = true;
+        ignoreme = true;
 
       } else {
 
@@ -3295,7 +3314,6 @@ prettify.lexers.markup = function markup (source: string) {
 
             function wrapper () {
 
-
               if (is(ltoke[aa], cc.WSP)) {
                 store.push(ltoke.slice(0, aa));
                 ltoke = ltoke.slice(aa + 1);
@@ -3318,7 +3336,6 @@ prettify.lexers.markup = function markup (source: string) {
                 aa = wrap;
 
                 do { aa = aa + 1; } while (aa < len && not(ltoke[aa], cc.WSP));
-
 
                 store.push(ltoke.slice(0, aa));
 
@@ -3367,8 +3384,6 @@ prettify.lexers.markup = function markup (source: string) {
 
             }
 
-
-
             ltoke = lex
               .join(NIL)
               .replace(SpaceLead, NIL)
@@ -3388,19 +3403,18 @@ prettify.lexers.markup = function markup (source: string) {
 
             if (nwl > -1) {
 
-
               record.token = ltoke.slice(0, nwl);
               recordPush(data, record, NIL);
 
-              ltoke = ltoke.slice(nwl)
+              ltoke = ltoke.slice(nwl);
 
-              const m = ltoke.match(/^\n+/)
+              const m = ltoke.match(/^\n+/);
 
-              if(m === null) {
-                record.lines = 1
+              if (m === null) {
+                record.lines = 1;
               } else {
-                record.lines = 2
-                ltoke = ltoke.replace(SpaceLead, NIL)
+                record.lines = 2;
+                ltoke = ltoke.replace(SpaceLead, NIL);
                 //  console.log(JSON.stringify(ltoke))
               }
             }
