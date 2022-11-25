@@ -87,7 +87,10 @@ test.serial('Multilined Tags', async t => {
 
       const output = await prettify.format(source, {
         language: 'liquid',
-        preserveLine: 3
+        preserveLine: 3,
+        markup: {
+          lineBreakOperator: 'default'
+        }
       });
 
       t.snapshot(output, label.description);
