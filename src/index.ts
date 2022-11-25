@@ -7,6 +7,5 @@ import './beautify/style';
 import './beautify/script';
 import './model';
 
-export { definitions } from './options/definitions';
 
 export * as default from './prettify';

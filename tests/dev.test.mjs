@@ -13,7 +13,10 @@ test('develop', async t => {
       //  delimiterTrims: 'tags',
         preserveText: true,
         forceIndent: false,
-        forceAttribute: 3
+        lineBreakOperator: 'after',
+        forceAttribute: 3,
+        ignoreScripts: true,
+        ignoreStyles: true
       },
       json: {
         braceAllman: true,
