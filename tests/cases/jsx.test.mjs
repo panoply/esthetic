@@ -1,10 +1,10 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { forSample } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 test('Embedded Template string expression', async t => {
 
-  await util.forSample('cases/jsx')(
+  await forSample('cases/jsx')(
     [
       'template-literal-1'
     ]

@@ -1,5 +1,5 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { forRule } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 /* -------------------------------------------- */
@@ -24,7 +24,7 @@ test.before('Setup Tests', () => {
 
 test.serial('Class Padding', async t => {
 
-  await util.forRule('rules/style/class-padding')([
+  await forRule('rules/style/class-padding')([
     true,
     false
   ]
@@ -42,7 +42,7 @@ test.serial('Class Padding', async t => {
 
 test.serial('Correct', async t => {
 
-  await util.forRule('rules/style/correct')([
+  await forRule('rules/style/correct')([
     true,
     false
   ]
@@ -59,7 +59,7 @@ test.serial('Correct', async t => {
 
 test.serial('No Leading Zero', async t => {
 
-  await util.forRule('rules/style/no-lead-zero')([
+  await forRule('rules/style/no-lead-zero')([
     true,
     false
   ]
@@ -77,7 +77,7 @@ test.serial('No Leading Zero', async t => {
 
 test.serial('Quotation Conversion', async t => {
 
-  await util.forRule('rules/style/quote-convert')([
+  await forRule('rules/style/quote-convert')([
     'single',
     'double',
     'none'
@@ -96,7 +96,7 @@ test.serial('Quotation Conversion', async t => {
 
 test.serial('Sort Selectors (Alphabetical)', async t => {
 
-  await util.forRule('rules/style/sort-selectors')([
+  await forRule('rules/style/sort-selectors')([
     true,
     false
   ]
@@ -114,7 +114,7 @@ test.serial('Sort Selectors (Alphabetical)', async t => {
 
 test.serial('Sort Properties (Alphabetical)', async t => {
 
-  await util.forRule('rules/style/sort-properties')([
+  await forRule('rules/style/sort-properties')([
     true,
     false
   ]
@@ -131,7 +131,7 @@ test.serial('Sort Properties (Alphabetical)', async t => {
 
 test.serial('Compress CSS', async t => {
 
-  await util.forRule('rules/style/compress-css')([
+  await forRule('rules/style/compress-css')([
     true,
     false
   ]

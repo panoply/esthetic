@@ -1,10 +1,10 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { forRule, forSample } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
-test.serial('Attribute Casing Preserved', async t => {
+test.serial('Attribute casing', async t => {
 
-  await util.forRule('cases/attributes', { lexer: 'markup' })({
+  await forRule('cases/attributes', { lexer: 'markup' })({
     'casing-1': [
       { attributeCasing: 'preserve' },
       { attributeCasing: 'lowercase' },
@@ -34,7 +34,7 @@ test.serial('Attribute Casing Preserved', async t => {
 
 test.serial('Quote handling', async t => {
 
-  await util.forSample('cases/attributes')(
+  await forSample('cases/attributes')(
     [
       'quote-handling-1',
       'quote-handling-2'
@@ -63,7 +63,7 @@ test.serial('Quote handling', async t => {
 
 test.serial('Preserve attribute structures', async t => {
 
-  await util.forSample('cases/attributes')(
+  await forSample('cases/attributes')(
     [
       'structure-preserve-1',
       'structure-preserve-2',
@@ -97,7 +97,7 @@ test.serial('Preserve attribute structures', async t => {
 
 test.serial('Force attributes', async t => {
 
-  await util.forSample('cases/attributes')(
+  await forSample('cases/attributes')(
     [
       'force-attributes-1',
       'force-attributes-2',

@@ -1,10 +1,10 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { forRule, forSample } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 test.serial('Delimiter Trims Cases', async t => {
 
-  await util.forRule('cases/liquid')(
+  await forRule('cases/liquid')(
     {
       'delimiter-trims-force': [
         { delimiterTrims: 'force', delimiterSpacing: true },
@@ -44,7 +44,7 @@ test.serial('Delimiter Trims Cases', async t => {
 
 test.serial('Preserve Inlined Outputs in Text Nodes', async t => {
 
-  await util.forRule('cases/liquid')(
+  await forRule('cases/liquid')(
     {
       'preserve-inline-1': [
         { forceIndent: true },
@@ -79,7 +79,7 @@ test.serial('Preserve Inlined Outputs in Text Nodes', async t => {
 
 test.serial('Multilined Tags', async t => {
 
-  await util.forSample('cases/liquid')(
+  await forSample('cases/liquid')(
     [
       'multiline-tag-1'
     ]
@@ -103,7 +103,7 @@ test.serial('Multilined Tags', async t => {
 
 test.serial.skip('Comment Preservation', async t => {
 
-  const source = await util.getSample('cases/liquid/comment-preserve');
+  const source = await getSample('cases/liquid/comment-preserve');
 
   const output = await prettify.format(source, {
     language: 'liquid'
@@ -116,7 +116,7 @@ test.serial.skip('Comment Preservation', async t => {
 
 test.serial.skip('Conditional Structures', async t => {
 
-  const source = await util.getSample('cases/liquid/conditional-structure');
+  const source = await getSample('cases/liquid/conditional-structure');
 
   const output = await prettify.format(source, {
     language: 'liquid',
@@ -135,7 +135,7 @@ test.serial.skip('Conditional Structures', async t => {
 
 test.serial.skip('Liquid doctype', async t => {
 
-  const source = await util.getSample('cases/liquid/document-sample');
+  const source = await getSample('cases/liquid/document-sample');
 
   const output = await prettify.format(source, {
     language: 'liquid'

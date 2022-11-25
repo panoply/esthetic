@@ -1,12 +1,12 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { forRule } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 test.before(() => prettify.options({ language: 'javascript', lexer: 'script' }));
 
 test('Preserve Comments', async t => {
 
-  await util.forRule('cases/javascript')({
+  await forRule('cases/javascript')({
     'comment-indent': [
       {
         preserveComment: false,
@@ -34,7 +34,7 @@ test('Preserve Comments', async t => {
 
 test('Inline Return', async t => {
 
-  await util.forRule('cases/javascript')({
+  await forRule('cases/javascript')({
     'inline-return': [
       {
         attemptCorrection: false,
@@ -68,7 +68,7 @@ test('Inline Return', async t => {
 
 test('Object Sorting', async t => {
 
-  await util.forRule('cases/javascript')({
+  await forRule('cases/javascript')({
     'object-sort': [
       {
         indentSize: 4,

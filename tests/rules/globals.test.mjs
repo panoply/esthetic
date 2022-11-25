@@ -1,5 +1,5 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { forRule } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 /* -------------------------------------------- */
@@ -24,7 +24,7 @@ test.serial('Word Wrap limit', async t => {
     }
   });
 
-  await util.forRule('rules/global/wrap')([
+  await forRule('rules/global/wrap')([
     80,
     100,
     120,
@@ -49,7 +49,7 @@ test.serial('CRLF Line Terminations', async t => {
 
   prettify.options({ language: 'html' });
 
-  await util.forRule('rules/global/crlf')([
+  await forRule('rules/global/crlf')([
     true,
     false
   ]
@@ -70,7 +70,7 @@ test.serial('Indent Characters', async t => {
 
   prettify.options({ language: 'javascript' });
 
-  await util.forRule('rules/global/indent-char')([
+  await forRule('rules/global/indent-char')([
     {
       indentSize: 1,
       indentChar: '\t'
@@ -102,7 +102,7 @@ test.serial('Identation Size', async t => {
 
   prettify.options({ language: 'liquid' });
 
-  await util.forRule('rules/global/indent-size')([
+  await forRule('rules/global/indent-size')([
     6,
     4,
     5,
@@ -129,7 +129,7 @@ test.serial('Preserve Newlines', async t => {
 
   /* SAMPLE ------------------------------------- */
 
-  await util.forRule('rules/global/preserve-line')([
+  await forRule('rules/global/preserve-line')([
     5,
     4,
     1,
@@ -154,7 +154,7 @@ test.serial('End with Newline', async t => {
 
   prettify.options({ language: 'text' });
 
-  await util.forRule('rules/global/end-newline')([
+  await forRule('rules/global/end-newline')([
     true,
     false
   ]

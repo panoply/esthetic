@@ -1,10 +1,10 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { dev } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 test('develop', async t => {
 
-  await util.dev(t)(async (source, highlight) => {
+  await dev(t)(async (source) => {
 
     const output = await prettify.format(source, {
       language: 'liquid',

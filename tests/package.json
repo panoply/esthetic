@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@liquify/prettify": "link:..",
-    "@prettify/tests": "link:../packages/tests"
+    "@liquify/prettify": "link:.."
   }
 }

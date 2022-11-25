@@ -1,10 +1,10 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { getSample } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 test.serial.skip('attribute keywords', async t => {
 
-  const source = await util.getSample('cases/markup/attribute-keyword');
+  const source = await getSample('cases/markup/attribute-keyword');
 
   const output = await prettify.format(source, {
     language: 'html',
@@ -19,7 +19,7 @@ test.serial.skip('attribute keywords', async t => {
 
 test.serial.skip('html5 doctype', async t => {
 
-  const source = await util.getSample('cases/markup/html5-doctype');
+  const source = await getSample('cases/markup/html5-doctype');
 
   const output = await prettify.format(source, {
     language: 'html',

@@ -1,10 +1,10 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { forSample } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
-test('Code Corrections applied to CSS', async t => {
+test('Code corrections applied to CSS', async t => {
 
-  await util.forSample('cases/css')(
+  await forSample('cases/css')(
     [
       'correct-1'
     ]
@@ -27,7 +27,7 @@ test('Code Corrections applied to CSS', async t => {
 
 test('CSS variable expressions', async t => {
 
-  await util.forSample('cases/css')(
+  await forSample('cases/css')(
     [
       'css-vars-1',
       'css-vars-2'
@@ -50,7 +50,7 @@ test('CSS variable expressions', async t => {
 
 test('Sorting selector class names', async t => {
 
-  await util.forSample('cases/css')(
+  await forSample('cases/css')(
     [
       'sort-selectors'
     ]
@@ -77,7 +77,7 @@ test('Sorting selector class names', async t => {
 
 test('Sorting selector properties', async t => {
 
-  await util.forSample('cases/css')(
+  await forSample('cases/css')(
     [
       'sort-properties'
     ]
@@ -103,7 +103,7 @@ test('Sorting selector properties', async t => {
 
 test('Pseudo selector properties', async t => {
 
-  await util.forSample('cases/css')(
+  await forSample('cases/css')(
     [
       'pseudo-selector-1',
       'pseudo-selector-2',
@@ -125,7 +125,3 @@ test('Pseudo selector properties', async t => {
   );
 
 });
-
-/* -------------------------------------------- */
-/* RULES                                        */
-/* -------------------------------------------- */

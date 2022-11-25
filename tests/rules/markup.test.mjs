@@ -1,5 +1,5 @@
 import test from 'ava';
-import util from '@prettify/test-utils';
+import { forRule } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 /* -------------------------------------------- */
@@ -23,7 +23,7 @@ test.serial('Attribute Sorting (Alphanumeric)', async t => {
     }
   });
 
-  await util.forRule('rules/markup/attribute-sort')([
+  await forRule('rules/markup/attribute-sort')([
     true,
     false
   ]
@@ -50,7 +50,7 @@ test.serial('Attribute Sort List', async t => {
     }
   });
 
-  await util.forRule('rules/markup/attribute-sort-list')([
+  await forRule('rules/markup/attribute-sort-list')([
     [ 'class', 'data-b', 'data-a', 'data-c', 'data-e' ],
     [ 'first', 'second', 'third', 'fourth' ],
     [ 'data-a', 'data-b', 'data-c', 'data-e', 'data-f' ]
@@ -76,7 +76,7 @@ test.serial('Attribute Sort List', async t => {
 
 test.serial('Attribute Casing', async t => {
 
-  await util.forRule('rules/markup/attribute-casing')([
+  await forRule('rules/markup/attribute-casing')([
     'preserve',
     'lowercase',
     'lowercase-name',
@@ -107,7 +107,7 @@ test.serial('Force Attribute', async t => {
     }
   });
 
-  await util.forRule('rules/markup/force-attribute')([
+  await forRule('rules/markup/force-attribute')([
     true,
     false
   ]
@@ -135,7 +135,7 @@ test.serial('Force Attribute (Limit)', async t => {
     }
   });
 
-  await util.forRule('rules/markup/force-attribute')([
+  await forRule('rules/markup/force-attribute')([
     1,
     2,
     3,
@@ -166,7 +166,7 @@ test.serial('Force Attribute (Wrap)', async t => {
     }
   });
 
-  await util.forRule('rules/markup/force-attribute-wrap')([
+  await forRule('rules/markup/force-attribute-wrap')([
     30,
     50,
     80,
@@ -197,7 +197,7 @@ test.serial('Force Lead Attribute (Wrap)', async t => {
     }
   });
 
-  await util.forRule('rules/markup/force-lead-attribute')([
+  await forRule('rules/markup/force-lead-attribute')([
     30,
     50,
     80,
@@ -226,7 +226,7 @@ test.serial('Force Lead Attribute (Wrap)', async t => {
 
 test.serial('Force Content Indentation', async t => {
 
-  await util.forRule('rules/markup/force-indent')([
+  await forRule('rules/markup/force-indent')([
     true,
     false
   ]
@@ -244,7 +244,7 @@ test.serial('Force Content Indentation', async t => {
 
 test.serial('Delimiter Spacing', async t => {
 
-  await util.forRule('rules/markup/delimiter-spacing')([
+  await forRule('rules/markup/delimiter-spacing')([
     false,
     true
   ]
@@ -258,11 +258,13 @@ test.serial('Delimiter Spacing', async t => {
 
   });
 
+  prettify.options({ markup: { delimiterSpacing: false } });
+
 });
 
 test.serial('Delimiter Trims', async t => {
 
-  await util.forRule('rules/markup/delimiter-trims')([
+  await forRule('rules/markup/delimiter-trims')([
     'strip',
     'force',
     'tags',
@@ -275,15 +277,13 @@ test.serial('Delimiter Trims', async t => {
 
     t.snapshot(output, label({ markup: { delimiterTrims } }));
 
-    // t.log(output);
-
   });
 
 });
 
 test.serial('Quote Convert', async t => {
 
-  await util.forRule('rules/markup/quote-convert')([
+  await forRule('rules/markup/quote-convert')([
     'single',
     'double',
     'none'
@@ -302,7 +302,7 @@ test.serial('Quote Convert', async t => {
 
 test.serial('Self Close Space', async t => {
 
-  await util.forRule('rules/markup/self-close-space')([
+  await forRule('rules/markup/self-close-space')([
     true,
     false
   ]

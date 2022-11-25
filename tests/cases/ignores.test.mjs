@@ -1,10 +1,10 @@
 import test from 'ava';
-import util from '@prettify/tests';
+import { forRule } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
 test('Ignore file using Liquid comment', async t => {
 
-  await util.forRule('cases/ignores')({
+  await forRule('cases/ignores')({
     'liquid-ignore-file': [
       {
         language: 'liquid'
@@ -26,7 +26,7 @@ test('Ignore file using Liquid comment', async t => {
 
 test('Ignore file using HTML comment', async t => {
 
-  await util.forRule('cases/ignores')({
+  await forRule('cases/ignores')({
     'html-ignore-file': [
       {
         language: 'liquid'
@@ -50,7 +50,7 @@ test('Ignore file using HTML comment', async t => {
 
 test('Ignore file using line comment', async t => {
 
-  await util.forRule('cases/ignores')({
+  await forRule('cases/ignores')({
     'javascript-ignore-file-2': [
       {
         lexer: 'script',
@@ -72,7 +72,7 @@ test('Ignore file using line comment', async t => {
 
 test('Ignore file using line block comment', async t => {
 
-  await util.forRule('cases/ignores')({
+  await forRule('cases/ignores')({
     'javascript-ignore-file-1': [
       {
         lexer: 'script',
@@ -101,7 +101,7 @@ test('Ignore file using line block comment', async t => {
 
 test('Ignore code regions using Liquid comments ', async t => {
 
-  await util.forRule('cases/ignores')({
+  await forRule('cases/ignores')({
     'liquid-ignore-region': [
       {
         language: 'liquid',
@@ -125,7 +125,7 @@ test('Ignore code regions using Liquid comments ', async t => {
 
 test('Ignore code regions using HTML comments', async t => {
 
-  await util.forRule('cases/ignores')({
+  await forRule('cases/ignores')({
     'html-ignore-region': [
       {
         language: 'html',
@@ -157,7 +157,7 @@ test.todo('Ignores: Block and Line inline region ignores are not respected');
 
 test.skip('Ignore code regions using JS/TS/CSS block comments', async t => {
 
-  await util.forRule('cases/ignores')({
+  await forRule('cases/ignores')({
     'javascript-ignore-region-1': [
       {
         language: 'javascript',
@@ -182,7 +182,7 @@ test.skip('Ignore code regions using JS/TS/CSS block comments', async t => {
 
 test.skip('Ignore code regions using JS/TS/SCSS line comments', async t => {
 
-  await util.forRule('cases/ignores')({
+  await forRule('cases/ignores')({
     'javascript-ignore-region-2': [
       {
         language: 'javascript',
