@@ -39,32 +39,16 @@
     "build": "tsup --minify-identifiers --minify-whitespace",
     "specs": "node ./scripts/specs.cjs",
     "pack": "cd versions; pnpm pack ../ && cd ..",
-    "test:dev": "ava tests/dev.test.mjs",
     "test": "ava tests/**/*.test.mjs --serial",
+    "tests": "tests -t cases,rules,units",
+    "test:dev": "ava tests/dev.test.mjs --watch",
     "test:units": "ava tests/units/*.test.mjs ---",
-    "test:units:chars": "ava tests/units/chars.test.mjs ---",
     "test:rules": "ava tests/rules/*.test.mjs ---",
-    "test:rules:globals": "ava tests/rules/globals.test.mjs ---",
-    "test:rules:markup": "ava tests/rules/markup.test.mjs ---",
-    "test:rules:script": "ava tests/rules/script.test.mjs ---",
-    "test:rules:style": "ava tests/rules/style.test.mjs ---",
-    "test:cases": "ava tests/cases/*.test.mjs ---",
-    "test:cases:attributes": "ava tests/cases/attributes.test.mjs  ---",
-    "test:cases:embedded": "ava tests/cases/embedded.test.mjs  ---",
-    "test:cases:ignores": "ava tests/cases/ignores.test.mjs  ---",
-    "test:cases:css": "ava tests/cases/css.test.mjs  ---",
-    "test:cases:liquid": "ava tests/cases/liquid.test.mjs  ---",
-    "test:cases:html": "ava tests/cases/html.test.mjs  ---",
-    "test:cases:language": "ava tests/cases/language.test.mjs ---",
-    "test:cases:javascript": "ava tests/cases/javascript.test.mjs ---",
-    "test:cases:jsx": "ava tests/cases/jsx.test.mjs ---"
+    "test:cases": "ava tests/cases/*.test.mjs ---"
   },
   "ava": {
     "extensions": [
       "mjs"
-    ],
-    "files": [
-      "./tests/cases/*.test.mjs"
     ],
     "cache": false
   },
@@ -122,14 +106,14 @@
     }
   },
   "devDependencies": {
+    "@liquify/ava": "^0.0.2",
     "@liquify/eslint-config": "^1.1.0",
     "@liquify/liquid-language-specs": "^0.1.7",
     "@liquify/prettier-config": "^1.0.1",
-    "@prettify/tests": "^0.1.0",
     "@types/benchmark": "^2.1.2",
     "ava": "^5.0.1",
     "benchmark": "^2.1.4",
-    "tsup": "^6.3.0",
-    "type-fest": "^3.1.0"
+    "tsup": "^6.4.0",
+    "type-fest": "^3.2.0"
   }
 }
