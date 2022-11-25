@@ -86,7 +86,7 @@ export const prettify: Prettify = (function () {
         lineBreakOperator: 'default',
         ignoreJson: false,
         ignoreStyles: false,
-        ignoreScripts: true
+        ignoreScripts: false
       },
       style: {
         correct: false,
