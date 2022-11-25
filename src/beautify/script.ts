@@ -2455,8 +2455,10 @@ prettify.beautify.script = (options: Options) => {
         }
 
         if (options.script.methodChain === 0) {
+
           // methodchain is 0 so methods and properties should be chained together
           level[a - 1] = -20;
+
         } else if (options.script.methodChain < 0) {
 
           if (data.lines[a] > 0) {
@@ -2465,12 +2467,14 @@ prettify.beautify.script = (options: Options) => {
             level[a - 1] = -20;
           }
         } else {
+
           // methodchain is greater than 0 and should break
           // methods if the chain reaches this value
           propertybreak();
         }
 
         level.push(-20);
+
         return;
       }
 
@@ -3196,47 +3200,55 @@ prettify.beautify.script = (options: Options) => {
 
     function template () {
 
-      if (ctype === 'template_else') {
-        level[a - 1] = indent - 1;
-        level.push(indent);
+      // HOT PATCH
+      //
+      // Let's preserve occurances of Liquid tokens contained within
+      // JSON strings. This prevents extra spaces being applied.
+      if (options.language !== 'json' && data.types[a - 1] !== 'string') {
 
-      } else if (ctype === 'template_start') {
-
-        indent = indent + 1;
-
-        if (data.lines[a - 1] < 1) level[a - 1] = -20;
-
-        // eslint-disable-next-line no-mixed-operators
-        if (data.lines[a] > 0 || ltoke.length === 1 && ltype === 'string') {
+        if (ctype === 'template_else') {
+          level[a - 1] = indent - 1;
           level.push(indent);
-        } else {
-          level.push(-20);
-        }
 
-      } else if (ctype === 'template_end') {
+        } else if (ctype === 'template_start') {
 
-        indent = indent - 1;
+          indent = indent + 1;
 
-        if (ltype === 'template_start' || data.lines[a - 1] < 1) {
-          level[a - 1] = -20;
-        } else {
-          level[a - 1] = indent;
-        }
+          if (data.lines[a - 1] < 1) level[a - 1] = -20;
 
-        if (data.lines[a] > 0) {
-          level.push(indent);
-        } else {
-          level.push(-20);
-        }
+          // eslint-disable-next-line no-mixed-operators
+          if (data.lines[a] > 0 || ltoke.length === 1 && ltype === 'string') {
+            level.push(indent);
+          } else {
+            level.push(-20);
+          }
 
-      } else if (ctype === 'template') {
+        } else if (ctype === 'template_end') {
 
-        if (data.lines[a] > 0) {
-          level.push(indent);
-        } else {
-          level.push(-20);
+          indent = indent - 1;
+
+          if (ltype === 'template_start' || data.lines[a - 1] < 1) {
+            level[a - 1] = -20;
+          } else {
+            level[a - 1] = indent;
+          }
+
+          if (data.lines[a] > 0) {
+            level.push(indent);
+          } else {
+            level.push(-20);
+          }
+
+        } else if (ctype === 'template') {
+
+          if (data.lines[a] > 0) {
+            level.push(indent);
+          } else {
+            level.push(-20);
+          }
         }
       }
+
     };
 
     function templateString () {
@@ -3675,7 +3687,7 @@ prettify.beautify.script = (options: Options) => {
 
       }
 
-      return linesout.join('');
+      return linesout.join(NIL);
 
     };
 
