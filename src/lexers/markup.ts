@@ -3,7 +3,7 @@ import { prettify } from '@prettify/model';
 import { grammar } from '@options/grammar';
 import { parse } from '@parser/parse';
 import { lexmap } from '@parser/language';
-import { cc, NIL, NWL, WSP } from '@utils/chars';
+import { cc, NIL, NWL, WSP, TAB } from '@utils/chars';
 import {
   is,
   not,
@@ -13,7 +13,17 @@ import {
   isLiquidStart,
   getLiquidTagName
 } from '@utils/helpers';
-import { StripEnd, StripLead, SpaceLead, SpaceEnd } from '@utils/regex';
+import {
+  StripEnd,
+  StripLead,
+  SpaceLead,
+  SpaceEnd,
+  SpaceOnly,
+  TabsOnly,
+  SpaceInjectAfter,
+  SpaceInjectBefore,
+  StripSpaceInject
+} from '@utils/regex';
 
 /* -------------------------------------------- */
 /* LEXER                                        */
@@ -123,6 +133,8 @@ prettify.lexers.markup = function markup (source: string) {
   /* -------------------------------------------- */
 
   /**
+   * Delimiter Trims
+   *
    * Augments Liquid delimiter tokens by applying or removing
    * trim strip dashes.
    */
@@ -171,10 +183,42 @@ prettify.lexers.markup = function markup (source: string) {
 
       if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
 
-      if (rules.delimiterTrims !== 'preserve') input = delimiterTrims(input);
-      if (rules.delimiterSpacing === true) {
-        input = input.replace(/^{[{%]-?\s*/g, (m: string) => m.replace(StripEnd, WSP));
-        input = input.replace(/\s*-?[%}]}$/g, (m: string) => m.replace(StripLead, WSP));
+      if (isLiquid(input.trim(), 3)) {
+
+        if (rules.delimiterTrims !== 'preserve') input = delimiterTrims(input);
+        if (rules.delimiterSpacing === true) {
+          input = input
+            .replace(/^{[{%]-?\s*/, (m: string) => m.replace(StripEnd, WSP))
+            .replace(/\s*-?[%}]}$/, (m: string) => m.replace(StripLead, WSP))
+            .replace(/(?<={[{%]-?)\S/, m => WSP + m)
+            .replace(/\S(?=-?[%}]})/, m => m + WSP)
+
+          ;
+        }
+
+        if (rules.normalizeSpacing === false) return input;
+
+        let q = false;
+
+        input = input.split(/(["'])/).map((char) => {
+
+          const quote = is(char, cc.DQO) || is(char, cc.SQO);
+
+          if (q === true || quote) {
+            if (q === false) q = true;
+            if (q === true && quote) q = false;
+            return char;
+          }
+
+          return char
+            .replace(SpaceInjectAfter, m => WSP + m + WSP)
+            .replace(SpaceInjectBefore, m => m + WSP)
+            .replace(SpaceOnly, options.indentChar)
+            .replace(TabsOnly, TAB)
+            .replace(StripSpaceInject, m => m.trim());
+
+        }).join(NIL);
+
       }
 
       return input;

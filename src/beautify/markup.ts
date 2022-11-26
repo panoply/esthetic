@@ -22,7 +22,7 @@ import { grammar } from '@options/grammar';
  * - XHTML
  * - Liquid.
  */
-prettify.beautify.markup = (options: Options) => {
+prettify.beautify.markup = function (options: Options) {
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
@@ -43,7 +43,7 @@ prettify.beautify.markup = (options: Options) => {
   /**
    * Reference to `options.parsed`
    */
-  const { data } = parse;
+  const data = parse.data;
 
   /**
    * Whether or not language mode is TSX / JSX
@@ -131,7 +131,7 @@ prettify.beautify.markup = (options: Options) => {
    * newlines and spacing. The next function will reference the
    * return value applied here.
    */
-  const levels = (() => {
+  const levels = (function () {
 
     /**
      * The newline / spacing store reference
@@ -1037,16 +1037,31 @@ prettify.beautify.markup = (options: Options) => {
 
     };
 
+    /**
+     * Line Breaks
+     *
+     * Used in beautification of Liquid operator tokens,
+     * like commas and filters.
+     */
     function linebreaks () {
 
-      const offset = level[level.length - 2] + 1;
       const token = data.token[a].split(NWL);
       const trims = is(data.token[a][2], cc.DSH);
 
+      let offset = 0;
       let idx = 0;
       let nls = 0;
       let tok = NIL;
       let chr = NIL;
+
+      // Handle tokens in starting positions
+      //
+      if (level.length >= 2) {
+        offset = level[level.length - 2] + 1;
+      } else if (level.length === 1) {
+        offset = level[level.length - 1] + 1;
+      }
+
       let ind = trims
         ? repeatChar(offset * options.indentSize)
         : repeatChar(offset * options.indentSize - 1);
@@ -1057,11 +1072,11 @@ prettify.beautify.markup = (options: Options) => {
 
           tok = token[idx].trimEnd();
 
-          // console.log(tok);
-
           if (tok.endsWith(',')) {
+
             chr = ',' + WSP;
             token[idx] = tok.slice(0, -1);
+
           } else if (tok.endsWith('|')) {
 
             chr = '|' + WSP;
@@ -1083,9 +1098,7 @@ prettify.beautify.markup = (options: Options) => {
             // {%-
             //   tag
             //
-
             token[idx] = tok;
-
             idx = idx + 1;
 
             // Safetey check incase empty line is present
@@ -1093,12 +1106,11 @@ prettify.beautify.markup = (options: Options) => {
 
               tok = token[idx].trim();
 
-              if (tok.length > 0) {
-                break;
-              } else {
-                token.splice(idx, 1);
-                if (idx > token.length) break;
-              }
+              if (tok.length > 0) break;
+
+              token.splice(idx, 1);
+
+              if (idx > token.length) break;
 
             } while (idx < token.length);
 
@@ -1143,8 +1155,8 @@ prettify.beautify.markup = (options: Options) => {
           }
 
           idx = idx + 1;
-
           continue;
+
         }
 
         tok = token[idx].trim();
@@ -1170,8 +1182,10 @@ prettify.beautify.markup = (options: Options) => {
           chr = ',' + WSP;
 
         } else if (tok.endsWith('|')) {
+
           token[idx] = ind + chr + tok.slice(0, -1);
           chr = ind + '|' + WSP;
+
         } else {
 
           token[idx] = ind + chr + tok;
@@ -1186,10 +1200,14 @@ prettify.beautify.markup = (options: Options) => {
       //
       // This enforced delimiterSpacing, should maybe consider making this optional
       //
-      data.token[a] = token
-        .join(NWL);
-      // .replace(/\s*-?[%}]}$/, m => m.replace(/^\s*/, WSP));
+      if (rules.delimiterSpacing === true) {
+        data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, m => m.replace(/\s*/, WSP));
+      } else {
+        const space = repeatChar((data.lines[a] - 1) === -1 ? options.indentSize : data.lines[a] - 1);
+        data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, m => m.replace(StripEnd, space));
+      }
 
+      // console.log(data.lines[a] - 1);
     }
 
     function isLineBreak (idx: number) {
@@ -1261,12 +1279,14 @@ prettify.beautify.markup = (options: Options) => {
             }
 
           } else if ((
-            rules.forceIndent === false ||
-            (rules.forceIndent === true && type.is(next, 'script_start'))
+            rules.forceIndent === false || (
+              rules.forceIndent === true &&
+              type.is(next, 'script_start')
+            )
           ) && (
             type.is(a, 'content') ||
-              type.is(a, 'singleton') ||
-              type.is(a, 'template')
+            type.is(a, 'singleton') ||
+            type.is(a, 'template')
           )) {
 
             count = count + data.token[a].length;
@@ -1288,7 +1308,7 @@ prettify.beautify.markup = (options: Options) => {
               type.idx(next, 'start') > -1
             ) && (
               data.lines[next] > 0 ||
-                type.idx(a, 'template_') > -1
+              type.idx(a, 'template_') > -1
             )) {
 
               level.push(indent);
@@ -1298,6 +1318,8 @@ prettify.beautify.markup = (options: Options) => {
             } else if (data.lines[next] === 0) {
 
               level.push(-20);
+
+              if (isLineBreak(a)) linebreaks();
 
             } else if (data.lines[next] === 1) {
 
@@ -1392,10 +1414,13 @@ prettify.beautify.markup = (options: Options) => {
 
             }
 
-          } else if (rules.forceIndent === false && data.lines[next] === 0 && (
-            type.is(next, 'content') ||
-            type.is(next, 'singleton')
-          )) {
+          } else if (
+            rules.forceIndent === false &&
+            data.lines[next] === 0 && (
+              type.is(next, 'content') ||
+              type.is(next, 'singleton')
+            )
+          ) {
 
             level.push(-20);
 
@@ -1486,7 +1511,7 @@ prettify.beautify.markup = (options: Options) => {
 
     return level;
 
-  })();
+  }());
 
   /* -------------------------------------------- */
   /* APPLY BEAUTIFICATION                         */
