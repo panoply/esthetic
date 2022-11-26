@@ -1,4 +1,4 @@
-import { RuleNames } from '@liquify/prettify/types/common';
+import { RuleNames } from '../common';
 
 /**
  * Option defintion type string Literal
@@ -8,7 +8,7 @@ export type DefinitionTypes = 'boolean' | 'array' | 'number' | 'string' | 'selec
 /**
  * Option defintion lexer types
  */
-export type DefinitionLexerTypes = 'all' | 'markup' | 'script' | 'style'
+export type DefinitionLexerTypes = 'auto' | 'markup' | 'script' | 'style'
 
 /**
  * Definition Reference

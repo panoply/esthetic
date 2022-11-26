@@ -1,5 +1,5 @@
-import { LanguageNames, LexerNames } from '@liquify/prettify/types/common';
-import { LiteralUnion } from '@liquify/prettify/node_modules/type-fest';
+import { LanguageNames, LexerNames } from '../common';
+import { LiteralUnion } from 'type-fest';
 
 export type EmbeddedHTML = {
   [tag: string]: {

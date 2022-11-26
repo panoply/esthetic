@@ -1,11 +1,11 @@
 /* eslint-disable no-use-before-define */
 
-import { LiteralUnion } from '@liquify/prettify/node_modules/type-fest';
-import { MarkupTypes, StyleTypes, ScriptTypes, ExtraTypes } from '@liquify/prettify/types/parse/tokens';
-import { GlobalOptions } from '@liquify/prettify/types/rules/global';
-import { MarkupOptions } from '@liquify/prettify/types/rules/markup';
-import { StyleOptions } from '@liquify/prettify/types/rules/style';
-import { ScriptOptions } from '@liquify/prettify/types/rules/script';
+import { LiteralUnion } from 'type-fest';
+import { MarkupTypes, StyleTypes, ScriptTypes, ExtraTypes } from './parse/tokens';
+import { GlobalOptions } from './rules/global';
+import { MarkupOptions } from './rules/markup';
+import { StyleOptions } from './rules/style';
+import { ScriptOptions } from './rules/script';
 
 /**
  * Option Rule Names Stirng Literal

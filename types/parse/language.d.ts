@@ -1,5 +1,5 @@
-import { LanguageProperName } from '@liquify/prettify/types/common';
-import { LiteralUnion } from '@liquify/prettify/node_modules/type-fest';
+import { LanguageProperName } from '../common';
+import { LiteralUnion } from 'type-fest';
 
 export type PatternTypes =
   | 'comment.line' // single block comment
