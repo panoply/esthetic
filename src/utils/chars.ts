@@ -11,6 +11,11 @@ export const NIL = '';
 export const WSP = ' ';
 
 /**
+ * `\t` – Single tab character
+ */
+export const TAB = '\t';
+
+/**
  * `\n` – Newline character
  */
 export const NWL = '\n';
@@ -117,6 +122,11 @@ export const enum cc {
    * `\n` – Newline Character
    */
   NWL = 10,
+
+  /**
+   * `\` – Backward Slash
+   */
+  BWS = 92,
 
   /**
    * `/` – Forward Slash
