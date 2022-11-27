@@ -3,7 +3,7 @@ import { prettify } from '@prettify/model';
 import { grammar } from '@options/grammar';
 import { parse } from '@parser/parse';
 import { lexmap } from '@parser/language';
-import { cc, NIL, NWL, WSP, TAB } from '@utils/chars';
+import { cc, NIL, NWL, WSP } from '@utils/chars';
 import {
   is,
   not,
@@ -18,11 +18,7 @@ import {
   StripLead,
   SpaceLead,
   SpaceEnd,
-  SpaceOnly,
-  TabsOnly,
-  SpaceInjectAfter,
-  SpaceInjectBefore,
-  StripSpaceInject
+  SpaceOnly
 } from '@utils/regex';
 
 /* -------------------------------------------- */
@@ -140,28 +136,30 @@ prettify.lexers.markup = function markup (source: string) {
    */
   function delimiterTrims (tag: string) {
 
+    const end = tag.length - 4;
+
     if (rules.delimiterTrims === 'force') {
       if (is(tag[1], cc.PER)) {
         if (!is(tag[2], cc.DSH)) tag = tag.replace(/^{%/, '{%-');
         if (!tag.endsWith('-%}')) tag = tag.replace(/%}$/, '-%}');
       } else {
         if (!is(tag[2], cc.DSH)) tag = tag.replace(/^{{/, '{{-');
-        if (!tag.endsWith('-}}')) tag = tag.replace(/}}$/, '-}}');
+        if (!tag.endsWith('-}}', end)) tag = tag.replace(/}}$/, '-}}');
       }
     } else if (rules.delimiterTrims === 'strip') {
       if (is(tag[1], cc.PER)) {
         if (is(tag[2], cc.DSH)) tag = tag.replace(/^{%-/, '{%');
-        if (tag.endsWith('-%}')) tag = tag.replace(/-%}$/, '%}');
+        if (tag.endsWith('-%}', end)) tag = tag.replace(/-%}$/, '%}');
       } else {
         if (is(tag[2], cc.DSH)) tag = tag.replace(/^{{-/, '{{');
-        if (tag.endsWith('-}}')) tag = tag.replace(/-}}$/, '}}');
+        if (tag.endsWith('-}}', end)) tag = tag.replace(/-}}$/, '}}');
       }
     } else if (rules.delimiterTrims === 'tags' && is(tag[1], cc.PER)) {
       if (!is(tag[2], cc.DSH)) tag = tag.replace(/^{%/, '{%-');
-      if (!tag.endsWith('-%}')) tag = tag.replace(/%}$/, '-%}');
+      if (!tag.endsWith('-%}', end)) tag = tag.replace(/%}$/, '-%}');
     } else if (rules.delimiterTrims === 'outputs' && is(tag[1], cc.LCB)) {
       if (!is(tag[2], cc.DSH)) tag = tag.replace(/^{{/, '{{-');
-      if (!tag.endsWith('-}}')) tag = tag.replace(/}}$/, '-}}');
+      if (!tag.endsWith('-}}', end)) tag = tag.replace(/}}$/, '-}}');
     }
 
     return tag;
@@ -177,7 +175,7 @@ prettify.lexers.markup = function markup (source: string) {
    * - `}}` or `-}}`
    * - `%}`or `-%}`
    */
-  function bracketSpace (input: string) {
+  function tokenParse (input: string) {
 
     if (markup === true && jsx === false) {
 
@@ -190,32 +188,58 @@ prettify.lexers.markup = function markup (source: string) {
           input = input
             .replace(/^{[{%]-?\s*/, (m: string) => m.replace(StripEnd, WSP))
             .replace(/\s*-?[%}]}$/, (m: string) => m.replace(StripLead, WSP))
-            .replace(/(?<={[{%]-?)\S/, m => WSP + m)
-            .replace(/\S(?=-?[%}]})/, m => m + WSP)
-
-          ;
+            .replace(/((?<={[{%]-?)\S|\S(?=-?[%}]}))/, '$1 ');
         }
 
         if (rules.normalizeSpacing === false) return input;
 
-        let q = false;
+        /**
+         * The starting quotation code character
+         */
+        let t: cc.DQO | cc.SQO;
 
-        input = input.split(/(["'])/).map((char) => {
+        /**
+         * Quotation Reference
+         *
+         * Tracks string quotes allowing them to be skipped.
+         *
+         * - `0` token is not a string
+         * - `1` We have encountered a string, eg: {{ '^
+         * - `2` We have closed the last known string, eg: {{ 'foo'^
+         */
+        let q: 0 | 1 | 2 = 0;
 
-          const quote = is(char, cc.DQO) || is(char, cc.SQO);
+        return input.split(/(["']{1})/).map((char, idx, arr) => {
 
-          if (q === true || quote) {
-            if (q === false) q = true;
-            if (q === true && quote) q = false;
-            return char;
+          const quotation = is(char[0], cc.DQO) || is(char[0], cc.SQO);
+
+          if (q > 0 || (quotation && q === 0 && not(arr[idx - 1], cc.BWS)) || quotation) {
+
+            if (q === 0) t = char.charCodeAt(0);
+
+            // Move forward for nested quote type, eg: '"' or "'"
+            if (q === 1 && not(arr[idx - 1], cc.BWS)) {
+              if (t === char.charCodeAt(0)) q = 2;
+              return char;
+            }
+
+            if (q !== 2) {
+              q = q === 0 ? 1 : q === 1 ? is(arr[idx - 1], cc.BWS) ? 1 : 2 : 0;
+              return char;
+            }
+
+            q = 0;
+
           }
 
           return char
-            .replace(SpaceInjectAfter, m => WSP + m + WSP)
-            .replace(SpaceInjectBefore, m => m + WSP)
-            .replace(SpaceOnly, options.indentChar)
-            .replace(TabsOnly, TAB)
-            .replace(StripSpaceInject, m => m.trim());
+            .replace(SpaceOnly, WSP)
+            .replace(/([!=]=|[<>]=?)/g, ' $1 ')
+            .replace(/ +(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
+            .replace(/(\||(?<=[^=!<>])(?:=(?=[^=!<>])|=$))/g, ' $1 ')
+            .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
+
+            .replace(SpaceOnly, WSP);
 
         }).join(NIL);
 
@@ -1613,7 +1637,7 @@ prettify.lexers.markup = function markup (source: string) {
         }
 
         attr = attribute.join(options.crlf === true ? '\r\n' : '\n');
-        attr = bracketSpace(attr);
+        attr = tokenParse(attr);
 
         if (ttexp >= 1 || isLiquid(attr, 1)) {
           if (isLiquid(attr, 5) === false) {
@@ -2326,7 +2350,7 @@ prettify.lexers.markup = function markup (source: string) {
       igcount = 0;
       element = lex.join(NIL);
       tname = tagName(element);
-      element = bracketSpace(element);
+      element = tokenParse(element);
 
       if (tname === 'xml') {
         html = 'xml';
@@ -3335,7 +3359,7 @@ prettify.lexers.markup = function markup (source: string) {
             ltoke = lex.join(NIL).replace(SpaceEnd, NIL);
           }
 
-          // ltoke = bracketSpace(ltoke);
+          // ltoke = tokenParse(ltoke);
 
           liner = 0;
           record.token = ltoke;
