@@ -270,10 +270,9 @@ Prettify provides a granular set of beautification options (rules). The projects
     forceIndent: false,
     ignoreStyles: false,
     ignoreScripts: false,
-    ignoreJson: false,
     lineBreakOperator: 'default',
+    normalizeSpacing: true,
     preserveAttributes: false,
-    preserveCaptures: false
     preserveComment: true,
     preserveText: true,
     quoteConvert: 'double',
