@@ -249,9 +249,9 @@ export const definitions: Definitions = {
     lexer: 'markup',
     type: 'boolean'
   },
-  preserveCaptures: {
-    default: false,
-    description: 'Whether or not to apply formatting on the inner contents of Liquid capture tags.',
+  normalizeSpacing: {
+    default: true,
+    description: 'Whether or not to normalize the distributed spacing contained in Liquid tokens.',
     lexer: 'markup',
     type: 'boolean'
   },
