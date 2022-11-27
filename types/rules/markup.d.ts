@@ -7,11 +7,9 @@ export interface MarkupOptions {
    *
    * Automatically correct some sloppiness in code and allow Prettify to
    * reason with the intended structures in order to reduce chaos in otherwise
-   * unreadble and terrible code like that of Shopify's Dawn theme. The option acts
-   * as a very mild form of linting, wherein invalid code will be attempt to be
-   * corrected.
+   * unreadble and terrible code.
    *
-   * _The option enables Prettify to go about fixing your shitty code. It's not
+   * _The option enables Prettify to go about fixing shitty code. It's not
    * going to produce miracles and for the most part it will have little effect
    * overall but can help in some situations._
    *
@@ -102,7 +100,7 @@ export interface MarkupOptions {
    *
    * ```
    */
-  attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value'
+  attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value';
 
   /**
    * **Default** `false`
@@ -144,7 +142,7 @@ export interface MarkupOptions {
    * </div>
    * ```
    */
-  attributeSort?: boolean
+  attributeSort?: boolean;
 
   /**
    * **Default** `[]`
@@ -329,7 +327,7 @@ export interface MarkupOptions {
    *
    * ```
    */
-  delimiterTrims?: 'preserve' | 'strip' | 'force' | 'tags' | 'outputs'
+  delimiterTrims?: 'preserve' | 'strip' | 'force' | 'tags' | 'outputs';
 
   /**
    * **Default** `false`
@@ -376,7 +374,45 @@ export interface MarkupOptions {
    * {% endfor %}
    * ```
    */
-  delimiterSpacing?: boolean
+  delimiterSpacing?: boolean;
+
+  /**
+   * **Default** `true`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
+   * Whether or not to normalize and correct the inner spacing of Liquid tokens.
+   * This rules will equally distribute whitespace characters contained within
+   * Liquid tags and output tokens.
+   *
+   * **Note**
+   *
+   * Normalized spacing does not strip newline characters or code wrapped in quotation
+   * characters (strings) from the inner contents of Liquid tokens.
+   *
+   * ---
+   *
+   * #### Example
+   *
+   * *Below is an example of how this rule works if it's enabled, ie: `true` which is the default.
+   * Notice how in the below example, all string tokens are left intact whereas other tokens will
+   * normalize the whitespace distribution*
+   *
+   *
+   * ```liquid
+   *
+   * <!-- Before formatting -->
+   * {{  object.prop   |filter:'x'  , 'xx'|    filter   :   'preserves   strings'   }}
+   * {% assign  'foo '  =   ' x '   |  append : object . prop    %}
+   *
+   * <!-- After formatting -->
+   *
+   * {{ object.prop | filter: 'x', 'xx' | filter: 'preserves   strings' }}
+   *
+   * {% assign 'foo ' = ' preserved ' | append: object.prop %}
+   * ```
+   */
+  normalizeSpacing?: boolean;
 
   /**
    * **Default** `false`
@@ -406,7 +442,7 @@ export interface MarkupOptions {
    *
    * ```
    */
-  selfCloseSpace?: boolean,
+  selfCloseSpace?: boolean;
 
   /**
    * **Default** `false`
@@ -416,7 +452,7 @@ export interface MarkupOptions {
    * If text in the provided markup code should be preserved exactly as provided.
    * This option eliminates beautification and wrapping of text content.
    */
-  preserveText?: boolean,
+  preserveText?: boolean;
 
   /**
    * **Default** `false`
@@ -584,7 +620,7 @@ export interface MarkupOptions {
    * </ul>
    * ```
    */
-  forceIndent?: boolean
+  forceIndent?: boolean;
 
   /**
    * **Default** `none`
@@ -601,18 +637,7 @@ export interface MarkupOptions {
    * - `none` Ignores this option (default)
    * - `single` Converts double quotes to single quotes
    */
-  quoteConvert?: 'double' | 'single' | 'none'
-
-  /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
-   *
-   * Whether or not to apply formatting on the inner contents of Liquid `{% capture %}` tags.
-   * When disabled, the contained contents of capture tags will excluded from beautification.
-   *
-   */
-  preserveCaptures?: boolean;
+  quoteConvert?: 'double' | 'single' | 'none';
 
   /**
    * **Default** `false`
