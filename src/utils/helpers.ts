@@ -180,36 +180,41 @@ export function isLiquid (input: string, direction: 1 | 2 | 3 | 4 | 5): boolean 
 
     return is(input[0], cc.LCB) && (
       is(input[1], cc.PER) ||
-        is(input[1], cc.LCB)
+      is(input[1], cc.LCB)
     );
 
-  } else if (direction === 2) {
-
-    return is(input[input.length - 1], cc.RCB) && (
-      is(input[input.length - 2], cc.PER) ||
-      is(input[input.length - 2], cc.RCB)
-    );
-
-  } else if (direction === 3) {
-    return (
-      is(input[0], cc.LCB) && (
-        is(input[1], cc.PER) ||
-          is(input[1], cc.LCB)
-      )
-    ) && (
-      is(input[input.length - 1], cc.RCB) && (
-        is(input[input.length - 2], cc.PER) ||
-          is(input[input.length - 2], cc.LCB)
-      )
-    );
-
-  } else if (direction === 4) {
+  } if (direction === 4) {
 
     return /{[{%}]/.test(input);
 
   } else if (direction === 5) {
 
     return (/{[{%]/.test(input) && /[%}]}/.test(input));
+
+  } else if (direction === 2) {
+
+    const size = input.length;
+
+    return is(input[size - 1], cc.RCB) && (
+      is(input[size - 2], cc.PER) ||
+      is(input[size - 2], cc.RCB)
+    );
+
+  } else if (direction === 3) {
+
+    const size = input.length;
+
+    return (
+      is(input[0], cc.LCB) && (
+        is(input[1], cc.PER) ||
+        is(input[1], cc.LCB)
+      )
+    ) && (
+      is(input[size - 1], cc.RCB) && (
+        is(input[size - 2], cc.PER) ||
+        is(input[size - 2], cc.RCB)
+      )
+    );
 
   }
 
