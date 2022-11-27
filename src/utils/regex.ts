@@ -59,6 +59,71 @@ export const StripLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
 export const StripEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
 
 /**
+ * Captures more than 1 whitespace character occurances but does not touch newlines.
+ *
+ * ---
+ *
+ * @example
+ *
+ * BEFORE: 'foo   \t\n '
+ * AFTER:  'foo\t\n'
+ */
+export const SpaceOnly = /[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
+
+/**
+ * Captures more than 1 tab character occurances but does not touch newlines.
+ *
+ * ---
+ *
+ * @example
+ *
+ * BEFORE: 'foo   \t\n '
+ * AFTER:  'foo   \n'
+ */
+export const TabsOnly = /\t+/g;
+
+/**
+ * Regex is used to inject whitespace and equally distributes spacing
+ * within Liquid tokens. It directly relates to `normalizeSpacing` rules.
+ *
+ * ---
+ *
+ * @see https://regex101.com/r/jxLNhv/1
+ * @example
+ *
+ * BEFORE: '|filter:" foo "|append:123'
+ * AFTER:  '| filter: " foo " | append: 123'
+ */
+export const SpaceInjectBefore = /[|:,[\]](?=[0-9a-z-])/g;
+
+/**
+ * Regex is used to inject whitespace and equally distributes spacing
+ * within Liquid tokens. It directly relates to `normalizeSpacing` rules.
+ * This regex is specifically used for prefixed token characters.
+ *
+ * ---
+ *
+ * @see https://regex101.com/r/jxLNhv/1
+ * @example
+ *
+ * BEFORE: 'foo="bar"'
+ * AFTER:  'foo = "bar"' // SpaceInjectBefore will handle `="bar"`
+ */
+export const SpaceInjectAfter = /(?<=[0-9a-z\]-])(?:[!=]=|[<>]=?)/g;
+
+/**
+ * Regex is used to strip whitespaces expressed where they might otherwise
+ * can be avoided.
+ *
+ * ---
+ * @example
+ *
+ * BEFORE: 'object . prop'
+ * AFTER:  'object.prop' // SpaceInjectBefore will handle `="bar"`
+ */
+export const StripSpaceInject = /[.[\]] {1,}/g;
+
+/**
  * Captures Prettify inline comment controls
  *
  * ---
