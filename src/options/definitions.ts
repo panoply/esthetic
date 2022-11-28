@@ -273,9 +273,9 @@ export const definitions: Definitions = {
     lexer: 'markup',
     type: 'boolean'
   },
-  lineBreakOperator: {
+  lineBreakSeparator: {
     default: 'default',
-    description: 'Controls the placement of Liquid tag operator type characters in newline structures.',
+    description: 'Controls the placement of Liquid tag separator type characters in newline structures.',
     lexer: 'markup',
     type: 'select',
     values: [
@@ -305,16 +305,11 @@ export const definitions: Definitions = {
     lexer: 'markup',
     type: 'boolean'
   },
-  ignoreJson: {
-    default: false,
-    description: 'Whether to ignore embedded regions of tags identified to contain JSON',
-    lexer: 'markup',
-    type: 'boolean'
-  },
 
   /* -------------------------------------------- */
   /* LEXER:STYLE                                  */
   /* -------------------------------------------- */
+
   classPadding: {
     description: 'Inserts new line characters between every CSS code block.',
     default: false,

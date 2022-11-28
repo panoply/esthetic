@@ -3,7 +3,6 @@ import type { Types } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { grammar } from '@options/grammar';
-import { create } from '@utils/native';
 import { is, not, ws } from '@utils/helpers';
 import { cc, NIL, WSP } from '@utils/chars';
 
@@ -92,6 +91,9 @@ prettify.lexers.style = function style (source: string) {
 
   };
 
+  /**
+   * Escape Character Test
+   */
   function esctest (index: number) {
 
     const slashy = index;
@@ -363,7 +365,7 @@ prettify.lexers.style = function style (source: string) {
         if (/^\w+\(/.test(values[ii]) && values[ii].charAt(values[ii].length - 1) === ')' && (
           values[ii].indexOf('url(') !== 0 || (
             values[ii].indexOf('url(') === 0 &&
-            values[ii].indexOf(' ') > 0
+            values[ii].indexOf(WSP) > 0
           )
         )) {
 
@@ -375,7 +377,7 @@ prettify.lexers.style = function style (source: string) {
       } while (ii < leng);
     }
 
-    block = values.join(' ');
+    block = values.join(WSP);
 
     return block.charAt(0) + block.slice(1).replace(/\s*(\/|\+|\*)\s*(\d|\$)/, valueSpace);
 
@@ -567,7 +569,7 @@ prettify.lexers.style = function style (source: string) {
 
     ltoke = out
       .join(NIL)
-      .replace(/\s+/g, ' ')
+      .replace(/\s+/g, WSP)
       .replace(/^\s/, NIL)
       .replace(/\s$/, NIL);
 
@@ -588,8 +590,8 @@ prettify.lexers.style = function style (source: string) {
       (/\d/).test(ltoke.charAt(0)) === false &&
       (/^rgba?\(/).test(ltoke) === false &&
       ltoke.indexOf('url(') !== 0 && (
-        ltoke.indexOf(' ') < 0 ||
-        ltoke.indexOf(' ') > ltoke.indexOf('(')
+        ltoke.indexOf(WSP) < 0 ||
+        ltoke.indexOf(WSP) > ltoke.indexOf('(')
       ) &&
       ltoke.charAt(ltoke.length - 1) === ')'
     ) {
@@ -1145,7 +1147,7 @@ prettify.lexers.style = function style (source: string) {
                 const templateNames = Array.from(grammar.liquid.tags);
                 let namesLen = templateNames.length - 1;
 
-                name = name.slice(0, name.indexOf(' '));
+                name = name.slice(0, name.indexOf(WSP));
 
                 if (name.indexOf('(') > 0) {
                   name = name.slice(0, name.indexOf('('));
@@ -1192,9 +1194,7 @@ prettify.lexers.style = function style (source: string) {
 
                 group = group.slice(0, begin);
 
-                if (group.charAt(group.length - 2) === '}') {
-                  group = group.slice(0, group.length - 2);
-                }
+                if (is(group[group.length - 2], cc.RCB)) group = group.slice(0, group.length - 2);
 
                 if (group === 'end') {
                   exit('template_end');
@@ -1279,37 +1279,49 @@ prettify.lexers.style = function style (source: string) {
     const lines = parse.linesSpace;
     const props: {
       data: {
-        margin: [
-          top: string,
-          right: string,
-          bottom: string,
-          left: string,
-          semi: boolean
+        margin?: [
+          top?: string,
+          right?: string,
+          bottom?: string,
+          left?: string,
+          semi?: boolean
         ];
+        padding?: [
+          top?: string,
+          right?: string,
+          bottom?: string,
+          left?: string,
+          semi?: boolean
+        ]
+      },
+      last?: {
+        margin?: number;
+        padding?: number;
+      }
+      removes?: any[]
+    } = {
+      data: {
+        margin: [
+          NIL,
+          NIL,
+          NIL,
+          NIL,
+          false
+        ],
         padding: [
-          top: string,
-          right: string,
-          bottom: string,
-          left: string,
-          semi: boolean
+          NIL,
+          NIL,
+          NIL,
+          NIL,
+          false
         ]
       },
       last: {
-        margin: number;
-        padding: number;
-      }
-      removes: any[]
-    } = create(null);
-
-    props.data = create(null);
-    props.data.margin = [ NIL, NIL, NIL, NIL, false ];
-    props.data.padding = [ NIL, NIL, NIL, NIL, false ];
-
-    props.last = create(null);
-    props.last.margin = 0;
-    props.last.padding = 0;
-
-    props.removes = [];
+        margin: 0,
+        padding: 0
+      },
+      removes: []
+    };
 
     const begin = parse.structure[parse.structure.length - 1][1];
 
@@ -1317,7 +1329,7 @@ prettify.lexers.style = function style (source: string) {
 
       if (data.token[aa - 2] === prop) {
 
-        const values = data.token[aa].replace(/\s*!important\s*/g, NIL).split(' ');
+        const values = data.token[aa].replace(/\s*!important\s*/g, NIL).split(WSP);
         const vlen = values.length;
 
         if (data.token[aa].indexOf('!important') > -1) props.data[prop[4]] = true;

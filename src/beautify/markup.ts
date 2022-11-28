@@ -1139,7 +1139,7 @@ prettify.beautify.markup = function (options: Options) {
           } else if (
             tok.endsWith(',') === false &&
             is(token[idx + 1].trimStart(), cc.COM) &&
-            rules.lineBreakOperator === 'after'
+            rules.lineBreakSeparator === 'after'
           ) {
 
             // APPLY COMMA AT THIS POINT
@@ -1161,7 +1161,7 @@ prettify.beautify.markup = function (options: Options) {
 
         tok = token[idx].trim();
 
-        if (is(tok, cc.COM) && rules.lineBreakOperator === 'after') {
+        if (is(tok, cc.COM) && rules.lineBreakSeparator === 'after') {
           if (tok.endsWith('%}')) {
             tok = WSP + tok.slice(1);
           } else {
@@ -1176,7 +1176,7 @@ prettify.beautify.markup = function (options: Options) {
 
         if (idx === token.length - 1 && nls === 1) break;
 
-        if (tok.endsWith(',') && rules.lineBreakOperator === 'before') {
+        if (tok.endsWith(',') && rules.lineBreakSeparator === 'before') {
 
           token[idx] = ind + chr + tok.slice(0, -1);
           chr = ',' + WSP;

@@ -9,7 +9,7 @@ export interface MarkupOptions {
    * reason with the intended structures in order to reduce chaos in otherwise
    * unreadble and terrible code.
    *
-   * _The option enables Prettify to go about fixing shitty code. It's not
+   * _The option enables Prettify to go about fixing code. It's not
    * going to produce miracles and for the most part it will have little effect
    * overall but can help in some situations._
    *
@@ -683,7 +683,7 @@ export interface MarkupOptions {
    * In situations where you write a multiline tag expression this rule can augment the
    * order of leading operator characters such as the parameter comma `,` separator.
    */
-  lineBreakOperator: 'default' | 'before' | 'after';
+  lineBreakSeparator?: 'default' | 'before' | 'after';
 
   /**
    * **Default** `false`
@@ -712,17 +712,5 @@ export interface MarkupOptions {
    *
    */
   ignoreScripts?: boolean;
-
-  /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
-   *
-   * Whether HTML and Liquid tags identified to be containing JSON
-   * should be ignored from beautification. When enabled, formatting will
-   * be applied in accordance with rules defined in the `json` lexer.
-   *
-   */
-  ignoreJson?: boolean;
 
 }
