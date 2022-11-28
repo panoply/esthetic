@@ -27,7 +27,7 @@ Currently working on documentation to better inform upon rules and overall archi
   - Markup
   - Style
   - Script
-  - [JSON](https://github.com/panoply/prettify/blob/pre-release/docs/rules/json.md)
+  - JSON
 
 ### Why Prettify?
 
@@ -270,13 +270,20 @@ Prettify provides a granular set of beautification options (rules). The projects
     forceIndent: false,
     ignoreStyles: false,
     ignoreScripts: false,
-    lineBreakOperator: 'default',
+    lineBreakSeparator: 'default',
     normalizeSpacing: true,
     preserveAttributes: false,
     preserveComment: true,
     preserveText: true,
     quoteConvert: 'double',
-    selfCloseSpace: false,
+    selfCloseSpace: false
+  },
+  json: {
+    arrayFormat: 'default',
+    braceAllman: true,
+    bracePadding: false,
+    objectIndent: 'indent',
+    objectSort: false
   },
   style: {
     correct: false,
@@ -312,14 +319,6 @@ Prettify provides a granular set of beautification options (rules). The projects
     variableList: 'none',
     vertical: false,
     styleGuide: 'none'
-  },
-  json: {
-    arrayFormat: 'default',
-    braceAllman: true,
-    bracePadding: false,
-    objectIndent: 'indent',
-    objectSort: false,
-    preserveLine: 2
   }
 }
 ```
@@ -330,6 +329,7 @@ Global rules will be applied to all lexer modes. You cannot override globals on 
 
 ```ts
 {
+  grammar: {},
   language: 'auto',
   lexer: 'auto',
   indentSize: 2,
@@ -337,9 +337,8 @@ Global rules will be applied to all lexer modes. You cannot override globals on 
   wrap: 0,
   crlf: false,
   endNewline: false,
-  commentIndent: false,
   preserveLine: 3,
-  preserveComment: false,
+  commentIndent: false,
   grammar: {},
 }
 ```
@@ -367,14 +366,15 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
   forceAttribute: false,
   forceLeadAttribute: false,
   forceIndent: false,
+  ignoreStyles: false,
+  ignoreScripts: false,
+  lineBreakSeparator: 'default',
+  normalizeSpacing: true,
   preserveAttributes: false,
   preserveComment: true,
   preserveText: true,
   quoteConvert: 'double',
-  selfCloseSpace: false,
-  ignoreStyles: false,
-  ignoreScripts: false,
-  ignoreJson: false
+  selfCloseSpace: false
 }
 ```
 
@@ -393,8 +393,8 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
   noLeadZero: false,
   sortProperties: false,
   sortSelectors: false,
-  preserveLine: 3,
-  quoteConvert: 'none'
+  quoteConvert: 'none',
+  functionSpace: false
 }
 ```
 
@@ -429,7 +429,6 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
   objectIndent: 'indent',
   objectSort: false,
   preserveComment: true,
-  preserveLine: 3,
   preserveText: true,
   quoteConvert: 'single',
   ternaryLine: false,
@@ -450,10 +449,9 @@ Refer to the [JSON](/docs/rules/json.md) declaration file for description. Rules
 ```ts
 {
   arrayFormat: 'default',
-  braceAllman: false,
+  braceAllman: true,
   bracePadding: false,
-  braceNewline: false,
-  objectIndent: false,
+  objectIndent: 'indent',
   objectSort: false
 }
 ```
@@ -623,13 +621,17 @@ Developers working with JAMStack static site building tools like Jekyll or 11ty 
 
 # Prettify vs Shopify's Liquid Prettier Plugin
 
-Shopify recently shipped a Liquid prettier plugin but it does not really do much beyond indentation. It's great to see Shopify begin to bring support for Liquid beautification and it's thanks to the brilliant work [C.P](https://github.com/charlespwd) has been doing on behalf of Shopify and its community which has made that possible. C.P is both a brilliant and gifted engineer who is taming Liquid in the confinement of Prettier's uniform and developers who prefer that uniform should indeed choose that solution.
+Shopify recently shipped a Liquid prettier plugin but it does not really do much beyond indentation. It's great to see Shopify begin to bring support for Liquid beautification and it's thanks to the brilliant work [C.P](https://github.com/charlespwd) has been doing on behalf of Shopify and its community which has made that possible. Developers who prefer the Prettier style should indeed choose that solution.
 
-Prettify takes a complete different approach and is leveraging the Sparser lexing algorithm under the hood. The differences internally begin with Prettier working from an AST whereas Prettify is composing and working from data structures it generates in a fast lexical process. The Sparser algorithm along side its sister tool PrettyDiff at the time of their adaption into Prettify were efficient at handling Liquid contained in Markup, Script and Style languages. Both these tools allowed me to refine the analysis handling and extend upon their pre-existing logic. While the end product of both Prettify and the Liquid Prettier Plugin are similar, the goals and capabilities differ. The ambition I have for Prettify is to bring it to the point where it becomes a competitive alternative to Prettier and disrupts the "opinionated" conventions which imo are kinda shitty and restrictive.
+Prettify is cut from a different cloth and takes a complete different approach to both Prettier and the Liquid Prettier Plugin. Under the hood, Prettify implements the Sparser lexing algorithm which allows for all traversal operations to done internally without the need for third party parsers. The generated data structure produced by Prettify has refined context specifically designed for beautification usage.
+
+The Sparser algorithm along side its sister tool PrettyDiff at the time of their adaption into Prettify were efficient at handling Liquid contained in Markup, Script and Style languages. Both these tools allowed me to refine the analysis handling and extend upon their pre-existing logic. While the end product of both Prettify and the Liquid Prettier Plugin are similar, the goals and capabilities differ. The ambition I have for Prettify is make it competitive alternative to Prettier and disrupt the "opinionated" convention imposed which imo is kinda shitty and restrictive.
 
 ### Intention vs Impedance.
 
-The Liquid Prettier Plugin appropriates the opinionated conventions of Prettier so when producing output the solution is indirectly impeding itself into your workflow. The restrictions of Prettier is great in a lot of cases but god forbid you need to defer for the status-quo, it's either the way of Prettier or the highway. This is a double edged sword and problematic when working with a template language like Liquid due to manner in which folks infuse it. Prettify takes a different approach - it uses the developers intent and refines its result in accordance allowing you determine what works best for the project at hand, while still respecting correctness. The granular set of beautification rules exposed by Prettify makes it feel like a "Linter" more than a "Formatter" but make no mistake, it is the latter but just with far more control.
+The Liquid Prettier Plugin appropriates the opinionated conventions of Prettier so when producing output the solution is indirectly impeding itself into your workflow. The restrictions of Prettier is great in a lot of cases but when you need to defer for the status-quo you'll find restrictions. This is a double edged sword and problematic when working with a template language like Liquid due to the manner in which developers infuse and express the syntax with other languages.
+
+Prettify uses the developers intent and refines its result in accordance, this allows you to determine what works best for the project at hand with respecting to correctness. The granular set of beautification rules exposed by Prettify enables developers to progressively adapt the tool to their preferred code style.
 
 ### Standard Markup Comparison
 
@@ -648,8 +650,9 @@ Below is a formatting specific feature comparison as of October 2022 for Markup 
 | Attribute Sorting              | 𐄂                      | ✓        |
 | Liquid Attribute Indentations  | 𐄂                      | ✓        |
 | Liquid Newline Filters         | 𐄂                      | ✓        |
+| Liquid Line Break Separators   | 𐄂                      | ✓        |
 | Liquid + CSS/SCSS              | 𐄂                      | ✓        |
-| Liquid + JS/TS                 | 𐄂                      | ✓        |
+| Liquid + JS                    | 𐄂                      | ✓        |
 | Frontmatter                    | 𐄂                      | ✓        |
 
 ### Embedded Languages Comparison
