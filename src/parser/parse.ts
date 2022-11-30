@@ -34,11 +34,30 @@ export const parse = new class Parse implements IParse {
     ]
   ];
 
+  /**
+   * Reference of attributes of new line values
+   * with containing Liquid block tokens. It maintains a
+   * a store which is generated in the markup lexer and
+   * used within the beautify process.
+   */
+  public attributes: Set<number> = new Set();
+
   public references = [ [] ];
   public count = -1;
   public lineNumber = 1;
   public linesSpace = 0;
   public error = NIL;
+
+  /**
+   * Returns the last known structure entry in
+   * a deconstructed manner.
+   */
+  get scope () {
+
+    const [ token, index ] = this.structure[this.structure.length - 1];
+    return { token, index };
+
+  }
 
   /**
    * Returns the last known record within `data` set.
@@ -489,13 +508,14 @@ export const parse = new class Parse implements IParse {
 
       if (record.lexer !== 'style') {
         if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, NIL) === NIL) {
-          structure = record.types === 'else' ? 'else' : structure = record.token;
+          structure = record.types === 'else'
+            ? 'else'
+            : structure = record.token;
         }
       }
 
       if (record.types === 'start' || record.types.indexOf('_start') > 0) {
 
-        // console.log(structure);
         this.structure.push([ structure, this.count ]);
 
       } else if (record.types === 'end' || record.types.indexOf('_end') > 0) {
