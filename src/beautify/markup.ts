@@ -61,6 +61,11 @@ prettify.beautify.markup = function (options: Options) {
   const rules = options.markup;
 
   /**
+   * Force Attribute rule reference (used for handling newline attribute values)
+   */
+  const force = rules.forceAttribute;
+
+  /**
    * Source count. This holds reference to data token
    * length or the source length.
    */
@@ -567,37 +572,6 @@ prettify.beautify.markup = function (options: Options) {
       /* CONSTANTS                                    */
       /* -------------------------------------------- */
 
-      // function attributeName (x: string) {
-
-      //   const eq = x.indexOf('=');
-
-      //   if (eq > 0 && (
-      //     (eq < x.indexOf('"') && x.indexOf('"') > 0) ||
-      //     (eq < x.indexOf("'") && x.indexOf("'") > 0)
-      //   )) {
-      //     return [
-      //       x.slice(0, eq),
-      //       x.slice(eq + 1)
-      //     ];
-      //   }
-
-      //   return [ x, NIL ];
-
-      // };
-
-      // function attributeValues (input: string) {
-
-      //   const attr = attributeName(input);
-
-      //   if (attr[1] === NIL) {
-      //     return input;
-      //   }
-
-      //   const ass = attr[0] + '=' + attr[1].replace(/\s*$/, NIL);
-
-      //   console.log(ass);
-      // }
-
       /**
        * This function is responsible for wrapping
        * applied to attributes.
@@ -872,8 +846,8 @@ prettify.beautify.markup = function (options: Options) {
 
           } else if (
             rules.forceAttribute === true ||
-            rules.forceAttribute >= 1 ||
-            attrstart === true || (
+              rules.forceAttribute >= 1 ||
+              attrstart === true || (
               a < c - 1 && ((
                 type.idx(a + 1, 'template_attribute_') > -1 &&
                 data.lines[a + 1] !== -20
@@ -899,6 +873,7 @@ prettify.beautify.markup = function (options: Options) {
           } else {
 
             level.push(-10);
+
           }
 
         } else if (data.begin[a] < parent + 1) {
@@ -923,6 +898,7 @@ prettify.beautify.markup = function (options: Options) {
         level[a - 1] > 0 &&
         plural === true
       ) {
+
         level[a - 1] = level[a - 1] - 1;
       }
 
@@ -980,7 +956,11 @@ prettify.beautify.markup = function (options: Options) {
         }
 
       } else {
+
+        //
+
         level[parent] = -10;
+
       }
 
       if (
@@ -1237,6 +1217,12 @@ prettify.beautify.markup = function (options: Options) {
 
         if (type.idx(a, 'attribute') > -1) {
 
+          if (parse.attributes.has(data.begin[a]) && force !== true) {
+            rules.forceAttribute = true;
+          } else if (force !== rules.forceAttribute) {
+            rules.forceAttribute = force;
+          }
+
           attribute();
 
         } else if (type.is(a, 'comment')) {
@@ -1343,7 +1329,9 @@ prettify.beautify.markup = function (options: Options) {
             //
             indent = indent + 1;
 
-            if (type.is(a, 'template_start') && type.is(next, 'template_else')) indent = indent + 1;
+            if (type.is(a, 'template_start') && type.is(next, 'template_else')) {
+              indent = indent + 1;
+            }
 
             if (jsx === true && token.is(a + 1, '{')) {
 
@@ -1430,9 +1418,14 @@ prettify.beautify.markup = function (options: Options) {
 
           } else if (type.is(a, 'template_else')) {
 
-            level[a - 1] = type.is(next, 'template_end')
-              ? indent + 1
-              : indent - 1;
+            level[a - 1] = indent - 1;
+
+            if (type.is(next, 'template_end')) {
+              level[a - 1] = indent - 1;
+            }
+            // else {
+            // level[a - 1] = indent - 1;
+            // }
 
             level.push(indent);
 
@@ -1651,6 +1644,7 @@ prettify.beautify.markup = function (options: Options) {
             }
           }
         } else {
+
           build.push(lines[aa]);
           build.push(newline(lev));
         }
@@ -1684,7 +1678,7 @@ prettify.beautify.markup = function (options: Options) {
      */
     function endattr () {
 
-      const regend = /\/?>$/;
+      const regend = /(?!=)\/?>$/;
       const parent = data.token[a];
       const end = regend.exec(parent);
 
@@ -1722,8 +1716,12 @@ prettify.beautify.markup = function (options: Options) {
 
       if (type.is(y - 1, 'comment_attribute')) space = newline(levels[y - 2] - 1);
 
-      // Connects the ending delimiter of HTML tags, eg: >
-      data.token[y - 1] = `${data.token[y - 1]}${space}${end[0]}`;
+      if (!(parse.attributes.has(a))) {
+
+        // Connects the ending delimiter of HTML tags, eg: >
+        data.token[y - 1] = `${data.token[y - 1]}${space}${end[0]}`;
+
+      }
 
       // HOT PATCH
       //
