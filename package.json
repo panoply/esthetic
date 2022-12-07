@@ -109,7 +109,7 @@
     }
   },
   "devDependencies": {
-    "@liquify/ava": "^0.0.2",
+    "@liquify/ava": "^0.0.4",
     "@liquify/eslint-config": "^1.1.0",
     "@liquify/liquid-language-specs": "^0.1.7",
     "@liquify/prettier-config": "^1.0.1",
