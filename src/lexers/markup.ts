@@ -1,4 +1,4 @@
-import type { Record, Data, Types } from 'types/prettify';
+import type { Record, Data, Types, Counter, LanguageProperName } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { grammar } from '@options/grammar';
 import { parse } from '@parser/parse';
@@ -11,14 +11,18 @@ import {
   isLiquid,
   isLiquidEnd,
   isLiquidStart,
-  getLiquidTagName
+  getTagName,
+  isLiquidControl,
+  isLiquidElse,
+  isLiquidLine
 } from '@utils/helpers';
 import {
   StripEnd,
   StripLead,
   SpaceLead,
   SpaceEnd,
-  SpaceOnly
+  SpaceOnly,
+  CommIgnoreNext
 } from '@utils/regex';
 
 /* -------------------------------------------- */
@@ -38,7 +42,7 @@ import {
  * - SGML
  * - Liquid.
  */
-prettify.lexers.markup = function markupLexer (source: string) {
+prettify.lexers.markup = function lexer (source: string) {
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
@@ -75,6 +79,11 @@ prettify.lexers.markup = function markupLexer (source: string) {
   const asl = rules.attributeSortList.length;
 
   /**
+   * Count reference to be assigned to the generated tree.
+   */
+  const count: Counter = { end: 0, start: 0, line: 1, index: -1 };
+
+  /**
    * The document source as an array list, ie: source.split(NIL)
    */
   const b = source.split(NIL);
@@ -84,21 +93,6 @@ prettify.lexers.markup = function markupLexer (source: string) {
    */
   const c = b.length;
 
-  /**
-   * Count reference to be assigned to the generated tree.
-   */
-  const count: {
-    end: number;
-    start: number;
-    index: number;
-    line: number;
-  } = {
-    end: 0,
-    start: 0,
-    line: 1,
-    index: -1
-  };
-
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
   /* -------------------------------------------- */
@@ -106,17 +100,17 @@ prettify.lexers.markup = function markupLexer (source: string) {
   /**
    * Advancement reference
    */
-  let a = 0;
+  let a: number = 0;
 
   /**
-   * External Tag, eg: <scrip> or {% schema %} etc
+   * embed Tag, eg: <scrip> or {% schema %} etc
    */
-  let ext = false;
+  let embed: boolean = false;
 
   /**
-   * External Tags embedded language
+   * embed Tags embedded language
    */
-  let extlang = 'javascript';
+  let language: LanguageProperName;
 
   /**
    * HTML String
@@ -127,51 +121,15 @@ prettify.lexers.markup = function markupLexer (source: string) {
    * Stack nesting reference for Liquid tokens, increments by 1
    * for each opener and decrements for each ender.
    */
-  let ttexp = 0;
+  let within: number = 0;
 
   /* -------------------------------------------- */
   /* FUNCTIONS                                    */
   /* -------------------------------------------- */
 
   /**
-   * Delimiter Trims
+   * Normalize
    *
-   * Augments Liquid delimiter tokens by applying or removing
-   * trim strip dashes.
-   */
-  function delimiterTrims (tag: string) {
-
-    const end = tag.length - 4;
-
-    if (rules.delimiterTrims === 'force') {
-      if (is(tag[1], cc.PER)) {
-        if (!is(tag[2], cc.DSH)) tag = tag.replace(/^{%/, '{%-');
-        if (!tag.endsWith('-%}')) tag = tag.replace(/%}$/, '-%}');
-      } else {
-        if (!is(tag[2], cc.DSH)) tag = tag.replace(/^{{/, '{{-');
-        if (!tag.endsWith('-}}', end)) tag = tag.replace(/}}$/, '-}}');
-      }
-    } else if (rules.delimiterTrims === 'strip') {
-      if (is(tag[1], cc.PER)) {
-        if (is(tag[2], cc.DSH)) tag = tag.replace(/^{%-/, '{%');
-        if (tag.endsWith('-%}', end)) tag = tag.replace(/-%}$/, '%}');
-      } else {
-        if (is(tag[2], cc.DSH)) tag = tag.replace(/^{{-/, '{{');
-        if (tag.endsWith('-}}', end)) tag = tag.replace(/-}}$/, '}}');
-      }
-    } else if (rules.delimiterTrims === 'tags' && is(tag[1], cc.PER)) {
-      if (!is(tag[2], cc.DSH)) tag = tag.replace(/^{%/, '{%-');
-      if (!tag.endsWith('-%}', end)) tag = tag.replace(/%}$/, '-%}');
-    } else if (rules.delimiterTrims === 'outputs' && is(tag[1], cc.LCB)) {
-      if (!is(tag[2], cc.DSH)) tag = tag.replace(/^{{/, '{{-');
-      if (!tag.endsWith('-}}', end)) tag = tag.replace(/}}$/, '-}}');
-    }
-
-    return tag;
-
-  }
-
-  /**
    * Pads template tag delimters with a space. This function
    * was updated to also support whitespace dashes:
    *
@@ -180,87 +138,132 @@ prettify.lexers.markup = function markupLexer (source: string) {
    * - `}}` or `-}}`
    * - `%}`or `-%}`
    */
-  function tokenParse (input: string) {
+  function normalize (input: string) {
 
-    if (markup === true && jsx === false) {
+    if (!(markup === true && jsx === false)) return input;
+    if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
+    if (!isLiquid(input, 3)) return input;
 
-      if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
+    const end = input.length - 4;
 
-      if (isLiquid(input.trim(), 3)) {
+    if (rules.delimiterTrims === 'force') {
+      if (is(input[1], cc.PER)) {
 
-        if (rules.delimiterTrims !== 'preserve') input = delimiterTrims(input);
-        if (rules.delimiterSpacing === true) {
-          input = input
-            .replace(/^{[{%]-?\s*/, (m: string) => m.replace(StripEnd, WSP))
-            .replace(/\s*-?[%}]}$/, (m: string) => m.replace(StripLead, WSP));
-          // .replace(/((?<={[{%]-?)\S|\S(?=-?[%}]}))/, '$1 ');
+        if (!is(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
+        if (!input.endsWith('-%}')) input = input.replace(/%}$/, '-%}');
+
+      } else {
+
+        if (!is(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
+        if (!input.endsWith('-}}', end)) input = input.replace(/}}$/, '-}}');
+
+      }
+    } else if (rules.delimiterTrims === 'strip') {
+      if (is(input[1], cc.PER)) {
+
+        if (is(input[2], cc.DSH)) input = input.replace(/^{%-/, '{%');
+        if (input.endsWith('-%}', end)) input = input.replace(/-%}$/, '%}');
+
+      } else {
+
+        if (is(input[2], cc.DSH)) input = input.replace(/^{{-/, '{{');
+        if (input.endsWith('-}}', end)) input = input.replace(/-}}$/, '}}');
+
+      }
+    } else if (rules.delimiterTrims === 'tags' && is(input[1], cc.PER)) {
+
+      if (!is(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
+      if (!input.endsWith('-%}', end)) input = input.replace(/%}$/, '-%}');
+
+    } else if (rules.delimiterTrims === 'outputs' && is(input[1], cc.LCB)) {
+
+      if (!is(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
+      if (!input.endsWith('-}}', end)) input = input.replace(/}}$/, '-}}');
+    }
+
+    if (rules.delimiterSpacing === true) {
+
+      input = input
+        .replace(/^{[{%]-?\s*/, (m: string) => m.replace(StripEnd, WSP))
+        .replace(/\s*-?[%}]}$/, (m: string) => m.replace(StripLead, WSP));
+
+      // .replace(/((?<={[{%]-?)\S|\S(?=-?[%}]}))/, '$1 ');
+    }
+
+    if (rules.normalizeSpacing === false) return input;
+
+    /**
+     * The starting quotation code character
+     */
+    let t: cc.DQO | cc.SQO;
+
+    /**
+     * Quotation Reference
+     *
+     * Tracks string quotes allowing them to be skipped.
+     *
+     * - `0` token is not a string
+     * - `1` We have encountered a string, eg: {{ '^
+     * - `2` We have closed the last known string, eg: {{ 'foo'^
+     */
+    let q: 0 | 1 | 2 = 0;
+
+    return input.split(/(["']{1})/).map((char, idx, arr) => {
+
+      const quotation = is(char[0], cc.DQO) || is(char[0], cc.SQO);
+
+      if (q > 0 || (quotation && q === 0 && not(arr[idx - 1], cc.BWS)) || quotation) {
+
+        if (q === 0) t = char.charCodeAt(0);
+
+        // Move forward for nested quote type, eg: '"' or "'"
+        if (q === 1 && not(arr[idx - 1], cc.BWS)) {
+          if (t === char.charCodeAt(0)) q = 2;
+          return char;
         }
 
-        if (rules.normalizeSpacing === false) return input;
+        if (q !== 2) {
+          q = q === 0 ? 1 : q === 1 ? is(arr[idx - 1], cc.BWS) ? 1 : 2 : 0;
+          return char;
+        }
 
-        /**
-         * The starting quotation code character
-         */
-        let t: cc.DQO | cc.SQO;
-
-        /**
-         * Quotation Reference
-         *
-         * Tracks string quotes allowing them to be skipped.
-         *
-         * - `0` token is not a string
-         * - `1` We have encountered a string, eg: {{ '^
-         * - `2` We have closed the last known string, eg: {{ 'foo'^
-         */
-        let q: 0 | 1 | 2 = 0;
-
-        return input.split(/(["']{1})/).map((char, idx, arr) => {
-
-          const quotation = is(char[0], cc.DQO) || is(char[0], cc.SQO);
-
-          if (q > 0 || (quotation && q === 0 && not(arr[idx - 1], cc.BWS)) || quotation) {
-
-            if (q === 0) t = char.charCodeAt(0);
-
-            // Move forward for nested quote type, eg: '"' or "'"
-            if (q === 1 && not(arr[idx - 1], cc.BWS)) {
-              if (t === char.charCodeAt(0)) q = 2;
-              return char;
-            }
-
-            if (q !== 2) {
-              q = q === 0 ? 1 : q === 1 ? is(arr[idx - 1], cc.BWS) ? 1 : 2 : 0;
-              return char;
-            }
-
-            q = 0;
-
-          }
-
-          return char
-            .replace(SpaceOnly, WSP)
-            .replace(/([!=]=|[<>]=?)/g, ' $1 ')
-            .replace(/ +(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
-            .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
-            .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
-            .replace(SpaceOnly, WSP);
-
-        }).join(NIL);
+        q = 0;
 
       }
 
-      return input;
+      return char
+        .replace(SpaceOnly, WSP)
+        .replace(/([!=]=|[<>]=?)/g, ' $1 ')
+        .replace(/ +(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
+        .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
+        .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
+        .replace(SpaceOnly, WSP);
 
-    }
+    }).join(NIL);
 
-    return input;
   };
 
   /**
-   * Pushes a record into the parse table
+   * Finds slash escape sequences
+   */
+  function esc (idx: number) {
+
+    let x: number = idx;
+
+    do x = x - 1; while (is(b[x], cc.BWS));
+
+    x = idx - x;
+
+    return x % 2 === 1;
+
+  };
+
+  /**
+   * Push Record
    *
-   * ---
-   * Original: lexer_markup_recordPush
+   * Pushes a record into the parse table populating the
+   * data structure. All tokenized tags and content will
+   * pass through this function.
    */
   function push (target: Data, record: Record, structure: Types) {
 
@@ -275,63 +278,59 @@ prettify.lexers.markup = function markupLexer (source: string) {
     count.index = parse.count;
     count.line = parse.lineNumber;
 
-    parse.push(
-      target,
-      record,
-      structure
-    );
+    parse.push(target, record, structure);
 
   };
 
   /**
-   * Find the lowercase tag name of the provided token.
+   * Peer Detection
    *
-   * ---
-   * Original: lexer_markup_tagName
+   * This function is used together with `fix()` and `correct()`.
+   * The correct/fix feature needs refactoring, so this like the
+   * the functions which leverage this will likely be overhauled.
    */
-  function tagName (tag: string) {
+  function peers (n: string, i: string) {
 
-    /**
-     * The index of the whitespace character
-     */
-    let space = 0;
+    if (!grammar.html.tags.has(n)) return false;
+    if (n === i) return true;
+    if (n === 'dd' && i === 'dt') return true;
+    if (n === 'dt' && i === 'dd') return true;
+    if (n === 'td' && i === 'th') return true;
+    if (n === 'th' && i === 'td') return true;
+    if (n === 'colgroup' && (i === 'tbody' || i === 'tfoot' || i === 'thead' || i === 'tr')) return true;
+    if (n === 'tbody' && (i === 'colgroup' || i === 'tfoot' || i === 'thead')) return true;
+    if (n === 'tfoot' && (i === 'colgroup' || i === 'tbody' || i === 'thead')) return true;
+    if (n === 'thead' && (i === 'colgroup' || i === 'tbody' || i === 'tfoot')) return true;
+    if (n === 'tr' && i === 'colgroup') return true;
 
-    /**
-     * The actual tag name
-     */
-    let name = NIL as string;
+    return false;
 
-    /**
-     * Delimeter expression match
-     *
-     */
-    const reg: RegExp = (/^(?:<|{%-?|{{-?)\s*/);
-
-    if (typeof tag !== 'string') return NIL;
-
-    space = tag.replace(reg, '%').replace(/\s+/, WSP).indexOf(WSP);
-    name = tag.replace(reg, WSP);
-    name = (space < 0) ? name.slice(1, tag.length - 1) : name.slice(1, space);
-
-    if (html === 'html') name = name.toLowerCase();
-
-    name = name.replace(/-?[%}]}$/, NIL);
-
-    if (name.indexOf('(') > 0) name = name.slice(0, name.indexOf('('));
-
-    if (name === '?xml?') return 'xml';
-
-    return name;
-
-  };
+  }
 
   /**
-   * Utility function fixer for HTML missing end tags
+   * Parse Error Message
    *
-   * ---
-   * Original: lexer_markup_fixHtmlEnd
+   * Helper utility for composing the parse error message.
+   * Generates a readable message for errors.
    */
-  function fixHtmlEnd (element: string, end: boolean) {
+  function error (message: string | string[]) {
+
+    return `Parse Error (line ${parse.lineNumber}):\n${
+      Array.isArray(message)
+        ? message.join(NIL)
+        : message
+    }`;
+
+  }
+
+  /**
+   * Fix Tags
+   *
+   * Utility function fixer for HTML missing end tags.
+   * This is a little buggy and I'll likely remove or
+   * refactor this in later versions, for now it suffices.
+   */
+  function fix (token: string, end: boolean) {
 
     /* -------------------------------------------- */
     /* CONSTANTS                                    */
@@ -340,7 +339,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
     /**
      * The tag name
      */
-    const tname = tagName(element);
+    const tname = getTagName(token);
 
     /**
      * Parse record - This is generated as a drop-in as
@@ -351,7 +350,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
       ender: -1,
       lexer: 'markup',
       lines: data.lines[parse.count] > 0 ? 1 : 0,
-      stack: parse.scope.token,
+      stack: getTagName(parse.scope.token),
       token: `</${parse.scope.token}>`,
       types: 'end'
     };
@@ -370,7 +369,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
       do {
 
         record.begin = parse.scope.index;
-        record.stack = parse.scope.token;
+        record.stack = getTagName(parse.scope.token);
         record.token = `</${parse.scope.token}>`;
 
         push(data, record, NIL);
@@ -388,91 +387,38 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
   };
 
+  /* -------------------------------------------- */
+  /* PARSE HANDLERS                               */
+  /* -------------------------------------------- */
+
   /**
-   * Parse CDTA
+   * Parse Error
    *
-   * This function will identify script and style hidden within a
-   * CDATA escape markup comment. The `element` contains the full
-   * token and identified structured are forwarded to appropriate lexers.
-   *
-   * @param {Record} record
-   * The current record being handled.
-   *
-   * @param {string} element
-   * The current element reference
+   * This function is responsible cancelling the traversal and
+   * returning a parse error when the lexing encounters an
+   * error. The `parse.error` is assigned a string value that
+   * informs about the issue.
    */
-  function ParseCDATA (record: Record, element: string) {
+  function parseError () {
 
-    const stack = record.stack;
-
-    let begin = parse.count;
-    let ender = parse.count;
-
-    if (data.types[ender] === 'attribute') {
-      do {
-        begin = begin - 1;
-        ender = ender - 1;
-      } while (data.types[ender] === 'attribute' && ender > -1);
-    }
-
-    record.begin = begin;
-    record.token = '<![CDATA[';
-    record.types = 'cdata_start';
-
-    element = element
-      .replace(/^(\s*<!\[cdata\[)/i, NIL)
-      .replace(/(\]{2}>\s*)$/, NIL);
-
-    push(data, record, NIL);
-
-    parse.structure.push([ 'cdata', parse.count ]);
-
-    if (stack === 'script') {
-      prettify.lexers.script(element);
-    } else {
-      prettify.lexers.style(element);
-    }
-
-    record.begin = parse.scope.index;
-    record.token = ']]>';
-    record.types = 'cdata_end';
-
-    push(data, record, NIL);
-
-    parse.structure.pop();
+    parse.error = 'Prettify Error:\n\n' + parse.error;
 
   }
 
   /**
-   * Parse Ignore
-   *
-   * This function will identify script and style hidden within a
-   * CDATA escape markup comment. The `element` contains the full
-   * token and identified structured are forwarded to appropriate lexers.
-   *
-   * @param {Record} record
-   * The current record being handled.
-   *
-   * @param {string} element
-   * The current element reference
-   */
-  function ParseIgnore () {
-
-  }
-
-  /**
-   * Parses tags, attributes, and template elements.
+   * Parses tags, attrs, and template elements.
    * Markup is two smaller lexers that work together:
    *
    * 1. tag - evaluates markup (ie: HTML)
    * 2. template tags - (ie: Liquid)
-   * 3. content - evaluates text content and code for external lexers
+   * 3. content - evaluates text content and code for embed lexers
    *
    * Type Definitions:
    *
    * ```none
    * START       END     TYPE
    *
+   * ---         ---     frontmatter
    * <![CDATA[   ]]>     cdata
    * <!--        -->     comment
    * <!--[if     -->     conditional
@@ -482,16 +428,15 @@ prettify.lexers.markup = function markupLexer (source: string) {
    * text       text     script
    * <!          >       sgml
    * <          />       singleton
-   * <           >       start
+   * <           >       start/end
    * text       text     style
    * {{          }}      template
-   * {%          %}      template
-   * {{          }}      template_end
+   * {%          %}      template_start/template_end
    * <?xml       ?>      xml
    *
    * ```
    */
-  function ParseToken (end: string) {
+  function parseToken (end: string) {
 
     /* -------------------------------------------- */
     /* CONSTANTS                                    */
@@ -500,11 +445,11 @@ prettify.lexers.markup = function markupLexer (source: string) {
     const record: Record = {
       lexer: 'markup',
       lines: parse.linesSpace,
-      stack: parse.scope.token,
+      stack: parse.scope.token !== 'global' ? getTagName(parse.scope.token) : 'global',
       begin: parse.scope.index,
-      ender: -1,
       token: NIL,
-      types: NIL
+      types: NIL,
+      ender: -1
     };
 
     /* -------------------------------------------- */
@@ -512,19 +457,14 @@ prettify.lexers.markup = function markupLexer (source: string) {
     /* -------------------------------------------- */
 
     /**
-     * Ignore count
+     * The token string reference
      */
-    let igcount = 0;
-
-    /**
-     * The element string reference
-     */
-    let element = NIL;
+    let token: string = NIL;
 
     /**
      * The last known character of a token
      */
-    let lastchar = NIL;
+    let lchar: string = NIL;
 
     /**
      * Last Type, ie: `start`, `template` etc etc
@@ -532,61 +472,64 @@ prettify.lexers.markup = function markupLexer (source: string) {
     let ltype: Types = NIL;
 
     /**
-     * Tag Name
+     * Tag Name, ie: `div`, `main` etc
      */
-    let tname = NIL;
+    let tname: string = NIL;
 
     /**
      * Starting delimeter token, ie: `{{` or `<` etc etc.
      */
-    let start = NIL;
+    let start: string = NIL;
 
     /**
      * Whether or not to pass to cheat functions.
      */
-    let cheat = false;
+    let cheat: boolean = false;
 
     /**
-     * Whether or not to exit eary from walk
+     * Whether or not to exit early from walk
      */
-    let earlyexit = false;
+    let nowalk: boolean = false;
 
     /**
      * Ignored reference to skip lexing certain sources
      */
-    let ignoreme = false;
+    let ignore: boolean = false;
+
+    /**
+     * Ignore count
+     */
+    let icount: number = 0;
 
     /**
      * Whether or not JavaScript comment exists
      */
-    let jscom = false;
+    let jscomm: boolean = false;
 
     /**
      * Whether or not attribute sorting should be applied
      */
-    let nosort = false;
+    let nosort: boolean = false;
 
     /**
-     * Whether or not the contents of the toke should be preserved
+     * Whether or not the contents of the token should be preserved
      */
-    let preserve = false;
+    let preserve: boolean = false;
 
     /**
-     * Infers a simple lex to be applied, typically used on easy tags
+     * Infers a basic lex operation, typically used on easy tags, ie: <div>
      */
-    let simple = false;
+    let basic: boolean = false;
 
     /**
-     * Whether or not the tag is a singleton type, eg: `<meta>`
+     * Attribute store reference. When chain is asserted (`index[2]`) then
+     * the data type will be inferred to `template_attribute_chain` - This
+     * is only used for template (liquid) attribute expressions.
      */
-    const singleton = false; // TODO - Remove this it does nothing
-    /**
-     * Attribute store reference
-     */
-    let attrstore: [string, number][] = [];
+    let attrs: [token: string, lines: number, chain?: boolean][] = [];
 
     /**
-     * Comment related reference (unsure of its use)
+     * Comment related reference
      */
     let comm = [ NIL, 0 ];
 
@@ -595,16 +538,15 @@ prettify.lexers.markup = function markupLexer (source: string) {
     /* -------------------------------------------- */
 
     /**
-     * Returns the markup attribute name reference and
-     * its value reference. This is determined by an `=`
-     * character and quotation character separator, the
-     * return type is an array, where index `0` is attr
-     * name and index `1` is attribute value.
+     * Attribute Name
      *
-     * > When a _void_ attribute exists an empty string
-     * is returned for index `1`.
+     * Returns the markup attribute name and its value reference. This is determined by
+     * an `=` character and quotation character separator, the return type is an array,
+     * where index `0` is attr name and index `1` is attribute value.
+     *
+     * > When a _void_ attribute exists an empty string is returned for index `1`.
      */
-    function AttrName (x: string) {
+    function attrname (x: string): [string, string] {
 
       const eq = x.indexOf('=');
 
@@ -622,2020 +564,35 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
     };
 
-    /**
-     * Liquid Attribute Casing
-     *
-     * Walks over Liquid attributes and applies lowercasing
-     * ammendments to contained attribute names. For example:
-     *
-     * ```html
-     * <div {% if x %}DATA-ATTR-{{ xx }}{% else %}ID="foo"{% endif %}></div>
-     * ```
-     *
-     * Where the `DATA-ATTR-` and `ID` will be converted to lowercase.
-     * This function is only called when certain rule conditions are passed
-     * and when Liquid attributes are contained.
-     */
-    /* function liqattrcase (attr: string) {
+    function insert (count: number) {
 
-      const len = attr.length;
+      record.lines = data.lines[parse.count] > 0 ? 1 : 0;
+      record.token = `</${parse.scope.token}>`;
+      record.types = 'end';
 
-      let i: number = 0; // index
-      let t: number = -1; // token
+      push(data, record, NIL);
 
-      do {
-
-        t = attr.indexOf('{', i);
-
-        if (t < 0) t = len;
-        if (t > 0 && i > 0) attr = attr.slice(0, i) + attr.slice(i, t).toLowerCase() + attr.slice(t);
-        if (t > -1 && is(attr[t + 1], cc.PER)) t = attr.indexOf('%}', t + 2) + 2;
-        if (t > -1 && is(attr[t + 1], cc.LCB)) t = attr.indexOf('}}', t + 2) + 2;
-
-        i = t === -1 ? len : t;
-
-      } while (i < len);
-
-      return attr;
-
-    } */
-
-    // attribute parser
-    // lexer_markup_tag_attributeRecord
-
-    function ParseAttribute () {
-
-      /* -------------------------------------------- */
-      /* CONSTANTS                                    */
-      /* -------------------------------------------- */
-
-      /**
-       * The index of data record in the tree
-       */
-      const begin = parse.count;
-
-      /**
-       * The tag name, ie: `tname`
-       */
-      const stack = tname.replace(/(\/)$/, NIL);
-
-      /**
-       * Type of quotation character to convert
-       */
-      const qc = rules.quoteConvert;
-
-      /* -------------------------------------------- */
-      /* LOCAL SCOPES                                 */
-      /* -------------------------------------------- */
-
-      /**
-       * The current index of the attribute
-       */
-      let idx = 0;
-
-      /**
-       * Equals `=` operator index in the token
-       */
-      let eq = 0;
-
-      /**
-       * Double quotation `"` index in the token
-       */
-      let dq = 0;
-
-      /**
-       * Single quotation `'` index in the token
-       */
-      // @ts-ignore
-      let sq = 0; // eslint-disable-line @typescript-eslint/no-unused-vars
-
-      /**
-       * The attribute name
-       */
-      let name = NIL;
-
-      /**
-       * The attribute value
-       */
-      let value = NIL;
-
-      /**
-       * The amount of attributes in the store
-       */
-      let len = attrstore.length;
-
-      /* -------------------------------------------- */
-      /* FUNCTIONS                                    */
-      /* -------------------------------------------- */
-
-      /**
-       * Converts quotation characters and pushes
-       * the attribute record.
-       */
-      function convertq () {
-
-        if (parse.attributes.has(begin)) {
-          if (idx + 1 === len && not(record.token[record.token.length - 1], cc.RAN)) {
-            record.token = record.token + '>';
-          }
-        }
-
-        let lq = isLiquid(record.token, 5);
-
-        if (
-          ignoreme === true ||
-          qc === 'none' ||
-          record.types.indexOf('attribute') < 0 ||
-          (lq === false && qc === 'single' && record.token.indexOf('"') < 0) ||
-          (lq === false && qc === 'double' && record.token.indexOf("'") < 0)
-        ) {
-
+      if (count > 0) {
+        do {
+          record.begin = parse.scope.index;
+          record.stack = getTagName(parse.scope.token);
+          record.token = `</${parse.scope.token}>`;
           push(data, record, NIL);
-
-        } else {
-
-          let ee = 0;
-          let inner = false;
-
-          const ch = record.token.split(NIL);
-          const eq = record.token.indexOf('=');
-          const ln = ch.length - 1;
-
-          if (
-            not(ch[eq + 1], cc.DQO) &&
-            not(ch[ch.length - 1], cc.DQO) &&
-            qc === 'single' &&
-            lq === false
-          ) {
-
-            push(data, record, NIL);
-
-          } else if (
-            not(ch[eq + 1], cc.SQO) &&
-            not(ch[ch.length - 1], cc.SQO) &&
-            qc === 'double' &&
-            lq === false
-          ) {
-
-            push(data, record, NIL);
-
-          } else {
-
-            ee = eq + 2;
-
-            if (lq === false) {
-              if (qc === 'double') {
-                if (record.token.slice(eq + 2, ln).indexOf('"') > -1) inner = true;
-                ch[eq + 1] = '"';
-                ch[ch.length - 1] = '"';
-              } else if (qc === 'single') {
-                if (record.token.slice(eq + 2, ln).indexOf("'") > -1) inner = true;
-                ch[eq + 1] = "'";
-                ch[ch.length - 1] = "'";
-              }
-            }
-
-            if (inner === true || lq === true) {
-
-              lq = false;
-
-              do {
-
-                if (is(ch[ee - 1], cc.LCB) && (
-                  is(ch[ee], cc.PER) ||
-                  is(ch[ee], cc.LCB)
-                )) {
-                  lq = true;
-                } else if (is(ch[ee], cc.RCB) && (
-                  is(ch[ee - 1], cc.PER) ||
-                  is(ch[ee - 1], cc.RCB)
-                )) {
-                  lq = false;
-                }
-
-                if (lq === true) {
-
-                  if (is(ch[ee], cc.DQO) && qc === 'double') {
-                    ch[ee] = "'";
-                  } else if (is(ch[ee], cc.SQO) && qc === 'single') {
-                    ch[ee] = '"';
-                  }
-                } else {
-                  if (is(ch[ee], cc.SQO) && qc === 'double') {
-                    ch[ee] = '"';
-                  } else if (is(ch[ee], cc.DQO) && qc === 'single') {
-                    ch[ee] = "'";
-                  }
-                }
-
-                ee = ee + 1;
-
-              } while (ee < ln);
-            }
-
-            record.token = ch.join(NIL);
-            push(data, record, NIL);
-
-          }
-        }
-      };
-
-      function attrsort () {
-
-        if (!(!jsx && !jscom && !nosort)) return;
-
-        if (asl === 0) {
-          attrstore = parse.safeSort(attrstore, NIL, false);
-          return;
-        }
-
-        // if making use of the 'options.attributeSortList` option
-
-        const tempstore = [];
-
-        dq = 0;
-        eq = 0;
-        len = attrstore.length;
-
-        // loop through the options.attributeSortList looking for attribute name matches
-        do {
-
-          // loop through the attrstore
-          eq = 0;
-
-          do {
-
-            name = attrstore[eq][0].split('=')[0];
-
-            if (rules.attributeSortList[dq] === name) {
-              tempstore.push(attrstore[eq]);
-              attrstore.splice(eq, 1);
-              len = len - 1;
-              break;
-            }
-
-            eq = eq + 1;
-
-          } while (eq < len);
-
-          dq = dq + 1;
-
-        } while (dq < asl);
-
-        attrstore = parse.safeSort(attrstore, NIL, false);
-        attrstore = tempstore.concat(attrstore);
-        len = attrstore.length;
-
+          count = count - 1;
+        } while (count > 0);
       }
 
-      /* -------------------------------------------- */
-      /* BEGIN                                        */
-      /* -------------------------------------------- */
-
-      if (attrstore.length < 1) return;
-
-      // Fixes Singleton Tags
-      //
-      // Since a forward slash "/" character at
-      // the end of the tag then this is not an attribute
-      if (is(attrstore[attrstore.length - 1][0], cc.FWS)) {
-        attrstore.pop();
-        element = element.replace(/>$/, '/>');
-      }
-
-      // Reconnects attribute names to their respective values if separated on "="
-      eq = attrstore.length;
-      dq = 1;
-
-      if (dq < eq) {
-        do {
-
-          name = attrstore[dq - 1][0];
-
-          if (is(name[name.length - 1], cc.EQS) && attrstore[dq][0].indexOf('=') < 0) {
-            attrstore[dq - 1][0] = name + attrstore[dq][0];
-            attrstore.splice(dq, 1);
-
-            eq = eq - 1;
-            dq = dq - 1;
-          }
-
-          dq = dq + 1;
-
-        } while (dq < eq);
-      }
-
-      // Sort the attributes
-      if (rules.attributeSort) {
-        attrsort();
-      }
-
-      record.begin = begin;
-      record.stack = stack;
-      record.types = 'attribute';
-
-      if (idx < len) {
-        do {
-
-          if (attrstore[idx] === undefined) break;
-
-          record.lines = attrstore[idx][1];
-
-          attrstore[idx][0] = attrstore[idx][0].replace(SpaceEnd, NIL);
-
-          if (jsx === true && /^\/(\/|\*)/.test(attrstore[idx][0])) {
-
-            record.types = 'comment_attribute';
-            record.token = attrstore[idx][0];
-
-            convertq();
-
-            idx = idx + 1;
-            continue;
-          }
-
-          // First, let's determine if the attribute either starts or ends with
-          // Liquid delimiters tag block. We check the beginning and ending characters
-          // in order to detect such structures.
-          //
-          // For example:
-          //
-          // {% if %}data-attr
-          // {% endif %}-attr
-          //
-          if ((
-            is(attrstore[idx][0][0], cc.LCB) &&
-            is(attrstore[idx][0][1], cc.PER)
-          ) || (
-            is(attrstore[idx][0][attrstore[idx][0].length - 1], cc.RCB) &&
-            is(attrstore[idx][0][attrstore[idx][0].length - 2], cc.PER)
-          )) {
-
-            if (isLiquidEnd(attrstore[idx][0])) {
-              record.token = attrstore[idx][0];
-              record.types = 'template_attribute_end';
-              record.ender = record.begin;
-            } else {
-
-              const tag = getLiquidTagName(attrstore[idx][0]);
-
-              if (grammar.liquid.tags.has(tag)) {
-
-                record.types = 'template_attribute_start';
-                record.begin = parse.count;
-                record.token = attrstore[idx][0];
-
-              } else if (grammar.liquid.else.has(tag)) {
-
-                record.types = 'template_attribute_else';
-                record.token = attrstore[idx][0];
-
-              } else {
-
-                record.types = 'template_attribute';
-                record.token = attrstore[idx][0];
-
-              }
-            }
-
-            convertq();
-
-            idx = idx + 1;
-            continue;
-
-          }
-
-          // Second, let's determine if the attribute either starts or ends with
-          // Liquid delimiters output. In some cases our attribute might be chaining
-          // tokens and in such a situation we will validate before asserting.
-          //
-          // For example:
-          //
-          // {{ foo }}=
-          // data{% if x %}-foo{% else %}-bar{% endif %}={{ x }}
-          //
-          if ((
-            is(attrstore[idx][0][0], cc.LCB) &&
-            is(attrstore[idx][0][1], cc.LCB)
-          ) || (
-            is(attrstore[idx][0][attrstore[idx][0].length - 1], cc.RCB) &&
-            is(attrstore[idx][0][attrstore[idx][0].length - 2], cc.RCB)
-          )) {
-
-            if (isLiquidEnd(attrstore[idx][0])) {
-
-              record.token = attrstore[idx][0];
-              record.types = 'template_attribute_end';
-              record.ender = record.begin;
-
-            } else {
-
-              const name = getLiquidTagName(attrstore[idx][0]);
-
-              if (grammar.liquid.tags.has(name)) {
-                record.types = 'template_attribute_start';
-                record.begin = parse.count;
-                record.token = attrstore[idx][0];
-              } else if (grammar.liquid.else.has(name)) {
-                record.types = 'template_attribute_else';
-                record.token = attrstore[idx][0];
-              } else {
-                record.types = 'template_attribute';
-                record.token = attrstore[idx][0];
-
-                // HOT PATCH
-                //
-                // Fixes situations where the next Liquid attribute token starts with dash -
-                // and current token ends with closing delimiter. For example:
-                //
-                // <div data-{{ current_attr }}-{% if x %}{{ foo }}{% else %}{{ bar }}="xxx"></div>
-                //
-                // Where the "-" following `{{ current_attr }}` would be contained in attrstore
-                // as a separate token. We will look ahead here and instead connect it.
-                //
-                /* if ((len > idx + 1) && is(attrstore[idx + 1][0][0], cc.DSH)) {
-                  record.token = attrstore[idx][0] + attrstore[idx + 1][0][0];
-                  record.types = grammar.liquid.tags.has(getLiquidTagName(attrstore[idx + 1][0]))
-                    ? 'template_attribute_start'
-                    : 'template_attribute';
-
-                  record.token = attrstore[idx][0];
-
-                } else {
-                  record.types = 'template_attribute';
-                  record.token = attrstore[idx][0];
-                } */
-              }
-            }
-
-            convertq();
-
-            idx = idx + 1;
-            continue;
-          }
-
-          eq = attrstore[idx][0].indexOf('=');
-          dq = attrstore[idx][0].indexOf('"');
-          sq = attrstore[idx][0].indexOf("'"); // eslint-disable-line @typescript-eslint/no-unused-vars
-
-          if (eq < 0) {
-
-            record.types = 'attribute';
-
-            if (
-              is(attrstore[idx][0], cc.HSH) ||
-              is(attrstore[idx][0], cc.LSB) ||
-              is(attrstore[idx][0], cc.LCB) ||
-              is(attrstore[idx][0], cc.LPR) ||
-              jsx === true
-            ) {
-              record.token = attrstore[idx][0];
-            } else {
-
-              if (rules.attributeCasing === 'preserve') {
-                record.token = attrstore[idx][0];
-              } else {
-                record.token = attrstore[idx][0].toLowerCase();
-              }
-            }
-
-            convertq();
-
-          } else {
-
-            // separates out the attribute name from its value
-
-            name = attrstore[idx][0].slice(0, eq);
-            value = attrstore[idx][0].slice(eq + 1);
-
-            if (rules.correct && (
-              not(value[0], cc.LAN) ||
-              not(value[0], cc.LCB) ||
-              not(value[0], cc.EQS) ||
-              not(value[0], cc.DQO) ||
-              not(value[0], cc.SQO)
-            )) {
-
-              value = '"' + value + '"';
-
-            }
-
-            if (jsx === true && /^\s*{/.test(value)) {
-
-              record.token = name + '={';
-              record.types = 'jsx_attribute_start';
-
-              push(data, record, 'jsx_attribute');
-
-              prettify.lexers.script(value.slice(1, value.length - 1));
-              record.begin = parse.count;
-
-              if (/\s\}$/.test(value)) {
-                value = value.slice(0, value.length - 1);
-                value = SpaceEnd.exec(value)[0];
-                record.lines = value.indexOf('\n') < 0 ? 1 : value.split('\n').length;
-              } else {
-                record.lines = 0;
-              }
-
-              record.begin = parse.scope.index;
-              record.stack = parse.scope.token;
-              record.token = '}';
-              record.types = 'jsx_attribute_end';
-
-              convertq();
-
-              record.types = 'attribute';
-              record.begin = begin;
-              record.stack = stack;
-
-            } else if (isLiquid(value, 5) && (is(value[0], cc.DQO) || is(value[0], cc.SQO))) {
-
-              record.token = name + '="';
-              record.types = 'attribute';
-
-              push(data, record, NIL);
-
-              parse.attributes.add(begin);
-
-              if (idx + 1 === len) {
-
-                markupLexer(value.slice(1, -1));
-
-                data.token[parse.count] = data.token[parse.count] + '">';
-
-                break;
-
-              } else {
-
-                markupLexer(value.slice(1));
-
-                record.types = 'attribute';
-                record.stack = stack;
-                record.begin = begin;
-
-              }
-
-            } else {
-
-              if (isLiquidEnd(name) || ((not(value, cc.SQO) || not(value, cc.DQO)) && isLiquidEnd(value))) {
-
-                record.token = attrstore[idx][0];
-                record.types = 'template_attribute_end';
-                record.ender = record.begin;
-
-              } else if (isLiquid(name, 5) && (not(value, cc.SQO) || not(value, cc.DQO)) && isLiquid(name, 5)) {
-
-                const tag = getLiquidTagName(attrstore[idx][0]);
-
-                if (grammar.liquid.tags.has(tag)) {
-
-                  record.types = 'template_attribute_start';
-                  record.begin = parse.count;
-                  record.token = attrstore[idx][0];
-
-                } else if (grammar.liquid.else.has(tag)) {
-
-                  record.types = 'template_attribute_else';
-                  record.token = attrstore[idx][0];
-
-                } else {
-
-                  record.types = 'template_attribute';
-                  record.token = attrstore[idx][0];
-
-                }
-
-              } else {
-
-                if (
-                  is(attrstore[idx][0], cc.HSH) ||
-                  is(attrstore[idx][0], cc.LSB) ||
-                  is(attrstore[idx][0], cc.LCB) ||
-                  is(attrstore[idx][0], cc.LPR) ||
-                  jsx === true
-                ) {
-
-                  record.token = attrstore[idx][0];
-
-                } else {
-
-                  record.token = attrstore[idx][0];
-                }
-
-              }
-
-              convertq();
-
-            }
-          }
-
-          idx = idx + 1;
-
-        } while (idx < len);
-      }
+      record.begin = parse.scope.index;
+      record.lines = parse.linesSpace;
+      record.stack = getTagName(parse.scope.token);
+      record.token = token;
+      record.types = 'end';
+
+      data.lines[parse.count - 1] = 0;
 
     };
 
-    ext = false;
-
-    /* -------------------------------------------- */
-    /* DELIMITER PARSE                              */
-    /* -------------------------------------------- */
-
-    // console.log(JSON.stringify(end));
-    /**
-     * DELIMITERS
-     *
-     * This complex series of conditions determines an elements delimiters look to
-     * the types being pushed to quickly reason about the logic no type is pushed
-     * for start tags or singleton tags just yet some types set the `preserve` flag,
-     * which means to preserveLine internal white space The `nopush` flag is set when
-     * Data tags are to be ignored and forgotten
-     *
-     * ---
-     * @prettify
-     *
-     * The vast majoirty of delimiter checks were purged, we only want those relative
-     * to Prettify.
-     */
-    if (end === '---') {
-
-      start = '---';
-      ltype = 'ignore';
-      preserve = true;
-
-    } else if (is(b[a], cc.LAN)) {
-
-      if (is(b[a + 1], cc.FWS)) {
-
-        ltype = 'end';
-        end = '>';
-
-      } else if (is(b[a + 1], cc.BNG)) {
-
-        if ((
-          is(b[a + 2], 100) ||
-          is(b[a + 2], 68) // d D
-        ) && (
-          is(b[a + 3], 111) ||
-          is(b[a + 3], 79) // o O
-        ) && (
-          is(b[a + 4], 99) ||
-          is(b[a + 4], 67) // c C
-        ) && (
-          is(b[a + 5], 116) ||
-          is(b[a + 5], 84) // t T
-        ) && (
-          is(b[a + 6], 121) ||
-          is(b[a + 6], 89) // y Y
-        ) && (
-          is(b[a + 7], 112) ||
-          is(b[a + 7], 80) // p P
-        ) && (
-          is(b[a + 8], 101) ||
-          is(b[a + 8], 69) // e E
-        )) {
-
-          end = '>';
-          ltype = 'doctype';
-          preserve = true;
-
-        } else if (is(b[a + 2], cc.DSH) && is(b[a + 3], cc.DSH)) {
-
-          end = '-->';
-          ltype = 'comment';
-          start = '<!--';
-
-        } else if (
-          is(b[a + 2], cc.LSB) &&
-          b[a + 3].charCodeAt(0) === 67 && // C
-          b[a + 4].charCodeAt(0) === 68 && // D
-          b[a + 5].charCodeAt(0) === 65 && // A
-          b[a + 6].charCodeAt(0) === 84 && // T
-          b[a + 7].charCodeAt(0) === 65 && // A
-          is(b[a + 8], cc.LSB)
-        ) {
-
-          end = ']]>';
-          ltype = 'cdata';
-          preserve = true;
-
-        }
-
-      } else if (b[a + 1] === '?') {
-
-        end = '?>';
-
-        if (
-          b[a + 2].charCodeAt(0) === 120 && // x
-          b[a + 3].charCodeAt(0) === 109 && // m
-          b[a + 4].charCodeAt(0) === 109 // l
-        ) {
-          ltype = 'xml';
-          simple = true;
-        } else {
-          preserve = true;
-          ltype = 'template';
-        }
-
-      } else if ((
-        is(b[a + 1], 112) ||
-        is(b[a + 1], 80) // p P
-      ) && (
-        is(b[a + 2], 114) ||
-        is(b[a + 2], 82) // r R
-      ) && (
-        is(b[a + 3], 101) ||
-        is(b[a + 3], 69) // e E
-      ) && (
-        is(b[a + 4], cc.RAN) ||
-        ws(b[a + 4])
-      )) {
-
-        end = '</pre>';
-        ltype = 'ignore';
-        preserve = true;
-
-      } else if (
-        rules.ignoreScripts === true &&
-        b.slice(a + 1, a + 7).join(NIL).toLowerCase() === 'script'
-      ) {
-
-        end = '</script>';
-        ltype = 'ignore';
-        preserve = true;
-        ignoreme = true;
-
-      } else if (
-        rules.ignoreStyles === true &&
-        b.slice(a + 1, a + 6).join(NIL).toLowerCase() === 'style'
-      ) {
-
-        end = '</style>';
-        ltype = 'ignore';
-        preserve = true;
-        ignoreme = true;
-
-      } else {
-
-        simple = true;
-        end = '>';
-
-      }
-
-    } else if (is(b[a], cc.LCB)) {
-
-      if (jsx) {
-
-        ext = true;
-        earlyexit = true;
-
-        record.token = '{';
-        record.types = 'script_start';
-        parse.structure.push([ 'script', parse.count ]);
-
-        push(data, record, NIL);
-
-        return;
-      }
-
-      if (is(b[a + 1], cc.LCB)) {
-
-        preserve = true;
-        end = '}}';
-        ltype = 'template';
-
-      } else if (is(b[a + 1], cc.PER)) {
-
-        preserve = true; // Required for lexer
-        end = '%}';
-        ltype = 'template';
-
-        /**
-         * `}` - The index of the next Right Curly brace
-         */
-        const rcb = b.indexOf('}', a + 2);
-
-        /**
-         * Liquid Comment
-         *
-         * Lets ensure that we have a closing delimiter
-         * character before moving ahead, eg: `%}` and
-         * then we will look for comment keywords.
-         */
-        if (is(b[rcb - 1], cc.PER)) {
-
-          let t = b.slice(a + 2, rcb - 1).join(NIL);
-
-          // Lets make sure we do not interfere with dash delimiters
-          //
-          if (is(t, cc.DSH)) {
-            start = '{%-';
-            t = t.slice(1).trimStart();
-          } else {
-            start = '{%';
-            t = t.trimStart();
-          }
-
-          // Same as above but for closing delimiters
-          //
-          if (is(t[t.length - 1], cc.DSH)) {
-            end = '-%}';
-            t = t.slice(0, t.length - 1).trimEnd();
-          } else {
-            end = '%}';
-            t = t.trimEnd();
-          }
-
-          // Lets look for the comment keyword before proceeding,
-          // We are skipping ahead from the normal parse here.
-          //
-          if (t === 'comment') {
-
-            /**
-             * `{%` The index of the next known closing delimiter
-             * starting from the last `rcb` index position.
-             */
-            const idx1 = source.indexOf('{%', rcb);
-
-            //  Lets reference this index
-            //
-            let idx2 = idx1;
-
-            // Lets make sure to consume and whitespace dash
-            // characters that might be defined
-            //
-            if (b[idx1 + 1].charCodeAt(0) === cc.DSH) idx2 = idx1 + 1;
-
-            // Lets now look the starting index of the `endcomment` keyword
-            //
-            idx2 = source.indexOf('endcomment', idx2);
-
-            if (idx2 > 0) {
-
-              idx2 = b.indexOf('}', idx2);
-
-              if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
-
-                ltype = 'comment';
-                start = b.slice(a, rcb + 1).join(NIL);
-                end = b.slice(idx1, idx2 + 1).join(NIL);
-
-              }
-            }
-          } else if (is(t, cc.HSH)) {
-
-            ltype = 'comment';
-            ltype = 'template';
-            end = '%}';
-
-          }
-
-        } else {
-
-          preserve = true;
-          end = '%}';
-          ltype = 'template';
-
-        }
-
-      } else {
-        preserve = true;
-        end = b[a + 1] + '}';
-        ltype = 'template';
-      }
-    }
-
-    if (rules.preserveAttributes === true) preserve = true;
-    if (earlyexit) return;
-
-    // This is the real tag lexer.
-    // Everything that follows is attribute handling and edge cases
-    lastchar = end.charAt(end.length - 1);
-
-    // HTML / Liquid Prettify comment ignore
-    //
-    if (ltype === 'comment' && (is(b[a], cc.LAN) || (is(b[a], cc.LCB) && is(b[a + 1], cc.PER)))) {
-
-      comm = parse.wrapCommentBlock({
-        chars: b,
-        end: c,
-        lexer: 'markup',
-        opening: start,
-        start: a,
-        terminator: end
-      });
-
-      element = comm[0] as string;
-      a = comm[1] as number;
-
-      if (element.replace(start, NIL).trimStart().startsWith('@prettify-ignore-start')) {
-        record.token = element;
-        record.types = 'ignore';
-        push(data, record, NIL);
-        return;
-      }
-
-    } else if (a < c) {
-
-      /* -------------------------------------------- */
-      /* CONSTANTS                                    */
-      /* -------------------------------------------- */
-
-      /**
-       * Lexing store - Character in the lex will reside here
-       */
-      const lex = [];
-
-      /* -------------------------------------------- */
-      /* REFERENCES                                   */
-      /* -------------------------------------------- */
-
-      /**
-       * An advancement index reference
-       */
-      let e = 0;
-
-      /**
-       * An advancement index reference
-       */
-      let f = 0;
-
-      /**
-       * Angle bracket count, ie: `<` and `>`
-       */
-      let acount = 0;
-
-      /**
-       * Brace count, ie: `{` and ``
-       */
-      let bcount = 0;
-
-      /**
-       * Parenthesis count, ie: `(` and `)`
-       */
-      let pcount = 0;
-
-      /**
-       * Line count - This is applied to the data structure
-       */
-      let lines = 0;
-
-      /**
-       * The quotation character store reference
-       */
-      let quote = NIL;
-
-      /**
-       * JSX/TSX quotataion character
-       */
-      let jsxquote = NIL;
-
-      /**
-       * JSX/TSX parenthesis counts, ie: `{` and `}`
-       */
-      let jsxcount = 0;
-
-      /**
-       * Whether or not we are within a Liquid template token
-       */
-      let liquid = false;
-
-      /**
-       * Whether or not we should invoke a whitespace test
-       */
-      let stest = false;
-
-      /**
-       * Whether or not we are at a starting attribute value quote.
-       * This reference will always us to consume nested quotations
-       * like those we'd encounter in Liquid tokens.
-       */
-      let qattr = false;
-
-      /**
-       * Whether or not we should invoke a quotation test
-       */
-      let qtest = false;
-
-      /**
-       * Attribute store
-       */
-      let attribute = [];
-
-      /* -------------------------------------------- */
-      /* FUNCTIONS                                    */
-      /* -------------------------------------------- */
-
-      /**
-       * Informs whether or not we are currently withina Liquid token. We
-       * need to ensure we know when we are within template tags so as to prevent
-       * parse failures from occuring when specific characters are detected in
-       * tokens like the `<` or `>` characters which cause the lex to fail because
-       * it assume that we hace ended the HTML tag.
-       */
-      function inliquid () {
-
-        if (liquid === false && is(b[a - 1], cc.LCB) && (
-          is(b[a], cc.LCB) ||
-          is(b[a], cc.PER)
-        )) {
-
-          return true;
-
-        } else if (liquid === true && is(b[a], cc.RCB) && (
-          is(b[a - 1], cc.RCB) ||
-          is(b[a - 1], cc.PER)
-        )) {
-
-          return false;
-
-        }
-
-        return liquid;
-
-      }
-
-      /**
-       * Finds slash escape sequences
-       *
-       * ---
-       * Original: lexer_markup_tag_escslash
-       */
-      function escslash () {
-
-        let x = a;
-
-        do { x = x - 1; } while (b[x] === '\\');
-
-        x = a - x;
-
-        return x % 2 === 1;
-
-      };
-
-      /**
-       * Attribute Lexer
-       *
-       * ---
-       * Original: lexer_markup_tag_lexattr
-       */
-      function lexattr (quotes: boolean) {
-
-        let name: string[];
-        let attr = NIL;
-        let aa = 0;
-        let bb = 0;
-
-        const ignoreattr = 'data-prettify-ignore';
-
-        if (quotes === true) {
-
-          attr = attribute.join(NIL);
-          name = AttrName(attr);
-          quote = NIL;
-
-          // HOT PATCH
-          //
-          // Replaced the attribute ignore logic for 'data-parse-ignore' to
-          // data-prettify-ignore and also removed 'data-prettydiff-ignore'
-          if (name[0] === ignoreattr) ignoreme = true;
-
-        } else {
-
-          attr = attribute.join(NIL);
-
-          if (jsx === false || (jsx && not(attr[attr.length - 1], cc.RCB))) {
-            attr = attr.replace(/\s+/g, WSP);
-          }
-
-          name = AttrName(attr);
-
-          if (name[0] === ignoreattr) ignoreme = true;
-          if (jsx && is(attribute[0], cc.LCB) && is(attribute[attribute.length - 1], cc.RCB)) jsxcount = 0;
-
-        }
-
-        if (is(attr[0], cc.LCB) && is(attr[1], cc.PER)) nosort = true;
-
-        if (quotes === false) {
-          if (isLiquidStart(attr)) {
-            ttexp = ttexp + 1;
-          } else if (isLiquidEnd(attr)) {
-            ttexp = ttexp - 1;
-          }
-        }
-
-        attr = attr
-          .replace(/^\u0020/, NIL)
-          .replace(/\u0020$/, NIL);
-
-        attribute = attr
-          .replace(/\r\n/g, '\n')
-          .split('\n');
-
-        bb = attribute.length;
-
-        if (aa < bb) {
-          do {
-            attribute[aa] = attribute[aa].replace(/\s+$/, NIL);
-            aa = aa + 1;
-          } while (aa < bb);
-        }
-
-        attr = attribute.join(options.crlf === true ? '\r\n' : '\n');
-        attr = tokenParse(attr);
-
-        if (ttexp >= 1 || isLiquid(attr, 1)) {
-          if (isLiquid(attr, 5) === false) {
-            lines = is(b[a + 1], cc.NWL) || is(b[a], cc.NWL)
-              ? 2
-              : is(b[a], cc.WSP) && not(b[a + 1], cc.WSP)
-                ? 1 : 0;
-          } else {
-            lines = is(b[a + 1], cc.NWL) ? 2 : not(b[a + 1], cc.WSP) ? 0 : lines;
-          }
-        }
-
-        if (attr === '=') {
-
-          attrstore[attrstore.length - 1][0] = attrstore[attrstore.length - 1][0] + '=';
-
-        } else if (
-          is(attr[0], cc.EQS) &&
-          attrstore.length > 0 &&
-          attrstore[attrstore.length - 1][0].indexOf('=') < 0
-        ) {
-
-          // If an attribute starts with a `=` then adjoin it to the last attribute
-          attrstore[attrstore.length - 1][0] = attrstore[attrstore.length - 1][0] + attr;
-
-          // HOT PATCH
-          //
-          // Ensure that if Liquid attribute is contained that
-          // we apply the line level indentations
-          if (ttexp >= 1 || isLiquid(attr, 5)) attrstore[attrstore.length - 1][1] = lines;
-
-        } else if (
-          not(attr[0], cc.EQS) &&
-          attrstore.length > 0 &&
-          attrstore[attrstore.length - 1][0].indexOf('=') === attrstore[attrstore.length - 1][0].length - 1
-        ) {
-
-          // If an attribute follows an attribute ending with `=` then adjoin it to the last attribute
-          attrstore[attrstore.length - 1][0] = attrstore[attrstore.length - 1][0] + attr;
-
-        } else if (attr !== NIL && attr !== WSP) {
-
-          attrstore.push([ attr, lines ]);
-
-        }
-
-        if (attrstore.length > 0) {
-
-          const [ value ] = attrstore[attrstore.length - 1];
-
-          if (value.indexOf('=\u201c') > 0) { // “
-            parse.error = `Invalid quote character (\u201c, &#x201c) used on line number ${parse.lineNumber}`;
-          } else if (value.indexOf('=\u201d') > 0) { // ”
-            parse.error = `Invalid quote character (\u201d, &#x201d) used on line number ${parse.lineNumber}`;
-          }
-        }
-
-        attribute = [];
-        lines = b[a] === '\n' ? 2 : 1;
-
-      };
-
-      function templateTag () {
-
-        do {
-
-          const e = b.indexOf('>', a);
-
-          if (e > -1) {
-            if (is(b[e - 1], cc.RCB) && is(b[e - 1], cc.PER)) {
-
-              const toke = b.slice(a - 1, e + 1).join(NIL);
-
-              if (!/<\/?{%-?/.test(toke.slice(3))) return toke;
-
-              break;
-
-            } else {
-              a = e + 1;
-            }
-          } else {
-            break;
-          }
-
-        } while (a < b.length);
-
-      }
-
-      do {
-
-        if (is(b[a], cc.NWL)) {
-          lines = lines + 1;
-          parse.lineNumber = parse.lineNumber + 1;
-        }
-
-        if (preserve === true || ((ws(b[a]) === false && not(quote, cc.RCB)) || is(quote, cc.RCB))) {
-
-          liquid = inliquid();
-          lex.push(b[a]);
-
-          if (is(lex[0], cc.LAN) && is(lex[1], cc.RAN) && is(end, cc.RAN)) {
-            record.token = '<>';
-            record.types = 'start';
-            push(data, record, '(empty)');
-            return;
-          }
-
-          if (is(lex[0], cc.LAN) && is(lex[1], cc.FWS) && is(lex[2], cc.RAN) && is(end, cc.RAN)) {
-            record.token = '</>';
-            record.types = 'end';
-            push(data, record, NIL);
-            return;
-          }
-        }
-
-        if (ltype === 'cdata' && is(b[a], cc.RAN) && is(b[a - 1], cc.RSB) && not(b[a - 2], cc.RSB)) {
-          parse.error = `CDATA tag (${lex.join(NIL)}) not properly terminated with "]]>"`;
-          break;
-        }
-
-        if (ltype === 'comment') {
-
-          quote = NIL;
-
-          // Comments must ignore fancy encapsulations and attribute parsing
-          if (b[a] === lastchar && lex.length > end.length + 1) {
-
-            // If current character matches the last character of the tag ending sequence
-            f = lex.length;
-            e = end.length - 1;
-
-            if (e > -1) {
-              do {
-                f = f - 1;
-                if (lex[f] !== end.charAt(e)) break;
-                e = e - 1;
-              } while (e > -1);
-            }
-
-            if (e < 0) break;
-
-          }
-        } else {
-
-          if (quote === NIL) {
-
-            if (is(lex[0], cc.LAN) && is(lex[1], cc.BNG) && ltype !== 'cdata') {
-
-              if (ltype === 'doctype' && is(b[a], cc.RAN)) break;
-
-              if (is(b[a], cc.LSB)) {
-
-                if (is(b[a + 1], cc.LAN)) {
-                  ltype = 'start';
-                  break;
-                }
-
-                if (ws(b[a + 1])) {
-                  do {
-                    a = a + 1;
-                    if (is(b[a], cc.NWL)) lines = lines + 1;
-                  } while (a < c - 1 && ws(b[a + 1]));
-                }
-
-                if (is(b[a + 1], cc.LAN)) {
-                  ltype = 'start';
-                  break;
-                }
-              }
-            }
-
-            if (jsx) {
-              if (is(b[a], cc.LCB)) {
-                jsxcount = jsxcount + 1;
-              } else if (is(b[a], cc.RCB)) {
-                jsxcount = jsxcount - 1;
-              }
-            }
-
-            if (
-              is(b[a], cc.LAN) &&
-              preserve === false &&
-              lex.length > 1 &&
-              />{2,3}/.test(end) === false &&
-              simple
-            ) {
-              parse.error = `Parse error (line ${parse.lineNumber}) on: ${lex.join(NIL)}`;
-            }
-
-            if (ws(b[a]) === false && stest === true && b[a] !== lastchar) {
-
-              // Attribute start
-              stest = false;
-              igcount = 0;
-              quote = jsxquote;
-
-              lex.pop();
-
-              if (a < c) {
-
-                do {
-
-                  if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
-
-                  if (rules.preserveAttributes === true) {
-                    lex.push(b[a]);
-                  } else {
-                    attribute.push(b[a]);
-                  }
-
-                  if (not(quote, cc.DQO) || not(quote, cc.SQO)) {
-                    if (is(b[a - 1], cc.LCB) && (is(b[a], cc.PER) || is(b[a], cc.LCB))) {
-                      liquid = true;
-                    } else if ((is(b[a - 1], cc.RCB) || is(b[a - 1], cc.PER)) && is(b[a], cc.RCB)) {
-                      liquid = false;
-                    }
-                  }
-
-                  if (
-                    jsx === false &&
-                    qattr === false &&
-                    liquid === true &&
-                    rules.preserveAttributes === false
-                  ) {
-
-                    const isval = is(attribute[0], cc.EQS);
-
-                    do {
-
-                      a = a + 1;
-
-                      if (is(b[a], cc.NWL)) {
-
-                        parse.lineNumber = parse.lineNumber + 1;
-
-                        if (isval) {
-                          liquid = false;
-                          quote = NIL;
-                          lexattr(false);
-                          break;
-                        }
-                      }
-
-                      attribute.push(b[a]);
-
-                      if (isval && is(b[a + 1], cc.RAN)) {
-
-                        liquid = false;
-                        quote = NIL;
-                        attrstore[attrstore.length - 1][0] += attribute.join(NIL);
-                        attribute = [];
-                        break;
-                      }
-
-                      if (isval === false && (is(b[a - 1], cc.RCB) || is(b[a - 1], cc.PER)) && is(b[a], cc.RCB)) {
-                        liquid = false;
-                        quote = NIL;
-                        lexattr(false);
-                        break;
-                      }
-
-                    } while (a < c);
-
-                  }
-
-                  if (jsx === false && (
-                    is(b[a], cc.LAN) ||
-                    is(b[a], cc.RAN)
-                  ) && (
-                    quote === NIL ||
-                    is(quote, cc.RAN)
-                  )) {
-
-                    if (quote === NIL && is(b[a], cc.LAN)) {
-
-                      quote = '>';
-                      acount = 1;
-
-                    } else if (is(quote, cc.RAN)) {
-
-                      if (is(b[a], cc.LAN)) {
-
-                        acount = acount + 1;
-
-                      } else if (is(b[a], cc.RAN)) {
-
-                        acount = acount - 1;
-
-                        if (acount === 0) {
-                          quote = NIL;
-                          igcount = 0;
-                          lexattr(false);
-                          break;
-                        }
-                      }
-                    }
-
-                  } else if (quote === NIL) {
-
-                    if (b[a + 1] === lastchar) {
-
-                      // If at end of tag
-                      if (is(attribute[attribute.length - 1], cc.FWS) || (
-                        is(attribute[attribute.length - 1], cc.QWS) &&
-                        ltype === 'xml'
-                      )) {
-                        attribute.pop();
-                        if (preserve === true) lex.pop();
-                        a = a - 1;
-                      }
-
-                      if (attribute.length > 0) lexattr(false);
-
-                      break;
-                    }
-
-                    if (jsx === false && is(b[a], cc.LCB) && is(b[a - 1], cc.EQS)) {
-
-                      quote = '}';
-
-                    } else if (is(b[a], cc.DQO) || is(b[a], cc.SQO)) {
-
-                      quote = b[a];
-
-                      if (qattr === false && liquid === false) qattr = true;
-
-                      if (is(b[a - 1], cc.EQS) && (is(b[a + 1], cc.LAN) || (
-                        is(b[a + 1], cc.LCB) &&
-                        is(b[a + 2], cc.PER)
-                      ) || (
-                        ws(b[a + 1]) &&
-                        not(b[a - 1], cc.EQS)
-                      ))) {
-
-                        igcount = a;
-
-                      }
-
-                    } else if (is(b[a], cc.LPR)) {
-
-                      quote = ')';
-                      pcount = 1;
-
-                    } else if (jsx) {
-
-                      // JSX Variable attribute
-                      if ((is(b[a - 1], cc.EQS) || ws(b[a - 1])) && is(b[a], cc.LCB)) {
-
-                        quote = '}';
-                        bcount = 1;
-
-                      } else if (is(b[a], cc.FWS)) {
-
-                        // JSX Comments
-                        if (is(b[a + 1], cc.ARS)) {
-                          quote = '\u002a/';
-                        } else if (b[a + 1] === '/') {
-                          quote = '\n';
-                        }
-
-                      }
-
-                    } else if (is(lex[0], cc.LCB) && is(b[a], cc.LCB) && (
-                      is(b[a + 1], cc.LCB) ||
-                      is(b[a + 1], cc.PER)
-                    )) {
-
-                      // Opening embedded template expression
-                      quote = is(b[a + 1], cc.LCB)
-                        ? '}}'
-                        : b[a + 1] + '}';
-
-                    }
-
-                    if (ws(b[a]) && quote === NIL) {
-
-                      // Testing for a run of spaces between an attribute's = and a quoted value.
-                      // Unquoted values separated by space are separate attributes
-                      //
-                      if (is(attribute[attribute.length - 2], cc.EQS)) {
-
-                        e = a + 1;
-
-                        if (e < c) {
-                          do {
-
-                            if (ws(b[e]) === false) {
-
-                              if (is(b[e], cc.DQO) || is(b[e], cc.SQO)) {
-                                a = e - 1;
-                                qtest = true;
-                                attribute.pop();
-
-                              }
-
-                              break;
-                            }
-
-                            e = e + 1;
-                          } while (e < c);
-                        }
-                      }
-
-                      if (qtest === true) {
-
-                        qtest = false;
-
-                      } else if (jsxcount === 0 || (jsxcount === 1 && is(attribute[0], cc.LCB))) {
-
-                        // If there is an unquoted space attribute is complete
-                        //
-                        attribute.pop();
-
-                        if (attribute.length > 0) lexattr(false);
-
-                        stest = true;
-
-                        break;
-
-                      }
-                    }
-                  } else if (is(b[a], cc.LPR) && is(quote, cc.RPR)) {
-
-                    pcount = pcount + 1;
-
-                  } else if (is(b[a], cc.RPR) && is(quote, cc.RPR)) {
-
-                    pcount = pcount - 1;
-
-                    if (pcount === 0) {
-
-                      quote = NIL;
-
-                      if (b[a + 1] === end.charAt(0)) {
-                        lexattr(false);
-                        break;
-                      }
-                    }
-
-                  } else if (jsx && (
-                    is(quote, cc.RCB) || (
-                      is(quote, cc.NWL) &&
-                      is(b[a], cc.NWL)
-                    ) || (
-                      quote === '\u002a/' &&
-                      is(b[a - 1], cc.ARS) &&
-                      is(b[a], cc.FWS)
-                    )
-                  )) {
-
-                    if (is(b[a], cc.TQO)) {
-
-                      a = a + 1;
-
-                      do {
-                        attribute.push(b[a]);
-                        if (is(b[a], cc.TQO)) break;
-                        a = a + 1;
-                      } while (a < b.length);
-                    }
-
-                    // JSX Attributes
-                    if (is(quote, cc.RCB)) {
-                      if (is(b[a], cc.RCB) && b[a] !== quote) {
-
-                        bcount = bcount + 1;
-
-                      } else if (b[a] === quote) {
-
-                        bcount = bcount - 1;
-
-                        if (bcount === 0) {
-
-                          jsxcount = 0;
-                          quote = NIL;
-                          element = attribute.join(NIL);
-
-                          if (rules.preserveAttributes === false) {
-                            if (jsx) {
-                              if (!/^\s*$/.test(element)) attrstore.push([ element, lines ]);
-                            } else {
-                              element = element.replace(/\s+/g, WSP);
-                              if (element !== WSP) attrstore.push([ element, lines ]);
-                            }
-                          }
-
-                          attribute = [];
-                          lines = 1;
-                          break;
-                        }
-                      }
-
-                    } else {
-
-                      jsxquote = NIL;
-                      jscom = true;
-                      element = attribute.join(NIL);
-
-                      if (element !== WSP) attrstore.push([ element, lines ]);
-
-                      attribute = [];
-                      lines = is(quote, cc.NWL) ? 2 : 1;
-                      quote = NIL;
-
-                      break;
-                    }
-
-                  } else if (
-                    is(b[a], cc.LCB) &&
-                    is(b[a + 1], cc.PER) &&
-                    is(b[igcount - 1], cc.EQS) && (
-                      is(quote, cc.DQO) ||
-                      is(quote, cc.SQO)
-                    )
-                  ) {
-
-                    quote = quote + '{%';
-                    igcount = 0;
-
-                  } else if (
-                    is(b[a - 1], cc.PER) &&
-                    is(b[a], cc.RCB) && (
-                      quote === '"{%' ||
-                      quote === "'{%"
-                    )
-                  ) {
-
-                    quote = quote.charAt(0);
-                    igcount = 0;
-
-                  } else if (
-                    is(b[a], cc.LAN) &&
-                    is(end, cc.RAN) &&
-                    is(b[igcount - 1], cc.EQS) && (
-                      is(quote, cc.DQO) ||
-                      is(quote, cc.SQO)
-                    )
-                  ) {
-
-                    quote = quote + '<';
-                    igcount = 0;
-
-                  } else if (
-                    is(b[a], cc.RAN) && (
-                      quote === '"<' ||
-                      quote === "'<"
-                    )
-                  ) {
-
-                    quote = quote.charAt(0);
-                    igcount = 0;
-
-                  } else if (igcount === 0 && not(quote, cc.RAN) && (quote.length < 2 || (
-                    not(quote, cc.DQO) &&
-                    not(quote, cc.SQO)
-                  ))) {
-
-                    // Terminate attribute at the conclusion of a quote pair
-                    f = 0;
-                    e = quote.length - 1;
-
-                    if (e > -1) {
-
-                      do {
-
-                        if (not(b[a - f], quote.charCodeAt(e))) break;
-
-                        f = f + 1;
-                        e = e - 1;
-
-                      } while (e > -1);
-                    }
-
-                    if (e < 0 && liquid === false && qattr === true) {
-                      qattr = false;
-                      lexattr(true);
-                      if (b[a + 1] === lastchar) break;
-                    }
-
-                  } else if (igcount > 0 && ws(b[a]) === false) {
-
-                    igcount = 0;
-                  }
-
-                  a = a + 1;
-
-                } while (a < c);
-              }
-            } else if (is(end, cc.NWL) === false && (is(b[a], cc.DQO) || is(b[a], cc.SQO))) {
-
-              // opening quote
-              quote = b[a];
-
-            } else if (
-              ltype !== 'comment' &&
-              not(end, cc.NWL) &&
-              is(b[a], cc.LAN) &&
-              is(b[a + 1], cc.BNG) &&
-              is(b[a + 2], cc.DSH) &&
-              is(b[a + 3], cc.DSH) &&
-              data.types[parse.count] !== 'conditional'
-            ) {
-
-              quote = '-->';
-
-            } else if (is(b[a], cc.LCB) && not(lex[0], cc.LCB) && not(end, cc.NWL) && (
-              is(b[a + 1], cc.LCB) ||
-              is(b[a + 1], cc.PER)
-            )) {
-
-              if (is(b[a + 1], cc.LCB)) {
-
-                quote = '}}';
-
-              } else {
-
-                quote = b[a + 1] + '}';
-
-                if (attribute.length < 1 && (attrstore.length < 1 || ws(b[a - 1]))) {
-
-                  lex.pop();
-
-                  do {
-                    if (is(b[a], cc.NWL)) lines = lines + 1;
-                    attribute.push(b[a]);
-                    a = a + 1;
-                  } while (a < c && b[a - 1] + b[a] !== quote);
-
-                  attribute.push('}');
-
-                  attrstore.push([ attribute.join(NIL), lines ]);
-
-                  attribute = [];
-                  lines = 1;
-                  quote = NIL;
-                }
-              }
-
-              if (quote === end) quote = NIL;
-
-            } else if (simple && not(end, cc.NWL) && ws(b[a]) && not(b[a - 1], cc.LAN)) {
-
-              // Identify a space in a regular start or singleton tag
-              stest = true;
-
-            } else if (simple && jsx && is(b[a], cc.FWS) && (is(b[a + 1], cc.ARS) || is(b[a + 1], cc.FWS))) {
-
-              // JSX Comment immediately following tag name
-              stest = true;
-              lex[lex.length - 1] = WSP;
-              jsxquote = is(b[a + 1], cc.ARS) ? '\u002a/' : '\n';
-
-              attribute.push(b[a]);
-
-            } else if (liquid === false && (
-              b[a] === lastchar || (is(end, cc.NWL) && is(b[a + 1], cc.LAN))
-            ) && (
-              lex.length > end.length + 1 || is(lex[0], cc.RSB)
-            ) && (
-              jsx === false || jsxcount === 0
-            )) {
-
-              if (is(end, cc.NWL)) {
-                if (ws(lex[lex.length - 1])) {
-                  do {
-                    lex.pop();
-                    a = a - 1;
-                  } while (ws(lex[lex.length - 1]));
-                }
-
-                break;
-              }
-
-              // If current character matches the last character of the tag ending sequence
-              f = lex.length;
-              e = end.length - 1;
-
-              if (e > -1) {
-                do {
-                  f = f - 1;
-                  if (lex[f] !== end.charAt(e)) break;
-                  e = e - 1;
-                } while (e > -1);
-              }
-
-              if (e < 0) {
-
-                // HOT PATCH
-                //
-                // This condition will fix incorrect line spaces applied
-                // on template attributes that are contained in the attribute store
-                //
-                if (is(lex[f], cc.RAN) && is(b[a], cc.RAN) && attrstore.length > 0) {
-                  if (attrstore[attrstore.length - 1][1] === 0 && is(b[a - 1], cc.RCB) && ws(b[a + 1])) {
-                    attrstore[attrstore.length - 1][1] = is(b[a + 1], cc.WSP) ? 1 : 2;
-                  }
-                }
-
-                break;
-
-              }
-            }
-          } else if (b[a].charCodeAt(0) === quote.charCodeAt(quote.length - 1) && (
-            (
-              jsx &&
-              is(end, cc.RCB) && (
-                b[a - 1] !== '\\' ||
-                escslash() === false
-              )
-            ) || (
-              jsx === false ||
-              not(end, cc.RCB)
-            )
-          )) {
-
-            // Find the closing quote or embedded template expression
-            f = 0;
-            e = quote.length - 1;
-
-            if (e > -1) {
-              do {
-                if (b[a - f] !== quote.charAt(e)) break;
-                f = f + 1;
-                e = e - 1;
-              } while (e > -1);
-            }
-
-            if (e < 0) quote = NIL;
-
-          }
-        }
-
-        a = a + 1;
-
-      } while (a < c);
-
-      // Correction to incomplete template tags that use multiple angle braceAllman
-      if (rules.correct === true) {
-
-        if (
-          is(b[a + 1], cc.RAN) &&
-          is(lex[0], cc.LAN) &&
-          not(lex[0], cc.LAN)
-        ) {
-
-          do a = a + 1;
-          while (is(b[a + 1], cc.RAN));
-
-        } else if (
-          is(lex[0], cc.LAN) &&
-          is(lex[1], cc.LAN) &&
-          not(b[a + 1], cc.RAN) &&
-          not(lex[lex.length - 2], cc.RAN)
-        ) {
-
-          do lex.splice(1, 1);
-          while (is(lex[1], cc.LAN));
-        }
-      }
-
-      igcount = 0;
-      element = lex.join(NIL);
-      tname = tagName(element);
-      element = tokenParse(element);
-
-      if (tname === 'xml') {
-        html = 'xml';
-      } else if (html === NIL && tname === 'html') {
-        html = 'html';
-      }
-    }
-
-    record.token = element;
-    record.types = ltype;
-
-    tname = tagName(element);
-
-    if (preserve === false && jsx === false) element = element.replace(/\s+/g, WSP);
-
-    // a quick hack to inject records for a type of template comments
-    if (tname === 'comment' && isLiquid(element, 2)) {
-
-      const open = element.slice(0, element.indexOf('%}') + 2);
-      const comm = element.slice(element.indexOf('%}') + 2, element.lastIndexOf('{%'));
-      const end = element.slice(element.lastIndexOf('{%'));
-
-      let lstart: number = 0;
-      let lend: number = 0;
-
-      const lineFindStart = (spaces: string): string => {
-        lstart = spaces === NIL ? 0 : spaces.split(NWL).length;
-        return NIL;
-      };
-
-      const lineFindEnd = (spaces: string): string => {
-        lend = spaces === NIL ? 0 : spaces.split(NWL).length;
-        return NIL;
-      };
-
-      /* COMMENT START ------------------------------ */
-
-      record.begin = parse.scope.index;
-      record.ender = parse.count + 3;
-      record.stack = parse.scope.token;
-      record.types = 'template_start';
-      record.token = open;
-
-      push(data, record, 'comment');
-
-      /* COMMENT CONTENT ---------------------------- */
-
-      element = comm.replace(/^\s*/, lineFindStart);
-      element = element.replace(/\s*$/, lineFindEnd);
-
-      record.begin = parse.count;
-      record.lines = lstart;
-      record.stack = 'comment';
-      record.token = element;
-      record.types = 'comment';
-
-      push(data, record, NIL);
-
-      /* COMMENT END -------------------------------- */
-
-      record.types = 'template_end';
-      record.stack = 'comment';
-      record.lines = lend;
-      record.token = end;
-
-      push(data, record, NIL);
-
-      return;
-
-    }
-
-    // a type correction for template tags who have variable start tag names but a
-    // consistent ending tag name
-    record.types = ltype;
-
-    // cheat identifies HTML singleton elements as singletons even if formatted as
-    // start tags, such as <br> (which is really <br/>)
-    cheat = (() => {
-
-      const ender = (/(\/>)$/);
-
-      function peerTest (n: string, i: string) {
-
-        if (!grammar.html.tags.has(n)) return false;
-
-        if (n === i) return true;
-        if (n === 'dd' && i === 'dt') return true;
-        if (n === 'dt' && i === 'dd') return true;
-        if (n === 'td' && i === 'th') return true;
-        if (n === 'th' && i === 'td') return true;
-        if (n === 'colgroup' && (i === 'tbody' || i === 'tfoot' || i === 'thead' || i === 'tr')) return true;
-        if (n === 'tbody' && (i === 'colgroup' || i === 'tfoot' || i === 'thead')) return true;
-        if (n === 'tfoot' && (i === 'colgroup' || i === 'tbody' || i === 'thead')) return true;
-        if (n === 'thead' && (i === 'colgroup' || i === 'tbody' || i === 'tfoot')) return true;
-        if (n === 'tr' && i === 'colgroup') return true;
-
-        return false;
-
-      };
-
-      function addHtmlEnd (count: number) {
-
-        record.lines = data.lines[parse.count] > 0 ? 1 : 0;
-        record.token = `</${parse.scope.token}>`;
-        record.types = 'end';
-
-        push(data, record, NIL);
-
-        if (count > 0) {
-          do {
-            record.begin = parse.scope.index;
-            record.stack = parse.scope.token;
-            record.token = `</${parse.scope.token}>`;
-            push(data, record, NIL);
-            count = count - 1;
-          } while (count > 0);
-        }
-
-        record.begin = parse.scope.index;
-        record.lines = parse.linesSpace;
-        record.stack = parse.scope.token;
-        record.token = element;
-        record.types = 'end';
-        data.lines[parse.count - 1] = 0;
-
-      };
+    function correct () {
 
       // determine if the current end tag is actually part of an HTML singleton
       if (ltype === 'end') {
@@ -2644,74 +601,74 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
         if (data.types[parse.count - 1] === 'singleton' &&
           lastToken.charCodeAt(lastToken.length - 2) !== cc.FWS &&
-          `/${tagName(lastToken)}` === tname
+          `/${getTagName(lastToken)}` === tname
         ) {
 
           data.types[parse.count - 1] = 'start';
         }
       }
 
-      if (html === 'html') {
+      if (markup) {
 
         // HTML gets tag names in lowercase, if you want to
         // preserveLine case sensitivity beautify as XML
         if (
-          is(element[0], cc.LAN) &&
-          not(element[1], cc.BNG) &&
-          not(element[1], cc.QWS) && (
+          is(token[0], cc.LAN) &&
+          not(token[1], cc.BNG) &&
+          not(token[1], cc.QWS) && (
             parse.count < 0 ||
             data.types[parse.count].indexOf('template') < 0
           )
         ) {
 
-          element = element.toLowerCase();
+          token = token.toLowerCase();
         }
 
         // console.log(parse.scope.token);
 
         if (
           grammar.html.tags.has(parse.scope.token) &&
-          peerTest(tname.slice(1), parse.structure[parse.structure.length - 2][0])
+          peers(tname.slice(1), parse.structure[parse.structure.length - 2][0])
         ) {
 
           // Looks for HTML tags missing an ending pair when encountering
           // an ending tag for a parent node
-          addHtmlEnd(0);
+          insert(0);
 
         } else if (
           parse.structure.length > 3 &&
           grammar.html.tags.has(parse.scope.token) &&
           grammar.html.tags.has(parse.structure[parse.structure.length - 2][0]) &&
           grammar.html.tags.has(parse.structure[parse.structure.length - 3][0]) &&
-          peerTest(tname, parse.structure[parse.structure.length - 4][0])
+          peers(tname, parse.structure[parse.structure.length - 4][0])
         ) {
 
           // Looks for consecutive missing end tags
-          addHtmlEnd(3);
+          insert(3);
 
         } else if (
           parse.structure.length > 2 &&
           grammar.html.tags.has(parse.scope.token) &&
           grammar.html.tags.has(parse.structure[parse.structure.length - 2][0]) &&
-          peerTest(tname, parse.structure[parse.structure.length - 3][0])
+          peers(tname, parse.structure[parse.structure.length - 3][0])
         ) {
 
           // Looks for consecutive missing end tags
-          addHtmlEnd(2);
+          insert(2);
 
         } else if (
           parse.structure.length > 1 &&
           grammar.html.tags.has(parse.scope.token) &&
-          peerTest(tname, parse.structure[parse.structure.length - 2][0])
+          peers(tname, parse.structure[parse.structure.length - 2][0])
         ) {
 
           // Looks for consecutive missing end tags
-          addHtmlEnd(1);
+          insert(1);
 
-        } else if (peerTest(tname, parse.scope.token)) {
+        } else if (peers(tname, parse.scope.token)) {
 
           // Certain tags cannot contain other certain tags if such tags are peers
-          addHtmlEnd(0);
+          insert(0);
 
         } else if (
           is(tname[0], cc.FWS) &&
@@ -2719,13 +676,13 @@ prettify.lexers.markup = function markupLexer (source: string) {
           parse.scope.token !== tname.slice(1)
         ) {
 
-          // Looks for consecutive missing end tags if the current element is an end tag
-          fixHtmlEnd(element, false);
+          // Looks for consecutive missing end tags if the current token is an end tag
+          fix(token, false);
 
           record.begin = parse.scope.index;
           record.lines = parse.linesSpace;
-          record.stack = parse.scope.token;
-          record.token = element;
+          record.stack = getTagName(parse.scope.token);
+          record.token = token;
           record.types = 'end';
 
           data.lines[parse.count - 1] = 0;
@@ -2734,8 +691,8 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
         // Inserts a trailing slash into singleton tags if they do not already have it
         if (jsx === false && grammar.html.voids.has(tname)) {
-          if (rules.correct === true && ender.test(element) === false) {
-            element = element.slice(0, element.length - 1) + ' />';
+          if (rules.correct === true && /\/>$/.test(token) === false) {
+            token = token.slice(0, token.length - 1) + ' />';
           }
           return true;
         }
@@ -2744,263 +701,80 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
       return false;
 
-    })();
-
-    // This escape flag is set in the cheat function
-    if (singleton) {
-      ParseAttribute();
-      return;
     }
 
-    // console.log(tname);
+    /**
+     * Parse CDATA
+     *
+     * Handling for <![CDATA[   ]]> markup (html) type comment expressions.
+     * While rare this function correctly composes the data structures.
+     *
+     * @next attribute()
+     */
+    function cdata () {
 
-    // determine if the markup tag potentially contains code interpreted by a
-    // different lexer
-    if ((
-      grammar.embed('html', tname) &&
-      element.slice(element.length - 2) !== '/>'
-    ) || (
-      grammar.embed('liquid', tname) &&
-      element.slice(element.length - 2) === '%}'
-    )) {
+      if (ltype !== 'cdata') return attribute();
 
-      const liquid = isLiquid(element, 3);
+      if (record.stack === 'script' || record.stack === 'style') {
 
-      // get the attribute value for "type"
-      let len = attrstore.length - 1;
-      let attValue = NIL;
-      let attrName = [];
+        const stack = record.stack;
 
-      if (len > -1) {
-        do {
+        let begin = parse.count;
+        let ender = parse.count;
 
-          attrName = AttrName(attrstore[len][0]);
-
-          if (attrName[0] === 'type') {
-
-            attValue = attrName[1];
-            if (attValue.charCodeAt(0) === cc.DQO || attValue.charCodeAt(0) === cc.SQO) {
-              attValue = attValue.slice(1, attValue.length - 1);
-            }
-
-            break;
-          }
-
-          len = len - 1;
-        } while (len > -1);
-      }
-
-      // console.log(liquid);
-
-      // ext is flag to send information between the tag lexer and the content lexer
-      //
-      // HOTFIX
-      //
-      // Lets also capture JSON types which are defined
-      // via application/json or application/ld+json
-      //
-      if (liquid === false && grammar.embed('html', tname)) {
-
-        ext = true;
-
-        if (attValue === NIL) {
-          extlang = grammar.html.embed[tname].language;
-        } else if (grammar.html.embed[tname].value(attValue)) {
-          extlang = grammar.html.embed[tname].language;
+        if (data.types[ender] === 'attribute') {
+          do {
+            begin = begin - 1;
+            ender = ender - 1;
+          } while (data.types[ender] === 'attribute' && ender > -1);
         }
 
-      } else if (liquid === true && grammar.embed('liquid', tname)) {
+        record.begin = begin;
+        record.token = '<![CDATA[';
+        record.types = 'cdata_start';
 
-        ext = true;
+        token = token.replace(/^(\s*<!\[cdata\[)/i, NIL).replace(/(\]{2}>\s*)$/, NIL);
 
-        if (attValue === NIL) {
-          extlang = grammar.liquid.embed[tname].language;
+        push(data, record, NIL);
+
+        parse.structure.push([ 'cdata', parse.count ]);
+
+        if (stack === 'script') {
+          prettify.lexers.script(token);
         } else {
-          extlang = grammar.liquid.embed[tname].language;
+          prettify.lexers.style(token);
         }
+
+        record.begin = parse.scope.index;
+        record.token = ']]>';
+        record.types = 'cdata_end';
+
+        push(data, record, NIL);
+
+        parse.structure.pop();
       }
 
-      if (ext === true) {
-
-        len = a + 1;
-
-        if (len < c) {
-
-          do {
-
-            if (ws(b[len]) === false) {
-
-              if (is(b[len], cc.LAN)) {
-
-                if (b.slice(len + 1, len + 4).join(NIL) === '!--') {
-
-                  len = len + 4;
-
-                  if (len < c) {
-
-                    do {
-
-                      if (ws(b[len]) === false) {
-                        ext = false;
-                        break;
-                      }
-
-                      if (b[len] === '\n' || b[len] === '\r') break;
-
-                      len = len + 1;
-                    } while (len < c);
-                  }
-
-                } else {
-                  ext = false;
-                }
-
-              }
-              break;
-            }
-
-            len = len + 1;
-
-          } while (len < c);
-        }
-      }
-    }
-
-    // am I a singleton or a start type?
-    if (simple && ignoreme === false && ltype !== 'xml') {
-
-      if (cheat === true || (
-        is(element[element.length - 2], cc.FWS) &&
-        is(element[element.length - 1], cc.RAN)
-      )) {
-        ltype = 'singleton';
-      } else {
-        ltype = 'start';
-      }
-
-      record.types = ltype as Types;
-    }
-
-    // additional logic is required to find the end of a tag with the attribute
-    // data-parse-ignore
-    if (simple && !preserve && ignoreme && is(end, cc.RAN) && (
-      is(element[element.length - 2], cc.FWS) &&
-      is(element[element.length - 1], cc.RAN)
-    )) {
-
-      const tags = [];
-      const atstring = [];
-
-      if (cheat === true) {
-
-        ltype = 'singleton';
-
-      } else {
-
-        attrstore.forEach((value) => atstring.push(value[0]));
-
-        preserve = true;
-        ltype = 'ignore';
-
-        a = a + 1;
-
-        if (a < c) {
-
-          let delim = NIL;
-          let ee = 0;
-          let ff = 0;
-          let endtag = false;
-
-          do {
-
-            if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
-
-            tags.push(b[a]);
-
-            if (delim === NIL) {
-
-              if (is(b[a], cc.DQO)) {
-
-                delim = '"';
-
-              } else if (is(b[a], cc.SQO)) {
-
-                delim = "'";
-
-              } else if (
-                not(tags[0], cc.LCB) &&
-                is(b[a], cc.LCB) && (is(b[a + 1], cc.LCB) || is(b[a + 1], cc.PER))
-              ) {
-
-                if (is(b[a + 1], cc.LCB)) {
-
-                  delim = '}}';
-
-                } else {
-
-                  delim = b[a + 1] + '}';
-
-                }
-
-              } else if (is(b[a], cc.LAN) && simple === true) {
-
-                if (is(b[a + 1], cc.FWS)) {
-                  endtag = true;
-                } else {
-                  endtag = false;
-                }
-
-              } else if (b[a] === lastchar && not(b[a - 1], cc.FWS)) {
-
-                if (endtag === true) {
-                  igcount = igcount - 1;
-                  if (igcount < 0) break;
-                } else {
-                  igcount = igcount + 1;
-                }
-              }
-
-            } else if (is(b[a], delim.charCodeAt(delim.length - 1))) {
-
-              ff = 0;
-              ee = delim.length - 1;
-
-              if (ee > -1) {
-                do {
-                  if (not(b[a - ff], delim.charCodeAt(ee))) break;
-                  ff = ff + 1;
-                  ee = ee - 1;
-                } while (ee > -1);
-              }
-
-              if (ee < 0) delim = NIL;
-
-            }
-
-            a = a + 1;
-
-          } while (a < c);
-        }
-      }
-
-      element = element + tags.join(NIL);
-      element = element.replace('>', ` ${atstring.join(WSP)}>`);
-
-      record.token = element;
-      record.types = 'content-ignore' as any;
-      attrstore = [];
+      return attribute();
 
     }
 
-    if (record.types.indexOf('template') > -1) {
+    /**
+     * Parse Template
+     *
+     * This will parse template identified tokens and
+     * tags (Liquid). It aligns the the data `record` for identification.
+     *
+     * @next cdata()
+     */
+    function liquid () {
 
-      /**
-       * Parse Template
-       *
-       * This will parse template identified tokens and
-       * tags (Liquid). It aligns the the data `record` for identification.
-       */
-      if (is(element[0], cc.LCB) && is(element[1], cc.PER)) {
+      /* -------------------------------------------- */
+      /* LIQUID TOKEN                                 */
+      /* -------------------------------------------- */
+
+      if (record.types.indexOf('template') === -1) return cdata();
+
+      if (is(token[0], cc.LCB) && is(token[1], cc.PER)) {
 
         if (grammar.liquid.else.has(tname)) {
 
@@ -3012,7 +786,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
         } else if (tname.startsWith('end')) {
 
-          const name = tname.slice(3).toLowerCase();
+          const name = getTagName(tname.slice(3));
 
           if (grammar.liquid.tags.has(name)) {
 
@@ -3046,23 +820,11 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
       } else if (record.types === 'template') {
 
-        if (element.indexOf('else') > 2) record.types = 'template_else';
+        if (token.indexOf('else') > 2) record.types = 'template_else';
 
       }
 
-      if (record.types === 'template_start' || record.types === 'template_else') {
-        if (tname === NIL || is(tname, cc.PER)) {
 
-          tname = tname + element
-            .slice(1)
-            .replace(tname, NIL)
-            .replace(SpaceLead, NIL);
-
-          tname = tname
-            .slice(0, tname.indexOf('('))
-            .replace(/\s+/, NIL);
-        }
-      }
 
       if (rules.quoteConvert === 'double') {
         record.token = record.token.replace(/'/g, '"');
@@ -3070,60 +832,2224 @@ prettify.lexers.markup = function markupLexer (source: string) {
         record.token = record.token.replace(/"/g, "'");
       }
 
+      return cdata();
+
     }
 
-    if (ltype === 'cdata' && (record.stack === 'script' || record.stack === 'style')) {
-      ParseCDATA(record, element);
-    } else {
-      push(data, record, tname); // Liquid Tags and other items are pushed here
-    }
+    /**
+     * Singular Types
+     *
+     * Utility function which will re-assign the `ltype` when HTML `void`
+     * type tags. This only detects HTML tags, Liquid (template) types are
+     * handled by the `liquid()` function.
+     *
+     * @next ignored()
+     */
+    function singular () {
 
-    ParseAttribute();
+      if (basic && ignore === false && ltype !== 'xml') {
 
-    // Inserts a script space in anticipation of word wrap since
-    // JSX has unique white space rules
-    if (options.wrap > 0 && jsx === true) {
-
-      let current_length = 0;
-      let bb = parse.count;
-      let cc = 0;
-
-      if (data.types[bb].indexOf('attribute') > -1) {
-
-        do {
-          current_length = current_length + data.token[bb].length + 1;
-          bb = bb - 1;
-        } while (data.lexer[bb] !== 'markup' || data.types[bb].indexOf('attribute') > -1);
-
-        if (data.lines[bb] === 1) current_length = current_length + data.token[bb].length + 1;
-
-      } else if (data.lines[bb] === 1) {
-
-        current_length = data.token[bb].length + 1;
-      }
-
-      cc = bb - 1;
-
-      if (current_length > 0 && data.types[cc] !== 'script_end') {
-
-        if (data.types[cc].indexOf('attribute') > -1) {
-
-          do {
-            current_length = current_length + data.token[cc].length + 1;
-            cc = cc - 1;
-          } while (data.lexer[cc] !== 'markup' || data.types[cc].indexOf('attribute') > -1);
-
-          if (data.lines[cc] === 1) current_length = current_length + data.token[cc].length + 1;
-
-        } else if (data.lines[cc] === 1) {
-
-          current_length = data.token[cc].length + 1;
+        if (cheat === true || grammar.html.voids.has(tname) || (
+          is(token[token.length - 2], cc.FWS) &&
+          is(token[token.length - 1], cc.RAN)
+        )) {
+          ltype = 'singleton';
+        } else {
+          ltype = 'start';
         }
 
+        record.types = ltype;
+      }
+
+      return ignored();
+
+    }
+
+    /**
+     * Parse Ignores
+     *
+     * Additional logic required to find the end of a tag when it contains
+     * a `data-prettify-ignore` attribute annotation. The function also
+     * handles `@prettify-ignore-next` ignore comments placed above tag regions.
+     *
+     * @next liquid()
+     */
+    function ignored () {
+
+      /**
+       * The ender token name, used for Liquid tag ignores
+       */
+      let ender: string = NIL;
+
+      if (CommIgnoreNext.test(data.token[parse.count])) {
+
+        ignore = true;
+        preserve = false;
+
+        if (ltype.indexOf('template') > 0 && grammar.liquid.tags.has(ender)) {
+          ender = `end${tname}`;
+        } else if (grammar.html.voids.has(tname)) {
+          ender = null;
+        }
+
+      } else if (grammar.html.voids.has(tname)) {
+
+        ender = null;
+
+      }
+
+      if (ender !== null && preserve === false && ignore === true && (
+        end === '>' ||
+        end === '%}' ||
+        end === '}}'
+      )) {
+
+        /**
+         * Lexed characters traversed in the ignored region
+         */
+        const tags: string[] = [];
+
+        if (cheat === true) {
+
+          ltype = 'singleton';
+
+        } else {
+
+          preserve = true;
+          ltype = 'ignore';
+
+          a = a + 1;
+
+          if (a < c) {
+
+            /* -------------------------------------------- */
+            /* LOCAL SCOPES                                 */
+            /* -------------------------------------------- */
+
+            /**
+             * The delimiter match
+             */
+            let delim = NIL;
+
+            /**
+             * The delimiter length used to validate endtag match
+             */
+            let ee = 0;
+
+            /**
+             * The iterator index for matching entag
+             */
+            let ff = 0;
+
+            /**
+             * Whether or not we've reached the endtag
+             */
+            let endtag: boolean = false;
+
+            /* -------------------------------------------- */
+            /* ITERATOR                                     */
+            /* -------------------------------------------- */
+
+            do {
+
+              if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
+
+              tags.push(b[a]);
+
+              if (delim === NIL) {
+
+                delim = is(b[a], cc.DQO) ? '"' : is(b[a], cc.SQO) ? "'" : NIL;
+
+                if (
+                  not(tags[0], cc.LCB) &&
+                    is(b[a], cc.LCB) && (
+                    is(b[a + 1], cc.LCB) ||
+                    is(b[a + 1], cc.PER)
+                  )
+                ) {
+
+                  delim = b[a + 1] + '}';
+
+                } else if (is(b[a], cc.LAN) && basic === true) {
+
+                  endtag = is(b[a + 1], cc.FWS);
+
+                } else if (b[a] === lchar && not(b[a - 1], cc.FWS)) {
+
+                  if (endtag === true) {
+
+                    icount = icount - 1;
+                    if (icount < 0) break;
+
+                  } else {
+                    icount = icount + 1;
+                  }
+                }
+
+              } else if (is(b[a], delim.charCodeAt(delim.length - 1))) {
+
+                ff = 0;
+                ee = delim.length - 1;
+
+                if (is(delim[ee], cc.RCB)) {
+
+                  if (b
+                    .slice(a + (is(b[a + 2], cc.DSH) ? 3 : 2), b.indexOf('%', a + 2))
+                    .join(NIL)
+                    .trim()
+                    .startsWith(ender)) break;
+
+                } else if (ee > -1) {
+
+                  do {
+
+                    if (not(b[a - ff], delim.charCodeAt(ee))) break;
+                    ff = ff + 1;
+                    ee = ee - 1;
+
+                  } while (ee > -1);
+
+                }
+
+                if (ee < 0) delim = NIL;
+              }
+
+              a = a + 1;
+
+            } while (a < c);
+
+          }
+        }
+
+        token = token + tags.join(NIL);
+        token = token.replace('>', ` ${attrs.map(([ value ]) => value).join(WSP)}>`);
+        attrs = [];
+
+        record.token = token;
+        record.types = 'content-ignore';
+
+      }
+
+      return liquid();
+
+    }
+
+    /**
+     * Parse Externals
+     *
+     * Determines whether or not the token contains an external (embedded) region
+     * like that of `<script>`, `<style>` and Liquid equivalents `{% schema %}` etc.
+     * Some additional context is required before passing the contents of these tags
+     * to different lexers. It's here where we establish that context.
+     *
+     * @next liquid()
+     */
+    function external () {
+
+      cheat = correct();
+
+      if (!grammar.embed('html', tname) && !grammar.embed('liquid', tname)) return singular();
+
+      let len = attrs.length - 1;
+      let value = NIL;
+      let name: [name: string, value: string];
+
+      if (len > -1) {
+        do {
+
+          name = attrname(attrs[len][0]);
+
+          if (name[0] === 'type') {
+            value = name[1];
+            if (is(value, cc.DQO) || is(value, cc.SQO)) value = value.slice(1, -1);
+            break;
+          }
+
+          len = len - 1;
+        } while (len > -1);
+      }
+
+      const isliquid = isLiquid(token, 3);
+
+      if (isliquid === false && grammar.embed('html', tname)) {
+
+        embed = true;
+
+        if (value === NIL) {
+          language = grammar.html.embed[tname].language;
+        } else if (grammar.html.embed[tname].value(value)) {
+          language = grammar.html.embed[tname].language;
+        }
+
+      } else if (isliquid === true && grammar.embed('liquid', tname)) {
+
+        embed = true;
+
+        if (value === NIL) {
+          language = grammar.liquid.embed[tname].language;
+        } else {
+          language = grammar.liquid.embed[tname].language;
+        }
+      }
+
+      if (embed === true) {
+
+        len = a + 1;
+
+        if (len < c) {
+
+          do {
+
+            if (ws(b[len]) === false) {
+
+              if (is(b[len], cc.LAN)) {
+
+                if (b.slice(len + 1, len + 4).join(NIL) === '!--') {
+
+                  len = len + 4;
+
+                  if (len < c) {
+
+                    do {
+
+                      if (ws(b[len]) === false) {
+                        embed = false;
+                        break;
+                      }
+
+                      if (is(b[len], cc.NWL) || is(b[len], cc.CAR)) break;
+
+                      len = len + 1;
+                    } while (len < c);
+                  }
+
+                } else {
+                  embed = false;
+                }
+
+              }
+              break;
+            }
+
+            len = len + 1;
+
+          } while (len < c);
+        }
+      }
+
+      return singular();
+
+    }
+
+    /**
+     * Attributes
+     *
+     * The attribute lexer and tokenizer. This reasons with the traversed
+     * tokens and populates the data structure. It is only responsible for
+     * attribute expressions.
+     *
+     * @next script()
+     */
+    function attribute () {
+
+      /* PUSH RECORD -------------------------------- */
+
+      push(data, record, NIL);
+
+      /* -------------------------------------------- */
+      /* CONSTANTS                                    */
+      /* -------------------------------------------- */
+
+      /**
+       * The index of data record in the tree
+       */
+      const begin = parse.count;
+
+      /**
+       * The tag name, ie: `tname`
+       */
+      const stack = tname.replace(/\/$/, NIL);
+
+      /**
+       * Type of quotation character to convert
+       */
+      const qc = rules.quoteConvert;
+
+      /* -------------------------------------------- */
+      /* LOCAL SCOPES                                 */
+      /* -------------------------------------------- */
+
+      /**
+       * The current index of the attribute
+       */
+      let idx = 0;
+
+      /**
+       * Equals `=` operator index in the token
+       */
+      let eq = 0;
+
+      /**
+       * Double quotation `"` index in the token
+       */
+      let dq = 0;
+
+      /**
+       * Single quotation `'` index in the token
+       */
+      let sq = 0;
+
+      /**
+       * The attribute name
+       */
+      let name = NIL;
+
+      /**
+       * The attribute value
+       */
+      let value = NIL;
+
+      /**
+       * The amount of attrs in the store
+       */
+      let len = attrs.length;
+
+      /* -------------------------------------------- */
+      /* FUNCTIONS                                    */
+      /* -------------------------------------------- */
+
+      /**
+       * Convert Quotes
+       *
+       * Converts quotation characters and pushes the attribute record.
+       */
+      function quotes () {
+
+        if (parse.attributes.has(begin)) {
+          if (idx + 1 === len && not(record.token[record.token.length - 1], cc.RAN)) {
+            record.token = record.token + '>';
+          }
+        }
+
+        let lq = isLiquid(record.token, 5);
+
+        if (
+          ignore === true ||
+          qc === 'none' ||
+          record.types.indexOf('attribute') < 0 ||
+          (lq === false && qc === 'single' && record.token.indexOf('"') < 0) ||
+          (lq === false && qc === 'double' && record.token.indexOf("'") < 0)) {
+
+          push(data, record, NIL);
+
+        } else {
+
+          let ee = 0;
+          let inner = false;
+
+          const ch = record.token.split(NIL);
+          const eq = record.token.indexOf('=');
+          const ln = ch.length - 1;
+
+          if (
+            not(ch[eq + 1], cc.DQO) &&
+            not(ch[ch.length - 1], cc.DQO) &&
+            qc === 'single' &&
+            lq === false) {
+
+            push(data, record, NIL);
+
+          } else if (
+            not(ch[eq + 1], cc.SQO) &&
+            not(ch[ch.length - 1], cc.SQO) &&
+            qc === 'double' &&
+            lq === false) {
+
+            push(data, record, NIL);
+
+          } else {
+
+            ee = eq + 2;
+
+            if (lq === false) {
+              if (qc === 'double') {
+                if (record.token.slice(eq + 2, ln).indexOf('"') > -1) inner = true;
+                ch[eq + 1] = '"';
+                ch[ch.length - 1] = '"';
+              } else if (qc === 'single') {
+                if (record.token.slice(eq + 2, ln).indexOf("'") > -1) inner = true;
+                ch[eq + 1] = "'";
+                ch[ch.length - 1] = "'";
+              }
+            }
+
+            if (inner === true || lq === true) {
+
+              lq = false;
+
+              do {
+
+                if (is(ch[ee - 1], cc.LCB) && (is(ch[ee], cc.PER) || is(ch[ee], cc.LCB))) {
+                  lq = true;
+                } else if (is(ch[ee], cc.RCB) && (is(ch[ee - 1], cc.PER) || is(ch[ee - 1], cc.RCB))) {
+                  lq = false;
+                }
+
+                if (lq === true) {
+                  if (is(ch[ee], cc.DQO) && qc === 'double') {
+                    ch[ee] = "'";
+                  } else if (is(ch[ee], cc.SQO) && qc === 'single') {
+                    ch[ee] = '"';
+                  }
+                } else {
+                  if (is(ch[ee], cc.SQO) && qc === 'double') {
+                    ch[ee] = '"';
+                  } else if (is(ch[ee], cc.DQO) && qc === 'single') {
+                    ch[ee] = "'";
+                  }
+                }
+
+                ee = ee + 1;
+
+              } while (ee < ln);
+            }
+
+            record.token = ch.join(NIL);
+
+            push(data, record, NIL);
+
+          }
+        }
+      };
+
+      /**
+       * Sorting Attributes
+       *
+       * Applies attributes sorting when `attributeSort` and/or `attributeSortList`
+       * rules are enabled or defined. The sorting is applied in post process.
+       */
+      function sorting () {
+
+        if (!(!jsx && !jscomm && !nosort)) return;
+
+        if (asl === 0) {
+          attrs = parse.sortSafe(attrs, NIL, false);
+          return;
+        }
+
+        // if making use of the 'options.attributeSortList` option
+
+        const tempstore = [];
+
+        dq = 0;
+        eq = 0;
+        len = attrs.length;
+
+        // loop through the options.attributeSortList looking for attribute name matches
+        do {
+
+          // loop through the attrs
+          eq = 0;
+
+          do {
+
+            name = attrs[eq][0].split('=')[0];
+
+            if (rules.attributeSortList[dq] === name) {
+              tempstore.push(attrs[eq]);
+              attrs.splice(eq, 1);
+              len = len - 1;
+              break;
+            }
+
+            eq = eq + 1;
+
+          } while (eq < len);
+
+          dq = dq + 1;
+
+        } while (dq < asl);
+
+        attrs = parse.sortSafe(attrs, NIL, false);
+        attrs = tempstore.concat(attrs);
+        len = attrs.length;
+
+      }
+
+      /**
+       * JSX Attributes
+       *
+       * Passes JSX attributes literals to the `script` lexer and pushes the
+       * attributes onto the data structure stack accordingly.
+       */
+      function jsxattr () {
+
+        record.token = name + '={';
+        record.types = 'jsx_attribute_start';
+
+        push(data, record, 'jsx_attribute');
+
+        prettify.lexers.script(value.slice(1, value.length - 1));
+        record.begin = parse.count;
+
+        if (/\s\}$/.test(value)) {
+          value = value.slice(0, value.length - 1);
+          value = SpaceEnd.exec(value)[0];
+          record.lines = value.indexOf('\n') < 0 ? 1 : value.split('\n').length;
+        } else {
+          record.lines = 0;
+        }
+
+        record.begin = parse.scope.index;
+        record.stack = parse.scope.token;
+        record.token = '}';
+        record.types = 'jsx_attribute_end';
+
+        quotes();
+
+      }
+
+      /**
+       * Liquid Attributes
+       *
+       * Liquid infused attribute handling for record type assignment. Accepts an
+       * optional `skipEnd` parameter to prevent checking of `endtag` liquid tokens.
+       */
+      function liqattr () {
+
+        if (isLiquidLine(attrs[idx][0])) {
+
+          record.types = 'attribute';
+          record.token = attrs[idx][0];
+
+        } else if (isLiquidEnd(attrs[idx][0])) {
+
+          record.token = attrs[idx][0];
+          record.types = 'template_attribute_end';
+          record.ender = record.begin;
+
+        } else {
+
+          if (isLiquidStart(attrs[idx][0])) {
+
+            record.types = 'template_attribute_start';
+            record.begin = parse.count;
+            record.token = attrs[idx][0];
+
+          } else if (isLiquidElse(attrs[idx][0])) {
+
+            record.types = 'template_attribute_else';
+            record.token = attrs[idx][0];
+
+          } else {
+
+            record.types = 'attribute';
+            record.token = attrs[idx][0];
+
+          }
+        }
+
+        //  console.log(record);
+
+        quotes();
+
+      }
+
+      /* -------------------------------------------- */
+      /* TOKENIZE                                     */
+      /* -------------------------------------------- */
+
+      if (attrs.length < 1) return script();
+
+      // Fixes Singleton Tags
+      //
+      // Since a forward slash "/" character at
+      // the end of the tag then this is not an attribute
+      //
+      if (is(attrs[attrs.length - 1][0], cc.FWS)) {
+        attrs.pop();
+        token = token.replace(/>$/, '/>');
+      }
+
+      // Reconnects attribute names to their respective values if separated on "="
+      eq = attrs.length;
+      dq = 1;
+
+      if (dq < eq) {
+        do {
+
+          name = attrs[dq - 1][0];
+
+          if (is(name[name.length - 1], cc.EQS) && attrs[dq][0].indexOf('=') < 0) {
+            attrs[dq - 1][0] = name + attrs[dq][0];
+            attrs.splice(dq, 1);
+
+            eq = eq - 1;
+            dq = dq - 1;
+          }
+
+          dq = dq + 1;
+
+        } while (dq < eq);
+      }
+
+      // Sort the attrs
+      if (rules.attributeSort) sorting();
+
+      record.begin = begin;
+      record.stack = stack;
+      record.types = 'attribute';
+
+      if (idx < len) {
+
+        do {
+
+          if (attrs[idx] === undefined) break;
+
+          record.lines = attrs[idx][1];
+
+          attrs[idx][0] = attrs[idx][0].replace(SpaceEnd, NIL);
+
+          if (jsx === true && /^\/[/*]/.test(attrs[idx][0])) {
+
+            record.types = 'comment_attribute';
+            record.token = attrs[idx][0];
+
+            quotes();
+
+            idx = idx + 1;
+            continue;
+          }
+
+          if (attrs[idx][1] <= 1 && isLiquidLine(attrs[idx][0])) {
+
+            record.types = 'attribute';
+            record.token = attrs[idx][0];
+
+            quotes();
+
+            idx = idx + 1;
+            continue;
+          }
+
+          eq = attrs[idx][0].indexOf('=');
+          dq = attrs[idx][0].indexOf('"');
+          sq = attrs[idx][0].indexOf("'");
+
+          if (eq < 0) {
+
+            record.types = 'attribute';
+
+            if (
+              is(attrs[idx][0], cc.HSH) ||
+              is(attrs[idx][0], cc.LSB) ||
+              is(attrs[idx][0], cc.LCB) ||
+              is(attrs[idx][0], cc.LPR) || jsx === true) {
+
+              record.token = attrs[idx][0];
+
+            } else {
+
+              record.token = rules.attributeCasing === 'preserve'
+                ? attrs[idx][0]
+                : attrs[idx][0].toLowerCase();
+
+            }
+
+            quotes();
+
+          } else {
+
+            // Separates out the attribute name from its value
+            // We need context of the attribute expression for
+            // dealing with and handling Liquid attributes specifically
+            //
+            name = attrs[idx][0].slice(0, eq);
+            value = attrs[idx][0].slice(eq + 1);
+
+            if (rules.attributeCasing === 'lowercase-name') {
+              name = name.toLowerCase();
+              attrs[idx][0] = name + '=' + value;
+            } else if (rules.attributeCasing === 'lowercase-value') {
+              value = value.toLowerCase();
+              attrs[idx][0] = name + '=' + value;
+            } else if (rules.attributeCasing === 'lowercase') {
+              name = name.toLowerCase();
+              value = value.toLowerCase();
+              attrs[idx][0] = name + '=' + value;
+            }
+
+            if (rules.correct && (
+              not(value, cc.LAN) ||
+              not(value, cc.LCB) ||
+              not(value, cc.EQS) ||
+              not(value, cc.DQO) ||
+              not(value, cc.SQO))) {
+
+              value = '"' + value + '"';
+
+            }
+
+            if (jsx === true && /^\s*{/.test(value)) {
+
+              jsxattr();
+
+              record.types = 'attribute';
+              record.begin = begin;
+              record.stack = stack;
+
+            } else if (
+              rules.valueForce !== 'never' &&
+              isLiquid(value, 5) && (
+                value.indexOf(NWL) > 0 && (
+                  rules.valueForce === 'newline' ||
+                  rules.valueForce === 'intent'
+                )
+              ) && (
+                is(value[0], cc.DQO) ||
+                is(value[0], cc.SQO))
+            ) {
+
+              record.token = `${name}=${sq > -1 ? "'" : '"'}`;
+              record.types = 'attribute';
+
+              parse.attributes.add(begin);
+
+              push(data, record, NIL);
+
+              if (idx + 1 === len) {
+                lexer(value.slice(1, -1));
+                data.token[parse.count] = `${data.token[parse.count]}${sq > -1 ? "'" : '"'}>`;
+                break;
+              }
+
+              lexer(value.slice(1));
+
+              record.types = 'attribute';
+              record.stack = stack;
+              record.begin = begin;
+
+            } else {
+
+              if (isLiquid(name, 5)) {
+
+                liqattr();
+
+              } else {
+
+                record.types = 'attribute';
+                record.token = attrs[idx][0];
+
+                quotes();
+
+              }
+
+            }
+          }
+
+          idx = idx + 1;
+        } while (idx < len);
+      }
+
+      embed = false;
+
+      return script();
+
+    };
+
+    /**
+     * Delimiters
+     *
+     * This is the first function to execute and prepares the traversal
+     * for what to expect in terms of tag types.
+     *
+     * @next traverse()
+     */
+    function delimiter () {
+
+      if (end === '---') {
+
+        start = '---';
+        ltype = 'ignore';
+        preserve = true;
+
+      } else if (is(b[a], cc.LAN)) {
+
+        if (is(b[a + 1], cc.FWS)) {
+
+          ltype = 'end';
+          end = '>';
+
+        } else if (is(b[a + 1], cc.BNG)) {
+
+          if ((
+            is(b[a + 2], 100) ||
+            is(b[a + 2], 68) // d D
+          ) && (
+            is(b[a + 3], 111) ||
+            is(b[a + 3], 79) // o O
+          ) && (
+            is(b[a + 4], 99) ||
+            is(b[a + 4], 67) // c C
+          ) && (
+            is(b[a + 5], 116) ||
+            is(b[a + 5], 84) // t T
+          ) && (
+            is(b[a + 6], 121) ||
+            is(b[a + 6], 89) // y Y
+          ) && (
+            is(b[a + 7], 112) ||
+            is(b[a + 7], 80) // p P
+          ) && (
+            is(b[a + 8], 101) ||
+            is(b[a + 8], 69) // e E
+          )) {
+
+            end = '>';
+            ltype = 'doctype';
+            preserve = true;
+
+          } else if (is(b[a + 2], cc.DSH) && is(b[a + 3], cc.DSH)) {
+
+            end = '-->';
+            ltype = 'comment';
+            start = '<!--';
+
+          } else if (
+            is(b[a + 2], cc.LSB) &&
+            b[a + 3].charCodeAt(0) === 67 && // C
+            b[a + 4].charCodeAt(0) === 68 && // D
+            b[a + 5].charCodeAt(0) === 65 && // A
+            b[a + 6].charCodeAt(0) === 84 && // T
+            b[a + 7].charCodeAt(0) === 65 && // A
+            is(b[a + 8], cc.LSB)
+          ) {
+
+            end = ']]>';
+            ltype = 'cdata';
+            preserve = true;
+
+          }
+
+        } else if (b[a + 1] === '?') {
+
+          end = '?>';
+
+          if (
+            b[a + 2].charCodeAt(0) === 120 && // x
+            b[a + 3].charCodeAt(0) === 109 && // m
+            b[a + 4].charCodeAt(0) === 109 // l
+          ) {
+            ltype = 'xml';
+            basic = true;
+          } else {
+            preserve = true;
+            ltype = 'template';
+          }
+
+        } else if ((
+          is(b[a + 1], 112) ||
+          is(b[a + 1], 80) // p P
+        ) && (
+          is(b[a + 2], 114) ||
+          is(b[a + 2], 82) // r R
+        ) && (
+          is(b[a + 3], 101) ||
+          is(b[a + 3], 69) // e E
+        ) && (
+          is(b[a + 4], cc.RAN) ||
+          ws(b[a + 4])
+        )) {
+
+          end = '</pre>';
+          ltype = 'ignore';
+          preserve = true;
+
+        } else if (
+          rules.ignoreScripts === true &&
+          b.slice(a + 1, a + 7).join(NIL).toLowerCase() === 'script'
+        ) {
+
+          end = '</script>';
+          ltype = 'ignore';
+          preserve = true;
+          ignore = true;
+
+        } else if (
+          rules.ignoreStyles === true &&
+          b.slice(a + 1, a + 6).join(NIL).toLowerCase() === 'style'
+        ) {
+
+          end = '</style>';
+          ltype = 'ignore';
+          preserve = true;
+          ignore = true;
+
+        } else {
+
+          basic = true;
+          end = '>';
+
+        }
+
+      } else if (is(b[a], cc.LCB)) {
+
+        if (jsx) {
+
+          embed = true;
+          nowalk = true;
+
+          record.token = '{';
+          record.types = 'script_start';
+          parse.structure.push([ 'script', parse.count ]);
+
+          push(data, record, NIL);
+
+          return;
+        }
+
+        if (is(b[a + 1], cc.LCB)) {
+
+          preserve = true;
+          end = '}}';
+          ltype = 'template';
+
+        } else if (is(b[a + 1], cc.PER)) {
+
+          preserve = true; // Required for lexer
+          end = '%}';
+          ltype = 'template';
+
+          /**
+           * `}` - The index of the next Right Curly brace
+           */
+          const rcb = b.indexOf('}', a + 2);
+
+          /**
+           * Liquid Comment
+           *
+           * Lets ensure that we have a closing delimiter
+           * character before moving ahead, eg: `%}` and
+           * then we will look for comment keywords.
+           */
+          if (is(b[rcb - 1], cc.PER)) {
+
+            let t = b.slice(a + 2, rcb - 1).join(NIL);
+
+            // Lets make sure we do not interfere with dash delimiters
+            //
+            if (is(t, cc.DSH)) {
+              start = '{%-';
+              t = t.slice(1).trimStart();
+            } else {
+              start = '{%';
+              t = t.trimStart();
+            }
+
+            // Same as above but for closing delimiters
+            //
+            if (is(t[t.length - 1], cc.DSH)) {
+              end = '-%}';
+              t = t.slice(0, t.length - 1).trimEnd();
+            } else {
+              end = '%}';
+              t = t.trimEnd();
+            }
+
+            // Lets look for the comment keyword before proceeding,
+            // We are skipping ahead from the normal parse here.
+            //
+            if (t === 'comment') {
+
+              /**
+               * `{%` The index of the next known closing delimiter
+               * starting from the last `rcb` index position.
+               */
+              const idx1 = source.indexOf('{%', rcb);
+
+              //  Lets reference this index
+              //
+              let idx2 = idx1;
+
+              // Lets make sure to consume and whitespace dash
+              // characters that might be defined
+              //
+              if (b[idx1 + 1].charCodeAt(0) === cc.DSH) idx2 = idx1 + 1;
+
+              // Lets now look the starting index of the `endcomment` keyword
+              //
+              idx2 = source.indexOf('endcomment', idx2);
+
+              if (idx2 > 0) {
+
+                idx2 = b.indexOf('}', idx2);
+
+                if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
+
+                  ltype = 'comment';
+                  start = b.slice(a, rcb + 1).join(NIL);
+                  end = b.slice(idx1, idx2 + 1).join(NIL);
+
+                }
+              }
+            } else if (is(t, cc.HSH)) {
+
+              ltype = 'comment';
+              end = '%}';
+
+            }
+
+          } else {
+
+            preserve = true;
+            end = '%}';
+            ltype = 'template';
+
+          }
+
+        } else {
+          preserve = true;
+          end = b[a + 1] + '}';
+          ltype = 'template';
+        }
+      }
+
+      if (rules.preserveAttributes === true) preserve = true;
+      if (nowalk) return;
+
+      lchar = end.charAt(end.length - 1);
+
+      if (ltype === 'comment' && (is(b[a], cc.LAN) || (is(b[a], cc.LCB) && is(b[a + 1], cc.PER)))) {
+        return comments();
+      } else if (a < c) {
+        return traverse();
+      } else {
+        return external();
       }
     }
 
-    parse.linesSpace = 0;
+    /**
+     * Comments
+     *
+     * Handling for comment lines and blocks. Additional processing for
+     * dealing with Liquid comment blocks. The function also reasons
+     * with ignore comment regions.
+     *
+     * @next external()
+     * @note traverse() will run depending on current iteration
+     */
+    function comments () {
+
+      // a quick hack to inject records for a type of template comments
+      if (tname === 'comment' && isLiquid(token, 6) && isLiquid(token, 8)) {
+
+        const open = token.slice(0, token.indexOf('%}') + 2);
+        const comm = token.slice(token.indexOf('%}') + 2, token.lastIndexOf('{%'));
+        const ends = token.slice(token.lastIndexOf('{%'));
+
+        let lstart: number = 0;
+        let lend: number = 0;
+
+        const lineFindStart = (spaces: string): string => {
+          lstart = spaces === NIL ? 0 : spaces.split(NWL).length;
+          return NIL;
+        };
+
+        const lineFindEnd = (spaces: string): string => {
+          lend = spaces === NIL ? 0 : spaces.split(NWL).length;
+          return NIL;
+        };
+
+        /* COMMENT START ------------------------------ */
+
+        record.begin = parse.scope.index;
+        record.ender = parse.count + 3;
+        record.stack = getTagName(parse.scope.token);
+        record.types = 'template_start';
+        record.token = open;
+
+        push(data, record, 'comment');
+
+        /* COMMENT CONTENT ---------------------------- */
+
+        token = comm.replace(/^\s*/, lineFindStart);
+        token = token.replace(/\s*$/, lineFindEnd);
+
+        record.begin = parse.count;
+        record.lines = lstart;
+        record.stack = 'comment';
+        record.token = token;
+        record.types = 'comment';
+
+        push(data, record, NIL);
+
+        /* COMMENT END -------------------------------- */
+
+        record.types = 'template_end';
+        record.stack = 'comment';
+        record.lines = lend;
+        record.token = ends;
+
+        push(data, record, NIL);
+
+      } else {
+
+        comm = parse.wrapCommentBlock({
+          chars: b,
+          end: c,
+          lexer: 'markup',
+          opening: start,
+          start: a,
+          terminator: end
+        });
+
+        token = comm[0] as string;
+        a = comm[1] as number;
+
+        if (token.replace(start, NIL).trimStart().startsWith('@prettify-ignore-start')) {
+          record.token = token;
+          record.types = 'ignore';
+          push(data, record, NIL);
+        } else {
+          record.token = token;
+          record.types = 'comment';
+        }
+
+        return external();
+
+      }
+    }
+
+    /**
+     * Traverse
+     *
+     * The real tag lexer. This walks the tag/s and tokenizes
+     * attributes and Liquid tokens contained within the markup.
+     *
+     *  @next external()
+     */
+    function traverse () {
+
+      /* -------------------------------------------- */
+      /* CONSTANTS                                    */
+      /* -------------------------------------------- */
+
+      /**
+       * Lexing store - Character in the lex will reside here
+       */
+      const lexed: string[] = [];
+
+      /* -------------------------------------------- */
+      /* REFERENCES                                   */
+      /* -------------------------------------------- */
+
+      /**
+       * An advancement index reference
+       */
+      let e: number = 0;
+
+      /**
+       * An advancement index reference
+       */
+      let f: number = 0;
+
+      /**
+       * Angle bracket count, ie: `<` and `>`
+       */
+      let acount: number = 0;
+
+      /**
+       * Brace count, ie: `{` and ``
+       */
+      let bcount: number = 0;
+
+      /**
+       * Parenthesis count, ie: `(` and `)`
+       */
+      let pcount: number = 0;
+
+      /**
+       * Line count - This is applied to the data structure
+       */
+      let lines: number = 0;
+
+      /**
+       * The quotation character store reference
+       */
+      let quote: string = NIL;
+
+      /**
+       * JSX/TSX quotataion character
+       */
+      let jsxquote: string = NIL;
+
+      /**
+       * JSX/TSX parenthesis counts, ie: `{` and `}`
+       */
+      let jsxparen: number = 0;
+
+      /**
+       * Whether or not we are within a Liquid template token
+       */
+      let isliquid: boolean = false;
+
+      /**
+       * Whether or not we should invoke a whitespace test
+       */
+      let stest: boolean = false;
+
+      /**
+       * Whether or not we are at a starting attribute value quote.
+       * This reference will always us to consume nested quotes
+       * like those we'd encounter in Liquid tokens.
+       */
+      let qattr: boolean = false;
+
+      /**
+       * Whether or not we should invoke a quotation test
+       */
+      let qtest: boolean = false;
+
+      /**
+       * Attribute store
+       */
+      let store: string[] = [];
+
+      /* -------------------------------------------- */
+      /* FUNCTIONS                                    */
+      /* -------------------------------------------- */
+
+      /**
+       * Attribute Tokenizer
+       *
+       * This function is responsible reasoning with the lexed contents of
+       * the recently traversed attribute. This updates the `attrs` reference
+       * by using the `store[]` entries populated during traversal.
+       */
+      function tokenize (quotes: boolean) {
+
+        /* -------------------------------------------- */
+        /* LEXICAL SCOPES                               */
+        /* -------------------------------------------- */
+
+        /**
+         * The attribute name (index `0`) and value (index `0`)
+         */
+        let each: [ name: string, value: string ];
+
+        /**
+         * The attribute token, eg: `id="foo"`
+         */
+        let attr: string = NIL;
+
+        /* -------------------------------------------- */
+        /* LEXICAL HANDLING                             */
+        /* -------------------------------------------- */
+
+        if (quotes === true) {
+
+          attr = store.join(NIL);
+          each = attrname(attr);
+          quote = NIL;
+
+          if (each[0] === 'data-prettify-ignore') ignore = true;
+
+        } else {
+
+          attr = store.join(NIL);
+
+          if (jsx === false || (jsx && not.last(attr, cc.RCB))) attr = attr.replace(/\s+/g, WSP);
+
+          each = attrname(attr);
+
+          if (each[0] === 'data-prettify-ignore') ignore = true;
+
+          if (jsx && is(store[0], cc.LCB) && is.last(store, cc.RCB)) jsxparen = 0;
+        }
+
+        // Prevent sorting of attributes when tags contains Liquid tokens
+        if (is(attr[0], cc.LCB) && is(attr[1], cc.PER)) nosort = true;
+
+        if (quotes === false) {
+          if (isLiquidStart(attr)) within = within + 1;
+          if (isLiquidEnd(attr)) within = within - 1;
+        }
+
+        attr = attr.replace(/^\u0020/, NIL).replace(/\u0020$/, NIL);
+        store = attr.replace(/\r\n/g, NWL).split(NWL);
+
+        if (!store.length) store[0] = store[0].replace(/\s+$/, NIL);
+
+        attr = options.crlf === true ? normalize(store.join('\r\n')) : normalize(store.join(NWL));
+
+        if (within > 0 || isLiquid(attr, 1)) {
+          if (isLiquid(attr, 5) === false) {
+            lines = 0;
+            if (is(b[a + 1], cc.NWL) || is(b[a], cc.NWL)) lines = 2;
+            if (is(b[a], cc.WSP) && not(b[a + 1], cc.WSP)) lines = 1;
+          } else {
+            if (is(b[a + 1], cc.NWL)) {
+              lines = 2;
+            } else if (is(b[a + 1], cc.WSP)) {
+              lines = 1;
+            } else if (lines >= 1) {
+              lines = 0;
+            }
+          }
+        } else {
+          if (is(b[a + 1], cc.NWL)) {
+            lines = 2;
+          } else if (is(b[a + 1], cc.WSP)) {
+            lines = 1;
+          }
+        }
+
+        if (attrs.length > 0) {
+
+          const ln = attrs.length - 1;
+
+          if (is(attr, cc.EQS) || is(attr, cc.DSH)) {
+
+            // If an attribute starts with a `=` then adjoin it to the attrs.length -1 attribute
+            attrs[ln][0] = attrs[ln][0] + attr;
+            attrs[ln][1] = lines;
+
+            // Prevent adding the entry to store as we've connected it to the last entry
+            attr = NIL;
+
+          } else if (lines === 0 && attrs[ln][1] === 0) {
+
+            attrs[ln][0] = attrs[ln][0] + attr;
+            attrs[ln][1] = lines;
+            attr = NIL;
+
+          } else if (lines > 0 && attrs[ln][1] === 0 && isLiquidEnd(attr) === true) {
+
+            attrs[ln][0] = attrs[ln][0] + attr;
+            attrs[ln][1] = lines;
+            attr = NIL;
+
+          } else if (lines > 0 && attrs[ln][1] === 0) {
+
+            attrs[ln][0] = attrs[ln][0] + attr;
+            attr = NIL;
+
+          } else if (attrs[ln][1] > 0 && lines === 0 && isLiquidControl(attr) === false) {
+
+            lines = attrs[ln][1];
+
+          } else if (attrs[ln][1] > 0 && lines > 0 && isLiquidEnd(attr) && !isLiquid(attr, 6)) {
+
+            // Edge Case
+            const i = attr.indexOf('{%');
+            attrs.push([ attr.slice(0, i), lines ]);
+
+            attr = attr.slice(i);
+
+          }
+        }
+
+        // Populates the "attrs[]" array which will be used
+        // when adding the records to the data structures
+        //
+        if (attr !== NIL && attr !== WSP) attrs.push([ attr, lines ]);
+
+        if (attrs.length > 0) {
+
+          const [ value ] = attrs[attrs.length - 1];
+
+          if (value.indexOf('=\u201c') > 0) { // “
+
+            parse.error = error('Invalid quote character (\u201c, &#x201c) used.');
+
+          } else if (value.indexOf('=\u201d') > 0) { // ”
+
+            parse.error = error('Invalid quote character (\u201d, &#x201d) used.');
+
+          }
+        }
+
+        store = [];
+        lines = is(b[a], cc.NWL) ? 2 : 1;
+
+      };
+
+      /* -------------------------------------------- */
+      /* TRAVERSAL                                    */
+      /* -------------------------------------------- */
+
+      do {
+
+        if (is(b[a], cc.NWL)) {
+          lines = lines + 1;
+          parse.lineNumber = parse.lineNumber + 1;
+        }
+
+        if (preserve === true || ((ws(b[a]) === false && not(quote, cc.RCB)) || is(quote, cc.RCB))) {
+
+          if (isliquid === false && is(b[a - 1], cc.LCB) && (is(b[a], cc.LCB) || is(b[a], cc.PER))) {
+            isliquid = true;
+          } else if (isliquid === true && is(b[a], cc.RCB) && (is(b[a - 1], cc.RCB) || is(b[a - 1], cc.PER))) {
+            isliquid = false;
+          }
+
+          lexed.push(b[a]);
+
+          if (is(lexed[0], cc.LAN) && is(lexed[1], cc.RAN) && is(end, cc.RAN)) {
+            record.token = '<>';
+            record.types = 'start';
+            push(data, record, '(empty)');
+            return;
+          }
+
+          if (is(lexed[0], cc.LAN) && is(lexed[1], cc.FWS) && is(lexed[2], cc.RAN) && is(end, cc.RAN)) {
+            record.token = '</>';
+            record.types = 'end';
+            push(data, record, NIL);
+            return;
+          }
+        }
+
+        if (ltype === 'cdata' && is(b[a], cc.RAN) && is(b[a - 1], cc.RSB) && not(b[a - 2], cc.RSB)) {
+
+          parse.error = error(`CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`);
+
+          break;
+        }
+
+        if (ltype === 'comment') {
+
+          quote = NIL;
+
+          // Comments must ignore fancy encapsulations and attribute parsing
+          //
+          if (b[a] === lchar && lexed.length > end.length + 1) {
+
+            // If current character matches the last character of the tag ending sequence
+            //
+            f = lexed.length;
+            e = end.length - 1;
+
+            if (e > -1) {
+              do {
+                f = f - 1;
+                if (not(lexed[f], end.charCodeAt(e))) break;
+                e = e - 1;
+              } while (e > -1);
+            }
+
+            if (e < 0) break;
+
+          }
+        } else {
+
+          if (quote === NIL) {
+
+            if (is(lexed[0], cc.LAN) && is(lexed[1], cc.BNG) && ltype !== 'cdata') {
+
+              if (ltype === 'doctype' && is(b[a], cc.RAN)) break;
+
+              if (is(b[a], cc.LSB)) {
+
+                if (is(b[a + 1], cc.LAN)) {
+                  ltype = 'start';
+                  break;
+                }
+
+                if (ws(b[a + 1])) {
+                  do {
+                    a = a + 1;
+                    if (is(b[a], cc.NWL)) lines = lines + 1;
+                  } while (a < c - 1 && ws(b[a + 1]));
+                }
+
+                if (is(b[a + 1], cc.LAN)) {
+                  ltype = 'start';
+                  break;
+                }
+              }
+            }
+
+            if (jsx) {
+              if (is(b[a], cc.LCB)) {
+                jsxparen = jsxparen + 1;
+              } else if (is(b[a], cc.RCB)) {
+                jsxparen = jsxparen - 1;
+              }
+            }
+
+            if (
+              is(b[a], cc.LAN) &&
+              basic === true &&
+              preserve === false &&
+              lexed.length > 1 &&
+              />{2,3}/.test(end) === false) {
+              parse.error = error(`Invalid structure detected ${b.slice(a, a + 8).join(NIL)}`);
+              break;
+            }
+
+            if (ws(b[a]) === false && stest === true && b[a] !== lchar) {
+
+              // Attribute start
+              //
+              stest = false;
+              icount = 0;
+              quote = jsxquote;
+
+              lexed.pop();
+
+              if (a < c) {
+
+                do {
+
+                  if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
+
+                  if (rules.preserveAttributes === true) {
+                    lexed.push(b[a]);
+                  } else {
+                    store.push(b[a]);
+                  }
+
+                  if (not(quote, cc.DQO) || not(quote, cc.SQO)) {
+                    if (is(b[a - 1], cc.LCB) && (is(b[a], cc.PER) || is(b[a], cc.LCB))) {
+                      isliquid = true;
+                    } else if ((is(b[a - 1], cc.RCB) || is(b[a - 1], cc.PER)) && is(b[a], cc.RCB)) {
+                      isliquid = false;
+                    }
+                  }
+
+                  if (
+                    jsx === false &&
+                    qattr === false &&
+                    isliquid === true &&
+                    rules.preserveAttributes === false
+                  ) {
+
+                    const isval = is(store[0], cc.EQS);
+
+                    do {
+
+                      a = a + 1;
+
+                      if (is(b[a], cc.NWL)) {
+
+                        // parse.lineNumber = parse.lineNumber + 1;
+
+                        if (isval) {
+
+                          isliquid = false;
+                          quote = NIL;
+
+                          tokenize(false);
+
+                          break;
+                        }
+                      }
+
+                      store.push(b[a]);
+
+                      if (isval && is(b[a + 1], cc.RAN)) {
+
+                        isliquid = false;
+                        quote = NIL;
+
+                        attrs[attrs.length - 1][0] += store.join(NIL);
+                        store = [];
+
+                        break;
+                      }
+
+                      if (isval === false && is(b[a], cc.RCB) && (
+                        is(b[a - 1], cc.RCB) ||
+                        is(b[a - 1], cc.PER)
+                      )) {
+
+                        isliquid = false;
+                        quote = NIL;
+
+                        tokenize(false);
+
+                        break;
+                      }
+
+                    } while (a < c);
+
+                  }
+
+                  if (jsx === false && (
+                    is(b[a], cc.LAN) ||
+                    is(b[a], cc.RAN)
+                  ) && (
+                    quote === NIL ||
+                    is(quote, cc.RAN)
+                  )) {
+
+                    if (quote === NIL && is(b[a], cc.LAN)) {
+
+                      quote = '>';
+                      acount = 1;
+
+                    } else if (is(quote, cc.RAN)) {
+
+                      if (is(b[a], cc.LAN)) {
+
+                        acount = acount + 1;
+
+                      } else if (is(b[a], cc.RAN)) {
+
+                        acount = acount - 1;
+
+                        if (acount === 0) {
+                          quote = NIL;
+                          icount = 0;
+                          tokenize(false);
+                          break;
+                        }
+                      }
+                    }
+
+                  } else if (quote === NIL) {
+
+                    if (b[a + 1] === lchar) {
+
+                      // If we are at end of tag, we exit the traversal.
+                      //
+                      if (is.last(store, cc.FWS) || (
+                        is.last(store, cc.QWS) &&
+                        ltype === 'xml'
+                      )) {
+
+                        store.pop();
+                        if (preserve === true) lexed.pop();
+                        a = a - 1;
+                      }
+
+                      if (store.length > 0) tokenize(false);
+
+                      break;
+                    }
+
+                    if (jsx === false && is(b[a], cc.LCB) && is(b[a - 1], cc.EQS)) {
+
+                      quote = '}';
+
+                    } else if (is(b[a], cc.DQO) || is(b[a], cc.SQO)) {
+
+                      quote = b[a];
+
+                      if (qattr === false && isliquid === false) qattr = true;
+
+                      if (is(b[a - 1], cc.EQS) && (is(b[a + 1], cc.LAN) || (
+                        is(b[a + 1], cc.LCB) &&
+                        is(b[a + 2], cc.PER)
+                      ) || (
+                        ws(b[a + 1]) &&
+                        not(b[a - 1], cc.EQS)
+                      ))) {
+
+                        icount = a;
+
+                      }
+
+                    } else if (is(b[a], cc.LPR)) {
+
+                      quote = ')';
+                      pcount = 1;
+
+                    } else if (jsx) {
+
+                      // JSX Variable attribute
+                      //
+                      if ((is(b[a - 1], cc.EQS) || ws(b[a - 1])) && is(b[a], cc.LCB)) {
+
+                        quote = '}';
+                        bcount = 1;
+
+                      } else if (is(b[a], cc.FWS)) {
+
+                        // JSX Comments
+                        if (is(b[a + 1], cc.ARS)) {
+                          quote = '\u002a/';
+                        } else if (b[a + 1] === '/') {
+                          quote = '\n';
+                        }
+
+                      }
+
+                    } else if (is(lexed[0], cc.LCB) && is(b[a], cc.LCB) && (
+                      is(b[a + 1], cc.LCB) ||
+                      is(b[a + 1], cc.PER)
+                    )) {
+
+                      // Opening embedded template expression
+                      //
+                      quote = is(b[a + 1], cc.LCB) ? '}}' : b[a + 1] + '}';
+
+                    }
+
+                    if (ws(b[a]) && quote === NIL) {
+
+                      // Testing for a run of spaces between an attribute's = and a quoted value.
+                      // Unquoted values separated by space are separate attrs
+                      //
+                      if (is(store[store.length - 2], cc.EQS)) {
+
+                        e = a + 1;
+
+                        if (e < c) {
+                          do {
+
+                            if (ws(b[e]) === false) {
+
+                              if (is(b[e], cc.DQO) || is(b[e], cc.SQO)) {
+                                a = e - 1;
+                                qtest = true;
+                                store.pop();
+                              }
+
+                              break;
+                            }
+
+                            e = e + 1;
+                          } while (e < c);
+                        }
+                      }
+
+                      if (qtest === true) {
+
+                        qtest = false;
+
+                      } else if (jsxparen === 0 || (jsxparen === 1 && is(store[0], cc.LCB))) {
+
+                        // If there is an unquoted space attribute is complete
+                        //
+                        store.pop();
+
+                        if (store.length > 0) tokenize(false);
+
+                        stest = true;
+                        break;
+                      }
+                    }
+                  } else if (is(b[a], cc.LPR) && is(quote, cc.RPR)) {
+
+                    pcount = pcount + 1;
+
+                  } else if (is(b[a], cc.RPR) && is(quote, cc.RPR)) {
+
+                    pcount = pcount - 1;
+
+                    if (pcount === 0) {
+
+                      quote = NIL;
+
+                      if (is(b[a + 1], end.charCodeAt(0))) {
+                        tokenize(false);
+                        break;
+                      }
+                    }
+
+                  } else if (jsx && (
+                    is(quote, cc.RCB) || (
+                      is(quote, cc.NWL) &&
+                      is(b[a], cc.NWL)
+                    ) || (
+                      quote === '\u002a/' &&
+                      is(b[a - 1], cc.ARS) &&
+                      is(b[a], cc.FWS)
+                    )
+                  )) {
+
+                    if (is(b[a], cc.TQO)) {
+
+                      a = a + 1;
+
+                      do {
+                        store.push(b[a]);
+                        if (is(b[a], cc.TQO)) break;
+                        a = a + 1;
+                      } while (a < b.length);
+                    }
+
+                    // JSX attributes
+                    if (is(quote, cc.RCB)) {
+                      if (is(b[a], cc.RCB) && b[a] !== quote) {
+
+                        bcount = bcount + 1;
+
+                      } else if (b[a] === quote) {
+
+                        bcount = bcount - 1;
+
+                        if (bcount === 0) {
+
+                          jsxparen = 0;
+                          quote = NIL;
+                          token = store.join(NIL);
+
+                          if (rules.preserveAttributes === false) {
+                            if (jsx) {
+                              if (!/^\s*$/.test(token)) attrs.push([ token, lines ]);
+                            } else {
+                              token = token.replace(/\s+/g, WSP);
+                              if (token !== WSP) attrs.push([ token, lines ]);
+                            }
+                          }
+
+                          store = [];
+                          lines = 1;
+                          break;
+                        }
+                      }
+
+                    } else {
+
+                      jsxquote = NIL;
+                      jscomm = true;
+                      token = store.join(NIL);
+
+                      if (token !== WSP) attrs.push([ token, lines ]);
+
+                      store = [];
+                      lines = is(quote, cc.NWL) ? 2 : 1;
+                      quote = NIL;
+
+                      break;
+                    }
+
+                  } else if (
+                    is(b[a], cc.LCB) &&
+                    is(b[a + 1], cc.PER) &&
+                    is(b[icount - 1], cc.EQS) && (
+                      is(quote, cc.DQO) ||
+                      is(quote, cc.SQO))) {
+
+                    quote = quote + '{%';
+                    icount = 0;
+
+                  } else if (
+                    is(b[a - 1], cc.PER) &&
+                    is(b[a], cc.RCB) && (
+                      quote === '"{%' ||
+                      quote === "'{%")) {
+
+                    quote = quote[0];
+                    icount = 0;
+
+                  } else if ((
+                    is(b[a], cc.LAN) &&
+                    is(end, cc.RAN) &&
+                    is(b[icount - 1], cc.EQS) && (
+                      is(quote, cc.DQO) ||
+                      is(quote, cc.SQO)
+                    )
+                  )) {
+
+                    quote = quote + '<';
+                    icount = 0;
+
+                  } else if (
+                    is(b[a], cc.RAN) && (
+                      quote === '"<' ||
+                      quote === "'<"
+                    )
+                  ) {
+
+                    quote = quote.charAt(0);
+                    icount = 0;
+
+                  } else if (icount === 0 &&
+                    not(quote, cc.RAN) && (
+                    quote.length < 2 || (
+                      not(quote, cc.DQO) &&
+                      not(quote, cc.SQO)
+                    ))) {
+
+                    // Terminate attribute at the conclusion of a quote pair
+                    f = 0;
+                    e = quote.length - 1;
+
+                    if (e > -1) {
+
+                      do {
+
+                        if (not(b[a - f], quote.charCodeAt(e))) break;
+
+                        f = f + 1;
+                        e = e - 1;
+
+                      } while (e > -1);
+                    }
+
+                    if (e < 0 && isliquid === false && qattr === true) {
+                      qattr = false;
+                      tokenize(true);
+                      if (b[a + 1] === lchar) break;
+                    }
+
+                  } else if (icount > 0 && ws(b[a]) === false) {
+
+                    icount = 0;
+
+                  }
+
+                  a = a + 1;
+
+                } while (a < c);
+              }
+            } else if (is(end, cc.NWL) === false && (is(b[a], cc.DQO) || is(b[a], cc.SQO))) {
+
+              // Opening quote
+              quote = b[a];
+
+            } else if (
+              ltype !== 'comment' &&
+              not(end, cc.NWL) &&
+              is(b[a], cc.LAN) &&
+              is(b[a + 1], cc.BNG) &&
+              is(b[a + 2], cc.DSH) &&
+              is(b[a + 3], cc.DSH) &&
+              data.types[parse.count] !== 'conditional'
+            ) {
+
+              quote = '-->';
+
+            } else if (is(b[a], cc.LCB) && not(lexed[0], cc.LCB) && not(end, cc.NWL) && (
+              is(b[a + 1], cc.LCB) ||
+              is(b[a + 1], cc.PER)
+            )) {
+
+              if (is(b[a + 1], cc.LCB)) {
+
+                quote = '}}';
+
+              } else {
+
+                quote = b[a + 1] + '}';
+
+                if (store.length < 1 && (attrs.length < 1 || ws(b[a - 1]))) {
+
+                  lexed.pop();
+
+                  do {
+
+                    if (is(b[a], cc.NWL)) lines = lines + 1;
+                    store.push(b[a]);
+
+                    a = a + 1;
+                  } while (a < c && b[a - 1] + b[a] !== quote);
+
+                  store.push('}');
+                  attrs.push([ store.join(NIL), lines ]);
+
+                  store = [];
+                  lines = 1;
+                  quote = NIL;
+
+                }
+              }
+
+              if (quote === end) quote = NIL;
+
+            } else if (basic && not(end, cc.NWL) && ws(b[a]) && not(b[a - 1], cc.LAN)) {
+
+              // Identify a space in a regular start or singleton tag
+              //
+              stest = true;
+
+            } else if (basic && jsx && is(b[a], cc.FWS) && (is(b[a + 1], cc.ARS) || is(b[a + 1], cc.FWS))) {
+
+              // JSX Comment immediately following tag each
+              //
+              stest = true;
+              lexed[lexed.length - 1] = WSP;
+              jsxquote = is(b[a + 1], cc.ARS) ? '\u002a/' : NWL;
+              store.push(b[a]);
+
+            } else if (isliquid === false && (
+              b[a] === lchar || (
+                is(end, cc.NWL) &&
+                is(b[a + 1], cc.LAN)
+              )
+            ) && (
+              lexed.length > end.length + 1 ||
+              is(lexed[0], cc.RSB)
+            ) && (
+              jsx === false ||
+              jsxparen === 0
+            )) {
+
+              if (is(end, cc.NWL)) {
+                if (ws(lexed[lexed.length - 1])) {
+                  do {
+                    lexed.pop();
+                    a = a - 1;
+                  } while (ws(lexed[lexed.length - 1]));
+                }
+
+                break;
+              }
+
+              // If current character matches the last character of the tag ending sequence
+              //
+              f = lexed.length;
+              e = end.length - 1;
+
+              if (e > -1) {
+                do {
+                  f = f - 1;
+                  if (lexed[f] !== end.charAt(e)) break;
+                  e = e - 1;
+                } while (e > -1);
+              }
+
+              if (e < 0) {
+
+                // This condition will fix incorrect line spaces applied
+                // on template attrs that are contained in the attribute store
+                //
+                if (is(lexed[f], cc.RAN) && is(b[a], cc.RAN) && attrs.length > 0) {
+                  if (attrs[attrs.length - 1][1] === 0 && is(b[a - 1], cc.RCB) && ws(b[a + 1])) {
+                    attrs[attrs.length - 1][1] = is(b[a + 1], cc.WSP) ? 1 : 2;
+                  }
+                }
+
+                break;
+
+              }
+            }
+          } else if ((
+            is(b[a], quote.charCodeAt(quote.length - 1)) && ((
+              jsx &&
+              is(end, cc.RCB) && (
+                not(b[a - 1], cc.BWS) ||
+                esc(a) === false
+              )
+            ) || (jsx === false || not(end, cc.RCB)))
+          )) {
+
+            // Find the closing quote or embedded template expression
+            //
+            f = 0;
+            e = quote.length - 1;
+
+            if (e > -1) {
+              do {
+                if (b[a - f] !== quote.charAt(e)) break;
+                f = f + 1;
+                e = e - 1;
+              } while (e > -1);
+            }
+
+            if (e < 0) quote = NIL;
+
+          }
+        }
+
+        a = a + 1;
+
+      } while (a < c);
+
+      // Correction to incomplete template tags that use multiple angle braceAllman
+      //
+      if (rules.correct === true) {
+
+        if (
+          is(b[a + 1], cc.RAN) &&
+          is(lexed[0], cc.LAN) &&
+          not(lexed[0], cc.LAN)
+        ) {
+
+          do a = a + 1; while (is(b[a + 1], cc.RAN));
+
+        } else if (
+          is(lexed[0], cc.LAN) &&
+          is(lexed[1], cc.LAN) &&
+          not(b[a + 1], cc.RAN) &&
+          not(lexed[lexed.length - 2], cc.RAN)
+        ) {
+
+          do lexed.splice(1, 1); while (is(lexed[1], cc.LAN));
+
+        }
+      }
+
+      icount = 0;
+      token = lexed.join(NIL);
+      tname = getTagName(token);
+      token = normalize(token);
+
+      if (tname === 'xml') {
+        html = 'xml';
+      } else if (html === NIL && tname === 'html') {
+        html = 'html';
+      }
+
+      record.token = token;
+      record.types = ltype;
+
+      if (preserve === false && jsx === false) token = token.replace(/\s+/g, WSP);
+
+      return external();
+
+    }
+
+    /**
+     * Scripts
+     *
+     * This the JSX related and does some additional processing for
+     * the data structures. This will likely undergo refactors as the
+     * script lexer operations are improved in later versions.
+     *
+     * This function concludes the `parseToken()` lexing operation.
+     */
+    function script () {
+
+      if (options.wrap > 0 && jsx === true) {
+
+        let clength: number = 0;
+        let bb: number = parse.count;
+        let cc: number = 0;
+
+        if (data.types[bb].indexOf('attribute') > -1) {
+
+          do {
+            clength = clength + data.token[bb].length + 1;
+            bb = bb - 1;
+          } while (data.lexer[bb] !== 'markup' || data.types[bb].indexOf('attribute') > -1);
+
+          if (data.lines[bb] === 1) clength = clength + data.token[bb].length + 1;
+
+        } else if (data.lines[bb] === 1) {
+
+          clength = data.token[bb].length + 1;
+        }
+
+        cc = bb - 1;
+
+        if (clength > 0 && data.types[cc] !== 'script_end') {
+          if (data.types[cc].indexOf('attribute') > -1) {
+            do {
+              clength = clength + data.token[cc].length + 1;
+              cc = cc - 1;
+            } while (data.lexer[cc] !== 'markup' || data.types[cc].indexOf('attribute') > -1);
+            if (data.lines[cc] === 1) clength = clength + data.token[cc].length + 1;
+          } else if (data.lines[cc] === 1) {
+            clength = data.token[cc].length + 1;
+          }
+        }
+      }
+
+      parse.linesSpace = 0;
+
+    }
+
+    /* -------------------------------------------- */
+    /* INVOKE                                       */
+    /* -------------------------------------------- */
+
+    return delimiter();
+
   }
 
   /**
@@ -3132,25 +3058,55 @@ prettify.lexers.markup = function markupLexer (source: string) {
    * This function is responsible for parsing everything
    * other than markup identified tags.
    */
-  function ParseContent () {
+  function parseContent (): void {
 
+    /* -------------------------------------------- */
+    /* CONSTANTS                                    */
+    /* -------------------------------------------- */
+
+    /**
+     * The current index content parse has began, ie: `a` number
+     */
     const now = a;
-    const jsxbrace = is(data.token[parse.count], cc.LCB) && jsx === true;
 
-    let lex = [];
-    let ltoke = NIL;
-    let liner = parse.linesSpace;
+    /**
+     * Whether or not content is JSX brace token
+     */
+    const jsxbrace = jsx === true && is(data.token[parse.count], cc.LCB);
+
+    /* -------------------------------------------- */
+    /* LEXICAL SCOPES                               */
+    /* -------------------------------------------- */
+
+    /**
+     * The current lexed character references
+     */
+    let lex: string[] = [];
+
+    /**
+     * The last known token
+     */
+    let ltoke: string = NIL;
+
+    /**
+     * The number of line spaces incurred, ie: `parse.linesSpace`
+     */
+    let liner: number = parse.linesSpace;
+
+    /**
+     * The tag name or known name reference
+     */
     let name: string = NIL;
 
-    if (ext === true) {
+    if (embed === true) {
       if (jsxbrace === true) {
         name = 'script';
       } else if (parse.scope.index > -1) {
-        name = tagName(data.token[parse.scope.index].toLowerCase());
+        name = getTagName(data.token[parse.scope.index]);
       } else if (data.begin[parse.count] > 1) {
-        name = tagName(data.token[data.begin[parse.count]].toLowerCase());
+        name = getTagName(data.token[data.begin[parse.count]]);
       } else {
-        name = tagName(data.token[data.begin[parse.count]].toLowerCase());
+        name = getTagName(data.token[data.begin[parse.count]]);
       }
     }
 
@@ -3161,12 +3117,15 @@ prettify.lexers.markup = function markupLexer (source: string) {
       data.token[parse.count].charCodeAt(data.token[parse.count].length - 1) === cc.LSB
     );
 
+    /**
+     * Initial data record state for the parsed content
+     */
     const record: Record = {
       begin: parse.scope.index,
       ender: -1,
       lexer: 'markup',
       lines: liner,
-      stack: parse.scope.token,
+      stack: getTagName(parse.scope.token),
       token: NIL,
       types: 'content'
     };
@@ -3199,14 +3158,13 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
       do {
 
-        // console.time('markup');
-        // console.timeEnd('markup');
+        // DISABLED FOR NOW
 
-        if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
+        // if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
 
-        // external code requires additional parsing to look for the appropriate end
+        // Embed code requires additional parsing to look for the appropriate end
         // tag, but that end tag cannot be quoted or commented
-        if (ext === true) {
+        if (embed === true) {
           if (quote === NIL) {
 
             if (is(b[a], cc.FWS)) {
@@ -3266,10 +3224,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
             if (isLiquid(data.token[parse.count], 3) === false) {
 
-              end = b
-                .slice(a, a + 10)
-                .join(NIL)
-                .toLowerCase();
+              end = b.slice(a, a + 10).join(NIL).toLowerCase();
 
               // script requires use of the script lexer
               if (name === 'script') {
@@ -3296,9 +3251,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
                     push(data, record, NIL);
 
-                    output = output
-                      .replace(/^<!--+/, NIL)
-                      .replace(/--+>$/, NIL);
+                    output = output.replace(/^<!--+/, NIL).replace(/--+>$/, NIL);
 
                     prettify.lexers.script(output);
                     record.token = '-->';
@@ -3307,18 +3260,14 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
                   } else {
 
-                    options.language = extlang;
+                    options.language = language;
                     prettify.lexers.script(output);
 
-                    if ((
-                      extlang === 'json' &&
-                      options.json.objectSort
-                    ) || (
-                      extlang !== 'json' &&
-                      options.script.objectSort
-                    )) {
+                    if (
+                      (language === 'json' && options.json.objectSort) ||
+                      (language !== 'json' && options.script.objectSort)) {
 
-                      parse.sortCorrection(0, parse.count + 1);
+                      parse.sortCorrect(0, parse.count + 1);
 
                     }
 
@@ -3358,9 +3307,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
                     push(data, record, NIL);
 
-                    outside = outside
-                      .replace(/^<!--+/, NIL)
-                      .replace(/--+>$/, NIL);
+                    outside = outside.replace(/^<!--+/, NIL).replace(/--+>$/, NIL);
 
                     prettify.lexers.style(outside);
                     record.token = '-->';
@@ -3369,10 +3316,10 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
                   } else {
 
-                    options.language = extlang;
+                    options.language = language;
                     prettify.lexers.style(outside);
 
-                    if (options.style.sortProperties === true) parse.sortCorrection(0, parse.count + 1);
+                    if (options.style.sortProperties === true) parse.sortCorrect(0, parse.count + 1);
 
                     options.language = 'html';
 
@@ -3403,19 +3350,16 @@ prettify.lexers.markup = function markupLexer (source: string) {
                   if (lex.length < 1) break;
 
                   const mode = lexmap[grammar.liquid.embed[name].language];
-                  options.language = extlang;
+                  options.language = language;
                   prettify.lexers[mode](output);
 
                   if (
-                    (
-                      (extlang === 'json') && options.json.objectSort === true
-                    ) || (
-                      (extlang === 'javascript') && options.script.objectSort === true
-                    ) || (
-                      (extlang === 'css' || extlang === 'scss') && options.style.sortProperties === true
-                    )
-                  ) {
-                    parse.sortCorrection(0, parse.count + 1);
+                    (language === 'json' && options.json.objectSort === true) ||
+                    (language === 'javascript' && options.script.objectSort === true) ||
+                    ((language === 'css' || language === 'scss') && options.style.sortProperties === true)) {
+
+                    parse.sortCorrect(0, parse.count + 1);
+
                   }
 
                   options.language = 'liquid';
@@ -3431,27 +3375,22 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
             }
 
-          } else if (quote === b[a] && (
+          } else if (quote === b[a] && esctest() === false && (
             is(quote, cc.DQO) ||
             is(quote, cc.SQO) ||
             is(quote, cc.TQO) || (is(quote, cc.ARS) && is(b[a + 1], cc.FWS))
-          ) && esctest() === false) {
+          )) {
             quote = NIL;
-          } else if (is(quote, cc.TQO) && b[a] === '$' && is(b[a + 1], cc.LCB) && esctest() === false) {
+          } else if (is(quote, cc.TQO) && is(b[a], cc.DOL) && is(b[a + 1], cc.LCB) && esctest() === false) {
             quote = '}';
           } else if (is(quote, cc.RCB) && is(b[a], cc.RCB) && esctest() === false) {
             quote = '`';
-          } else if (is(quote, cc.FWS) && (is(b[a], cc.NWL) || b[a] === '\r')) {
+          } else if (is(quote, cc.FWS) && (is(b[a], cc.NWL) || is(b[a], cc.CAR))) {
             quote = NIL;
           } else if (quote === 'reg' && is(b[a], cc.FWS) && esctest() === false) {
             quote = NIL;
           } else if (is(quote, cc.FWS) && is(b[a], cc.LAN) && is(b[a - 1], cc.DSH) && is(b[a - 2], cc.DSH)) {
-
-            end = b
-              .slice(a + 1, a + 11)
-              .join(NIL)
-              .toLowerCase();
-
+            end = b.slice(a + 1, a + 11).join(NIL).toLowerCase();
             end = end.slice(0, end.length - 2);
 
             if (name === 'script' && end === '</script') quote = NIL;
@@ -3479,10 +3418,10 @@ prettify.lexers.markup = function markupLexer (source: string) {
         }
 
         // general content processing
-        if (ext === false && lex.length > 0 && (
+        if (embed === false && lex.length > 0 && (
           (
             is(b[a], cc.LAN) &&
-            not(b[a + 1], cc.EQS) && !/\s|\d/.test(b[a + 1])) ||
+            not(b[a + 1], cc.EQS) && !/[\s\d]/.test(b[a + 1])) ||
             (is(b[a], cc.LSB) && is(b[a + 1], cc.PER)) ||
             (is(b[a], cc.LCB) && (jsx === true || is(b[a + 1], cc.LCB) || is(b[a + 1], cc.PER)))
         )) {
@@ -3493,12 +3432,10 @@ prettify.lexers.markup = function markupLexer (source: string) {
           if (parse.scope.token === 'comment') {
             ltoke = lex.join(NIL);
           } else {
-
             ltoke = lex.join(NIL).replace(SpaceEnd, NIL);
-
           }
 
-          // ltoke = tokenParse(ltoke);
+          // ltoke = normalize(ltoke);
 
           liner = 0;
           record.token = ltoke;
@@ -3529,7 +3466,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
                 return;
               }
 
-              do { aa = aa - 1; } while (aa > 0 && not(ltoke[aa], cc.WSP));
+              do aa = aa - 1; while (aa > 0 && not(ltoke[aa], cc.WSP));
 
               if (aa > 0) {
 
@@ -3542,7 +3479,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
                 aa = wrap;
 
-                do { aa = aa + 1; } while (aa < len && not(ltoke[aa], cc.WSP));
+                do aa = aa + 1; while (aa < len && not(ltoke[aa], cc.WSP));
 
                 store.push(ltoke.slice(0, aa));
 
@@ -3597,7 +3534,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
               .replace(SpaceEnd, NIL)
               .replace(/\s+/g, WSP);
 
-            do { wrapper(); } while (aa < len);
+            do wrapper(); while (aa < len);
 
             if (ltoke !== NIL && not(ltoke, cc.WSP)) store.push(ltoke);
 
@@ -3622,7 +3559,6 @@ prettify.lexers.markup = function markupLexer (source: string) {
               } else {
                 record.lines = 2;
                 ltoke = ltoke.replace(SpaceLead, NIL);
-                //  console.log(JSON.stringify(ltoke))
               }
             }
           }
@@ -3649,10 +3585,8 @@ prettify.lexers.markup = function markupLexer (source: string) {
         parse.linesSpace = 1;
 
         do {
-
           if (is(b[x], cc.NWL)) parse.linesSpace = parse.linesSpace + 1;
           x = x - 1;
-
         } while (x > now && ws(b[x]));
 
       } else {
@@ -3660,7 +3594,7 @@ prettify.lexers.markup = function markupLexer (source: string) {
         parse.linesSpace = 0;
       }
 
-    } else if (a !== now || (a === now && ext === false)) {
+    } else if (a !== now || (a === now && embed === false)) {
 
       // regular content at the end of the supplied source
       ltoke = lex.join(NIL).replace(SpaceEnd, NIL);
@@ -3674,8 +3608,36 @@ prettify.lexers.markup = function markupLexer (source: string) {
       }
     }
 
-    ext = false;
+    embed = false;
+
   };
+
+  /**
+   * Parse Space
+   *
+   * This function is responsible for parsing whitespace
+   * characters and newlines. The lexical `a` scope is incremented
+   * and both `parse.lineNumber` and `parse.linesSpace` are
+   * updated accordinly.
+   */
+  function parseSpace (): void {
+
+    parse.linesSpace = 1;
+
+    do {
+
+      if (is(b[a], cc.NWL)) {
+        parse.linesSpace = parse.linesSpace + 1;
+        parse.lineNumber = parse.lineNumber + 1;
+      }
+
+      if (ws(b[a + 1]) === false) break;
+
+      a = a + 1;
+
+    } while (a < c);
+
+  }
 
   if (options.language === 'html' || options.language === 'liquid') html = 'html';
 
@@ -3683,89 +3645,55 @@ prettify.lexers.markup = function markupLexer (source: string) {
 
     if (ws(b[a])) {
 
-      if (
-        data.types[parse.count] === 'template_start' &&
-        parse.scope.token === 'comment') {
+      parseSpace();
 
-        ParseContent();
+    } else if (embed) {
 
-      } else {
-
-        a = parse.spacer({ index: a, array: b, end: c });
-
-      }
-
-    } else if (ext) {
-
-      ParseContent();
+      parseContent();
 
     } else if (is(b[a], cc.LAN)) {
 
-      ParseToken(NIL);
-
-    } else if (is(b[a], cc.LSB) && is(b[a + 1], cc.PER)) {
-
-      ParseToken('%]');
+      parseToken(NIL);
 
     } else if (is(b[a], cc.LCB) && (jsx || is(b[a + 1], cc.LCB) || is(b[a + 1], cc.PER))) {
 
-      ParseToken(NIL);
+      parseToken(NIL);
 
     } else if (is(b[a], cc.DSH) && is(b[a + 1], cc.DSH) && is(b[a + 2], cc.DSH)) {
 
-      ParseToken('---');
+      parseToken('---');
+
+    } else if (parse.error) {
+
+      parseError();
+
+      return data;
 
     } else {
-      ParseContent();
+
+      parseContent();
+
     }
 
     a = a + 1;
 
   } while (a < c);
 
-  if (
-    not(data.token[parse.count][0], cc.FWS) &&
-    grammar.html.tags.has(parse.scope.token)
-  ) fixHtmlEnd(data.token[parse.count], true);
-
-  // console.log(data);
-
   if (count.end !== count.start && parse.error === NIL) {
 
     if (count.end > count.start) {
       const x = count.end - count.start;
-      const plural = (x === 1) ? NIL : 's';
-      // const token = data.types.lastIndexOf('end');
-      parse.error = [
-        'Prettify Error:',
-        // '',
-        // `${count.line - 1} |`,
-        //  `${count.line - 0} | ${data.token[token]}`,
-        // `${count.line + 1} | ^`,
-        '',
-      `${x} more end type${plural} than start types`
-      ].join('\n');
-
+      const p = (x === 1) ? NIL : 's';
+      parse.error = `Prettify Error (line ${count.line}):\n${x} more end type${p} than start type${p}`;
     } else {
       const x = count.start - count.end;
-
-      const plural = (x === 1) ? NIL : 's';
-      // const token = data.types.lastIndexOf('start');
-      parse.error = [
-        'Prettify Error:',
-        // '',
-        // `${count.line - 1} | ${data.token[count.index]}`,
-        // `${count.line - 0} | ${data.token[token]}`,
-        // `${count.line + 1} | ^`,
-        '',
-      `${x} more start type${plural} than end types`
-      ].join('\n');
-
+      const p = (x === 1) ? NIL : 's';
+      parse.error = `Prettify Error (line ${count.line}):\n${x} more start type${p} than end type${p}`;
     }
 
   }
 
-  // console.log(data);
+ // console.log(data);
   return data;
 
 };
