@@ -16,11 +16,11 @@
     "window.inactiveBorder": "#00aeff"
   },
   "highlight.regexes": {
-    "^(?<=-{3}\\n)|(`.*?`)|^(?=-{3})$": {
+    "(\\L\\T)(?=\\.)": {
       "regexFlags": "g",
       "decorations": [
         {
-          "color": "#888888",
+          "color": "#81D4FA",
         }
       ]
     },
