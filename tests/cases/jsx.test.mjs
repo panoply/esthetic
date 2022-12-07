@@ -2,7 +2,7 @@ import test from 'ava';
 import { forSample } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
-test('Embedded Template string expression', async t => {
+test.skip('Embedded Template string expression', async t => {
 
   await forSample('cases/jsx')(
     [

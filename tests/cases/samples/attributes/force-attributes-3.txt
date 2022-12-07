@@ -1,6 +1,0 @@
----
-Testing chained conditional attribute structure. The `data-{% if x %}` will either be a boolean attribute
-or value attribute based on the condition. The entire structure will be force onto new line.
----
-
-<div data-{% if x %}id="foo"{% else %}name{% endif %}></div>

@@ -1,8 +1,0 @@
----
-Forcing Liquid attribute control structures that are conditionally chaining. Ensures that
-the structure of `data-` is left intact, whereas the starting `{% if foo %}` and ending `{% endif %}`
-will be forced onto new lines.
----
-
-<div id="foo" {% if foo %} data-{% if x %}-foo{% else %}-bar{% endif %}="{{ x }}" {% endif %} class="bar">
-</div>

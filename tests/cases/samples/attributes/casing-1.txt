@@ -1,9 +1,0 @@
----
-Testing HTML (markup) `attributeCasing` rule. This case tests HTML attributes only.
----
-
-<div ID="FOO" class="HelloWorld" data-VaLuE="eXampLE" DATA-BOOLEAN>
-  <div CLASS="UPPERCASE" data-VaLuE="UPPERCASE" ANOTHER-data-BOOLEAN>
-        </div>
-</div>
-

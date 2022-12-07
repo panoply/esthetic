@@ -2,7 +2,7 @@ import test from 'ava';
 import { forSample } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
-test('Code corrections applied to CSS', async t => {
+test.skip('Code corrections applied to CSS', async t => {
 
   await forSample('cases/css')(
     [
@@ -25,7 +25,7 @@ test('Code corrections applied to CSS', async t => {
 
 });
 
-test('CSS variable expressions', async t => {
+test.skip('CSS variable expressions', async t => {
 
   await forSample('cases/css')(
     [
@@ -48,7 +48,7 @@ test('CSS variable expressions', async t => {
 
 });
 
-test('Sorting selector class names', async t => {
+test.skip('Sorting selector class names', async t => {
 
   await forSample('cases/css')(
     [
@@ -101,7 +101,7 @@ test('Sorting selector properties', async t => {
   prettify.options({ style: { sortProperties: false } });
 });
 
-test('Pseudo selector properties', async t => {
+test.skip('Pseudo selector properties', async t => {
 
   await forSample('cases/css')(
     [

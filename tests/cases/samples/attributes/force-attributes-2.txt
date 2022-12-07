@@ -1,6 +1,0 @@
----
-Tests conditional expressed Liquid attribute structures with space separators. Each space separated expression
-will be forced on to new lines.
----
-
-<div id="foo" {% if x  %} data-attr="x" {% elsif %} data-id="x" {% endif %}></div>

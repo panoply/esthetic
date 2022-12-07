@@ -2,7 +2,7 @@ import test from 'ava';
 import { forRule, forSample } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
-test.serial('Delimiter Trims Cases', async t => {
+test.serial.skip('Delimiter Trims Cases', async t => {
 
   await forRule('cases/liquid')(
     {
@@ -42,7 +42,7 @@ test.serial('Delimiter Trims Cases', async t => {
 
 });
 
-test.serial('Preserve Inlined Outputs in Text Nodes', async t => {
+test.serial.skip('Preserve Inlined Outputs in Text Nodes', async t => {
 
   await forRule('cases/liquid')(
     {
@@ -77,7 +77,7 @@ test.serial('Preserve Inlined Outputs in Text Nodes', async t => {
 
 });
 
-test.serial('Multilined Tags', async t => {
+test.serial.skip('Multilined Tags', async t => {
 
   await forSample('cases/liquid')(
     [

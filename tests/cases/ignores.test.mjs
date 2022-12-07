@@ -2,7 +2,7 @@ import test from 'ava';
 import { forRule } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
-test('Ignore file using Liquid comment', async t => {
+test.skip('Ignore file using Liquid comment', async t => {
 
   await forRule('cases/ignores')({
     'liquid-ignore-file': [
@@ -24,7 +24,7 @@ test('Ignore file using Liquid comment', async t => {
 
 });
 
-test('Ignore file using HTML comment', async t => {
+test.skip('Ignore file using HTML comment', async t => {
 
   await forRule('cases/ignores')({
     'html-ignore-file': [
@@ -48,7 +48,7 @@ test('Ignore file using HTML comment', async t => {
 
 });
 
-test('Ignore file using line comment', async t => {
+test.skip('Ignore file using line comment', async t => {
 
   await forRule('cases/ignores')({
     'javascript-ignore-file-2': [
@@ -70,7 +70,7 @@ test('Ignore file using line comment', async t => {
 
 });
 
-test('Ignore file using line block comment', async t => {
+test.skip('Ignore file using line block comment', async t => {
 
   await forRule('cases/ignores')({
     'javascript-ignore-file-1': [
@@ -99,7 +99,7 @@ test('Ignore file using line block comment', async t => {
 
 });
 
-test('Ignore code regions using Liquid comments ', async t => {
+test.skip('Ignore code regions using Liquid comments ', async t => {
 
   await forRule('cases/ignores')({
     'liquid-ignore-region': [
@@ -123,7 +123,7 @@ test('Ignore code regions using Liquid comments ', async t => {
 
 });
 
-test('Ignore code regions using HTML comments', async t => {
+test.skip('Ignore code regions using HTML comments', async t => {
 
   await forRule('cases/ignores')({
     'html-ignore-region': [

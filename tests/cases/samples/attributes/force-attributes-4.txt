@@ -1,6 +1,0 @@
----
-Testing Liquid output tag and control tag infusion. All attributes will be forced onto new lines but
-the `{% if x %}` structure will be preserved and remain intact.
----
-
-<div id="foo" data-bar {{ output.attr | filter: '' }} id="foo" {% if x  %}{{ attr.2 }}{% endif %}></div>
