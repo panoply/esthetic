@@ -16,6 +16,7 @@ import {
   isLiquidElse,
   isLiquidLine
 } from '@utils/helpers';
+
 import {
   StripEnd,
   StripLead,
@@ -84,7 +85,7 @@ prettify.lexers.markup = function lexer (source: string) {
   const count: Counter = { end: 0, start: 0, line: 1, index: -1 };
 
   /**
-   * The document source as an array list, ie: source.split(NIL)
+   * The document source as an array list
    */
   const b = source.split(NIL);
 
@@ -144,50 +145,38 @@ prettify.lexers.markup = function lexer (source: string) {
     if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
     if (!isLiquid(input, 3)) return input;
 
-    const end = input.length - 4;
+    const end = input.length - 3;
 
     if (rules.delimiterTrims === 'force') {
+
       if (is(input[1], cc.PER)) {
 
-        if (!is(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
-        if (!input.endsWith('-%}')) input = input.replace(/%}$/, '-%}');
+        if (not(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
+        if (not(input[end], cc.DSH)) input = input.replace(/%}$/, '-%}');
 
       } else {
 
-        if (!is(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
-        if (!input.endsWith('-}}', end)) input = input.replace(/}}$/, '-}}');
+        if (not(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
+        if (not(input[end], cc.DSH)) input = input.replace(/}}$/, '-}}');
 
       }
     } else if (rules.delimiterTrims === 'strip') {
-      if (is(input[1], cc.PER)) {
 
-        if (is(input[2], cc.DSH)) input = input.replace(/^{%-/, '{%');
-        if (input.endsWith('-%}', end)) input = input.replace(/-%}$/, '%}');
+      input = input
+        .replace(/^{%-/, '{%')
+        .replace(/-%}$/, '%}')
+        .replace(/^{{-/, '{{')
+        .replace(/-}}$/, '}}');
 
-      } else {
-
-        if (is(input[2], cc.DSH)) input = input.replace(/^{{-/, '{{');
-        if (input.endsWith('-}}', end)) input = input.replace(/-}}$/, '}}');
-
-      }
     } else if (rules.delimiterTrims === 'tags' && is(input[1], cc.PER)) {
 
-      if (!is(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
-      if (!input.endsWith('-%}', end)) input = input.replace(/%}$/, '-%}');
+      if (not(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
+      if (not(input[end], cc.DSH)) input = input.replace(/%}$/, '-%}');
 
     } else if (rules.delimiterTrims === 'outputs' && is(input[1], cc.LCB)) {
 
-      if (!is(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
-      if (!input.endsWith('-}}', end)) input = input.replace(/}}$/, '-}}');
-    }
-
-    if (rules.delimiterSpacing === true) {
-
-      input = input
-        .replace(/^{[{%]-?\s*/, (m: string) => m.replace(StripEnd, WSP))
-        .replace(/\s*-?[%}]}$/, (m: string) => m.replace(StripLead, WSP));
-
-      // .replace(/((?<={[{%]-?)\S|\S(?=-?[%}]}))/, '$1 ');
+      if (not(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
+      if (not(input[end], cc.DSH)) input = input.replace(/}}$/, '-}}');
     }
 
     if (rules.normalizeSpacing === false) return input;
@@ -233,10 +222,12 @@ prettify.lexers.markup = function lexer (source: string) {
 
       return char
         .replace(SpaceOnly, WSP)
+        .replace(/^({[{%]-?)/, '$1 ')
         .replace(/([!=]=|[<>]=?)/g, ' $1 ')
         .replace(/ +(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
         .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
         .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
+        .replace(/(-?[%}]})$/, ' $1')
         .replace(SpaceOnly, WSP);
 
     }).join(NIL);
@@ -786,7 +777,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
         } else if (tname.startsWith('end')) {
 
-          const name = getTagName(tname.slice(3));
+          const name = tname.slice(3);
 
           if (grammar.liquid.tags.has(name)) {
 
@@ -794,6 +785,9 @@ prettify.lexers.markup = function lexer (source: string) {
 
           } else {
 
+            // Unknown tag handling for situations where a custom endtag
+            // name is used, we will look for a matching start tag name
+            //
             record.stack = name;
             record.types = 'template_end';
 
@@ -818,13 +812,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
         }
 
-      } else if (record.types === 'template') {
-
-        if (token.indexOf('else') > 2) record.types = 'template_else';
-
       }
-
-
 
       if (rules.quoteConvert === 'double') {
         record.token = record.token.replace(/'/g, '"');
@@ -2229,7 +2217,7 @@ prettify.lexers.markup = function lexer (source: string) {
             attrs[ln][1] = lines;
             attr = NIL;
 
-          } else if (lines > 0 && attrs[ln][1] === 0) {
+          } else if (lines > 0 && attrs[ln][1] === 0 && isLiquid(attrs[ln][0], 4)) {
 
             attrs[ln][0] = attrs[ln][0] + attr;
             attr = NIL;
@@ -3693,7 +3681,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
   }
 
- // console.log(data);
+  // console.log(data);
   return data;
 
 };
