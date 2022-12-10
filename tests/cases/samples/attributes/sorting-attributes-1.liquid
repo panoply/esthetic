@@ -22,7 +22,8 @@ id="last"
 >
 The attributes used on this tag will be sorted alphabeticaly
 </div>
-
+{{ additional_checkout_buttons }}
+{%-  -%}
 <ul>
 
   <li
@@ -37,7 +38,7 @@ data-a="1"
   >The attributes of this tag will be sorted because it contains a liquid value</li>
 
     <li
-  class="x"
+  class="x {{  }}"
   {% if x %}data-x{% endif %}
     data-c="3"
 data-b="2"
