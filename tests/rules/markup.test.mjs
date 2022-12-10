@@ -242,26 +242,6 @@ test.serial('Force Content Indentation', async t => {
 
 });
 
-test.serial('Delimiter Spacing', async t => {
-
-  await forRule('rules/markup/delimiter-spacing')([
-    false,
-    true
-  ]
-  , async function (source, delimiterSpacing, label) {
-
-    const output = await prettify.format(source, { markup: { delimiterSpacing } });
-
-    t.snapshot(output, label({ markup: { delimiterSpacing } }));
-
-    // t.log(output);
-
-  });
-
-  prettify.options({ markup: { delimiterSpacing: false } });
-
-});
-
 test.serial('Delimiter Trims', async t => {
 
   await forRule('rules/markup/delimiter-trims')([
