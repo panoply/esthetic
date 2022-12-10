@@ -738,7 +738,7 @@ prettify.lexers.script = function script (source: string) {
         )
       ) && parse.structure[parse.structure.length - 1][0] === 'object') {
 
-        parse.objectSort(data);
+        parse.sortObject(data);
 
       }
 
