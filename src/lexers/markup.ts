@@ -14,12 +14,11 @@ import {
   getTagName,
   isLiquidControl,
   isLiquidElse,
-  isLiquidLine
+  isLiquidLine,
+  isValueLiquid
 } from '@utils/helpers';
 
 import {
-  StripEnd,
-  StripLead,
   SpaceLead,
   SpaceEnd,
   SpaceOnly,
@@ -1510,14 +1509,16 @@ prettify.lexers.markup = function lexer (source: string) {
           }
 
           if (attrs[idx][1] <= 1 && isLiquidLine(attrs[idx][0])) {
+            if (!isValueLiquid(attrs[idx][0])) {
 
-            record.types = 'attribute';
-            record.token = attrs[idx][0];
+              record.types = 'attribute';
+              record.token = attrs[idx][0];
 
-            quotes();
+              quotes();
 
-            idx = idx + 1;
-            continue;
+              idx = idx + 1;
+              continue;
+            }
           }
 
           eq = attrs[idx][0].indexOf('=');
@@ -1586,17 +1587,23 @@ prettify.lexers.markup = function lexer (source: string) {
               record.begin = begin;
               record.stack = stack;
 
-            } else if (
-              rules.valueForce !== 'never' &&
-              isLiquid(value, 5) && (
+            } else if (isLiquid(value, 5) && (
+              (
+                rules.valueForce === 'always' || (
+                  (rules.valueForce === 'intent' || rules.valueForce === 'wrap') &&
+                  options.wrap > 0 &&
+                  Math.abs(a - parse.lineStart) >= options.wrap
+                )
+              ) || (
                 value.indexOf(NWL) > 0 && (
                   rules.valueForce === 'newline' ||
                   rules.valueForce === 'intent'
                 )
-              ) && (
-                is(value[0], cc.DQO) ||
-                is(value[0], cc.SQO))
-            ) {
+              )
+            ) && (
+              is(value[0], cc.DQO) ||
+              is(value[0], cc.SQO)
+            )) {
 
               record.token = `${name}=${sq > -1 ? "'" : '"'}`;
               record.types = 'attribute';
@@ -3615,6 +3622,7 @@ prettify.lexers.markup = function lexer (source: string) {
     do {
 
       if (is(b[a], cc.NWL)) {
+        parse.lineStart = a;
         parse.linesSpace = parse.linesSpace + 1;
         parse.lineNumber = parse.lineNumber + 1;
       }
