@@ -73,20 +73,21 @@ export const prettify: Prettify = (function () {
         delimiterTrims: 'preserve',
         delimiterSpacing: false,
         attributeCasing: 'preserve',
-        normalizeSpacing: true,
         attributeSort: false,
         attributeSortList: [],
-        forceAttribute: false,
-        forceLeadAttribute: false,
+        forceAttribute: 3,
+        forceLeadAttribute: true,
         forceIndent: false,
-        preserveText: false,
-        preserveAttributes: false,
-        selfCloseSpace: false,
-        quoteConvert: 'none',
-        lineBreakOperator: 'default',
         ignoreJson: false,
         ignoreStyles: false,
-        ignoreScripts: false
+        ignoreScripts: false,
+        lineBreakSeparator: 'default',
+        preserveText: false,
+        preserveAttributes: false,
+        selfCloseSpace: true,
+        quoteConvert: 'none',
+        normalizeSpacing: true,
+        valueForce: 'intent'
       },
       style: {
         correct: false,
@@ -124,6 +125,7 @@ export const prettify: Prettify = (function () {
         vertical: false
       },
       json: {
+        useStringify: false,
         arrayFormat: 'default',
         braceAllman: false,
         bracePadding: false,
