@@ -715,71 +715,7 @@ prettify.beautify.markup = function (options: Options) {
 
         if (data.types[a].indexOf('attribute') > 0) {
 
-          if (type.is(a, 'template_attribute_start')) {
-
-            // console.log(data.token[a], data.lines[a]);
-
-            if (rules.forceAttribute === true || attcount >= rules.forceAttribute) {
-
-              level.push(lev);
-
-            } else {
-
-              if (data.lines[a] === 0) {
-                level.push(-20);
-              } else {
-                level.push(-10);
-              }
-
-            }
-
-          } else if (type.is(a, 'template_attribute_else')) {
-
-            // console.log(data.token[a], data.lines[a]);
-
-            if (rules.forceAttribute === true || attcount >= rules.forceAttribute) {
-
-              level.push(lev);
-
-            } else {
-
-              if (data.lines[a] === 0) {
-                level.push(-20);
-              } else {
-                level.push(-10);
-              }
-
-            }
-
-          } else if (type.is(a, 'template_attribute_end')) {
-
-            // console.log(data.token[a], data.lines[a]);
-
-            if (rules.forceAttribute === true || attcount >= rules.forceAttribute) {
-
-              level.push(lev);
-
-            } else {
-
-              if (data.lines[a] === 0) {
-                level.push(-20);
-              } else {
-                level.push(-10);
-              }
-
-            }
-
-          } else if (type.is(a, 'template_attribute')) {
-
-            // console.log(data.token[a], data.lines[a]);
-
-            if (rules.forceAttribute === true || attcount >= rules.forceAttribute) {
-              level.push(lev);
-            } else {
-              level.push(-10);
-            }
-
-          } else if (type.is(a, 'comment_attribute')) {
+          if (type.is(a, 'comment_attribute')) {
 
             level.push(lev);
 
@@ -852,39 +788,25 @@ prettify.beautify.markup = function (options: Options) {
 
             level.push(-10);
 
-          } else if (rules.forceAttribute === true ||
+          } else if (
+            rules.forceAttribute === true ||
             rules.forceAttribute >= 1 ||
             attrstart === true || (
-            a < c - 1 && ((
-              type.idx(a + 1, 'template_attribute_') > -1 &&
-              data.lines[a + 1] !== -20
-            ) || type.idx(a + 1, 'attribute') > 0))) {
+              a < c - 1 &&
+              type.idx(a + 1, 'attribute') > 0
+            )
+          ) {
 
             if (rules.forceAttribute === false && data.lines[a] === 1) {
 
-              if (type.is(a + 1, 'template_attribute_start') && data.lines[a + 1] > 1) {
-                level.push(lev);
-              } else {
-                level.push(-10);
-              }
+              level.push(-10);
 
             } else {
 
               if (rules.forceAttribute === true) {
-
                 level.push(lev);
-
-              } else if (data.lines[a] === 0 && (
-                type.is(a - 1, 'template_attribute_start') ||
-                type.is(a - 1, 'template_attribute_else')
-              )) {
-
-                level.push(-20);
-
               } else {
-
                 level.push(-10);
-
               }
             }
 
@@ -1247,7 +1169,9 @@ prettify.beautify.markup = function (options: Options) {
           if (comstart < 0) comstart = a;
 
           if (type.not(a + 1, 'comment') || (a > 0 && type.idx(a - 1, 'end') > -1)) {
+
             comment();
+
           }
 
         } else if (type.not(a, 'comment')) {
@@ -1668,17 +1592,47 @@ prettify.beautify.markup = function (options: Options) {
 
       do {
 
-        // HOT PATCH
         // Fixes newlines in comments
         // opposed to generation '\n     ' a newline character is applied
         //
         if (type.is(a, 'comment')) {
-          if (lines[aa] !== NIL) {
-            if (lines[aa + 1].trimStart() !== NIL) {
-              build.push(lines[aa], newline(lev));
+
+          if (aa === 0 && rules.commentNewline) {
+
+            // When preserve line is zero, we will insert
+            // the new line above the comment.
+            //
+            if (options.preserveLine === 0) {
+
+              build.push(newline(lev));
+
             } else {
-              build.push(lines[aa], NWL);
+
+              // We need to first count the number of line proceeded by the comment
+              // to determine whether or not we should insert an additional lines.
+              // We need to add an additional 1 value as lines are not zero based.
+              //
+              if ((build[build.length - 1].lastIndexOf(NWL) + 1) < 2) build.push(newline(lev));
+
             }
+          }
+
+          if (lines[aa] !== NIL) {
+
+            // Indent comment contents
+            //
+            if (aa > 0 && options.commentIndent) build.push(ind);
+
+            if (lines[aa + 1].trimStart() !== NIL) {
+
+              build.push(lines[aa], newline(lev));
+
+            } else {
+
+              build.push(lines[aa], NWL);
+
+            }
+
           } else {
             if (lines[aa + 1].trimStart() === NIL) {
               build.push(NWL);
@@ -1686,6 +1640,7 @@ prettify.beautify.markup = function (options: Options) {
               build.push(newline(lev));
             }
           }
+
         } else {
 
           build.push(lines[aa]);
@@ -1815,6 +1770,21 @@ prettify.beautify.markup = function (options: Options) {
 
           multiline();
 
+        } else if (type.is(a, 'comment') && rules.commentNewline && (
+          options.preserveLine === 0 ||
+          build[build.length - 1].lastIndexOf(NWL) + 1 < 2
+        )) {
+
+          // When preserve line is zero, we will insert
+          // the new line above the comment.
+          //
+
+          build.push(
+            newline(levels[a]),
+            data.token[a],
+            newline(levels[a])
+          );
+
         } else {
 
           build.push(data.token[a]);
@@ -1886,7 +1856,6 @@ prettify.beautify.markup = function (options: Options) {
 
     if (build[0] === lf || is(build[0], cc.WSP)) build[0] = NIL;
 
-    // console.log(data);
     // console.log('TOKE', build);
     return build.join(NIL);
 

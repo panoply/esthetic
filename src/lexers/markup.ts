@@ -3,6 +3,7 @@ import { prettify } from '@prettify/model';
 import { grammar } from '@options/grammar';
 import { parse } from '@parser/parse';
 import { lexmap } from '@parser/language';
+import { wrapCommentBlock } from '@comments/block';
 import { cc, NIL, NWL, WSP } from '@utils/chars';
 import {
   is,
@@ -1936,13 +1937,13 @@ prettify.lexers.markup = function lexer (source: string) {
      */
     function comments () {
 
-      comm = parse.wrapCommentBlock({
+      comm = wrapCommentBlock({
         chars: b,
         end: c,
         lexer: 'markup',
-        opening: start,
+        begin: start,
         start: a,
-        terminator: end
+        ender: end
       });
 
       token = comm[0] as string;
