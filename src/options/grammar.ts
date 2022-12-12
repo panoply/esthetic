@@ -176,10 +176,15 @@ export const grammar = new class Grammar {
       'stylesheet',
       'javascript'
     ],
+    control: [
+      'if',
+      'unless',
+      'case'
+    ],
     else: [
       'else',
-      'elsif',
-      'when'
+      'elsif'
+
     ],
     singletons: [
       'include',
@@ -193,7 +198,8 @@ export const grammar = new class Grammar {
       'decrement',
       'echo',
       'increment',
-      'render'
+      'render',
+      'when'
     ]
   };
 
@@ -339,9 +345,7 @@ export const grammar = new class Grammar {
     }
   };
 
-  public script: {
-    keywords?: Set<string>;
-  } = {};
+  public script: { keywords?: Set<string>; } = {};
 
   public style: {
     units?: Set<string>;
@@ -366,6 +370,7 @@ export const grammar = new class Grammar {
   public liquid: {
     tags?: Set<string>;
     singletons?: Set<string>;
+    control?: Set<string>;
     else?: Set<string>;
     embed?: {
       [tagName: string]: {
@@ -387,6 +392,7 @@ export const grammar = new class Grammar {
     this.html.tags = set(Grammar.html.tags);
     this.html.voids = set(Grammar.html.voids);
     this.liquid.tags = set(Grammar.liquid.tags);
+    this.liquid.control = set(Grammar.liquid.control);
     this.liquid.else = set(Grammar.liquid.else);
     this.liquid.singletons = set(Grammar.liquid.singletons);
 
