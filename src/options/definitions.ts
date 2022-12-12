@@ -215,12 +215,6 @@ export const definitions: Definitions = {
       }
     ]
   },
-  delimiterSpacing: {
-    default: true,
-    description: 'Whether or not delimiter characters should apply a single space at the start and end point',
-    lexer: 'markup',
-    type: 'boolean'
-  },
   forceAttribute: {
     default: false,
     description: 'If all markup attributes should be indented each onto their own line. This option accepts either a boolean or number value, depending on your preferences you can either force attributes based a count limit, disable forcing or always enable enforcing.',
