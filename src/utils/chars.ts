@@ -29,82 +29,84 @@ export const enum cc {
    * `@` – The at character
    */
   ATT = 64,
+
   /**
    * `.` – The dot character
    */
   DOT = 46,
+
   /**
    * `#` – Hashtag character
    */
   HSH = 35,
 
   /**
-   * `(` – Left Parenthesis - Used in Liquid delimiters
+   * `(` – Left Parenthesis
    */
   LPR = 40,
 
   /**
-   * `)` – Right Parenthesis - Used in Liquid delimiters
+   * `)` – Right Parenthesis
    */
   RPR = 41,
 
   /**
-   * `{` – Left Curly Brace - Used in Liquid delimiters
+   * `{` – Left Curly Brace
    */
   LCB = 123,
 
   /**
-   * `}` – Right Curly Brace - Used in Liquid delimiters
+   * `}` – Right Curly Brace
    */
   RCB = 125,
 
   /**
-   * `[` – Left Square Brace - Used in JavaScript
+   * `[` – Left Square Brace
    */
   LSB = 91,
 
   /**
-   * `]` – Right Square Brace - Used in JavaScript
+   * `]` – Right Square Brace
    */
   RSB = 93,
 
   /**
-   * `<` – Left Angle Bracket - Used in HTML delimiters
+   * `<` – Left Angle Bracket
    */
   LAN = 60,
 
   /**
-   * `>` – Right Angle Bracket - Used in HTML delimiters
+   * `>` – Right Angle Bracket
    */
   RAN = 62,
 
   /**
-   * `!` – Bang chanter - Used in HTML comments and Liquid operators
+   * `!` – Bang character
    */
   BNG = 33,
 
   /**
-   * `-` – Dash character - Used in Liquid delimiters (whitespace)
+   * `-` – Dash character
    */
   DSH = 45,
 
   /**
-   * `%` – Percent character - Used in Liquid delimiters
+   * `%` – Percent character
    */
   PER = 37,
 
   /**
-   * `=` – Equals character - Used in Liquid operators and assignments
+   * `=` – Equals character
    */
   EQS = 61,
 
   /**
-   * `"` – Double Quoted Character - Used in Liquid to define string values
+   * `"` – Double Quoted Character
    */
   DQO = 34,
 
   /**
-   * `'` – Single Quoted Character - Used in Liquid to define string values
+   * `'` – Single Quoted Character
    */
   SQO = 39,
 
@@ -124,6 +126,11 @@ export const enum cc {
   NWL = 10,
 
   /**
+   * `\r` – Carriage rEturn Character
+   */
+  CAR = 13,
+
+  /**
    * `\` – Backward Slash
    */
   BWS = 92,
@@ -132,6 +139,11 @@ export const enum cc {
    * `/` – Forward Slash
    */
   FWS = 47,
+
+  /**
+   * `$` – Dollar Character
+   */
+  DOL = 36,
 
   /**
    * `?` – Question Mark

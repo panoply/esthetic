@@ -1,6 +1,7 @@
 import { isArray, create, assign } from './native';
 import { cc, NIL, WSP } from '@utils/chars';
 import { grammar } from '@options/grammar';
+import { LT } from '@utils/enums';
 
 /**
  * Creates a null prototypical object
@@ -48,25 +49,39 @@ export function notchar (string: string, code: number) {
 
 }
 
+export const doWhile = <T extends any[]>(array: T, callback: (index: number) => void | false) => {
+
+  let i: number = 0;
+  const length = array.length;
+
+  do {
+    if (callback(i) === false) break;
+    i = i + 1;
+  } while (i < length);
+
+};
+
 /**
  * Character Code is equal
  */
-export function is (string: string, code: number) {
-
-  if (!string) return false;
-
-  return string.charCodeAt(0) === code;
-
-}
+const is = (string: string, code: number) => string ? string.charCodeAt(0) === code : false;
 
 /**
- * Character Code is not
+ * Last Character Code is equal
  */
-export function not (string: string, code: number) {
+is.last = (string: string | string[], code: number) => is(string[string.length - 1], code);
 
-  return is(string, code) === false;
+/**
+ * Character Code is not equal
+ */
+const not = (string: string, code: number) => is(string, code) === false;
 
-}
+/**
+ * Last Character Code is equal
+ */
+not.last = (string: string | string[], code: number) => is.last(string, code) === false;
+
+export { is, not };
 
 /**
  * Whitespace
@@ -76,6 +91,18 @@ export function not (string: string, code: number) {
 export function ws (string: string) {
 
   return /\s/.test(string);
+
+}
+
+/**
+ * Whitespace
+ *
+ * Check if character is whitespace
+ */
+export function nl (string: string) {
+
+  return /\s/.test(string);
+
 }
 
 /**
@@ -115,6 +142,50 @@ export function getLiquidTagName (input: string) {
 
 }
 
+/**
+ * Tag Name
+ *
+ * Returns the tag name of the provided token. Looks for HTML and
+ * Liquid tag names, included Liquid output objects. This will also
+ * convert tag names to lowercase.
+ *
+ * Optionally provide a slice offset index to slice the tag name. Helpful
+ * in situations when we need to exclude `end` from `endtag`
+ */
+export function getTagName (tag: string, slice: number = NaN) {
+
+  if (typeof tag !== 'string') return NIL;
+
+  if (not(tag, cc.LAN) && not(tag, cc.LCB)) return tag;
+
+  if (is(tag, cc.LAN)) {
+
+    const name = tag.slice(1, tag.search(/[\s>]/));
+
+    // Handles XML tag name (ie: <?xml?>)
+    return is(name, cc.QWS) && is.last(name, cc.QWS)
+      ? 'xml'
+      : isNaN(slice) ? name.toLowerCase() : name.slice(slice).toLowerCase();
+
+  }
+
+  // Returns the Liquid tag or output token name
+  let name = is(tag[2], cc.DSH)
+    ? tag.slice(3).trimStart()
+    : tag.slice(2).trimStart();
+
+  name = name.slice(0, name.search(/[\s=|!<>,.[]|-?[%}]}/)).toLowerCase();
+
+  return isNaN(slice) ? name : name.slice(slice);
+};
+
+/**
+ * Is Liquid Output
+ *
+ * Check if input contains a Liquid output type token.
+ * The entire input is checked, so the control tag itself
+ * does not need to begin with Liquid delimiters.
+ */
 export function isLiquidOutput (input: string) {
 
   const begin = input.indexOf('{');
@@ -123,27 +194,128 @@ export function isLiquidOutput (input: string) {
 
 }
 
-export function isLiquidStart (input: string) {
+/**
+ * Is Liquid Control
+ *
+ * Check if input contains a Liquid control type tag.
+ * The entire input is checked, so the control tag itself
+ * does not need to begin with Liquid delimiters.
+ */
+export function isLiquidControl (input: string) {
 
   const begin = input.indexOf('{');
 
   if (is(input[begin + 1], cc.PER)) {
 
-    let token = is(input[begin + 2], cc.DSH)
-      ? input.slice(begin + 3).trimStart()
-      : input.slice(begin + 2).trimStart();
+    let token: string;
 
-    token = token.slice(0, token.search(/\s/));
+    token = input.slice(begin + (is(input[begin + 2], cc.DSH) ? 3 : 2)).trimStart();
+    token = token.slice(0, token.search(/[\s=|!<>,.[]|-?[%}]}/));
 
-    if (token.startsWith('end')) return false;
-
-    return grammar.liquid.tags.has(token);
+    return token.startsWith('end')
+      ? false
+      : grammar.liquid.control.has(token);
 
   }
 
   return false;
 }
 
+/**
+ * Is Liquid Else
+ *
+ * Check if input contains a Liquid control flow else type token.
+ * The entire input is checked, so the control tag itself
+ * does not need to begin with Liquid delimiters.
+ */
+export function isLiquidElse (input: string) {
+
+  const begin = input.indexOf('{');
+
+  console.log(begin);
+  if (is(input[begin + 1], cc.PER)) {
+
+    let token: string;
+
+    token = input.slice(begin + (is(input[begin + 2], cc.DSH) ? 3 : 2)).trimStart();
+    token = token.slice(0, token.search(/[\s=|!<>,.[]|-?[%}]}/));
+
+    return token.startsWith('end')
+      ? false
+      : grammar.liquid.else.has(token);
+
+  }
+
+  return false;
+}
+
+/**
+ * Is Value Liquid
+ *
+ * Check if an attribute value string contains Liquid tag type
+ * expression.
+ */
+export function isValueLiquid (input: string) {
+
+  const eq = input.indexOf('=');
+
+  if (eq > -1) {
+    if (is(input[eq + 1], cc.DQO) || is(input[eq + 1], cc.SQO)) {
+      return /{%-?\s*end\w+/.test(input.slice(eq, input.lastIndexOf(input[eq + 1])));
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Is Liquid Line
+ *
+ * Check if input contains Liquid start and End type tokens.
+ * The entire input is checked, so the control tag itself
+ * does not need to begin with Liquid delimiters.
+ */
+export function isLiquidLine (input: string) {
+
+  if (isLiquidStart(input)) return /{%-?\s*end\w+/.test(input);
+
+  return false;
+}
+
+/**
+ * Is Liquid Start
+ *
+ * Check if input contains a Liquid start type token.
+ * The entire input is checked, so the control tag itself
+ * does not need to begin with Liquid delimiters.
+ */
+export function isLiquidStart (input: string) {
+
+  const begin = input.indexOf('{');
+
+  if (is(input[begin + 1], cc.PER)) {
+
+    let token: string;
+
+    token = input.slice(begin + (is(input[begin + 2], cc.DSH) ? 3 : 2)).trimStart();
+    token = token.slice(0, token.search(/[\s=|!<>,.[]|-?[%}]}/));
+
+    return token.startsWith('end')
+      ? false
+      : grammar.liquid.tags.has(token);
+
+  }
+
+  return false;
+}
+
+/**
+ * Is Liquid End
+ *
+ * Check if input contains a Liquid end type token.
+ * The entire input is checked, so the control tag itself
+ * does not need to begin with Liquid delimiters.
+ */
 export function isLiquidEnd (input: string | string[]) {
 
   let token = input as string;
@@ -162,45 +334,55 @@ export function isLiquidEnd (input: string | string[]) {
 }
 
 /**
- * Checks where the provided string contains Liquid
- * delimiters. Optionally accepts a `where` parameter
- * which allows for checking start, end, both or containment.
+ * Checks for existense of liquid tokens.
  *
- * Where Parameter
- *
- * - `1` Check starting delimiters, eg: `{{`, `%}`
- * - `2` Check ending delimiters, eg: `}}`, `%}`
- * - `3` Check starting and ending delimiters
- * - `4` Check if input contains starting delimiters
- * - `5` Check if input contains starting and ending delimiters
+ * - `1` Check open delimiters, eg: `{{`, `{%`
+ * - `2` Check close delimiters, eg: `}}`, `%}`
+ * - `3` Check open and end delimiters, eg: `{{`, `}}`, `{%` or `%}`
+ * - `4` Check open containment, eg: `xx {{` or `xx {%`
+ * - `5` Check close containment, eg: `x }} x` or `x %} x`
+ * - `6` Check open tag delimiters from index 0, eg: `{%`
+ * - `7` Check open output delimiters from index 0, eg: `{{`
+ * - `8` Check close tag delimiter from end, eg: `%}`
+ * - `9` Check close output delimiter from end, eg: `}}`
  */
-export function isLiquid (input: string, direction: 1 | 2 | 3 | 4 | 5): boolean {
+export function isLiquid (input: string, type: LT): boolean {
 
-  if (direction === 1) {
+  if (type === LT.Open) {
 
-    return is(input[0], cc.LCB) && (
-      is(input[1], cc.PER) ||
-      is(input[1], cc.LCB)
-    );
+    return is(input[0], cc.LCB) && (is(input[1], cc.PER) || is(input[1], cc.LCB));
 
-  } if (direction === 4) {
+  } else if (type === LT.OpenTag) {
 
-    return /{[{%}]/.test(input);
+    return is(input[0], cc.LCB) && is(input[1], cc.PER);
 
-  } else if (direction === 5) {
+  } else if (type === LT.OpenOutput) {
+
+    return is(input[0], cc.LCB) && is(input[1], cc.LCB);
+
+  } else if (type === LT.CloseTag) {
+
+    return is(input[input.length - 2], cc.PER) && is(input[input.length - 1], cc.RCB);
+
+  } else if (type === LT.CloseOutput) {
+
+    return is(input[input.length - 2], cc.RCB) && is(input[input.length - 1], cc.RCB);
+
+  } else if (type === LT.HasOpen) {
+
+    return /{[{%]/.test(input);
+
+  } else if (type === LT.HasOpenAndClose) {
 
     return (/{[{%]/.test(input) && /[%}]}/.test(input));
 
-  } else if (direction === 2) {
+  } else if (type === LT.Close) {
 
     const size = input.length;
 
-    return is(input[size - 1], cc.RCB) && (
-      is(input[size - 2], cc.PER) ||
-      is(input[size - 2], cc.RCB)
-    );
+    return is(input[size - 1], cc.RCB) && (is(input[size - 2], cc.PER) || is(input[size - 2], cc.RCB));
 
-  } else if (direction === 3) {
+  } else if (type === LT.OpenAndClose) {
 
     const size = input.length;
 

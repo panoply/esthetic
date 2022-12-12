@@ -37,8 +37,8 @@ export const SpaceEnd = /\s+$/;
  *
  * @example
  *
- * BEFORE: '  foo'
- * AFTER:  'foo' // leading whitespace and newlines are preserved
+ * BEFORE: ' \n  foo'
+ * AFTER:  '\nfoo' // leading whitespace and newlines are preserved
  */
 export const StripLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
 
@@ -65,11 +65,20 @@ export const StripEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
  *
  * @example
  *
- * BEFORE: 'foo   \t\n '
- * AFTER:  'foo\t\n'
+ * ' \t\v\r '
  */
-export const SpaceOnly = /[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
+export const SpaceOnly = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
 
+/**
+ * Captures whitespace only
+ *
+ * ---
+ *
+ * @example
+ *
+ * '\t\v\r '
+ */
+export const Whitespace = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]/;
 /**
  * Captures more than 1 tab character occurances but does not touch newlines.
  *
@@ -127,7 +136,7 @@ export const StripSpaceInject = /[.[\]] {1,}/g;
  * Captures Prettify inline comment controls
  *
  * ---
- * @see https://regex101.com/r/js1E4u/1
+ * @see https://regex101.com/r/pGFcm3/1
  * @example
  *
  * LINE COMMENT:    // @prettify
@@ -137,13 +146,13 @@ export const StripSpaceInject = /[.[\]] {1,}/g;
  * HTML COMMENT:    <!-- @prettify
  * YAML COMMENT:    # @prettify
  */
-export const CommControl = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@prettify\s+/;
+export const CommControl = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*@prettify\s+/;
 
 /**
  * Captures Prettify inline comment file ignores
  *
  * ---
- * @see https://regex101.com/r/ww472j/1
+ * @see https://regex101.com/r/gDpxIG/1
  * @example
  *
  * LINE COMMENT:    // @prettify-ignore
@@ -153,13 +162,13 @@ export const CommControl = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@pre
  * HTML COMMENT:    <!-- @prettify-ignore
  * YAML COMMENT:    # @prettify-ignore
  */
-export const CommIgnoreFile = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@prettify-ignore\b/;
+export const CommIgnoreFile = /(\/[*/]|{%-?\s*(?:comment\s*-?%})|<!-{2})\s*@prettify-ignore\b/;
 
 /**
  * Captures Prettify inline comment ignore starters
  *
  * ---
- * @see https://regex101.com/r/QWwU3p/1
+ * @see https://regex101.com/r/QNLjAX/1
  * @example
  *
  * LINE COMMENT:    // @prettify-ignore-start
@@ -169,13 +178,13 @@ export const CommIgnoreFile = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@
  * HTML COMMENT:    <!-- @prettify-ignore-start
  * YAML COMMENT:    # @prettify-ignore-start
  */
-export const CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@prettify-ignore-start\b/;
+export const CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*@prettify-ignore-start\b/;
 
 /**
  * Captures Prettify inline comment ignore enders
  *
  * ---
- * @see https://regex101.com/r/sVwE1z/1
+ * @see https://regex101.com/r/MJgkQq/1
  * @example
  *
  * LINE COMMENT:    // @prettify-ignore-end
@@ -185,7 +194,23 @@ export const CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*
  * HTML COMMENT:    <!-- @prettify-ignore-end
  * YAML COMMENT:    # @prettify-ignore-end
  */
-export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@prettify-ignore-end\b/;
+export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*@prettify-ignore-end\b/;
+
+/**
+ * Captures Prettify inline comment ignore next line
+ *
+ * ---
+ * @see https://regex101.com/r/nGP7Uh/1
+ * @example
+ *
+ * LINE COMMENT:    // @prettify-ignore-next
+ * BLOCK COMMENT:   /* @prettify-ignore-next
+ * LINE LIQUID:     {% # @prettify-ignore-next
+ * BLOCK LIQUID:    {% comment %} @prettify-ignore-next
+ * HTML COMMENT:    <!-- @prettify-ignore-next
+ * YAML COMMENT:    # @prettify-ignore-next
+ */
+export const CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*@prettify-ignore-next\b/;
 
 /**
  * Liquid Tag Delimiters
@@ -198,7 +223,7 @@ export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|#|<!-{2})\s*@p
  * @example /{%-?\s*|\s*-?%}/g
  *
  */
-export const LiquidTagDelimiters = /{%-?\s*|\s*-?%}/g;
+export const LiqDelims = /{%-?\s*|\s*-?%}/g;
 
 /**
  * Character Escape
