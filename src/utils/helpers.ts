@@ -288,14 +288,31 @@ export function isLiquidLine (input: string) {
  * Check if input contains a Liquid start type token.
  * The entire input is checked, so the control tag itself
  * does not need to begin with Liquid delimiters.
+ *
+ * Optional `strict` parameter to detect from index `0` to determine
+ * a Liquid tag expression only.
  */
-export function isLiquidStart (input: string) {
+export function isLiquidStart (input: string, strict = false) {
+
+  let token: string;
+
+  if (strict) {
+
+    if (isLiquid(input, 6) && isLiquid(input, 8)) {
+      token = input.slice(is(input[2], cc.DSH) ? 3 : 2).trimStart();
+      token = token.slice(0, token.search(/[\s=|!<>,.[]|-?[%}]}/));
+
+      return token.startsWith('end')
+        ? false
+        : grammar.liquid.tags.has(token);
+    }
+
+    return false;
+  }
 
   const begin = input.indexOf('{');
 
   if (is(input[begin + 1], cc.PER)) {
-
-    let token: string;
 
     token = input.slice(begin + (is(input[begin + 2], cc.DSH) ? 3 : 2)).trimStart();
     token = token.slice(0, token.search(/[\s=|!<>,.[]|-?[%}]}/));
