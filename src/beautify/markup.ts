@@ -695,14 +695,15 @@ prettify.beautify.markup = function (options: Options) {
 
       if (lev < 1) lev = 1;
 
-      if (attcount > -1) {
-        const next = data.types.indexOf('start', parent + 1);
-        if (next > -1 && next < attcount) {
-          attcount = Math.abs((parent + 1) - next);
-        } else {
-          attcount = Math.abs((parent + 1) - attcount);
-        }
-      }
+      attcount = 0;
+
+      do attcount = attcount + 1;
+      while (type.idx(a + attcount, 'attribute') > -1 && (
+        type.not(a + attcount, 'end') ||
+        type.not(a + attcount, 'singleton') ||
+        type.not(a + attcount, 'start') ||
+        type.not(a + attcount, 'comment')
+      ));
 
       // First, set levels and determine if there
       // are template attributes. When we have template
@@ -866,7 +867,7 @@ prettify.beautify.markup = function (options: Options) {
       if (rules.forceAttribute === true) {
 
         count = 0;
-        level[parent] = 1;
+        level[parent] = lev;
 
       } else if (rules.forceAttribute >= 1) {
 
@@ -1337,15 +1338,6 @@ prettify.beautify.markup = function (options: Options) {
 
             } else if (rules.forceIndent === true) {
 
-              // Handler Force Value
-              //
-              if (data.types[a - 1] === 'attribute' && data.types[data.begin[a - 1]] === 'singleton') {
-
-                // level[a - 1] = indent;
-                // indent = indent + 1;
-
-              }
-
               level.push(indent);
 
             } else if (data.lines[next] === 0 && (
@@ -1614,7 +1606,9 @@ prettify.beautify.markup = function (options: Options) {
               // to determine whether or not we should insert an additional lines.
               // We need to add an additional 1 value as lines are not zero based.
               //
-              if ((build[build.length - 1].lastIndexOf(NWL) + 1) < 2) build.push(newline(lev));
+              if (build.length > 0 && (build[build.length - 1].lastIndexOf(NWL) + 1) < 2) {
+                build.push(newline(lev));
+              }
 
             }
           }

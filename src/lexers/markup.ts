@@ -1623,7 +1623,17 @@ prettify.lexers.markup = function lexer (source: string) {
                 break;
               }
 
-              lexer(value.slice(1));
+              if (rules.forceIndent === true) {
+                const q = value.lastIndexOf(value[0]);
+                if (is(value[q], cc.DQO) || is(value[q], cc.SQO)) {
+                  lexer(value.slice(1, q));
+                  data.token[parse.count] = `${data.token[parse.count]}${sq > -1 ? "'" : '"'}`;
+                } else {
+                  lexer(value.slice(1));
+                }
+              } else {
+                lexer(value.slice(1));
+              }
 
               record.types = 'attribute';
               record.stack = stack;
