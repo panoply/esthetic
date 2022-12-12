@@ -1,4 +1,4 @@
-### v0.3.0-beta.1
+### v0.4.0-beta.1
 
 _This module is in its infancy and working towards an official release candidate. Refer to the [Language Support](#language-support) before using the module._
 
