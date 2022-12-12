@@ -20,6 +20,7 @@ prettify.beautify.script = (options: Options) => {
         vertical: false
       }
     );
+
   }
 
   /**
