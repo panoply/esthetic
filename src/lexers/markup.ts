@@ -23,8 +23,7 @@ import {
   SpaceLead,
   SpaceEnd,
   SpaceOnly,
-  CommIgnoreNext,
-  StripEnd
+  CommIgnoreNext
 } from '@utils/regex';
 
 /* -------------------------------------------- */
