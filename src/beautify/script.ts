@@ -1,27 +1,14 @@
-import type { JSONOptions, Options, ScriptOptions } from 'types/prettify';
+import type { Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { assign, create } from '@utils/native';
+import { create } from '@utils/native';
 import { repeatChar } from '@utils/helpers';
 import { NIL, NWL, WSP } from '@utils/chars';
 import { StripEnd } from '@utils/regex';
+import { parse } from '@parser/parse';
 
 prettify.beautify.script = (options: Options) => {
 
-  const cloneopts = assign({}, options.script);
-
-  if (options.language === 'json') {
-    options.script = assign<ScriptOptions, JSONOptions, ScriptOptions>(
-      options.script,
-      options.json,
-      {
-        quoteConvert: 'double',
-        endComma: 'never',
-        noSemicolon: true,
-        vertical: false
-      }
-    );
-
-  }
+  console.log(options);
 
   /**
    * API Keywords, this can be web browser API keywords
@@ -3931,9 +3918,8 @@ prettify.beautify.script = (options: Options) => {
           prettify.end = externalIndex[a];
           prettify.start = a;
 
-          options.indentLevel = lastLevel;
-
-          external = prettify.beautify[data.lexer[a]](options).replace(StripEnd, NIL);
+          const ex = parse.beautify(lastLevel);
+          external = ex.beautify.replace(StripEnd, NIL);
 
           build.push(external);
 
@@ -3948,7 +3934,8 @@ prettify.beautify.script = (options: Options) => {
           // HOT PATCH
           // Reset indentation level, if not reset to 0 then
           // content will shift on save
-          options.indentLevel = 0;
+          ex.reset();
+
         }
       }
 
@@ -3962,10 +3949,6 @@ prettify.beautify.script = (options: Options) => {
     return build.join(NIL);
 
   })();
-
-  if (options.language === 'json') {
-    options.script = assign(options.script, cloneopts);
-  }
 
   return output;
 

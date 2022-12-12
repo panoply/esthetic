@@ -2,6 +2,22 @@ import { Grammars, Options, LanguageProperName } from 'types/prettify';
 import { set } from '@utils/helpers';
 import { isArray } from '@utils/native';
 
+interface LiquidEmbed {
+
+  language?: LanguageProperName;
+  attribute?(token: string): boolean
+  end?(token: string): boolean
+
+}
+
+interface HTMLEmbed {
+
+  language?: LanguageProperName;
+  attribute?: string;
+  value?(token: string):boolean
+
+}
+
 export const grammar = new class Grammar {
 
   static script: Grammars['script'] = {
@@ -358,13 +374,7 @@ export const grammar = new class Grammar {
   public html: {
     tags?: Set<string>;
     voids?: Set<string>;
-    embed?: {
-      [tagName: string]: {
-        language?: LanguageProperName;
-        attribute?: string;
-        value?(token: string):boolean
-      }
-    }
+    embed?: { [tagName: string]: HTMLEmbed }
   } = { embed: {} };
 
   public liquid: {
@@ -372,13 +382,7 @@ export const grammar = new class Grammar {
     singletons?: Set<string>;
     control?: Set<string>;
     else?: Set<string>;
-    embed?: {
-      [tagName: string]: {
-        language?: LanguageProperName;
-        attribute?(token: string): boolean
-        end?(token: string): boolean
-      }
-    }
+    embed?: { [tagName: string]: LiquidEmbed }
   } = { embed: {} };
 
   constructor () {
@@ -449,9 +453,14 @@ export const grammar = new class Grammar {
 
   }
 
-  embed (language: 'html' | 'liquid', tag: string) {
+  embed <T extends 'html' | 'liquid', R extends T extends 'liquid' ? LiquidEmbed : HTMLEmbed > (
+    language: T,
+    tag: string
+  ): false | R {
 
-    return tag in this[language].embed;
+    if (tag in this[language].embed) return this[language].embed[tag] as R;
+
+    return false;
 
   }
 

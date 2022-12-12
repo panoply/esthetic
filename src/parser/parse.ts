@@ -1,10 +1,12 @@
 /* eslint no-unmodified-loop-condition: "off" */
-import type { Data, Types, Record, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
+import type { Data, Types, Record, Structure, Spacer, WrapComment, Splice, ScriptOptions, JSONOptions, LexerNames, LanguageNames } from 'types/prettify';
 import { prettify } from '@prettify/model';
-import { isArray } from '@utils/native';
+import { grammar } from '@options/grammar';
+import { assign, isArray } from '@utils/native';
 import { cc as ch, NIL, NWL, WSP } from '@utils/chars';
 import { getTagName, is, not, safeSortAscend, safeSortDescend, safeSortNormal, ws } from '@utils/helpers';
 import { StripEnd, StripLead } from '@utils/regex';
+import { lexmap } from './language';
 
 export const parse = new class Parse {
 
@@ -230,6 +232,129 @@ export const parse = new class Parse {
     if (a > -1) data.ender[a] = this.count;
 
   };
+
+  public lexer (output: string, language: LanguageNames) {
+
+    const mode = lexmap[language];
+    const current = prettify.options.language;
+
+    prettify.options.language = language;
+
+    if (language === 'json') {
+
+      const json = assign<JSONOptions, JSONOptions>({}, prettify.options.json);
+      const clone = assign<ScriptOptions, ScriptOptions>({}, prettify.options.script);
+
+      prettify.options.script = assign<ScriptOptions, JSONOptions, ScriptOptions>(
+        prettify.options.script,
+        prettify.options.json, {
+          quoteConvert: 'double',
+          endComma: 'never',
+          noSemicolon: true,
+          vertical: false
+        }
+      );
+
+      prettify.lexers[mode](output);
+
+      if (language === 'json' && prettify.options.json.objectSort === true) {
+        this.sortCorrect(0, this.count + 1);
+      }
+
+      prettify.options.language = current;
+      prettify.options.json = json;
+      prettify.options.script = clone;
+
+    } else {
+
+      prettify.lexers[mode](output);
+
+      if (
+        (language === 'javascript' && prettify.options.script.objectSort === true) ||
+        ((language === 'css' || language === 'scss') && prettify.options.style.sortProperties === true)) {
+
+        this.sortCorrect(0, this.count + 1);
+
+      }
+
+      prettify.options.language = current;
+
+    }
+
+  }
+
+  /**
+   * Embedded Language
+   *
+   * Handler for embedded language regions.
+   * Does all the heavy lifting during a lex traversal
+   * and format.
+   */
+  public beautify (indent: number) {
+
+    const tagType = is(this.data.token[prettify.start], ch.LCB) ? 'liquid' : 'html';
+    const tagName = getTagName(this.data.stack[prettify.start]);
+    const embedded = grammar.embed(tagType, tagName);
+    const language = prettify.options.language;
+
+    if (embedded !== false) {
+
+      const lexer: LexerNames = this.data.lexer[prettify.start] as LexerNames;
+
+      prettify.options.indentLevel = indent;
+      prettify.options.language = embedded.language;
+
+      if (embedded.language === 'json') {
+
+        const json = assign<JSONOptions, JSONOptions>({}, prettify.options.json);
+        const clone = assign<ScriptOptions, ScriptOptions>({}, prettify.options.script);
+
+        prettify.options.script = assign<ScriptOptions, JSONOptions, ScriptOptions>(
+          prettify.options.script,
+          prettify.options.json, {
+            quoteConvert: 'double',
+            endComma: 'never',
+            noSemicolon: true,
+            vertical: false
+          }
+        );
+
+        return {
+          reset () {
+
+            prettify.options.language = language;
+            prettify.options.indentLevel = 0;
+            prettify.options.json = json;
+            prettify.options.script = clone;
+
+          },
+          get beautify () {
+
+            return prettify.beautify[lexer](prettify.options);
+
+          }
+        };
+
+      }
+
+      return {
+        reset () {
+
+          prettify.options.language = language;
+          prettify.options.indentLevel = 0;
+
+        },
+        get beautify () {
+
+          return prettify.beautify[lexer](prettify.options);
+
+        }
+      };
+    }
+
+    return null;
+
+  }
 
   /**
    * An extension of `Array.prototype.push` to work across the data structure

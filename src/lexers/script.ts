@@ -1295,9 +1295,9 @@ prettify.lexers.script = function script (source: string) {
       chars: c,
       end: b,
       lexer: 'script',
-      opening: '//',
+      begin: '//',
       start: a,
-      terminator: '\n'
+      ender: '\n'
     });
 
     a = comment[1];

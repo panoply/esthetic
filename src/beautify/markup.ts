@@ -2,9 +2,8 @@ import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { StripEnd } from '@utils/regex';
-import { getLiquidTagName, is, repeatChar, ws } from '@utils/helpers';
+import { is, repeatChar, ws } from '@utils/helpers';
 import { cc, WSP, NIL, NWL } from '@utils/chars';
-import { grammar } from '@options/grammar';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
@@ -1738,7 +1737,6 @@ prettify.beautify.markup = function (options: Options) {
     a = prettify.start;
 
     let lastLevel = options.indentLevel;
-    let embedded: string = NIL;
 
     do {
 
@@ -1807,25 +1805,9 @@ prettify.beautify.markup = function (options: Options) {
 
         prettify.start = a;
         prettify.end = extidx[a];
-        options.indentLevel = lastLevel;
 
-        const lang = options.language;
-        const id = is(data.token[a], cc.LCB) ? 'liquid' : 'html';
-        const name = getLiquidTagName(data.stack[a]);
-
-        let json = false;
-
-        if (
-          id === 'liquid' &&
-          name in grammar[id].embed &&
-          'language' in grammar[id].embed[name]) {
-
-          json = grammar[id].embed[name].language === 'json';
-          if (json) options.language = 'json';
-
-        }
-
-        embedded = prettify.beautify[data.lexer[a]](options).replace(StripEnd, NIL);
+        const external = parse.beautify(lastLevel);
+        const embedded = external.beautify.replace(StripEnd, NIL);
 
         build.push(embedded);
 
@@ -1839,11 +1821,7 @@ prettify.beautify.markup = function (options: Options) {
 
         a = prettify.iterator;
 
-        // Reset indentation level, if not reset to 0 then
-        // content will shift on save
-        options.indentLevel = 0;
-
-        if (json) options.language = lang;
+        external.reset();
 
       }
 

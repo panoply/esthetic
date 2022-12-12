@@ -2,7 +2,6 @@ import type { Record, Data, Types, Counter, LanguageProperName } from 'types/pre
 import { prettify } from '@prettify/model';
 import { grammar } from '@options/grammar';
 import { parse } from '@parser/parse';
-import { lexmap } from '@parser/language';
 import { wrapCommentBlock } from '@comments/block';
 import { cc, NIL, NWL, WSP } from '@utils/chars';
 import {
@@ -3237,6 +3236,7 @@ prettify.lexers.markup = function lexer (source: string) {
                   } else {
 
                     options.language = language;
+
                     prettify.lexers.script(output);
 
                     if (
@@ -3307,7 +3307,9 @@ prettify.lexers.markup = function lexer (source: string) {
 
             } else {
 
-              if (grammar.embed('liquid', name)) {
+              const embed = grammar.embed('liquid', name);
+
+              if (embed !== false) {
 
                 const inner = b.slice(a).join(NIL);
                 const ender = inner.search(new RegExp(`{%-?\\s*end${name}`));
@@ -3316,7 +3318,7 @@ prettify.lexers.markup = function lexer (source: string) {
                 a = a + ender;
                 end = b.slice(a).join(NIL).toLowerCase();
 
-                if (grammar.liquid.embed[name].end(end)) {
+                if (embed.end(end)) {
 
                   end = end.slice(0, end.indexOf('%}') + 2);
                   output = lex.join(NIL).replace(SpaceLead, NIL).replace(SpaceEnd, NIL);
@@ -3325,23 +3327,11 @@ prettify.lexers.markup = function lexer (source: string) {
 
                   if (lex.length < 1) break;
 
-                  const mode = lexmap[grammar.liquid.embed[name].language];
-                  options.language = language;
-                  prettify.lexers[mode](output);
-
-                  if (
-                    (language === 'json' && options.json.objectSort === true) ||
-                    (language === 'javascript' && options.script.objectSort === true) ||
-                    ((language === 'css' || language === 'scss') && options.style.sortProperties === true)) {
-
-                    parse.sortCorrect(0, parse.count + 1);
-
-                  }
-
-                  options.language = 'liquid';
+                  parse.lexer(output, embed.language);
 
                   record.token = end;
                   record.types = 'template_end';
+
                   push(data, record, NIL);
 
                 }

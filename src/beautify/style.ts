@@ -9,6 +9,8 @@ import { cc, NIL, WSP } from '@utils/chars';
 
 prettify.beautify.style = (options: Options) => {
 
+  console.log(options);
+
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
   /* -------------------------------------------- */
