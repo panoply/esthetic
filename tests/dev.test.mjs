@@ -9,23 +9,36 @@ test('develop', async t => {
     const output = await prettify.format(source, {
       language: 'liquid',
       wrap: 0,
-      markup: {
-      //  delimiterTrims: 'tags',
-        preserveText: true,
-        forceIndent: false,
-        lineBreakOperator: 'after',
-        forceAttribute: 3,
-        ignoreScripts: true,
-        ignoreStyles: true
+      preserveLine: 0,
+      preserveComment: false,
+      commentIndent: true,
+      style: {
+        classPadding: true
       },
+      markup: {
+        correct: false,
+        commentNewline: true,
+        normalizeSpacing: true,
+        delimiterTrims: 'strip',
+        lineBreakSeparator: 'before',
+        valueForce: 'always',
+        forceLeadAttribute: false,
+        forceAttribute: false,
+        forceIndent: true,
+        quoteConvert: 'none'
+      },
+
       json: {
-        braceAllman: true,
-        objectSort: true
+        braceAllman: false,
+        bracePadding: false,
+        objectSort: false,
+        arrayFormat: 'inline',
+        objectIndent: 'indent'
       }
     });
 
     return {
-      repeat: 4,
+      repeat: 0,
       source: output,
       logger: false,
       finish: () => t.log(output)

@@ -1,31 +1,66 @@
-<div class="foo">
+{% #
+      som
+      I am a multiline comment I am a multiline comment
+      I am a multiline comment I am a multiline comment
+      I am a multiline comment I am a mu
+%}
 
-{%- tag 'snippet', class: 'some-long string'
-    , type: "header"
-   , param: "foo" %}
+<div id="foo" class="{{ foo }}">
+<div>
+<main>
 
-     <style>
+<ul>
 
- const
-    foo = 'ffffffo'
+{% comment %}
+Hello World
+       I am a multiline comment
 
-    ;
+Numbers
 
-  </style>
+1. foo
+      2. bar
+3. baz
+{% endcomment %}
+<li>Foo Bar</li>
 
+<!-- Some comment -->
+<li>HTML Comment</li>
 
-{%- render 'snippet'
-    , class: 'some-long string'
-    , type: "header"
-   , param: "foo" %}
+<!--
 
-     <script>
+  Hello World
+  I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment
 
- const
-    foo = 'ffffffo'
+  Numbers
 
-    ;
+  1. I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment
+  2. I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment
+  3. baz
+  4. four
+  5. five
 
-  </script>
+-->
+<li>HTML Comment</li>
+</ul>
+
+<script>
+
+function() {
+
+//
+// Hello World
+// I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a
+//
+// multiline comment I am a multiline comment I am a multiline comment I am a multiline comment I am a multiline
+//
+
+const example = ''
+
+}
+</script>
+
+</main>
+
+</div>
 
 </div>
