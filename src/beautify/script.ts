@@ -8,8 +8,6 @@ import { parse } from '@parser/parse';
 
 prettify.beautify.script = (options: Options) => {
 
-  console.log(options);
-
   /**
    * API Keywords, this can be web browser API keywords
    * or node keywords.

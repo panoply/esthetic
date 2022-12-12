@@ -943,7 +943,7 @@ prettify.lexers.style = function style (source: string) {
           if (first === '$' || is(first, cc.ATT)) {
 
             // @import
-            console.log(data.token[aa]);
+            // console.log(data.token[aa]);
 
             data.types[aa] = 'variable';
 
