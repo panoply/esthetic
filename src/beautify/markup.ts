@@ -1665,6 +1665,10 @@ prettify.beautify.markup = function (options: Options) {
 
         build.push(newline(levels[a]));
 
+      } else if (levels[a] === 0 && a === 0 && type.is(a, 'comment')) {
+
+        build.push(newline(levels[a]));
+
       }
 
     };
@@ -1776,7 +1780,6 @@ prettify.beautify.markup = function (options: Options) {
           // When preserve line is zero, we will insert
           // the new line above the comment.
           //
-
           build.push(
             newline(levels[a]),
             data.token[a],

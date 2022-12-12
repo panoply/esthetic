@@ -53,7 +53,7 @@ test('develop', async t => {
       repeat: 0,
       source: output,
       logger: false,
-      finish: () => {}// t.log(output)
+      finish: () => t.log(output)
     };
 
   });
