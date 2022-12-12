@@ -2,7 +2,7 @@ import { Options, Helper } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { StripEnd } from '@utils/regex';
-import { is, repeatChar, ws } from '@utils/helpers';
+import { getLiquidTagName, is, repeatChar, ws } from '@utils/helpers';
 import { cc, WSP, NIL, NWL } from '@utils/chars';
 import { grammar } from '@options/grammar';
 
@@ -262,7 +262,9 @@ prettify.beautify.markup = function (options: Options) {
         x = a;
 
       } else {
+
         test = true;
+
       }
 
       // The first condition applies indentation
@@ -279,7 +281,9 @@ prettify.beautify.markup = function (options: Options) {
           level[data.begin[x] - 1] = indent;
         }
 
-        const ind = (type.is(next, 'end') || type.is(next, 'template_end')) ? indent + 1 : indent;
+        const ind = (type.is(next, 'end') || type.is(next, 'template_end'))
+          ? indent + 1
+          : indent;
 
         do {
           level.push(ind);
@@ -302,7 +306,6 @@ prettify.beautify.markup = function (options: Options) {
           level[data.begin[x]] = ind;
         } else {
           level[x] = ind;
-
         }
 
       } else {
@@ -524,8 +527,7 @@ prettify.beautify.markup = function (options: Options) {
           data.lexer[a + 1] === lexer &&
           data.begin[a + 1] < skip &&
           type.not(a + 1, 'start') &&
-          type.not(a + 1, 'singleton')
-        ) break;
+          type.not(a + 1, 'singleton')) break;
 
         level.push(0);
 
@@ -633,7 +635,7 @@ prettify.beautify.markup = function (options: Options) {
       /**
        * The number of attributes contained on the tag
        */
-      let attcount = 0;
+      let attcount = data.types.indexOf('end', parent + 1);
 
       /**
        * The token length
@@ -651,7 +653,7 @@ prettify.beautify.markup = function (options: Options) {
 
           do {
 
-            if (data.types[x].indexOf('end') > 0 && data.begin[x] === a) {
+            if (type.is(x, 'end') && data.begin[x] === a) {
               if (x < c - 1 && type.idx(x + 1, 'attribute') > -1) {
                 plural = true;
                 break;
@@ -663,7 +665,9 @@ prettify.beautify.markup = function (options: Options) {
           } while (x < c);
 
         } else if (a < c - 1 && type.idx(a + 1, 'attribute') > -1) {
+
           plural = true;
+
         }
 
         if (type.is(next, 'end') || type.is(next, 'template_end')) {
@@ -680,9 +684,7 @@ prettify.beautify.markup = function (options: Options) {
 
         // lev must be indent unless the "next" type is end then its indent + 1
         level.push(indent);
-        level[parent] = data.types[parent] === 'singleton'
-          ? indent + 1
-          : indent;
+        level[parent] = data.types[parent] === 'singleton' ? indent + 1 : indent;
 
         return;
       }
@@ -692,6 +694,15 @@ prettify.beautify.markup = function (options: Options) {
       /* -------------------------------------------- */
 
       if (lev < 1) lev = 1;
+
+      if (attcount > -1) {
+        const next = data.types.indexOf('start', parent + 1);
+        if (next > -1 && next < attcount) {
+          attcount = Math.abs((parent + 1) - next);
+        } else {
+          attcount = Math.abs((parent + 1) - attcount);
+        }
+      }
 
       // First, set levels and determine if there
       // are template attributes. When we have template
@@ -704,76 +715,75 @@ prettify.beautify.markup = function (options: Options) {
 
         if (data.types[a].indexOf('attribute') > 0) {
 
-          // Token with type value of template_attribute_start
-          // infers a Liquid control tag is contained in the
-          // HTML tag. We need to handle this accordingly
-          //
-          if (data.types[a] === 'template_attribute_start') {
-
-            if (rules.preserveAttributes === true) {
-
-              level.push(-10);
-
-            } else {
-
-              let nested = 1;
-
-              do {
-
-                if (data.lines[a] === 0) {
-
-                  level.push(-20);
-
-                } else if (data.lines[a] === 1) {
-
-                  if (rules.forceAttribute === true) {
-                    level.push(lev);
-                  } else {
-                    level.push(-10);
-                  }
-
-                } else {
-
-                  level.push(lev);
-
-                }
-
-                if (nested === 0) break;
-
-                a = a + 1;
-
-                if (type.is(a, 'template_attribute_start')) {
-                  nested = nested + 1;
-                } else if (type.is(a, 'template_attribute_end')) {
-                  nested = nested - 1;
-                }
-
-                attcount = attcount + 1;
-
-                if (data.token[a] !== undefined) {
-                  count = count + data.token[a].length + 1;
-                  len = len + data.token[a].length + 1;
-                }
-
-              } while (a < c);
-
-            }
-
-          } else if (data.types[a] === 'template_attribute') {
+          if (type.is(a, 'template_attribute_start')) {
 
             // console.log(data.token[a], data.lines[a]);
 
-            if (rules.forceAttribute === true) {
+            if (rules.forceAttribute === true || attcount >= rules.forceAttribute) {
+
+              level.push(lev);
+
+            } else {
+
+              if (data.lines[a] === 0) {
+                level.push(-20);
+              } else {
+                level.push(-10);
+              }
+
+            }
+
+          } else if (type.is(a, 'template_attribute_else')) {
+
+            // console.log(data.token[a], data.lines[a]);
+
+            if (rules.forceAttribute === true || attcount >= rules.forceAttribute) {
+
+              level.push(lev);
+
+            } else {
+
+              if (data.lines[a] === 0) {
+                level.push(-20);
+              } else {
+                level.push(-10);
+              }
+
+            }
+
+          } else if (type.is(a, 'template_attribute_end')) {
+
+            // console.log(data.token[a], data.lines[a]);
+
+            if (rules.forceAttribute === true || attcount >= rules.forceAttribute) {
+
+              level.push(lev);
+
+            } else {
+
+              if (data.lines[a] === 0) {
+                level.push(-20);
+              } else {
+                level.push(-10);
+              }
+
+            }
+
+          } else if (type.is(a, 'template_attribute')) {
+
+            // console.log(data.token[a], data.lines[a]);
+
+            if (rules.forceAttribute === true || attcount >= rules.forceAttribute) {
               level.push(lev);
             } else {
               level.push(-10);
             }
 
-          } else if (data.types[a] === 'comment_attribute') {
+          } else if (type.is(a, 'comment_attribute')) {
 
             level.push(lev);
 
-          } else if (data.types[a].indexOf('start') > 0) {
+          } else if (type.idx(a, 'start') > 0 && type.idx(a, 'template') < 0) {
 
             attrstart = true;
 
@@ -791,10 +801,8 @@ prettify.beautify.markup = function (options: Options) {
 
               if (parent === a - 1 && plural === false) {
 
-                // HOT PATCH
-                // Prevent embedded expression content being indented onto
-                // newlines.
-                //
+                // Prevent embedded expression content being indented
+                // onto newlines.
                 if (jsx) {
                   level.push(-20);
                 } else {
@@ -820,7 +828,7 @@ prettify.beautify.markup = function (options: Options) {
               }
             }
 
-          } else if (data.types[a].indexOf('end') > 0 && data.types[a].indexOf('template') < 0) {
+          } else if (type.idx(a, 'end') > 0) {
 
             if (level[a - 1] !== -20) level[a - 1] = level[data.begin[a]] - 1;
 
@@ -844,29 +852,39 @@ prettify.beautify.markup = function (options: Options) {
 
             level.push(-10);
 
-          } else if (
-            rules.forceAttribute === true ||
-              rules.forceAttribute >= 1 ||
-              attrstart === true || (
-              a < c - 1 && ((
-                type.idx(a + 1, 'template_attribute_') > -1 &&
-                data.lines[a + 1] !== -20
-              ) || (
-                type.idx(a + 1, 'attribute') > 0
-              ))
-            )) {
+          } else if (rules.forceAttribute === true ||
+            rules.forceAttribute >= 1 ||
+            attrstart === true || (
+            a < c - 1 && ((
+              type.idx(a + 1, 'template_attribute_') > -1 &&
+              data.lines[a + 1] !== -20
+            ) || type.idx(a + 1, 'attribute') > 0))) {
 
             if (rules.forceAttribute === false && data.lines[a] === 1) {
+
               if (type.is(a + 1, 'template_attribute_start') && data.lines[a + 1] > 1) {
                 level.push(lev);
               } else {
                 level.push(-10);
               }
+
             } else {
+
               if (rules.forceAttribute === true) {
+
                 level.push(lev);
+
+              } else if (data.lines[a] === 0 && (
+                type.is(a - 1, 'template_attribute_start') ||
+                type.is(a - 1, 'template_attribute_else')
+              )) {
+
+                level.push(-20);
+
               } else {
+
                 level.push(-10);
+
               }
             }
 
@@ -883,8 +901,6 @@ prettify.beautify.markup = function (options: Options) {
         }
 
         a = a + 1;
-
-        attcount = attcount + 1;
 
       } while (a < c);
 
@@ -928,7 +944,7 @@ prettify.beautify.markup = function (options: Options) {
       if (rules.forceAttribute === true) {
 
         count = 0;
-        level[parent] = lev;
+        level[parent] = 1;
 
       } else if (rules.forceAttribute >= 1) {
 
@@ -966,10 +982,11 @@ prettify.beautify.markup = function (options: Options) {
       if (
         rules.preserveAttributes === true ||
         token.is(parent, '<%xml%>') ||
-        token.is(parent, '<?xml?>')
-      ) {
+        token.is(parent, '<?xml?>')) {
+
         count = 0;
         return;
+
       }
 
       w = a;
@@ -1180,7 +1197,7 @@ prettify.beautify.markup = function (options: Options) {
       //
       // This enforced delimiterSpacing, should maybe consider making this optional
       //
-      if (rules.delimiterSpacing === true) {
+      if (rules.normalizeSpacing === true) {
         data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, m => m.replace(/\s*/, WSP));
       } else {
         const space = repeatChar((data.lines[a] - 1) === -1 ? options.indentSize : data.lines[a] - 1);
@@ -1239,9 +1256,21 @@ prettify.beautify.markup = function (options: Options) {
 
           if (type.is(next, 'end') || type.is(next, 'template_end')) {
 
+            // Handle force Value for void tags
+            //
+            if (parse.attributes.has(data.begin[a]) || (
+              data.types[data.begin[a - 1]] === 'singleton' &&
+              data.types[a - 1] === 'attribute'
+            )) {
+
+              // indent = indent - 1;
+              // level[a - 1] = indent;
+            }
+
             indent = indent - 1;
 
             if (type.is(next, 'template_end') && type.is(data.begin[next] + 1, 'template_else')) {
+
               indent = indent - 1;
             }
 
@@ -1384,6 +1413,15 @@ prettify.beautify.markup = function (options: Options) {
 
             } else if (rules.forceIndent === true) {
 
+              // Handler Force Value
+              //
+              if (data.types[a - 1] === 'attribute' && data.types[data.begin[a - 1]] === 'singleton') {
+
+                // level[a - 1] = indent;
+                // indent = indent + 1;
+
+              }
+
               level.push(indent);
 
             } else if (data.lines[next] === 0 && (
@@ -1421,7 +1459,9 @@ prettify.beautify.markup = function (options: Options) {
             level[a - 1] = indent - 1;
 
             if (type.is(next, 'template_end')) {
+
               level[a - 1] = indent - 1;
+
             }
             // else {
             // level[a - 1] = indent - 1;
@@ -1488,9 +1528,10 @@ prettify.beautify.markup = function (options: Options) {
           type.not(a, 'content') &&
           type.not(a, 'singleton') &&
           type.not(a, 'template') &&
-          type.not(a, 'attribute')
-        ) {
+          type.not(a, 'attribute')) {
+
           count = 0;
+
         }
 
       } else {
@@ -1555,8 +1596,10 @@ prettify.beautify.markup = function (options: Options) {
       if (tabs < 0) tabs = 0;
 
       do {
+
         linesout.push(lf);
         index = index + 1;
+
       } while (index < total);
 
       if (tabs > 0) {
@@ -1564,8 +1607,10 @@ prettify.beautify.markup = function (options: Options) {
         index = 0;
 
         do {
+
           linesout.push(ind);
           index = index + 1;
+
         } while (index < tabs);
 
       }
@@ -1595,9 +1640,7 @@ prettify.beautify.markup = function (options: Options) {
         let bb = a - 1; // add + 1 for inline comment formats
         let start = (bb > -1 && type.idx(bb, 'start') > -1);
 
-        if (levels[a] > -1 && type.is(a, 'attribute')) {
-          return levels[a] + 1;
-        }
+        if (levels[a] > -1 && type.is(a, 'attribute')) return levels[a] + 1;
 
         do {
 
@@ -1661,11 +1704,17 @@ prettify.beautify.markup = function (options: Options) {
         type.is(a + 1, 'template_end') ||
         type.is(a - 1, 'template_end')
       )) {
+
         build.push(newline(levels[a]));
+
       } else if (levels[a] === -10) {
+
         build.push(WSP);
+
       } else if (levels[a] > 1) {
+
         build.push(newline(levels[a]));
+
       }
 
     };
@@ -1792,15 +1841,16 @@ prettify.beautify.markup = function (options: Options) {
 
         const lang = options.language;
         const id = is(data.token[a], cc.LCB) ? 'liquid' : 'html';
+        const name = getLiquidTagName(data.stack[a]);
 
         let json = false;
 
         if (
           id === 'liquid' &&
-          data.stack[a] in grammar[id].embed &&
-          'language' in grammar[id].embed[data.stack[a]]) {
+          name in grammar[id].embed &&
+          'language' in grammar[id].embed[name]) {
 
-          json = grammar[id].embed[data.stack[a]].language === 'json';
+          json = grammar[id].embed[name].language === 'json';
           if (json) options.language = 'json';
 
         }

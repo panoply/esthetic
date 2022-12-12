@@ -567,6 +567,7 @@ prettify.lexers.markup = function lexer (source: string) {
           record.begin = parse.scope.index;
           record.stack = getTagName(parse.scope.token);
           record.token = `</${parse.scope.token}>`;
+
           push(data, record, NIL);
           count = count - 1;
         } while (count > 0);
@@ -873,7 +874,7 @@ prettify.lexers.markup = function lexer (source: string) {
         ignore = true;
         preserve = false;
 
-        if (ltype.indexOf('template') > 0 && grammar.liquid.tags.has(ender)) {
+        if (ltype.indexOf('template') > 0 && grammar.liquid.tags.has(tname)) {
           ender = `end${tname}`;
         } else if (grammar.html.voids.has(tname)) {
           ender = null;
@@ -1587,7 +1588,7 @@ prettify.lexers.markup = function lexer (source: string) {
               record.begin = begin;
               record.stack = stack;
 
-            } else if (isLiquid(value, 5) && (
+            } else if (isLiquidStart(value) && (
               (
                 rules.valueForce === 'always' || (
                   (rules.valueForce === 'intent' || rules.valueForce === 'wrap') &&
@@ -1910,7 +1911,7 @@ prettify.lexers.markup = function lexer (source: string) {
       }
 
       if (rules.preserveAttributes === true) preserve = true;
-      if (nowalk) return;
+      if (nowalk) return external();
 
       lchar = end.charAt(end.length - 1);
 
@@ -1935,84 +1936,39 @@ prettify.lexers.markup = function lexer (source: string) {
      */
     function comments () {
 
-      // a quick hack to inject records for a type of template comments
-      if (tname === 'comment' && isLiquid(token, 6) && isLiquid(token, 8)) {
+      comm = parse.wrapCommentBlock({
+        chars: b,
+        end: c,
+        lexer: 'markup',
+        opening: start,
+        start: a,
+        terminator: end
+      });
 
-        const open = token.slice(0, token.indexOf('%}') + 2);
-        const comm = token.slice(token.indexOf('%}') + 2, token.lastIndexOf('{%'));
-        const ends = token.slice(token.lastIndexOf('{%'));
+      token = comm[0] as string;
+      a = comm[1] as number;
 
-        let lstart: number = 0;
-        let lend: number = 0;
+      if (token.replace(start, NIL).trimStart().startsWith('@prettify-ignore-start')) {
 
-        const lineFindStart = (spaces: string): string => {
-          lstart = spaces === NIL ? 0 : spaces.split(NWL).length;
-          return NIL;
-        };
-
-        const lineFindEnd = (spaces: string): string => {
-          lend = spaces === NIL ? 0 : spaces.split(NWL).length;
-          return NIL;
-        };
-
-        /* COMMENT START ------------------------------ */
-
-        record.begin = parse.scope.index;
-        record.ender = parse.count + 3;
-        record.stack = getTagName(parse.scope.token);
-        record.types = 'template_start';
-        record.token = open;
-
-        push(data, record, 'comment');
-
-        /* COMMENT CONTENT ---------------------------- */
-
-        token = comm.replace(/^\s*/, lineFindStart);
-        token = token.replace(/\s*$/, lineFindEnd);
-
-        record.begin = parse.count;
-        record.lines = lstart;
-        record.stack = 'comment';
         record.token = token;
-        record.types = 'comment';
-
-        push(data, record, NIL);
-
-        /* COMMENT END -------------------------------- */
-
-        record.types = 'template_end';
-        record.stack = 'comment';
-        record.lines = lend;
-        record.token = ends;
-
+        record.types = 'ignore';
         push(data, record, NIL);
 
       } else {
 
-        comm = parse.wrapCommentBlock({
-          chars: b,
-          end: c,
-          lexer: 'markup',
-          opening: start,
-          start: a,
-          terminator: end
-        });
-
-        token = comm[0] as string;
-        a = comm[1] as number;
-
-        if (token.replace(start, NIL).trimStart().startsWith('@prettify-ignore-start')) {
-          record.token = token;
-          record.types = 'ignore';
-          push(data, record, NIL);
-        } else {
-          record.token = token;
-          record.types = 'comment';
+        if (is(token[0], cc.LCB) && is(token[1], cc.PER)) {
+          const begin = token.indexOf('%}', 2) + 2;
+          const last = token.lastIndexOf('{%');
+          token = normalize(token.slice(0, begin)) + token.slice(begin, last) + normalize(token.slice(last));
         }
 
-        return external();
+        record.token = token;
+        record.types = 'comment';
 
       }
+
+      return external();
+
     }
 
     /**
@@ -2280,6 +2236,15 @@ prettify.lexers.markup = function lexer (source: string) {
           parse.lineNumber = parse.lineNumber + 1;
         }
 
+        if (start === '---' && end === '---' && ltype === 'ignore') {
+
+          lexed.push(b[a]);
+
+          if (a > 3 && is(b[a], cc.DSH) && is(b[a - 1], cc.DSH) && is(b[a - 2], cc.DSH)) break;
+          a = a + 1;
+          continue;
+        }
+
         if (preserve === true || ((ws(b[a]) === false && not(quote, cc.RCB)) || is(quote, cc.RCB))) {
 
           if (isliquid === false && is(b[a - 1], cc.LCB) && (is(b[a], cc.LCB) || is(b[a], cc.PER))) {
@@ -2293,6 +2258,7 @@ prettify.lexers.markup = function lexer (source: string) {
           if (is(lexed[0], cc.LAN) && is(lexed[1], cc.RAN) && is(end, cc.RAN)) {
             record.token = '<>';
             record.types = 'start';
+
             push(data, record, '(empty)');
             return;
           }
@@ -2300,6 +2266,7 @@ prettify.lexers.markup = function lexer (source: string) {
           if (is(lexed[0], cc.LAN) && is(lexed[1], cc.FWS) && is(lexed[2], cc.RAN) && is(end, cc.RAN)) {
             record.token = '</>';
             record.types = 'end';
+
             push(data, record, NIL);
             return;
           }
@@ -2947,27 +2914,27 @@ prettify.lexers.markup = function lexer (source: string) {
 
       // Correction to incomplete template tags that use multiple angle braceAllman
       //
-      if (rules.correct === true) {
+      // if (rules.correct === true) {
 
-        if (
-          is(b[a + 1], cc.RAN) &&
-          is(lexed[0], cc.LAN) &&
-          not(lexed[0], cc.LAN)
-        ) {
+      //   if (
+      //     is(b[a + 1], cc.RAN) &&
+      //     is(lexed[0], cc.LAN) &&
+      //     not(lexed[0], cc.LAN)
+      //   ) {
 
-          do a = a + 1; while (is(b[a + 1], cc.RAN));
+      //     do a = a + 1; while (is(b[a + 1], cc.RAN));
 
-        } else if (
-          is(lexed[0], cc.LAN) &&
-          is(lexed[1], cc.LAN) &&
-          not(b[a + 1], cc.RAN) &&
-          not(lexed[lexed.length - 2], cc.RAN)
-        ) {
+      //   } else if (
+      //     is(lexed[0], cc.LAN) &&
+      //     is(lexed[1], cc.LAN) &&
+      //     not(b[a + 1], cc.RAN) &&
+      //     not(lexed[lexed.length - 2], cc.RAN)
+      //   ) {
 
-          do lexed.splice(1, 1); while (is(lexed[1], cc.LAN));
+      //     do lexed.splice(1, 1); while (is(lexed[1], cc.LAN));
 
-        }
-      }
+      //   }
+      // }
 
       icount = 0;
       token = lexed.join(NIL);
@@ -3155,7 +3122,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
         // DISABLED FOR NOW
 
-        // if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
+        if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
 
         // Embed code requires additional parsing to look for the appropriate end
         // tag, but that end tag cannot be quoted or commented
@@ -3500,6 +3467,7 @@ prettify.lexers.markup = function lexer (source: string) {
             }
 
             if (len < wrap) {
+
               push(data, record, NIL);
               break;
             }
@@ -3543,6 +3511,7 @@ prettify.lexers.markup = function lexer (source: string) {
             if (nwl > -1) {
 
               record.token = ltoke.slice(0, nwl);
+
               push(data, record, NIL);
 
               ltoke = ltoke.slice(nwl);
@@ -3560,6 +3529,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
           liner = 0;
           record.token = ltoke;
+
           push(data, record, NIL);
           break;
         }
@@ -3598,6 +3568,7 @@ prettify.lexers.markup = function lexer (source: string) {
       // this condition prevents adding content that was just added in the loop above
       if (record.token !== ltoke) {
         record.token = ltoke;
+
         push(data, record, NIL);
         parse.linesSpace = 0;
       }
