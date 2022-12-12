@@ -60,9 +60,9 @@ export function parser (prettify: Prettify) {
       options.language !== 'json' &&
       options.script.objectSort === true
     ))) {
-      parse.sortCorrection(0, parse.count + 1);
-    } else if (lexer === 'style' && options.style.sortProperties) {
-      parse.sortCorrection(0, parse.count + 1);
+      parse.sortCorrect(0, parse.count + 1);
+    } else if (lexer === 'style' && options.style.sortProperties === true) {
+      parse.sortCorrect(0, parse.count + 1);
     }
   }
 
@@ -140,7 +140,7 @@ function blank (prettify: Prettify) {
  */
 export function execute (prettify: Prettify) {
 
-  prettify.data = parse.init();
+  prettify.data = parse.full();
 
   if (!/\S/.test(prettify.source)) return blank(prettify);
 
