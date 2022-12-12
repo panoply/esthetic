@@ -50,6 +50,28 @@ export interface Grammars {
     tags?: string[];
 
     /**
+     * **Control Tags**
+     *
+     * String list of token names to be treated as control type openers. These are tags,
+     * which are used within conditionals.
+     *
+     * The Tags names you provide here will inform Prettify on how to reason and handle
+     * certain expressions when building data structures for beautification.
+     *
+     * #### Defaults
+     *
+     * ```js
+     * [
+     *  'if',
+     *  'unless',
+     *  'case'
+     * ]
+     *
+     * ```
+     */
+    control: string[];
+
+    /**
      * **Else Tags**
      *
      * String list of token names to be treated as else type control singletons. These are tags,
@@ -57,6 +79,17 @@ export interface Grammars {
      *
      * The Tags names you provide here will inform Prettify to cancel beautification
      * when no ender can be found or the ender is in-correctly placed.
+     *
+     * #### Defaults
+     *
+     * ```js
+     * [
+     *  'else',
+     *  'elsif',
+     *  'when'
+     * ]
+     *
+     * ```
      */
     else?: string[];
 

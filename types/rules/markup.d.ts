@@ -330,53 +330,6 @@ export interface MarkupOptions {
   delimiterTrims?: 'preserve' | 'strip' | 'force' | 'tags' | 'outputs';
 
   /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
-   *
-   * Whether or not delimiter characters should apply
-   * a single space at the start and end point. For example:
-   *
-   * ---
-   *
-   * #### Example
-   *
-   * *Below is an example of how this rule works if it's enabled, ie: `true`*
-   *
-   *
-   * ```html
-   *
-   * <!-- Before formatting -->
-   * {% for i in arr   %}
-   *   {{i.object
-   *        }}
-   *
-   *   {%if x%}
-   *
-   *     {{foo}}
-   *     {{bar   }}
-   *     {{   baz   }}
-   *
-   *   {%   endif%}
-   * {%endfor%}
-   *
-   * <!-- After formatting -->
-   * {% for i in arr %}
-   *   {{ i.object }}
-   *
-   *   {% if x %}
-   *
-   *     {{ foo }}
-   *     {{ bar }}
-   *     {{ baz }}
-   *
-   *   {% endif %}
-   * {% endfor %}
-   * ```
-   */
-  delimiterSpacing?: boolean;
-
-  /**
    * **Default** `true`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
@@ -713,4 +666,14 @@ export interface MarkupOptions {
    */
   ignoreScripts?: boolean;
 
+  /**
+   * **Default** `intent`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `intent`
+   *
+   * Controls force indentation applied in accordance with the attribute value expressions.
+   * This rule is Liquid specific.
+   *
+   */
+  valueForce?: 'wrap' | 'newline' | 'intent' | 'always' | 'never';
 }

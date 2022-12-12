@@ -1,8 +1,47 @@
+import { LanguageProperName } from 'types/prettify';
 import { Types, Structure } from '../common';
 
 /* -------------------------------------------- */
 /* DATA STRUCTURE                               */
 /* -------------------------------------------- */
+
+export interface ParseError {
+  /**
+   * The line number
+   */
+  lineNumber: number;
+  /**
+   * The error message
+   */
+  message: string;
+  /**
+   * The index of the data record
+   */
+  parseIndex: number;
+  /**
+   * The index of the data record
+   */
+  charIndex: number;
+  /**
+   * The index of the data record
+   */
+  languageName: LanguageProperName;
+  /**
+   * Code sample extract
+   */
+  note?: string;
+}
+
+/**
+ * Parse Counter
+ */
+export interface Counter {
+  end: number;
+  start: number;
+  index: number;
+  line: number;
+}
+
 /**
  * Parsed Data
  */
@@ -105,9 +144,9 @@ export interface WrapComment {
   chars: string[];
   end: number;
   lexer: string;
-  opening: string;
   start: number;
-  terminator: string;
+  begin: string;
+  ender: string;
 }
 
 export interface IParse {
@@ -171,7 +210,11 @@ export interface IParse {
    * A custom sort tool that is a bit more intelligent and
    * multidimensional than `Array.prototype.sort`
    */
-  safeSort(array: [string, number][], operation: string, recursive: boolean): [string, number][];
+  safeSort(array: [ token: string,
+    lines: number,
+    chain?: boolean][], operation: string, recursive: boolean): [ token: string,
+    lines: number,
+    chain?: boolean][];
   /**
    * This functionality provides corrections to the `begin` and `ender` values after use of objectSort
    */

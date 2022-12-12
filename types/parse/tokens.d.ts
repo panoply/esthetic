@@ -398,6 +398,30 @@ export enum MarkupTypes {
    */
   attribute = 'attribute',
   /**
+   * A tag attribute from a regular start or singular tag type.
+   * ---
+   * @example
+   *
+   * <div id="{{ x }}">
+   */
+  template_value_start = 'template_value_start',
+  /**
+   * A tag attribute from a regular start or singular tag type.
+   * ---
+   * @example
+   *
+   * <div id="{{ x }}">
+   */
+  template_value_end = 'template_value_end',
+  /**
+   * A tag attribute from a regular start or singular tag type.
+   * ---
+   * @example
+   *
+   * <div id="{{ x }}">
+   */
+  template_value = 'template_value',
+  /**
    * A start template tag being used within an attribute
    *
    * ---
@@ -437,6 +461,19 @@ export enum MarkupTypes {
    * <div {{ foo }}>
    */
   template_attribute = 'template_attribute',
+  /**
+   * A tag attribute that represents a basic string value, typically used within conditional
+   * based expressions, with this type being the resulting conditional. When this type is
+   * inferred, no identation is applied, and instead the attribute is chained.
+   *
+   * ---
+   * @example
+   *
+   * // Where "foo" and "bar" both represent
+   * // a "template_attribute_chain" type
+   * <div data-{% if xx %}foo{% else %}bar{% endif %}="xxx">
+   */
+  template_attribute_chain = 'template_attribute_chain',
   /**
    * A tag delimited by a known convention of an external template language.
    * This is typically going to represent singleton Liquid tags or Liquid objects,
