@@ -3,6 +3,7 @@
 
 import { JSONOptions, Record, ScriptOptions, Structure } from 'types/prettify';
 import { prettify } from '@prettify/model';
+import { wrapCommentBlock } from '@comments/block';
 import { parse } from '@parser/parse';
 import { assign, create } from '@utils/native';
 import { is, not } from '@utils/helpers';
@@ -415,13 +416,13 @@ prettify.lexers.script = function script (source: string) {
 
     if (wordTest > -1) word();
 
-    comment = parse.wrapCommentBlock({
+    comment = wrapCommentBlock({
       chars: c,
       end: b,
       lexer: 'script',
-      opening: '/*',
+      begin: '/*',
       start: a,
-      terminator: '\u002a/'
+      ender: '\u002a/'
     });
 
     a = comment[1];

@@ -1,5 +1,6 @@
 /* eslint-disable no-use-before-define */
 import type { Types } from 'types/prettify';
+import { wrapCommentBlock } from '@comments/block';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { grammar } from '@options/grammar';
@@ -1258,11 +1259,11 @@ prettify.lexers.style = function style (source: string) {
 
       comm = parse.wrapCommentLine({
         chars: b,
+        start: a,
         end: c,
         lexer: 'style',
-        opening: '//',
-        start: a,
-        terminator: '\n'
+        begin: '//',
+        ender: '\n'
       });
 
       ltoke = comm[0];
@@ -1270,13 +1271,13 @@ prettify.lexers.style = function style (source: string) {
 
     } else {
 
-      comm = parse.wrapCommentBlock({
+      comm = wrapCommentBlock({
         chars: b,
+        start: a,
         end: c,
         lexer: 'style',
-        opening: '/*',
-        start: a,
-        terminator: '\u002a/'
+        begin: '/*',
+        ender: '\u002a/'
       });
 
       ltoke = comm[0];
