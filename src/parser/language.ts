@@ -192,7 +192,8 @@ export function detect (sample: string): Language {
         /\s(class|var|const|let)\s+\w/.test(sample) === false &&
         /<[a-zA-Z](?:-[a-zA-Z])?/.test(sample) &&
         /<\/[a-zA-Z-](?:-[a-zA-Z])?/.test(sample) && (
-          /\s?\{%/.test(sample) || /{{/.test(sample))) return reference('liquid');
+          /\s?\{%/.test(sample) || /{{/.test(sample)
+        )) return reference('liquid');
 
       /* -------------------------------------------- */
       /* JAVASCRIPT                                   */
