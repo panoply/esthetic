@@ -43,7 +43,7 @@ prettify.lexers.style = function style (source: string) {
   /**
    * The input source string length
    */
-  const len = source.length;
+  const c = source.length;
 
   /**
    * Holds a _number_ array reference, (I am unsure of exact use)
@@ -54,6 +54,11 @@ prettify.lexers.style = function style (source: string) {
    * Holds a _boolean_ reference to sorting
    */
   const nosort: boolean[] = [];
+
+  /**
+   * Parse whitespace and newlines curried callback
+   */
+  const parseSpace = parse.space(b, c);
 
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
@@ -74,10 +79,14 @@ prettify.lexers.style = function style (source: string) {
    */
   let ltoke = NIL;
 
+  /* -------------------------------------------- */
+  /* FUNCTIONS                                    */
+  /* -------------------------------------------- */
+
   /**
    * Pushes a record into the parse table
    */
-  function recordpush (structure: string) {
+  function push (structure: string) {
 
     parse.push(data, {
       begin: parse.structure[parse.structure.length - 1][1],
@@ -403,11 +412,11 @@ prettify.lexers.style = function style (source: string) {
 
       out.push(b[aa]);
 
-      if (ws(b[aa + 1])) do { aa = aa + 1; } while (aa < len && ws(b[aa + 1]));
+      if (ws(b[aa + 1])) do { aa = aa + 1; } while (aa < c && ws(b[aa + 1]));
 
     };
 
-    if (aa < len) {
+    if (aa < c) {
 
       // this loop accounts for grouping mechanisms
       do {
@@ -558,7 +567,7 @@ prettify.lexers.style = function style (source: string) {
 
         aa = aa + 1;
 
-      } while (aa < len);
+      } while (aa < c);
     }
 
     a = aa;
@@ -644,7 +653,7 @@ prettify.lexers.style = function style (source: string) {
       ltype = 'item';
     }
 
-    recordpush(NIL);
+    push(NIL);
   };
 
   /**
@@ -775,7 +784,7 @@ prettify.lexers.style = function style (source: string) {
             if (data.begin[ss] === dd) {
               if (is(data.token[ss], cc.SEM)) break;
               if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') data.types[ss] = 'selector';
-              if (data.token[ss] === ':') {
+              if (data.token[ss] === ':' && not(data.token[ss - 1], cc.SEM)) {
 
                 data.token[ss - 1] = `${data.token[ss - 1]}:${data.token[ss + 1]}`
                   .replace(/\s*&/, ' &')
@@ -896,6 +905,7 @@ prettify.lexers.style = function style (source: string) {
       } else if (type === 'end') {
 
         if (first === '$' || is(first, cc.ATT)) {
+
           data.types[aa] = 'variable';
         } else {
           data.types[aa] = 'value';
@@ -913,6 +923,7 @@ prettify.lexers.style = function style (source: string) {
             selector(aa);
 
           } else if (data.token[aa].charAt(0) === '$' || is(data.token[aa], cc.ATT)) {
+
             data.types[aa] = 'variable';
           } else {
             data.types[aa] = 'value';
@@ -929,10 +940,17 @@ prettify.lexers.style = function style (source: string) {
         } else {
 
           if (first === '$' || is(first, cc.ATT)) {
+
+            // @import
+            console.log(data.token[aa]);
+
             data.types[aa] = 'variable';
+
           } else if (data.types[bb] === 'value' || data.types[bb] === 'variable') {
+
             data.token[bb] = data.token[bb] + data.token[aa];
             parse.pop(data);
+
           } else {
             data.types[aa] = 'value';
           }
@@ -1016,17 +1034,17 @@ prettify.lexers.style = function style (source: string) {
       ltype = typeName;
 
       if (ltype.indexOf('start') > -1 || ltype.indexOf('else') > -1) {
-        recordpush(ltoke);
+        push(ltoke);
       } else {
         // console.log(data.token[parse.count], data.lines[parse.count]);
-        recordpush(NIL);
+        push(NIL);
       }
 
     };
 
     nosort[nosort.length - 1] = true;
 
-    if (a < len) {
+    if (a < c) {
 
       do {
 
@@ -1058,7 +1076,7 @@ prettify.lexers.style = function style (source: string) {
               a = a + 1;
               store.push(b[a]);
 
-            } while (a < len && endlen < end.length && b[a + 1] === end.charAt(endlen));
+            } while (a < c && endlen < end.length && b[a + 1] === end.charAt(endlen));
 
             if (endlen === end.length) {
 
@@ -1145,6 +1163,7 @@ prettify.lexers.style = function style (source: string) {
               if (open === '{%') {
 
                 const templateNames = Array.from(grammar.liquid.tags);
+
                 let namesLen = templateNames.length - 1;
 
                 name = name.slice(0, name.indexOf(WSP));
@@ -1223,7 +1242,7 @@ prettify.lexers.style = function style (source: string) {
 
         a = a + 1;
 
-      } while (a < len);
+      } while (a < c);
     }
   };
 
@@ -1239,7 +1258,7 @@ prettify.lexers.style = function style (source: string) {
 
       comm = parse.wrapCommentLine({
         chars: b,
-        end: len,
+        end: c,
         lexer: 'style',
         opening: '//',
         start: a,
@@ -1253,7 +1272,7 @@ prettify.lexers.style = function style (source: string) {
 
       comm = parse.wrapCommentBlock({
         chars: b,
-        end: len,
+        end: c,
         lexer: 'style',
         opening: '/*',
         start: a,
@@ -1265,7 +1284,7 @@ prettify.lexers.style = function style (source: string) {
 
     }
 
-    recordpush(NIL);
+    push(NIL);
 
     a = comm[1];
 
@@ -1496,7 +1515,7 @@ prettify.lexers.style = function style (source: string) {
         if (begin < 0) {
           parse.error = 'Brace mismatch. There appears to be more closing braces than starting braces.';
         } else {
-          parse.sortCorrection(begin, parse.count + 1);
+          parse.sortCorrect(begin, parse.count + 1);
         }
       }
     };
@@ -1534,7 +1553,7 @@ prettify.lexers.style = function style (source: string) {
 
     if (ws(b[a])) {
 
-      a = parse.spacer({ array: b, end: len, index: a });
+      parseSpace(a);
 
     } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.ARS)) {
 
@@ -1567,14 +1586,14 @@ prettify.lexers.style = function style (source: string) {
       ltoke = b[a];
 
       if (is(b[a], cc.LPR)) {
-        recordpush('map');
+        push('map');
         mapper.push(0);
       } else if (data.types[parse.count] === 'selector' || data.types[parse.count] === 'variable') {
-        recordpush(data.token[parse.count]);
+        push(data.token[parse.count]);
       } else if (data.types[parse.count] === 'colon') {
-        recordpush(data.token[parse.count - 1]);
+        push(data.token[parse.count - 1]);
       } else {
-        recordpush('block');
+        push('block');
       }
 
       nosort.push(false);
@@ -1623,7 +1642,7 @@ prettify.lexers.style = function style (source: string) {
             }
 
             ltype = 'separator';
-            recordpush(NIL);
+            push(NIL);
 
           } else if (data.types[parse.count] === 'comment') {
 
@@ -1638,9 +1657,9 @@ prettify.lexers.style = function style (source: string) {
         ltype = 'end';
 
         if (is(b[a], cc.RCB)) marginPadding();
-        if (rules.sortProperties === true && is(b[a], cc.RCB)) parse.objectSort(data);
+        if (rules.sortProperties === true && is(b[a], cc.RCB)) parse.sortObject(data);
 
-        recordpush(NIL);
+        push(NIL);
 
       }
 
@@ -1661,7 +1680,7 @@ prettify.lexers.style = function style (source: string) {
       if (data.types[parse.count] !== 'separator' && esctest(a) === true) {
         ltoke = b[a];
         ltype = 'separator';
-        recordpush(NIL);
+        push(NIL);
       }
 
     } else if (parse.count > -1 && is(b[a], cc.COL) && data.types[parse.count] !== 'end') {
@@ -1669,7 +1688,7 @@ prettify.lexers.style = function style (source: string) {
       item('colon');
       ltoke = ':';
       ltype = 'colon';
-      recordpush(NIL);
+      push(NIL);
 
     } else {
 
@@ -1682,9 +1701,9 @@ prettify.lexers.style = function style (source: string) {
 
     a = a + 1;
 
-  } while (a < len);
+  } while (a < c);
 
-  if (rules.sortProperties === true) parse.objectSort(data);
+  if (rules.sortProperties === true) parse.sortObject(data);
 
   return data;
 };

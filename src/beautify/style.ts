@@ -177,6 +177,7 @@ prettify.beautify.style = (options: Options) => {
               data.token[b] !== startChar &&
               data.begin[b] === start
             ) {
+
               item[1] = data.token[b].length + item[1];
             }
 
@@ -363,6 +364,7 @@ prettify.beautify.style = (options: Options) => {
       } else if (data.types[a + 1] !== 'separator') {
 
         if (data.types[a + 1] !== 'comment' || (data.types[a + 1] === 'comment' && data.lines[a + 1] > 1)) {
+
           nl(indent);
         } else {
           build.push(WSP);
