@@ -1,13 +1,17 @@
 /* eslint no-unmodified-loop-condition: "off" */
-import type { Data, Types, Record, IParse, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
+import type { Data, Types, Record, Structure, Spacer, WrapComment, Splice } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { isArray } from '@utils/native';
 import { cc as ch, NIL, NWL, WSP } from '@utils/chars';
-import { is, not, safeSortAscend, safeSortDescend, safeSortNormal, sanitizeComment, ws } from '@utils/helpers';
-import { StripEnd, StripLead, LiquidTagDelimiters, CharEscape } from '@utils/regex';
+import { getTagName, is, not, safeSortAscend, safeSortDescend, safeSortNormal, ws } from '@utils/helpers';
+import { StripEnd, StripLead } from '@utils/regex';
 
-export const parse = new class Parse implements IParse {
+export const parse = new class Parse {
 
+  /**
+   * Stores the name of the data arrays. This is used for internal automation
+   * and describes the data structure (AST) result.
+   */
   public datanames = [
     'begin',
     'ender',
@@ -18,6 +22,9 @@ export const parse = new class Parse implements IParse {
     'types'
   ];
 
+  /**
+   * Stores the various data arrays of the parse table
+   */
   public data: Data = {
     begin: [],
     ender: [],
@@ -28,6 +35,9 @@ export const parse = new class Parse implements IParse {
     types: []
   };
 
+  /**
+   * Stores the stack and begin values by stacking depth
+   */
   public structure: Structure[] = [
     [
       'global', -1
@@ -35,22 +45,46 @@ export const parse = new class Parse implements IParse {
   ];
 
   /**
-   * Reference of attributes of new line values
-   * with containing Liquid block tokens. It maintains a
-   * a store which is generated in the markup lexer and
-   * used within the beautify process.
+   * Reference of attributes of new line values with containing Liquid block tokens.
+   * It maintains a store which is generated in the markup lexer and used within
+   * the beautify process.
    */
   public attributes: Set<number> = new Set();
 
+  /**
+   * Stores the declared variable names for the script lexer.
+   * This must be stored outside the script lexer since some languages
+   * recursive use of the script lexer
+   */
   public references = [ [] ];
+
+  /**
+   * Stores the final index location of the data arrays
+   */
   public count = -1;
-  public lineNumber = 1;
+
+  /**
+   * Stores the offset location of last known new line offset
+   */
+  public lineStart = 0;
+
+  /**
+   * Stores the current line number from the input string for logging parse errors
+   */
+  public lineNumber = 0;
+
+  /**
+   * Stores the 'lines' value before the next token
+   */
   public linesSpace = 0;
+
+  /**
+   * Parse Error Message
+   */
   public error = NIL;
 
   /**
-   * Returns the last known structure entry in
-   * a deconstructed manner.
+   * Returns the last known structure entry in a deconstructed manner.
    */
   get scope () {
 
@@ -60,9 +94,8 @@ export const parse = new class Parse implements IParse {
   }
 
   /**
-   * Returns the last known record within `data` set.
-   * This is typically going to be the current item in
-   * sequence, ie: the previus record before `push` is executed.
+   * Returns the last known record within `data` set.  This is typically going to be
+   * the current item in sequence, ie: the previus record before `push` is executed.
    */
   get current () {
 
@@ -94,12 +127,12 @@ export const parse = new class Parse implements IParse {
    * Sets up the runtime and data structures that will be populated
    * during lexical walk. Invoked each time `parse` or `format` happens.
    */
-  init () {
+  public full () {
 
     this.error = NIL;
     this.count = -1;
     this.linesSpace = 0;
-    this.lineNumber = 1;
+    this.lineNumber = 0;
     this.references = [ [] ];
     this.data.begin = [];
     this.data.ender = [];
@@ -119,17 +152,220 @@ export const parse = new class Parse implements IParse {
     return this.data;
   }
 
-  concat (data: Data, array: Data) {
-    for (const v of this.datanames) data[v] = data[v].concat(array[v]);
+  /**
+   * Initialize
+   *
+   * Sets up the runtime and data structures that will be populated
+   * during lexical walk. Invoked each time `parse` or `format` happens.
+   */
+  increment () {
+
+    this.error = NIL;
+    this.count = -1;
+    this.linesSpace = 0;
+    this.lineNumber = 0;
+    this.references = [ [] ];
+    this.data.begin = [];
+    this.data.ender = [];
+    this.data.lexer = [];
+    this.data.lines = [];
+    this.data.stack = [];
+    this.data.token = [];
+    this.data.types = [];
+    this.structure = [ [ 'global', -1 ] ];
+    this.structure.pop = () => {
+      const len = this.structure.length - 1;
+      const arr = this.structure[len];
+      if (len > 0) this.structure.splice(len, 1);
+      return arr;
+    };
+
+    return this.data;
+  }
+
+  public pushEnder (data: Data) {
+
+    let a = this.count;
+
+    const begin = data.begin[a];
+
+    if ((
+      data.lexer[a] === 'style' &&
+      prettify.options.style.sortProperties === true
+    ) || (
+      data.lexer[a] === 'script' && (
+        prettify.options.script.objectSort === true ||
+        prettify.options.json.objectSort === true
+      )
+    )) {
+
+      // Sorting can result in a token whose begin value is greater than either
+      // Its current index or the index of the end token, which results in
+      // an endless loop. These end values are addressed at the end of
+      // the "parser" function with this.sortCorrection
+      return;
+
+    }
+
+    do {
+
+      if (data.begin[a] === begin || (
+        data.begin[data.begin[a]] === begin &&
+        data.types[a].indexOf('attribute') > -1 &&
+        data.types[a].indexOf('attribute_end') < 0
+      )) {
+
+        data.ender[a] = this.count;
+
+      } else {
+
+        a = data.begin[a];
+
+      }
+
+      a = a - 1;
+
+    } while (a > begin);
+
+    if (a > -1) data.ender[a] = this.count;
+
+  };
+
+  /**
+   * An extension of `Array.prototype.push` to work across the data structure
+   */
+  public push (data: Data, record: Record, structure: string = NIL) {
+
+    // parse_push_datanames
+    data.begin.push(record.begin);
+    data.ender.push(record.ender);
+    data.lexer.push(record.lexer);
+    data.stack.push(record.stack);
+    data.token.push(record.token);
+    data.types.push(record.types);
+    data.lines.push(record.lines);
+
+    if (data === this.data) {
+
+      this.count = this.count + 1;
+      this.linesSpace = 0;
+
+      if (record.lexer !== 'style' && structure.replace(/[{}@<>%#]/g, NIL) === NIL) {
+        structure = record.types === 'else'
+          ? 'else'
+          : getTagName(record.token);
+
+      }
+
+      if (record.types === 'start' || record.types.indexOf('_start') > 0) {
+
+        this.structure.push([ structure, this.count ]);
+
+      } else if (record.types === 'end' || record.types.indexOf('_end') > 0) {
+
+        // This big condition fixes language specific else blocks that
+        // are children of start/end blocks not associated with
+        // the if/else chain
+
+        let ender = 0;
+
+        const length = this.structure.length;
+
+        if (this.structure.length > 2 && (
+          data.types[this.structure[length - 1][1]] === 'else' ||
+          data.types[this.structure[length - 1][1]].indexOf('_else') > 0
+        ) && (
+          data.types[this.structure[length - 2][1]] === 'start' ||
+          data.types[this.structure[length - 2][1]].indexOf('_start') > 0
+        ) && (
+          data.types[this.structure[length - 2][1] + 1] === 'else' ||
+          data.types[this.structure[length - 2][1] + 1].indexOf('_else') > 0
+        )) {
+
+          this.structure.pop();
+
+          data.begin[this.count] = this.structure[this.structure.length - 1][1];
+          data.stack[this.count] = this.structure[this.structure.length - 1][0];
+          data.ender[this.count - 1] = this.count;
+
+          ender = data.ender[data.begin[this.count] + 1];
+
+        }
+
+        this.pushEnder(data);
+
+        if (ender > 0) data.ender[data.begin[this.count] + 1] = ender;
+
+        this.structure.pop();
+
+      } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
+
+        if (structure === NIL) structure = 'else';
+        if (this.count > 0 && (
+          data.types[this.count - 1] === 'start' ||
+          data.types[this.count - 1].indexOf('_start') > 0
+        )) {
+
+          this.structure.push([ structure, this.count ]);
+
+        } else {
+
+          this.pushEnder(data);
+
+          this.structure[this.structure.length - 1] = structure === NIL
+            ? [ 'else', this.count ]
+            : [ structure, this.count ];
+
+        }
+      }
+    }
+  }
+
+  /**
+   * An extension of `Array.prototype.pop` to work across the data
+   * structure
+   */
+  public pop (data: Data): Record {
+
+    const output = {
+      begin: data.begin.pop(),
+      ender: data.ender.pop(),
+      lexer: data.lexer.pop(),
+      lines: data.lines.pop(),
+      stack: data.stack.pop(),
+      token: data.token.pop(),
+      types: data.types.pop()
+    };
+
+    if (data === this.data) this.count = this.count - 1;
+
+    return output;
+
+  }
+
+  /**
+   * An extension of `Array.prototype.concat` to work across
+   * the data structure. This is an expensive operation.
+   */
+  public concat (data: Data, record: Data) {
+
+    // parse_push_datanames
+    data.begin = data.begin.concat(record.begin);
+    data.ender = data.ender.concat(record.ender);
+    data.lexer = data.lexer.concat(record.lexer);
+    data.stack = data.stack.concat(record.stack);
+    data.token = data.token.concat(record.token);
+    data.types = data.types.concat(record.types);
+    data.lines = data.lines.concat(record.lines);
+
     if (data === this.data) this.count = data.token.length - 1;
   }
 
   /**
-   * Object Sorting
-   *
-   * Applies alphanumeric sorting for objects.
+   * The function that sorts object properties. Applies alphanumeric
+   * sorting for objects.
    */
-  objectSort (data: Data) {
+  public sortObject (data: Data) {
 
     let cc = this.count;
     let dd = this.structure[this.structure.length - 1][1];
@@ -429,157 +665,17 @@ export const parse = new class Parse implements IParse {
 
   }
 
-  pop (data: Data): Record {
-
-    const output = {
-      begin: data.begin.pop(),
-      ender: data.ender.pop(),
-      lexer: data.lexer.pop(),
-      lines: data.lines.pop(),
-      stack: data.stack.pop(),
-      token: data.token.pop(),
-      types: data.types.pop()
-    };
-
-    if (data === this.data) this.count = this.count - 1;
-
-    return output;
-
-  }
-
-  push (data: Data, record: Record, structure: string = NIL) {
-
-    const ender = () => {
-
-      let a = this.count;
-
-      const begin = data.begin[a];
-
-      if ((
-        (data.lexer[a] === 'style' && prettify.options.style.sortProperties === true) || (
-          data.lexer[a] === 'script' && (
-            prettify.options.script.objectSort === true ||
-            prettify.options.json.objectSort === true
-          )
-        )
-      )) {
-
-        // Sorting can result in a token whose begin value is greater than either
-        // Its current index or the index of the end token, which results in
-        // an endless loop. These end values are addressed at the end of
-        // the "parser" function with this.sortCorrection
-        return;
-      }
-
-      do {
-
-        if (
-          data.begin[a] === begin || (
-            data.begin[data.begin[a]] === begin &&
-            data.types[a].indexOf('attribute') > -1 &&
-            data.types[a].indexOf('attribute_end') < 0
-          )
-        ) {
-
-          //  console.log(data.token[a], this.count);
-
-          data.ender[a] = this.count;
-
-        } else {
-
-          a = data.begin[a];
-        }
-
-        a = a - 1;
-
-      } while (a > begin);
-
-      if (a > -1) data.ender[a] = this.count;
-    };
-
-    // parse_push_datanames
-    for (const value of this.datanames) data[value].push(record[value]);
-
-    if (data === this.data) {
-
-      // console.log(data);
-      this.count = this.count + 1;
-      this.linesSpace = 0;
-
-      if (record.lexer !== 'style') {
-        if (structure.replace(/(\{|\}|@|<|>|%|#|)/g, NIL) === NIL) {
-          structure = record.types === 'else'
-            ? 'else'
-            : structure = record.token;
-        }
-      }
-
-      if (record.types === 'start' || record.types.indexOf('_start') > 0) {
-
-        this.structure.push([ structure, this.count ]);
-
-      } else if (record.types === 'end' || record.types.indexOf('_end') > 0) {
-
-        // This big condition fixes language specific else blocks that
-        // are children of start/end blocks not associated with
-        // the if/else chain
-
-        let case_ender = 0;
-
-        if (this.structure.length > 2 && (
-          data.types[this.structure[this.structure.length - 1][1]] === 'else' ||
-          data.types[this.structure[this.structure.length - 1][1]].indexOf('_else') > 0
-        ) && (
-          data.types[this.structure[this.structure.length - 2][1]] === 'start' ||
-          data.types[this.structure[this.structure.length - 2][1]].indexOf('_start') > 0
-        ) && (
-          data.types[this.structure[this.structure.length - 2][1] + 1] === 'else' ||
-          data.types[this.structure[this.structure.length - 2][1] + 1].indexOf('_else') > 0
-        )) {
-
-          this.structure.pop();
-
-          data.begin[this.count] = this.structure[this.structure.length - 1][1];
-          data.stack[this.count] = this.structure[this.structure.length - 1][0];
-          data.ender[this.count - 1] = this.count;
-
-          case_ender = data.ender[data.begin[this.count] + 1];
-
-        }
-
-        ender();
-
-        if (case_ender > 0) data.ender[data.begin[this.count] + 1] = case_ender;
-
-        this.structure.pop();
-
-      } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
-
-        if (structure === NIL) structure = 'else';
-        if (this.count > 0 && (
-          data.types[this.count - 1] === 'start' ||
-          data.types[this.count - 1].indexOf('_start') > 0
-        )) {
-
-          this.structure.push([ structure, this.count ]);
-
-        } else {
-
-          ender();
-
-          this.structure[this.structure.length - 1] = structure === NIL
-            ? [ 'else', this.count ]
-            : [ structure, this.count ];
-
-        }
-      }
-    }
-  }
-
-  safeSort (array: [string, number][], operation: string, recursive: boolean): [string, number][] {
+  /**
+   * A custom sort tool that is a bit more intelligent and
+   * multidimensional than `Array.prototype.sort`
+   */
+  public sortSafe (
+    array: [token: string, lines: number, chain?: boolean ][],
+    operation: string,
+    recursive: boolean
+  ): [ token: string, lines: number, chain?: boolean][] {
 
     if (isArray(array) === false) return array;
-
     if (operation === 'normal') return safeSortNormal.call({ array, recursive }, array);
     if (operation === 'descend') return safeSortDescend.call({ recursive }, array);
 
@@ -587,7 +683,11 @@ export const parse = new class Parse implements IParse {
 
   }
 
-  sortCorrection (start: number, end: number) {
+  /**
+   * This functionality provides corrections to the `begin` and `ender` values
+   * after use of objectSort
+   */
+  public sortCorrect (start: number, end: number) {
 
     let a = start;
     let endslen = -1;
@@ -661,6 +761,36 @@ export const parse = new class Parse implements IParse {
 
   }
 
+  /**
+   * Parse Space
+   *
+   * This function is responsible for parsing whitespace
+   * characters and newlines. The lexical `a` scope is incremented
+   * and both `parse.lineNumber` and `parse.linesSpace` are
+   * updated accordinly.
+   */
+  public space (array: string[], length: number) {
+
+    this.linesSpace = 1;
+
+    return (index: number) => {
+
+      do {
+
+        if (is(array[index], ch.NWL)) this.lineNumber = this.lineNumber + 1;
+        if (ws(array[index]) === false) break;
+
+        this.linesSpace = this.linesSpace + 1;
+        index = index + 1;
+
+      } while (index < length);
+
+      return index;
+
+    };
+
+  }
+
   spacer (args: Spacer): number {
 
     // * array - the characters to scan
@@ -685,7 +815,10 @@ export const parse = new class Parse implements IParse {
 
   }
 
-  splice (splice: Splice) {
+  /**
+   * An extension of `Array.prototype.splice` to work across the data structure
+   */
+  public splice (splice: Splice) {
 
     const { data } = this;
     const finalItem = [ data.begin[this.count], data.token[this.count] ];
@@ -722,459 +855,10 @@ export const parse = new class Parse implements IParse {
 
   }
 
-  wrapCommentBlock (config: WrapComment): [string, number] {
-
-    const { wrap, crlf, preserveComment } = prettify.options;
-    const build = [];
-    const second = [];
-    const lf = crlf === true ? '\r\n' : NWL;
-
-    /* -------------------------------------------- */
-    /* LEXICAL SCOPES                               */
-    /* -------------------------------------------- */
-
-    let a = config.start;
-    let b = 0;
-    let c = 0;
-    let d = 0;
-    let len = 0;
-    let lines = [];
-    let space = NIL;
-    let bline = NIL;
-    let emptyLine = false;
-    let bulletLine = false;
-    let numberLine = false;
-    let bigLine = false;
-    let output = NIL;
-    let terml = config.terminator.length - 1;
-    let term = config.terminator.charAt(terml);
-    let twrap = 0;
-    let regEnd: RegExp;
-
-    const opensan = config.opening.replace(CharEscape, sanitizeComment);
-    const regIgnore = new RegExp(`^(${opensan}\\s*@prettify-ignore-start)`);
-    const regStart = new RegExp(`(${opensan}\\s*)`);
-    const isLiquid = is(config.opening[0], ch.LCB) && is(config.opening[1], ch.PER);
-
-    if (isLiquid) {
-
-      const capture = '\\s*' + config.terminator.replace(LiquidTagDelimiters, input => {
-        return input.charCodeAt(0) === ch.LCB
-          ? '{%-?\\s*'
-          : '\\s*-?%}';
-      }) + '$';
-
-      regEnd = new RegExp(capture);
-
-    }
-
-    const emptylines = () => {
-
-      if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL) {
-        do { b = b + 1; } while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL));
-      }
-
-      if (b < len - 1) second.push(NIL);
-
-    };
-
-    do {
-
-      build.push(config.chars[a]);
-
-      if (config.chars[a] === NWL) this.lineNumber = this.lineNumber + 1;
-      if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === config.terminator) break;
-      /* console.log(JSON.stringify([
-        config.chars[config.start - 3]
-        , config.chars[config.start - 2]
-        , config.chars[config.start - 1]
-        , config.chars[config.start]
-        , config.chars[config.start + 1]
-        , config.chars[config.start + 2]
-        , config.chars[config.start + 3]
-        , config.chars[config.start + 4]
-        , config.chars[config.start + 5]
-        , config.chars[config.start + 6]
-        , config.chars[config.start + 7]
-      ])); */
-
-      /// console.log(config.chars[a - 4], config.chars[a - 3], config.chars[a - 2], config.chars[a - 1]);
-      // console.log(config);
-      // build.push(config.chars[a]);
-
-      a = a + 1;
-
-    } while (a < config.end);
-
-    output = build.join(NIL);
-
-    if (regIgnore.test(output) === true) {
-
-      let termination = NWL;
-
-      a = a + 1;
-
-      do {
-
-        build.push(config.chars[a]);
-
-        // HOT PATCH
-        // Supports comment start/end comment ignores using Liquid
-        // tags. We don't have any knowledge of the comment formation
-        // upon parse, this will re-assign the terminator
-        //
-        if (build.slice(build.length - 20).join(NIL) === '@prettify-ignore-end') {
-
-          if (isLiquid) {
-            const d = config.chars.indexOf('{', a);
-            if (is(config.chars[d + 1], ch.PER)) {
-              const ender = config.chars.slice(d, config.chars.indexOf('}', d + 1) + 1).join(NIL);
-              if (regEnd.test(ender)) config.terminator = ender;
-            }
-          }
-
-          a = a + 1;
-
-          break;
-        }
-
-        a = a + 1;
-
-      } while (a < config.end);
-
-      b = a;
-
-      terml = config.opening.length - 1;
-      term = config.opening.charAt(terml);
-
-      do {
-
-        if (
-          config.opening === '/*' &&
-          is(config.chars[b - 1], ch.FWS) &&
-         (is(config.chars[b], ch.ARS) || is(config.chars[b], ch.FWS))) break; // for script OR style
-
-        if (
-          config.opening !== '/*' &&
-          config.chars[b] === term &&
-          config.chars.slice(b - terml, b + 1).join(NIL) === config.opening) break; // for markup
-
-        b = b - 1;
-
-      } while (b > config.start);
-
-      if (config.opening === '/*' && is(config.chars[b], ch.ARS)) {
-        termination = '\u002a/';
-      } else if (config.opening !== '/*') {
-        termination = config.terminator;
-      }
-
-      terml = termination.length - 1;
-      term = termination.charAt(terml);
-
-      if (termination !== NWL || config.chars[a] !== NWL) {
-
-        do {
-
-          build.push(config.chars[a]);
-
-          if (termination === NWL && config.chars[a + 1] === NWL) break;
-
-          if (
-            config.chars[a] === term &&
-            config.chars.slice(a - terml, a + 1).join(NIL) === termination) break;
-
-          a = a + 1;
-
-        } while (a < config.end);
-
-      }
-
-      if (config.chars[a] === NWL) a = a - 1;
-
-      // console.log(output);
-
-      output = build.join(NIL).replace(StripEnd, NIL);
-
-      // console.log(output);
-
-      /* -------------------------------------------- */
-      /* RETURN COMMENT                               */
-      /* -------------------------------------------- */
-
-      return [ output, a ];
-    }
-
-    if (preserveComment === true || wrap < 1 || a === config.end || (
-      output.length <= wrap &&
-      output.indexOf(NWL) < 0
-    ) || (
-      config.opening === '/*' &&
-      output.indexOf(NWL) > 0 &&
-      output.replace(NWL, NIL).indexOf(NWL) > 0 &&
-      (/\n(?!(\s*\*))/).test(output) === false
-    )
-    ) {
-
-      // console.log(output);
-
-      /* -------------------------------------------- */
-      /* RETURN COMMENT                               */
-      /* -------------------------------------------- */
-
-      return [ output, a ];
-    }
-
-    b = config.start;
-
-    if (b > 0 && config.chars[b - 1] !== NWL && ws(config.chars[b - 1])) {
-      do {
-        b = b - 1;
-      } while (b > 0 && config.chars[b - 1] !== NWL && ws(config.chars[b - 1]));
-    }
-
-    space = config.chars.slice(b, config.start).join(NIL);
-
-    const spaceLine = new RegExp(NWL + space, 'g');
-
-    lines = output.replace(/\r\n/g, NWL).replace(spaceLine, NWL).split(NWL);
-    len = lines.length;
-    lines[0] = lines[0].replace(regStart, NIL);
-    lines[len - 1] = lines[len - 1].replace(regEnd, NIL);
-
-    if (len < 2) lines = lines[0].split(WSP);
-
-    if (lines[0] === NIL) {
-      lines[0] = config.opening;
-    } else {
-      lines.splice(0, 0, config.opening);
-    }
-
-    len = lines.length;
-    b = 0;
-
-    do {
-
-      bline = (b < len - 1) ? lines[b + 1].replace(StripLead, NIL) : NIL;
-
-      if ((/^\s+$/).test(lines[b]) === true || lines[b] === NIL) {
-
-        emptylines();
-
-      } else if (lines[b].slice(0, 4) === '    ') {
-
-        second.push(lines[b]);
-
-      } else if (
-        lines[b].replace(StripLead, NIL).length > wrap &&
-        lines[b].replace(StripLead, NIL).indexOf(WSP) > wrap
-      ) {
-
-        lines[b] = lines[b].replace(StripLead, NIL);
-        c = lines[b].indexOf(WSP);
-        second.push(lines[b].slice(0, c));
-        lines[b] = lines[b].slice(c + 1);
-        b = b - 1;
-
-      } else {
-
-        lines[b] = (config.opening === '/*' && lines[b].indexOf('/*') !== 0)
-          ? `   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`
-          : `${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`;
-
-        twrap = b < 1 ? wrap - (config.opening.length + 1) : wrap;
-        c = lines[b].length;
-        d = lines[b].replace(StripLead, NIL).indexOf(WSP);
-
-        if (c > twrap && d > 0 && d < twrap) {
-
-          c = twrap;
-
-          do {
-            c = c - 1;
-            if (ws(lines[b].charAt(c)) && c <= wrap) break;
-          } while (c > 0);
-
-          if (
-            lines[b].slice(0, 4) !== '    ' &&
-            (/^\s*(\*|-)\s/).test(lines[b]) === true &&
-            (/^\s*(\*|-)\s/).test(lines[b + 1]) === false
-          ) {
-
-            lines.splice(b + 1, 0, '* ');
-          }
-
-          if (
-            lines[b].slice(0, 4) !== '    ' &&
-            (/^\s*\d+\.\s/).test(lines[b]) === true &&
-            (/^\s*\d+\.\s/).test(lines[b + 1]) === false) {
-
-            lines.splice(b + 1, 0, '1. ');
-          }
-
-          if (c < 4) {
-
-            second.push(lines[b]);
-            bigLine = true;
-
-          } else if (b === len - 1) {
-
-            second.push(lines[b].slice(0, c));
-            lines[b] = lines[b].slice(c + 1);
-            bigLine = true;
-            b = b - 1;
-
-          } else if ((/^\s+$/).test(lines[b + 1]) === true || lines[b + 1] === NIL) {
-
-            second.push(lines[b].slice(0, c));
-            lines[b] = lines[b].slice(c + 1);
-            emptyLine = true;
-            b = b - 1;
-
-          } else if (lines[b + 1].slice(0, 4) !== '    ' && (/^\s*(\*|-)\s/).test(lines[b + 1])) {
-
-            second.push(lines[b].slice(0, c));
-            lines[b] = lines[b].slice(c + 1);
-            bulletLine = true;
-            b = b - 1;
-
-          } else if (lines[b + 1].slice(0, 4) !== '    ' && (/^\s*\d+\.\s/).test(lines[b + 1])) {
-
-            second.push(lines[b].slice(0, c));
-            lines[b] = lines[b].slice(c + 1);
-            numberLine = true;
-            b = b - 1;
-
-          } else if (lines[b + 1].slice(0, 4) === '    ') {
-
-            second.push(lines[b].slice(0, c));
-            lines[b] = lines[b].slice(c + 1);
-            bigLine = true;
-            b = b - 1;
-
-          } else if (c + bline.length > wrap && bline.indexOf(WSP) < 0) {
-
-            second.push(lines[b].slice(0, c));
-            lines[b] = lines[b].slice(c + 1);
-            bigLine = true;
-            b = b - 1;
-
-          } else if (lines[b].replace(StripLead, NIL).indexOf(WSP) < wrap) {
-            lines[b + 1] = lines[b].length > wrap
-              ? lines[b].slice(c + 1) + lf + lines[b + 1]
-              : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
-          }
-
-          if (
-            emptyLine === false &&
-            bulletLine === false &&
-            numberLine === false &&
-            bigLine === false
-          ) {
-            lines[b] = lines[b].slice(0, c);
-          }
-
-        } else if (
-          lines[b + 1] !== undefined && (
-            (
-              lines[b].length + bline.indexOf(WSP) > wrap &&
-              bline.indexOf(WSP) > 0
-            ) || (
-              lines[b].length + bline.length > wrap &&
-              bline.indexOf(WSP) < 0
-            )
-          )
-        ) {
-
-          second.push(lines[b]);
-
-          b = b + 1;
-
-        } else if (
-          lines[b + 1] !== undefined &&
-          (/^\s+$/).test(lines[b + 1]) === false &&
-          lines[b + 1] !== NIL &&
-          lines[b + 1].slice(0, 4) !== '    ' &&
-          (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
-        ) {
-
-          // LIQUID COMMENTS ARE AUGMENTED HERE
-
-          // console.log(lines);
-
-          lines[b + 1] = `${lines[b]} ${lines[b + 1]}`;
-          emptyLine = true;
-        }
-
-        if (bigLine === false && bulletLine === false && numberLine === false) {
-
-          if (emptyLine === true) {
-
-            emptyLine = false;
-
-          } else if ((/^\s*(\*|-|(\d+\.))\s*$/).test(lines[b]) === false) {
-
-            if (
-              b < len - 1 &&
-              lines[b + 1] !== NIL &&
-              (/^\s+$/).test(lines[b]) === false &&
-              lines[b + 1].slice(0, 4) !== '    ' &&
-              (/^\s*(\*|-|(\d+\.))\s/).test(lines[b + 1]) === false
-
-            ) {
-
-              lines[b] = `${lines[b]} ${lines[b + 1]}`;
-              lines.splice(b + 1, 1);
-              len = len - 1;
-              b = b - 1;
-
-            } else {
-              if (config.opening === '/*' && lines[b].indexOf('/*') !== 0) {
-                second.push(`   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`);
-              } else {
-                second.push(`${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`);
-              }
-            }
-          }
-        }
-
-        bigLine = false;
-        bulletLine = false;
-        numberLine = false;
-      }
-
-      b = b + 1;
-
-    } while (b < len);
-
-    if (second.length > 0) {
-
-      if (second[second.length - 1].length > wrap - (config.terminator.length + 1)) {
-        second.push(config.terminator);
-      } else {
-
-        // second.push(config.terminator);
-        second[second.length - 1] = `${second[second.length - 1]} ${config.terminator}`;
-      }
-
-      output = second.join(lf);
-
-    } else {
-      lines[lines.length - 1] = lines[lines.length - 1] + config.terminator;
-      output = lines.join(lf);
-    }
-
-    // console.log(output);
-
-    /* -------------------------------------------- */
-    /* RETURN COMMENT                               */
-    /* -------------------------------------------- */
-
-    return [ output, a ];
-
-  }
-
-  wrapCommentLine (config: WrapComment): [string, number] {
+  /**
+   * Parsing block comments and applying word wrap
+   */
+  public wrapCommentLine (config: WrapComment): [string, number] {
 
     let a = config.start;
     let b = 0;
