@@ -1,6 +1,6 @@
 ### v0.4.0-beta.1
 
-_This module is in its infancy and working towards an official release candidate. Refer to the [Language Support](#language-support) before using the module._
+_This module is in its infancy and working towards an official release candidate. Refer to the [Language Support](#language-support) before using the module and please note that this readme will be subject to change._
 
 # 🎀 Prettify
 
@@ -21,13 +21,15 @@ The new generation code beautification tool for formatting HTML, Liquid, CSS/SCS
 
 ### Documentation
 
-Currently working on documentation to better inform upon rules and overall architecture.
+Currently working on documentation to better inform upon rules and overall architecture. Below are the descriptions used in the Schema Stores and do a great job at explaining each rule.
 
-- Rules
-  - Markup
-  - Style
-  - Script
-  - JSON
+- [Global](https://github.com/panoply/liquify-schema/tree/master/stores/descriptions/format/global)
+- [Markup](https://github.com/panoply/liquify-schema/tree/master/stores/descriptions/format/markup)
+- [Json](https://github.com/panoply/liquify-schema/tree/master/stores/descriptions/format/json)
+- [Style](https://github.com/panoply/liquify-schema/tree/master/stores/descriptions/format/style)
+
+> **Note**&nbsp;
+> Script mode documentation is still being worked on.
 
 ### Why Prettify?
 
@@ -361,7 +363,6 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
   attributeSort: false,
   attributeSortList: [],
   delimiterTrims: 'preserve',
-  delimiterSpacing: true,
   commentNewline: false,
   forceAttribute: false,
   forceLeadAttribute: false,
@@ -374,7 +375,8 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
   preserveComment: true,
   preserveText: true,
   quoteConvert: 'double',
-  selfCloseSpace: false
+  selfCloseSpace: false,
+  valueForce: 'intent'
 }
 ```
 
