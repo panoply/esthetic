@@ -23,7 +23,8 @@ import {
   SpaceLead,
   SpaceEnd,
   SpaceOnly,
-  CommIgnoreNext
+  CommIgnoreNext,
+  StripEnd
 } from '@utils/regex';
 
 /* -------------------------------------------- */
@@ -178,6 +179,9 @@ prettify.lexers.markup = function lexer (source: string) {
       if (not(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
       if (not(input[end], cc.DSH)) input = input.replace(/}}$/, '-}}');
     }
+
+    // skip line comments
+    if (/^{%-?\s*#/.test(input)) return input;
 
     if (rules.normalizeSpacing === false) return input;
 
@@ -1891,7 +1895,7 @@ prettify.lexers.markup = function lexer (source: string) {
               }
             } else if (is(t, cc.HSH)) {
 
-              ltype = 'comment';
+              ltype = 'template';
               end = '%}';
 
             }

@@ -1555,7 +1555,9 @@ prettify.beautify.markup = function (options: Options) {
 
       const line = data.lines[a + 1];
 
-      if (type.is(a, 'comment')) lines = lines.map(l => l.trimStart());
+      if (type.is(a, 'comment') && options.preserveComment === false) {
+        lines = lines.map(l => l.trimStart());
+      }
 
       const lev = (levels[a - 1] > -1) ? type.is(a, 'attribute')
         ? levels[a - 1] + 1
@@ -1770,10 +1772,14 @@ prettify.beautify.markup = function (options: Options) {
 
           multiline();
 
-        } else if (type.is(a, 'comment') && rules.commentNewline && (
-          options.preserveLine === 0 ||
-          build[build.length - 1].lastIndexOf(NWL) + 1 < 2
-        )) {
+        } else if (
+          options.preserveComment === false &&
+          type.is(a, 'comment') &&
+          rules.commentNewline && (
+            options.preserveLine === 0 ||
+            build[build.length - 1].lastIndexOf(NWL) + 1 < 2
+          )
+        ) {
 
           // When preserve line is zero, we will insert
           // the new line above the comment.
