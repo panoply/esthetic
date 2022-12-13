@@ -181,6 +181,8 @@ prettify.lexers.markup = function lexer (source: string) {
     // skip line comments
     if (/^{%-?\s*#/.test(input)) return input;
 
+    if (/{%-?\s*(?:liquid)/.test(input)) return input;
+
     if (rules.normalizeSpacing === false) return input;
 
     /**

@@ -1,4 +1,4 @@
-import type { Options } from 'types/prettify';
+import type { Helper, Options } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { is, not } from '@utils/helpers';
 import { cc, NIL, WSP } from '@utils/chars';
@@ -7,7 +7,7 @@ import { cc, NIL, WSP } from '@utils/chars';
 /* MARKUP BEAUTIFICATION                        */
 /* -------------------------------------------- */
 
-prettify.beautify.style = (options: Options) => {
+prettify.beautify.style = function style (options: Options) {
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
@@ -16,12 +16,17 @@ prettify.beautify.style = (options: Options) => {
   /**
    * The beautified result
    */
-  const build = [];
+  const build: string[] = [];
 
   /**
    * Reference to `options.parsed`
    */
   const data = prettify.data;
+
+  /**
+   * Cached option markup beautification rules
+   */
+  const rules = options.style;
 
   /**
    * Carriage return / Line Feed
@@ -65,11 +70,6 @@ prettify.beautify.style = (options: Options) => {
   let indent = options.indentLevel;
 
   /**
-   * Word wrap - This is used for `forceValue`
-   */
-  let wrap = options.wrap > 0 ? options.wrap : 0;
-
-  /**
    * Holds the current index position.
    */
   let a = prettify.start;
@@ -84,11 +84,22 @@ prettify.beautify.style = (options: Options) => {
   /* -------------------------------------------- */
 
   /**
+   * Type token helper utilities for querying
+   * the `data.types` (options.parsed) AST tree.
+   */
+  const type: Helper.Type = {
+    is: (index: number, name: string) => data.types[index] === name,
+    not: (index: number, name: string) => data.types[index] !== name,
+    idx: (index: number, name: string) => index > -1 && (data.types[index] || NIL).indexOf(name)
+  };
+
+  /**
    * Applies New lines plus indentation
    */
-  function nl (tabs: number) {
+  function newline (tabs: number) {
 
     const linesout = [];
+
     const total = (() => {
 
       if (a === len - 1) return 1;
@@ -107,7 +118,6 @@ prettify.beautify.style = (options: Options) => {
     do {
       linesout.push(lf);
       index = index + 1;
-      wrap = indent;
     } while (index < total);
 
     if (tabs > 0) {
@@ -122,287 +132,105 @@ prettify.beautify.style = (options: Options) => {
 
   };
 
-  /**
-   * Vertical colon applier, used when `options.style.vertical`
-   * is provided. I will likely to deprecate or remove this.
-   */
-  function vertical () {
-
-    const start = data.begin[a];
-    const startChar = data.token[start];
-    const endChar = data.token[a];
-    const store = [];
-
-    let b = a;
-    let c = 0;
-    let item: [ number, number ];
-    let longest = 0;
-
-    if (start < 0 || b <= start) return;
-
-    do {
-
-      b = b - 1;
-
-      if (data.begin[b] === start) {
-
-        if (is(data.token[b], cc.COL)) {
-          item = [ b - 1, 0 ];
-
-          do {
-            b = b - 1;
-
-            if (
-              (
-                (
-                  (
-                    is(data.token[b], cc.SEM) &&
-                    startChar === '{'
-                  ) || (
-                    is(data.token[b], cc.COM) &&
-                    startChar === '('
-                  )
-                ) &&
-                data.begin[b] === start) || (
-                data.token[b] === endChar &&
-                data.begin[data.begin[b]] === start
-              )
-            ) {
-              break;
-            }
-
-            if (
-              data.types[b] !== 'comment' &&
-              data.types[b] !== 'selector' &&
-              data.token[b] !== startChar &&
-              data.begin[b] === start
-            ) {
-
-              item[1] = data.token[b].length + item[1];
-            }
-
-          } while (b > start + 1);
-
-          if (item[1] > longest) longest = item[1];
-
-          store.push(item);
-        }
-
-      } else if (data.types[b] === 'end') {
-
-        if (b < data.begin[b]) break;
-
-        b = data.begin[b];
-      }
-
-    } while (b > start);
-
-    b = store.length;
-
-    if (b < 2) return;
-
-    do {
-
-      b = b - 1;
-
-      if (store[b][1] < longest) {
-        c = store[b][1];
-
-        do {
-          data.token[store[b][0]] = data.token[store[b][0]] + ' ';
-          c = c + 1;
-        } while (c < longest);
-
-      }
-
-    } while (b > 0);
-  };
-
-  if (options.script.vertical === true && options.style.compressCSS === false) {
-
-    a = len;
-
-    do {
-      a = a - 1;
-      if (is(data.token[a], cc.RCB) || is(data.token[a], cc.RPR)) vertical();
-    } while (a > 0);
-
-    a = prettify.start;
-  }
-
   /* -------------------------------------------- */
   /* BEAUTIFICATION LOOP                          */
   /* -------------------------------------------- */
 
   do {
 
-    if (data.types[a] === 'property') wrap = indent + data.token[a].length;
-
-    if (data.types[a + 1] === 'end' || data.types[a + 1] === 'template_end' || data.types[a + 1] === 'template_else') {
-
+    if (type.is(a + 1, 'end') || type.is(a + 1, 'template_end') || type.is(a + 1, 'template_else')) {
       indent = indent - 1;
-
     }
 
-    if (data.types[a] === 'template' && data.lines[a] === 0) {
+    if (type.is(a, 'template') && data.lines[a] > 0) {
 
       build.push(data.token[a]);
 
-      if (data.types[a + 1] === 'template' && data.lines[a + 1] > 0) nl(indent);
+      newline(indent);
 
-    } else if (data.types[a] === 'template' && data.lines[a] > 0) {
-
-      // HOTFIX
-      //
-      // Fixes semicolon newlines from occuring when output tag is used as a property
-      // value within classes, eg: .class { color: {{ foo }}; }
-      // In addition we will also gracefully handle comma separated values
-      //
-      if (data.types[a - 2] !== 'property' && data.types[a - 1] !== 'colon') {
-
-        wrap = indent;
-
-        build.push(data.token[a]);
-
-        if (data.types[a + 1] !== 'separator' && not(data.token[a + 1], cc.SEM)) {
-          nl(indent);
-        }
-
-      } else if (
-        data.types[a - 2] === 'property' &&
-        data.types[a - 1] === 'colon' &&
-        data.types[a + 1] === 'separator' &&
-        is(data.token[a + 1], cc.COM)
-      ) {
-
-        wrap = wrap + data.token[a].length;
-
-        if (wrap > options.wrap) nl(indent);
-
-        build.push(data.token[a]);
-
-        do {
-
-          a = a + 1;
-
-          build.push(data.token[a]);
-
-          if (data.lines[a + 1] > 0) nl(indent);
-
-        } while (data.types[a] !== 'separator' && not(data.token[a], cc.SEM));
-
-        if (is(data.token[a], cc.SEM) && data.types[a] === 'separator') {
-
-          build.push(data.token[a]);
-
-          if (data.lines[a + 1] > 0) nl(indent);
-
-          a = a + 1;
-          continue;
-        }
-
-      } else {
-
-        wrap = wrap + data.token[a].length;
-
-        if (options.wrap > 0 && wrap > options.wrap) {
-
-          nl(indent);
-
-          build.push(data.token[a]);
-
-        } else {
-          build.push(data.token[a]);
-        }
-
-      }
-
-    } else if (data.types[a] === 'template_else') {
+    } else if (type.is(a, 'template_else')) {
 
       build.push(data.token[a]);
 
       indent = indent + 1;
-      nl(indent);
 
-    } else if (data.types[a] === 'start' || data.types[a] === 'template_start') {
+      newline(indent);
+
+    } else if (type.is(a, 'start') || type.is(a, 'template_start')) {
 
       indent = indent + 1;
 
       build.push(data.token[a]);
 
-      if (data.types[a + 1] !== 'end' && data.types[a + 1] !== 'template_end' && (
-        options.style.compressCSS === false || (
-          options.style.compressCSS === true &&
-          data.types[a + 1] === 'selector'
-        ))
-      ) {
+      if (type.not(a + 1, 'end') && type.not(a + 1, 'template_end')) {
 
-        nl(indent);
+        newline(indent);
+
       }
 
-    } else if ((is(data.token[a], cc.SEM) && (
-      options.style.compressCSS === false || (
-        options.style.compressCSS === true &&
-        data.types[a + 1] === 'selector'
-      )
-    )) || (
-      data.types[a] === 'end' ||
-      data.types[a] === 'template_end' ||
-      data.types[a] === 'comment'
+    } else if (is(data.token[a], cc.SEM) || (
+      type.is(a, 'end') ||
+      type.is(a, 'template_end') ||
+      type.is(a, 'comment')
     )) {
 
       build.push(data.token[a]);
 
-      if (data.types[a + 1] === 'value') {
+      if (type.is(a + 1, 'value')) {
 
         if (data.lines[a + 1] === 1) {
-          build.push(' ');
+
+          build.push(WSP);
+
         } else if (data.lines[a + 1] > 1) {
-          nl(indent);
+
+          newline(indent);
+
         }
 
-      } else if (data.types[a + 1] !== 'separator') {
+      } else if (type.not(a + 1, 'separator')) {
 
-        if (data.types[a + 1] !== 'comment' || (data.types[a + 1] === 'comment' && data.lines[a + 1] > 1)) {
+        if (type.not(a + 1, 'comment') || (type.is(a + 1, 'comment') && data.lines[a + 1] > 1)) {
 
-          nl(indent);
+          newline(indent);
+
         } else {
+
           build.push(WSP);
+
         }
       }
 
     } else if (is(data.token[a], cc.COL)) {
 
-      // console.log(data.token[a], data.types[a], data.types[a - 1]);
-
       build.push(data.token[a]);
 
       // console.log(data.types[a]);
 
-      if (options.style.compressCSS === false) {
-        if (data.types[a] !== 'selector' && not(data.token[a + 1], cc.COM)) build.push(WSP);
+      if (type.not(a + 1, 'selector') && not(data.token[a + 1], cc.COM)) {
+        build.push(WSP);
       }
 
-    } else if (data.types[a] === 'selector') {
+    } else if (type.is(a, 'selector')) {
 
-      if (
-        options.style.classPadding === true &&
-        data.types[a - 1] === 'end' &&
-        data.lines[a] < 3
-      ) {
+      if (rules.classPadding === true && type.is(a - 1, 'end') && data.lines[a] < 3) {
         build.push(lf);
       }
 
       if (data.token[a].indexOf('and(') > 0) {
 
         data.token[a] = data.token[a].replace(/and\(/, 'and (');
+
         build.push(data.token[a]);
 
       } else if (data.token[a].indexOf('when(') > 0) {
 
         when = data.token[a].split('when(');
+
         build.push(when[0].replace(/\s+$/, NIL));
-        nl(indent + 1);
+
+        newline(indent + 1);
+
         build.push(`when (${when[1]}`);
 
       } else {
@@ -410,54 +238,40 @@ prettify.beautify.style = (options: Options) => {
         build.push(data.token[a]);
       }
 
-      if (data.types[a + 1] === 'start') {
-        // if (options.style.braceAllman === true) {
-        //   nl(indent);
-        // } else
-
-        if (options.style.compressCSS === false) {
-          build.push(' ');
-        }
+      if (type.is(a + 1, 'start')) {
+        build.push(WSP);
       }
 
     } else if (is(data.token[a], cc.COM)) {
 
       build.push(data.token[a]);
 
-      if (data.types[a + 1] === 'selector' || data.types[a + 1] === 'property') {
-        nl(indent);
-      } else if (options.style.compressCSS === false) {
-        build.push(' ');
+      if (type.is(a + 1, 'selector') || type.is(a + 1, 'property')) {
+        newline(indent);
+      } else {
+        build.push(WSP);
       }
 
-    } else if (
-      data.stack[a] === 'map' &&
-      is(data.token[a + 1], cc.RPR) &&
-      a - data.begin[a] > 5
-    ) {
+    } else if (data.stack[a] === 'map' && is(data.token[a + 1], cc.RPR) && a - data.begin[a] > 5) {
 
       build.push(data.token[a]);
-      nl(indent);
+
+      newline(indent);
 
     } else if (data.token[a] === 'x;') {
 
-      nl(indent);
+      newline(indent);
 
-    } else if ((data.types[a] === 'variable' || data.types[a] === 'function') &&
-      options.style.classPadding === true &&
-      data.types[a - 1] === 'end' &&
+    } else if ((type.is(a, 'variable') || type.is(a, 'function')) &&
+      rules.classPadding === true &&
+      type.is(a - 1, 'end') &&
       data.lines[a] < 3
     ) {
 
       build.push(lf);
       build.push(data.token[a]);
 
-    } else if (not(data.token[a], cc.SEM) || (
-      is(data.token[a], cc.SEM) && (options.style.compressCSS === false || (
-        options.style.compressCSS === true &&
-        not(data.token[a + 1], cc.RCB)
-      ))
-    )) {
+    } else if (not(data.token[a], cc.SEM)) {
 
       build.push(data.token[a]);
 

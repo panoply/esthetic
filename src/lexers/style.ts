@@ -56,11 +56,6 @@ prettify.lexers.style = function style (source: string) {
    */
   const nosort: boolean[] = [];
 
-  /**
-   * Parse whitespace and newlines curried callback
-   */
-  const parseSpace = parse.space(b, c);
-
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
   /* -------------------------------------------- */
@@ -1546,6 +1541,34 @@ prettify.lexers.style = function style (source: string) {
     parse.linesSpace = lines;
   };
 
+  /**
+   * Parse Space
+   *
+   * This function is responsible for parsing whitespace
+   * characters and newlines. The lexical `a` scope is incremented
+   * and both `parse.lineNumber` and `parse.linesSpace` are
+   * updated accordinly.
+   */
+  function parseSpace (): void {
+
+    parse.linesSpace = 1;
+
+    do {
+
+      if (is(b[a], cc.NWL)) {
+        parse.lineStart = a;
+        parse.linesSpace = parse.linesSpace + 1;
+        parse.lineNumber = parse.lineNumber + 1;
+      }
+
+      if (ws(b[a + 1]) === false) break;
+
+      a = a + 1;
+
+    } while (a < c);
+
+  }
+
   /* -------------------------------------------- */
   /* TOKEN BUILD                                  */
   /* -------------------------------------------- */
@@ -1554,7 +1577,7 @@ prettify.lexers.style = function style (source: string) {
 
     if (ws(b[a])) {
 
-      parseSpace(a);
+      parseSpace();
 
     } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.ARS)) {
 

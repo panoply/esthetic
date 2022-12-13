@@ -41,11 +41,11 @@ test('develop', async t => {
       },
       style: {
         correct: false,
-        sortProperties: true,
+        sortProperties: false,
         sortSelectors: true,
         noLeadZero: true,
         quoteConvert: 'single',
-        classPadding: true
+        classPadding: false
       }
     });
 

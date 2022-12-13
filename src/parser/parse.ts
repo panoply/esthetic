@@ -269,9 +269,10 @@ export const parse = new class Parse {
 
       prettify.lexers[mode](output);
 
-      if (
-        (language === 'javascript' && prettify.options.script.objectSort === true) ||
-        ((language === 'css' || language === 'scss') && prettify.options.style.sortProperties === true)) {
+      if ((language === 'javascript' && prettify.options.script.objectSort === true) || (((
+        language === 'css' ||
+        language === 'scss'
+      )) && prettify.options.style.sortProperties === true)) {
 
         this.sortCorrect(0, this.count + 1);
 
@@ -292,6 +293,8 @@ export const parse = new class Parse {
    */
   public beautify (indent: number) {
 
+    prettify.options.indentLevel = indent;
+
     const tagType = is(this.data.token[prettify.start], ch.LCB) ? 'liquid' : 'html';
     const tagName = getTagName(this.data.stack[prettify.start]);
     const embedded = grammar.embed(tagType, tagName);
@@ -300,8 +303,6 @@ export const parse = new class Parse {
     if (embedded !== false) {
 
       const lexer: LexerNames = this.data.lexer[prettify.start] as LexerNames;
-
-      prettify.options.indentLevel = indent;
       prettify.options.language = embedded.language;
 
       if (embedded.language === 'json') {
@@ -529,12 +530,14 @@ export const parse = new class Parse {
       let yy = y[0];
 
       if (data.types[xx] === 'comment') {
-        do { xx = xx + 1; } while (xx < length && (data.types[xx] === 'comment'));
+        do xx = xx + 1;
+        while (xx < length && (data.types[xx] === 'comment'));
         if (data.token[xx] === undefined) return 1;
       }
 
       if (data.types[yy] === 'comment') {
-        do { yy = yy + 1; } while (yy < length && (data.types[yy] === 'comment'));
+        do yy = yy + 1;
+        while (yy < length && (data.types[yy] === 'comment'));
         if (data.token[yy] === undefined) return 1;
       }
 
@@ -588,12 +591,14 @@ export const parse = new class Parse {
 
           comma = true;
           front = cc;
+
         }
 
         if (front === 0 && data.types[0] === 'comment') {
 
           // Keep top comments at the top
-          do { front = front + 1; } while (data.types[front] === 'comment');
+          do front = front + 1;
+          while (data.types[front] === 'comment');
 
         } else if (data.types[front] === 'comment' && data.lines[front] < 2) {
 
@@ -632,12 +637,14 @@ export const parse = new class Parse {
       ee = keys[keys.length - 1][0] - 1;
 
       if (data.types[ee] === 'comment' && data.lines[ee] > 1) {
-        do { ee = ee - 1; } while (ee > 0 && data.types[ee] === 'comment');
+        do ee = ee - 1;
+        while (ee > 0 && data.types[ee] === 'comment');
         keys[keys.length - 1][0] = ee + 1;
       }
 
       if (data.types[cc + 1] === 'comment' && cc === -1) {
-        do { cc = cc + 1; } while (data.types[cc + 1] === 'comment');
+        do cc = cc + 1;
+        while (data.types[cc + 1] === 'comment');
       }
 
       keys.push([ cc + 1, ee ]);
@@ -753,7 +760,8 @@ export const parse = new class Parse {
             ee = store.types.length - 1;
 
             if (store.types[ee] === 'comment') {
-              do { ee = ee - 1; } while (ee > 0 && (store.types[ee] === 'comment'));
+              do ee = ee - 1;
+              while (ee > 0 && (store.types[ee] === 'comment'));
             }
 
             ee = ee + 1;
