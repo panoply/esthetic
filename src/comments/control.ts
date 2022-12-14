@@ -80,9 +80,8 @@ export function control (prettify: Prettify) {
 
       let x = a;
 
-      do {
-        x = x - 1;
-      } while (x > 0 && source.charAt(x) === '\\');
+      do x = x - 1;
+      while (x > 0 && source.charAt(x) === '\\');
 
       return (a - x) % 2 === 0;
     };
@@ -368,7 +367,8 @@ export function control (prettify: Prettify) {
 
     if (prettify.options[keys[a]] !== undefined) {
       b = definitions[keys[a]].lexer.length;
-      do { b = b - 1; } while (b > 0);
+      do b = b - 1;
+      while (b > 0);
     }
 
     a = a + 1;
