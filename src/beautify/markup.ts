@@ -140,13 +140,14 @@ prettify.beautify.markup = function (options: Options) {
     /**
      * The newline / spacing store reference
      */
-    const level = prettify.start > 0 ? Array(prettify.start).fill(0, 0, prettify.start) : [];
+    const level = prettify.start > 0
+      ? Array(prettify.start).fill(0, 0, prettify.start)
+      : [];
 
     /**
      * Next Index
      *
-     * Advances the structure to the next index
-     * in the uniform.
+     * Advances the structure to the next index in the uniform.
      */
     function forward () {
 
