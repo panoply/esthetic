@@ -2,7 +2,7 @@ import type { Record, Data, Types, Counter, LanguageProperName } from 'types/pre
 import { prettify } from '@prettify/model';
 import { grammar } from '@options/grammar';
 import { parse } from '@parser/parse';
-import { wrapCommentBlock } from '@comments/block';
+import { wrapCommentBlock } from '@comments/parse';
 import { cc, NIL, NWL, WSP } from '@utils/chars';
 import {
   is,
@@ -180,7 +180,6 @@ prettify.lexers.markup = function lexer (source: string) {
 
     // skip line comments
     if (/^{%-?\s*#/.test(input)) return input;
-
     if (/{%-?\s*(?:liquid)/.test(input)) return input;
 
     if (rules.normalizeSpacing === false) return input;
@@ -521,7 +520,7 @@ prettify.lexers.markup = function lexer (source: string) {
      * the data type will be inferred to `template_attribute_chain` - This
      * is only used for template (liquid) attribute expressions.
      */
-    let attrs: [token: string, lines: number, chain?: boolean][] = [];
+    let attrs: [ token: string, lines: number, chain?: boolean ][] = [];
 
     /**
      * Comment related reference
@@ -953,13 +952,10 @@ prettify.lexers.markup = function lexer (source: string) {
 
                 delim = is(b[a], cc.DQO) ? '"' : is(b[a], cc.SQO) ? "'" : NIL;
 
-                if (
-                  not(tags[0], cc.LCB) &&
-                    is(b[a], cc.LCB) && (
-                    is(b[a + 1], cc.LCB) ||
-                    is(b[a + 1], cc.PER)
-                  )
-                ) {
+                if (not(tags[0], cc.LCB) &&
+                  is(b[a], cc.LCB) && (
+                  is(b[a + 1], cc.LCB) ||
+                  is(b[a + 1], cc.PER))) {
 
                   delim = b[a + 1] + '}';
 
@@ -972,6 +968,7 @@ prettify.lexers.markup = function lexer (source: string) {
                   if (endtag === true) {
 
                     icount = icount - 1;
+
                     if (icount < 0) break;
 
                   } else {
@@ -997,6 +994,7 @@ prettify.lexers.markup = function lexer (source: string) {
                   do {
 
                     if (not(b[a - ff], delim.charCodeAt(ee))) break;
+
                     ff = ff + 1;
                     ee = ee - 1;
 
@@ -1035,17 +1033,19 @@ prettify.lexers.markup = function lexer (source: string) {
      * Some additional context is required before passing the contents of these tags
      * to different lexers. It's here where we establish that context.
      *
-     * @next liquid()
+     * @next singular()
      */
     function external () {
 
       cheat = correct();
 
-      if (!grammar.embed('html', tname) && !grammar.embed('liquid', tname)) return singular();
+      if (!grammar.embed('html', tname) && !grammar.embed('liquid', tname)) {
+        return singular();
+      }
 
       let len = attrs.length - 1;
       let value = NIL;
-      let name: [name: string, value: string];
+      let name: [ name: string, value: string ];
 
       if (len > -1) {
         do {
@@ -1062,9 +1062,7 @@ prettify.lexers.markup = function lexer (source: string) {
         } while (len > -1);
       }
 
-      const isliquid = isLiquid(token, 3);
-
-      if (isliquid === false && grammar.embed('html', tname)) {
+      if (is(token, cc.RAN) && grammar.embed('html', tname)) {
 
         embed = true;
 
@@ -1074,15 +1072,17 @@ prettify.lexers.markup = function lexer (source: string) {
           language = grammar.html.embed[tname].language;
         }
 
-      } else if (isliquid === true && grammar.embed('liquid', tname)) {
+      } else if (isLiquidStart(token, true) && grammar.embed('liquid', tname)) {
+
+        if (rules.ignoreScripts === true && (tname === 'style' || tname === 'stylesheet')) {
+          ignore = true;
+          preserve = false;
+          return ignored();
+        }
 
         embed = true;
+        language = grammar.liquid.embed[tname].language;
 
-        if (value === NIL) {
-          language = grammar.liquid.embed[tname].language;
-        } else {
-          language = grammar.liquid.embed[tname].language;
-        }
       }
 
       if (embed === true) {
@@ -1669,6 +1669,70 @@ prettify.lexers.markup = function lexer (source: string) {
     };
 
     /**
+     * Exclude
+     *
+     * This is a utility function for obtaining ending liquid tags
+     * before traversal. Specifically for handling comment blocks
+     * and/or ignored markup tags like scripts or styles.
+     *
+     * @next traverse()
+     */
+    function exclude (tag: string, from: number) {
+
+      // Lets look for liquid tokens keyword sbefore proceeding,
+      // We are skipping ahead from the normal parse here.
+      //
+      if (tag === 'comment' || (tag === 'capture' && rules.preserveCaptures === true) || (
+        tag in grammar.liquid.embed && ((
+          rules.ignoreStyles === true && (
+            grammar.liquid.embed[tag].language === 'css' ||
+            grammar.liquid.embed[tag].language === 'scss' ||
+            grammar.liquid.embed[tag].language === 'less'
+          )) || (
+          rules.ignoreScripts === true && (
+            grammar.liquid.embed[tag].language === 'javascript' ||
+            grammar.liquid.embed[tag].language === 'jsx' ||
+            grammar.liquid.embed[tag].language === 'tsx' ||
+            grammar.liquid.embed[tag].language === 'typescript'
+          )
+        ) || (
+          rules.ignoreJson === true &&
+          grammar.liquid.embed[tag].language === 'json'
+        ))
+      )) {
+
+        const idx1 = source.indexOf('{%', from);
+
+        //  Lets reference this index
+        let idx2 = idx1;
+
+        // Lets make sure to consume and whitespace dash
+        // characters that might be defined
+        //
+        if (b[idx1 + 1].charCodeAt(0) === cc.DSH) idx2 = idx1 + 1;
+
+        // Lets now look the starting index of the `endcomment` keyword
+        //
+        idx2 = source.indexOf(`end${tag}`, idx2);
+
+        if (idx2 > 0) {
+
+          idx2 = b.indexOf('}', idx2);
+
+          if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
+
+            ltype = tag !== 'comment' ? 'ignore' : 'comment';
+            start = b.slice(a, from + 1).join(NIL);
+            end = b.slice(idx1, idx2 + 1).join(NIL);
+
+          }
+        }
+
+      }
+
+    }
+
+    /**
      * Delimiters
      *
      * This is the first function to execute and prepares the traversal
@@ -1832,78 +1896,35 @@ prettify.lexers.markup = function lexer (source: string) {
           ltype = 'template';
 
           /**
-           * `}` - The index of the next Right Curly brace
-           */
-          const rcb = b.indexOf('}', a + 2);
+            * `}` - The index of the next Right Curly brace
+            */
+          const from = b.indexOf('}', a + 2);
 
-          /**
-           * Liquid Comment
-           *
-           * Lets ensure that we have a closing delimiter
-           * character before moving ahead, eg: `%}` and
-           * then we will look for comment keywords.
-           */
-          if (is(b[rcb - 1], cc.PER)) {
+          if (is(b[from - 1], cc.PER)) {
 
-            let t = b.slice(a + 2, rcb - 1).join(NIL);
+            let tag = b.slice(a + 2, from - 1).join(NIL);
 
             // Lets make sure we do not interfere with dash delimiters
-            //
-            if (is(t, cc.DSH)) {
+            if (is(tag, cc.DSH)) {
               start = '{%-';
-              t = t.slice(1).trimStart();
+              tag = tag.slice(1).trimStart();
             } else {
               start = '{%';
-              t = t.trimStart();
+              tag = tag.trimStart();
             }
 
             // Same as above but for closing delimiters
-            //
-            if (is(t[t.length - 1], cc.DSH)) {
+            if (is(tag[tag.length - 1], cc.DSH)) {
               end = '-%}';
-              t = t.slice(0, t.length - 1).trimEnd();
+              tag = tag.slice(0, tag.length - 1).trimEnd();
             } else {
               end = '%}';
-              t = t.trimEnd();
+              tag = tag.trimEnd();
             }
 
-            // Lets look for the comment keyword before proceeding,
-            // We are skipping ahead from the normal parse here.
-            //
-            if (t === 'comment') {
+            exclude(tag, from);
 
-              /**
-               * `{%` The index of the next known closing delimiter
-               * starting from the last `rcb` index position.
-               */
-              const idx1 = source.indexOf('{%', rcb);
-
-              //  Lets reference this index
-              //
-              let idx2 = idx1;
-
-              // Lets make sure to consume and whitespace dash
-              // characters that might be defined
-              //
-              if (b[idx1 + 1].charCodeAt(0) === cc.DSH) idx2 = idx1 + 1;
-
-              // Lets now look the starting index of the `endcomment` keyword
-              //
-              idx2 = source.indexOf('endcomment', idx2);
-
-              if (idx2 > 0) {
-
-                idx2 = b.indexOf('}', idx2);
-
-                if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
-
-                  ltype = 'comment';
-                  start = b.slice(a, rcb + 1).join(NIL);
-                  end = b.slice(idx1, idx2 + 1).join(NIL);
-
-                }
-              }
-            } else if (is(t, cc.HSH)) {
+            if (is(tag, cc.HSH)) {
 
               ltype = 'template';
               end = '%}';
@@ -1917,11 +1938,12 @@ prettify.lexers.markup = function lexer (source: string) {
             ltype = 'template';
 
           }
-
         } else {
+
           preserve = true;
           end = b[a + 1] + '}';
           ltype = 'template';
+
         }
       }
 
@@ -3134,8 +3156,6 @@ prettify.lexers.markup = function lexer (source: string) {
       let quotes = 0;
 
       do {
-
-        // DISABLED FOR NOW
 
         if (is(b[a], cc.NWL)) parse.lineNumber = parse.lineNumber + 1;
 
