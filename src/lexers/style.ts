@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import type { Types } from 'types/prettify';
-import { wrapCommentBlock } from '@comments/block';
+import { wrapCommentBlock, wrapCommentLine } from '@comments/parse';
 import { prettify } from '@prettify/model';
 import { parse } from '@parser/parse';
 import { grammar } from '@options/grammar';
@@ -1252,7 +1252,7 @@ prettify.lexers.style = function style (source: string) {
 
     if (isLineComment) {
 
-      comm = parse.wrapCommentLine({
+      comm = wrapCommentLine({
         chars: b,
         start: a,
         end: c,
