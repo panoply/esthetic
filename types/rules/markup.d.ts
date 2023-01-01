@@ -18,6 +18,26 @@ export interface MarkupOptions {
   correct?: boolean;
 
   /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
+   * If a blank new line should be forced above comments.
+   */
+  commentNewline?: boolean;
+
+  /**
+   * **Default** `true`
+   *
+   * This will determine whether comments should always start at position
+   * `0` of each line or if comments should be indented according to the code.
+   * It is unlikely you will ever want to set this to `false` so generally, just
+   * leave it to `true`
+   *
+   */
+  commentIndent?: boolean;
+
+  /**
    * **Default** `preserve`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `preserve`
@@ -101,6 +121,47 @@ export interface MarkupOptions {
    * ```
    */
   attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value';
+
+  /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
+   * Whether or not ending HTML tag delimiters should be forced onto a newline.
+   * This will emulate the style of Prettier's `singleAttributePerLine` formatting
+   * option, wherein the last `>` delimiter character breaks itself onto a new line.
+   *
+   * **Tip**
+   *
+   * Though this output style was popularized by Prettier, the resulting structures
+   * produced are far from elegant (aesthetically).
+   *
+   * ---
+   *
+   * #### Example
+   *
+   * *Below is an example of how this rule works if it's enabled, ie: `true`. Notice
+   * how the ending delimiter is forced onto a newline after formatting.*
+   *
+   * ```html
+   *
+   * <!-- Before formatting -->
+   * <div
+   *  id="x"
+   *  class="xx">
+   *
+   * </div>
+   *
+   * <!-- After formatting -->
+   * <div
+   *  id="x"
+   *  class="xx"
+   * >
+   *
+   * </div>
+   * ```
+   */
+  delimiterForce?: boolean;
 
   /**
    * **Default** `false`
@@ -196,176 +257,6 @@ export interface MarkupOptions {
    * ```
    */
   attributeSortList?: string[];
-
-  /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
-   *
-   * If a blank new line should be forced above comments.
-   */
-  commentNewline?: boolean;
-
-  /**
-   * **Default** `preserve`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `tags`
-   *
-   * How delimiter whitespace trim dashes should handled on
-   * Liquid tokens. You should avoid setting this to `force` in order to
-   * avoid stripping whitespace between text content. The rule accepts one
-   * of the following options:
-   *
-   * - `preserve`
-   * - `strip`
-   * - `force`
-   * - `tags`
-   * - `outputs`
-   *
-   * ---
-   *
-   * #### Preserve Example
-   *
-   * *Below is an example of how this rule works if set to `preserve` which is
-   * the default and leaves all occurances of trims intact*
-   *
-   * ```liquid
-   *
-   * <!-- Before formatting -->
-   * {% if x -%}
-   *   {{- foo_bar }} {{- trims }}
-   * {% endof -%}
-   *
-   * <!-- Before formatting -->
-   * {% if x -%}
-   *   {{- foo_bar }} {{- trims }}
-   * {% endof -%}
-   * ```
-   *
-   * ---
-   *
-   * #### Strip Example
-   *
-   * *Below is an example of how this rule works if set to `strip` which will
-   * remove all occurances of trims from Liquid tokens.*
-   *
-   * ```liquid
-   *
-   * <!-- Before formatting -->
-   * {%- if x -%}
-   *   {{- foo_bar -}}
-   * {%- endof -%}
-   *
-   * <!-- Before formatting -->
-   * {% if x %}
-   *   {{ foo_bar }}
-   * {% endof %}
-   *
-   * ```
-   *
-   * ---
-   *
-   * #### Force Example
-   *
-   * *Below is an example of how this rule works if set to `force` which will
-   * apply trims on all Liquid tokens.*
-   *
-   * ```liquid
-   *
-   * <!-- Before formatting -->
-   * {% if x %}
-   *   {{ foo_bar }}
-   * {% endof %}
-   *
-   * <!-- Before formatting -->
-   * {%- if x -%}
-   *   {{- foo_bar -}}
-   * {%- endof -%}
-   *
-   * ```
-   *
-   *
-   * ---
-   *
-   * #### Tags Example
-   *
-   * *Below is an example of how this rule works if set to `tags` which will
-   * apply trims to Liquid tag tokens but leave object output tokens intact.*
-   *
-   * ```liquid
-   *
-   * <!-- Before formatting -->
-   * {% if x %}
-   *  {{ foo_bar -}} {{ no_trims }}
-   * {% endof %}
-   *
-   * <!-- After formatting -->
-   * {%- if x -%}
-   *   {{ foo_bar -}} {{ no_trims }}
-   * {%- endof -%}
-   *
-   * ```
-   *
-   * ---
-   *
-   * #### Outputs Example
-   *
-   * *Below is an example of how this rule works if set to `outputs` which will
-   * apply trims to Liquid object output tokens but leave tag tokens intact.*
-   *
-   * ```liquid
-   *
-   * <!-- Before formatting -->
-   * {% if x -%}
-   *  {{ foo_bar }} {{ trims }}
-   * {%- endof %}
-   *
-   * <!-- After formatting -->
-   * {% if x -%}
-   *   {{- foo_bar -}} {{- trims -}}
-   * {%- endof %}
-   *
-   * ```
-   */
-  delimiterTrims?: 'preserve' | 'strip' | 'force' | 'tags' | 'outputs';
-
-  /**
-   * **Default** `true`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
-   *
-   * Whether or not to normalize and correct the inner spacing of Liquid tokens.
-   * This rules will equally distribute whitespace characters contained within
-   * Liquid tags and output tokens.
-   *
-   * **Note**
-   *
-   * Normalized spacing does not strip newline characters or code wrapped in quotation
-   * characters (strings) from the inner contents of Liquid tokens.
-   *
-   * ---
-   *
-   * #### Example
-   *
-   * *Below is an example of how this rule works if it's enabled, ie: `true` which is the default.
-   * Notice how in the below example, all string tokens are left intact whereas other tokens will
-   * normalize the whitespace distribution*
-   *
-   *
-   * ```liquid
-   *
-   * <!-- Before formatting -->
-   * {{  object.prop   |filter:'x'  , 'xx'|    filter   :   'preserves   strings'   }}
-   * {% assign  'foo '  =   ' x '   |  append : object . prop    %}
-   *
-   * <!-- After formatting -->
-   *
-   * {{ object.prop | filter: 'x', 'xx' | filter: 'preserves   strings' }}
-   *
-   * {% assign 'foo ' = ' preserved ' | append: object.prop %}
-   * ```
-   */
-  normalizeSpacing?: boolean;
 
   /**
    * **Default** `false`
@@ -628,15 +519,11 @@ export interface MarkupOptions {
   preserveAttributes?: boolean;
 
   /**
-   * **Default** `default`
+   * **Default** `false`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `before`
-   *
-   * Controls the placement of Liquid tag operator type characters in newline structures.
-   * In situations where you write a multiline tag expression this rule can augment the
-   * order of leading operator characters such as the parameter comma `,` separator.
+   * Prevent comment reformatting due to option wrap.
    */
-  lineBreakSeparator?: 'default' | 'before' | 'after';
+  preserveComment?: boolean;
 
   /**
    * **Default** `false`
@@ -644,9 +531,7 @@ export interface MarkupOptions {
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
    *
    * Whether HTML and Liquid tags identified to be containing CSS or SCSS
-   * should be ignored from beautification. When enabled, formatting will
-   * be applied in accordance with rules defined in the `style` lexer.
-   *
+   * should be ignored from beautification.
    */
   ignoreStyles?: boolean;
 
@@ -666,14 +551,4 @@ export interface MarkupOptions {
    */
   ignoreScripts?: boolean;
 
-  /**
-   * **Default** `intent`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `intent`
-   *
-   * Controls force indentation applied in accordance with the attribute value expressions.
-   * This rule is Liquid specific.
-   *
-   */
-  valueForce?: 'wrap' | 'newline' | 'intent' | 'always' | 'never';
 }
