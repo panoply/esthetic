@@ -5,31 +5,35 @@ import { Types, Structure } from '../common';
 /* DATA STRUCTURE                               */
 /* -------------------------------------------- */
 
-export interface ParseError {
+export interface ParseError<T = any> {
   /**
-   * The line number
-   */
-  lineNumber: number;
-  /**
-   * The error message
-   */
-  message: string;
-  /**
-   * The index of the data record
+   * The index of the data record - This is required
    */
   parseIndex: number;
   /**
-   * The index of the data record
+   * The line number - This is required
    */
-  charIndex: number;
+  lineNumber: number;
   /**
-   * The index of the data record
+   * The index of the source string which the error begins. - This is required
+   */
+  startIndex: number;
+  /**
+   * The index of the data record - This is required
    */
   languageName: LanguageProperName;
   /**
    * Code sample extract
    */
   note?: string;
+  /**
+   * The error message
+   */
+  message?: string;
+  /**
+   * Additional contextual data
+   */
+  data?: T
 }
 
 /**
@@ -40,6 +44,33 @@ export interface Counter {
   start: number;
   index: number;
   line: number;
+}
+
+/**
+ * Syntactical Tracking
+ *
+ * Maintains a reference of start and end type tokens
+ * to be tracked ensuring opening and ending counts
+ * match correctly. The data stored in this model is
+ * used by the Parse Error logic.
+ */
+export interface Syntactic {
+  line?: number;
+  expect?: string;
+  token?: string;
+  stack?: string;
+  syntax?: 'HTML' | 'Liquid' | 'JSX' | 'TSX';
+  begin?: number;
+}
+
+export interface ParseErrorSyntactic {
+
+  /**
+   * This is a store The `parse.data.begin` index. This will typically
+   * reference the `parse.count` value, incremented by `1`
+   */
+  [node: number]: Syntactic
+
 }
 
 /**

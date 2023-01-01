@@ -1,8 +1,8 @@
-import type { Record, Data, Types, Counter, LanguageProperName } from 'types/prettify';
+import type { Record, Data, Types, Counter, LanguageProperName, ParseError, ParseErrorSyntactic, Syntactic } from 'types/prettify';
 import { prettify } from '@prettify/model';
 import { grammar } from '@options/grammar';
 import { parse } from '@parser/parse';
-import { wrapCommentBlock } from '@comments/parse';
+import { wrapCommentBlock, wrapCommentLine } from '@comments/parse';
 import { cc, NIL, NWL, WSP } from '@utils/chars';
 import {
   is,
@@ -15,7 +15,8 @@ import {
   isLiquidControl,
   isLiquidElse,
   isLiquidLine,
-  isValueLiquid
+  isValueLiquid,
+  join
 } from '@utils/helpers';
 
 import {
@@ -51,7 +52,7 @@ prettify.lexers.markup = function lexer (source: string) {
   /**
    * Prettify Options
    */
-  const { options } = prettify;
+  const { options, options: { liquid } } = prettify;
 
   /**
    * Parse data reference
@@ -74,6 +75,11 @@ prettify.lexers.markup = function lexer (source: string) {
   const rules = options.markup;
 
   /**
+   * Ignored Liquid Tags
+   */
+  const igl = new Set(liquid.ignoreTagList);
+
+  /**
    * Attribute sorting list length
    */
   const asl = rules.attributeSortList.length;
@@ -81,7 +87,7 @@ prettify.lexers.markup = function lexer (source: string) {
   /**
    * Count reference to be assigned to the generated tree.
    */
-  const count: Counter = { end: 0, start: 0, line: 1, index: -1 };
+  const count: Counter = { end: 0, start: 0, line: 1, index: 0 };
 
   /**
    * The document source as an array list
@@ -128,6 +134,169 @@ prettify.lexers.markup = function lexer (source: string) {
   /* -------------------------------------------- */
 
   /**
+   * Paired token tag store for capturing invalid start/end tag
+   * type structures.
+   */
+  const pairs: Map<number, Syntactic> = new Map();
+
+  /**
+   * Syntactical Tracking
+   *
+   * This is a store The `parse.data.begin` index. This will typically
+   * reference the `parse.count` value, incremented by `1`
+   */
+  function syntactic (record: Record) {
+
+    function excerpt (no: number) {
+
+      const line = source.split(NWL);
+
+      return [
+        `${no - 2} │ ${line[no - 3].trim().length === 0 ? '␤' : line[no - 3].trim()}`,
+        `${no - 1} │ ${line[no - 2].trim().length === 0 ? '␤' : line[no - 2].trim()}`,
+        `${no} │ ${line[no - 1].trim()}\n`
+      ];
+    }
+
+    function error (line: number, message: string[]) {
+
+      parse.error = parseError({
+        lineNumber: line,
+        sample: excerpt(line),
+        message
+      });
+
+    }
+
+    if (record.types === 'template_start') {
+
+      pairs.set(parse.count + 1, {
+        line: parse.lineNumber,
+        token: record.token,
+        stack: getTagName(record.token),
+        expect: `end${getTagName(record.token)}`,
+        syntax: 'Liquid'
+      });
+
+    } else if (record.types === 'start') {
+
+      pairs.set(parse.count + 1, {
+        line: parse.lineNumber,
+        token: record.token,
+        stack: getTagName(record.token),
+        expect: `</${record.token.slice(1)}`,
+        syntax: 'HTML'
+      });
+
+    } else if (record.types === 'end') {
+
+      if (pairs.has(parse.scope.index)) {
+
+        const ref = pairs.get(parse.scope.index);
+
+        if (ref.expect === record.token) {
+
+          pairs.delete(parse.scope.index);
+
+        } else if (ref.syntax === 'HTML') {
+
+          error(ref.line, [
+            `Incomplete HTML syntactic structure for: ${ref.token}`,
+            'The start/open type tag is missing an end/close type.\n'
+          ]);
+
+        } else if (ref.syntax === 'Liquid') {
+
+          console.log(record);
+
+          // Allow for conditional based wrapping of Liquid tokens
+          // For example
+          //
+          // {% if x %}
+          // <tag>
+          // {% endif %}
+          //
+          if (!grammar.liquid.control.has(data.stack[parse.scope.index])) {
+            error(ref.line, [
+              `Incomplete Liquid syntactic structure for: ${ref.token}`,
+              'The start/open type tag is missing an end/close type.\n'
+            ]);
+          }
+        } else {
+
+          error(parse.lineNumber, [
+            `Invalid syntactic placement of: ${record.token}\n`
+          ]);
+
+        }
+      }
+
+    } else if (record.types === 'template_end') {
+
+      if (pairs.has(parse.scope.index)) {
+
+        const ref = pairs.get(parse.scope.index);
+
+        if (ref.expect === getTagName(record.token)) {
+
+          pairs.delete(parse.scope.index);
+
+        } else if (ref.syntax === 'Liquid') {
+
+          error(ref.line, [
+            `Incomplete Liquid syntactic structure for: ${ref.token}`,
+            'The start/open type tag is missing an end/close type.\n'
+          ]);
+
+        } else if (ref.syntax === 'HTML') {
+
+          // Allow for conditional based wrapping of Liquid tokens
+          // For example
+          //
+          // {% if x %}
+          // <tag>
+          // {% endif %}
+          //
+          if (!grammar.liquid.control.has(data.stack[parse.scope.index])) {
+            error(ref.line, [
+            `Incomplete HTML syntactic structure for: ${ref.token}`,
+            'The start/open type tag is missing an end/close type.\n'
+            ]);
+          }
+
+        } else {
+
+          parse.error = parseError({
+            lineNumber: parse.lineNumber,
+            sample: excerpt(parse.lineNumber),
+            message: `Invalid syntactic placement of: ${record.token}\n`
+          });
+
+        }
+
+      }
+    }
+  }
+
+  /**
+   * Push Record
+   *
+   * Pushes a record into the parse table populating the
+   * data structure. All tokenized tags and content will
+   * pass through this function.
+   */
+  function push (target: Data, record: Record, structure: Types) {
+
+    if (data === target) syntactic(record);
+
+    count.index = parse.count;
+    count.line = parse.lineNumber;
+
+    parse.push(target, record, structure);
+
+  };
+
+  /**
    * Normalize
    *
    * Pads template tag delimters with a space. This function
@@ -146,7 +315,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
     const end = input.length - 3;
 
-    if (rules.delimiterTrims === 'force') {
+    if (liquid.delimiterTrims === 'force') {
 
       if (is(input[1], cc.PER)) {
 
@@ -159,7 +328,7 @@ prettify.lexers.markup = function lexer (source: string) {
         if (not(input[end], cc.DSH)) input = input.replace(/}}$/, '-}}');
 
       }
-    } else if (rules.delimiterTrims === 'strip') {
+    } else if (liquid.delimiterTrims === 'strip') {
 
       input = input
         .replace(/^{%-/, '{%')
@@ -167,22 +336,25 @@ prettify.lexers.markup = function lexer (source: string) {
         .replace(/^{{-/, '{{')
         .replace(/-}}$/, '}}');
 
-    } else if (rules.delimiterTrims === 'tags' && is(input[1], cc.PER)) {
+    } else if (liquid.delimiterTrims === 'tags' && is(input[1], cc.PER)) {
 
       if (not(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
       if (not(input[end], cc.DSH)) input = input.replace(/%}$/, '-%}');
 
-    } else if (rules.delimiterTrims === 'outputs' && is(input[1], cc.LCB)) {
+    } else if (liquid.delimiterTrims === 'outputs' && is(input[1], cc.LCB)) {
 
       if (not(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
       if (not(input[end], cc.DSH)) input = input.replace(/}}$/, '-}}');
     }
 
-    // skip line comments
-    if (/^{%-?\s*#/.test(input)) return input;
-    if (/{%-?\s*(?:liquid)/.test(input)) return input;
+    // ensure normalize spacing is enabld
+    if (liquid.normalizeSpacing === false) return input;
 
-    if (rules.normalizeSpacing === false) return input;
+    // skip line comments
+    if (/^{%-?\s*#/.test(input) || /^{%-?\s*comment/.test(input)) return input;
+
+    // skip liquid tag
+    if (/{%-?\s*(?:liquid)/.test(input)) return input;
 
     /**
      * The starting quotation code character
@@ -238,7 +410,9 @@ prettify.lexers.markup = function lexer (source: string) {
   };
 
   /**
-   * Finds slash escape sequences
+   * Esc
+   *
+   * Finds escaped slash character sequences
    */
   function esc (idx: number) {
 
@@ -249,30 +423,6 @@ prettify.lexers.markup = function lexer (source: string) {
     x = idx - x;
 
     return x % 2 === 1;
-
-  };
-
-  /**
-   * Push Record
-   *
-   * Pushes a record into the parse table populating the
-   * data structure. All tokenized tags and content will
-   * pass through this function.
-   */
-  function push (target: Data, record: Record, structure: Types) {
-
-    if (target === data) {
-      if (record.types.indexOf('end') > -1) {
-        count.end = count.end + 1;
-      } else if (record.types.indexOf('start') > -1) {
-        count.start = count.start + 1;
-      }
-    }
-
-    count.index = parse.count;
-    count.line = parse.lineNumber;
-
-    parse.push(target, record, structure);
 
   };
 
@@ -298,22 +448,6 @@ prettify.lexers.markup = function lexer (source: string) {
     if (n === 'tr' && i === 'colgroup') return true;
 
     return false;
-
-  }
-
-  /**
-   * Parse Error Message
-   *
-   * Helper utility for composing the parse error message.
-   * Generates a readable message for errors.
-   */
-  function error (message: string | string[]) {
-
-    return `Parse Error (line ${parse.lineNumber}):\n${
-      Array.isArray(message)
-        ? message.join(NIL)
-        : message
-    }`;
 
   }
 
@@ -393,10 +527,42 @@ prettify.lexers.markup = function lexer (source: string) {
    * error. The `parse.error` is assigned a string value that
    * informs about the issue.
    */
-  function parseError () {
+  function parseError (ref?: string | {
+    lineNumber: number;
+    lineSpace?: number;
+    sample?: string[];
+    message: string | string[]
+  }) {
 
-    parse.error = 'Prettify Error:\n\n' + parse.error;
+    if (typeof ref === 'object') {
 
+      parse.diagnostic.line = ref.lineNumber;
+      parse.diagnostic.character = ref.lineSpace || parse.linesSpace;
+
+      return join(
+        `Parse Error (line ${ref.lineNumber}):\n`,
+        typeof ref.message === 'string' ? ref.message : join(...ref.message),
+        ...(ref.sample || [])
+      );
+
+    } else if (typeof ref === 'string') {
+
+      parse.diagnostic.line = parse.lineNumber;
+      parse.diagnostic.character = parse.linesSpace;
+
+      return join(
+        `Parse Error (line ${parse.lineNumber}):\n`,
+        ref
+      );
+
+    } else {
+
+      parse.diagnostic.line = parse.lineNumber;
+      parse.diagnostic.character = parse.linesSpace;
+
+      return 'Parse Error:\n' + parse.error;
+
+    }
   }
 
   /**
@@ -478,7 +644,7 @@ prettify.lexers.markup = function lexer (source: string) {
     /**
      * Whether or not to pass to cheat functions.
      */
-    let cheat: boolean = false;
+    const cheat: boolean = false;
 
     /**
      * Whether or not to exit early from walk
@@ -761,7 +927,7 @@ prettify.lexers.markup = function lexer (source: string) {
      *
      * @next cdata()
      */
-    function liquid () {
+    function template () {
 
       /* -------------------------------------------- */
       /* LIQUID TOKEN                                 */
@@ -818,9 +984,9 @@ prettify.lexers.markup = function lexer (source: string) {
 
       }
 
-      if (rules.quoteConvert === 'double') {
+      if (liquid.quoteConvert === 'double') {
         record.token = record.token.replace(/'/g, '"');
-      } else if (rules.quoteConvert === 'single') {
+      } else if (liquid.quoteConvert === 'single') {
         record.token = record.token.replace(/"/g, "'");
       }
 
@@ -833,7 +999,7 @@ prettify.lexers.markup = function lexer (source: string) {
      *
      * Utility function which will re-assign the `ltype` when HTML `void`
      * type tags. This only detects HTML tags, Liquid (template) types are
-     * handled by the `liquid()` function.
+     * handled by the `template()` function.
      *
      * @next ignored()
      */
@@ -885,6 +1051,10 @@ prettify.lexers.markup = function lexer (source: string) {
         }
 
       } else if (grammar.html.voids.has(tname)) {
+
+        ender = null;
+
+      } else if (grammar.embed('liquid', tname) !== false && igl.has(tname) === true) {
 
         ender = null;
 
@@ -1021,7 +1191,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
       }
 
-      return liquid();
+      return template();
 
     }
 
@@ -1037,10 +1207,18 @@ prettify.lexers.markup = function lexer (source: string) {
      */
     function external () {
 
-      cheat = correct();
+      //  cheat = correct();
 
-      if (!grammar.embed('html', tname) && !grammar.embed('liquid', tname)) {
+      if ((
+        grammar.embed('html', tname) === false &&
+        grammar.embed('liquid', tname) === false
+      ) || (
+        grammar.embed('liquid', tname) !== false &&
+        igl.has(tname) === true
+      )) {
+
         return singular();
+
       }
 
       let len = attrs.length - 1;
@@ -1062,7 +1240,7 @@ prettify.lexers.markup = function lexer (source: string) {
         } while (len > -1);
       }
 
-      if (is(token, cc.RAN) && grammar.embed('html', tname)) {
+      if (is(token, cc.LAN) && grammar.embed('html', tname)) {
 
         embed = true;
 
@@ -1074,7 +1252,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
       } else if (isLiquidStart(token, true) && grammar.embed('liquid', tname)) {
 
-        if (rules.ignoreScripts === true && (tname === 'style' || tname === 'stylesheet')) {
+        if (igl.has(tname)) {
           ignore = true;
           preserve = false;
           return ignored();
@@ -1595,15 +1773,15 @@ prettify.lexers.markup = function lexer (source: string) {
 
             } else if (isLiquidStart(value) && (
               (
-                rules.valueForce === 'always' || (
-                  (rules.valueForce === 'intent' || rules.valueForce === 'wrap') &&
+                liquid.valueForce === 'always' || (
+                  (liquid.valueForce === 'intent' || liquid.valueForce === 'wrap') &&
                   options.wrap > 0 &&
                   Math.abs(a - parse.lineStart) >= options.wrap
                 )
               ) || (
                 value.indexOf(NWL) > 0 && (
-                  rules.valueForce === 'newline' ||
-                  rules.valueForce === 'intent'
+                  liquid.valueForce === 'newline' ||
+                  liquid.valueForce === 'intent'
                 )
               )
             ) && (
@@ -1614,9 +1792,11 @@ prettify.lexers.markup = function lexer (source: string) {
               record.token = `${name}=${sq > -1 ? "'" : '"'}`;
               record.types = 'attribute';
 
-              parse.attributes.add(begin);
+              parse.attributes.set(begin, grammar.html.voids.has(record.stack));
 
               push(data, record, NIL);
+
+              // const before = parse.count + 1;
 
               if (idx + 1 === len) {
                 lexer(value.slice(1, -1));
@@ -1639,6 +1819,12 @@ prettify.lexers.markup = function lexer (source: string) {
               record.types = 'attribute';
               record.stack = stack;
               record.begin = begin;
+
+              // for (let x = before; x < parse.count; x++) {
+              //   if (data.types[x].indexOf('template') > -1) {
+              //     data.token[x] = '  ' + data.token[x];
+              //   }
+              // }
 
             } else {
 
@@ -1679,39 +1865,24 @@ prettify.lexers.markup = function lexer (source: string) {
      */
     function exclude (tag: string, from: number) {
 
+      tag = tag.trimStart().split(/\s/)[0];
+
       // Lets look for liquid tokens keyword sbefore proceeding,
       // We are skipping ahead from the normal parse here.
       //
-      if (tag === 'comment' || (tag === 'capture' && rules.preserveCaptures === true) || (
-        tag in grammar.liquid.embed && ((
-          rules.ignoreStyles === true && (
-            grammar.liquid.embed[tag].language === 'css' ||
-            grammar.liquid.embed[tag].language === 'scss' ||
-            grammar.liquid.embed[tag].language === 'less'
-          )) || (
-          rules.ignoreScripts === true && (
-            grammar.liquid.embed[tag].language === 'javascript' ||
-            grammar.liquid.embed[tag].language === 'jsx' ||
-            grammar.liquid.embed[tag].language === 'tsx' ||
-            grammar.liquid.embed[tag].language === 'typescript'
-          )
-        ) || (
-          rules.ignoreJson === true &&
-          grammar.liquid.embed[tag].language === 'json'
-        ))
-      )) {
+      if (tag === 'comment' || igl.has(tag)) {
 
         const idx1 = source.indexOf('{%', from);
 
         //  Lets reference this index
         let idx2 = idx1;
 
-        // Lets make sure to consume and whitespace dash
+        // Lets make sure to consume any whitespace dash
         // characters that might be defined
         //
         if (b[idx1 + 1].charCodeAt(0) === cc.DSH) idx2 = idx1 + 1;
 
-        // Lets now look the starting index of the `endcomment` keyword
+        // Lets now look for the starting index of the `endcomment` keyword
         //
         idx2 = source.indexOf(`end${tag}`, idx2);
 
@@ -1721,9 +1892,16 @@ prettify.lexers.markup = function lexer (source: string) {
 
           if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
 
-            ltype = tag !== 'comment' ? 'ignore' : 'comment';
-            start = b.slice(a, from + 1).join(NIL);
-            end = b.slice(idx1, idx2 + 1).join(NIL);
+            if (tag !== 'comment') {
+              ltype = 'ignore';
+              ignore = true;
+              start = b.slice(a, from + 1).join(NIL);
+              end = b.slice(idx1, idx2 + 1).join(NIL);
+            } else {
+              ltype = 'comment';
+              start = b.slice(a, from + 1).join(NIL);
+              end = b.slice(idx1, idx2 + 1).join(NIL);
+            }
 
           }
         }
@@ -1926,9 +2104,11 @@ prettify.lexers.markup = function lexer (source: string) {
 
             if (is(tag, cc.HSH)) {
 
-              ltype = 'template';
+              ltype = 'comment';
               end = '%}';
+              lchar = end.charAt(end.length - 1);
 
+              return comments(true);
             }
 
           } else {
@@ -1971,16 +2151,30 @@ prettify.lexers.markup = function lexer (source: string) {
      * @next external()
      * @note traverse() will run depending on current iteration
      */
-    function comments () {
+    function comments (lineComment?: boolean) {
 
-      comm = wrapCommentBlock({
-        chars: b,
-        end: c,
-        lexer: 'markup',
-        begin: start,
-        start: a,
-        ender: end
-      });
+      if (lineComment === true) {
+
+        comm = wrapCommentLine({
+          chars: b,
+          end: c,
+          lexer: 'markup',
+          begin: start,
+          start: a,
+          ender: end
+        });
+
+      } else {
+
+        comm = wrapCommentBlock({
+          chars: b,
+          end: c,
+          lexer: 'markup',
+          begin: start,
+          start: a,
+          ender: end
+        });
+      }
 
       token = comm[0] as string;
       a = comm[1] as number;
@@ -1993,7 +2187,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
       } else {
 
-        if (is(token[0], cc.LCB) && is(token[1], cc.PER)) {
+        if (is(token[0], cc.LCB) && is(token[1], cc.PER) && lineComment === false) {
           const begin = token.indexOf('%}', 2) + 2;
           const last = token.lastIndexOf('{%');
           token = normalize(token.slice(0, begin)) + token.slice(begin, last) + normalize(token.slice(last));
@@ -2002,10 +2196,8 @@ prettify.lexers.markup = function lexer (source: string) {
         record.token = token;
         record.types = 'comment';
 
+        return external();
       }
-
-      return external();
-
     }
 
     /**
@@ -2248,11 +2440,11 @@ prettify.lexers.markup = function lexer (source: string) {
 
           if (value.indexOf('=\u201c') > 0) { // “
 
-            parse.error = error('Invalid quote character (\u201c, &#x201c) used.');
+            parse.error = parseError('Invalid quote character (\u201c, &#x201c) used.');
 
           } else if (value.indexOf('=\u201d') > 0) { // ”
 
-            parse.error = error('Invalid quote character (\u201d, &#x201d) used.');
+            parse.error = parseError('Invalid quote character (\u201d, &#x201d) used.');
 
           }
         }
@@ -2265,6 +2457,8 @@ prettify.lexers.markup = function lexer (source: string) {
       /* -------------------------------------------- */
       /* TRAVERSAL                                    */
       /* -------------------------------------------- */
+
+      if (parse.error) return;
 
       do {
 
@@ -2282,6 +2476,36 @@ prettify.lexers.markup = function lexer (source: string) {
           continue;
         }
 
+        if (ltype === 'ignore' && (end === '</style>' || end === '</script>')) {
+
+          lexed.push(b[a]);
+
+          if (
+            end === '</script>' &&
+            b[a - 8] === '<' &&
+            b[a - 7] === '/' &&
+            b[a - 6] === 's' &&
+            b[a - 5] === 'c' &&
+            b[a - 4] === 'r' &&
+            b[a - 3] === 'i' &&
+            b[a - 2] === 'p' &&
+            b[a - 1] === 't' &&
+            b[a] === '>'
+          ) {
+
+            record.token = lexed.join(NIL);
+            push(data, record, 'ignore');
+
+            a = a + 1;
+            return;
+
+          }
+
+          a = a + 1;
+
+          continue;
+        }
+
         if (preserve === true || ((ws(b[a]) === false && not(quote, cc.RCB)) || is(quote, cc.RCB))) {
 
           if (isliquid === false && is(b[a - 1], cc.LCB) && (is(b[a], cc.LCB) || is(b[a], cc.PER))) {
@@ -2292,10 +2516,37 @@ prettify.lexers.markup = function lexer (source: string) {
 
           lexed.push(b[a]);
 
+          if (ltype === 'end' && lexed.length > 2 && is(lexed[0], cc.LAN) && is(lexed[1], cc.FWS) && (
+            is(lexed[lexed.length - 1], cc.FWS) ||
+            is(lexed[lexed.length - 1], cc.LAN)
+          )) {
+
+            if (rules.correct) {
+
+              lexed.pop();
+              lexed.push('>');
+
+            } else {
+
+              parse.error = parseError({
+                lineNumber: parse.lineNumber,
+                message: [
+                  `Missing closing delimiter character: ${lexed.join(NIL)}`,
+                  '\nTIP',
+                  'Prettify can autofix these issues when the correct rule is enabled'
+                ]
+              });
+
+              return;
+
+            }
+
+            break;
+          }
+
           if (is(lexed[0], cc.LAN) && is(lexed[1], cc.RAN) && is(end, cc.RAN)) {
             record.token = '<>';
             record.types = 'start';
-
             push(data, record, '(empty)');
             return;
           }
@@ -2303,16 +2554,13 @@ prettify.lexers.markup = function lexer (source: string) {
           if (is(lexed[0], cc.LAN) && is(lexed[1], cc.FWS) && is(lexed[2], cc.RAN) && is(end, cc.RAN)) {
             record.token = '</>';
             record.types = 'end';
-
             push(data, record, NIL);
             return;
           }
         }
 
         if (ltype === 'cdata' && is(b[a], cc.RAN) && is(b[a - 1], cc.RSB) && not(b[a - 2], cc.RSB)) {
-
-          parse.error = error(`CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`);
-
+          parse.error = parseError(`CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`);
           break;
         }
 
@@ -2383,7 +2631,7 @@ prettify.lexers.markup = function lexer (source: string) {
               preserve === false &&
               lexed.length > 1 &&
               />{2,3}/.test(end) === false) {
-              parse.error = error(`Invalid structure detected ${b.slice(a, a + 8).join(NIL)}`);
+              parse.error = parseError(`Invalid structure detected ${b.slice(a, a + 8).join(NIL)}`);
               break;
             }
 
@@ -2426,13 +2674,13 @@ prettify.lexers.markup = function lexer (source: string) {
 
                     const isval = is(store[0], cc.EQS);
 
-                    do {
+                    while (a < c) {
 
                       a = a + 1;
 
                       if (is(b[a], cc.NWL)) {
 
-                        // parse.lineNumber = parse.lineNumber + 1;
+                        parse.lineNumber = parse.lineNumber + 1;
 
                         if (isval) {
 
@@ -2471,7 +2719,7 @@ prettify.lexers.markup = function lexer (source: string) {
                         break;
                       }
 
-                    } while (a < c);
+                    }
 
                   }
 
@@ -2513,11 +2761,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
                       // If we are at end of tag, we exit the traversal.
                       //
-                      if (is.last(store, cc.FWS) || (
-                        is.last(store, cc.QWS) &&
-                        ltype === 'xml'
-                      )) {
-
+                      if (is.last(store, cc.FWS) || (is.last(store, cc.QWS) && ltype === 'xml')) {
                         store.pop();
                         if (preserve === true) lexed.pop();
                         a = a - 1;
@@ -2721,7 +2965,8 @@ prettify.lexers.markup = function lexer (source: string) {
                     is(b[a + 1], cc.PER) &&
                     is(b[icount - 1], cc.EQS) && (
                       is(quote, cc.DQO) ||
-                      is(quote, cc.SQO))) {
+                      is(quote, cc.SQO)
+                    )) {
 
                     quote = quote + '{%';
                     icount = 0;
@@ -2865,12 +3110,7 @@ prettify.lexers.markup = function lexer (source: string) {
               jsxquote = is(b[a + 1], cc.ARS) ? '\u002a/' : NWL;
               store.push(b[a]);
 
-            } else if (isliquid === false && (
-              b[a] === lchar || (
-                is(end, cc.NWL) &&
-                is(b[a + 1], cc.LAN)
-              )
-            ) && (
+            } else if (isliquid === false && (b[a] === lchar || (is(end, cc.NWL) && is(b[a + 1], cc.LAN))) && (
               lexed.length > end.length + 1 ||
               is(lexed[0], cc.RSB)
             ) && (
@@ -2976,7 +3216,8 @@ prettify.lexers.markup = function lexer (source: string) {
       icount = 0;
       token = lexed.join(NIL);
       tname = getTagName(token);
-      token = normalize(token);
+
+      if (ignore === false) token = normalize(token);
 
       if (tname === 'xml') {
         html = 'xml';
@@ -3331,7 +3572,7 @@ prettify.lexers.markup = function lexer (source: string) {
 
               const embed = grammar.embed('liquid', name);
 
-              if (embed !== false) {
+              if (embed !== false && igl.has(name) === false) {
 
                 const inner = b.slice(a).join(NIL);
                 const ender = inner.search(new RegExp(`{%-?\\s*end${name}`));
@@ -3378,6 +3619,7 @@ prettify.lexers.markup = function lexer (source: string) {
           } else if (quote === 'reg' && is(b[a], cc.FWS) && esctest() === false) {
             quote = NIL;
           } else if (is(quote, cc.FWS) && is(b[a], cc.LAN) && is(b[a - 1], cc.DSH) && is(b[a - 2], cc.DSH)) {
+
             end = b.slice(a + 1, a + 11).join(NIL).toLowerCase();
             end = end.slice(0, end.length - 2);
 
@@ -3636,6 +3878,8 @@ prettify.lexers.markup = function lexer (source: string) {
 
   do {
 
+    if (parse.error) return data;
+
     if (ws(b[a])) {
 
       parseSpace();
@@ -3656,12 +3900,6 @@ prettify.lexers.markup = function lexer (source: string) {
 
       parseToken('---');
 
-    } else if (parse.error) {
-
-      parseError();
-
-      return data;
-
     } else {
 
       parseContent();
@@ -3672,20 +3910,19 @@ prettify.lexers.markup = function lexer (source: string) {
 
   } while (a < c);
 
-  if (count.end !== count.start && parse.error === NIL) {
+  if (syntactic.count > 0) {
 
-    if (count.end > count.start) {
-      const x = count.end - count.start;
-      const p = (x === 1) ? NIL : 's';
-      parse.error = `Prettify Error (line ${count.line}):\n${x} more end type${p} than start type${p}`;
-    } else {
-      const x = count.start - count.end;
-      const p = (x === 1) ? NIL : 's';
-      parse.error = `Prettify Error (line ${count.line}):\n${x} more start type${p} than end type${p}`;
+    for (const e in syntactic) {
+      console.log(syntactic);
+
+      parse.error = parseError({
+        message: `Parse Error (line ${syntactic[e].lineNumber})`,
+        lineNumber: syntactic[e].lineNumber
+      });
+
     }
 
   }
-
   // console.log(data);
   return data;
 
