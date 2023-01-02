@@ -1582,6 +1582,24 @@ prettify.beautify.markup = function (options: Options) {
 
   }
 
+  /**
+   * Contained Controls
+   *
+   * This is a quick hack for aligning nested control tags
+   * which contain HTML start/end markup tokens. For example:
+   *
+   * ```liquid
+   * {% if x %}
+   *  <div class="foo">
+   * {% endif %}
+   *
+   *  {% # applied correct indentation %}
+   *
+   * {% if x %}
+   *  </div>
+   * {% endif %}
+   * ```
+   */
   function onContainedControls (last: number) {
 
     if (
@@ -1595,7 +1613,7 @@ prettify.beautify.markup = function (options: Options) {
     } else if (
       isType(a, 'template_start') &&
       isType(a + 1, 'end') &&
-      isType(next, 'template_end')
+      isType(data.ender[a + 1] + 1, 'template_end')
     ) {
 
       build[last] = build[last].replace(/ +/, m => m.slice(options.indentSize));
