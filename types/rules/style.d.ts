@@ -1,4 +1,4 @@
-export interface StyleOptions {
+export interface StyleRules {
   /**
    * **Default** `false`
    *
@@ -7,6 +7,13 @@ export interface StyleOptions {
    * corrected.
    */
   correct?: boolean;
+
+  /**
+   * **Default** `true`
+   *
+   * Insert a single whitespace character betwen @ rules.
+   */
+  atRuleSpace?: boolean;
 
   /**
    * This option will alphabetically sort CSS properties contained
@@ -190,12 +197,4 @@ export interface StyleOptions {
    * @default 'none'
    */
   quoteConvert?: 'double' | 'single' | 'none'
-
-  /**
-   * **Default:** `false`
-   *
-   * If CSS should be beautified in a style where the properties and
-   * values are minifed for faster reading of selectors
-   */
-  compressCSS?: boolean;
 }

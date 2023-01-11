@@ -26,7 +26,7 @@ test('Spacing in object expressions', t => {
 
     const actual = prettify.formatSync(source, {
       language: 'liquid',
-      markup: {
+      liquid: {
         normalizeSpacing: true
       }
     });
@@ -83,7 +83,7 @@ test('Spacing in control operators', t => {
 
     const actual = prettify.formatSync(source, {
       language: 'liquid',
-      markup: {
+      liquid: {
         normalizeSpacing: true
       }
     });
@@ -123,7 +123,7 @@ test('Spacing in filter expressions', t => {
 
     const actual = prettify.formatSync(source, {
       language: 'liquid',
-      markup: {
+      liquid: {
         normalizeSpacing: true
       }
     });
@@ -162,7 +162,7 @@ test('Spacing in assignment', t => {
 
     const actual = prettify.formatSync(source, {
       language: 'liquid',
-      markup: {
+      liquid: {
         normalizeSpacing: true
       }
     });
@@ -191,7 +191,7 @@ test('Spacing in arguments', t => {
 
     const actual = prettify.formatSync(source, {
       language: 'liquid',
-      markup: {
+      liquid: {
         normalizeSpacing: true
       }
     });
@@ -224,7 +224,7 @@ test('Spacing in parameters', t => {
 
     const actual = prettify.formatSync(source, {
       language: 'liquid',
-      markup: {
+      liquid: {
         normalizeSpacing: true
       }
     });
@@ -273,7 +273,7 @@ test('Spacing skipping strings', t => {
 
     const actual = prettify.formatSync(source, {
       language: 'liquid',
-      markup: {
+      liquid: {
         normalizeSpacing: true
       }
     });

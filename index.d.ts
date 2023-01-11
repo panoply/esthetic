@@ -1,34 +1,84 @@
 /* eslint-disable object-curly-newline */
 
 import {
-  Options,
+  LiquidFormat,
+  HTMLFormat,
+  CSSFormat,
+  JSONFormat
+} from './types/misc/specifics';
+
+import {
+  Rules,
   Definitions,
   Language,
   Format,
-  Parse
-} from '@liquify/prettify/types/prettify';
+  Parse,
+  ParseError,
+  Grammars
+} from './types/internal';
 
 export {
   Definition,
   Definitions,
-  Options,
-  GlobalOptions,
-  MarkupOptions,
-  ScriptOptions,
-  StyleOptions,
-  JSONOptions,
+  Rules,
+  GlobalRules,
+  LiquidRules,
+  MarkupRules,
+  ScriptRules,
+  StyleRules,
+  JSONRules,
   Language,
-  LanguageNames,
-  LanguageProperNames,
-  LexerNames
-} from '@liquify/prettify/types/prettify';
+  LanguageName,
+  LanguageOfficialName,
+  LexerName
+} from './types/internal';
 
 declare const prettify: {
   /**
+   * **PRETTIFY LIQUID 🎀**
+   *
+   * Formatting for the Liquid Template Language.
+   */
+  liquid: LiquidFormat;
+  /**
+   * **PRETTIFY HTML 🎀**
+   *
+   * Formatting for the HTML Language.
+   */
+  html: HTMLFormat;
+  /**
+   * **PRETTIFY CSS 🎀**
+   *
+   * Formatting for the CSS Language.
+   */
+  css: CSSFormat
+  /**
+   * **PRETTIFY JSON 🎀**
+   *
+   * Formatting for the JSON Language.
+   */
+  json: JSONFormat;
+  /**
+   * **Defintions**
+   *
+   * Rule defintions which describe the different formatting options
+   * prettify offers.
+   */
+  get definitions(): Definitions;
+  /**
+   * **Error**
+   *
+   * Returns the the Parse Error or `null` if no error
+   */
+  get error(): ParseError;
+  /**
    * **PRETTIFY 🎀**
    *
-   * The new generation beautification tool for Liquid. Async
-   * export which resolves a promise.
+   * A formatting method which exposes all formatting options.
+   * If you are target a specific language, then use the specific
+   * language name exports for easier control.
+   *
+   * Support for the following languages:
    *
    * - Liquid + HTML
    * - Liquid + XHTML
@@ -43,71 +93,52 @@ declare const prettify: {
    * - Liquid + TSX
    * - JSON
    */
-  format?: Format<Promise<string>>
+  format?: Format<string, Rules>;
+
   /**
-   * **PRETTIFY 🎀**
+   * **Parse (async)**
    *
-   * The new generation beautification tool for Liquid. Sync
-   * export which throws if error.
-   *
-   * - Liquid + HTML
-   * - Liquid + XHTML
-   * - Liquid + XML
-   * - Liquid + CSS
-   * - Liquid + SCSS
-   * - Liquid + SASS
-   * - Liquid + LESS
-   * - Liquid + JavaScript
-   * - Liquid + TypeScript
-   * - Liquid + JSX
-   * - Liquid + TSX
-   * - JSON
+   * Returns the Sparser data~structure. Returns a promise.
+   * You can access the sync method as a function method.
    */
-  formatSync?: Format<string>
+  parse: Parse<string>;
+
   /**
-   * **Parse**
+   * **Rules**
    *
-   * Returns the Sparser data~structure. Async
-   * export which resolves a promise.
+   * Set format rules to be applied to syntax. To return the
+   * current beautification rules, then do not provide a parameter.
    */
-  parse?: Parse<string>;
-  /**
-   * **Parse**
-   *
-   * Returns the Sparser data~structure. Async
-   * export which resolves a promise.
-   */
-  parseSync?: Parse<Promise<string>>
-  /**
-   * **Options**
-   *
-   * Set format options to be applied to syntax
-   */
-  options?: {
-    (rules: Options): Options;
-    /**
-     * **Current Rules**
-     *
-     * Returns the current formatting rule options. This
-     * getter will reflect the last known options to have been
-     * passed.
-     */
-    get rules(): Options;
+  rules: {
+    (rules?: Rules): Rules;
     /**
      * **Change Listener**
      *
      * Hook listener wich will be invoked when beautification
      * options change or are augmented.
      */
-    listen?: (callback: (opions: Options) => void) => void
+    listen: (callback: (rules: Rules, changes: ) => void) => void
   };
+  /**
+   * **Grammar**
+   *
+   * Extend the Prettify built-in grammar references.
+   * By default, Prettify supports all current specification standards.
+   *
+   * This is helpful when you need to provide additional
+   * context and handling in Liquid but you can also extend
+   * the core languages.
+   *
+   * > To return the current grammar presets, then do not provide a parameter.
+   */
+  grammar: (grammar?: Grammars) => Grammars;
   /**
    * **Language**
    *
    * Automatic language detection based on the string input.
    * Returns lexer, language and official name.
    */
-  language?: {
+  language: {
     /**
      * **Detect Language**
      *
@@ -121,23 +152,15 @@ declare const prettify: {
      * Returns a language from a supplied language
      * name reference.
      */
-    reference?(languageId: Language): Language;
+    reference(languageId: Language): Language;
     /**
      * **Language Listener**
      *
      * Trigger a callback to execute after language detection has
      * completed. Optionally return an augmentation
      */
-    listen?: (callback: (language: Language) => void | Language) => void;
+    listen: (callback: (language: Language) => void | Language) => void;
   };
 };
-
-/**
- * **Defintions**
- *
- * Rule defintions which describe the different formatting options
- * prettify offers.
- */
-export declare const definitions: Definitions;
 
 export default prettify;

@@ -128,21 +128,3 @@ test.serial('Sort Properties (Alphabetical)', async t => {
   });
 
 });
-
-test.serial('Compress CSS', async t => {
-
-  await forRule('rules/style/compress-css')([
-    true,
-    false
-  ]
-  , async function (source, compressCSS, label) {
-
-    const output = await prettify.format(source, { style: { compressCSS } });
-
-    t.snapshot(output, label({ style: { compressCSS } }));
-
-    // t.log(output);
-
-  });
-
-});
