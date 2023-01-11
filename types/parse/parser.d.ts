@@ -1,39 +1,75 @@
-import { LanguageProperName } from 'types/prettify';
-import { Types, Structure } from '../common';
+import { Types, Structure, LanguageOfficialName } from '../shared';
+import { LangMap } from 'src/parse/detection';
+import { ErrorTypes, ParseErrors } from 'src/parse/errors';
+
+export interface Scope {
+  get token (): string;
+  set token (token: string)
+  get index (): number;
+  set index (index: number)
+}
+
+/* -------------------------------------------- */
+/* LEXING                                       */
+/* -------------------------------------------- */
+
+export interface VariableDeclarations {
+  /**
+   * Count reference
+   */
+  count: number[];
+  /**
+   * Index Reference
+   */
+  index: number[];
+  /**
+   * Word Stores
+   */
+  word: string[];
+}
 
 /* -------------------------------------------- */
 /* DATA STRUCTURE                               */
 /* -------------------------------------------- */
 
-export interface ParseError<T = any> {
+export interface ParseError {
   /**
-   * The index of the data record - This is required
-   */
-  parseIndex: number;
-  /**
-   * The line number - This is required
-   */
-  lineNumber: number;
-  /**
-   * The index of the source string which the error begins. - This is required
-   */
-  startIndex: number;
-  /**
-   * The index of the data record - This is required
-   */
-  languageName: LanguageProperName;
-  /**
-   * Code sample extract
-   */
-  note?: string;
-  /**
-   * The error message
+   * The error message, to be thrown (combines all refs in this model)
    */
   message?: string;
   /**
-   * Additional contextual data
+   * Error details, holds more informative information about error
    */
-  data?: T
+  details?: string;
+  /**
+   * Snippet Error Code Sample
+   */
+  snippet?: string;
+  /**
+   * The Error Type
+   */
+  type?: ErrorTypes;
+  /**
+   * Snippet Error Sample
+   */
+  code?: ParseErrors;
+  /**
+   * The error syntax Language (Proper Name)
+   */
+  language?: LanguageOfficialName;
+  /**
+   * The range based location of the error.
+   */
+  location?: {
+    start: {
+      line: number;
+      character: number;
+    };
+    end: {
+      line: number;
+      character: number;
+    }
+  };
 }
 
 /**
@@ -59,18 +95,7 @@ export interface Syntactic {
   expect?: string;
   token?: string;
   stack?: string;
-  syntax?: 'HTML' | 'Liquid' | 'JSX' | 'TSX';
-  begin?: number;
-}
-
-export interface ParseErrorSyntactic {
-
-  /**
-   * This is a store The `parse.data.begin` index. This will typically
-   * reference the `parse.count` value, incremented by `1`
-   */
-  [node: number]: Syntactic
-
+  type?: LangMap;
 }
 
 /**
@@ -123,16 +148,16 @@ export interface Record {
    * For tokens of type start this will refer to the parent
    * container or global scope.
    */
-  begin: Data['begin'][0]
+  begin: Data['begin'][number]
   /**
    * The index where the current structure ends. Unlike the
    * `begin` data a token of type end refers to itself.
    */
-  ender: Data['ender'][0]
+  ender: Data['ender'][number]
   /**
    * The type of rules use to scan and resolve the current token.
    */
-  lexer: Data['lexer'][0]
+  lexer: Data['lexer'][number]
   /**
    * Describes the white space immediate prior to the token's first
    * character. A value of `0` means no white space. A value of `1`
@@ -141,16 +166,16 @@ export interface Record {
    * For example, an empty line preceding the current token would mean a
    * value of `3`, because the white space would contain two new line characters.
    */
-  lines: Data['lines'][0]
+  lines: Data['lines'][number]
   /**
    * A description of the current structure represented by the
    * `begin` and `ender` data values.
    */
-  stack: Data['stack'][0]
+  stack: Data['stack'][number]
   /**
    * The atomic code fragment.
    */
-  token: Data['token'][0]
+  token: Data['token'][number]
   /**
    * A categorical description of the current token. Types are defined
    * in each markdown file accompanying a respective lexer file.
@@ -180,7 +205,7 @@ export interface WrapComment {
   ender: string;
 }
 
-export interface IParse {
+export interface XParse {
 
   /**
    * Parse Error
@@ -272,10 +297,11 @@ export interface IParse {
 /**
  * Parse Scopes
  */
-interface Scopes extends Array<[
-  string,
-  number]>{
-  [index: number]: [string, number];
+interface Scopes extends Array<[ string, number]>{
+  [index: number]: [
+    string,
+    number
+  ];
 }
 
 /* -------------------------------------------- */

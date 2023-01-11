@@ -2,7 +2,7 @@ import test from 'ava';
 import { forRules, forAssert, liquid } from '@liquify/ava/prettify';
 import prettify from '@liquify/prettify';
 
-test('Liquid structure variations', t => {
+test.serial('Liquid structure variations', t => {
 
   forAssert(
     [
@@ -49,17 +49,14 @@ test('Liquid structure variations', t => {
     ]
   )(function (source, expect) {
 
-    const actual = prettify.formatSync(source, {
-      language: 'liquid'
-
-    });
+    const actual = prettify.formatSync(source, { language: 'liquid' });
 
     t.is(actual, expect);
 
   });
 });
 
-test('Liquid chaining and whitespace breaks', t => {
+test.serial('Liquid chaining and whitespace breaks', t => {
 
   forAssert(
     [
@@ -106,7 +103,7 @@ test('Liquid chaining and whitespace breaks', t => {
   });
 });
 
-test('Liquid structure preservation', t => {
+test.serial('Liquid structure preservation', t => {
 
   forRules(
     [
@@ -246,13 +243,13 @@ test('Liquid structure preservation', t => {
 
 });
 
-test('Liquid delimiter handling', t => {
+test.serial('Liquid delimiter handling', t => {
 
   forRules(
     [
       liquid`
 
-      {% # Testing HTML tag delimiter characters ">" and "<"" within HTML attribute values. %}
+      {% # Testing HTML tag delimiter characters ">" and "<" within HTML attribute values. %}
 
       <div
 
@@ -312,22 +309,25 @@ test('Liquid delimiter handling', t => {
   )(
     {
       language: 'liquid',
+      liquid: {
+        normalizeSpacing: true
+      },
       markup: {
-        forceAttribute: true,
-        delimiterSpacing: true
+        forceAttribute: true
       }
     }
   )(function (source, rules, label) {
 
     const snapshot = prettify.formatSync(source, rules);
 
+    //  console.log(snapshot);
     t.snapshot(snapshot, label);
 
   });
 
 });
 
-test('Casing rule cases', t => {
+test.serial('Casing rule cases', t => {
 
   forRules(
     [
@@ -363,7 +363,7 @@ test('Casing rule cases', t => {
 
 });
 
-test('Quote conversion within values', t => {
+test.serial('Quote conversion within values', t => {
 
   forRules(
     [
@@ -426,7 +426,7 @@ test('Quote conversion within values', t => {
 
 });
 
-test('Sorting alphabetically', t => {
+test.serial('Sorting alphabetically', t => {
 
   forRules(
     [
@@ -476,7 +476,7 @@ test('Sorting alphabetically', t => {
 
 });
 
-test('Sorting using sort list', t => {
+test.serial('Sorting using sort list', t => {
 
   forRules(
     [
@@ -540,7 +540,7 @@ test('Sorting using sort list', t => {
   });
 });
 
-test('Sorting excluded when Liquid attributes', t => {
+test.serial('Sorting excluded when Liquid attributes', t => {
 
   forAssert(
     [

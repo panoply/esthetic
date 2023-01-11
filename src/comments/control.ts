@@ -1,10 +1,10 @@
-import type { Prettify } from 'types/prettify';
-import * as language from '@parser/language';
+import * as language from 'src/parse/detection';
 import { CommControl, CommIgnoreFile } from '@utils/regex';
 import { cc, NIL } from '@utils/chars';
 import { keys } from '@utils/native';
 import { is, ws } from '@utils/helpers';
-import { definitions } from '@options/definitions';
+import { definitions } from '@shared/definitions';
+
 
 /**
  * Parses the inline comment settings. This has been adapted from
@@ -33,7 +33,7 @@ import { definitions } from '@options/definitions';
  * 4. Parameters are name value pairs separated by white space
  * 5. The delimiter separating name and value must be a colon character, eg: `:`
  */
-export function control (prettify: Prettify) {
+export function control () {
 
   const sindex = prettify.source.search(CommControl);
   const signore = prettify.source.search(CommIgnoreFile);

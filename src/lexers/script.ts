@@ -1,41 +1,32 @@
 /* eslint-disable no-mixed-operators */
 /* eslint-disable no-control-regex */
 
-import { JSONRules, Record, ScriptRules, Structure, Types, VariableDeclarations } from 'types/internal';
-import { prettify } from '@prettify/model';
+import { Record, Structure, Types, VariableDeclarations } from 'types/internal';
 import { wrapCommentBlock, wrapCommentLine } from '@comments/parse';
 import { CommIgnoreStart } from '@utils/regex';
 import { parse } from '@parse/parser';
 import { assign, isArray } from '@utils/native';
 import { cc, NIL, NWL } from '@utils/chars';
 import * as u from '@utils/helpers';
+import { sortCorrect, sortObject } from '@parse/sorting';
 
 // prettify.lexers.script =
 
-export function script (source: string | string[]) {
-
-  const { rules } = prettify;
-
-  const cloneopts = assign({}, rules.script);
-
-  if (rules.language === 'json') {
-    rules.script = assign<ScriptRules, JSONRules, ScriptRules>(rules.script, rules.json, {
-      quoteConvert: 'double',
-      endComma: 'never',
-      noSemicolon: true,
-      vertical: false
-    });
-  }
+export function script () {
 
   /**
    * Destructured `parse` methods and store reference
    */
-  const { data, references } = parse;
+  const { data, references, rules, source } = parse;
+
+  const cache = { ...rules.script };
+
+  rules.script = assign(rules.script, rules.json);
 
   /**
    * The document source as an array list, ie: source.split()
    */
-  const c = isArray(source) ? source : source.split(NIL);
+  const c: string[] = isArray(source) ? source : source.split(NIL);
 
   /**
    * The length of the document source, ie: number of characters (`source.length`)
@@ -185,14 +176,16 @@ export function script (source: string | string[]) {
   function push (structure: string = NIL) {
 
     const record: Record = {
-      begin: parse.scope.index,
+      begin: parse.stack.index,
       ender: -1,
       lexer: 'script',
-      lines: parse.linesSpace,
-      stack: parse.scope.token,
+      lines: parse.space,
+      stack: parse.stack.token,
       token: ltoke,
       types: ltype
     };
+
+    // console.log(record);
 
     parse.push(data, record, structure);
 
@@ -284,7 +277,7 @@ export function script (source: string | string[]) {
   function applySemicolon (isEnd: boolean) {
 
     const next = peek(1, false);
-    const clist = parse.structure.length === 0 ? NIL : parse.scope.token;
+    const clist = parse.stack.length === 0 ? NIL : parse.stack.token;
     const record: Record = {
       begin: data.begin[parse.count],
       ender: data.begin[parse.count],
@@ -363,8 +356,8 @@ export function script (source: string | string[]) {
     }
 
     if (data.lexer[parse.count - 1] !== 'script' && (
-      (a < b && b === prettify.source.length - 1) ||
-      (b < prettify.source.length - 1)
+      (a < b && b === source.length - 1) ||
+      (b < source.length - 1)
     )) {
 
       return; // RETURN EARLY
@@ -497,13 +490,13 @@ export function script (source: string | string[]) {
     ltoke = rules.script.correct === true ? ';' : 'x;';
     ltype = 'separator';
 
-    i = parse.linesSpace;
+    i = parse.space;
 
-    parse.linesSpace = 0;
+    parse.space = 0;
 
     push();
 
-    parse.linesSpace = i;
+    parse.space = i;
 
     applyBrace();
 
@@ -552,7 +545,7 @@ export function script (source: string | string[]) {
         begin: data.begin[i],
         ender: -1,
         lexer: 'script',
-        lines: parse.linesSpace,
+        lines: parse.space,
         stack: data.stack[i],
         token: ltoke,
         types: ltype as any
@@ -616,11 +609,11 @@ export function script (source: string | string[]) {
       }
 
       parse.push(data, {
-        begin: parse.scope.index,
+        begin: parse.stack.index,
         ender: -1,
         lexer: 'script',
-        lines: parse.linesSpace,
-        stack: parse.scope.token,
+        lines: parse.space,
+        stack: parse.stack.token,
         token: ltoke,
         types: ltype as any
       }, NIL);
@@ -668,11 +661,11 @@ export function script (source: string | string[]) {
       }
 
       parse.push(data, {
-        begin: parse.scope.index
+        begin: parse.stack.index
         , ender: -1
         , lexer: 'script'
-        , lines: parse.linesSpace
-        , stack: parse.scope.token
+        , lines: parse.space
+        , stack: parse.stack.token
         , token: ltoke
         , types: ltype as any
       }, NIL);
@@ -1116,7 +1109,7 @@ export function script (source: string | string[]) {
         data.types[parse.count] === 'reference'
       )) {
 
-        parse.scope.token = 'attribute';
+        parse.stack.update('attribute');
         data.stack[parse.count] = 'attribute';
       }
     }
@@ -1246,10 +1239,10 @@ export function script (source: string | string[]) {
 
     function applyMarkup () {
 
-      if (u.is(ltoke, cc.LPR)) parse.structure.update('paren', parse.count);
+      if (u.is(ltoke, cc.LPR)) parse.stack.update('paren', parse.count);
 
       // console.log(output.join(NIL));
-      prettify.lexers.markup(output.join(NIL));
+      parse.external('html', output.join(NIL));
 
     };
 
@@ -1377,7 +1370,7 @@ export function script (source: string | string[]) {
         data.types[d] === 'separator' ||
         data.types[d] === 'jsx_attribute_start' || (
           u.is(data.token[d], cc.RCB) &&
-          parse.scope.token === 'global'
+          parse.stack.token === 'global'
         )
       )
     ) {
@@ -1808,7 +1801,7 @@ export function script (source: string | string[]) {
           if (c[ee] === NWL) linesSpace = linesSpace + 1;
         } while (ee < b && u.ws(c[ee + 1]));
 
-        parse.linesSpace = linesSpace;
+        parse.space = linesSpace;
       }
     };
 
@@ -1933,11 +1926,11 @@ export function script (source: string | string[]) {
         } else if (starting.indexOf('#!') === 0) {
 
           ltoke = ltoke.slice(0, ltoke.length - 1);
-          parse.linesSpace = 2;
+          parse.space = 2;
 
         } else if (
-          parse.scope.token !== 'object' || (
-            parse.scope.token === 'object' &&
+          parse.stack.token !== 'object' || (
+            parse.stack.token === 'object' &&
             u.not(peek(1, false), cc.COL) &&
             u.not(data.token[parse.count], cc.COM) &&
             u.not(data.token[parse.count], cc.LCB)
@@ -2017,7 +2010,7 @@ export function script (source: string | string[]) {
 
                 push(NIL);
 
-                parse.linesSpace = 0;
+                parse.space = 0;
                 ltoke = '+';
                 ltype = 'operator';
 
@@ -2148,7 +2141,7 @@ export function script (source: string | string[]) {
           (u.is(c[ee], cc.NWL) || (ee === b - 1) === true)
         ) {
 
-          parse.error = 'Unterminated string in script on line number ' + parse.lineNumber;
+          parse.error = 'Unterminated string in script on line number ' + parse.line;
           break;
 
         }
@@ -2181,7 +2174,7 @@ export function script (source: string | string[]) {
 
     const next = peek(5, false);
     const g = parse.count;
-    const lines = parse.linesSpace;
+    const lines = parse.space;
 
     if (
       rules.language === 'json' ||
@@ -2206,10 +2199,10 @@ export function script (source: string | string[]) {
         tstore = parse.pop(data);
         ltoke = rules.script.correct === true ? '}' : 'x}';
         ltype = 'end';
-        pstack = parse.structure.scope;
+        pstack = parse.stack.entry;
         push();
         brace.pop();
-        parse.linesSpace = lines;
+        parse.space = lines;
         return;
       }
 
@@ -2217,7 +2210,7 @@ export function script (source: string | string[]) {
       tstore = parse.pop(data);
       ltoke = rules.script.correct === true ? '}' : 'x}';
       ltype = 'end';
-      pstack = parse.structure.scope;
+      pstack = parse.stack.entry;
 
       push();
       brace.pop();
@@ -2226,7 +2219,7 @@ export function script (source: string | string[]) {
       ltype = 'end';
 
       parse.push(data, tstore, NIL);
-      parse.linesSpace = lines;
+      parse.space = lines;
 
       return;
     }
@@ -2241,17 +2234,17 @@ export function script (source: string | string[]) {
       data.token[parse.count] === 'x;'
     )) {
 
-      pstack = parse.structure.scope;
+      pstack = parse.stack.entry;
       push();
       brace.pop();
-      parse.linesSpace = lines;
+      parse.space = lines;
 
       return;
     }
 
     do {
 
-      pstack = parse.structure.scope;
+      pstack = parse.stack.entry;
       push();
       brace.pop();
 
@@ -2259,7 +2252,7 @@ export function script (source: string | string[]) {
 
     } while (brace[brace.length - 1] === 'x{');
 
-    parse.linesSpace = lines;
+    parse.space = lines;
 
   };
 
@@ -2290,7 +2283,7 @@ export function script (source: string | string[]) {
           begin: data.begin[x]
           , ender: -1
           , lexer: 'script'
-          , lines: parse.linesSpace
+          , lines: parse.space
           , stack: data.stack[x]
           , token: ','
           , types: 'separator'
@@ -2334,7 +2327,7 @@ export function script (source: string | string[]) {
       tstore = parse.pop(data);
       tstore = parse.pop(data);
 
-      parse.structure.pop();
+      parse.stack.pop();
 
       ltoke = startar;
       ltype = 'start';
@@ -2434,19 +2427,12 @@ export function script (source: string | string[]) {
         parseLogical();
       }
 
-      if (parse.structure.length > 0 && parse.scope.token !== 'object') {
+      if (parse.stack.length > 0 && parse.stack.token !== 'object') {
         applySemicolon(true);
       }
 
-      if (parse.scope.token === 'object' && (
-        rules.script.objectSort === true || (
-          rules.language === 'json' &&
-          rules.json.objectSort === true
-        )
-      )) {
-
-        parse.sortObject(data);
-
+      if (rules.script.objectSort === true && parse.stack.token === 'object') {
+        sortObject(data);
       }
 
       if (ltype === 'comment') {
@@ -2457,14 +2443,14 @@ export function script (source: string | string[]) {
       ltoke = '}';
     }
 
-    if (parse.scope.token === 'data_type') {
+    if (parse.stack.token === 'data_type') {
       ltype = 'type_end';
     } else {
       ltype = 'end';
     }
 
     lword.pop();
-    pstack = parse.structure.scope;
+    pstack = parse.stack.entry;
 
     if (
       u.is(x, cc.RPR) &&
@@ -2502,14 +2488,14 @@ export function script (source: string | string[]) {
     if (
       rules.script.endComma !== undefined &&
       rules.script.endComma !== 'none' &&
-      parse.scope.token === 'array' ||
-      parse.scope.token === 'object' ||
-      parse.scope.token === 'data_type'
+      parse.stack.token === 'array' ||
+      parse.stack.token === 'object' ||
+      parse.stack.token === 'data_type'
     ) {
 
       if (rules.script.endComma === 'always' && u.not(data.token[parse.count], cc.COM)) {
 
-        const begin = parse.scope.index;
+        const begin = parse.stack.index;
         let y = parse.count;
 
         do {
@@ -2558,7 +2544,7 @@ export function script (source: string | string[]) {
 
     if (insert === true) {
 
-      ltoke = (rules.script.correct === true) ? '{' : 'x{';
+      ltoke = rules.script.correct === true ? '{' : 'x{';
       ltype = 'start';
 
       push(pword[0]);
@@ -2569,7 +2555,7 @@ export function script (source: string | string[]) {
 
     tstype.pop();
 
-    if (parse.scope.token !== 'data_type') tstype[tstype.length - 1] = false;
+    if (parse.stack.token !== 'data_type') tstype[tstype.length - 1] = false;
 
   };
 
@@ -2886,9 +2872,9 @@ export function script (source: string | string[]) {
         stack = 'function';
 
       } else if (
-        parse.structure.length > 0 &&
+        parse.stack.length > 0 &&
         u.not(data.token[aa], cc.COL) &&
-        parse.scope.token === 'object' && (
+        parse.stack.token === 'object' && (
           u.is(data.token[data.begin[aa] - 2], cc.LCB) ||
           u.is(data.token[data.begin[aa] - 2], cc.COM)
         )
@@ -3233,16 +3219,16 @@ export function script (source: string | string[]) {
       lex.push(c[f]);
 
       if (u.is(c[f], cc.BWS)) {
-        // parse.error = `Illegal escape in JavaScript on line number ${parse.lineNumber}`;
+        // parse.error = `Illegal escape in JavaScript on line number ${parse.line}`;
       }
 
       f = f + 1;
     } while (f < a);
 
     if (ltoke.charAt(0) === '\u201c') {
-      parse.error = `Quote looking character (\u201c, \\u201c) used instead of actual quotes on line number ${parse.lineNumber}`;
+      parse.error = `Quote looking character (\u201c, \\u201c) used instead of actual quotes on line number ${parse.line}`;
     } else if (ltoke.charAt(0) === '\u201d') {
-      parse.error = `Quote looking character (\u201d, \\u201d) used instead of actual quotes on line number ${parse.lineNumber}`;
+      parse.error = `Quote looking character (\u201d, \\u201d) used instead of actual quotes on line number ${parse.line}`;
     }
 
     output = lex.join(NIL);
@@ -3331,12 +3317,12 @@ export function script (source: string | string[]) {
         data.token[parse.count] = '{';
         ltoke = '}';
         data.stack[parse.count] = 'object';
-        parse.scope.token = 'object';
+        parse.stack.update('object');
       } else {
         data.token[parse.count] = '[';
         ltoke = ']';
         data.stack[parse.count] = 'array';
-        parse.scope.token = 'array';
+        parse.stack.update('array');
       }
 
       data.types[parse.count] = 'start';
@@ -3458,9 +3444,9 @@ export function script (source: string | string[]) {
         }
 
       } else if ((
-        parse.scope.token === 'object' ||
-        parse.scope.token === 'class' ||
-        parse.scope.token === 'data_type'
+        parse.stack.token === 'object' ||
+        parse.stack.token === 'class' ||
+        parse.stack.token === 'data_type'
       ) && (
         u.is(data.token[parse.count], cc.LCB) || (
           u.is(data.token[data.begin[parse.count]], cc.LCB) &&
@@ -3521,7 +3507,7 @@ export function script (source: string | string[]) {
           hoisting(parse.count, output, false);
         }
 
-      } else if (parse.scope.token === 'arguments' && ltype !== 'operator') {
+      } else if (parse.stack.token === 'arguments' && ltype !== 'operator') {
 
         ltype = 'reference';
         fnrefs.push(output);
@@ -3535,7 +3521,7 @@ export function script (source: string | string[]) {
       ) {
 
         let d = parse.count;
-        const e = parse.scope.index;
+        const e = parse.stack.index;
 
         do {
           if (data.begin[d] === e) {
@@ -3594,8 +3580,8 @@ export function script (source: string | string[]) {
         }
 
       } else if (
-        parse.scope.token !== 'object' || (
-          parse.scope.token === 'object' &&
+        parse.stack.token !== 'object' || (
+          parse.stack.token === 'object' &&
           ltoke !== ',' &&
           ltoke !== '{'
         )
@@ -3695,9 +3681,9 @@ export function script (source: string | string[]) {
               }
             });
 
-            if (parse.structure.length > 1) {
-              parse.structure.splice(parse.structure.length - 2, 1);
-              parse.scope.index = parse.count;
+            if (parse.stack.length > 1) {
+              parse.stack.splice(parse.stack.length - 2, 1);
+              parse.stack.update(parse.count);
             }
 
           } else if (
@@ -3759,19 +3745,19 @@ export function script (source: string | string[]) {
    *
    * This function is responsible for parsing whitespace
    * characters and newlines. The lexical `a` scope is incremented
-   * and both `parse.lineNumber` and `parse.linesSpace` are
+   * and both `parse.line` and `parse.space` are
    * updated accordinly.
    */
   function parseSpace (): void {
 
-    parse.linesSpace = 1;
+    parse.space = 1;
 
     do {
 
       if (u.is(c[a], cc.NWL)) {
-        parse.lineStart = a;
-        parse.linesSpace = parse.linesSpace + 1;
-        parse.lineNumber = parse.lineNumber + 1;
+        parse.lineOffset = a;
+        parse.space = parse.space + 1;
+        parse.line = parse.line + 1;
       }
 
       if (u.ws(c[a + 1]) === false) break;
@@ -3795,7 +3781,7 @@ export function script (source: string | string[]) {
       parseSpace();
 
       if (
-        parse.linesSpace > 1 &&
+        parse.space > 1 &&
         lengthb < parse.count &&
         u.not(c[a + 1], cc.SEM) &&
         u.not(c[a + 1], cc.RCB)
@@ -3847,7 +3833,7 @@ export function script (source: string | string[]) {
 
     } else if (u.is(c[a], cc.TQO) || (
       u.is(c[a], cc.RCB) &&
-      parse.scope.token === 'liquid_string'
+      parse.stack.token === 'liquid_string'
     )) {
 
       // template string
@@ -4020,7 +4006,7 @@ export function script (source: string | string[]) {
         ltype = 'separator';
       }
 
-      if (u.ws(c[a - 1])) parse.linesSpace = 1;
+      if (u.ws(c[a - 1])) parse.space = 1;
 
       push();
 
@@ -4172,9 +4158,12 @@ export function script (source: string | string[]) {
     parse.pop(data);
   }
 
-  rules.script = cloneopts;
+  if (rules.script.objectSort && data.begin.length > 0) {
+    sortCorrect(0, parse.count + 1);
+  }
 
-  // console.log('g etshere', data);
+  assign(rules.script, cache);
+
   return data;
 
 };

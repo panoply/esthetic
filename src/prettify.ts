@@ -1,184 +1,194 @@
-import type { Options, Prettify } from 'types/prettify';
-import { prettify } from '@prettify/model';
-import { definitions } from '@options/definitions';
-import { grammar } from '@options/grammar';
-import { parse as parser } from '@parser/parse';
-import { execute } from '@parser/mode';
-import { keys, assign, defineProperty } from '@utils/native';
+import type { Rules, LanguageName, Events, RulesChanges } from 'types/internal';
+import { grammar } from '@shared/grammar';
+import { parse } from '@parse/parser';
+import { assign, defineProperties } from '@utils/native';
+import { Modes } from '@shared/enums';
+import { getLexerName, getLexerType } from '@utils/maps';
+import { definitions } from '@shared/definitions';
+import { detect } from '@parse/detection';
 
 /* -------------------------------------------- */
 /* LANGUAGE EXPORT                              */
 /* -------------------------------------------- */
 
-export { detect as language } from '@parser/language';
+export default (function () {
 
-/* -------------------------------------------- */
-/* FORMATTING HOOKS                             */
-/* -------------------------------------------- */
-format.before = (callback: Prettify['hooks']['before'][number]) => prettify.hooks.before.push(callback);
-format.after = (callback: Prettify['hooks']['after'][number]) => prettify.hooks.after.push(callback);
+  const events: Events = {
+    before: [],
+    language: [],
+    rules: [],
+    after: []
+  };
 
-/* -------------------------------------------- */
-/* OPTIONS LISTENER                             */
-/* -------------------------------------------- */
-
-options.listen = (callback: Prettify['hooks']['rules'][number]) => prettify.hooks.rules.push(callback);
-
-/* -------------------------------------------- */
-/* STATS GETTER                                 */
-/* -------------------------------------------- */
-
-defineProperty(format, 'stats', { get () { return prettify.stats; } });
-defineProperty(parse, 'stats', { get () { return prettify.stats; } });
-defineProperty(options, 'rules', { get () { return prettify.options; } });
-
-/* -------------------------------------------- */
-/* FORMAT FUNCTION                              */
-/* -------------------------------------------- */
-
-function formatSync (source: string | Buffer, rules?: Options) {
-
-  prettify.source = source;
-
-  if (typeof rules === 'object') prettify.options = options(rules);
-
-  // TRIGGER BEFORE HOOKS
-  //
-  if (prettify.hooks.before.length > 0) {
-    for (const cb of prettify.hooks.before) {
-      if (cb(prettify.options, source as string) === false) return source;
+  defineProperties(format, {
+    sync: {
+      value: format.bind({ sync: true })
     }
-  }
-
-  // BEAUTIFY
-  //
-  const output = execute(prettify);
-
-  // TRIGGER AFTER HOOKS
-  //
-  if (prettify.hooks.after.length > 0) {
-    for (const cb of prettify.hooks.after) {
-      if (cb.call(parser.data, output, prettify.options) === false) return source;
-    }
-  }
-
-  if (parser.error.length) throw new Error(parser.error);
-
-  // RESOLVE OUTPUT
-  //
-  return output;
-
-}
-
-function format (source: string | Buffer, rules?: Options) {
-
-  prettify.source = source;
-
-  if (typeof rules === 'object') prettify.options = options(rules);
-
-  // TRIGGER BEFORE HOOKS
-  //
-  if (prettify.hooks.before.length > 0) {
-    for (const cb of prettify.hooks.before) {
-      if (cb(prettify.options, source as string) === false) return source;
-    }
-  }
-
-  // BEAUTIFY
-  //
-  const output = execute(prettify);
-
-  // TRIGGER AFTER HOOKS
-  //
-  if (prettify.hooks.after.length > 0) {
-    for (const cb of prettify.hooks.after) {
-      if (cb.call(parser.data, output, prettify.options) === false) return source;
-    }
-  }
-
-  // RESOLVE OUTPUT
-  //
-  return new Promise((resolve, reject) => {
-
-    if (parser.error.length) return reject(parser.error);
-
-    return resolve(output);
-
   });
 
-};
-
-/* -------------------------------------------- */
-/* OPTIONS FUNCTION                             */
-/* -------------------------------------------- */
-
-function options (rules: Options) {
-
-  for (const rule of keys(rules) as Array<keyof Options>) {
-
-    if ((rule in definitions) && definitions[rule].lexer === 'auto') {
-      prettify.options[rule as string] = rules[rule];
-    } else if (rule === 'markup') {
-      assign(prettify.options.markup, rules.markup);
-    } else if (rule === 'script') {
-      assign(prettify.options.script, rules.script);
-    } else if (rule === 'style') {
-      assign(prettify.options.style, rules.style);
-    } else if (rule === 'json') {
-      assign(prettify.options.json, rules.json);
-    } else if (rule === 'grammar') {
-      grammar.extend(rules.grammar);
-    } else if (rule in prettify.options) {
-      prettify.options[rule as string] = rules[rule];
+  defineProperties(rules, {
+    listen: {
+      value (callback: Events['rules'][number]) {
+        events.rules.push(callback);
+      }
     }
-  }
-
-  // TRIGGER UPDATED HOOK
-  //
-  if (prettify.hooks.rules.length > 0) {
-    for (const cb of prettify.hooks.rules) cb(prettify.options);
-  }
-
-  return prettify.options;
-
-}
-
-/* -------------------------------------------- */
-/* PARSE FUNCTION                               */
-/* -------------------------------------------- */
-
-function parse (source: string | Buffer, rules?: Options) {
-
-  prettify.source = source;
-  prettify.mode = 'parse';
-
-  if (typeof rules === 'object') prettify.options = options(rules);
-
-  const formatted = execute(prettify);
-
-  return new Promise((resolve, reject) => {
-
-    if (parser.error.length) return reject(parser.error);
-
-    return resolve(formatted);
-
   });
 
-};
+  defineProperties(parse, {
+    stats: {
+      get () {
+        return parse.stats;
+      }
+    },
+    sync: {
+      value: parser.bind({ sync: true })
+    }
+  });
 
-function parseSync (source: string | Buffer, rules?: Options) {
+  function format (this: { sync: boolean, language?: LanguageName}, source: string | Buffer, options?: Rules) {
 
-  prettify.source = source;
-  prettify.mode = 'parse';
+    console.time('time');
 
-  if (typeof rules === 'object') prettify.options = options(rules);
+    parse.source = source;
 
-  const parsed = execute(prettify);
+    if (typeof this.language === 'string' && this.language !== parse.language) {
+      parse.language = this.language;
+      parse.lexer = getLexerName(parse.language);
+    }
 
-  if (parser.error.length) throw new Error(parser.error);
+    if (typeof options === 'object') rules(options);
 
-  return parsed;
+    const output = parse.full(getLexerType(parse.language));
 
-};
+    console.timeEnd('time');
 
-export { formatSync, format, options, parse, parseSync, definitions };
+    // if (s.events.dispatch('before', rules, source) === false) return source;
+
+    // if (s.events.dispatch('after', output, rules) === false) return source;
+
+    if (this.sync === true) {
+      if (parse.error.length) throw new Error(parse.error);
+      return output;
+    }
+
+    // RESOLVE OUTPUT AS PROMISE
+    //
+    return new Promise((resolve, reject) => {
+
+      if (parse?.error?.length) return reject(parse.error);
+
+      return resolve(output);
+
+    });
+
+  };
+
+  function rules (options?: Rules) {
+
+    if (typeof options === 'undefined') return parse.rules;
+
+    let changes: Rules;
+
+    if (events.rules.length > 0) {
+      changes = assign<Rules, Rules>({}, parse.rules as Rules);
+    }
+
+    for (const rule in options) {
+      if (rule in parse.rules) {
+        if (typeof parse.rules[rule] === 'object') {
+          assign(parse.rules[rule], options[rule]);
+        } else {
+          if (rule === 'crlf') {
+            parse.rules[rule] = options[rule];
+            parse.crlf = parse.rules[rule] ? '\r\n' : '\n';
+          } else if (rule === 'language') {
+            parse.rules[rule] = options[rule];
+            if (parse.language !== parse.rules[rule]) {
+              parse.language = options[rule];
+              parse.lexer = getLexerName(parse.language);
+            }
+          } else {
+            parse.rules[rule] = options[rule];
+          }
+        }
+      }
+
+      if (changes) {
+
+        const diff: RulesChanges = {};
+
+        for (const rule in options) {
+
+          if (
+            rule !== 'liquid' &&
+            rule !== 'markup' &&
+            rule !== 'script' &&
+            rule !== 'style' &&
+            rule !== 'json'
+          ) {
+            if (changes[rule] !== options[rule]) {
+              diff[rule] = { from: changes[rule], to: options[rule] };
+            }
+          } else {
+            for (const prop in options[rule]) {
+              if (changes[rule][prop] !== options[rule][prop]) {
+                if (!(rule in diff)) diff[rule] = {};
+                diff[rule][prop] = { from: changes[rule][prop], to: options[rule][prop] };
+              }
+            }
+          }
+        }
+
+        //  for (const cb of s.events.rules) cb(diff, prettify.rules);
+
+      }
+    }
+
+    return rules;
+
+  }
+
+  function parser (this: { sync: boolean }, source: string, options?: Rules) {
+
+    parse.source = source;
+
+    if (typeof options === 'object') rules(options);
+
+    const lexer = getLexerType(parse.language);
+    const parsed = parse.full(lexer, Modes.Parse);
+
+    if (this.sync === true) {
+      if (parse.error.length) throw new Error(parse.error);
+      return parsed;
+    }
+
+    return new Promise((resolve, reject) => {
+      if (parse.error.length) return reject(parse.error);
+      return resolve(parsed);
+    });
+
+  };
+
+  return {
+    format,
+    rules,
+    parse: parser,
+    liquid: format.bind({ language: 'liquid' }),
+    html: format.bind({ language: 'html' }),
+    css: format.bind({ language: 'css' }),
+    json: format.bind({ language: 'json' }),
+    get data () {
+      return parse.data;
+    },
+    get grammar () {
+      return grammar.extend;
+    },
+    get definitions () {
+      return definitions;
+    },
+    get language () {
+      return detect;
+    }
+
+  };
+})();

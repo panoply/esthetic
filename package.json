@@ -1,6 +1,6 @@
 {
   "name": "@liquify/prettify",
-  "version": "0.4.5-beta.1",
+  "version": "0.5.5-beta.1",
   "license": "MIT",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <n.savvidis@gmx.com>",
   "description": "Prettify 🎀 ~ Language beautification support for multiple languages with the Sparser lexing algorithm.",
@@ -30,18 +30,20 @@
   "bugs": {
     "url": "https://github.com/panoply/prettify/issues"
   },
-  "types": "index.d.ts",
-  "main": "index.js",
-  "module": "index.mjs",
+  "types": "./index.d.ts",
+  "main": "./index.js",
+  "module": "./index.mjs",
   "exports": {
+    "types": "./index.d.ts",
     "require": "./index.js",
     "import": "./index.mjs"
   },
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup --minify-identifiers --minify-whitespace",
+    "build": "tsup --minify-identifiers --minify-whitespace && gzip-size index.mjs --include-original",
     "specs": "node ./scripts/specs.cjs",
     "pack": "cd versions; pnpm pack ../ && cd ..",
+    "release": "pnpm -w release --pkg $npm_package_name",
     "test": "ava tests/**/*.test.mjs --serial",
     "tests": "tests -t cases,rules,units",
     "test:dev": "ava tests/dev.test.mjs --watch",
@@ -53,6 +55,7 @@
     "extensions": [
       "mjs"
     ],
+    "timeout": "3s",
     "cache": false
   },
   "tsup": {
@@ -109,14 +112,17 @@
     }
   },
   "devDependencies": {
-    "@liquify/ava": "^0.0.4",
-    "@liquify/eslint-config": "^1.1.0",
+    "@liquify/ava": "^0.0.5",
+    "@liquify/eslint-config": "workspace:^1.1.0",
     "@liquify/liquid-language-specs": "^0.1.7",
     "@liquify/prettier-config": "^1.0.1",
     "@types/benchmark": "^2.1.2",
-    "ava": "^5.0.1",
+    "ava": "^5.1.0",
     "benchmark": "^2.1.4",
-    "tsup": "^6.4.0",
-    "type-fest": "^3.2.0"
+    "tsup": "^6.5.0",
+    "type-fest": "^3.4.0"
+  },
+  "dependencies": {
+    "ansis": "^1.5.5"
   }
 }
