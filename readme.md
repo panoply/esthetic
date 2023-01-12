@@ -140,9 +140,8 @@ prettify.format(code, {
   }
 }).then(output => {
 
-  console.log(output)
-
   // Do something with the beautified output
+  console.log(output)
 
 }).catch(error => {
 
@@ -241,7 +240,7 @@ prettify.json.sync('..'): string;
 
 ## Parse
 
-The `parse` method can be used to inspect the data structures that Prettify constructs. Prettify is using the Sparser lexing algorithm under the hood the generated parse tree returned is representative of sparser's data structures. Similar to `prettify.format` you can alo invoke this both asynchronously and synchronously.
+The `parse` method can be used to inspect the data structures that Prettify constructs. Prettify is using the Sparser lexing algorithm under the hood the generated parse tree returned is representative of sparser's data structures. Similar to `prettify.format` you can also invoke this both asynchronously and synchronously.
 
 ```typescript
 import prettify from "@liquify/prettify";
