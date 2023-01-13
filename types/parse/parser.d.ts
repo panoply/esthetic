@@ -1,6 +1,7 @@
-import { Types, Structure, LanguageOfficialName } from '../shared';
+import { Types, Structure, LanguageOfficialName, LanguageName } from '../shared';
 import { LangMap } from 'src/parse/detection';
 import { ErrorTypes, ParseErrors } from 'src/parse/errors';
+import { StackItem } from 'types/next';
 
 export interface Scope {
   get token (): string;
@@ -182,6 +183,12 @@ export interface Record {
    */
   types: Types
 }
+
+type ParseHook = (this: {
+  readonly line: number;
+  readonly stack: StackItem;
+  readonly language: LanguageName;
+}, node: Record, index?: number) => void | Record
 
 export interface Spacer {
   array: string[];

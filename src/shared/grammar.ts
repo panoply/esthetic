@@ -135,7 +135,7 @@ function LiquidGrammar (grammar: Grammars['liquid'] = {
               SINGLETON.add(tag);
             }
           }
-        } else if (rule === 'embed') {
+        } else if (rule === 'embedded') {
           if (typeof rules[rule] === 'object') {
             embed(rules[rule]);
           }

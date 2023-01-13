@@ -1,7 +1,8 @@
 /* eslint-disable no-extend-native */
-import { NIL, NWL, WSP } from '@utils/chars';
-import { LanguageName, LanguageOfficialName } from 'types/shared';
+import { NIL, NWL, WSP } from 'shared';
+import { LanguageName, LexerName } from 'types/shared';
 import { Prettify } from 'types/internal';
+import { getLanguageName } from './maps';
 
 /**
  * Blank Document
@@ -58,9 +59,14 @@ export function upcase (text: string) {
  * Wrapper for execution statistics available on  the export `format.stats`.
  * Timer starts as soon as the function is invoked.
  */
-export function stats (language: LanguageOfficialName) {
+export function stats (language: LanguageName, lexer: LexerName) {
 
-  const store: Partial<Prettify['stats']> = { language, chars: 0 };
+  const store: Partial<Prettify['stats']> = {
+    lexer,
+    language: getLanguageName(language),
+    chars: 0
+  };
+
   const start: number = Date.now();
 
   return (output: number): Prettify['stats'] => {
@@ -116,31 +122,6 @@ export function repeatChar (count: number, character: string = WSP) {
 
   return char;
 }
-
-/**
- * Not Character
- *
- *
- */
-export function notchar (string: string, code: number) {
-
-  if (!string) return false;
-
-  return string.charCodeAt(0) !== code;
-
-}
-
-export function doWhile <T extends any[]> (array: T, callback: (index: number) => void | false) {
-
-  let i: number = 0;
-  const length = array.length;
-
-  do {
-    if (callback(i) === false) break;
-    i = i + 1;
-  } while (i < length);
-
-};
 
 /**
  * First (equal)
@@ -207,6 +188,7 @@ export function digit (string: string) {
   return /\d/.test(string);
 
 }
+
 /**
  * Size
  *

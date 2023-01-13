@@ -4,7 +4,8 @@ import {
   LiquidFormat,
   HTMLFormat,
   CSSFormat,
-  JSONFormat
+  JSONFormat,
+  XMLFormat
 } from './types/misc/specifics';
 
 import {
@@ -14,7 +15,8 @@ import {
   Format,
   Parse,
   ParseError,
-  Grammars
+  Grammars,
+  EventListeners
 } from './types/internal';
 
 export {
@@ -46,6 +48,12 @@ declare const prettify: {
    * Formatting for the HTML Language.
    */
   html: HTMLFormat;
+  /**
+   * **PRETTIFY XML 🎀**
+   *
+   * Formatting for the XML Language.
+   */
+  xml: XMLFormat;
   /**
    * **PRETTIFY CSS 🎀**
    *
@@ -104,21 +112,20 @@ declare const prettify: {
   parse: Parse<string>;
 
   /**
+   * **Change Listener**
+   *
+   * Hook listener wich will be invoked when beautification
+   * options change or are augmented.
+   */
+  on: EventListeners<'format' | 'parse' | 'rules'>;
+
+  /**
    * **Rules**
    *
    * Set format rules to be applied to syntax. To return the
    * current beautification rules, then do not provide a parameter.
    */
-  rules: {
-    (rules?: Rules): Rules;
-    /**
-     * **Change Listener**
-     *
-     * Hook listener wich will be invoked when beautification
-     * options change or are augmented.
-     */
-    listen: (callback: (rules: Rules, changes: ) => void) => void
-  };
+  rules: (rules?: Rules) => Rules;
   /**
    * **Grammar**
    *
@@ -138,29 +145,8 @@ declare const prettify: {
    * Automatic language detection based on the string input.
    * Returns lexer, language and official name.
    */
-  language: {
-    /**
-     * **Detect Language**
-     *
-     * Automatic language detection based on the string input.
-     * Returns lexer, language and official name.
-     */
-    (sample: string): Language;
-    /**
-     * **Language Reference**
-     *
-     * Returns a language from a supplied language
-     * name reference.
-     */
-    reference(languageId: Language): Language;
-    /**
-     * **Language Listener**
-     *
-     * Trigger a callback to execute after language detection has
-     * completed. Optionally return an augmentation
-     */
-    listen: (callback: (language: Language) => void | Language) => void;
-  };
+  language: (sample: string) => Language;
+
 };
 
 export default prettify;

@@ -1,5 +1,5 @@
 import { repeatChar, is, not } from '@utils/helpers';
-import { NIL, NWL, WSP, cc as ch } from '@utils/chars';
+import { NIL, NWL, WSP, cc as ch } from 'shared';
 // import { StripEnd } from '@utils/regex';
 import { parse } from '@parse/parser';
 import { grammar } from '@shared/grammar';
@@ -3800,16 +3800,9 @@ export function script () {
           parse.ender = exidx[a];
           parse.start = a;
 
-          if (parse.regions.has(parse.start)) {
+          const output = parse.external(lastLevel);
 
-            const output = parse.external(lastLevel);
-            build.push(output);
-
-          } else {
-            parse.rules.indentLevel = lastLevel;
-            const output = script();
-            build.push(output);
-          }
+          build.push(output);
 
           a = parse.iterator;
 

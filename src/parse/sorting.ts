@@ -1,8 +1,7 @@
-import { isArray } from '@utils/native';
-import { NIL, cc as ch } from '@utils/chars';
-import { Data } from 'types/internal';
-import { parse } from './parser';
-import { is, not } from '@utils/helpers';
+import { is, not, isArray } from 'utils';
+import { NIL, cc as ch } from 'shared';
+import { parse } from '@parse/parser';
+import type{ Data } from 'types/internal';
 
 /* -------------------------------------------- */
 /* EXPORTS                                      */

@@ -5,8 +5,8 @@ import { Record, Structure, Types, VariableDeclarations } from 'types/internal';
 import { wrapCommentBlock, wrapCommentLine } from '@comments/parse';
 import { CommIgnoreStart } from '@utils/regex';
 import { parse } from '@parse/parser';
-import { assign, isArray } from '@utils/native';
-import { cc, NIL, NWL } from '@utils/chars';
+import { assign, isArray } from 'utils';
+import { cc, NIL, NWL } from 'shared';
 import * as u from '@utils/helpers';
 import { sortCorrect, sortObject } from '@parse/sorting';
 

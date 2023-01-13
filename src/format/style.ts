@@ -1,7 +1,6 @@
 import type { Types } from 'types/internal';
-import { is, isLast, not } from '@utils/helpers';
-import { cc, NIL, WSP } from '@utils/chars';
-import { grammar } from '@shared/grammar';
+import { is, isLast, not } from 'utils';
+import { cc, NIL, WSP, grammar } from 'shared';
 import { parse } from '@parse/parser';
 
 /* -------------------------------------------- */
