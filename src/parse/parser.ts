@@ -1,11 +1,9 @@
 /* eslint no-unmodified-loop-condition: "off" */
-
-import { NIL, NWL } from '@utils/chars';
-import { Lexers, Modes } from '@shared/enums';
-import { ws } from '@utils/helpers';
-import { getTagName } from '@utils/lexical';
-import { lexers } from '../lexers';
-import { format } from '../format';
+import { lexers } from 'lexers';
+import { format } from 'format';
+import { Lexers, Modes, NIL, NWL, getTagName } from 'shared';
+import { getLexerName, getLexerType, assign, ws } from 'utils';
+import type { LiteralUnion } from 'type-fest';
 import type {
   LanguageName,
   Syntactic,
@@ -15,11 +13,10 @@ import type {
   Record,
   Spacer,
   Splice,
-  RulesInternal,
-  Stats
+  Rules,
+  JSONRules,
+  ScriptRules
 } from 'types/internal';
-import { getLexerName, getLexerType } from '@utils/maps';
-import { LiteralUnion } from 'type-fest/source/literal-union';
 
 /**
  * Parse Stack
@@ -78,24 +75,39 @@ export class Stack extends Array<StackItem> implements ParseStack {
 class Parser {
 
   /**
-   * Static reference of the provided source input
+   * Static reference of the provided input
    */
-  static source: string | Buffer = NIL;
+  static input: string | Buffer = NIL;
 
   /**
    * Static reference to the current external region input
    */
   static region: string | string[] = NIL;
 
-  /**
-   * Static reference to the operation statisticals for reporting.
-   */
-  static stats: Stats = {
-    chars: -1,
-    time: '',
-    size: '',
-    language: ''
-  };
+  public hooks: {
+    /**
+     * The before formatting hooks
+     */
+    parse?: ((this: {
+      readonly line: number;
+      readonly stack: StackItem;
+      readonly language: LanguageName;
+    }, node: Record, index?: number) => void | Record)[];
+
+    /**
+     * The before formatting hooks
+     */
+    format?: ((this: {
+      readonly record: Record;
+      readonly language: LanguageName;
+      readonly levels: number[];
+      readonly structure: string[]
+    }, token: string, level?: number) => void | {
+      token?: string;
+      level?: number
+    })[];
+
+  } = { parse: null, format: null };
 
   /**
    * The current environment runing within.
@@ -200,7 +212,7 @@ class Parser {
   /**
    * The formatting and parse rules
    */
-  public rules: RulesInternal = {
+  public rules: Rules = {
     crlf: false,
     language: 'auto',
     endNewline: false,
@@ -217,8 +229,7 @@ class Parser {
       lineBreakSeparator: 'default',
       normalizeSpacing: true,
       preserveComment: false,
-      quoteConvert: 'none',
-      valueForce: 'intent'
+      quoteConvert: 'none'
     },
     markup: {
       attributeCasing: 'preserve',
@@ -240,18 +251,18 @@ class Parser {
       selfCloseSpace: true,
       quoteConvert: 'none'
     },
-    json: {
-      correct: false,
+    json: assign<JSONRules, ScriptRules>({
       arrayFormat: 'default',
       braceAllman: false,
       bracePadding: false,
       objectIndent: 'default',
-      objectSort: false,
+      objectSort: false
+    }, {
       quoteConvert: 'double',
       endComma: 'never',
       noSemicolon: true,
       vertical: false
-    },
+    }),
     style: {
       correct: false,
       atRuleSpace: true,
@@ -300,26 +311,33 @@ class Parser {
     types: []
   };
 
-  get stats (): Stats {
-
-    return Parser.stats;
-
-  }
-
   get source (): string {
 
     if (this.mode === Modes.Embed) return Parser.region as string;
 
-    return this.env === 'node' && Buffer.isBuffer(Parser.source)
-      ? Parser.source.toString()
-      : Parser.source as string;
+    return this.env === 'node' && Buffer.isBuffer(Parser.input)
+      ? Parser.input.toString()
+      : Parser.input as string;
   }
 
   set source (source: string | Buffer) {
 
-    Parser.source = this.env === 'node'
+    Parser.input = this.env === 'node'
       ? Buffer.isBuffer(source) ? source : Buffer.from(source)
       : source;
+  }
+
+  get current () {
+
+    return {
+      begin: this.data.begin[this.count],
+      ender: this.data.ender[this.count],
+      lexer: this.data.lexer[this.count],
+      lines: this.data.lines[this.count],
+      stack: this.data.stack[this.count],
+      token: this.data.token[this.count],
+      types: this.data.types[this.count]
+    };
   }
 
   /**
@@ -331,6 +349,8 @@ class Parser {
 
     this.error = NIL;
     this.count = -1;
+    this.start = 0;
+    this.ender = 0;
     this.mode = Modes.Parse;
     this.data.begin = [];
     this.data.ender = [];
@@ -340,6 +360,7 @@ class Parser {
     this.data.token = [];
     this.data.types = [];
     this.references = [ [] ];
+    this.scopes = [];
     this.stack = new Stack([ 'global', -1 ]);
 
     if (this.pairs.size > 0) this.pairs.clear();
@@ -349,11 +370,30 @@ class Parser {
   }
 
   /**
-   * Full Parse
+   * Get Record
+   *
+   * Returns a record at the give index
+   */
+  public get (index: number) {
+
+    return {
+      begin: this.data.begin[index],
+      ender: this.data.ender[index],
+      lexer: this.data.lexer[index],
+      lines: this.data.lines[index],
+      stack: this.data.stack[index],
+      token: this.data.token[index],
+      types: this.data.types[index]
+    };
+
+  }
+
+  /**
+   * Document Parse
    *
    * Executes a full parse - top to bottom.
    */
-  public full (lexer: Lexers, mode: Modes = Modes.Format) {
+  public document (lexer: Lexers, mode: Modes = Modes.Format) {
 
     this.reset();
 
@@ -550,6 +590,15 @@ class Parser {
         this.stack.update(structure === NIL ? 'else' : structure, this.count);
 
       }
+    }
+
+    if (this.hooks.parse !== null) {
+
+      this.hooks.parse[0].call({
+        line: this.line,
+        stack: this.stack.entry,
+        language: this.language
+      }, record, this.count);
     }
 
   }

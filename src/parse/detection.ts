@@ -1,4 +1,4 @@
-import { cc, NIL } from '@utils/chars';
+import { cc, NIL } from 'shared';
 import { is } from '@utils/helpers';
 import { LanguageName, LexerName } from 'types/internal';
 

@@ -1,7 +1,34 @@
 import { grammar } from '@shared/grammar';
-import { LT } from '@shared/enums';
+import { LT, cc } from '@shared/enums';
 import { is, isLast, not } from '@utils/helpers';
-import { NIL, cc } from '@utils/chars';
+
+/* -------------------------------------------- */
+/* COMMON CHARACTERS                            */
+/* -------------------------------------------- */
+
+/**
+ * `''` –  Empty String
+ */
+export const NIL = '';
+
+/**
+ * ` ` – Single whitespace character
+ */
+export const WSP = ' ';
+
+/**
+ * `\t` – Single tab character
+ */
+export const TAB = '\t';
+
+/**
+ * `\n` – Newline character
+ */
+export const NWL = '\n';
+
+/* -------------------------------------------- */
+/* HELPER FUNCTIONS                             */
+/* -------------------------------------------- */
 
 /**
  * Get Liquid Tag Name

@@ -4,7 +4,7 @@ import { Except } from 'type-fest';
 /**
  * Helper Utility for excluding common rules
  */
-type Excludes<T> = 'language'| 'languageName' | 'indentLevel' | T
+type Excludes<T> = 'language' | 'indentLevel' | T
 
 /* -------------------------------------------- */
 /* EXPORTS                                      */
@@ -15,7 +15,7 @@ type Excludes<T> = 'language'| 'languageName' | 'indentLevel' | T
  *
  * Used by the `prettify.liquid()` method
  */
-export type LiquidFormat = Format<string, Except<Rules, | 'language' | 'indentLevel' | 'languageName'>>
+export type LiquidFormat = Format<string, Except<Rules, | 'language' | 'indentLevel'>>
 
 /**
  * HTML Specifics
@@ -23,6 +23,13 @@ export type LiquidFormat = Format<string, Except<Rules, | 'language' | 'indentLe
  * Used by the `prettify.html()` method
  */
 export type HTMLFormat = Format<string, Except<Rules, Excludes<'liquid'>>>
+
+/**
+ * XML Specifics
+ *
+ * Used by the `prettify.xml()` method
+ */
+export type XMLFormat = Format<string, Except<Rules, Excludes<'liquid' | 'style' | 'script' |'json'>>>
 
 /**
  * CSS Specifics

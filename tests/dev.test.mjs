@@ -4,7 +4,7 @@ import prettify from '@liquify/prettify';
 
 test('develop', async t => {
 
-  await dev(t)(async function (source) {
+  await dev(t)(function (source) {
 
     // prettify.grammar({
     //   html: {
@@ -61,53 +61,82 @@ test('develop', async t => {
 
     //  prettify.rules.listen((changed) => console.log(changed));
 
-    prettify.rules({
-      language: 'json',
-      preserveLine: 0,
-      wrap: 0,
-      liquid: {
-        correct: false,
-        valueForce: 'always',
-        lineBreakSeparator: 'before',
-        ignoreTagList: [ 'javascript' ]
-      },
-      json: {
-        arrayFormat: 'indent',
-        objectIndent: 'indent',
-        braceAllman: true,
-        objectSort: true,
-        bracePadding: false
+    // prettify.rules({
+    //   language: 'liquid',
+    //   preserveLine: 0,
+    //   wrap: 0,
+    //   liquid: {
+    //     correct: false,
+    //     valueForce: 'always',
+    //     lineBreakSeparator: 'before',
+    //     ignoreTagList: [ 'javascript' ]
+    //   },
+    //   json: {
+    //     arrayFormat: 'indent',
+    //     objectIndent: 'indent',
+    //     braceAllman: true,
+    //     objectSort: true,
+    //     bracePadding: false
 
-      },
-      markup: {
-        correct: true,
-        delimiterForce: false,
-        selfCloseSpace: true,
-        forceAttribute: 3,
-        forceIndent: true,
-        forceLeadAttribute: false,
-        ignoreJS: false,
-        ignoreJSON: false,
-        ignoreCSS: false
-      },
-      script: {
-        correct: true,
-        noSemicolon: true,
-        vertical: true,
-        braceAllman: false
-      },
-      style: {
-        classPadding: true
+    //   },
+    //   markup: {
+    //     correct: true,
+    //     delimiterForce: false,
+    //     selfCloseSpace: true,
+    //     forceAttribute: 3,
+    //     forceIndent: true,
+    //     forceLeadAttribute: false,
+    //     ignoreJS: false,
+    //     ignoreJSON: false,
+    //     ignoreCSS: false
+    //   },
+    //   script: {
+    //     correct: true,
+    //     noSemicolon: true,
+    //     vertical: true,
+    //     braceAllman: false
+    //   },
+    //   style: {
+    //     classPadding: true
+    //   }
+    // });
+
+    prettify.grammar({
+      liquid: {
+        embedded: {
+          capture: [
+            {
+              language: 'json',
+              argument: [ 'json_tag' ]
+            }
+          ]
+        }
       }
     });
 
-    const output = await prettify.format(source);
+    const output = prettify.liquid.sync(source, {
+      wrap: 0,
+      liquid: {
+        indentAttributes: true,
+        valueForce: 'always',
+        normalizeSpacing: true,
+        ignoreTagList: [ ]
+      },
+      markup: {
+        correct: true,
+        forceAttribute: true,
+        ignoreJS: false
+      }
+    });
 
     return {
       repeat: 0,
       source: output,
       logger: false,
-      finish: () => t.log(output)
+      finish: () => {
+        t.log(output);
+        t.log(prettify.stats);
+      }
     };
 
   });
