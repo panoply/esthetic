@@ -1,9 +1,10 @@
-import { cc, WSP, NIL, NWL } from 'shared';
-import { Types } from 'types/internal';
-import { StripEnd } from '@utils/regex';
-import { is, isLast, not, repeatChar, ws } from '@utils/helpers';
-import { getTagName } from '@shared/lexical';
-import { grammar } from '@shared/grammar';
+import type { Types } from 'types/internal';
+import * as rx from 'lexical/regex';
+import * as lx from 'lexical/lexing';
+import { cc } from 'lexical/codes';
+import { WSP, NIL, NWL } from 'chars';
+import { is, isLast, not, repeatChar, ws } from 'utils';
+import { grammar } from '@parse/grammar';
 import { parse } from '@parse/parser';
 
 /* -------------------------------------------- */
@@ -22,7 +23,6 @@ import { parse } from '@parse/parser';
  * - XHTML
  * - rules.Liquid.
  */
-// prettify.beautify.markup =
 
 export function markup () {
 
@@ -177,14 +177,18 @@ export function markup () {
 
     } while (index < total);
 
-    if (tabs > 0) {
+    if (data.types[a] !== 'ignore' || (data.types[a] === 'ignore' && data.types[a + 1] !== 'ignore')) {
 
-      index = 0;
+      if (tabs > 0) {
 
-      do {
-        linesout.push(ind);
-        index = index + 1;
-      } while (index < tabs);
+        index = 0;
+
+        do {
+          linesout.push(ind);
+          index = index + 1;
+        } while (index < tabs);
+      }
+
     }
 
     return linesout.join(NIL);
@@ -230,7 +234,10 @@ export function markup () {
 
         bb = bb - 1;
 
-        if (levels[bb] > -1) return isType(a, 'content') && start === false ? levels[bb] : levels[bb] + 1;
+        if (levels[bb] > -1) {
+          return isType(a, 'content') && start === false ? levels[bb] : levels[bb] + 1;
+        }
+
         if (isIndex(bb, 'start') > -1) start = true;
 
       } while (bb > 0);
@@ -247,6 +254,7 @@ export function markup () {
     // console.log(data.token[a - 1]);
 
     data.lines[a + 1] = 0;
+
     const len = lines.length - 1;
 
     do {
@@ -462,13 +470,19 @@ export function markup () {
       } else if (data.begin[y] === a) {
 
         if (isType(y, 'jsx_attribute_start')) {
+
           isjsx = true;
+
         } else if (isIndex(y, 'attribute') < 0 && isjsx === false) {
+
           break;
+
         }
 
       } else if (isjsx === false && (data.begin[y] < a || isIndex(y, 'attribute') < 0)) {
+
         break;
+
       }
 
       y = y + 1;
@@ -484,7 +498,11 @@ export function markup () {
     //
     // Fixes attributes being forced when proceeded by a comment
     //
-    if (isType(y, 'comment') && data.lines[a + 1] < 2) levels[a] = -10;
+    if (isType(y, 'comment') && data.lines[a + 1] < 2) {
+
+      levels[a] = -10;
+
+    }
 
   };
 
@@ -1043,6 +1061,31 @@ export function markup () {
       return;
     }
 
+    function doAttributeForce () {
+
+      if (rules.markup.forceAttribute === false && data.lines[a] === 1) {
+
+        level.push(-10);
+
+      } else {
+
+        if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1) {
+          if (rules.liquid.indentAttributes === true) {
+
+            if (isType(a - 1, 'liquid_attribute_start')) {
+              level[a - 1] = levatt + levliq;
+            }
+
+            level.push(levatt + levliq);
+          } else {
+            level.push(levatt);
+          }
+        } else {
+          level.push(-10);
+        }
+      }
+    }
+
     /* -------------------------------------------- */
     /* BEGIN WALK                                   */
     /* -------------------------------------------- */
@@ -1119,23 +1162,31 @@ export function markup () {
             }
           }
 
-        } else if (isType(a, 'liquid_attribute_start')) {
+        } else if (rules.liquid.indentAttributes === true) {
 
-          if (rules.liquid.indentAttributes === true) {
+          if (isType(a, 'liquid_attribute_start')) {
+
+            if (levliq > 0) {
+              level.push(levatt + levliq);
+            } else {
+              level.push(levatt);
+            }
+
             levliq = levliq + 1;
-            level.push(levatt + levliq);
+
+          } else if (isType(a, 'liquid_attribute_else')) {
+
+            level[a - 1] = levatt + levliq - 1;
+
+          } else if (isType(a, 'liquid_attribute_end')) {
+
+            levliq = levliq - 1;
+            level[a - 1] = levatt + levliq;
+
           } else {
-            level.push(levatt);
+
+            doAttributeForce();
           }
-
-        } else if (isType(a, 'liquid_attribute_else') && rules.liquid.indentAttributes === true) {
-
-          level[a - 1] = levatt + levliq - 1;
-
-        } else if (isType(a, 'liquid_attribute_end') && rules.liquid.indentAttributes === true) {
-
-          levliq = levliq - 1;
-          level[a - 1] = levatt + levliq;
 
         } else if (isIndex(a, 'end') > 0 && isType(a, 'liquid_attribute_end') === false) {
 
@@ -1145,6 +1196,31 @@ export function markup () {
             level.push(-20);
           } else {
             level.push(levatt);
+          }
+
+        } else if (isIndex(a, 'liquid_attribute') > -1) {
+
+          length = length + data.token[a].length + 1;
+
+          if (rules.markup.preserveAttributes === true) {
+
+            level.push(-10);
+
+          } else if (
+            rules.markup.forceAttribute === true ||
+            rules.markup.forceAttribute >= 1 ||
+            attstart === true || (
+              a < c - 1 &&
+              isIndex(a + 1, 'attribute') > -1
+            )
+          ) {
+
+            doAttributeForce();
+
+          } else {
+
+            level.push(-10);
+
           }
 
         } else {
@@ -1157,6 +1233,8 @@ export function markup () {
 
         length = length + data.token[a].length + 1;
 
+        //  console.log(data.token[a], data.lines[a]);
+
         if (rules.markup.preserveAttributes === true) {
 
           level.push(-10);
@@ -1166,25 +1244,14 @@ export function markup () {
           rules.markup.forceAttribute >= 1 ||
           attstart === true || (
             a < c - 1 &&
-            isIndex(a + 1, 'attribute') > 0
+            isIndex(a + 1, 'attribute') > -1
           )
         ) {
 
-          if (rules.markup.forceAttribute === false && data.lines[a] === 1) {
-            level.push(-10);
-          } else {
-            if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1) {
-              if (rules.liquid.indentAttributes === true) {
-                level.push(levatt + levliq);
-              } else {
-                level.push(levatt);
-              }
-            } else {
+          doAttributeForce();
 
-              level.push(-10);
-            }
-          }
         } else {
+
           level.push(-10);
         }
 
@@ -1208,7 +1275,7 @@ export function markup () {
 
     if (
       isIndex(a, 'liquid') < 0 &&
-      isIndex(a, 'end') > 0 &&
+      isIndex(a, 'end') > -1 &&
       isIndex(a, 'attribute') > 0 &&
       isType(parent, 'singleton') === false &&
       level[a - 1] > 0 &&
@@ -1216,6 +1283,7 @@ export function markup () {
     ) {
 
       level[a - 1] = level[a - 1] - 1;
+
     }
 
     if (level[a] !== -20) {
@@ -1456,7 +1524,7 @@ export function markup () {
       ? repeatChar(offset * rules.indentSize)
       : repeatChar(offset * rules.indentSize - 1);
 
-    if (getTagName(data.token[a]) === 'liquid') return onLiquidTag(ind, token);
+    if (lx.getTagName(data.token[a]) === 'liquid') return onLiquidTag(ind, token);
 
     do {
 
@@ -1631,7 +1699,7 @@ export function markup () {
 
       data.token[a] = token
         .join(NWL)
-        .replace(/\s*-?[%}]}$/, m => m.replace(StripEnd, space));
+        .replace(/\s*-?[%}]}$/, m => m.replace(rx.StripEnd, space));
     }
 
     // console.log(data.lines[a] - 1);
@@ -1729,10 +1797,7 @@ export function markup () {
 
           next = forward();
 
-          if ((
-            isType(next, 'end') ||
-            isType(next, 'liquid_end')
-          )) {
+          if (isType(next, 'end') || isType(next, 'liquid_end')) {
 
             // Handle force Value for void tags
             //
@@ -1762,6 +1827,7 @@ export function markup () {
               isToken(a, '</dl>')) {
 
               onAnchorList();
+
             }
 
           }
@@ -1814,6 +1880,8 @@ export function markup () {
               isIndex(a, 'liquid_') > -1
             )) {
 
+              // console.log('levels', data.token[a], data.lines[next]);
+
               level.push(indent);
 
               if (isLineBreak(a)) onLineBreak();
@@ -1845,12 +1913,6 @@ export function markup () {
             // </div>
             //
             indent = indent + 1;
-
-            if (isType(a, 'liquid_start') && isType(next, 'liquid_else')) {
-
-              indent = indent + 1;
-
-            }
 
             if (jsx === true && isToken(a + 1, '{')) {
 
@@ -1933,6 +1995,7 @@ export function markup () {
 
           } else if (isType(a + 2, 'script_end')) {
 
+            console.log(data.token[next], indent);
             level.push(-20);
 
           } else if (isType(a, 'liquid_else')) {
@@ -1999,31 +2062,19 @@ export function markup () {
               level.push(-10);
             }
 
-          } else if (
-            isType(a, 'liquid_end') &&
-            isType(a - 1, 'end') &&
-            isType(a - 2, 'liquid_start')
-          ) {
+          } else if (isType(a, 'liquid_start_bad')) {
 
-            level[a - 3] = level[a - 3] - 1;
+            indent = indent + 1;
+            level.push(indent);
 
-            if ((
-              isType(data.begin[a], 'liquid_start') &&
-              isType(data.begin[a] + 1, 'start') &&
-              isType(data.ender[data.begin[a] + 1], 'liquid_end')
-            )) {
+          } else if (isType(next, 'liquid_end_bad')) {
 
-              level[data.ender[data.begin[a] + 1] - 1] = level[data.ender[data.begin[a] + 1] - 1] - 1;
-              level.push(indent);
-            } else if ((
-              isType(data.begin[data.begin[a - 1] - 1], 'liquid_start') &&
-              isType(data.begin[data.begin[a]], 'start') &&
-              isType(data.ender[data.begin[a] + 1], 'liquid_end')
-            )) {
-              console.log(parse.get(data.ender[data.begin[a] + 1]));
-              level[data.begin[data.begin[a - 1] - 1]] = level[data.begin[data.begin[a - 1] - 1]] - 1;
-              level.push(indent);
-            }
+            indent = indent - 1;
+            level.push(indent);
+
+          } else if (isType(a, 'ignore') && isType(next, 'end')) {
+
+            level.push(indent);
 
           } else {
 
@@ -2126,6 +2177,10 @@ export function markup () {
             nl(levels[a])
           );
 
+        } else if (isIndex(a, '_preserve') > -1) {
+
+          build.push(data.token[a]);
+
         } else {
 
           if (rules.markup.delimiterForce === true) onDelimiterForce();
@@ -2142,8 +2197,22 @@ export function markup () {
 
             lastLevel = levels[a];
 
-            build.push(nl(levels[a]));
+            // Exclude adding newlines to preserved regions. For example, if <script> external
+            // blocks are preserved then the next known index in the data structure will
+            // be using a "_preserve" type. We need to check for the existence of this or else
+            // new lines will be applied.
+            //
+            // Say we have ignored all <script type="application/json"> external code regions
+            // by setting "markup.ignoreJSON" to true. In this case we the inner content
+            // of this tag will be marked with a "json_preserve" type. Essentially, without checking
+            // the next record we'd end up with additional indentation and newlines.
+            //
+            if (isIndex(a + 1, '_preserve') < 0) {
 
+              // console.log(JSON.stringify(build, null, 2));
+
+              build.push(nl(levels[a]));
+            }
           }
 
         }
@@ -2156,7 +2225,7 @@ export function markup () {
         const external = parse.external(lastLevel);
 
         if (rules.language === 'jsx' && (
-          data.types[a - 1] === 'liquid_string_end' ||
+          data.types[a - 1] === 'template_string_end' ||
           data.types[a - 1] === 'jsx_attribute_start' ||
           data.types[a - 1] === 'script_start'
         )) {

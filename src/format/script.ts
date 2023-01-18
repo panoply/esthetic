@@ -1,12 +1,9 @@
-import { repeatChar, is, not } from '@utils/helpers';
-import { NIL, NWL, WSP, cc as ch } from 'shared';
-// import { StripEnd } from '@utils/regex';
+import type { Types, ScriptRules } from 'types/internal';
+import { repeatChar, is, not } from 'utils';
+import { NIL, NWL, WSP } from 'chars';
+import { cc as ch } from 'lexical/codes';
 import { parse } from '@parse/parser';
-import { grammar } from '@shared/grammar';
-import { Types } from 'types/shared';
-import { assign } from '@utils/native';
-
-// parse.beautify.script =
+import { grammar } from '@parse/grammar';
 
 export function script () {
 
@@ -16,9 +13,10 @@ export function script () {
    */
   const { data, rules } = parse;
 
-  const cache = { ...rules.script };
-
-  rules.script = assign(rules.script, rules.json);
+  /**
+   * Script Rule Options
+   */
+  const option: ScriptRules = parse.language === 'json' ? rules.json : rules.script;
 
   /**
    * Semicolon
@@ -154,7 +152,7 @@ export function script () {
 
       destructfix(false, false);
 
-      const ind = rules.script.commentIndent === true ? indent : 0;
+      const ind = option.commentIndent === true ? indent : 0;
 
       if (notcomment === false && (/\/\u002a\s*global\s/).test(data.token[a])) {
 
@@ -255,7 +253,7 @@ export function script () {
             level.push(indent);
           }
 
-          if (rules.script.commentIndent === true && level[a] > -1 && data.lines[a] < 3) {
+          if (option.commentIndent === true && level[a] > -1 && data.lines[a] < 3) {
             data.lines[a] = 3;
           }
         }
@@ -326,7 +324,7 @@ export function script () {
       // block type comments.
       //
       if (
-        rules.script.commentNewline === true &&
+        option.commentNewline === true &&
         ctoke.startsWith('//') === false &&
         data.lines[a] >= 3
       ) {
@@ -357,10 +355,10 @@ export function script () {
       if (
         destruct[destruct.length - 1] === false || (
           data.stack[a] === 'array' &&
-          rules.script.arrayFormat === 'inline'
+          option.arrayFormat === 'inline'
         ) || (
           data.stack[a] === 'object' &&
-          rules.script.objectIndent === 'inline'
+          option.objectIndent === 'inline'
         )
       ) {
         return;
@@ -579,7 +577,7 @@ export function script () {
         if (
           is(ctoke, ch.RCB) &&
           data.stack[a] === 'switch' &&
-          rules.script.noCaseIndent === false
+          option.noCaseIndent === false
         ) {
 
           indent = indent - 1;
@@ -705,12 +703,12 @@ export function script () {
         vindex.pop();
       }
 
-      if (rules.script.bracePadding === false && ctoke !== '}' && ltype !== 'markup') {
+      if (option.bracePadding === false && ctoke !== '}' && ltype !== 'markup') {
         level[a - 1] = -20;
       }
 
       if (
-        rules.script.bracePadding === true &&
+        option.bracePadding === true &&
         ltype !== 'start' &&
         ltoke !== ';' &&
         (
@@ -1151,7 +1149,7 @@ export function script () {
           (
             commas[commas.length - 1] === true &&
             destruct[destruct.length - 1] === false &&
-            rules.script.arrayFormat !== 'inline'
+            option.arrayFormat !== 'inline'
           ) || (
             is(ltoke, ch.RSB) && level[a - 2] === indent + 1
           )
@@ -1217,7 +1215,7 @@ export function script () {
           markuplist();
         }
 
-        if (rules.script.arrayFormat === 'inline') {
+        if (option.arrayFormat === 'inline') {
 
           let c = a;
           const begin = data.begin[a];
@@ -1741,7 +1739,7 @@ export function script () {
 
         ternary.push(a);
 
-        if (rules.script.ternaryLine === true) {
+        if (option.ternaryLine === true) {
           level[a - 1] = -10;
         } else {
 
@@ -1820,7 +1818,7 @@ export function script () {
                 ternary.pop();
                 endExtraInd();
 
-                if (rules.script.ternaryLine === true) level[a - 1] = -10;
+                if (option.ternaryLine === true) level[a - 1] = -10;
 
                 level.push(-10);
                 return;
@@ -1903,7 +1901,7 @@ export function script () {
 
           level[a - 1] = -20;
 
-          if (rules.script.caseSpace === true) {
+          if (option.caseSpace === true) {
             level.push(-10);
           } else {
             level.push(indent);
@@ -2262,7 +2260,7 @@ export function script () {
 
       const propertybreak = () => {
 
-        if (rules.script.methodChain > 0) {
+        if (option.methodChain > 0) {
 
           let x = a;
           let y = data.begin[a];
@@ -2311,7 +2309,7 @@ export function script () {
 
           } while (x > y);
 
-          if (z.length < rules.script.methodChain) {
+          if (z.length < option.methodChain) {
             level[a - 1] = -20;
             return;
           }
@@ -2362,12 +2360,12 @@ export function script () {
           }
         }
 
-        if (rules.script.methodChain === 0) {
+        if (option.methodChain === 0) {
 
           // methodchain is 0 so methods and properties should be chained together
           level[a - 1] = -20;
 
-        } else if (rules.script.methodChain < 0) {
+        } else if (option.methodChain < 0) {
 
           if (data.lines[a] > 0) {
             propertybreak();
@@ -2421,25 +2419,25 @@ export function script () {
           }
         }
 
-        if (data.stack[a] === 'array' && rules.script.arrayFormat === 'indent') {
+        if (data.stack[a] === 'array' && option.arrayFormat === 'indent') {
           level[a - 1] = -20;
           level.push(indent);
           return;
         }
 
-        if (data.stack[a] === 'array' && rules.script.arrayFormat === 'inline') {
+        if (data.stack[a] === 'array' && option.arrayFormat === 'inline') {
           level[a - 1] = -20;
           level.push(-10);
           return;
         }
 
-        if (data.stack[a] === 'object' && rules.script.objectIndent === 'indent') {
+        if (data.stack[a] === 'object' && option.objectIndent === 'indent') {
           level[a - 1] = -20;
           level.push(indent);
           return;
         }
 
-        if (data.stack[a] === 'object' && rules.script.objectIndent === 'inline') {
+        if (data.stack[a] === 'object' && option.objectIndent === 'inline') {
           level[a - 1] = -20;
           level.push(-10);
           return;
@@ -2743,10 +2741,10 @@ export function script () {
       itemcount.push(0);
 
       if (
-        rules.script.neverFlatten === true ||
+        option.neverFlatten === true ||
         deep === 'attribute' ||
         ltype === 'generic' || (
-          rules.script.arrayFormat === 'indent' &&
+          option.arrayFormat === 'indent' &&
           deep === 'array'
         ) || (
           deep === 'class' &&
@@ -2821,7 +2819,7 @@ export function script () {
             level[a - 1] = indent;
 
           } else if (
-            rules.script.braceAllman === true &&
+            option.braceAllman === true &&
             ltype !== 'operator' &&
             ltoke !== 'return'
           ) {
@@ -2855,13 +2853,13 @@ export function script () {
 
         if (deep === 'object') {
 
-          if (rules.script.objectIndent === 'indent') {
+          if (option.objectIndent === 'indent') {
             destruct[destruct.length - 1] = false;
             level.push(indent);
             return;
           }
 
-          if (rules.script.objectIndent === 'inline') {
+          if (option.objectIndent === 'inline') {
             destruct[destruct.length - 1] = true;
             level.push(-20);
             return;
@@ -2870,7 +2868,7 @@ export function script () {
 
         if (deep === 'switch') {
 
-          if (rules.script.noCaseIndent === true) {
+          if (option.noCaseIndent === true) {
             level.push(indent - 1);
             return;
           }
@@ -2936,7 +2934,7 @@ export function script () {
           if (
             ltoke === 'import' ||
             ltoke === 'in' ||
-            rules.script.functionNameSpace === true
+            option.functionNameSpace === true
           ) {
             level[a - 1] = -10;
 
@@ -2981,7 +2979,7 @@ export function script () {
               )
             )
           ) || (
-            rules.script.functionSpace === false &&
+            option.functionSpace === false &&
             ltoke === 'function'
           )
         ) {
@@ -3026,13 +3024,13 @@ export function script () {
           return;
         }
 
-        if (rules.script.arrayFormat === 'indent') {
+        if (option.arrayFormat === 'indent') {
           destruct[destruct.length - 1] = false;
           level.push(indent);
           return;
         }
 
-        if (rules.script.arrayFormat === 'inline') {
+        if (option.arrayFormat === 'inline') {
           destruct[destruct.length - 1] = true;
           level.push(-20);
           return;
@@ -3178,7 +3176,7 @@ export function script () {
         )
       ) {
 
-        if (rules.script.bracePadding === true) {
+        if (option.bracePadding === true) {
           level[a - 2] = -10;
           level[a - 1] = -10;
         } else {
@@ -3233,7 +3231,7 @@ export function script () {
 
         if (data.token[a - 2] === 'x}') level[a - 3] = level[a - 3] - 1;
 
-        if (rules.script.braceAllman === true || rules.script.elseNewline === true) {
+        if (option.braceAllman === true || option.elseNewline === true) {
           level[a - 1] = indent;
         } else {
           // level[a - 1] = -20;
@@ -3256,7 +3254,7 @@ export function script () {
       if (ctoke === 'function') {
 
         if (
-          rules.script.functionSpace === false &&
+          option.functionSpace === false &&
           a < b - 1 && (
             is(data.token[a + 1], ch.LPR) ||
             data.token[a + 1] === 'x('
@@ -3310,8 +3308,8 @@ export function script () {
         ) && (
           ctoke === 'catch' || (
             ctoke === 'else' &&
-            rules.script.elseNewline === false &&
-            rules.script.braceAllman === false
+            option.elseNewline === false &&
+            option.braceAllman === false
           )
         )
       )) {
@@ -3366,7 +3364,7 @@ export function script () {
         return;
       }
 
-      if (rules.script.bracePadding === false && a < b - 1 && is(data.token[a + 1], ch.RCB)) {
+      if (option.bracePadding === false && a < b - 1 && is(data.token[a + 1], ch.RCB)) {
         level.push(-20);
         return;
       }
@@ -3569,7 +3567,7 @@ export function script () {
 
     };
 
-    if (rules.script.vertical === true) {
+    if (option.vertical === true) {
 
       function vertical (end: number) {
 
@@ -3717,7 +3715,7 @@ export function script () {
         // Improves the indentComment rule by aligning
         // comments to the code they annotate.
         //
-        if (data.types[a] === 'comment' && rules.script.commentIndent === true) {
+        if (data.types[a] === 'comment' && option.commentIndent === true) {
 
           if (/\n/.test(data.token[a])) {
 
@@ -3740,7 +3738,7 @@ export function script () {
         }
 
         if (invisibles.indexOf(data.token[a]) < 0) {
-          if (not(data.token[a], ch.SEM) || rules.script.noSemicolon === false) {
+          if (not(data.token[a], ch.SEM) || option.noSemicolon === false) {
             build.push(data.token[a]);
           } else if (levels[a] < 0 && data.types[a + 1] !== 'comment') {
             build.push(';');
@@ -3765,7 +3763,7 @@ export function script () {
               (levels[a] > -1 && is(data.token[a + 1], ch.RCB))
             ) &&
             data.lines[a] < 3 &&
-            rules.script.braceNewline === true
+            option.braceNewline === true
           ) {
 
             // console.log(data.token[a]);
@@ -3832,7 +3830,6 @@ export function script () {
 
   })();
 
-  assign(rules.script, cache);
   return output;
 
 };

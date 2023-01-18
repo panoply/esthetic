@@ -1,6 +1,7 @@
-import { cc, NIL } from 'shared';
-import { is } from '@utils/helpers';
-import { LanguageName, LexerName } from 'types/internal';
+import type { LanguageName, LexerName } from 'types/internal';
+import { cc } from 'lexical/codes';
+import { NIL } from 'chars';
+import { is } from 'utils';
 
 interface ReturnValue {
   language: LanguageName,

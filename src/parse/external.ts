@@ -1,4 +1,4 @@
-import { grammar } from 'shared';
+import { grammar } from './grammar';
 
 /**
  * Determine External

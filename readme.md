@@ -2,11 +2,11 @@
 
 _This module is in its infancy and working towards an official release candidate. Refer to the [Language Support](#language-support) before using the module and please note that this readme will be subject to change._
 
-# 🎀 Prettify
+# Æsthetic
 
-The new generation code beautification tool for formatting HTML, Liquid, CSS/SCSS, JavaScript, TypeScript and more! Prettify is built atop of the original Sparser lexing algorithm and its parse approach has been repurposed from the distributed source of the late and powerful PrettyDiff.
+Code beautification tool for formatting HTML, Liquid, CSS/SCSS, JavaScript, TypeScript and more! Æsthetic is built atop of the original [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and its parse approach has been repurposed from the distributed source of the late and powerful [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
 
-- [playground](https://liquify.dev/prettify)
+- [playground](https://liquify.dev/Æsthetic)
 - [vscode-liquid](https://github.com/panoply/vscode-liquid)
 
 ### Features
@@ -31,29 +31,29 @@ Currently working on documentation to better inform upon rules and overall archi
 > **Note**&nbsp;
 > Script mode documentation is still being worked on.
 
-## What is Prettify?
+## What is Æsthetic?
 
-Prettify is a lightweight, fast and extensible code beautification tool. It currently provides formatting support for 15 different languages and is used by the [Liquify](https://liquify.dev) text editor extension/plugin. Prettify implements a variation of the universal [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and was originally adapted from the distributed source of [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md). The module has been refined for usage in projects working with client side and consumer facing languages and exists as an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/).
+Æsthetic is a lightweight, fast and extensible code beautification tool. It currently provides formatting support for 15 different languages and is used by the [Liquify](https://liquify.dev) text editor extension/plugin. Æsthetic implements a variation of the universal [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and was originally adapted from the distributed source of [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md). The module has been refined for usage in projects working with client side and consumer facing languages and exists as an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/).
 
 ## Motivation / Backstory
 
-Prettify was developed to handle chaotic and unpredictable Liquid + HTML markup structures. Before creating Prettify, alternative solutions did not support Liquid infused syntax and thus developers using this template language were not able to leverage beautifiers. I learned of Sparser and PrettyDiff while seeking a solution to this problem and discovered that both these tools supported Liquid and several additional template language infused beautification. Sparser and PrettyDiff had unfortunately fallen into disarray and were no longer being _actively_ maintained as of 2019 so I began sifting through the code and was fascinated with the original universal parse algorithm that author [Austin Cheney](https://github.com/prettydiff) created and employed.
+Æsthetic was developed to handle chaotic and unpredictable Liquid + HTML markup structures. Before creating Æsthetic, alternative solutions did not support Liquid infused syntax and thus developers using this template language were not able to leverage beautifiers. I learned of Sparser and PrettyDiff while seeking a solution to this problem and discovered that both these tools supported Liquid and several additional template language infused beautification. Sparser and PrettyDiff had unfortunately fallen into disarray and were no longer being _actively_ maintained as of 2019 so I began sifting through the code and was fascinated with the original universal parse algorithm that author [Austin Cheney](https://github.com/prettydiff) created and employed.
 
 Given that these tools had extended support for style and script language beautification there was endless potential and not only was it possible to bring support for Liquid in HTML and markup but I could also leverage the existing logic to extend support into in all common client side and consumer facing languages while still facilitating features without its Liquid containment.
 
 ## Purpose
 
-The main purpose of Prettify is to take code input of a language, restructure formations expressed within the code and return a more refined output. The tool is not a linter, and it is not designed to correct invalid syntax, it's developed for code beautification of client side consumer facing languages.
+The main purpose of Æsthetic is to take code input of a language, restructure formations expressed within the code and return a more refined output. The tool is not a linter, and it is not designed to correct invalid syntax, it's developed for code beautification of client side consumer facing languages.
 
-### Why Prettify?
+### Why Æsthetic?
 
-The reapplication of Sparser and PrettyDiff into Prettify is an example of evolutionary open source. Prettify provides developers with a granular set of beautification rules that allow for customized output allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support, it intends to be the solution you'd employ when working with the template language.
+The reapplication of Sparser and PrettyDiff into Æsthetic is an example of evolutionary open source. Æsthetic provides developers with a granular set of beautification rules that allow for customized output allows developers to comfortably infuse Liquid into different languages without sacrificing beautification support, it intends to be the solution you'd employ when working with the template language.
 
-The lexing algorithm and parse approach employed in Prettify is an original strategic concept. Parsers typically produce an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (abstract syntax tree) Prettify implementation of Sparser will produces a uniformed table like structure.
+The lexing algorithm and parse approach employed in Æsthetic is an original strategic concept. Parsers typically produce an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (abstract syntax tree) Æsthetic implementation of Sparser will produces a uniformed table like structure.
 
 ### Language Support
 
-Below is a current support list of languages, their completion status and whether you can run Prettify for beautification. You can leverage on languages above 90% completion, anything below that is not yet ready for the big time. Languages with an above 80% completion status will work with basic structures, but may not be viable in some cases and can be problematic.
+Below is a current support list of languages, their completion status and whether you can run Æsthetic for beautification. You can leverage on languages above 90% completion, anything below that is not yet ready for the big time. Languages with an above 80% completion status will work with basic structures, but may not be viable in some cases and can be problematic.
 
 | Language            | Status       | Operational | Usage                           |
 | ------------------- | ------------ | ----------- | ------------------------------- |
@@ -98,15 +98,15 @@ _Those wonderful individuals who come across any bugs or defects. Please inform 
   - [Asynchronous](#asynchronous)
   - [Synchronous](#synchronous)
 - [Inline Control](#inline-control)
-  - [Disable Prettify](#disable-prettify)
+  - [Disable Æsthetic](#disable-Æsthetic)
   - [Inline Rules](#inline-rules)
   - [Ignoring Regions](#ignoring-regions)
 - [Caveats](#caveats)
-  - [Prettier + Prettify](#prettier--prettify)
+  - [Prettier + Æsthetic](#prettier--Æsthetic)
   - [Linters](#linters)
   - [Shopify Themes](#shopify-themes)
   - [Jekyll and 11ty](#jekyll-and-11ty)
-- [Prettify vs Shopify's Liquid Prettier Plugin](#prettify-vs-shopifys-liquid-prettier-plugin)
+- [Æsthetic vs Shopify's Liquid Prettier Plugin](#Æsthetic-vs-shopifys-liquid-prettier-plugin)
   - [Intention vs Impedance](#intention-vs-impedance)
   - [Standard Markup Comparison](#standard-markup-comparison)
   - [Embedded Languages Comparison](#embedded-languages-comparison)
@@ -117,22 +117,22 @@ _Those wonderful individuals who come across any bugs or defects. Please inform 
 This module is currently used by the [vscode-liquid](https://github.com/panoply/vscode-liquid)] extension.
 
 ```bash
-pnpm add @liquify/prettify -D
+pnpm add esthetic -D
 ```
 
 _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
 
 # Usage
 
-The tool provides a granular set of beautification rules. Each supported language exposes different formatting rules. You can either use the `prettify.format` method to beautify all languages within a matching nexus or alternatively you can use [language specific](#language-specific) methods. Prettify will attempt to automatically detect the language you've provided and from here forward input to an appropriate lexer for handling when using `prettify.format` but it is recommended that your specify a `language` value.
+The tool provides a granular set of beautification rules. Each supported language exposes different formatting rules. You can either use the `Æsthetic.format` method to beautify all languages within a matching nexus or alternatively you can use [language specific](#language-specific) methods. Æsthetic will attempt to automatically detect the language you've provided and from here forward input to an appropriate lexer for handling when using `Æsthetic.format` but it is recommended that your specify a `language` value.
 
 <!-- prettier-ignore -->
 ```typescript
-import prettify from '@liquify/prettify';
+import { format } from 'esthetic';
 
 const code = '<div class="example">{% if x %} {{ x }} {% endif %}</div>';
 
-prettify.format(code, {
+format(code, {
   language: 'liquid',
   indentSize: 2,
   markup: {
@@ -156,7 +156,7 @@ prettify.format(code, {
 
 # API
 
-Prettify does not yet provide CLI support but will in future releases. The API exports several methods on the default and intends to make usage as simple as possible with respect to extendability for more advanced use cases. The `prettify` instance is exported on the default and all methods can be called from its import.
+Æsthetic does not yet provide CLI support but will in future releases. The API exports several methods on the default and intends to make usage as simple as possible with respect to extendability for more advanced use cases. The `Æsthetic` instance is exported on the default and all methods can be called from its import.
 
 - [Rules](#rules)
 - [Format](#format)
@@ -166,20 +166,20 @@ Prettify does not yet provide CLI support but will in future releases. The API e
 - [Events](#events)
 - [Hooks](#hooks)
 
-The `rules` method is completely optional and helpful when you are making repeated calls to the `prettify.format()` or wish to control rules at a different point within your application. When calling the `p`Return the current rules being used by invoking `prettify.rules()`
+The `rules` method is completely optional and helpful when you are making repeated calls to the `Æsthetic.format()` or wish to control rules at a different point within your application. When calling the `p`Return the current rules being used by invoking `Æsthetic.rules()`
 
 ## Format
 
-There format method can be used to beautify code and accepts either a string or buffer type argument. An optional `rules` parameter can also be passed for setting beautification options. By default the method resolves to a promise but you can also invoke this in a synchronous manner using `prettify.format.sync()`.
+There format method can be used to beautify code and accepts either a string or buffer type argument. An optional `rules` parameter can also be passed for setting beautification options. By default the method resolves to a promise but you can also invoke this in a synchronous manner using `Æsthetic.format.sync()`.
 
-> When an error occurs the `prettify.format.sync` method throws an instance of an Error.
+> When an error occurs the `Æsthetic.format.sync` method throws an instance of an Error.
 
 <!-- prettier-ignore -->
 ```typescript
-import prettify from "@liquify/prettify";
+import { format } from "esthetic";
 
 // Async formatting
-prettify.format('.class { font-size: 0.95rem; }', {
+format('.class { font-size: 0.95rem; }', {
   language: 'css',
   style: {
     noLeadZero: true
@@ -192,7 +192,7 @@ prettify.format('.class { font-size: 0.95rem; }', {
 
 
 // Sync formatting
-const output = prettify.format.sync('.class { font-size: 0.95rem; }', {
+const output = Æsthetic.format.sync('.class { font-size: 0.95rem; }', {
   language: 'css',
   style: {
     noLeadZero: true
@@ -205,62 +205,62 @@ console.log(output)
 
 ### Language Specific
 
-Language specific formatting methods work the same as `prettify.format` but are refined to operate on a language specific level. These methods accept only relative rules as a second parameter as the `language` option is inferred.
+Language specific formatting methods work the same as `Æsthetic.format` but are refined to operate on a language specific level. These methods accept only relative rules as a second parameter as the `language` option is inferred.
 
 > Currently, only stable language specific methods are made available.
 
 ```ts
-import prettify from "@liquify/prettify";
+import { format } from "esthetic";
 
 // Liquid
 //
-prettify.liquid('..'): Promise<string>;
-prettify.liquid.sync('..'): string;
+format.liquid('..'): Promise<string>;
+format.liquid.sync('..'): string;
 
 // HTML
 //s
-prettify.html('..'): Promise<string>;
-prettify.html.sync('..'): string;
+format.html('..'): Promise<string>;
+format.html.sync('..'): string;
 
 // HTML
 //
-prettify.xml('..'): Promise<string>;
-prettify.xml.sync('..'): string;
+format.xml('..'): Promise<string>;
+format.xml.sync('..'): string;
 
 // CSS
 //
-prettify.css('..'): Promise<string>;
-prettify.css.sync('..'): string;
+format.css('..'): Promise<string>;
+format.css.sync('..'): string;
 
 // JSON
 //
-prettify.json('..'): Promise<string>;
-prettify.json.sync('..'): string;
+format.json('..'): Promise<string>;
+format.json.sync('..'): string;
 ```
 
 ## Parse
 
-The `parse` method can be used to inspect the data structures that Prettify constructs. Prettify is using the Sparser lexing algorithm under the hood the generated parse tree returned is representative of sparser's data structures. Similar to `prettify.format` you can also invoke this both asynchronously and synchronously.
+The `parse` method can be used to inspect the data structures that Æsthetic constructs. Æsthetic is using the Sparser lexing algorithm under the hood the generated parse tree returned is representative of sparser's data structures. Similar to `Æsthetic.format` you can also invoke this both asynchronously and synchronously.
 
 ```typescript
-import prettify from "@liquify/prettify";
+import { parse } from "esthetic";
 
 // The generated sparser data structure
-prettify.parse('...'): Promise<Data>;
+parse('...'): Promise<Data>;
 
 // The generated sparser data structure
-prettify.parse.sync('...'): Data;
+parse.sync('...'): Data;
 ```
 
 ## Grammar
 
-The `grammar` method allows you to extend beautification to support custom tags and provide Prettify with additional context about certain keywords and structures. This is a great feature for folks using custom Liquid variations or those who require some special behavior from the beautification cycle.
+The `grammar` method allows you to extend beautification to support custom tags and provide Æsthetic with additional context about certain keywords and structures. This is a great feature for folks using custom Liquid variations or those who require some special behavior from the beautification cycle.
 
 ```typescript
-import prettify from "@liquify/prettify";
+import { grammar } from "esthetic";
 
 // Detects a language from a string sample
-prettify.grammar({
+grammar({
   html: {
     // Extend void tag handling
     voids: [
@@ -318,17 +318,17 @@ prettify.grammar({
 
 ## Language
 
-The `language` method is a utility method that Prettify uses under the hood in the beautification process. The method is not _perfect_ but can detect and determine the language from the sample string provided.
+The `language` method is a utility method that Æsthetic uses under the hood in the beautification process. The method is not _perfect_ but can detect and determine the language from the sample string provided.
 
 ```typescript
-import prettify from "@liquify/prettify";
+import Æsthetic from "esthetic";
 
 // Detects a language from a string sample
-prettify.language(sample: string)
+Æsthetic.language(sample: string)
 
 ```
 
-> You can augment the language reference detected in the `prettify.language.listen` event.
+> You can augment the language reference detected in the `Æsthetic.language.listen` event.
 
 ## Rules
 
@@ -336,10 +336,10 @@ The `rules` methods will augment formatting options (rules). Formatting options 
 
 <!-- prettier-ignore -->
 ```typescript
-import prettify from '@liquify/prettify';
+import { rules, format } from 'esthetic';
 
 // Define rules to be used when formatting
-prettify.rules({
+rules({
   language: 'html',
   indentSize: 4,
   markup: {
@@ -359,7 +359,7 @@ prettify.rules({
 });
 
 // When calling format, the rules will be used.
-prettify.format('<div id="x" class="x"> etc etc </div>').then(output => {
+format('<div id="x" class="x"> etc etc </div>').then(output => {
 
   console.log(output);
 
@@ -369,17 +369,17 @@ prettify.format('<div id="x" class="x"> etc etc </div>').then(output => {
 
 ## Events
 
-Prettify provides event dispatching. Events are invoked at different stages of the beautification cycle and can also inform upon changes occurring in rules.
+Æsthetic provides event dispatching. Events are invoked at different stages of the beautification cycle and can also inform upon changes occurring in rules.
 
-> When listening to the `prettify.on('format')` event you cancel out of formatting by returning `false` in the event.
+> When listening to the `Æsthetic.on('format')` event you cancel out of formatting by returning `false` in the event.
 
 <!-- prettier-ignore -->
 ```typescript
-import prettify from '@liquify/prettify';
+import * as esthetic from 'esthetic';
 
 // Formatting Event
 //
-prettify.on('format', function (output) {
+esthetic.on('format', function (output) {
 
   // Access formatting rules in the "this" context
   console.log(this.rules);
@@ -397,7 +397,7 @@ prettify.on('format', function (output) {
 
 // Rules Event
 //
-prettify.on('rules', function (changes, rules) {
+esthetic.on('rules', function (changes, rules) {
 
   // Informs upon changed rules
   console.log(changes);
@@ -409,7 +409,7 @@ prettify.on('rules', function (changes, rules) {
 
 // Parse Event
 //
-prettify.on('parse', function (data) {
+esthetic.on('parse', function (data) {
 
   // The generated data structure
   console.log(data);
@@ -422,15 +422,15 @@ prettify.on('parse', function (data) {
 
 ## Hooks
 
-Prettify hooks are similar to events but will fire during the parse cycle. Hooks can be used to augment the data structure and will be called for every record pushed into the generated uniform.
+Æsthetic hooks are similar to events but will fire during the parse cycle. Hooks can be used to augment the data structure and will be called for every record pushed into the generated uniform.
 
 > Currently only `parse` hooks are available.
 
 <!-- prettier-ignore -->
 ```typescript
-import prettify from '@liquify/prettify';
+import * as esthetic from 'esthetic';
 
-prettify.hook('parse', function(record, index) {
+esthetic.hook('parse', function(record, index) {
 
   // The current line number in which parse is running.
   console.log(this.line);
@@ -464,16 +464,16 @@ The definitions is a named export that exposes a definition list of the availabl
 
 <!-- prettier-ignore -->
 ```typescript
-import prettify from '@liquify/prettify';
+import * as esthetic from 'esthetic';
 
 // Print the definitions to console
-console.log(prettify.definitions);
+console.log(esthetic.definitions);
 
 ```
 
 # Rule Options
 
-Prettify provides a granular set of beautification options (rules). The projects [Typings](https://github.com/panoply/prettify/tree/pre-release/types/rules) explains in good detail the effect each available rule has on code. You can also checkout the [Playground](https://liquify.dev/prettify) to get a better idea of how code will be beautified.
+Æsthetic provides a granular set of beautification options (rules). The projects [Typings](https://github.com/panoply/Æsthetic/tree/pre-release/types/rules) explains in good detail the effect each available rule has on code. You can also checkout the [Playground](https://liquify.dev/Æsthetic) to get a better idea of how code will be beautified.
 
 ```typescript
 {
@@ -513,8 +513,10 @@ Prettify provides a granular set of beautification options (rules). The projects
     preserveAttributes: false,
     preserveComment: true,
     preserveText: true,
+    selfCloseSpace: false,
+    selfCloseSVG: true,
+    stripAttributeLines: false,
     quoteConvert: 'double',
-    selfCloseSpace: false
   },
   style: {
     atRuleSpace: false,
@@ -529,6 +531,7 @@ Prettify provides a granular set of beautification options (rules). The projects
     quoteConvert: 'none',
   },
   json: {
+    allowComments: false,
     arrayFormat: 'default',
     braceAllman: true,
     bracePadding: false,
@@ -584,7 +587,7 @@ Global rules will be applied to all lexer modes. You cannot override globals on 
 
 ### Liquid Rules
 
-Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/liquid.d.ts) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [typings](https://github.com/panoply/Æsthetic/blob/pre-release/types/rules/liquid.d.ts) declaration file for description. Rules will be used when formatting the following languages:
 
 - Liquid
 
@@ -607,7 +610,7 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
 
 ### Markup Rules
 
-Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/markup.d.ts) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [typings](https://github.com/panoply/Æsthetic/blob/pre-release/types/rules/markup.d.ts) declaration file for description. Rules will be used when formatting the following languages:
 
 - Liquid
 - HTML
@@ -619,28 +622,33 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
 ```ts
 {
   markup: {
-    commentIndent: false,
-    commentNewline: false,
     attributeCasing: 'preserve',
     attributeSort: false,
     attributeSortList: [],
+    commentIndent: false,
+    commentNewline: false,
+    correct: true,
+    delimiterForce: false,
     forceAttribute: false,
     forceLeadAttribute: false,
     forceIndent: false,
-    ignoreStyles: false,
-    ignoreScripts: false,
+    ignoreCSS: false,
+    ignoreJS: false,
+    ignoreJSON: false,
     preserveAttributes: false,
     preserveComment: true,
     preserveText: true,
+    selfCloseSpace: false,
+    selfCloseSVG: true,
+    stripAttributeLines: false,
     quoteConvert: 'double',
-    selfCloseSpace: false
   }
 }
 ```
 
 ### Style Rules
 
-Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/style.d.ts) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [typings](https://github.com/panoply/Æsthetic/blob/pre-release/types/rules/style.d.ts) declaration file for description. Rules will be used when formatting the following languages:
 
 - CSS
 - SCSS/SASS
@@ -663,11 +671,11 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
 }
 ```
 
-> _Prettify supports Liquid infused style formatting and when encountered it will apply beautification using Markup rules_
+> _Æsthetic supports Liquid infused style formatting and when encountered it will apply beautification using Markup rules_
 
 ### Script Rules
 
-Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/types/rules/script.d.ts) declaration file for description. Rules will be used when formatting the following languages:
+Refer to the [typings](https://github.com/panoply/Æsthetic/blob/pre-release/types/rules/script.d.ts) declaration file for description. Rules will be used when formatting the following languages:
 
 - JavaScript
 - TypeScript
@@ -707,7 +715,7 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
 }
 ```
 
-> _Prettify supports Liquid infused script formatting and when encountered it will apply beautification using Markup rules_
+> _Æsthetic supports Liquid infused script formatting and when encountered it will apply beautification using Markup rules_
 
 ### JSON Rules
 
@@ -726,7 +734,7 @@ Refer to the [JSON](/docs/rules/json.md) declaration file for description. Rules
 }
 ```
 
-> _Prettify partially supports Liquid infused JSON formatting, but you should avoid coupling these 2 language together._
+> _Æsthetic partially supports Liquid infused JSON formatting, but you should avoid coupling these 2 language together._
 
 # Parse Errors
 
@@ -736,12 +744,12 @@ The `format` method returns a promise, so when beautification fails and a parse 
 
 <!-- prettier-ignore -->
 ```typescript
-import prettify from '@liquify/prettify';
+import Æsthetic from 'esthetic';
 
 // Invalid code
 const code = '{% if x %} {{ x }} {% endless %}';
 
-prettify.format(code).then(output => console.log(output)).catch(error => {
+Æsthetic.format(code).then(output => console.log(output)).catch(error => {
 
   // Print the PrettyDiff error
   console.error(error);
@@ -756,14 +764,14 @@ prettify.format(code).then(output => console.log(output)).catch(error => {
 
 <!-- prettier-ignore -->
 ```typescript
-import prettify from '@liquify/prettify';
+import Æsthetic from 'esthetic';
 
 // Invalid code
 const code = '{% if x %} {{ x }} {% endless %}';
 
 try {
 
-  const output = prettify.formatSync(code)
+  const output = Æsthetic.formatSync(code)
 
 } catch (error) {
 
@@ -780,17 +788,17 @@ try {
 
 Inline control is supported and can be applied within comments. Inline control allows your to ignore files, code regions or apply custom formatting options. Comments use the following structures:
 
-- `@prettify-ignore`
-- `@prettify-ignore-next`
-- `@prettify-ignore-start`
-- `@prettify-ignore-end`
+- `@Æsthetic-ignore`
+- `@Æsthetic-ignore-next`
+- `@Æsthetic-ignore-start`
+- `@Æsthetic-ignore-end`
 
-## Disable Prettify
+## Disable Æsthetic
 
-You can prevent Prettify from formatting a file by placing an inline control comment at the type of the document.
+You can prevent Æsthetic from formatting a file by placing an inline control comment at the type of the document.
 
 ```liquid
-{% # @prettify-ignore %}
+{% # @Æsthetic-ignore %}
 
 <div>
   <ul>
@@ -805,116 +813,116 @@ Lexer modes provide comment ignore control and support ignoring regions (blocks)
 
 ### HTML Comments
 
-- `<!-- @prettify-ignore-start -->`
-- `<!-- @prettify-ignore-end -->`
+- `<!-- @Æsthetic-ignore-start -->`
+- `<!-- @Æsthetic-ignore-end -->`
 
 ### Liquid Block Comments
 
-- `{% comment %} @prettify-ignore-start {% endcomment %}`
-- `{% comment %} @prettify-ignore-end {% endcomment %}`
+- `{% comment %} @Æsthetic-ignore-start {% endcomment %}`
+- `{% comment %} @Æsthetic-ignore-end {% endcomment %}`
 
 ### Liquid Line Comments
 
-- `{% # @prettify-ignore-start %}`
-- `{% # @prettify-ignore-end %}`
+- `{% # @Æsthetic-ignore-start %}`
+- `{% # @Æsthetic-ignore-end %}`
 
 ### Block Comments
 
-- `/* @prettify-ignore-start */`
-- `/* @prettify-ignore-end */`
+- `/* @Æsthetic-ignore-start */`
+- `/* @Æsthetic-ignore-end */`
 
 ### Line Comments
 
-- `// @prettify-ignore-start`
-- `// @prettify-ignore-end`
+- `// @Æsthetic-ignore-start`
+- `// @Æsthetic-ignore-end`
 
 ## Ignore Next
 
-Similar to region ignores, you can instead have Prettify ignore the next known line. This comment ignore will span multiple lines when it is annotated about a tag block start/end token structure.
+Similar to region ignores, you can instead have Æsthetic ignore the next known line. This comment ignore will span multiple lines when it is annotated about a tag block start/end token structure.
 
 ### HTML Comments
 
-- `<!-- @prettify-ignore-next -->`
+- `<!-- @Æsthetic-ignore-next -->`
 
 ### Liquid Block Comments
 
-- `{% comment %} @prettify-ignore-next {% endcomment %}`
+- `{% comment %} @Æsthetic-ignore-next {% endcomment %}`
 
 ### Liquid Line Comments
 
-- `{% # @prettify-ignore-next %}`
+- `{% # @Æsthetic-ignore-next %}`
 
 ### Block Comments
 
-- `/* @prettify-ignore-next */`
+- `/* @Æsthetic-ignore-next */`
 
 ### Line Comments
 
-- `// @prettify-ignore-next`
+- `// @Æsthetic-ignore-next`
 
 # Comment Rules
 
-Prettify provides inline formatting support via comments. Inline formatting adopts a similar approach used in linters and other projects. The difference is how inline formats are expressed, in Prettify you express formats using inline annotation at the top of the document with a value of `@prettify` followed by either a space of newline.
+Æsthetic provides inline formatting support via comments. Inline formatting adopts a similar approach used in linters and other projects. The difference is how inline formats are expressed, in Æsthetic you express formats using inline annotation at the top of the document with a value of `@Æsthetic` followed by either a space of newline.
 
 **Not all inline ignore capabilities are operational**
 
 #### HTML Comments
 
 ```html
-<!-- @prettify forceAttribute: true indentLevel: 4 -->
+<!-- @Æsthetic forceAttribute: true indentLevel: 4 -->
 ```
 
 #### Liquid Block Comments
 
 ```liquid
 {% comment %}
-  @prettify forceAttribute: true indentLevel: 4
+  @Æsthetic forceAttribute: true indentLevel: 4
 {% endcomment %}
 ```
 
 #### Liquid Line Comments
 
 ```liquid
-{% # @prettify forceAttribute: true indentLevel: 4 %}
+{% # @Æsthetic forceAttribute: true indentLevel: 4 %}
 ```
 
 #### Block comment
 
 ```css
-/* @prettify forceAttribute: true indentLevel: 4 */
+/* @Æsthetic forceAttribute: true indentLevel: 4 */
 ```
 
 ### Line comments
 
 ```javascript
-// @prettify forceAttribute: true indentLevel: 4
+// @Æsthetic forceAttribute: true indentLevel: 4
 ```
 
 # Caveats
 
-Prettify is comparatively _recluse_ in terms of PnP integrations/extensibility. Depending on your stack and development preferences you may wish to use Prettify together with additional tools like [eslint](https://eslint.org/), [stylelint](https://stylelint.io/) or even [Prettier](https://prettier.io/). There are a few notable caveats you should be aware before running Prettify, most of which are trivial.
+Æsthetic is comparatively _recluse_ in terms of PnP integrations/extensibility. Depending on your stack and development preferences you may wish to use Æsthetic together with additional tools like [eslint](https://eslint.org/), [stylelint](https://stylelint.io/) or even [Prettier](https://prettier.io/). There are a few notable caveats you should be aware before running Æsthetic, most of which are trivial.
 
-### Prettier + Prettify
+### Æsthetic vs Prettier
 
-It is not uncommon for developers to use Prettier in their projects but you should avoid executing Prettify alongside Prettier in code editor environments. You can easily prevent issues from arising by excluding the files Prettify handles by adding them to a `.prettierignore` file. More on this [below](#intention-vs-inference).
+It is not uncommon for developers to use Prettier in their projects but you should avoid executing Æsthetic alongside Prettier in code editor environments. You can easily prevent issues from arising by excluding the files Æsthetic handles by adding them to a `.prettierignore` file. More on this [below](#intention-vs-inference).
 
 ### Linters
 
-Prettify can be used together with tools like ESLint and StyleLint without the need to install additional plugins but the caveats come when you introduce Liquid into the code. Prettify can format Liquid contained in JavaScript, TypeScript, JSX and TSX but tools like ESLint are currently unable to process content of that nature and as such without official linting support for Liquid by these tools it is best to only run Prettify with linters on code that does not contain Liquid.
+Æsthetic can be used together with tools like ESLint and StyleLint without the need to install additional plugins but the caveats come when you introduce Liquid into the code. Æsthetic can format Liquid contained in JavaScript, TypeScript, JSX and TSX but tools like ESLint are currently unable to process content of that nature and as such without official linting support for Liquid by these tools it is best to only run Æsthetic with linters on code that does not contain Liquid.
 
 ### Shopify Themes
 
-Developers working with straps like [Dawn](https://github.com/Shopify/dawn) should take some consideration before running Prettify on the distributed code contained within the project. Dawn is chaotic, novice and it employs some terrible approaches. Using Prettify blindly on the project may lead to problematic scenarios and readability issues.
+Developers working with straps like [Dawn](https://github.com/Shopify/dawn) should take some consideration before running Æsthetic on the distributed code contained within the project. Dawn is chaotic, novice and it employs some terrible approaches. Using Æsthetic blindly on the project may lead to problematic scenarios and readability issues.
 
-# Prettify vs Liquid Prettier Plugin
+# Æsthetic vs Liquid Prettier Plugin
 
 Shopify recently shipped a Liquid prettier plugin. It does not really do much beyond basic level indentation but regardless it is great to see Shopify bring support for Liquid beautification and developers who prefer the Prettier style should indeed choose that solution.
 
-Prettify is cut from a different cloth and takes a complete different approach when compared to the Liquid Prettier Plugin. In Prettify, the generated data structure (parse table) it produces has refined context that is specifically designed for beautification usage which allows it to perform incremental traversals that result in faster and more customized beautification results.
+Æsthetic is cut from a different cloth and takes a complete different approach when compared to the Liquid Prettier Plugin. In Æsthetic, the generated data structure (parse table) it produces has refined context that is specifically designed for beautification usage which allows it to perform incremental traversals that result in faster and more customized beautification results.
 
 ### Parse Algorithm
 
-The parse algorithm and lexing approach employed in Prettify is an original strategic concept created by [Austin Cheney](https://github.com/prettydiff). It was first introduced in [Sparser](https://sparser.io/) to provide a simple data format that can accurately describe any language. Parsers typically produce an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (abstract syntax tree) whereas Prettify and its implementation of Sparser produces a uniformed table like structure.
+The parse algorithm and lexing approach employed in Æsthetic is an original strategic concept created by [Austin Cheney](https://github.com/prettydiff). It was first introduced in [Sparser](https://sparser.io/) to provide a simple data format that can accurately describe any language. Parsers typically produce an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (abstract syntax tree) whereas Æsthetic and its implementation of Sparser produces a uniformed table like structure.
 
 Many different algorithms can be made to work and achieve the same result produced by the Sparser table structure, but they all come with tradeoffs relative to the others. Most tools in this nexus seem to be using some variant of [ANTLR](https://en.wikipedia.org/wiki/ANTLR) or [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar) which has less ambiguity than LR parsers but may produce worse error messages for users and consume more memory. When the task involves making sense of combined language formations (ie: Liquid inside of JavaScript inside HTML) there is no "right way" or consensus on how it should be done nor does it seem to have been studied much in academia due to the edge case of the topic.
 
@@ -924,13 +932,13 @@ Looking at the Liquid Prettier Plugin there no _real_ parse algorithm employed a
 
 The Liquid Prettier Plugin appropriates the opinionated conventions of Prettier so when producing output the solution is indirectly impeding itself into your workflow. The restrictions of Prettier can be great in some cases but when you need refined results you'll be met with heavy restrictions. This is a double edged sword and problematic when working with a template language like Liquid due to the manner in which developers infuse and express the syntax with other languages.
 
-Prettify uses the developers intent and refines its result in accordance, this allows you to determine what works best for a project at hand. The granular set of beautification rules exposed by Prettify enables developers to progressively adapt the tool to their preferred code style and it can even replicate beautification styles that both Prettier and its Liquid Prettier Plugin are capable of producing.
+Æsthetic uses the developers intent and refines its result in accordance, this allows you to determine what works best for a project at hand. The granular set of beautification rules exposed by Æsthetic enables developers to progressively adapt the tool to their preferred code style and it can even replicate beautification styles that both Prettier and its Liquid Prettier Plugin are capable of producing.
 
 ### Standard Markup Comparison
 
-Below is a formatting specific feature comparison as of January 2023 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities, overall Shopify's Prettier based solution offers 1/10th of what Prettify currently provides.
+Below is a formatting specific feature comparison as of January 2023 for Markup (Liquid + HTML). This a minimal comparison and I have omitted the cumbersome capabilities, overall Shopify's Prettier based solution offers 1/10th of what Æsthetic currently provides.
 
-| Feature                             | Liquid Prettier Plugin | Prettify |
+| Feature                             | Liquid Prettier Plugin | Æsthetic |
 | ----------------------------------- | ---------------------- | -------- |
 | Tag Indentation                     | ✓                      | ✓        |
 | HTML Attribute Indentation          | ✓                      | ✓        |
@@ -954,9 +962,9 @@ Below is a formatting specific feature comparison as of January 2023 for Markup 
 
 ### Embedded Languages Comparison
 
-Below is the embedded language support comparison. Shopify's solution employs Prettier native formatters when handling regions that contain external languages. Given Prettify is still under heavy development, Shopify's Liquid Prettier Plugin may suffice here but it does not support Liquid infused within the languages whereas Prettify does.
+Below is the embedded language support comparison. Shopify's solution employs Prettier native formatters when handling regions that contain external languages. Given Æsthetic is still under heavy development, Shopify's Liquid Prettier Plugin may suffice here but it does not support Liquid infused within the languages whereas Æsthetic does.
 
-| Feature               | Tag                | Liquid Prettier Plugin | Prettify |
+| Feature               | Tag                | Liquid Prettier Plugin | Æsthetic |
 | --------------------- | ------------------ | ---------------------- | -------- |
 | Embedded CSS          | `<style>`          | ✓                      | ✓        |
 | Embedded JS           | `<script>`         | ✓                      | ✓        |
@@ -970,7 +978,7 @@ Below is the embedded language support comparison. Shopify's solution employs Pr
 
 # Credits
 
-Prettify owes its existence to Sparser and PrettyDiff. This project has been adapted from these 2 brilliant tools and while largely refactored + overhauled the original parse architecture remains intact.
+Æsthetic owes its existence to Sparser and PrettyDiff. This project has been adapted from these 2 brilliant tools and while largely refactored + overhauled the original parse architecture remains intact.
 
 ### [PrettyDiff](https://github.com/prettydiff/prettydiff) and [Sparser](https://github.com/unibeautify/sparser)
 

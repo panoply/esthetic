@@ -1,12 +1,13 @@
 /* eslint-disable no-use-before-define */
 import type { Types } from 'types/internal';
-import { wrapCommentBlock, wrapCommentLine } from '@comments/parse';
+import { commentBlock, commentLine } from 'comments';
 import { parse } from '@parse/parser';
-import { grammar } from '@shared/grammar';
-import { is, not, ws } from '@utils/helpers';
-import { cc, NIL, WSP } from 'shared';
+import { grammar } from '@parse/grammar';
 import { sortCorrect, sortObject } from '@parse/sorting';
-import { Modes } from '@shared/enums';
+import { digit, is, not, ws } from 'utils';
+import { DQO, NIL, NWL, SQO, WSP } from 'chars';
+import * as rx from 'lexical/regex';
+import { cc } from 'lexical/codes';
 
 /* -------------------------------------------- */
 /* LEXER                                        */
@@ -84,7 +85,7 @@ export function style () {
       begin: parse.stack.index,
       ender: -1,
       lexer: 'style',
-      lines: parse.space,
+      lines: parse.lineOffset,
       stack: parse.stack.token,
       token: ltoke,
       types: ltype as Types
@@ -97,11 +98,12 @@ export function style () {
    */
   function esctest (index: number) {
 
-    const slashy = index;
+    const slash = index;
 
-    do { index = index - 1; } while (b[index] === '\\' && index > 0);
+    do index = index - 1;
+    while (is(b[index], cc.BWS) && index > 0);
 
-    return (slashy - index) % 2 === 1;
+    return (slash - index) % 2 === 1;
 
   };
 
@@ -242,7 +244,8 @@ export function style () {
 
       if (start < 1) return true;
 
-      do { xx = xx - 1; } while (xx > 0 && x[xx] === '\\');
+      do xx = xx - 1;
+      while (xx > 0 && is(x[xx], cc.BWS));
 
       return (start - xx) % 2 === 1; // report true for odd numbers (escaped)
 
@@ -255,18 +258,18 @@ export function style () {
 
         items.push(x[ii]);
 
-        if (x[ii - 1] !== '\\' || safeSlash() === false) {
+        if (not(x[ii - 1], cc.BWS) || safeSlash() === false) {
 
           if (block === NIL) {
 
             if (is(x[ii], cc.DQO)) {
 
-              block = '"';
+              block = DQO;
               dd = dd + 1;
 
             } else if (is(x[ii], cc.SQO)) {
 
-              block = "'";
+              block = SQO;
               dd = dd + 1;
 
             } else if (is(x[ii], cc.LPR)) {
@@ -405,7 +408,12 @@ export function style () {
 
       out.push(b[aa]);
 
-      if (ws(b[aa + 1])) do { aa = aa + 1; } while (aa < c && ws(b[aa + 1]));
+      if (ws(b[aa + 1])) {
+
+        do aa = aa + 1;
+        while (aa < c && ws(b[aa + 1]));
+
+      }
 
     };
 
@@ -418,14 +426,14 @@ export function style () {
 
           if (func === null) func = false;
 
-          if (block[block.length - 1] === b[aa] && (b[aa - 1] !== '\\' || esctest(aa - 1) === false)) {
+          if (block[block.length - 1] === b[aa] && (not(b[aa - 1], cc.BWS) || esctest(aa - 1) === false)) {
 
             block.pop();
 
             if (qc === 'double') {
-              b[aa] = '"';
+              b[aa] = DQO;
             } else if (qc === 'single') {
-              b[aa] = "'";
+              b[aa] = SQO;
             }
 
           } else if (
@@ -439,12 +447,12 @@ export function style () {
             block.push(b[aa]);
 
             if (qc === 'double') {
-              b[aa] = '"';
+              b[aa] = DQO;
             } else if (qc === 'single') {
-              b[aa] = "'";
+              b[aa] = SQO;
             }
 
-          } else if (b[aa - 1] === '\\' && qc !== 'none') {
+          } else if (is(b[aa - 1], cc.BWS) && qc !== 'none') {
 
             if (esctest(aa - 1) === true) {
               if (qc === 'double' && is(b[aa], cc.SQO)) {
@@ -462,7 +470,7 @@ export function style () {
 
           out.push(b[aa]);
 
-        } else if (b[aa - 1] !== '\\' || esctest(aa - 1) === false) {
+        } else if (not(b[aa - 1], cc.BWS) || esctest(aa - 1) === false) {
 
           if (is(b[aa], cc.LPR)) {
 
@@ -593,7 +601,7 @@ export function style () {
 
     if (func === true) {
 
-      if (grammar.css.atrules.has(ltoke) && rules.style.atRuleSpace === true) {
+      if (grammar.css.atrules(ltoke) && rules.style.atRuleSpace === true) {
 
         data.token[parse.count] = data.token[parse.count]
           .replace(/\s*\(/g, ' (')
@@ -626,7 +634,7 @@ export function style () {
 
     } else if (
       func === true &&
-      /\d/.test(ltoke.charAt(0)) === false &&
+      digit(ltoke.charAt(0)) === false &&
       /^rgba?\(/.test(ltoke) === false &&
       ltoke.indexOf('url(') !== 0 && (
         ltoke.indexOf(WSP) < 0 ||
@@ -645,7 +653,7 @@ export function style () {
 
     } else if (
       parse.count > -1 &&
-      "\"'".indexOf(data.token[parse.count].charAt(0)) > -1 &&
+      SQO.indexOf(data.token[parse.count].charAt(0)) > -1 &&
       data.types[parse.count] === 'variable'
     ) {
 
@@ -695,7 +703,7 @@ export function style () {
    * until we know the following syntax.  This function replaces the type 'item'
    * with something more specific.
    */
-  function item (type: string) {
+  function parseToken (type: string) {
 
     /**
      * Current character in sequence
@@ -805,9 +813,9 @@ export function style () {
           data.types[ss] === 'at_rule'
         ) && (
           data.types[ss - 2] === 'template' ||
-          data.types[ss - 2] === 'template_start' ||
-          data.types[ss - 2] === 'template_else' ||
-          data.types[ss - 2] === 'template_end'
+          data.types[ss - 2] === 'liquid_start' ||
+          data.types[ss - 2] === 'liquid_else' ||
+          data.types[ss - 2] === 'liquid_end'
         )) {
 
           data.token[ss - 1] = ':' + data.token[ss] + WSP;
@@ -986,9 +994,9 @@ export function style () {
         if (data.token[aa] === ':') data.types[bb] = 'selector';
 
         if (data.token[aa].indexOf('=\u201c') > 0) {
-          parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.line}`;
+          parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.lineNumber}`;
         } else if (data.token[aa].indexOf('=\u201d') > 0) {
-          parse.error = `Invalid Quote (\u201d, \\201d) used on line number ${parse.line}`;
+          parse.error = `Invalid Quote (\u201d, \\201d) used on line number ${parse.lineNumber}`;
         }
 
       } else if (type === 'end') {
@@ -1029,11 +1037,11 @@ export function style () {
 
           if (data.token[aa].charAt(0) === '\u201c') {
 
-            parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.line}`;
+            parse.error = `Invalid Quote (\u201c, \\201c) used on line number ${parse.lineNumber}`;
 
           } else if (data.token[aa].charAt(0) === '\u201d') {
 
-            parse.error = `Invalid (\u201d, \\201d) used on line number ${parse.line}`;
+            parse.error = `Invalid (\u201d, \\201d) used on line number ${parse.lineNumber}`;
 
           }
 
@@ -1095,7 +1103,7 @@ export function style () {
   /**
    * Original: lexer_style_separatorComment
    */
-  function semiComment () {
+  function parseSeparatorComment () {
 
     let x = parse.count;
 
@@ -1114,7 +1122,7 @@ export function style () {
         begin: parse.stack.index,
         ender: -1,
         lexer: 'style',
-        lines: parse.space,
+        lines: parse.lineOffset,
         stack: parse.stack.token,
         token: ';',
         types: 'separator'
@@ -1123,7 +1131,7 @@ export function style () {
 
   };
 
-  function template (open: string, end: string) {
+  function parseLiquid (open: string, end: string) {
 
     const store = [];
 
@@ -1147,13 +1155,15 @@ export function style () {
         if (endtype === 'colon') {
           data.types[parse.count] = 'value';
         } else {
-          item(endtype);
+          parseToken(endtype);
         }
       }
 
       if (is(b[a + 1], cc.WSP)) {
 
-        data.lines[parse.count] = 1;
+        console.log(parse.lineOffset);
+
+        // data.lines[parse.count] = 1;
 
       }
 
@@ -1179,11 +1189,11 @@ export function style () {
 
           if (is(b[a], cc.DQO)) {
 
-            quote = '"';
+            quote = DQO;
 
           } else if (is(b[a], cc.SQO)) {
 
-            quote = "'";
+            quote = SQO;
 
           } else if (is(b[a], cc.FWS)) {
 
@@ -1298,7 +1308,7 @@ export function style () {
                 }
 
                 if (grammar.liquid.else.has(name)) {
-                  exit('template_else');
+                  exit('liquid_else');
                   return;
                 }
 
@@ -1308,12 +1318,12 @@ export function style () {
                   do {
 
                     if (name === templateNames[namesLen]) {
-                      exit('template_start');
+                      exit('liquid_start');
                       return;
                     }
 
                     if (name === 'end' + templateNames[namesLen]) {
-                      exit('template_end');
+                      exit('liquid_end');
                       return;
                     }
 
@@ -1341,13 +1351,13 @@ export function style () {
                 if (is(group[group.length - 2], cc.RCB)) group = group.slice(0, group.length - 2);
 
                 if (group === 'end') {
-                  exit('template_end');
+                  exit('liquid_end');
                   return;
                 }
 
               }
 
-              exit('template');
+              exit('liquid');
 
               return;
             }
@@ -1372,30 +1382,32 @@ export function style () {
   };
 
   /**
+   * Parse Comment
+   *
    * Accepts a _boolean_ parameter value to infer whether or not
    * we have encountered a JS looking '//' commment.
    */
-  function comment (isLineComment: boolean) {
+  function parseComment (isLineComment: boolean) {
 
     let comm: [string, number];
 
     if (isLineComment) {
 
-      comm = wrapCommentLine({
+      comm = commentLine({
         chars: b,
         start: a,
         end: c,
         lexer: 'style',
         begin: '//',
-        ender: '\n'
+        ender: NWL
       });
 
       ltoke = comm[0];
-      ltype = ((/^(\/\/\s*@prettify-ignore-start)/).test(ltoke)) ? 'ignore' : 'comment';
+      ltype = rx.CommLineIgnoreStart.test(ltoke) ? 'ignore' : 'comment';
 
     } else {
 
-      comm = wrapCommentBlock({
+      comm = commentBlock({
         chars: b,
         start: a,
         end: c,
@@ -1405,7 +1417,7 @@ export function style () {
       });
 
       ltoke = comm[0];
-      ltype = ((/^(\/\*\s*@prettify-ignore-start)/).test(ltoke)) ? 'ignore' : 'comment';
+      ltype = rx.CommBlockIgnoreStart.test(ltoke) ? 'ignore' : 'comment';
 
     }
 
@@ -1420,7 +1432,7 @@ export function style () {
    */
   function marginPadding () {
 
-    const lines = parse.space;
+    const lines = parse.lineOffset;
     const props: {
       data: {
         margin?: [
@@ -1667,7 +1679,7 @@ export function style () {
     } while (aa > begin);
 
     removes();
-    parse.space = lines;
+    parse.lineOffset = lines;
   };
 
   /**
@@ -1675,19 +1687,19 @@ export function style () {
    *
    * This function is responsible for parsing whitespace
    * characters and newlines. The lexical `a` scope is incremented
-   * and both `parse.line` and `parse.space` are
+   * and both `parse.lineNumber` and `parse.lineOffset` are
    * updated accordinly.
    */
   function parseSpace (): void {
 
-    parse.space = 1;
+    parse.lineOffset = 1;
 
     do {
 
       if (is(b[a], cc.NWL)) {
-        parse.lineOffset = a;
-        parse.space = parse.space + 1;
-        parse.line = parse.line + 1;
+        parse.lineIndex = a;
+        parse.lineOffset = parse.lineOffset + 1;
+        parse.lineNumber = parse.lineNumber + 1;
       }
 
       if (ws(b[a + 1]) === false) break;
@@ -1710,21 +1722,21 @@ export function style () {
 
     } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.ARS)) {
 
-      comment(false);
+      parseComment(false);
 
     } else if (is(b[a], cc.FWS) && is(b[a + 1], cc.FWS)) {
 
-      comment(true);
+      parseComment(true);
 
     } else if (is(b[a], cc.LCB) && is(b[a + 1], cc.PER)) {
 
       // Liquid
-      template('{%', '%}');
+      parseLiquid('{%', '%}');
 
     } else if (is(b[a], cc.LCB) && is(b[a + 1], cc.LCB)) {
 
       // Liquid
-      template('{{', '}}');
+      parseLiquid('{{', '}}');
 
     } else if ((
       is(b[a], cc.LCB)
@@ -1734,7 +1746,7 @@ export function style () {
       data.types[parse.count - 1] === 'variable'
     )) {
 
-      item('start');
+      parseToken('start');
       ltype = 'start';
       ltoke = b[a];
 
@@ -1795,7 +1807,7 @@ export function style () {
 
         if (is(b[a], cc.RPR)) mapper.pop();
 
-        item('end');
+        parseToken('end');
 
         if (is(b[a], cc.RCB) && not(data.token[parse.count], cc.SEM)) {
 
@@ -1817,7 +1829,7 @@ export function style () {
 
           } else if (data.types[parse.count] === 'comment') {
 
-            semiComment();
+            parseSeparatorComment();
 
           }
         }
@@ -1841,11 +1853,11 @@ export function style () {
         is(data.token[parse.count - 1], cc.RCB)
       )) {
 
-        item('start');
+        parseToken('start');
 
       } else {
 
-        item('separator');
+        parseToken('separator');
       }
 
       if (data.types[parse.count] !== 'separator' && esctest(a) === true) {
@@ -1856,7 +1868,7 @@ export function style () {
 
     } else if (parse.count > -1 && is(b[a], cc.COL) && data.types[parse.count] !== 'end') {
 
-      item('colon');
+      parseToken('colon');
       ltoke = ':';
       ltype = 'colon';
       push(NIL);
@@ -1874,10 +1886,7 @@ export function style () {
 
   } while (a < c);
 
-  if (rules.style.sortProperties === true) {
-    sortObject(data);
-    if (parse.mode === Modes.Embed) sortCorrect(0, parse.count + 1);
-  }
+  if (rules.style.sortProperties === true) sortObject(data);
 
   // console.log(data);
   return data;

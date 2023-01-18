@@ -37,31 +37,31 @@ export {
 
 declare const prettify: {
   /**
-   * **PRETTIFY LIQUID 🎀**
+   * **Liquid Æsthetic**
    *
    * Formatting for the Liquid Template Language.
    */
   liquid: LiquidFormat;
   /**
-   * **PRETTIFY HTML 🎀**
+   * **HTML Æsthetic**
    *
    * Formatting for the HTML Language.
    */
   html: HTMLFormat;
   /**
-   * **PRETTIFY XML 🎀**
+   * **XML Æsthetic**
    *
    * Formatting for the XML Language.
    */
   xml: XMLFormat;
   /**
-   * **PRETTIFY CSS 🎀**
+   * **CSS Æsthetic**
    *
    * Formatting for the CSS Language.
    */
   css: CSSFormat
   /**
-   * **PRETTIFY JSON 🎀**
+   * **JSON Æsthetic**
    *
    * Formatting for the JSON Language.
    */
@@ -80,7 +80,7 @@ declare const prettify: {
    */
   get error(): ParseError;
   /**
-   * **PRETTIFY 🎀**
+   * **ÆSTHETIC**
    *
    * A formatting method which exposes all formatting options.
    * If you are target a specific language, then use the specific
@@ -99,6 +99,8 @@ declare const prettify: {
    * - Liquid + TypeScript
    * - Liquid + JSX
    * - Liquid + TSX
+   * - HTML
+   * - CSS
    * - JSON
    */
   format?: Format<string, Rules>;

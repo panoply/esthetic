@@ -1,14 +1,14 @@
 /* eslint-disable no-mixed-operators */
 /* eslint-disable no-control-regex */
 
-import { Record, Structure, Types, VariableDeclarations } from 'types/internal';
-import { wrapCommentBlock, wrapCommentLine } from '@comments/parse';
-import { CommIgnoreStart } from '@utils/regex';
+import { Record, ScriptRules, Structure, Types, VariableDeclarations } from 'types/internal';
+import { commentBlock, commentLine } from 'comments';
 import { parse } from '@parse/parser';
-import { assign, isArray } from 'utils';
-import { cc, NIL, NWL } from 'shared';
-import * as u from '@utils/helpers';
 import { sortCorrect, sortObject } from '@parse/sorting';
+import { DQO, NIL, NWL, SQO } from 'chars';
+import * as rx from 'lexical/regex';
+import { cc } from 'lexical/codes';
+import * as u from 'utils';
 
 // prettify.lexers.script =
 
@@ -19,14 +19,15 @@ export function script () {
    */
   const { data, references, rules, source } = parse;
 
-  const cache = { ...rules.script };
-
-  rules.script = assign(rules.script, rules.json);
+  /**
+   * Script Lexer Options
+   */
+  const option: ScriptRules = parse.language === 'json' ? rules.json : rules.script;
 
   /**
    * The document source as an array list, ie: source.split()
    */
-  const c: string[] = isArray(source) ? source : source.split(NIL);
+  const c: string[] = u.isArray(source) ? source : source.split(NIL);
 
   /**
    * The length of the document source, ie: number of characters (`source.length`)
@@ -179,7 +180,7 @@ export function script () {
       begin: parse.stack.index,
       ender: -1,
       lexer: 'script',
-      lines: parse.space,
+      lines: parse.lineOffset,
       stack: parse.stack.token,
       token: ltoke,
       types: ltype
@@ -288,7 +289,7 @@ export function script () {
       types: data.types[parse.count]
     };
 
-    if (CommIgnoreStart.test(ltoke)) {
+    if (rx.CommIgnoreStart.test(ltoke)) {
 
       return; // RETURN EARLY
 
@@ -343,7 +344,7 @@ export function script () {
     if (
       record.types !== undefined &&
       record.types.indexOf('liquid') > -1 &&
-      record.types.indexOf('liquid_string') < 0
+      record.types.indexOf('template_string') < 0
     ) {
 
       return; // RETURN EARLY
@@ -422,7 +423,7 @@ export function script () {
       clist === 'array' ||
       clist === 'object' || (clist === 'switch' &&
         record.stack !== 'method' &&
-        data.token[data.begin[parse.count]] === '(' &&
+        u.is(data.token[data.begin[parse.count]], cc.LPR) &&
         data.token[data.begin[parse.count] - 1] !== 'return' &&
         data.types[data.begin[parse.count] - 1] !== 'operator'
       )
@@ -485,18 +486,18 @@ export function script () {
       return;
     }
 
-    if (rules.script.variableList === 'list') vstore.index[v] = parse.count;
+    if (option.variableList === 'list') vstore.index[v] = parse.count;
 
-    ltoke = rules.script.correct === true ? ';' : 'x;';
+    ltoke = option.correct === true ? ';' : 'x;';
     ltype = 'separator';
 
-    i = parse.space;
+    i = parse.lineOffset;
 
-    parse.space = 0;
+    parse.lineOffset = 0;
 
     push();
 
-    parse.space = i;
+    parse.lineOffset = i;
 
     applyBrace();
 
@@ -545,7 +546,7 @@ export function script () {
         begin: data.begin[i],
         ender: -1,
         lexer: 'script',
-        lines: parse.space,
+        lines: parse.lineOffset,
         stack: data.stack[i],
         token: ltoke,
         types: ltype as any
@@ -571,7 +572,7 @@ export function script () {
 
     if (wtest > -1) word();
 
-    comment = wrapCommentBlock({
+    comment = commentBlock({
       chars: c,
       end: b,
       lexer: 'script',
@@ -601,7 +602,7 @@ export function script () {
     } else if (comment[0] !== NIL) {
 
       ltoke = comment[0];
-      ltype = CommIgnoreStart.test(ltoke) ? 'ignore' : 'comment';
+      ltype = rx.CommIgnoreStart.test(ltoke) ? 'ignore' : 'comment';
 
       if (ltoke.indexOf('# sourceMappingURL=') === 2) {
         sourcemap[0] = parse.count + 1;
@@ -612,7 +613,7 @@ export function script () {
         begin: parse.stack.index,
         ender: -1,
         lexer: 'script',
-        lines: parse.space,
+        lines: parse.lineOffset,
         stack: parse.stack.token,
         token: ltoke,
         types: ltype as any
@@ -640,7 +641,7 @@ export function script () {
 
     if (wtest > -1) word();
 
-    comment = wrapCommentLine({
+    comment = commentLine({
       chars: c,
       end: b,
       lexer: 'script',
@@ -653,7 +654,7 @@ export function script () {
 
     if (comment[0] !== NIL) {
       ltoke = comment[0];
-      ltype = CommIgnoreStart.test(ltoke) ? 'ignore' : 'comment';
+      ltype = rx.CommIgnoreStart.test(ltoke) ? 'ignore' : 'comment';
 
       if (ltoke.indexOf('# sourceMappingURL=') === 2) {
         sourcemap[0] = parse.count + 1;
@@ -664,7 +665,7 @@ export function script () {
         begin: parse.stack.index
         , ender: -1
         , lexer: 'script'
-        , lines: parse.space
+        , lines: parse.lineOffset
         , stack: parse.stack.token
         , token: ltoke
         , types: ltype as any
@@ -1405,7 +1406,7 @@ export function script () {
 
           anglecount = anglecount + 1;
 
-          if (peek(1, false) === '/') endtag = true;
+          if (u.is(peek(1, false), cc.FWS)) endtag = true;
 
         } else if (u.is(c[a], cc.RAN) && curlytest === false) {
 
@@ -1582,7 +1583,7 @@ export function script () {
 
     } else {
 
-      if (rules.script.correct === false || (
+      if (option.correct === false || (
         tokea !== '++' &&
         tokea !== '--' &&
         tokeb !== '++' &&
@@ -1782,7 +1783,7 @@ export function script () {
     const endlen = ender.length;
     const start = a;
     const base = a + starting.length;
-    const qc = rules.script.quoteConvert;
+    const qc = option.quoteConvert;
 
     function cleanUp () {
 
@@ -1801,7 +1802,8 @@ export function script () {
           if (c[ee] === NWL) linesSpace = linesSpace + 1;
         } while (ee < b && u.ws(c[ee + 1]));
 
-        parse.space = linesSpace;
+        parse.lineOffset = linesSpace;
+
       }
     };
 
@@ -1837,13 +1839,13 @@ export function script () {
 
       if (u.is(starting, cc.DQO) && qc === 'single') {
 
-        build[0] = "'";
-        build[build.length - 1] = "'";
+        build[0] = SQO;
+        build[build.length - 1] = SQO;
 
       } else if (u.is(starting, cc.SQO) && qc === 'double') {
 
-        build[0] = '"';
-        build[build.length - 1] = '"';
+        build[0] = DQO;
+        build[build.length - 1] = DQO;
 
       } else if (escape === true) {
 
@@ -1926,7 +1928,7 @@ export function script () {
         } else if (starting.indexOf('#!') === 0) {
 
           ltoke = ltoke.slice(0, ltoke.length - 1);
-          parse.space = 2;
+          parse.lineOffset = 2;
 
         } else if (
           parse.stack.token !== 'object' || (
@@ -1947,11 +1949,12 @@ export function script () {
 
             let item = ltoke;
             let segment = NIL;
-            let q = (qc === 'double') ? '"' : (qc === 'single') ? "'" : item.charAt(0);
+            let q = (qc === 'double') ? DQO : (qc === 'single') ? SQO : item.charAt(0);
 
             const limit = rules.wrap;
-            const uchar = (/u[0-9a-fA-F]{4}/);
-            const xchar = (/x[0-9a-fA-F]{2}/);
+
+            const uchar = /u[0-9a-fA-F]{4}/;
+            const xchar = /x[0-9a-fA-F]{2}/;
 
             item = item.slice(1, item.length - 1);
 
@@ -2010,7 +2013,7 @@ export function script () {
 
                 push(NIL);
 
-                parse.space = 0;
+                parse.lineOffset = 0;
                 ltoke = '+';
                 ltype = 'operator';
 
@@ -2047,13 +2050,13 @@ export function script () {
 
       if (u.is(data.token[0], cc.LCB)) {
         if (u.is(c[a], cc.DQO)) {
-          starting = '"';
+          starting = DQO;
           ending = '\\"';
-          build = [ '"' ];
+          build = [ DQO ];
         } else {
-          starting = "'";
+          starting = SQO;
           ending = "\\'";
-          build = [ "'" ];
+          build = [ SQO ];
         }
 
         escape = true;
@@ -2097,9 +2100,9 @@ export function script () {
             }
 
           } else if (qc === 'double' && u.is(c[ee], cc.DQO) && u.is(c[a], cc.SQO)) {
-            c[ee] = '\\"';
+            c[ee] = DQO;
           } else if (qc === 'single' && u.is(c[ee], cc.SQO) && u.is(c[a], cc.DQO)) {
-            c[ee] = "\\'";
+            c[ee] = SQO;
           }
 
           build.push(c[ee]);
@@ -2141,7 +2144,7 @@ export function script () {
           (u.is(c[ee], cc.NWL) || (ee === b - 1) === true)
         ) {
 
-          parse.error = 'Unterminated string in script on line number ' + parse.line;
+          parse.error = 'Unterminated string in script on line number ' + parse.lineNumber;
           break;
 
         }
@@ -2174,7 +2177,7 @@ export function script () {
 
     const next = peek(5, false);
     const g = parse.count;
-    const lines = parse.space;
+    const lines = parse.lineOffset;
 
     if (
       rules.language === 'json' ||
@@ -2197,18 +2200,18 @@ export function script () {
       if (data.token[g - 2] === 'do' || (u.is(data.token[g - 2], cc.RPR) && 'ifforwhilecatch'.indexOf(name) > -1)) {
 
         tstore = parse.pop(data);
-        ltoke = rules.script.correct === true ? '}' : 'x}';
+        ltoke = option.correct === true ? '}' : 'x}';
         ltype = 'end';
         pstack = parse.stack.entry;
         push();
         brace.pop();
-        parse.space = lines;
+        parse.lineOffset = lines;
         return;
       }
 
       // to prevent the semicolon from inserting between the braceAllman --> while (x) {};
       tstore = parse.pop(data);
-      ltoke = rules.script.correct === true ? '}' : 'x}';
+      ltoke = option.correct === true ? '}' : 'x}';
       ltype = 'end';
       pstack = parse.stack.entry;
 
@@ -2219,12 +2222,12 @@ export function script () {
       ltype = 'end';
 
       parse.push(data, tstore, NIL);
-      parse.space = lines;
+      parse.lineOffset = lines;
 
       return;
     }
 
-    ltoke = rules.script.correct === true ? '}' : 'x}';
+    ltoke = option.correct === true ? '}' : 'x}';
     ltype = 'end';
 
     if (data.token[parse.count] === 'x}') return;
@@ -2237,7 +2240,7 @@ export function script () {
       pstack = parse.stack.entry;
       push();
       brace.pop();
-      parse.space = lines;
+      parse.lineOffset = lines;
 
       return;
     }
@@ -2252,7 +2255,7 @@ export function script () {
 
     } while (brace[brace.length - 1] === 'x{');
 
-    parse.space = lines;
+    parse.lineOffset = lines;
 
   };
 
@@ -2264,7 +2267,7 @@ export function script () {
 
     let x = parse.count;
 
-    if (data.stack[x] === 'object' && rules.script.objectSort === true) {
+    if (data.stack[x] === 'object' && option.objectSort === true) {
 
       ltoke = ',';
       ltype = 'separator';
@@ -2283,7 +2286,7 @@ export function script () {
           begin: data.begin[x]
           , ender: -1
           , lexer: 'script'
-          , lines: parse.space
+          , lines: parse.lineOffset
           , stack: data.stack[x]
           , token: ','
           , types: 'separator'
@@ -2313,10 +2316,10 @@ export function script () {
 
       let arraylen = 0;
 
-      const ar = (data.token[count - 1] === 'Array');
-      const startar = (ar === true) ? '[' : '{';
-      const endar = (ar === true) ? ']' : '}';
-      const namear = (ar === true) ? 'array' : 'object';
+      const ar = data.token[count - 1] === 'Array';
+      const startar = ar ? '[' : '{';
+      const endar = ar ? ']' : '}';
+      const namear = ar ? 'array' : 'object';
 
       if (ar === true && data.types[parse.count] === 'number') {
         arraylen = Number(data.token[parse.count]);
@@ -2364,7 +2367,7 @@ export function script () {
     }
 
     if (u.is(x, cc.RPR) || x === 'x)' || u.is(x, cc.RSB)) {
-      if (rules.script.correct === true) parseLogical();
+      if (option.correct === true) parseLogical();
       cleanSemicolon();
     }
 
@@ -2372,8 +2375,8 @@ export function script () {
 
     if (v > -1) {
       if (u.is(x, cc.RCB) && (
-        (rules.script.variableList === 'list' && vstore.count[v] === 0) ||
-        (data.token[parse.count] === 'x;' && rules.script.variableList === 'each')
+        (option.variableList === 'list' && vstore.count[v] === 0) ||
+        (data.token[parse.count] === 'x;' && option.variableList === 'each')
       )) {
 
         pop();
@@ -2423,7 +2426,7 @@ export function script () {
 
     } else if (u.is(x, cc.RCB)) {
 
-      if (u.not(ltoke, cc.COM) && rules.script.correct === true) {
+      if (u.not(ltoke, cc.COM) && option.correct === true) {
         parseLogical();
       }
 
@@ -2431,7 +2434,7 @@ export function script () {
         applySemicolon(true);
       }
 
-      if (rules.script.objectSort === true && parse.stack.token === 'object') {
+      if (option.objectSort === true && parse.stack.token === 'object') {
         sortObject(data);
       }
 
@@ -2454,7 +2457,7 @@ export function script () {
 
     if (
       u.is(x, cc.RPR) &&
-      rules.script.correct === true &&
+      option.correct === true &&
       count - parse.count < 2 && (
         u.is(data.token[parse.count], cc.LPR) ||
         data.types[parse.count] === 'number'
@@ -2486,14 +2489,14 @@ export function script () {
 
     // rules.endComma
     if (
-      rules.script.endComma !== undefined &&
-      rules.script.endComma !== 'none' &&
+      option.endComma !== undefined &&
+      option.endComma !== 'none' &&
       parse.stack.token === 'array' ||
       parse.stack.token === 'object' ||
       parse.stack.token === 'data_type'
     ) {
 
-      if (rules.script.endComma === 'always' && u.not(data.token[parse.count], cc.COM)) {
+      if (option.endComma === 'always' && u.not(data.token[parse.count], cc.COM)) {
 
         const begin = parse.stack.index;
         let y = parse.count;
@@ -2523,7 +2526,7 @@ export function script () {
           ltype = type;
         }
 
-      } else if (rules.script.endComma === 'never' && u.is(data.token[parse.count], cc.COM)) {
+      } else if (option.endComma === 'never' && u.is(data.token[parse.count], cc.COM)) {
 
         parse.pop(data);
       }
@@ -2544,7 +2547,7 @@ export function script () {
 
     if (insert === true) {
 
-      ltoke = rules.script.correct === true ? '{' : 'x{';
+      ltoke = option.correct === true ? '{' : 'x{';
       ltype = 'start';
 
       push(pword[0]);
@@ -2653,7 +2656,7 @@ export function script () {
 
           paren = -1;
 
-          if (rules.script.correct === true) {
+          if (option.correct === true) {
             end(')');
           } else {
             end('x)');
@@ -3219,16 +3222,16 @@ export function script () {
       lex.push(c[f]);
 
       if (u.is(c[f], cc.BWS)) {
-        // parse.error = `Illegal escape in JavaScript on line number ${parse.line}`;
+        // parse.error = `Illegal escape in JavaScript on line number ${parse.lineNumber}`;
       }
 
       f = f + 1;
     } while (f < a);
 
     if (ltoke.charAt(0) === '\u201c') {
-      parse.error = `Quote looking character (\u201c, \\u201c) used instead of actual quotes on line number ${parse.line}`;
+      parse.error = `Quote looking character (\u201c, \\u201c) used instead of actual quotes on line number ${parse.lineNumber}`;
     } else if (ltoke.charAt(0) === '\u201d') {
-      parse.error = `Quote looking character (\u201d, \\u201d) used instead of actual quotes on line number ${parse.line}`;
+      parse.error = `Quote looking character (\u201d, \\u201d) used instead of actual quotes on line number ${parse.lineNumber}`;
     }
 
     output = lex.join(NIL);
@@ -3306,7 +3309,7 @@ export function script () {
     }
 
     if (
-      rules.script.correct === true && (output === 'Object' || output === 'Array') &&
+      option.correct === true && (output === 'Object' || output === 'Array') &&
       u.is(c[a + 1], cc.LPR) &&
       u.is(c[a + 2], cc.RPR) &&
       u.is(data.token[parse.count - 1], cc.EQS) &&
@@ -3338,7 +3341,7 @@ export function script () {
       f = g;
 
       if (
-        rules.script.variableList !== 'none' && (
+        option.variableList !== 'none' && (
           output === 'var' ||
           output === 'let' ||
           output === 'const'
@@ -3351,7 +3354,7 @@ export function script () {
         }
 
         if (
-          rules.script.variableList === 'list' &&
+          option.variableList === 'list' &&
           v > -1 &&
           vstore.index[v] === g &&
           output === vstore.word[v]
@@ -3381,7 +3384,7 @@ export function script () {
         parse.count === vstore.index[v] &&
         u.is(data.token[vstore.index[v]], cc.SEM) &&
         ltoke !== vstore.word[v] &&
-        rules.script.variableList === 'list'
+        option.variableList === 'list'
       ) {
 
         pop();
@@ -3638,7 +3641,7 @@ export function script () {
 
       if (next !== '{') {
 
-        ltoke = (rules.script.correct === true) ? '{' : 'x{';
+        ltoke = (option.correct === true) ? '{' : 'x{';
         ltype = 'start';
 
         brace.push('x{');
@@ -3676,7 +3679,7 @@ export function script () {
                 lexer: 'script',
                 lines: 0,
                 stack: 'if',
-                token: (rules.script.correct === true) ? '}' : 'x}',
+                token: (option.correct === true) ? '}' : 'x}',
                 types: 'end'
               }
             });
@@ -3712,7 +3715,7 @@ export function script () {
       }
 
       if (next !== 'if' && u.not(next, cc.LCB)) {
-        ltoke = (rules.script.correct === true) ? '{' : 'x{';
+        ltoke = (option.correct === true) ? '{' : 'x{';
         ltype = 'start';
         brace.push('x{');
         push('else');
@@ -3730,7 +3733,7 @@ export function script () {
 
       if (next !== '(') {
         paren = parse.count;
-        if (rules.script.correct === true) {
+        if (option.correct === true) {
           start('(');
         } else {
           start('x(');
@@ -3745,19 +3748,19 @@ export function script () {
    *
    * This function is responsible for parsing whitespace
    * characters and newlines. The lexical `a` scope is incremented
-   * and both `parse.line` and `parse.space` are
+   * and both `parse.lineNumber` and `parse.lineOffset` are
    * updated accordinly.
    */
   function parseSpace (): void {
 
-    parse.space = 1;
+    parse.lineOffset = 1;
 
     do {
 
       if (u.is(c[a], cc.NWL)) {
         parse.lineOffset = a;
-        parse.space = parse.space + 1;
-        parse.line = parse.line + 1;
+        parse.lineOffset = parse.lineOffset + 1;
+        parse.lineNumber = parse.lineNumber + 1;
       }
 
       if (u.ws(c[a + 1]) === false) break;
@@ -3781,7 +3784,7 @@ export function script () {
       parseSpace();
 
       if (
-        parse.space > 1 &&
+        parse.lineOffset > 1 &&
         lengthb < parse.count &&
         u.not(c[a + 1], cc.SEM) &&
         u.not(c[a + 1], cc.RCB)
@@ -3831,10 +3834,7 @@ export function script () {
       // comment line
       parseLineComment();
 
-    } else if (u.is(c[a], cc.TQO) || (
-      u.is(c[a], cc.RCB) &&
-      parse.stack.token === 'liquid_string'
-    )) {
+    } else if (u.is(c[a], cc.TQO) || (u.is(c[a], cc.RCB) && parse.stack.token === 'template_string')) {
 
       // template string
       if (wtest > -1) word();
@@ -3843,17 +3843,17 @@ export function script () {
 
       if (u.is(ltoke, cc.RCB) && ltoke.slice(ltoke.length - 2) === '${') {
 
-        ltype = 'liquid_string_else';
-        push('liquid_string');
+        ltype = 'template_string_else';
+        push('template_string');
 
       } else if (ltoke.slice(ltoke.length - 2) === '${') {
 
-        ltype = 'liquid_string_start';
-        push('liquid_string');
+        ltype = 'template_string_start';
+        push('template_string');
 
       } else if (u.is(ltoke[0], cc.RCB)) {
 
-        ltype = 'liquid_string_end';
+        ltype = 'template_string_end';
         push();
 
       } else {
@@ -3862,7 +3862,8 @@ export function script () {
         push();
       }
 
-    } else if (u.is(c[a], cc.DQO) || u.is(c[a + 1], cc.SQO)) {
+    } else if (u.is(c[a], cc.DQO) || u.is(c[a], cc.SQO)) {
+
       // string
       parseTokens(c[a], c[a], 'string');
 
@@ -3926,7 +3927,7 @@ export function script () {
     } else if (u.is(c[a], cc.COL) && u.is(c[a + 1], cc.COL)) {
 
       if (wtest > -1) word();
-      if (rules.script.correct === true) parseLogical();
+      if (option.correct === true) parseLogical();
 
       cleanSemicolon();
 
@@ -3940,7 +3941,7 @@ export function script () {
 
       // comma
       if (wtest > -1) word();
-      if (rules.script.correct === true) parseLogical();
+      if (option.correct === true) parseLogical();
 
       if (
         tstype[tstype.length - 1] === true &&
@@ -3957,7 +3958,7 @@ export function script () {
       } else if (
         v > -1 &&
         vstore.count[v] === 0 &&
-        rules.script.variableList === 'each'
+        option.variableList === 'each'
       ) {
 
         cleanSemicolon();
@@ -4006,7 +4007,7 @@ export function script () {
         ltype = 'separator';
       }
 
-      if (u.ws(c[a - 1])) parse.space = 1;
+      if (u.ws(c[a - 1])) parse.lineOffset = 1;
 
       push();
 
@@ -4026,14 +4027,14 @@ export function script () {
       if (classy[classy.length - 1] === 0) classy.pop();
       if (v > -1 && vstore.count[v] === 0) {
 
-        if (rules.script.variableList === 'each') {
+        if (option.variableList === 'each') {
           pop();
         } else {
           vstore.index[v] = parse.count + 1;
         }
       }
 
-      if (rules.script.correct === true) parseLogical();
+      if (option.correct === true) parseLogical();
 
       ltoke = ';';
       ltype = 'separator';
@@ -4114,7 +4115,7 @@ export function script () {
       u.is(data.token[vstore.index[v]], cc.SEM) &&
       ltoke !== vstore.word[v] &&
       ltype !== 'comment' &&
-      rules.script.variableList === 'list'
+      option.variableList === 'list'
     ) {
 
       pop();
@@ -4158,11 +4159,9 @@ export function script () {
     parse.pop(data);
   }
 
-  if (rules.script.objectSort && data.begin.length > 0) {
+  if (option.objectSort && data.begin.length > 0) {
     sortCorrect(0, parse.count + 1);
   }
-
-  assign(rules.script, cache);
 
   return data;
 

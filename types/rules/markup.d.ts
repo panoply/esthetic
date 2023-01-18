@@ -289,6 +289,29 @@ export interface MarkupRules {
   selfCloseSpace?: boolean;
 
   /**
+   * **Default** `true`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
+   * Whether or not SVG type tags should be converted to self closing void
+   * types. When enabled, tags which contain a closing tag will instead become
+   * void type.
+   *
+   * ```html
+   * <!-- Before Formatting -->
+   * <svg>
+   *   <path d="M.865 15.978a.5.5"></path>
+   * </svg>
+   *
+   * <!-- After Formatting -->
+   * <svg>
+   *   <path d="M.865 15.978a.5.5" />
+   * </svg>
+   * ```
+   */
+  selfCloseSVG?: boolean;
+
+  /**
    * **Default** `false`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
@@ -524,6 +547,22 @@ export interface MarkupRules {
    * Prevent comment reformatting due to option wrap.
    */
   preserveComment?: boolean;
+
+  /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
+   * Whether or not newlines contained within tag attributes should be removed
+   * or preserved. This rule will be used along side `forceAttribute` and when
+   * enabled (`true`) will remove any newlines. When disabled (`false`) then the
+   * newline limits will respect the **global** value defined in `preserveLine`.
+   *
+   * > **NOTE**
+   * >
+   * > This rule only applies to attributes names not values.
+   */
+  stripAttributeLines?: boolean;
 
   /**
    * **Default** `false`

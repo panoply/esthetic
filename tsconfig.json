@@ -32,30 +32,23 @@
       "lexers": [
         "./src/lexers/index.ts"
       ],
-      "shared": [
-        "./src/shared/index.ts"
+      "lexical/*": [
+        "./src/lexical/*"
+      ],
+      "chars": [
+        "./src/lexical/chars.ts"
+      ],
+      "comments": [
+        "./src/comments/index.ts"
       ],
       "utils": [
         "./src/utils/index.ts"
       ],
-      "@comments/*": [
-        "./src/comments/*"
-      ],
-      "@shared/*": [
-        "./src/shared/*"
-      ],
       "@parse/*": [
         "src/parse/*"
       ],
-      "@utils/*": [
-        "./src/utils/*"
-      ],
-      "@prettify/*": [
-        "src/modelx.ts",
-        "src/prettifyx.ts"
-      ],
       "@liquify/ava/prettify": [
-        "./node_modules/@liquify/ava/package/prettify.d.ts"
+        "./node_modules/@liquify/ava/package/esthetic.d.ts"
       ]
     }
   }
