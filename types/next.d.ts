@@ -1,7 +1,6 @@
-import { Modes, Languages, Lexers } from '@shared/enums';
+import { Modes, Languages, Lexers } from 'lexical/enum';
 import { Data, Syntactic } from './internal';
-import { LexerName, LanguageName } from './shared';
-import { ErrorTypes, ParseErrors } from '@parse/errors';
+import { LanguageName } from './shared';
 
 /**
  * Stack item entry references populated in the `parse.stack[]` store.
@@ -48,50 +47,6 @@ export interface ParseStack extends Array<StackItem> {
    */
   pop(): StackItem;
 
-}
-
-export interface ParseError {
-  /**
-   * The error message, to be thrown (combines all refs in this model)
-   */
-  message?: string;
-  /**
-   * Error details, holds more informative information about error
-   */
-  details?: string;
-  /**
-   * Snippet Error Code Sample
-   */
-  snippet?: string;
-  /**
-   * The Error Type
-   */
-  type?: ErrorTypes;
-  /**
-   * Snippet Error Sample
-   */
-  code?: ParseErrors;
-  /**
-   * The error syntax Language (Proper Name)
-   */
-  language?: LanguageName;
-  /**
-   * The lexer in which the error occured.
-   */
-  lexer?: LexerName;
-  /**
-   * The range based location of the error.
-   */
-  location?: {
-    start: {
-      line: number;
-      character: number;
-    };
-    end: {
-      line: number;
-      character: number;
-    }
-  };
 }
 
 export declare interface ParseOptions {

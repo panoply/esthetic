@@ -17,7 +17,1793 @@ var __spreadValues = (a, b) => {
   return a;
 };
 
-// src/shared/definitions.ts
+// src/lexical/chars.ts
+var NIL = "";
+var DQO = '"';
+var SQO = "'";
+var WSP = " ";
+var NWL = "\n";
+var CNL = "\r\n";
+
+// src/utils/maps.ts
+function getLanguageName(language) {
+  if (typeof language === "string") {
+    return {
+      html: "HTML",
+      liquid: "Liquid",
+      xml: "XML",
+      jsx: "JSX",
+      tsx: "TSX",
+      json: "JSON",
+      yaml: "YAML",
+      css: "CSS",
+      scss: "SCSS",
+      sass: "SASS",
+      less: "LESS",
+      javascript: "JavaScript",
+      typescript: "TypeScript"
+    }[language];
+  }
+}
+function getLexerName(language) {
+  if (typeof language === "string") {
+    return {
+      text: "ignore",
+      auto: "ignore",
+      markup: "markup",
+      html: "markup",
+      liquid: "markup",
+      xml: "markup",
+      javascript: "script",
+      typescript: "script",
+      jsx: "script",
+      tsx: "script",
+      json: "script",
+      less: "style",
+      scss: "style",
+      sass: "style",
+      css: "style"
+    }[language];
+  }
+}
+function getLexerType(language) {
+  if (typeof language === "string") {
+    return {
+      text: 4 /* Ignore */,
+      auto: 4 /* Ignore */,
+      markup: 1 /* Markup */,
+      html: 1 /* Markup */,
+      liquid: 1 /* Markup */,
+      xml: 1 /* Markup */,
+      javascript: 2 /* Script */,
+      typescript: 2 /* Script */,
+      jsx: 2 /* Script */,
+      tsx: 2 /* Script */,
+      json: 2 /* Script */,
+      less: 3 /* Style */,
+      scss: 3 /* Style */,
+      sass: 3 /* Style */,
+      css: 3 /* Style */
+    }[language];
+  }
+}
+
+// src/utils/helpers.ts
+function stats(language, lexer) {
+  const store = {
+    lexer,
+    language: getLanguageName(language),
+    chars: 0
+  };
+  const start = Date.now();
+  return (output) => {
+    const time = +(Date.now() - start).toFixed(0);
+    store.time = time > 1e3 ? `${time}s` : `${time}ms`;
+    store.chars = output;
+    store.size = size(output);
+    return store;
+  };
+}
+function repeatChar(count, character = WSP) {
+  if (count === 0)
+    return character;
+  let char = NIL;
+  let i = 1;
+  do {
+    char += character;
+  } while (i++ < count);
+  return char;
+}
+function is(string, code) {
+  return string ? string.charCodeAt(0) === code : false;
+}
+function isLast(string, code) {
+  return is(string[string.length - 1], code);
+}
+function not(string, code) {
+  return is(string, code) === false;
+}
+function notLast(string, code) {
+  return isLast(string, code) === false;
+}
+function ws(string) {
+  return /\s/.test(string);
+}
+function digit(string) {
+  return /\d/.test(string);
+}
+function size(bytes) {
+  const kb = 1024;
+  const mb = 1048576;
+  const gb = 1073741824;
+  if (bytes < kb)
+    return bytes + " B";
+  else if (bytes < mb)
+    return (bytes / kb).toFixed(1) + " KB";
+  else if (bytes < gb)
+    return (bytes / mb).toFixed(1) + " MB";
+  else
+    return (bytes / gb).toFixed(1) + " GB";
+}
+function sanitizeComment(input) {
+  return `\\${input}`;
+}
+
+// src/utils/native.ts
+var assign = Object.assign;
+var defineProperties = Object.defineProperties;
+var isArray = Array.isArray;
+
+// src/parse/sorting.ts
+function sortObject(data) {
+  let cc2 = parse.count;
+  let dd = parse.stack.index;
+  let ee = 0;
+  let ff = 0;
+  let gg = 0;
+  let behind = 0;
+  let front = 0;
+  let keyend = 0;
+  let keylen = 0;
+  let comma = true;
+  const { count } = parse;
+  const token = parse.stack.token;
+  const begin = parse.stack.index;
+  const lines = parse.lineOffset;
+  const style3 = data.lexer[count] === "style";
+  const global = style3 && token === "global";
+  const delim = style3 ? [";", "separator"] : [",", "separator"];
+  const keys2 = [];
+  const store = {
+    begin: [],
+    ender: [],
+    lexer: [],
+    lines: [],
+    stack: [],
+    token: [],
+    types: []
+  };
+  function sort(x, y) {
+    let xx = x[0];
+    let yy = y[0];
+    if (data.types[xx] === "comment") {
+      do
+        xx = xx + 1;
+      while (xx < count && data.types[xx] === "comment");
+      if (data.token[xx] === void 0)
+        return 1;
+    }
+    if (data.types[yy] === "comment") {
+      do
+        yy = yy + 1;
+      while (yy < count && data.types[yy] === "comment");
+      if (data.token[yy] === void 0)
+        return 1;
+    }
+    if (style3 === true) {
+      if (data.token[xx].indexOf("@import") === 0 || data.token[yy].indexOf("@import") === 0) {
+        return xx < yy ? -1 : 1;
+      }
+      if (data.types[xx] !== data.types[yy]) {
+        if (data.types[xx] === "function")
+          return 1;
+        if (data.types[xx] === "variable")
+          return -1;
+        if (data.types[xx] === "selector")
+          return 1;
+        if (data.types[xx] === "property" && data.types[yy] !== "variable")
+          return -1;
+        if (data.types[xx] === "mixin" && data.types[yy] !== "property" && data.types[yy] !== "variable")
+          return -1;
+      }
+    }
+    if (data.token[xx].toLowerCase() > data.token[yy].toLowerCase())
+      return 1;
+    return -1;
+  }
+  behind = cc2;
+  do {
+    if (data.begin[cc2] === dd || global && cc2 < behind && is(data.token[cc2], 125 /* RCB */) && data.begin[data.begin[cc2]] === -1) {
+      if (data.types[cc2].indexOf("liquid") > -1)
+        return;
+      if (data.token[cc2] === delim[0] || style3 === true && is(data.token[cc2], 125 /* RCB */) && not(data.token[cc2 + 1], 59 /* SEM */)) {
+        comma = true;
+        front = cc2 + 1;
+      } else if (style3 === true && is(data.token[cc2 - 1], 125 /* RCB */)) {
+        comma = true;
+        front = cc2;
+      }
+      if (front === 0 && data.types[0] === "comment") {
+        do
+          front = front + 1;
+        while (data.types[front] === "comment");
+      } else if (data.types[front] === "comment" && data.lines[front] < 2) {
+        front = front + 1;
+      }
+      if (comma === true && (data.token[cc2] === delim[0] || style3 === true && is(data.token[cc2 - 1], 125 /* RCB */)) && front <= behind) {
+        if (style3 === true && "};".indexOf(data.token[behind]) < 0) {
+          behind = behind + 1;
+        } else if (style3 === false && not(data.token[behind], 44 /* COM */)) {
+          behind = behind + 1;
+        }
+        keys2.push([front, behind]);
+        if (style3 === true && is(data.token[front], 125 /* RCB */)) {
+          behind = front;
+        } else {
+          behind = front - 1;
+        }
+      }
+    }
+    cc2 = cc2 - 1;
+  } while (cc2 > dd);
+  if (keys2.length > 0 && keys2[keys2.length - 1][0] > cc2 + 1) {
+    ee = keys2[keys2.length - 1][0] - 1;
+    if (data.types[ee] === "comment" && data.lines[ee] > 1) {
+      do
+        ee = ee - 1;
+      while (ee > 0 && data.types[ee] === "comment");
+      keys2[keys2.length - 1][0] = ee + 1;
+    }
+    if (data.types[cc2 + 1] === "comment" && cc2 === -1) {
+      do
+        cc2 = cc2 + 1;
+      while (data.types[cc2 + 1] === "comment");
+    }
+    keys2.push([cc2 + 1, ee]);
+  }
+  if (keys2.length > 1) {
+    if (style3 === true || parse.language === "json" || is(data.token[cc2 - 1], 61 /* EQS */) || is(data.token[cc2 - 1], 58 /* COL */) || is(data.token[cc2 - 1], 40 /* LPR */) || is(data.token[cc2 - 1], 91 /* LSB */) || is(data.token[cc2 - 1], 44 /* COM */) || data.types[cc2 - 1] === "word" || cc2 === 0) {
+      keys2.sort(sort);
+      keylen = keys2.length;
+      comma = false;
+      dd = 0;
+      do {
+        keyend = keys2[dd][1];
+        if (style3 === true) {
+          gg = keyend;
+          if (data.types[gg] === "comment")
+            gg = gg - 1;
+          if (is(data.token[gg], 125 /* RCB */)) {
+            keyend = keyend + 1;
+            delim[0] = "}";
+            delim[1] = "end";
+          } else {
+            delim[0] = ";";
+            delim[1] = "separator";
+          }
+        }
+        ee = keys2[dd][0];
+        if (style3 === true && data.types[keyend - 1] !== "end" && data.types[keyend] === "comment" && data.types[keyend + 1] !== "comment" && dd < keylen - 1) {
+          keyend = keyend + 1;
+        }
+        if (ee < keyend) {
+          do {
+            if (style3 === false && dd === keylen - 1 && ee === keyend - 2 && is(data.token[ee], 44 /* COM */) && data.lexer[ee] === "script" && data.types[ee + 1] === "comment") {
+              ff = ff + 1;
+            } else {
+              parse.push(store, {
+                begin: data.begin[ee],
+                ender: data.begin[ee],
+                lexer: data.lexer[ee],
+                lines: data.lines[ee],
+                stack: data.stack[ee],
+                token: data.token[ee],
+                types: data.types[ee]
+              }, NIL);
+              ff = ff + 1;
+            }
+            if (data.token[ee] === delim[0] && (style3 === true || data.begin[ee] === data.begin[keys2[dd][0]])) {
+              comma = true;
+            } else if (data.token[ee] !== delim[0] && data.types[ee] !== "comment") {
+              comma = false;
+            }
+            ee = ee + 1;
+          } while (ee < keyend);
+        }
+        if (comma === false && store.token[store.token.length - 1] !== "x;" && (style3 === true || dd < keylen - 1)) {
+          ee = store.types.length - 1;
+          if (store.types[ee] === "comment") {
+            do
+              ee = ee - 1;
+            while (ee > 0 && store.types[ee] === "comment");
+          }
+          ee = ee + 1;
+          parse.splice({
+            data: store,
+            howmany: 0,
+            index: ee,
+            record: {
+              begin,
+              stack: global ? "global" : token,
+              ender: parse.count,
+              lexer: store.lexer[ee - 1],
+              lines: 0,
+              token: delim[0],
+              types: delim[1]
+            }
+          });
+          ff = ff + 1;
+        }
+        dd = dd + 1;
+      } while (dd < keylen);
+      parse.splice({ data, howmany: ff, index: cc2 + 1 });
+      parse.lineOffset = lines;
+      parse.concat(data, store);
+    }
+  }
+}
+function sortSafe(array, operation, recursive) {
+  if (isArray(array) === false)
+    return array;
+  if (operation === "normal") {
+    return safeSortNormal.call({ array, recursive }, array);
+  }
+  if (operation === "descend")
+    return safeSortDescend.call({ recursive }, array);
+  return safeSortAscend.call({ recursive }, array);
+}
+function sortCorrect(start, end) {
+  let a = start;
+  let endslen = -1;
+  const { data } = parse;
+  const ends = [];
+  const structure = parse.stack.length < 2 ? [-1] : [parse.stack[parse.stack.length - 2][1]];
+  do {
+    if (a > 0 && data.types[a].indexOf("attribute") > -1 && data.types[a].indexOf("end") < 0 && data.types[a - 1].indexOf("start") < 0 && data.types[a - 1].indexOf("attribute") < 0 && data.lexer[a] === "markup") {
+      structure.push(a - 1);
+    }
+    if (a > 0 && data.types[a - 1].indexOf("attribute") > -1 && data.types[a].indexOf("attribute") < 0 && data.lexer[structure[structure.length - 1]] === "markup" && data.types[structure[structure.length - 1]].indexOf("start") < 0) {
+      structure.pop();
+    }
+    if (data.begin[a] !== structure[structure.length - 1]) {
+      data.begin[a] = structure.length > 0 ? structure[structure.length - 1] : -1;
+    }
+    if (data.types[a].indexOf("else") > -1) {
+      if (structure.length > 0) {
+        structure[structure.length - 1] = a;
+      } else {
+        structure.push(a);
+      }
+    }
+    if (data.types[a].indexOf("end") > -1)
+      structure.pop();
+    if (data.types[a].indexOf("start") > -1)
+      structure.push(a);
+    a = a + 1;
+  } while (a < end);
+  a = end;
+  do {
+    a = a - 1;
+    if (data.types[a].indexOf("end") > -1) {
+      ends.push(a);
+      endslen = endslen + 1;
+    }
+    data.ender[a] = endslen > -1 ? ends[endslen] : -1;
+    if (data.types[a].indexOf("start") > -1) {
+      ends.pop();
+      endslen = endslen - 1;
+    }
+  } while (a > start);
+}
+function safeSortAscend(item) {
+  let c = 0;
+  const len = item.length;
+  const storeb = item;
+  const ascendChild = () => {
+    let a = 0;
+    const lenc = storeb.length;
+    if (a < lenc) {
+      do {
+        if (isArray(storeb[a]) === true)
+          storeb[a] = safeSortAscend.apply(this, storeb[a]);
+        a = a + 1;
+      } while (a < lenc);
+    }
+  };
+  const ascendRecurse = (value = NIL) => {
+    let a = c;
+    let b = 0;
+    let d = 0;
+    let e = 0;
+    let ind = [];
+    let key = storeb[c];
+    let tstore = "";
+    const tkey = typeof key;
+    if (a < len) {
+      do {
+        tstore = typeof storeb[a];
+        if (storeb[a] < key || tstore < tkey) {
+          key = storeb[a];
+          ind = [a];
+        } else if (storeb[a] === key) {
+          ind.push(a);
+        }
+        a = a + 1;
+      } while (a < len);
+    }
+    d = ind.length;
+    a = c;
+    b = d + c;
+    if (a < b) {
+      do {
+        storeb[ind[e]] = storeb[a];
+        storeb[a] = key;
+        e = e + 1;
+        a = a + 1;
+      } while (a < b);
+    }
+    c = c + d;
+    if (c < len) {
+      ascendRecurse();
+    } else {
+      if (this.recursive === true)
+        ascendChild();
+      item = storeb;
+    }
+    return value;
+  };
+  ascendRecurse();
+  return item;
+}
+function safeSortDescend(item) {
+  let c = 0;
+  const len = item.length;
+  const storeb = item;
+  const descendChild = () => {
+    const lenc = storeb.length;
+    let a = 0;
+    if (a < lenc) {
+      do {
+        if (isArray(storeb[a]))
+          storeb[a] = safeSortDescend.apply(this, storeb[a]);
+        a = a + 1;
+      } while (a < lenc);
+    }
+  };
+  const descendRecurse = (value = "") => {
+    let a = c;
+    let b = 0;
+    let d = 0;
+    let e = 0;
+    let key = storeb[c];
+    let ind = [];
+    let tstore = NIL;
+    const tkey = typeof key;
+    if (a < len) {
+      do {
+        tstore = typeof storeb[a];
+        if (storeb[a] > key || tstore > tkey) {
+          key = storeb[a];
+          ind = [a];
+        } else if (storeb[a] === key) {
+          ind.push(a);
+        }
+        a = a + 1;
+      } while (a < len);
+    }
+    d = ind.length;
+    a = c;
+    b = d + c;
+    if (a < b) {
+      do {
+        storeb[ind[e]] = storeb[a];
+        storeb[a] = key;
+        e = e + 1;
+        a = a + 1;
+      } while (a < b);
+    }
+    c = c + d;
+    if (c < len) {
+      descendRecurse();
+    } else {
+      if (this.recursive === true)
+        descendChild();
+      item = storeb;
+    }
+    return value;
+  };
+  descendRecurse();
+  return item;
+}
+function safeSortNormal(item) {
+  let storeb = item;
+  const done = [item[0]];
+  const safeSortNormalChild = () => {
+    let a = 0;
+    const len = storeb.length;
+    if (a < len) {
+      do {
+        if (isArray(storeb[a]))
+          storeb[a] = safeSortNormal.apply(this, storeb[a]);
+        a = a + 1;
+      } while (a < len);
+    }
+  };
+  const safeSortNormalRecurse = (x) => {
+    let a = 0;
+    const storea = [];
+    const len = storeb.length;
+    if (a < len) {
+      do {
+        if (storeb[a] !== x)
+          storea.push(storeb[a]);
+        a = a + 1;
+      } while (a < len);
+    }
+    storeb = storea;
+    if (storea.length > 0) {
+      done.push(storea[0]);
+      safeSortNormalRecurse(storea[0]);
+    } else {
+      if (this.recursive === true)
+        safeSortNormalChild();
+      item = storeb;
+    }
+  };
+  safeSortNormalRecurse(this.array[0]);
+  return item;
+}
+
+// src/parse/grammar.ts
+function LiquidGrammar(grammar2 = {
+  embedded: {
+    schema: [
+      {
+        language: "json"
+      }
+    ],
+    style: [
+      {
+        language: "css"
+      }
+    ],
+    stylesheet: [
+      {
+        language: "css"
+      },
+      {
+        language: "scss",
+        argument: /['"]scss['"]/
+      }
+    ],
+    javascript: [
+      {
+        language: "javascript"
+      }
+    ]
+  },
+  tags: [
+    "form",
+    "paginate",
+    "capture",
+    "case",
+    "comment",
+    "for",
+    "if",
+    "raw",
+    "tablerow",
+    "unless",
+    "schema",
+    "style",
+    "script",
+    "stylesheet",
+    "javascript"
+  ],
+  control: [
+    "if",
+    "unless",
+    "case"
+  ],
+  else: [
+    "else",
+    "elsif"
+  ],
+  singletons: [
+    "include",
+    "layout",
+    "section",
+    "assign",
+    "liquid",
+    "break",
+    "continue",
+    "cycle",
+    "decrement",
+    "echo",
+    "increment",
+    "render",
+    "when"
+  ]
+}) {
+  const ELSE = new Set(grammar2.else);
+  const CONTROL = new Set(grammar2.control);
+  const TAGS = new Set(grammar2.tags);
+  const SINGLETON = new Set(grammar2.singletons);
+  const EMBEDDED = {};
+  embed(grammar2.embedded);
+  return {
+    get grammar() {
+      return grammar2;
+    },
+    get tags() {
+      return TAGS;
+    },
+    get control() {
+      return CONTROL;
+    },
+    get else() {
+      return ELSE;
+    },
+    get singleton() {
+      return SINGLETON;
+    },
+    get embed() {
+      return EMBEDDED;
+    },
+    extend(rules) {
+      for (const rule in rules) {
+        if (isArray(rules[rule])) {
+          for (const tag of rules[rule]) {
+            if (rule === "tags" && TAGS.has(tag) === false) {
+              grammar2.tags.push(tag);
+              TAGS.add(tag);
+            } else if (rule === "else" && ELSE.has(tag) === false) {
+              grammar2.else.push(tag);
+              ELSE.add(tag);
+            } else if (rule === "control" && CONTROL.has(tag)) {
+              grammar2.control.push(tag);
+              CONTROL.add(tag);
+            } else if (rule === "singletons" && SINGLETON.has(tag) === false) {
+              grammar2.singletons.push(tag);
+              SINGLETON.add(tag);
+            }
+          }
+        } else if (rule === "embedded") {
+          if (typeof rules[rule] === "object") {
+            embed(rules[rule]);
+          }
+        }
+      }
+    }
+  };
+  function embed(rules) {
+    for (const tag in rules) {
+      for (const { language, argument = null } of rules[tag]) {
+        if (!(tag in EMBEDDED)) {
+          EMBEDDED[tag] = {
+            tag,
+            language,
+            args: /* @__PURE__ */ new Map([[/* @__PURE__ */ new Set(), { tag, language }]])
+          };
+        }
+        if (argument) {
+          for (const [match] of EMBEDDED[tag].args) {
+            if (match === null)
+              continue;
+            if (isArray(argument)) {
+              for (const arg of argument)
+                if (!match.has(arg))
+                  match.add(arg);
+            } else {
+              const exp = new RegExp(argument);
+              if (match.size > 0) {
+                for (const m of match) {
+                  if (!(m instanceof RegExp))
+                    continue;
+                  if (m.source !== exp.source)
+                    match.add(exp);
+                }
+              } else {
+                match.add(exp);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+function SVGGrammar(grammar2 = {
+  tags: [
+    "a",
+    "altGlyph",
+    "altGlyphDef",
+    "altGlyphItem",
+    "animate",
+    "animateColor",
+    "animateMotion",
+    "animateTransform",
+    "circle",
+    "clipPath",
+    "color-profile",
+    "cursor",
+    "defs",
+    "desc",
+    "ellipse",
+    "feBlend",
+    "feColorMatrix",
+    "feComponentTransfer",
+    "feComposite",
+    "feConvolveMatrix",
+    "feDiffuseLighting",
+    "feDisplacementMap",
+    "feDistantLight",
+    "feFlood",
+    "feFuncA",
+    "feFuncB",
+    "feFuncG",
+    "feFuncR",
+    "feGaussianBlur",
+    "feImage",
+    "feMerge",
+    "feMergeNode",
+    "feMorphology",
+    "feOffset",
+    "fePointLight",
+    "feSpecularLighting",
+    "feSpotLight",
+    "feTile",
+    "feTurbulence",
+    "filter",
+    "font",
+    "font-face",
+    "font-face-format",
+    "font-face-name",
+    "font-face-src",
+    "font-face-uri",
+    "foreignObject",
+    "g",
+    "glyph",
+    "glyphRef",
+    "hkern",
+    "image",
+    "line",
+    "linearGradient",
+    "marker",
+    "mask",
+    "metadata",
+    "missing-glyph",
+    "mpath",
+    "path",
+    "pattern",
+    "polygon",
+    "polyline",
+    "radialGradient",
+    "rect",
+    "script",
+    "set",
+    "stop",
+    "style",
+    "switch",
+    "symbol",
+    "text",
+    "textPath",
+    "title",
+    "tref",
+    "tspan",
+    "use",
+    "view",
+    "vkern"
+  ]
+}) {
+  const TAGS = new Set(grammar2.tags);
+  return {
+    get grammar() {
+      return grammar2;
+    },
+    get tags() {
+      return TAGS;
+    },
+    extend(rules) {
+      for (const rule in rules) {
+        if (isArray(rules[rule])) {
+          for (const tag of rules[rule]) {
+            if (rule === "tags" && TAGS.has(tag) === false) {
+              grammar2.tags.push(tag);
+              TAGS.add(tag);
+            }
+          }
+        }
+      }
+    }
+  };
+}
+function HTMLGrammar(grammar2 = {
+  embedded: {
+    script: [
+      {
+        language: "javascript"
+      },
+      {
+        language: "json",
+        attribute: {
+          type: [
+            "application/json",
+            "application/ld+json"
+          ]
+        }
+      },
+      {
+        language: "jsx",
+        attribute: {
+          type: [
+            "text/jsx",
+            "application/jsx"
+          ]
+        }
+      }
+    ],
+    style: [
+      {
+        language: "css"
+      }
+    ]
+  },
+  voids: [
+    "area",
+    "base",
+    "br",
+    "col",
+    "command",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "keygen",
+    "link",
+    "menuitem",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr"
+  ],
+  tags: [
+    "a",
+    "abbr",
+    "acronym",
+    "address",
+    "applet",
+    "article",
+    "aside",
+    "audio",
+    "b",
+    "basefont",
+    "bdi",
+    "bdo",
+    "big",
+    "blockquote",
+    "body",
+    "button",
+    "canvas",
+    "caption",
+    "center",
+    "cite",
+    "code",
+    "colgroup",
+    "data",
+    "datalist",
+    "dd",
+    "del",
+    "details",
+    "dfn",
+    "dialog",
+    "dir",
+    "div",
+    "dl",
+    "dt",
+    "em",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "figure",
+    "font",
+    "footer",
+    "form",
+    "frame",
+    "frameset",
+    "h1",
+    "h6",
+    "head",
+    "header",
+    "html",
+    "i",
+    "iframe",
+    "ins",
+    "isindex",
+    "kbd",
+    "label",
+    "legend",
+    "fieldset",
+    "li",
+    "main",
+    "map",
+    "mark",
+    "marquee",
+    "menu",
+    "meter",
+    "nav",
+    "noframes",
+    "frame",
+    "noscript",
+    "object",
+    "ol",
+    "optgroup",
+    "option",
+    "output",
+    "p",
+    "object",
+    "picture",
+    "pre",
+    "progress",
+    "q",
+    "rp",
+    "rt",
+    "ruby",
+    "s",
+    "samp",
+    "script",
+    "section",
+    "select",
+    "small",
+    "picture",
+    "video",
+    "audio",
+    "span",
+    "strike",
+    "strong",
+    "style",
+    "sub",
+    "summary",
+    "details",
+    "sup",
+    "svg",
+    "table",
+    "tbody",
+    "td",
+    "template",
+    "textarea",
+    "tfoot",
+    "th",
+    "thead",
+    "time",
+    "title",
+    "tr",
+    "audio",
+    "video",
+    "tt",
+    "u",
+    "ul",
+    "var",
+    "video"
+  ]
+}) {
+  const TAGS = new Set(grammar2.tags);
+  const VOIDS = new Set(grammar2.voids);
+  const EMBEDDED = {};
+  embed(grammar2.embedded);
+  return {
+    get grammar() {
+      return grammar2;
+    },
+    get tags() {
+      return TAGS;
+    },
+    get voids() {
+      return VOIDS;
+    },
+    get embed() {
+      return EMBEDDED;
+    },
+    extend(rules) {
+      for (const rule in rules) {
+        if (isArray(rules[rule])) {
+          for (const tag of rules[rule]) {
+            if (rule === "tags" && TAGS.has(tag) === false) {
+              grammar2.tags.push(tag);
+              TAGS.add(tag);
+            } else if (rule === "voids" && VOIDS.has(tag) === false) {
+              grammar2.voids.push(tag);
+              VOIDS.add(tag);
+            }
+          }
+        } else if (rule === "embedded") {
+          if (typeof rules[rule] === "object") {
+            embed(rules[rule]);
+          }
+        }
+      }
+    }
+  };
+  function embed(rules) {
+    for (const tag in rules) {
+      if (!(tag in EMBEDDED))
+        EMBEDDED[tag] = { tag, attr: /* @__PURE__ */ new Map() };
+      for (const { language, attribute } of rules[tag]) {
+        if (!("language" in EMBEDDED[tag]))
+          EMBEDDED[tag].language = language;
+        if (!EMBEDDED[tag].attr.has(language)) {
+          EMBEDDED[tag].attr.set(language, { tag, language, attr: /* @__PURE__ */ new Map() });
+        }
+        if (attribute) {
+          const entry = EMBEDDED[tag].attr.get(language);
+          for (const attr in attribute) {
+            if (!entry.attr.has(attr)) {
+              entry.attr.set(attr, {
+                tag,
+                language,
+                attr,
+                value: /* @__PURE__ */ new Set()
+              });
+            }
+            const curr = EMBEDDED[tag].attr.get(language).attr.get(attr);
+            if (isArray(attribute[attr])) {
+              for (const arg of attribute[attr])
+                if (!curr.value.has(arg))
+                  curr.value.add(arg);
+            } else {
+              const exp = new RegExp(attribute[attr]);
+              if (curr.value.size > 0) {
+                for (const m of curr.value) {
+                  if (!(m instanceof RegExp))
+                    continue;
+                  if (m.source !== exp.source)
+                    curr.value.add(exp);
+                }
+              } else {
+                curr.value.add(exp);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+function CSSGrammar(grammar2 = {
+  units: [
+    "%",
+    "cap",
+    "ch",
+    "cm",
+    "deg",
+    "dpcm",
+    "dpi",
+    "dppx",
+    "em",
+    "ex",
+    "fr",
+    "grad",
+    "Hz",
+    "ic",
+    "in",
+    "kHz",
+    "lh",
+    "mm",
+    "ms",
+    "mS",
+    "pc",
+    "pt",
+    "px",
+    "Q",
+    "rad",
+    "rem",
+    "rlh",
+    "s",
+    "turn",
+    "vb",
+    "vh",
+    "vi",
+    "vmax",
+    "vmin",
+    "vw"
+  ],
+  atrules: [
+    "@charset",
+    "@color-profile",
+    "@counter-style",
+    "@font-face",
+    "@font-feature-values",
+    "@font-palette-values",
+    "@import",
+    "@keyframes",
+    "@layer",
+    "@media",
+    "@namespace",
+    "@page",
+    "@supports"
+  ],
+  webkit: {
+    classes: [
+      "webkit-any",
+      "webkit-any-link*",
+      "webkit-autofill"
+    ],
+    elements: [
+      "webkit-file-upload-button",
+      "webkit-inner-spin-button",
+      "webkit-input-placeholder",
+      "webkit-meter-bar",
+      "webkit-meter-even-less-good-value",
+      "webkit-meter-inner-element",
+      "webkit-meter-optimum-value",
+      "webkit-meter-suboptimum-value",
+      "webkit-outer-spin-button",
+      "webkit-progress-bar",
+      "webkit-progress-inner-element",
+      "webkit-progress-value",
+      "webkit-search-cancel-button",
+      "webkit-search-results-button",
+      "webkit-slider-runnable-track",
+      "webkit-slider-thumb"
+    ]
+  },
+  pseudo: {
+    classes: [
+      "active",
+      "any-link",
+      "checked",
+      "default",
+      "defined",
+      "disabled",
+      "empty",
+      "enabled",
+      "first",
+      "first-child",
+      "first-of-type",
+      "fullscreen",
+      "focus",
+      "focus-visible",
+      "focus-within",
+      "host",
+      "hover",
+      "indeterminate",
+      "in-range",
+      "invalid",
+      "is",
+      "lang",
+      "last-child",
+      "last-of-type",
+      "left",
+      "link",
+      "modal",
+      "not",
+      "nth-child",
+      "nth-col",
+      "nth-last-child",
+      "nth-last-of-type",
+      "nth-of-type",
+      "only-child",
+      "only-of-type",
+      "optional",
+      "out-of-range",
+      "picture-in-picture",
+      "placeholder-shown",
+      "paused",
+      "playing",
+      "read-only",
+      "read-write",
+      "required",
+      "right",
+      "root",
+      "scope",
+      "target",
+      "valid",
+      "visited",
+      "where"
+    ],
+    elements: [
+      "after",
+      "backdrop",
+      "before",
+      "cue",
+      "cue-region",
+      "first-letter",
+      "first-line",
+      "file-selector-button",
+      "marker",
+      "part",
+      "placeholder",
+      "selection",
+      "slotted"
+    ],
+    functions: [
+      "after",
+      "before",
+      "first-letter",
+      "first-line",
+      "host",
+      "host-context",
+      "part",
+      "slotted",
+      "lang",
+      "not",
+      "nth-child",
+      "nth-col",
+      "nth-last-child",
+      "nth-last-of-type",
+      "nth-of-type",
+      "where"
+    ]
+  }
+}) {
+  const UNITS = new Set(grammar2.units);
+  const ATRULES = new Set(grammar2.atrules);
+  const PSEUDO_CLASSES = new Set(grammar2.pseudo.classes);
+  const PSEUDO_ELEMENTS = new Set(grammar2.pseudo.elements);
+  const PSEUDO_FUNCTIONS = new Set(grammar2.pseudo.functions);
+  const WEBKIT_ELEMENTS = new Set(grammar2.webkit.elements);
+  const WEBKIT_CLASSES = new Set(grammar2.webkit.classes);
+  return {
+    get grammar() {
+      return grammar2;
+    },
+    get units() {
+      return UNITS;
+    },
+    get pseudoClasses() {
+      return PSEUDO_CLASSES;
+    },
+    get pseudoElements() {
+      return PSEUDO_ELEMENTS;
+    },
+    get pseudoFunctions() {
+      return PSEUDO_FUNCTIONS;
+    },
+    get webkitElements() {
+      return WEBKIT_ELEMENTS;
+    },
+    get webkitClasses() {
+      return WEBKIT_CLASSES;
+    },
+    atrules(token) {
+      return ATRULES.has(token.slice(0, token.indexOf("(")).trim());
+    },
+    extend(rules) {
+      for (const rule in rules) {
+        if (isArray(rules[rule])) {
+          for (const tag of rules[rule]) {
+            if (rule === "units" && !UNITS.has(tag)) {
+              grammar2[rule].push(tag);
+              UNITS.add(tag);
+            } else if (rule === "atrules" && !ATRULES.has(tag)) {
+              grammar2[rule].push(tag);
+              ATRULES.add(tag);
+            }
+          }
+        }
+        if (typeof rules[rule] === "object") {
+          for (const prop in rules[rule]) {
+            if (isArray(rules[rule][prop])) {
+              for (const tag of rules[rule][prop]) {
+                if (rule === "webkit") {
+                  if (prop === "elements") {
+                    grammar2[rule][prop].push(tag);
+                    WEBKIT_ELEMENTS.add(tag);
+                  } else if (prop === "classes") {
+                    grammar2[rule][prop].push(tag);
+                    WEBKIT_CLASSES.add(tag);
+                  }
+                } else if (rule === "pseudo") {
+                  if (prop === "elements") {
+                    grammar2[rule][prop].push(tag);
+                    PSEUDO_ELEMENTS.add(tag);
+                  } else if (prop === "classes") {
+                    grammar2[rule][prop].push(tag);
+                    PSEUDO_CLASSES.add(tag);
+                  } else if (prop === "functions") {
+                    grammar2[rule][prop].push(tag);
+                    PSEUDO_FUNCTIONS.add(tag);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+}
+function JavaScriptGrammar(grammar2 = {
+  keywords: [
+    "ActiveXObject",
+    "ArrayBuffer",
+    "AudioContext",
+    "Canvas",
+    "CustomAnimation",
+    "DOMParser",
+    "DataView",
+    "Date",
+    "Error",
+    "EvalError",
+    "FadeAnimation",
+    "FileReader",
+    "Flash",
+    "Float32Array",
+    "Float64Array",
+    "FormField",
+    "Frame",
+    "Generator",
+    "HotKey",
+    "Image",
+    "Iterator",
+    "Intl",
+    "Int16Array",
+    "Int32Array",
+    "Int8Array",
+    "InternalError",
+    "Loader",
+    "Map",
+    "MenuItem",
+    "MoveAnimation",
+    "Notification",
+    "ParallelArray",
+    "Point",
+    "Promise",
+    "Proxy",
+    "RangeError",
+    "Rectangle",
+    "ReferenceError",
+    "Reflect",
+    "RegExp",
+    "ResizeAnimation",
+    "RotateAnimation",
+    "Set",
+    "SQLite",
+    "ScrollBar",
+    "Set",
+    "Shadow",
+    "StopIteration",
+    "Symbol",
+    "SyntaxError",
+    "Text",
+    "TextArea",
+    "Timer",
+    "TypeError",
+    "URL",
+    "Uint16Array",
+    "Uint32Array",
+    "Uint8Array",
+    "Uint8ClampedArray",
+    "URIError",
+    "WeakMap",
+    "WeakSet",
+    "Web",
+    "Window",
+    "XMLHttpRequest"
+  ]
+}) {
+  const KEYWORDS = new Set(grammar2.keywords);
+  return {
+    get grammar() {
+      return grammar2;
+    },
+    get keywords() {
+      return KEYWORDS;
+    },
+    extend(rules) {
+      for (const rule in rules) {
+        if (isArray(rules[rule])) {
+          for (const tag of rules[rule]) {
+            if (rule === "keywords" && !KEYWORDS.has(tag)) {
+              grammar2[rule].push(tag);
+              KEYWORDS.add(tag);
+            }
+          }
+        }
+      }
+    }
+  };
+}
+var grammar = function() {
+  const css = CSSGrammar();
+  const liquid = LiquidGrammar();
+  const js = JavaScriptGrammar();
+  const html = HTMLGrammar();
+  const svg = SVGGrammar();
+  return {
+    html,
+    liquid,
+    js,
+    css,
+    svg,
+    extend(options) {
+      if (typeof options === "object") {
+        for (const language in options) {
+          if (language === "liquid") {
+            liquid.extend(options.liquid);
+          } else if (language === "html") {
+            html.extend(options.html);
+          } else if (language === "css") {
+            css.extend(options.css);
+          } else if (language === "js") {
+            js.extend(options.js);
+          } else if (language === "svg") {
+            js.extend(options.js);
+          }
+        }
+      }
+      return {
+        get html() {
+          return html.grammar;
+        },
+        get liquid() {
+          return liquid.grammar;
+        },
+        get js() {
+          return js.grammar;
+        },
+        get css() {
+          return css.grammar;
+        },
+        get svg() {
+          return css.grammar;
+        }
+      };
+    }
+  };
+}();
+
+// src/lexical/regex.ts
+var SpaceLead = /^\s+/;
+var SpaceEnd = /\s+$/;
+var StripLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
+var StripEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
+var SpaceOnly = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
+var CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-start\b/;
+var CommLineIgnoreStart = /^\/\/\s*esthetic-ignore-start\b/;
+var CommBlockIgnoreStart = /^\/\*{1,2}(?:\s*|\n\s*\*\s*)esthetic-ignore-start\b/;
+var CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-next\b/;
+var LiquidDelimiters = /{%-?|-?%}/g;
+var LiquidTag = /^{%-?\s*liquid\b/;
+var LiquidComment = /^{%-?\s*(?:#|comment\b)/;
+var CharEscape = /(\/|\\|\||\*|\[|\]|\{|\})/g;
+
+// src/comments/block.ts
+function commentBlock(config) {
+  const { rules } = parse;
+  const build = [];
+  const second = [];
+  const sanitize = config.begin.replace(CharEscape, sanitizeComment);
+  const isliquid = is(config.begin[0], 123 /* LCB */) && is(config.begin[1], 37 /* PER */);
+  const expignore = new RegExp(`^(${sanitize}\\s*esthetic-ignore-start)`);
+  const expstart = new RegExp(`(${sanitize}\\s*)`);
+  const regEnd = isliquid ? new RegExp(`\\s*${config.ender.replace(LiquidDelimiters, (i) => is(i, 123 /* LCB */) ? "{%-?\\s*" : "\\s*-?%}")}$`) : new RegExp(config.ender.replace(CharEscape, sanitizeComment));
+  let a = config.start;
+  let b = 0;
+  let c = 0;
+  let d = 0;
+  let len = 0;
+  let lines = [];
+  let space = NIL;
+  let bline = NIL;
+  let emptyLine = false;
+  let bulletLine = false;
+  let numberLine = false;
+  let output = NIL;
+  let terml = config.ender.length - 1;
+  let term = config.ender.charAt(terml);
+  let twrap = 0;
+  function parseEmptyLines() {
+    if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL) {
+      do
+        b = b + 1;
+      while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL));
+    }
+    if (b < len - 1)
+      second.push(NIL);
+  }
+  function parseIgnoreComment() {
+    let termination = NWL;
+    a = a + 1;
+    do {
+      build.push(config.chars[a]);
+      if (build.slice(build.length - 19).join(NIL) === "esthetic-ignore-end") {
+        if (isliquid) {
+          const d2 = config.chars.indexOf("{", a);
+          if (is(config.chars[d2 + 1], 37 /* PER */)) {
+            const ender = config.chars.slice(d2, config.chars.indexOf("}", d2 + 1) + 1).join(NIL);
+            if (regEnd.test(ender))
+              config.ender = ender;
+          }
+        }
+        a = a + 1;
+        break;
+      }
+      a = a + 1;
+    } while (a < config.end);
+    b = a;
+    terml = config.begin.length - 1;
+    term = config.begin.charAt(terml);
+    do {
+      if (config.begin === "/*" && is(config.chars[b - 1], 47 /* FWS */) && (is(config.chars[b], 42 /* ARS */) || is(config.chars[b], 47 /* FWS */))) {
+        break;
+      }
+      if (config.begin !== "/*" && config.chars[b] === term && config.chars.slice(b - terml, b + 1).join(NIL) === config.begin) {
+        break;
+      }
+      b = b - 1;
+    } while (b > config.start);
+    if (config.begin === "/*" && is(config.chars[b], 42 /* ARS */)) {
+      termination = "*/";
+    } else if (config.begin !== "/*") {
+      termination = config.ender;
+    }
+    terml = termination.length - 1;
+    term = termination.charAt(terml);
+    if (termination !== NWL || config.chars[a] !== NWL) {
+      do {
+        build.push(config.chars[a]);
+        if (termination === NWL && config.chars[a + 1] === NWL)
+          break;
+        if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === termination)
+          break;
+        a = a + 1;
+      } while (a < config.end);
+    }
+    if (config.chars[a] === NWL)
+      a = a - 1;
+    output = build.join(NIL).replace(StripEnd, NIL);
+    return [output, a];
+  }
+  do {
+    build.push(config.chars[a]);
+    if (config.chars[a] === NWL) {
+      parse.lineNumber = parse.lineNumber + 1;
+      parse.lineOffset = parse.lineOffset + 1;
+    }
+    if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === config.ender)
+      break;
+    a = a + 1;
+  } while (a < config.end);
+  output = build.join(NIL);
+  if (expignore.test(output) === true)
+    return parseIgnoreComment();
+  if (isliquid === true && rules.liquid.preserveComment === true || isliquid === false && rules.markup.preserveComment === true || parse.lexer === "style" && rules.style.preserveComment === true || parse.lexer === "script" && rules.style.preserveComment === true || rules.wrap < 1 || a === config.end || output.length <= rules.wrap && output.indexOf(NWL) < 0 || config.begin === "/*" && output.indexOf(NWL) > 0 && output.replace(NWL, NIL).indexOf(NWL) > 0 && /\n(?!(\s*\*))/.test(output) === false) {
+    return [output, a];
+  }
+  b = config.start;
+  if (b > 0 && not(config.chars[b - 1], 10 /* NWL */) && ws(config.chars[b - 1])) {
+    do
+      b = b - 1;
+    while (b > 0 && not(config.chars[b - 1], 10 /* NWL */) && ws(config.chars[b - 1]));
+  }
+  space = config.chars.slice(b, config.start).join(NIL);
+  const spaceLine = new RegExp(NWL + space, "g");
+  lines = output.replace(/\r\n/g, NWL).replace(spaceLine, NWL).split(NWL);
+  len = lines.length;
+  lines[0] = lines[0].replace(expstart, NIL);
+  lines[len - 1] = lines[len - 1].replace(regEnd, NIL);
+  if (len < 2)
+    lines = lines[0].split(WSP);
+  if (lines[0] === NIL) {
+    lines[0] = config.begin;
+  } else {
+    lines.splice(0, 0, config.begin);
+  }
+  len = lines.length;
+  b = 0;
+  do {
+    bline = b < len - 1 ? lines[b + 1].replace(StripLead, NIL) : NIL;
+    if (/^\s+$/.test(lines[b]) === true || lines[b] === NIL) {
+      parseEmptyLines();
+    } else if (lines[b].replace(StripLead, NIL).length > rules.wrap && lines[b].replace(StripLead, NIL).indexOf(WSP) > rules.wrap) {
+      lines[b] = lines[b].replace(StripLead, NIL);
+      c = lines[b].indexOf(WSP);
+      second.push(lines[b].slice(0, c));
+      lines[b] = lines[b].slice(c + 1);
+      b = b - 1;
+    } else {
+      lines[b] = config.begin === "/*" && lines[b].indexOf("/*") !== 0 ? `   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}` : `${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`;
+      twrap = b < 1 ? rules.wrap - (config.begin.length + 1) : rules.wrap;
+      c = lines[b].length;
+      d = lines[b].replace(StripLead, NIL).indexOf(WSP);
+      if (c > twrap && d > 0 && d < twrap) {
+        c = twrap;
+        do {
+          c = c - 1;
+          if (ws(lines[b].charAt(c)) && c <= rules.wrap)
+            break;
+        } while (c > 0);
+        if (/^\s*\d+\.\s/.test(lines[b]) === true && /^\s*\d+\.\s/.test(lines[b + 1]) === false) {
+          lines.splice(b + 1, 0, "1. ");
+        }
+        if (/^\s+$/.test(lines[b + 1]) === true || lines[b + 1] === NIL) {
+          second.push(lines[b].slice(0, c));
+          lines[b] = lines[b].slice(c + 1);
+          emptyLine = true;
+          b = b - 1;
+        } else if (/^\s*[*-]\s/.test(lines[b + 1])) {
+          second.push(lines[b].slice(0, c));
+          lines[b] = lines[b].slice(c + 1);
+          bulletLine = true;
+          b = b - 1;
+        } else if (/^\s*\d+\.\s/.test(lines[b + 1])) {
+          second.push(lines[b].slice(0, c));
+          lines[b] = lines[b].slice(c + 1);
+          numberLine = true;
+          b = b - 1;
+        } else if (lines[b].replace(StripLead, NIL).indexOf(WSP) < rules.wrap) {
+          lines[b + 1] = lines[b].length > rules.wrap ? lines[b].slice(c + 1) + parse.crlf + lines[b + 1] : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
+        }
+        if (emptyLine === false && bulletLine === false && numberLine === false) {
+          lines[b] = lines[b].slice(0, c);
+        }
+      } else if (lines[b + 1] !== void 0 && (lines[b].length + bline.indexOf(WSP) > rules.wrap && bline.indexOf(WSP) > 0 || lines[b].length + bline.length > rules.wrap && bline.indexOf(WSP) < 0)) {
+        second.push(lines[b]);
+        b = b + 1;
+      } else if (lines[b + 1] !== void 0 && /^\s+$/.test(lines[b + 1]) === false && lines[b + 1] !== NIL && /^\s*(?:[*-]|\d+\.)\s/.test(lines[b + 1]) === false) {
+        second.push(lines[b]);
+        emptyLine = true;
+      } else {
+        second.push(lines[b]);
+        emptyLine = true;
+      }
+      bulletLine = false;
+      numberLine = false;
+    }
+    b = b + 1;
+  } while (b < len);
+  if (second.length > 0) {
+    if (second[second.length - 1].length > rules.wrap - (config.ender.length + 1)) {
+      second.push(config.ender);
+    } else {
+      second.push(config.ender);
+    }
+    output = second.join(parse.crlf);
+  } else {
+    lines[lines.length - 1] = lines[lines.length - 1] + config.ender;
+    output = lines.join(parse.crlf);
+  }
+  return [output, a];
+}
+
+// src/comments/line.ts
+function commentLine(config) {
+  const { wrap } = parse.rules;
+  const { preserveComment } = parse.rules[parse.lexer];
+  let a = config.start;
+  let b = 0;
+  let output = NIL;
+  let build = [];
+  function traverse() {
+    let line = NIL;
+    do {
+      b = b + 1;
+      if (is(config.chars[b + 1], 10 /* NWL */))
+        return;
+    } while (b < config.end && ws(config.chars[b]));
+    if (config.chars[b] + config.chars[b + 1] === "//") {
+      build = [];
+      do {
+        build.push(config.chars[b]);
+        b = b + 1;
+      } while (b < config.end && not(config.chars[b], 10 /* NWL */));
+      line = build.join(NIL);
+      if (/^\/\/ (?:[*-]|\d+\.)/.test(line) === false && /^\/\/\s*$/.test(line) === false) {
+        output = `${output} ${line.replace(/(^\/\/\s*)/, NIL).replace(StripEnd, NIL)}`;
+        a = b - 1;
+        traverse();
+      }
+    }
+  }
+  function wordwrap() {
+    const lines = [];
+    const record = {
+      ender: -1,
+      types: "comment",
+      lexer: config.lexer,
+      lines: parse.lineOffset
+    };
+    if (parse.count > -1) {
+      record.begin = parse.stack.index;
+      record.stack = parse.stack.token;
+      record.token = parse.data.token[parse.count];
+    } else {
+      record.begin = -1;
+      record.stack = "global";
+      record.token = NIL;
+    }
+    let c = 0;
+    let d = 0;
+    output = output.replace(/\s+/g, WSP).replace(StripEnd, NIL);
+    d = output.length;
+    if (wrap > d)
+      return;
+    do {
+      c = wrap;
+      if (not(output[c], 32 /* WSP */)) {
+        do
+          c = c - 1;
+        while (c > 0 && not(output[c], 32 /* WSP */));
+        if (c < 3) {
+          c = wrap;
+          do
+            c = c + 1;
+          while (c < d - 1 && not(output[c], 32 /* WSP */));
+        }
+      }
+      lines.push(output.slice(0, c));
+      output = `// ${output.slice(c).replace(StripLead, NIL)}`;
+      d = output.length;
+    } while (wrap < d);
+    c = 0;
+    d = lines.length;
+    do {
+      record.token = lines[c];
+      parse.push(parse.data, record, NIL);
+      record.lines = 2;
+      parse.lineOffset = 2;
+      c = c + 1;
+    } while (c < d);
+  }
+  do {
+    build.push(config.chars[a]);
+    a = a + 1;
+  } while (a < config.end && not(config.chars[a], 10 /* NWL */));
+  if (a === config.end) {
+    config.chars.push(NWL);
+  } else {
+    a = a - 1;
+  }
+  output = build.join(NIL).replace(StripEnd, NIL);
+  if (CommLineIgnoreStart.test(output) === true) {
+    let termination = NWL;
+    a = a + 1;
+    do {
+      build.push(config.chars[a]);
+      a = a + 1;
+    } while (a < config.end && (not(config.chars[a - 1], 100) || is(config.chars[a - 1], 100) && build.slice(build.length - 19).join(NIL) !== "esthetic-ignore-end"));
+    b = a;
+    do
+      ;
+    while (b > config.start && is(config.chars[b - 1], 47 /* FWS */) && (is(config.chars[b], 42 /* ARS */) || is(config.chars[b], 47 /* FWS */)));
+    if (is(config.chars[b], 42 /* ARS */))
+      termination = "*/";
+    if (termination !== NWL || not(config.chars[a], 10 /* NWL */)) {
+      do {
+        build.push(config.chars[a]);
+        if (termination === NWL && is(config.chars[a + 1], 10 /* NWL */))
+          break;
+        a = a + 1;
+      } while (a < config.end && (termination === NWL || termination === "*/" && (is(config.chars[a - 1], 42 /* ARS */) || is(config.chars[a], 47 /* FWS */))));
+    }
+    if (config.chars[a] === NWL)
+      a = a - 1;
+    output = build.join(NIL).replace(StripEnd, NIL);
+    return [output, a];
+  }
+  if (output === "//" || preserveComment === true)
+    return [output, a];
+  output = output.replace(/(\/\/\s*)/, "// ");
+  if (wrap < 1 || a === config.end - 1 && parse.data.begin[parse.count] < 1)
+    return [output, a];
+  b = a + 1;
+  traverse();
+  wordwrap();
+  return [output, a];
+}
+
+// src/parse/definitions.ts
 var definitions = {
   global: {
     crlf: {
@@ -227,34 +2013,6 @@ var definitions = {
           description: "Converts single quotes to double quotes"
         }
       ]
-    },
-    valueForce: {
-      default: "intent",
-      description: "Controls force indentation applied in accordance with the attribute value expressions. This rule is Liquid specific.",
-      lexer: "markup",
-      type: "select",
-      values: [
-        {
-          rule: "wrap",
-          description: "Apply by wrap"
-        },
-        {
-          rule: "newline",
-          description: "Apply when newlines"
-        },
-        {
-          rule: "intent",
-          description: "Apply on either newline or wrap"
-        },
-        {
-          rule: "always",
-          description: "Always apply"
-        },
-        {
-          rule: "never",
-          description: "Never apply"
-        }
-      ]
     }
   },
   markup: {
@@ -388,6 +2146,18 @@ var definitions = {
       lexer: "markup",
       type: "boolean"
     },
+    selfCloseSVG: {
+      default: true,
+      description: "Whether or not SVG type tags should be converted to self closing void types.",
+      lexer: "markup",
+      type: "boolean"
+    },
+    stripAttributeLines: {
+      default: false,
+      description: "Whether or not newlines contained within tag attributes should be removed or preserved.",
+      lexer: "markup",
+      type: "boolean"
+    },
     quoteConvert: {
       lexer: "all",
       description: "If the quotes should be converted to single quotes or double quotes.",
@@ -422,6 +2192,18 @@ var definitions = {
       type: "boolean",
       lexer: "style"
     },
+    commentNewline: {
+      default: false,
+      description: "If a blank new line should be forced above comments.",
+      lexer: "all",
+      type: "boolean"
+    },
+    commentIndent: {
+      default: false,
+      description: "This will determine whether comments should always start at position 0 of each line or if comments should be indented according to the code.",
+      lexer: "all",
+      type: "boolean"
+    },
     sortSelectors: {
       default: false,
       type: "boolean",
@@ -438,6 +2220,12 @@ var definitions = {
       lexer: "style",
       description: "This will eliminate leading zeros from numbers expressed within values.",
       default: false,
+      type: "boolean"
+    },
+    preserveComment: {
+      default: false,
+      description: "Prevent comment reformatting due to option wrap.",
+      lexer: "markup",
       type: "boolean"
     },
     atRuleSpace: {
@@ -703,890 +2491,7 @@ var definitions = {
   }
 };
 
-// src/utils/native.ts
-var assign = Object.assign;
-var defineProperties = Object.defineProperties;
-var isArray = Array.isArray;
-
-// src/shared/grammar.ts
-function LiquidGrammar(grammar2 = {
-  embedded: {
-    schema: [
-      {
-        language: "json"
-      }
-    ],
-    style: [
-      {
-        language: "css"
-      }
-    ],
-    stylesheet: [
-      {
-        language: "css"
-      },
-      {
-        language: "scss",
-        argument: /['"]scss['"]/
-      }
-    ],
-    javascript: [
-      {
-        language: "javascript"
-      }
-    ]
-  },
-  tags: [
-    "form",
-    "paginate",
-    "capture",
-    "case",
-    "comment",
-    "for",
-    "if",
-    "raw",
-    "tablerow",
-    "unless",
-    "schema",
-    "style",
-    "script",
-    "stylesheet",
-    "javascript"
-  ],
-  control: [
-    "if",
-    "unless",
-    "case"
-  ],
-  else: [
-    "else",
-    "elsif"
-  ],
-  singletons: [
-    "include",
-    "layout",
-    "section",
-    "assign",
-    "liquid",
-    "break",
-    "continue",
-    "cycle",
-    "decrement",
-    "echo",
-    "increment",
-    "render",
-    "when"
-  ]
-}) {
-  const ELSE = new Set(grammar2.else);
-  const CONTROL = new Set(grammar2.control);
-  const TAGS = new Set(grammar2.tags);
-  const SINGLETON = new Set(grammar2.singletons);
-  const EMBEDDED = {};
-  embed(grammar2.embedded);
-  return {
-    get grammar() {
-      return grammar2;
-    },
-    get tags() {
-      return TAGS;
-    },
-    get control() {
-      return CONTROL;
-    },
-    get else() {
-      return ELSE;
-    },
-    get singleton() {
-      return SINGLETON;
-    },
-    get embed() {
-      return EMBEDDED;
-    },
-    extend(rules) {
-      for (const rule in rules) {
-        if (isArray(rules[rule])) {
-          for (const tag of rules[rule]) {
-            if (rule === "tags" && TAGS.has(tag) === false) {
-              grammar2.tags.push(tag);
-              TAGS.add(tag);
-            } else if (rule === "else" && ELSE.has(tag) === false) {
-              grammar2.else.push(tag);
-              ELSE.add(tag);
-            } else if (rule === "control" && CONTROL.has(tag)) {
-              grammar2.control.push(tag);
-              CONTROL.add(tag);
-            } else if (rule === "singletons" && SINGLETON.has(tag) === false) {
-              grammar2.singletons.push(tag);
-              SINGLETON.add(tag);
-            }
-          }
-        } else if (rule === "embedded") {
-          if (typeof rules[rule] === "object") {
-            embed(rules[rule]);
-          }
-        }
-      }
-    }
-  };
-  function embed(rules) {
-    for (const tag in rules) {
-      for (const { language, argument = null } of rules[tag]) {
-        if (!(tag in EMBEDDED)) {
-          EMBEDDED[tag] = {
-            tag,
-            language,
-            args: /* @__PURE__ */ new Map([[/* @__PURE__ */ new Set(), { tag, language }]])
-          };
-        }
-        if (argument) {
-          for (const [match] of EMBEDDED[tag].args) {
-            if (match === null)
-              continue;
-            if (isArray(argument)) {
-              for (const arg of argument)
-                if (!match.has(arg))
-                  match.add(arg);
-            } else {
-              const exp = new RegExp(argument);
-              if (match.size > 0) {
-                for (const m of match) {
-                  if (!(m instanceof RegExp))
-                    continue;
-                  if (m.source !== exp.source)
-                    match.add(exp);
-                }
-              } else {
-                match.add(exp);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-function HTMLGrammar(grammar2 = {
-  embedded: {
-    script: [
-      {
-        language: "javascript"
-      },
-      {
-        language: "json",
-        attribute: {
-          type: [
-            "application/json",
-            "application/ld+json"
-          ]
-        }
-      },
-      {
-        language: "jsx",
-        attribute: {
-          type: [
-            "text/jsx",
-            "application/jsx"
-          ]
-        }
-      }
-    ],
-    style: [
-      {
-        language: "css"
-      }
-    ]
-  },
-  svg: [
-    "a",
-    "altGlyph",
-    "altGlyphDef",
-    "altGlyphItem",
-    "animate",
-    "animateColor",
-    "animateMotion",
-    "animateTransform",
-    "circle",
-    "clipPath",
-    "color-profile",
-    "cursor",
-    "defs",
-    "desc",
-    "ellipse",
-    "feBlend",
-    "feColorMatrix",
-    "feComponentTransfer",
-    "feComposite",
-    "feConvolveMatrix",
-    "feDiffuseLighting",
-    "feDisplacementMap",
-    "feDistantLight",
-    "feFlood",
-    "feFuncA",
-    "feFuncB",
-    "feFuncG",
-    "feFuncR",
-    "feGaussianBlur",
-    "feImage",
-    "feMerge",
-    "feMergeNode",
-    "feMorphology",
-    "feOffset",
-    "fePointLight",
-    "feSpecularLighting",
-    "feSpotLight",
-    "feTile",
-    "feTurbulence",
-    "filter",
-    "font",
-    "font-face",
-    "font-face-format",
-    "font-face-name",
-    "font-face-src",
-    "font-face-uri",
-    "foreignObject",
-    "g",
-    "glyph",
-    "glyphRef",
-    "hkern",
-    "image",
-    "line",
-    "linearGradient",
-    "marker",
-    "mask",
-    "metadata",
-    "missing-glyph",
-    "mpath",
-    "path",
-    "pattern",
-    "polygon",
-    "polyline",
-    "radialGradient",
-    "rect",
-    "script",
-    "set",
-    "stop",
-    "style",
-    "switch",
-    "symbol",
-    "text",
-    "textPath",
-    "title",
-    "tref",
-    "tspan",
-    "use",
-    "view",
-    "vkern"
-  ],
-  voids: [
-    "area",
-    "base",
-    "br",
-    "col",
-    "command",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "keygen",
-    "link",
-    "menuitem",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr"
-  ],
-  tags: [
-    "a",
-    "abbr",
-    "acronym",
-    "address",
-    "applet",
-    "article",
-    "aside",
-    "audio",
-    "b",
-    "basefont",
-    "bdi",
-    "bdo",
-    "big",
-    "blockquote",
-    "body",
-    "button",
-    "canvas",
-    "caption",
-    "center",
-    "cite",
-    "code",
-    "colgroup",
-    "data",
-    "datalist",
-    "dd",
-    "del",
-    "details",
-    "dfn",
-    "dialog",
-    "dir",
-    "div",
-    "dl",
-    "dt",
-    "em",
-    "fieldset",
-    "figcaption",
-    "figure",
-    "figure",
-    "font",
-    "footer",
-    "form",
-    "frame",
-    "frameset",
-    "h1",
-    "h6",
-    "head",
-    "header",
-    "html",
-    "i",
-    "iframe",
-    "ins",
-    "isindex",
-    "kbd",
-    "label",
-    "legend",
-    "fieldset",
-    "li",
-    "main",
-    "map",
-    "mark",
-    "marquee",
-    "menu",
-    "meter",
-    "nav",
-    "noframes",
-    "frame",
-    "noscript",
-    "object",
-    "ol",
-    "optgroup",
-    "option",
-    "output",
-    "p",
-    "object",
-    "picture",
-    "pre",
-    "progress",
-    "q",
-    "rp",
-    "rt",
-    "ruby",
-    "s",
-    "samp",
-    "script",
-    "section",
-    "select",
-    "small",
-    "picture",
-    "video",
-    "audio",
-    "span",
-    "strike",
-    "strong",
-    "style",
-    "sub",
-    "summary",
-    "details",
-    "sup",
-    "svg",
-    "table",
-    "tbody",
-    "td",
-    "template",
-    "textarea",
-    "tfoot",
-    "th",
-    "thead",
-    "time",
-    "title",
-    "tr",
-    "audio",
-    "video",
-    "tt",
-    "u",
-    "ul",
-    "var",
-    "video"
-  ]
-}) {
-  const SVG = new Set(grammar2.svg);
-  const TAGS = new Set(grammar2.tags);
-  const VOIDS = new Set(grammar2.voids);
-  const EMBEDDED = {};
-  embed(grammar2.embedded);
-  return {
-    get grammar() {
-      return grammar2;
-    },
-    get svg() {
-      return SVG;
-    },
-    get tags() {
-      return TAGS;
-    },
-    get voids() {
-      return VOIDS;
-    },
-    get embed() {
-      return EMBEDDED;
-    },
-    extend(rules) {
-      for (const rule in rules) {
-        if (isArray(rules[rule])) {
-          for (const tag of rules[rule]) {
-            if (rule === "tags" && TAGS.has(tag) === false) {
-              grammar2.tags.push(tag);
-              TAGS.add(tag);
-            } else if (rule === "voids" && VOIDS.has(tag) === false) {
-              grammar2.voids.push(tag);
-              VOIDS.add(tag);
-            } else if (rule === "svg" && SVG.has(tag) === false) {
-              grammar2.svg.push(tag);
-              SVG.add(tag);
-            }
-          }
-        } else if (rule === "embedded") {
-          if (typeof rules[rule] === "object") {
-            embed(rules[rule]);
-          }
-        }
-      }
-    }
-  };
-  function embed(rules) {
-    for (const tag in rules) {
-      if (!(tag in EMBEDDED))
-        EMBEDDED[tag] = { tag, attr: /* @__PURE__ */ new Map() };
-      for (const { language, attribute } of rules[tag]) {
-        if (!("language" in EMBEDDED[tag]))
-          EMBEDDED[tag].language = language;
-        if (!EMBEDDED[tag].attr.has(language)) {
-          EMBEDDED[tag].attr.set(language, { tag, language, attr: /* @__PURE__ */ new Map() });
-        }
-        if (attribute) {
-          const entry = EMBEDDED[tag].attr.get(language);
-          for (const attr in attribute) {
-            if (!entry.attr.has(attr)) {
-              entry.attr.set(attr, {
-                tag,
-                language,
-                attr,
-                value: /* @__PURE__ */ new Set()
-              });
-            }
-            const curr = EMBEDDED[tag].attr.get(language).attr.get(attr);
-            if (isArray(attribute[attr])) {
-              for (const arg of attribute[attr])
-                if (!curr.value.has(arg))
-                  curr.value.add(arg);
-            } else {
-              const exp = new RegExp(attribute[attr]);
-              if (curr.value.size > 0) {
-                for (const m of curr.value) {
-                  if (!(m instanceof RegExp))
-                    continue;
-                  if (m.source !== exp.source)
-                    curr.value.add(exp);
-                }
-              } else {
-                curr.value.add(exp);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-function CSSGrammar(grammar2 = {
-  units: [
-    "%",
-    "cap",
-    "ch",
-    "cm",
-    "deg",
-    "dpcm",
-    "dpi",
-    "dppx",
-    "em",
-    "ex",
-    "fr",
-    "grad",
-    "Hz",
-    "ic",
-    "in",
-    "kHz",
-    "lh",
-    "mm",
-    "ms",
-    "mS",
-    "pc",
-    "pt",
-    "px",
-    "Q",
-    "rad",
-    "rem",
-    "rlh",
-    "s",
-    "turn",
-    "vb",
-    "vh",
-    "vi",
-    "vmax",
-    "vmin",
-    "vw"
-  ],
-  atrules: [
-    "@charset",
-    "@color-profile",
-    "@counter-style",
-    "@font-face",
-    "@font-feature-values",
-    "@font-palette-values",
-    "@import",
-    "@keyframes",
-    "@layer",
-    "@media",
-    "@namespace",
-    "@page",
-    "@supports"
-  ],
-  webkit: {
-    classes: [
-      "webkit-any",
-      "webkit-any-link*",
-      "webkit-autofill"
-    ],
-    elements: [
-      "webkit-file-upload-button",
-      "webkit-inner-spin-button",
-      "webkit-input-placeholder",
-      "webkit-meter-bar",
-      "webkit-meter-even-less-good-value",
-      "webkit-meter-inner-element",
-      "webkit-meter-optimum-value",
-      "webkit-meter-suboptimum-value",
-      "webkit-outer-spin-button",
-      "webkit-progress-bar",
-      "webkit-progress-inner-element",
-      "webkit-progress-value",
-      "webkit-search-cancel-button",
-      "webkit-search-results-button",
-      "webkit-slider-runnable-track",
-      "webkit-slider-thumb"
-    ]
-  },
-  pseudo: {
-    classes: [
-      "active",
-      "any-link",
-      "checked",
-      "default",
-      "defined",
-      "disabled",
-      "empty",
-      "enabled",
-      "first",
-      "first-child",
-      "first-of-type",
-      "fullscreen",
-      "focus",
-      "focus-visible",
-      "focus-within",
-      "host",
-      "hover",
-      "indeterminate",
-      "in-range",
-      "invalid",
-      "is",
-      "lang",
-      "last-child",
-      "last-of-type",
-      "left",
-      "link",
-      "modal",
-      "not",
-      "nth-child",
-      "nth-col",
-      "nth-last-child",
-      "nth-last-of-type",
-      "nth-of-type",
-      "only-child",
-      "only-of-type",
-      "optional",
-      "out-of-range",
-      "picture-in-picture",
-      "placeholder-shown",
-      "paused",
-      "playing",
-      "read-only",
-      "read-write",
-      "required",
-      "right",
-      "root",
-      "scope",
-      "target",
-      "valid",
-      "visited",
-      "where"
-    ],
-    elements: [
-      "after",
-      "backdrop",
-      "before",
-      "cue",
-      "cue-region",
-      "first-letter",
-      "first-line",
-      "file-selector-button",
-      "marker",
-      "part",
-      "placeholder",
-      "selection",
-      "slotted"
-    ],
-    functions: [
-      "after",
-      "before",
-      "first-letter",
-      "first-line",
-      "host",
-      "host-context",
-      "part",
-      "slotted",
-      "lang",
-      "not",
-      "nth-child",
-      "nth-col",
-      "nth-last-child",
-      "nth-last-of-type",
-      "nth-of-type",
-      "where"
-    ]
-  }
-}) {
-  const UNITS = new Set(grammar2.units);
-  const ATRULES = new Set(grammar2.atrules);
-  const PSEUDO_CLASSES = new Set(grammar2.pseudo.classes);
-  const PSEUDO_ELEMENTS = new Set(grammar2.pseudo.elements);
-  const PSEUDO_FUNCTIONS = new Set(grammar2.pseudo.functions);
-  const WEBKIT_ELEMENTS = new Set(grammar2.webkit.elements);
-  const WEBKIT_CLASSES = new Set(grammar2.webkit.classes);
-  return {
-    get grammar() {
-      return grammar2;
-    },
-    get units() {
-      return UNITS;
-    },
-    get atrules() {
-      return ATRULES;
-    },
-    get pseudoClasses() {
-      return PSEUDO_CLASSES;
-    },
-    get pseudoElements() {
-      return PSEUDO_ELEMENTS;
-    },
-    get pseudoFunctions() {
-      return PSEUDO_FUNCTIONS;
-    },
-    get webkitElements() {
-      return WEBKIT_ELEMENTS;
-    },
-    get webkitClasses() {
-      return WEBKIT_CLASSES;
-    },
-    extend(rules) {
-      for (const rule in rules) {
-        if (isArray(rules[rule])) {
-          for (const tag of rules[rule]) {
-            if (rule === "units" && !UNITS.has(tag)) {
-              grammar2[rule].push(tag);
-              UNITS.add(tag);
-            } else if (rule === "atrules" && !ATRULES.has(tag)) {
-              grammar2[rule].push(tag);
-              ATRULES.add(tag);
-            }
-          }
-        }
-        if (typeof rules[rule] === "object") {
-          for (const prop in rules[rule]) {
-            if (isArray(rules[rule][prop])) {
-              for (const tag of rules[rule][prop]) {
-                if (rule === "webkit") {
-                  if (prop === "elements") {
-                    grammar2[rule][prop].push(tag);
-                    WEBKIT_ELEMENTS.add(tag);
-                  } else if (prop === "classes") {
-                    grammar2[rule][prop].push(tag);
-                    WEBKIT_CLASSES.add(tag);
-                  }
-                } else if (rule === "pseudo") {
-                  if (prop === "elements") {
-                    grammar2[rule][prop].push(tag);
-                    PSEUDO_ELEMENTS.add(tag);
-                  } else if (prop === "classes") {
-                    grammar2[rule][prop].push(tag);
-                    PSEUDO_CLASSES.add(tag);
-                  } else if (prop === "functions") {
-                    grammar2[rule][prop].push(tag);
-                    PSEUDO_FUNCTIONS.add(tag);
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  };
-}
-function JavaScriptGrammar(grammar2 = {
-  keywords: [
-    "ActiveXObject",
-    "ArrayBuffer",
-    "AudioContext",
-    "Canvas",
-    "CustomAnimation",
-    "DOMParser",
-    "DataView",
-    "Date",
-    "Error",
-    "EvalError",
-    "FadeAnimation",
-    "FileReader",
-    "Flash",
-    "Float32Array",
-    "Float64Array",
-    "FormField",
-    "Frame",
-    "Generator",
-    "HotKey",
-    "Image",
-    "Iterator",
-    "Intl",
-    "Int16Array",
-    "Int32Array",
-    "Int8Array",
-    "InternalError",
-    "Loader",
-    "Map",
-    "MenuItem",
-    "MoveAnimation",
-    "Notification",
-    "ParallelArray",
-    "Point",
-    "Promise",
-    "Proxy",
-    "RangeError",
-    "Rectangle",
-    "ReferenceError",
-    "Reflect",
-    "RegExp",
-    "ResizeAnimation",
-    "RotateAnimation",
-    "Set",
-    "SQLite",
-    "ScrollBar",
-    "Set",
-    "Shadow",
-    "StopIteration",
-    "Symbol",
-    "SyntaxError",
-    "Text",
-    "TextArea",
-    "Timer",
-    "TypeError",
-    "URL",
-    "Uint16Array",
-    "Uint32Array",
-    "Uint8Array",
-    "Uint8ClampedArray",
-    "URIError",
-    "WeakMap",
-    "WeakSet",
-    "Web",
-    "Window",
-    "XMLHttpRequest"
-  ]
-}) {
-  const KEYWORDS = new Set(grammar2.keywords);
-  return {
-    get grammar() {
-      return grammar2;
-    },
-    get keywords() {
-      return KEYWORDS;
-    },
-    extend(rules) {
-      for (const rule in rules) {
-        if (isArray(rules[rule])) {
-          for (const tag of rules[rule]) {
-            if (rule === "keywords" && !KEYWORDS.has(tag)) {
-              grammar2[rule].push(tag);
-              KEYWORDS.add(tag);
-            }
-          }
-        }
-      }
-    }
-  };
-}
-var grammar = function() {
-  const css = CSSGrammar();
-  const liquid = LiquidGrammar();
-  const js = JavaScriptGrammar();
-  const html = HTMLGrammar();
-  return {
-    html,
-    liquid,
-    js,
-    css,
-    extend(options) {
-      if (typeof options === "object") {
-        for (const language in options) {
-          if (language === "liquid") {
-            liquid.extend(options.liquid);
-          } else if (language === "html") {
-            html.extend(options.html);
-          } else if (language === "css") {
-            css.extend(options.css);
-          } else if (language === "js") {
-            js.extend(options.js);
-          }
-        }
-      }
-      return {
-        get html() {
-          return html.grammar;
-        },
-        get liquid() {
-          return liquid.grammar;
-        },
-        get js() {
-          return js.grammar;
-        },
-        get css() {
-          return css.grammar;
-        }
-      };
-    }
-  };
-}();
-
-// src/shared/lexical.ts
-var NIL = "";
-var WSP = " ";
-var NWL = "\n";
+// src/lexical/lexing.ts
 function getTagName(tag, slice = NaN) {
   if (typeof tag !== "string")
     return NIL;
@@ -1595,13 +2500,19 @@ function getTagName(tag, slice = NaN) {
   if (is(tag, 60 /* LAN */)) {
     const next = tag.search(/[\s>]/);
     const name2 = tag.slice(is(tag[1], 47 /* FWS */) ? 2 : 1, next);
-    return is(name2, 63 /* QWS */) && isLast(name2, 63 /* QWS */) ? "xml" : isNaN(slice) ? name2.toLowerCase() : name2.slice(slice).toLowerCase();
+    return is(name2, 63 /* QWS */) && isLast(name2, 63 /* QWS */) ? "xml" : isNaN(slice) ? name2 : name2.slice(slice);
   }
   const name = is(tag[2], 45 /* DSH */) ? tag.slice(3).trimStart() : tag.slice(2).trimStart();
-  const tname = name.slice(0, name.search(/[\s=|!<>,.[]|-?[%}]}/)).toLowerCase();
+  const tname = name.slice(0, name.search(/[\s=|!<>,.[]|-?[%}]}/));
   return isNaN(slice) ? tname : tname.slice(slice);
 }
-function isLiquidControl(input) {
+
+// src/lexical/liquid.ts
+function isOutput(input) {
+  const begin = input.indexOf("{");
+  return is(input[begin + 1], 123 /* LCB */);
+}
+function isControl(input) {
   const begin = input.indexOf("{");
   if (is(input[begin + 1], 37 /* PER */)) {
     let token;
@@ -1611,7 +2522,7 @@ function isLiquidControl(input) {
   }
   return false;
 }
-function isLiquidElse(input) {
+function isElse(input) {
   const begin = input.indexOf("{");
   if (is(input[begin + 1], 37 /* PER */)) {
     let token;
@@ -1621,7 +2532,7 @@ function isLiquidElse(input) {
   }
   return false;
 }
-function isValueLiquid(input) {
+function isValue(input) {
   const eq = input.indexOf("=");
   if (eq > -1) {
     if (is(input[eq + 1], 34 /* DQO */) || is(input[eq + 1], 39 /* SQO */)) {
@@ -1630,12 +2541,12 @@ function isValueLiquid(input) {
   }
   return false;
 }
-function isLiquidLine(input) {
-  if (isLiquidStart(input))
+function isChain(input) {
+  if (isStart(input))
     return /{%-?\s*end\w+/.test(input);
   return false;
 }
-function isLiquidStart(input, strict = false) {
+function isStart(input, strict = false) {
   let token;
   if (strict) {
     if (is(input[0], 123 /* LCB */) && is(input[1], 37 /* PER */) && is(input[input.length - 2], 37 /* PER */) && is(input[input.length - 1], 125 /* RCB */)) {
@@ -1660,7 +2571,7 @@ function isLiquidStart(input, strict = false) {
   } while (begin > -1);
   return false;
 }
-function isLiquidEnd(input) {
+function isEnd(input) {
   let token = input;
   if (Array.isArray(input))
     token = input.join(NIL);
@@ -1672,7 +2583,7 @@ function isLiquidEnd(input) {
   }
   return false;
 }
-function isLiquid(input, type) {
+function isType(input, type) {
   if (type === 1 /* Open */) {
     return is(input[0], 123 /* LCB */) && (is(input[1], 37 /* PER */) || is(input[1], 123 /* LCB */));
   } else if (type === 6 /* OpenTag */) {
@@ -1694,872 +2605,6 @@ function isLiquid(input, type) {
     const size2 = input.length;
     return is(input[0], 123 /* LCB */) && (is(input[1], 37 /* PER */) || is(input[1], 123 /* LCB */)) && (is(input[size2 - 1], 125 /* RCB */) && (is(input[size2 - 2], 37 /* PER */) || is(input[size2 - 2], 125 /* RCB */)));
   }
-}
-
-// src/utils/maps.ts
-function getLanguageName(language) {
-  if (typeof language === "string") {
-    return {
-      html: "HTML",
-      liquid: "Liquid",
-      xml: "XML",
-      jsx: "JSX",
-      tsx: "TSX",
-      json: "JSON",
-      yaml: "YAML",
-      css: "CSS",
-      scss: "SCSS",
-      sass: "SASS",
-      less: "LESS",
-      javascript: "JavaScript",
-      typescript: "TypeScript"
-    }[language];
-  }
-}
-function getLexerName(language) {
-  if (typeof language === "string") {
-    return {
-      text: "ignore",
-      auto: "ignore",
-      markup: "markup",
-      html: "markup",
-      liquid: "markup",
-      xml: "markup",
-      javascript: "script",
-      typescript: "script",
-      jsx: "script",
-      tsx: "script",
-      json: "script",
-      less: "style",
-      scss: "style",
-      sass: "style",
-      css: "style"
-    }[language];
-  }
-}
-function getLexerType(language) {
-  if (typeof language === "string") {
-    return {
-      text: 4 /* Ignore */,
-      auto: 4 /* Ignore */,
-      markup: 1 /* Markup */,
-      html: 1 /* Markup */,
-      liquid: 1 /* Markup */,
-      xml: 1 /* Markup */,
-      javascript: 2 /* Script */,
-      typescript: 2 /* Script */,
-      jsx: 2 /* Script */,
-      tsx: 2 /* Script */,
-      json: 2 /* Script */,
-      less: 3 /* Style */,
-      scss: 3 /* Style */,
-      sass: 3 /* Style */,
-      css: 3 /* Style */
-    }[language];
-  }
-}
-
-// src/utils/helpers.ts
-function stats(language, lexer) {
-  const store = {
-    lexer,
-    language: getLanguageName(language),
-    chars: 0
-  };
-  const start = Date.now();
-  return (output) => {
-    const time = +(Date.now() - start).toFixed(0);
-    store.time = time > 1e3 ? `${time}s` : `${time}ms`;
-    store.chars = output;
-    store.size = size(output);
-    return store;
-  };
-}
-function repeatChar(count, character = WSP) {
-  if (count === 0)
-    return character;
-  let char = NIL;
-  let i = 1;
-  do {
-    char += character;
-  } while (i++ < count);
-  return char;
-}
-function is(string, code) {
-  return string ? string.charCodeAt(0) === code : false;
-}
-function isLast(string, code) {
-  return is(string[string.length - 1], code);
-}
-function not(string, code) {
-  return is(string, code) === false;
-}
-function notLast(string, code) {
-  return isLast(string, code) === false;
-}
-function ws(string) {
-  return /\s/.test(string);
-}
-function digit(string) {
-  return /\d/.test(string);
-}
-function size(bytes) {
-  const kb = 1024;
-  const mb = 1048576;
-  const gb = 1073741824;
-  if (bytes < kb)
-    return bytes + " B";
-  else if (bytes < mb)
-    return (bytes / kb).toFixed(1) + " KB";
-  else if (bytes < gb)
-    return (bytes / mb).toFixed(1) + " MB";
-  else
-    return (bytes / gb).toFixed(1) + " GB";
-}
-function sanitizeComment(input) {
-  return `\\${input}`;
-}
-
-// src/utils/regex.ts
-var SpaceLead = /^\s+/;
-var SpaceEnd = /\s+$/;
-var StripLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
-var StripEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
-var SpaceOnly = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
-var CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*@prettify-ignore-start\b/;
-var CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*@prettify-ignore-next\b/;
-var LiqDelims = /{%-?\s*|\s*-?%}/g;
-var CharEscape = /(\/|\\|\||\*|\[|\]|\{|\})/g;
-
-// src/parse/sorting.ts
-function sortObject(data) {
-  let cc2 = parse.count;
-  let dd = parse.stack.index;
-  let ee = 0;
-  let ff = 0;
-  let gg = 0;
-  let behind = 0;
-  let front = 0;
-  let keyend = 0;
-  let keylen = 0;
-  let comma = true;
-  const { count } = parse;
-  const token = parse.stack.token;
-  const begin = parse.stack.index;
-  const lines = parse.space;
-  const style3 = data.lexer[count] === "style";
-  const global = style3 && token === "global";
-  const delim = style3 ? [";", "separator"] : [",", "separator"];
-  const keys = [];
-  const store = {
-    begin: [],
-    ender: [],
-    lexer: [],
-    lines: [],
-    stack: [],
-    token: [],
-    types: []
-  };
-  function sort(x, y) {
-    let xx = x[0];
-    let yy = y[0];
-    if (data.types[xx] === "comment") {
-      do
-        xx = xx + 1;
-      while (xx < count && data.types[xx] === "comment");
-      if (data.token[xx] === void 0)
-        return 1;
-    }
-    if (data.types[yy] === "comment") {
-      do
-        yy = yy + 1;
-      while (yy < count && data.types[yy] === "comment");
-      if (data.token[yy] === void 0)
-        return 1;
-    }
-    if (style3 === true) {
-      if (data.token[xx].indexOf("@import") === 0 || data.token[yy].indexOf("@import") === 0) {
-        return xx < yy ? -1 : 1;
-      }
-      if (data.types[xx] !== data.types[yy]) {
-        if (data.types[xx] === "function")
-          return 1;
-        if (data.types[xx] === "variable")
-          return -1;
-        if (data.types[xx] === "selector")
-          return 1;
-        if (data.types[xx] === "property" && data.types[yy] !== "variable")
-          return -1;
-        if (data.types[xx] === "mixin" && data.types[yy] !== "property" && data.types[yy] !== "variable")
-          return -1;
-      }
-    }
-    if (data.token[xx].toLowerCase() > data.token[yy].toLowerCase())
-      return 1;
-    return -1;
-  }
-  behind = cc2;
-  do {
-    if (data.begin[cc2] === dd || global && cc2 < behind && is(data.token[cc2], 125 /* RCB */) && data.begin[data.begin[cc2]] === -1) {
-      if (data.types[cc2].indexOf("liquid") > -1)
-        return;
-      if (data.token[cc2] === delim[0] || style3 === true && is(data.token[cc2], 125 /* RCB */) && not(data.token[cc2 + 1], 59 /* SEM */)) {
-        comma = true;
-        front = cc2 + 1;
-      } else if (style3 === true && is(data.token[cc2 - 1], 125 /* RCB */)) {
-        comma = true;
-        front = cc2;
-      }
-      if (front === 0 && data.types[0] === "comment") {
-        do
-          front = front + 1;
-        while (data.types[front] === "comment");
-      } else if (data.types[front] === "comment" && data.lines[front] < 2) {
-        front = front + 1;
-      }
-      if (comma === true && (data.token[cc2] === delim[0] || style3 === true && is(data.token[cc2 - 1], 125 /* RCB */)) && front <= behind) {
-        if (style3 === true && "};".indexOf(data.token[behind]) < 0) {
-          behind = behind + 1;
-        } else if (style3 === false && not(data.token[behind], 44 /* COM */)) {
-          behind = behind + 1;
-        }
-        keys.push([front, behind]);
-        if (style3 === true && is(data.token[front], 125 /* RCB */)) {
-          behind = front;
-        } else {
-          behind = front - 1;
-        }
-      }
-    }
-    cc2 = cc2 - 1;
-  } while (cc2 > dd);
-  if (keys.length > 0 && keys[keys.length - 1][0] > cc2 + 1) {
-    ee = keys[keys.length - 1][0] - 1;
-    if (data.types[ee] === "comment" && data.lines[ee] > 1) {
-      do
-        ee = ee - 1;
-      while (ee > 0 && data.types[ee] === "comment");
-      keys[keys.length - 1][0] = ee + 1;
-    }
-    if (data.types[cc2 + 1] === "comment" && cc2 === -1) {
-      do
-        cc2 = cc2 + 1;
-      while (data.types[cc2 + 1] === "comment");
-    }
-    keys.push([cc2 + 1, ee]);
-  }
-  if (keys.length > 1) {
-    if (style3 === true || parse.language === "json" || is(data.token[cc2 - 1], 61 /* EQS */) || is(data.token[cc2 - 1], 58 /* COL */) || is(data.token[cc2 - 1], 40 /* LPR */) || is(data.token[cc2 - 1], 91 /* LSB */) || is(data.token[cc2 - 1], 44 /* COM */) || data.types[cc2 - 1] === "word" || cc2 === 0) {
-      keys.sort(sort);
-      keylen = keys.length;
-      comma = false;
-      dd = 0;
-      do {
-        keyend = keys[dd][1];
-        if (style3 === true) {
-          gg = keyend;
-          if (data.types[gg] === "comment")
-            gg = gg - 1;
-          if (is(data.token[gg], 125 /* RCB */)) {
-            keyend = keyend + 1;
-            delim[0] = "}";
-            delim[1] = "end";
-          } else {
-            delim[0] = ";";
-            delim[1] = "separator";
-          }
-        }
-        ee = keys[dd][0];
-        if (style3 === true && data.types[keyend - 1] !== "end" && data.types[keyend] === "comment" && data.types[keyend + 1] !== "comment" && dd < keylen - 1) {
-          keyend = keyend + 1;
-        }
-        if (ee < keyend) {
-          do {
-            if (style3 === false && dd === keylen - 1 && ee === keyend - 2 && is(data.token[ee], 44 /* COM */) && data.lexer[ee] === "script" && data.types[ee + 1] === "comment") {
-              ff = ff + 1;
-            } else {
-              parse.push(store, {
-                begin: data.begin[ee],
-                ender: data.begin[ee],
-                lexer: data.lexer[ee],
-                lines: data.lines[ee],
-                stack: data.stack[ee],
-                token: data.token[ee],
-                types: data.types[ee]
-              }, NIL);
-              ff = ff + 1;
-            }
-            if (data.token[ee] === delim[0] && (style3 === true || data.begin[ee] === data.begin[keys[dd][0]])) {
-              comma = true;
-            } else if (data.token[ee] !== delim[0] && data.types[ee] !== "comment") {
-              comma = false;
-            }
-            ee = ee + 1;
-          } while (ee < keyend);
-        }
-        if (comma === false && store.token[store.token.length - 1] !== "x;" && (style3 === true || dd < keylen - 1)) {
-          ee = store.types.length - 1;
-          if (store.types[ee] === "comment") {
-            do
-              ee = ee - 1;
-            while (ee > 0 && store.types[ee] === "comment");
-          }
-          ee = ee + 1;
-          parse.splice({
-            data: store,
-            howmany: 0,
-            index: ee,
-            record: {
-              begin,
-              stack: global ? "global" : token,
-              ender: parse.count,
-              lexer: store.lexer[ee - 1],
-              lines: 0,
-              token: delim[0],
-              types: delim[1]
-            }
-          });
-          ff = ff + 1;
-        }
-        dd = dd + 1;
-      } while (dd < keylen);
-      parse.splice({ data, howmany: ff, index: cc2 + 1 });
-      parse.space = lines;
-      parse.concat(data, store);
-    }
-  }
-}
-function sortSafe(array, operation, recursive) {
-  if (isArray(array) === false)
-    return array;
-  if (operation === "normal") {
-    return safeSortNormal.call({ array, recursive }, array);
-  }
-  if (operation === "descend")
-    return safeSortDescend.call({ recursive }, array);
-  return safeSortAscend.call({ recursive }, array);
-}
-function sortCorrect(start, end) {
-  let a = start;
-  let endslen = -1;
-  const { data } = parse;
-  const ends = [];
-  const structure = parse.stack.length < 2 ? [-1] : [parse.stack[parse.stack.length - 2][1]];
-  do {
-    if (a > 0 && data.types[a].indexOf("attribute") > -1 && data.types[a].indexOf("end") < 0 && data.types[a - 1].indexOf("start") < 0 && data.types[a - 1].indexOf("attribute") < 0 && data.lexer[a] === "markup") {
-      structure.push(a - 1);
-    }
-    if (a > 0 && data.types[a - 1].indexOf("attribute") > -1 && data.types[a].indexOf("attribute") < 0 && data.lexer[structure[structure.length - 1]] === "markup" && data.types[structure[structure.length - 1]].indexOf("start") < 0) {
-      structure.pop();
-    }
-    if (data.begin[a] !== structure[structure.length - 1]) {
-      data.begin[a] = structure.length > 0 ? structure[structure.length - 1] : -1;
-    }
-    if (data.types[a].indexOf("else") > -1) {
-      if (structure.length > 0) {
-        structure[structure.length - 1] = a;
-      } else {
-        structure.push(a);
-      }
-    }
-    if (data.types[a].indexOf("end") > -1)
-      structure.pop();
-    if (data.types[a].indexOf("start") > -1)
-      structure.push(a);
-    a = a + 1;
-  } while (a < end);
-  a = end;
-  do {
-    a = a - 1;
-    if (data.types[a].indexOf("end") > -1) {
-      ends.push(a);
-      endslen = endslen + 1;
-    }
-    data.ender[a] = endslen > -1 ? ends[endslen] : -1;
-    if (data.types[a].indexOf("start") > -1) {
-      ends.pop();
-      endslen = endslen - 1;
-    }
-  } while (a > start);
-}
-function safeSortAscend(item) {
-  let c = 0;
-  const len = item.length;
-  const storeb = item;
-  const ascendChild = () => {
-    let a = 0;
-    const lenc = storeb.length;
-    if (a < lenc) {
-      do {
-        if (isArray(storeb[a]) === true)
-          storeb[a] = safeSortAscend.apply(this, storeb[a]);
-        a = a + 1;
-      } while (a < lenc);
-    }
-  };
-  const ascendRecurse = (value = NIL) => {
-    let a = c;
-    let b = 0;
-    let d = 0;
-    let e = 0;
-    let ind = [];
-    let key = storeb[c];
-    let tstore = "";
-    const tkey = typeof key;
-    if (a < len) {
-      do {
-        tstore = typeof storeb[a];
-        if (storeb[a] < key || tstore < tkey) {
-          key = storeb[a];
-          ind = [a];
-        } else if (storeb[a] === key) {
-          ind.push(a);
-        }
-        a = a + 1;
-      } while (a < len);
-    }
-    d = ind.length;
-    a = c;
-    b = d + c;
-    if (a < b) {
-      do {
-        storeb[ind[e]] = storeb[a];
-        storeb[a] = key;
-        e = e + 1;
-        a = a + 1;
-      } while (a < b);
-    }
-    c = c + d;
-    if (c < len) {
-      ascendRecurse();
-    } else {
-      if (this.recursive === true)
-        ascendChild();
-      item = storeb;
-    }
-    return value;
-  };
-  ascendRecurse();
-  return item;
-}
-function safeSortDescend(item) {
-  let c = 0;
-  const len = item.length;
-  const storeb = item;
-  const descendChild = () => {
-    const lenc = storeb.length;
-    let a = 0;
-    if (a < lenc) {
-      do {
-        if (isArray(storeb[a]))
-          storeb[a] = safeSortDescend.apply(this, storeb[a]);
-        a = a + 1;
-      } while (a < lenc);
-    }
-  };
-  const descendRecurse = (value = "") => {
-    let a = c;
-    let b = 0;
-    let d = 0;
-    let e = 0;
-    let key = storeb[c];
-    let ind = [];
-    let tstore = NIL;
-    const tkey = typeof key;
-    if (a < len) {
-      do {
-        tstore = typeof storeb[a];
-        if (storeb[a] > key || tstore > tkey) {
-          key = storeb[a];
-          ind = [a];
-        } else if (storeb[a] === key) {
-          ind.push(a);
-        }
-        a = a + 1;
-      } while (a < len);
-    }
-    d = ind.length;
-    a = c;
-    b = d + c;
-    if (a < b) {
-      do {
-        storeb[ind[e]] = storeb[a];
-        storeb[a] = key;
-        e = e + 1;
-        a = a + 1;
-      } while (a < b);
-    }
-    c = c + d;
-    if (c < len) {
-      descendRecurse();
-    } else {
-      if (this.recursive === true)
-        descendChild();
-      item = storeb;
-    }
-    return value;
-  };
-  descendRecurse();
-  return item;
-}
-function safeSortNormal(item) {
-  let storeb = item;
-  const done = [item[0]];
-  const safeSortNormalChild = () => {
-    let a = 0;
-    const len = storeb.length;
-    if (a < len) {
-      do {
-        if (isArray(storeb[a]))
-          storeb[a] = safeSortNormal.apply(this, storeb[a]);
-        a = a + 1;
-      } while (a < len);
-    }
-  };
-  const safeSortNormalRecurse = (x) => {
-    let a = 0;
-    const storea = [];
-    const len = storeb.length;
-    if (a < len) {
-      do {
-        if (storeb[a] !== x)
-          storea.push(storeb[a]);
-        a = a + 1;
-      } while (a < len);
-    }
-    storeb = storea;
-    if (storea.length > 0) {
-      done.push(storea[0]);
-      safeSortNormalRecurse(storea[0]);
-    } else {
-      if (this.recursive === true)
-        safeSortNormalChild();
-      item = storeb;
-    }
-  };
-  safeSortNormalRecurse(this.array[0]);
-  return item;
-}
-
-// src/comments/parse.ts
-function wrapCommentBlock(config) {
-  const { rules } = parse;
-  const build = [];
-  const second = [];
-  const sanitize = config.begin.replace(CharEscape, sanitizeComment);
-  const liqcomm = is(config.begin[0], 123 /* LCB */) && is(config.begin[1], 37 /* PER */);
-  const regIgnore = new RegExp(`^(${sanitize}\\s*@prettify-ignore-start)`);
-  const regStart = new RegExp(`(${sanitize}\\s*)`);
-  const regEnd = liqcomm ? new RegExp(`\\s*${config.ender.replace(LiqDelims, (i) => is(i, 123 /* LCB */) ? "{%-?\\s*" : "\\s*-?%}")}$`) : new RegExp(config.ender.replace(CharEscape, sanitizeComment));
-  let a = config.start;
-  let b = 0;
-  let c = 0;
-  let d = 0;
-  let len = 0;
-  let lines = [];
-  let space = NIL;
-  let bline = NIL;
-  let emptyLine = false;
-  let bulletLine = false;
-  let numberLine = false;
-  let output = NIL;
-  let terml = config.ender.length - 1;
-  let term = config.ender.charAt(terml);
-  let twrap = 0;
-  function emptyLines() {
-    if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL) {
-      do
-        b = b + 1;
-      while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL));
-    }
-    if (b < len - 1)
-      second.push(NIL);
-  }
-  function ignoreComment() {
-    let termination = NWL;
-    a = a + 1;
-    do {
-      build.push(config.chars[a]);
-      if (build.slice(build.length - 20).join(NIL) === "@prettify-ignore-end") {
-        if (liqcomm) {
-          const d2 = config.chars.indexOf("{", a);
-          if (is(config.chars[d2 + 1], 37 /* PER */)) {
-            const ender = config.chars.slice(d2, config.chars.indexOf("}", d2 + 1) + 1).join(NIL);
-            if (regEnd.test(ender))
-              config.ender = ender;
-          }
-        }
-        a = a + 1;
-        break;
-      }
-      a = a + 1;
-    } while (a < config.end);
-    b = a;
-    terml = config.begin.length - 1;
-    term = config.begin.charAt(terml);
-    do {
-      if (config.begin === "/*" && is(config.chars[b - 1], 47 /* FWS */) && (is(config.chars[b], 42 /* ARS */) || is(config.chars[b], 47 /* FWS */))) {
-        break;
-      }
-      if (config.begin !== "/*" && config.chars[b] === term && config.chars.slice(b - terml, b + 1).join(NIL) === config.begin) {
-        break;
-      }
-      b = b - 1;
-    } while (b > config.start);
-    if (config.begin === "/*" && is(config.chars[b], 42 /* ARS */)) {
-      termination = "*/";
-    } else if (config.begin !== "/*") {
-      termination = config.ender;
-    }
-    terml = termination.length - 1;
-    term = termination.charAt(terml);
-    if (termination !== NWL || config.chars[a] !== NWL) {
-      do {
-        build.push(config.chars[a]);
-        if (termination === NWL && config.chars[a + 1] === NWL)
-          break;
-        if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === termination)
-          break;
-        a = a + 1;
-      } while (a < config.end);
-    }
-    if (config.chars[a] === NWL)
-      a = a - 1;
-    output = build.join(NIL).replace(StripEnd, NIL);
-    return [output, a];
-  }
-  do {
-    build.push(config.chars[a]);
-    if (config.chars[a] === NWL)
-      parse.line = parse.line + 1;
-    if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === config.ender)
-      break;
-    a = a + 1;
-  } while (a < config.end);
-  output = build.join(NIL);
-  if (regIgnore.test(output) === true)
-    return ignoreComment();
-  if (liqcomm === true && rules.liquid.preserveComment === true || liqcomm === false && rules.markup.preserveComment === true || rules.wrap < 1 || a === config.end || output.length <= rules.wrap && output.indexOf(NWL) < 0 || config.begin === "/*" && output.indexOf(NWL) > 0 && output.replace(NWL, NIL).indexOf(NWL) > 0 && /\n(?!(\s*\*))/.test(output) === false) {
-    return [output, a];
-  }
-  b = config.start;
-  if (b > 0 && not(config.chars[b - 1], 10 /* NWL */) && ws(config.chars[b - 1])) {
-    do
-      b = b - 1;
-    while (b > 0 && not(config.chars[b - 1], 10 /* NWL */) && ws(config.chars[b - 1]));
-  }
-  space = config.chars.slice(b, config.start).join(NIL);
-  const spaceLine = new RegExp(NWL + space, "g");
-  lines = output.replace(/\r\n/g, NWL).replace(spaceLine, NWL).split(NWL);
-  len = lines.length;
-  lines[0] = lines[0].replace(regStart, NIL);
-  lines[len - 1] = lines[len - 1].replace(regEnd, NIL);
-  if (len < 2)
-    lines = lines[0].split(WSP);
-  if (lines[0] === NIL) {
-    lines[0] = config.begin;
-  } else {
-    lines.splice(0, 0, config.begin);
-  }
-  len = lines.length;
-  b = 0;
-  do {
-    bline = b < len - 1 ? lines[b + 1].replace(StripLead, NIL) : NIL;
-    if (/^\s+$/.test(lines[b]) === true || lines[b] === NIL) {
-      emptyLines();
-    } else if (lines[b].replace(StripLead, NIL).length > rules.wrap && lines[b].replace(StripLead, NIL).indexOf(WSP) > rules.wrap) {
-      lines[b] = lines[b].replace(StripLead, NIL);
-      c = lines[b].indexOf(WSP);
-      second.push(lines[b].slice(0, c));
-      lines[b] = lines[b].slice(c + 1);
-      b = b - 1;
-    } else {
-      lines[b] = config.begin === "/*" && lines[b].indexOf("/*") !== 0 ? `   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}` : `${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`;
-      twrap = b < 1 ? rules.wrap - (config.begin.length + 1) : rules.wrap;
-      c = lines[b].length;
-      d = lines[b].replace(StripLead, NIL).indexOf(WSP);
-      if (c > twrap && d > 0 && d < twrap) {
-        c = twrap;
-        do {
-          c = c - 1;
-          if (ws(lines[b].charAt(c)) && c <= rules.wrap)
-            break;
-        } while (c > 0);
-        if (/^\s*\d+\.\s/.test(lines[b]) === true && /^\s*\d+\.\s/.test(lines[b + 1]) === false) {
-          lines.splice(b + 1, 0, "1. ");
-        }
-        if (/^\s+$/.test(lines[b + 1]) === true || lines[b + 1] === NIL) {
-          second.push(lines[b].slice(0, c));
-          lines[b] = lines[b].slice(c + 1);
-          emptyLine = true;
-          b = b - 1;
-        } else if (/^\s*[*-]\s/.test(lines[b + 1])) {
-          second.push(lines[b].slice(0, c));
-          lines[b] = lines[b].slice(c + 1);
-          bulletLine = true;
-          b = b - 1;
-        } else if (/^\s*\d+\.\s/.test(lines[b + 1])) {
-          second.push(lines[b].slice(0, c));
-          lines[b] = lines[b].slice(c + 1);
-          numberLine = true;
-          b = b - 1;
-        } else if (lines[b].replace(StripLead, NIL).indexOf(WSP) < rules.wrap) {
-          lines[b + 1] = lines[b].length > rules.wrap ? lines[b].slice(c + 1) + parse.crlf + lines[b + 1] : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
-        }
-        if (emptyLine === false && bulletLine === false && numberLine === false) {
-          lines[b] = lines[b].slice(0, c);
-        }
-      } else if (lines[b + 1] !== void 0 && (lines[b].length + bline.indexOf(WSP) > rules.wrap && bline.indexOf(WSP) > 0 || lines[b].length + bline.length > rules.wrap && bline.indexOf(WSP) < 0)) {
-        second.push(lines[b]);
-        b = b + 1;
-      } else if (lines[b + 1] !== void 0 && /^\s+$/.test(lines[b + 1]) === false && lines[b + 1] !== NIL && /^\s*(?:[*-]|\d+\.)\s/.test(lines[b + 1]) === false) {
-        second.push(lines[b]);
-        emptyLine = true;
-      } else {
-        second.push(lines[b]);
-        emptyLine = true;
-      }
-      bulletLine = false;
-      numberLine = false;
-    }
-    b = b + 1;
-  } while (b < len);
-  if (second.length > 0) {
-    if (second[second.length - 1].length > rules.wrap - (config.ender.length + 1)) {
-      second.push(config.ender);
-    } else {
-      second.push(config.ender);
-    }
-    output = second.join(parse.crlf);
-  } else {
-    lines[lines.length - 1] = lines[lines.length - 1] + config.ender;
-    output = lines.join(parse.crlf);
-  }
-  return [output, a];
-}
-function wrapCommentLine(config) {
-  const { wrap } = parse.rules;
-  const { preserveComment } = parse.rules[parse.lexer];
-  let a = config.start;
-  let b = 0;
-  let output = NIL;
-  let build = [];
-  function recurse() {
-    let line = NIL;
-    do {
-      b = b + 1;
-      if (is(config.chars[b + 1], 10 /* NWL */))
-        return;
-    } while (b < config.end && ws(config.chars[b]));
-    if (config.chars[b] + config.chars[b + 1] === "//") {
-      build = [];
-      do {
-        build.push(config.chars[b]);
-        b = b + 1;
-      } while (b < config.end && not(config.chars[b], 10 /* NWL */));
-      line = build.join(NIL);
-      if (/^\/\/ (?:[*-]|\d+\.)/.test(line) === false && /^\/\/\s*$/.test(line) === false) {
-        output = `${output} ${line.replace(/(^\/\/\s*)/, NIL).replace(StripEnd, NIL)}`;
-        a = b - 1;
-        recurse();
-      }
-    }
-  }
-  function wordWrap() {
-    const lines = [];
-    const record = {
-      ender: -1,
-      types: "comment",
-      lexer: config.lexer,
-      lines: parse.space
-    };
-    if (parse.count > -1) {
-      record.begin = parse.stack.index;
-      record.stack = parse.stack.token;
-      record.token = parse.data.token[parse.count];
-    } else {
-      record.begin = -1;
-      record.stack = "global";
-      record.token = NIL;
-    }
-    let c = 0;
-    let d = 0;
-    output = output.replace(/\s+/g, WSP).replace(StripEnd, NIL);
-    d = output.length;
-    if (wrap > d)
-      return;
-    do {
-      c = wrap;
-      if (not(output[c], 32 /* WSP */)) {
-        do
-          c = c - 1;
-        while (c > 0 && not(output[c], 32 /* WSP */));
-        if (c < 3) {
-          c = wrap;
-          do
-            c = c + 1;
-          while (c < d - 1 && not(output[c], 32 /* WSP */));
-        }
-      }
-      lines.push(output.slice(0, c));
-      output = `// ${output.slice(c).replace(StripLead, NIL)}`;
-      d = output.length;
-    } while (wrap < d);
-    c = 0;
-    d = lines.length;
-    do {
-      record.token = lines[c];
-      parse.push(parse.data, record, NIL);
-      record.lines = 2;
-      parse.space = 2;
-      c = c + 1;
-    } while (c < d);
-  }
-  do {
-    build.push(config.chars[a]);
-    a = a + 1;
-  } while (a < config.end && not(config.chars[a], 10 /* NWL */));
-  if (a === config.end) {
-    config.chars.push(NWL);
-  } else {
-    a = a - 1;
-  }
-  output = build.join(NIL).replace(StripEnd, NIL);
-  if (/^(\/\/\s*@prettify-ignore-start\b)/.test(output) === true) {
-    let termination = NWL;
-    a = a + 1;
-    do {
-      build.push(config.chars[a]);
-      a = a + 1;
-    } while (a < config.end && (not(config.chars[a - 1], 100) || is(config.chars[a - 1], 100) && build.slice(build.length - 20).join(NIL) !== "@prettify-ignore-end"));
-    b = a;
-    do
-      ;
-    while (b > config.start && is(config.chars[b - 1], 47 /* FWS */) && (is(config.chars[b], 42 /* ARS */) || is(config.chars[b], 47 /* FWS */)));
-    if (is(config.chars[b], 42 /* ARS */))
-      termination = "*/";
-    if (termination !== NWL || not(config.chars[a], 10 /* NWL */)) {
-      do {
-        build.push(config.chars[a]);
-        if (termination === NWL && is(config.chars[a + 1], 10 /* NWL */))
-          break;
-        a = a + 1;
-      } while (a < config.end && (termination === NWL || termination === "*/" && (is(config.chars[a - 1], 42 /* ARS */) || is(config.chars[a], 47 /* FWS */))));
-    }
-    if (config.chars[a] === NWL)
-      a = a - 1;
-    output = build.join(NIL).replace(StripEnd, NIL);
-    return [output, a];
-  }
-  if (output === "//" || preserveComment === true)
-    return [output, a];
-  output = output.replace(/(\/\/\s*)/, "// ");
-  if (wrap < 1 || a === config.end - 1 && parse.data.begin[parse.count] < 1)
-    return [output, a];
-  b = a + 1;
-  recurse();
-  wordWrap();
-  return [output, a];
 }
 
 // src/parse/external.ts
@@ -2613,12 +2658,15 @@ function markup(input) {
   const asl = rules.markup.attributeSortList.length;
   const b = isArray(source) ? source : source.split(NIL);
   const c = b.length;
+  const svg = {
+    tname: [],
+    index: []
+  };
   let a = 0;
   let language;
   let embed = false;
   let html = markup ? rules.language : "html";
   let within = 0;
-  let svg = -1;
   function push(record, structure = NIL, param) {
     if (structure === NIL && param === void 0) {
       parse.push(data, record, NIL);
@@ -2642,7 +2690,7 @@ function markup(input) {
       return input2;
     if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input2))
       return input2;
-    if (!isLiquid(input2, 3))
+    if (!isType(input2, 3))
       return input2;
     const end = input2.length - 3;
     if (rules.liquid.delimiterTrims === "force") {
@@ -2672,9 +2720,7 @@ function markup(input) {
     }
     if (rules.liquid.normalizeSpacing === false)
       return input2;
-    if (/^{%-?\s*#/.test(input2) || /^{%-?\s*comment/.test(input2))
-      return input2;
-    if (/{%-?\s*(?:liquid)/.test(input2))
+    if (LiquidComment.test(input2) || LiquidTag.test(input2))
       return input2;
     let t;
     let q = 0;
@@ -2710,13 +2756,27 @@ function markup(input) {
       return token;
     return /\/\s+>$/.test(token) ? `${token.slice(0, token.lastIndexOf("/"))}${rules.markup.selfCloseSpace ? "/>" : " />"}` : `${token.slice(0, -1)}${rules.markup.selfCloseSpace ? "/>" : " />"}`;
   }
+  function attrname(x, withQuotes = true) {
+    const eq = x.indexOf("=");
+    if (eq > 0) {
+      const dq = x.indexOf(DQO);
+      if (eq < dq && dq > 0) {
+        return withQuotes ? [x.slice(0, eq), x.slice(eq + 1)] : [x.slice(0, eq), x.slice(eq + 2, -1)];
+      }
+      const sq = x.indexOf(SQO);
+      if (eq < sq && sq > 0) {
+        return withQuotes ? [x.slice(0, eq), x.slice(eq + 1)] : [x.slice(0, eq), x.slice(eq + 2, -1)];
+      }
+    }
+    return [x, NIL];
+  }
   function parseError(ref) {
     console.log(ref);
   }
   function parseToken(end) {
     const record = {
       lexer: "markup",
-      lines: parse.space,
+      lines: parse.lineOffset,
       stack: parse.stack.token !== "global" ? parse.stack.token : "global",
       begin: parse.stack.index,
       token: NIL,
@@ -2736,20 +2796,6 @@ function markup(input) {
     let preserve = false;
     let basic = false;
     let attrs = [];
-    function attrname(x, withQuotes = true) {
-      const eq = x.indexOf("=");
-      if (eq > 0) {
-        const dq = x.indexOf('"');
-        if (eq < dq && dq > 0) {
-          return withQuotes ? [x.slice(0, eq), x.slice(eq + 1)] : [x.slice(0, eq), x.slice(eq + 2, -1)];
-        }
-        const sq = x.indexOf("'");
-        if (eq < sq && sq > 0) {
-          return withQuotes ? [x.slice(0, eq), x.slice(eq + 1)] : [x.slice(0, eq), x.slice(eq + 2, -1)];
-        }
-      }
-      return [x, NIL];
-    }
     function cdata() {
       if (ltype !== "cdata")
         return parseAttribute();
@@ -2784,36 +2830,33 @@ function markup(input) {
         }
       }
       if (rules.liquid.quoteConvert === "double") {
-        record.token = record.token.replace(/'/g, '"');
+        record.token = record.token.replace(/'/g, DQO);
       } else if (rules.liquid.quoteConvert === "single") {
-        record.token = record.token.replace(/"/g, "'");
+        record.token = record.token.replace(/"/g, SQO);
       }
       return cdata();
     }
     function parseSVG() {
-      if (token === "<svg>" && svg === -1) {
-        svg = parse.count + 1;
-        return parseLiquid();
-      }
-      if (record.types === "end") {
-        if (is(token, 60 /* LAN */) && is(token[1], 47 /* FWS */)) {
-          if (tname === "svg") {
-            if (data.token[data.begin[parse.count]].slice(1) === record.token.slice(2) && data.token[data.begin[parse.count]] !== "singleton") {
-              data.types[data.begin[parse.count]] = "singleton";
-              data.token[data.begin[parse.count]] = selfclose(data.token[data.begin[parse.count]]);
-            }
-            svg = -1;
-            return parseLiquid();
-          } else if (grammar.html.svg.has(tname) && svg > -1) {
-            if (is(token, 60 /* LAN */) && is(token[1], 47 /* FWS */)) {
-              console.log(
-                data.token[data.begin[parse.count]].slice(1),
-                record.token.slice(2)
-              );
-              if (data.token[data.begin[parse.count]].slice(1) === record.token.slice(2)) {
-                data.types[data.begin[parse.count]] = "singleton";
-                data.token[data.begin[parse.count]] = selfclose(data.token[data.begin[parse.count]]);
-                return;
+      if (grammar.svg.tags.has(tname)) {
+        if (record.types === "start") {
+          record.types = "singleton";
+          svg.tname.push(tname);
+          svg.index.push(parse.count + 1);
+        } else if (record.types === "end") {
+          const i = svg.tname.indexOf(tname);
+          const e = svg.tname.lastIndexOf(tname);
+          if (i > -1) {
+            if (e === i) {
+              data.types[svg.index[e]] = "start";
+              svg.tname.splice(e, 1);
+              svg.index.splice(e, 1);
+            } else {
+              if (data.begin[parse.count] === svg.index[i]) {
+                data.types[data.begin[parse.count]] = "start";
+                svg.tname.splice(i, 1);
+                svg.index.splice(i, 1);
+              } else {
+                data.types[svg.index[e]] = "start";
               }
             }
           }
@@ -2865,11 +2908,13 @@ function markup(input) {
             let ff = 0;
             let endtag = false;
             do {
-              if (is(b[a], 10 /* NWL */))
-                parse.line = parse.line + 1;
+              if (is(b[a], 10 /* NWL */)) {
+                parse.lineNumber = parse.lineNumber + 1;
+                parse.lineIndex = a;
+              }
               tags.push(b[a]);
               if (delim === NIL) {
-                delim = is(b[a], 34 /* DQO */) ? '"' : is(b[a], 39 /* SQO */) ? "'" : NIL;
+                delim = is(b[a], 34 /* DQO */) ? DQO : is(b[a], 39 /* SQO */) ? SQO : NIL;
                 if (not(tags[0], 123 /* LCB */) && is(b[a], 123 /* LCB */) && (is(b[a + 1], 123 /* LCB */) || is(b[a + 1], 37 /* PER */))) {
                   delim = b[a + 1] + "}";
                 } else if (is(b[a], 60 /* LAN */) && basic === true) {
@@ -2908,24 +2953,37 @@ function markup(input) {
           token = token + tags.join(NIL);
           token = token.replace(">", ` ${attrs.map(([value]) => value).join(WSP)}>`);
           attrs = [];
-          record.types = "content_preserve";
+          data.types[parse.count] = "ignore";
+          record.types = "ignore";
+          record.token = token;
         } else {
           if (ltype.startsWith("liquid_")) ; else {
             record.types = "start";
             parseAttribute(true);
             const close = tags.lastIndexOf("<");
-            push(record, [
-              {
-                lexer: "markup",
-                types: ltype,
-                token: tags.slice(0, close).join(NIL)
-              },
-              {
-                lexer: "markup",
-                types: "end",
-                token: tags.slice(close).join(NIL)
-              }
-            ]);
+            const inner2 = tags.slice(0, close).join(NIL);
+            if (!/\S/.test(inner2)) {
+              push(record, [
+                {
+                  lexer: "markup",
+                  types: "end",
+                  token: tags.slice(close).join(NIL).trim()
+                }
+              ]);
+            } else {
+              push(record, [
+                {
+                  lexer: "markup",
+                  types: ltype,
+                  token: inner2
+                },
+                {
+                  lexer: "markup",
+                  types: "end",
+                  token: tags.slice(close).join(NIL).trim()
+                }
+              ]);
+            }
             embed = false;
             language = html;
             return parseScript();
@@ -2983,7 +3041,7 @@ function markup(input) {
             }
           }
         }
-      } else if (isLiquidStart(token, true)) {
+      } else if (isStart(token, true)) {
         const q = determine(tname, "liquid", token);
         if (q !== false) {
           if (ignored.has(tname)) {
@@ -3044,8 +3102,8 @@ function markup(input) {
             record.token = record.token + ">";
           }
         }
-        let lq = isLiquid(record.token, 5);
-        if (ignore === true || qc === "none" || record.types.indexOf("attribute") < 0 || lq === false && qc === "single" && record.token.indexOf('"') < 0 || lq === false && qc === "double" && record.token.indexOf("'") < 0) {
+        let liq = record.types.indexOf("liquid_attribute") > -1;
+        if (ignore === true || qc === "none" || record.types.indexOf("attribute") < 0 || liq === false && qc === "single" && record.token.indexOf(DQO) < 0 || liq === false && qc === "double" && record.token.indexOf(SQO) < 0) {
           push(record);
         } else {
           let ee = 0;
@@ -3053,44 +3111,44 @@ function markup(input) {
           const ch = record.token.split(NIL);
           const eq2 = record.token.indexOf("=");
           const ln = ch.length - 1;
-          if (not(ch[eq2 + 1], 34 /* DQO */) && not(ch[ch.length - 1], 34 /* DQO */) && qc === "single" && lq === false) {
-            push(record, NIL);
-          } else if (not(ch[eq2 + 1], 39 /* SQO */) && not(ch[ch.length - 1], 39 /* SQO */) && qc === "double" && lq === false) {
-            push(record, NIL);
+          if (not(ch[eq2 + 1], 34 /* DQO */) && not(ch[ch.length - 1], 34 /* DQO */) && qc === "single" && liq === false) {
+            push(record);
+          } else if (not(ch[eq2 + 1], 39 /* SQO */) && not(ch[ch.length - 1], 39 /* SQO */) && qc === "double" && liq === false) {
+            push(record);
           } else {
             ee = eq2 + 2;
-            if (lq === false) {
+            if (liq === false) {
               if (qc === "double") {
-                if (record.token.slice(eq2 + 2, ln).indexOf('"') > -1)
+                if (record.token.slice(eq2 + 2, ln).indexOf(DQO) > -1)
                   ex = true;
-                ch[eq2 + 1] = '"';
-                ch[ch.length - 1] = '"';
+                ch[eq2 + 1] = DQO;
+                ch[ch.length - 1] = DQO;
               } else if (qc === "single") {
-                if (record.token.slice(eq2 + 2, ln).indexOf("'") > -1)
+                if (record.token.slice(eq2 + 2, ln).indexOf(SQO) > -1)
                   ex = true;
-                ch[eq2 + 1] = "'";
-                ch[ch.length - 1] = "'";
+                ch[eq2 + 1] = SQO;
+                ch[ch.length - 1] = SQO;
               }
             }
-            if (ex === true || lq === true) {
-              lq = false;
+            if (ex === true || liq === true) {
+              liq = false;
               do {
                 if (is(ch[ee - 1], 123 /* LCB */) && (is(ch[ee], 37 /* PER */) || is(ch[ee], 123 /* LCB */))) {
-                  lq = true;
+                  liq = true;
                 } else if (is(ch[ee], 125 /* RCB */) && (is(ch[ee - 1], 37 /* PER */) || is(ch[ee - 1], 125 /* RCB */))) {
-                  lq = false;
+                  liq = false;
                 }
-                if (lq === true) {
+                if (liq === true) {
                   if (is(ch[ee], 34 /* DQO */) && qc === "double") {
-                    ch[ee] = "'";
+                    ch[ee] = SQO;
                   } else if (is(ch[ee], 39 /* SQO */) && qc === "single") {
-                    ch[ee] = '"';
+                    ch[ee] = DQO;
                   }
                 } else {
                   if (is(ch[ee], 39 /* SQO */) && qc === "double") {
-                    ch[ee] = '"';
+                    ch[ee] = DQO;
                   } else if (is(ch[ee], 34 /* DQO */) && qc === "single") {
-                    ch[ee] = "'";
+                    ch[ee] = SQO;
                   }
                 }
                 ee = ee + 1;
@@ -3150,18 +3208,20 @@ function markup(input) {
         quotes();
       }
       function liqattr() {
-        if (isLiquidLine(attrs[idx][0])) {
-          record.types = "attribute";
+        if (isChain(attrs[idx][0])) {
+          record.types = "liquid_attribute_chain";
           record.token = attrs[idx][0];
-        } else if (isLiquidEnd(attrs[idx][0])) {
+        } else if (isEnd(attrs[idx][0])) {
           record.token = attrs[idx][0];
           record.types = "liquid_attribute_end";
           record.ender = record.begin;
-        } else if (isLiquidStart(attrs[idx][0])) {
+        } else if (isStart(attrs[idx][0], true)) {
           record.types = "liquid_attribute_start";
           record.begin = parse.count;
           record.token = attrs[idx][0];
-        } else if (isLiquidElse(attrs[idx][0])) {
+          quotes();
+          return true;
+        } else if (isElse(attrs[idx][0])) {
           record.types = "liquid_attribute_else";
           record.token = attrs[idx][0];
         } else {
@@ -3169,6 +3229,7 @@ function markup(input) {
           record.token = attrs[idx][0];
         }
         quotes();
+        return false;
       }
       if (attrs.length < 1) {
         if (advance !== true)
@@ -3211,9 +3272,9 @@ function markup(input) {
             idx = idx + 1;
             continue;
           }
-          if (attrs[idx][1] <= 1 && isLiquidLine(attrs[idx][0])) {
-            if (!isValueLiquid(attrs[idx][0])) {
-              record.types = "attribute";
+          if (attrs[idx][1] <= 1 && isChain(attrs[idx][0])) {
+            if (!isValue(attrs[idx][0])) {
+              record.types = "liquid_attribute_chain";
               record.token = attrs[idx][0];
               quotes();
               idx = idx + 1;
@@ -3221,19 +3282,22 @@ function markup(input) {
             }
           }
           eq = attrs[idx][0].indexOf("=");
-          dq = attrs[idx][0].indexOf('"');
-          attrs[idx][0].indexOf("'");
+          dq = attrs[idx][0].indexOf(DQO);
+          attrs[idx][0].indexOf(SQO);
           if (eq < 0) {
-            if (isLiquidEnd(attrs[idx][0])) {
+            if (isEnd(attrs[idx][0])) {
               record.token = attrs[idx][0];
               record.types = "liquid_attribute_end";
               record.ender = record.begin;
-            } else if (isLiquidStart(attrs[idx][0])) {
+            } else if (isStart(attrs[idx][0], true)) {
               record.types = "liquid_attribute_start";
               record.begin = parse.count;
               record.token = attrs[idx][0];
-            } else if (isLiquidElse(attrs[idx][0])) {
+            } else if (isElse(attrs[idx][0])) {
               record.types = "liquid_attribute_else";
+              record.token = attrs[idx][0];
+            } else if (isOutput(attrs[idx][0])) {
+              record.types = "liquid_attribute";
               record.token = attrs[idx][0];
             } else if (is(attrs[idx][0], 35 /* HSH */) || is(attrs[idx][0], 91 /* LSB */) || is(attrs[idx][0], 123 /* LCB */) || is(attrs[idx][0], 40 /* LPR */) || jsx === true) {
               record.token = attrs[idx][0];
@@ -3241,7 +3305,7 @@ function markup(input) {
               record.token = rules.markup.attributeCasing === "preserve" ? attrs[idx][0] : attrs[idx][0].toLowerCase();
             }
             quotes();
-          } else if (isLiquid(attrs[idx][0], 6)) {
+          } else if (isType(attrs[idx][0], 6)) {
             liqattr();
           } else {
             name = attrs[idx][0].slice(0, eq);
@@ -3258,7 +3322,7 @@ function markup(input) {
               attrs[idx][0] = name + "=" + value;
             }
             if (rules.markup.correct === true && not(value, 60 /* LAN */) && not(value, 123 /* LCB */) && not(value, 61 /* EQS */) && not(value, 34 /* DQO */) && not(value, 39 /* SQO */)) {
-              value = '"' + value + '"';
+              value = DQO + value + DQO;
             }
             if (jsx === true && /^\s*{/.test(value)) {
               jsxattr();
@@ -3266,7 +3330,7 @@ function markup(input) {
               record.begin = begin;
               record.stack = stack;
             } else {
-              if (isLiquid(name, 5)) {
+              if (isType(name, 6)) {
                 liqattr();
               } else {
                 record.types = "attribute";
@@ -3307,14 +3371,14 @@ function markup(input) {
       }
     }
     function parseComments(lineComment) {
-      const comm = lineComment === true ? wrapCommentLine({
+      const comm = lineComment === true ? commentLine({
         chars: b,
         end: c,
         lexer: "markup",
         begin: start,
         start: a,
         ender: end
-      }) : wrapCommentBlock({
+      }) : commentBlock({
         chars: b,
         end: c,
         lexer: "markup",
@@ -3324,7 +3388,7 @@ function markup(input) {
       });
       token = comm[0];
       a = comm[1];
-      if (token.replace(start, NIL).trimStart().startsWith("@prettify-ignore-start")) {
+      if (token.replace(start, NIL).trimStart().startsWith("esthetic-ignore-start")) {
         push(record, { token, types: "ignore" });
       } else {
         if (is(token[0], 123 /* LCB */) && is(token[1], 37 /* PER */) && lineComment === false) {
@@ -3337,15 +3401,38 @@ function markup(input) {
         return parseExternal();
       }
     }
+    function parseBadLiquid(offset) {
+      const from = a;
+      let i = a + offset;
+      do {
+        if (is(b[i], 62 /* RAN */)) {
+          a = i;
+          return b.slice(from, i + 1).join(NIL);
+        }
+        i = i + 1;
+      } while (i < c);
+    }
     function parseDelimiter() {
       if (end === "---") {
         start = "---";
         ltype = "ignore";
         preserve = true;
       } else if (is(b[a], 60 /* LAN */)) {
-        if (is(b[a + 1], 47 /* FWS */)) {
-          ltype = "end";
-          end = ">";
+        if (is(b[a + 1], 123 /* LCB */) && (is(b[a + 2], 123 /* LCB */) || is(b[a + 2], 37 /* PER */))) {
+          const x = parseBadLiquid(3);
+          nowalk = true;
+          parse.stack.push(["liquid_bad", parse.count]);
+          push(record, { token: x, types: "liquid_start_bad" });
+          return;
+        } else if (is(b[a + 1], 47 /* FWS */)) {
+          if (is(b[a + 2], 123 /* LCB */) && (is(b[a + 3], 123 /* LCB */) || is(b[a + 3], 37 /* PER */))) {
+            const x = parseBadLiquid(3);
+            push(record, { token: x, types: "liquid_end_bad" });
+            return;
+          } else {
+            ltype = "end";
+            end = ">";
+          }
         } else if (is(b[a + 1], 33 /* BNG */)) {
           if ((is(b[a + 2], 100) || is(b[a + 2], 68)) && (is(b[a + 3], 111) || is(b[a + 3], 79)) && (is(b[a + 4], 99) || is(b[a + 4], 67)) && (is(b[a + 5], 116) || is(b[a + 5], 84)) && (is(b[a + 6], 121) || is(b[a + 6], 89)) && (is(b[a + 7], 112) || is(b[a + 7], 80)) && (is(b[a + 8], 101) || is(b[a + 8], 69))) {
             end = ">";
@@ -3469,7 +3556,7 @@ function markup(input) {
           }
         }
       }
-      parse.space = 0;
+      parse.lineOffset = 0;
     }
     function traverse() {
       const lexed = [];
@@ -3494,14 +3581,14 @@ function markup(input) {
           attr = store.join(NIL);
           each = attrname(attr);
           quote = NIL;
-          if (each[0] === "data-prettify-ignore")
+          if (each[0] === "data-esthetic-ignore")
             ignore = true;
         } else {
           attr = store.join(NIL);
           if (jsx === false || jsx && !is(attr[attr.length - 1], 125 /* RCB */))
             attr = attr.replace(/\s+/g, WSP);
           each = attrname(attr);
-          if (each[0] === "data-prettify-ignore")
+          if (each[0] === "data-esthetic-ignore")
             ignore = true;
           if (jsx && is(store[0], 123 /* LCB */) && is(store[store.length - 1], 125 /* RCB */))
             jsxparen = 0;
@@ -3509,9 +3596,9 @@ function markup(input) {
         if (is(attr[0], 123 /* LCB */) && is(attr[1], 37 /* PER */))
           nosort = true;
         if (quotes === false) {
-          if (isLiquidStart(attr))
+          if (isStart(attr))
             within = within + 1;
-          if (isLiquidEnd(attr))
+          if (isEnd(attr))
             within = within - 1;
         }
         attr = attr.replace(/^\u0020/, NIL).replace(/\u0020$/, NIL);
@@ -3519,15 +3606,15 @@ function markup(input) {
         if (!store.length)
           store[0] = store[0].replace(/\s+$/, NIL);
         attr = rules.crlf === true ? inner(store.join("\r\n")) : inner(store.join(NWL));
-        if (within > 0 || isLiquid(attr, 1)) {
-          if (isLiquid(attr, 5) === false) {
+        if (within > 0 || isType(attr, 1)) {
+          if (isType(attr, 5) === false) {
             lines = 0;
             if (is(b[a + 1], 10 /* NWL */) || is(b[a], 10 /* NWL */))
               lines = 2;
             if (is(b[a], 32 /* WSP */) && not(b[a + 1], 32 /* WSP */))
               lines = 1;
           } else {
-            if (is(b[a + 1], 10 /* NWL */)) {
+            if (lines <= 2 && is(b[a + 1], 10 /* NWL */)) {
               lines = 2;
             } else if (is(b[a + 1], 32 /* WSP */)) {
               lines = 1;
@@ -3552,16 +3639,16 @@ function markup(input) {
             attrs[ln][0] = attrs[ln][0] + attr;
             attrs[ln][1] = lines;
             attr = NIL;
-          } else if (lines > 0 && attrs[ln][1] === 0 && isLiquidEnd(attr) === true) {
+          } else if (lines > 0 && attrs[ln][1] === 0 && isEnd(attr) === true) {
             attrs[ln][0] = attrs[ln][0] + attr;
             attrs[ln][1] = lines;
             attr = NIL;
-          } else if (lines > 0 && attrs[ln][1] === 0 && isLiquid(attrs[ln][0], 4)) {
+          } else if (lines > 0 && attrs[ln][1] === 0 && isType(attrs[ln][0], 4)) {
             attrs[ln][0] = attrs[ln][0] + attr;
             attr = NIL;
-          } else if (attrs[ln][1] > 0 && lines === 0 && isLiquidControl(attr) === false) {
+          } else if (attrs[ln][1] > 0 && lines === 0 && isControl(attr) === false) {
             lines = attrs[ln][1];
-          } else if (attrs[ln][1] > 0 && lines > 0 && isLiquidEnd(attr) && !isLiquid(attr, 6)) {
+          } else if (attrs[ln][1] > 0 && lines > 0 && isEnd(attr) && !isType(attr, 6)) {
             const i = attr.indexOf("{%");
             attrs.push([attr.slice(0, i), lines]);
             attr = attr.slice(i);
@@ -3585,7 +3672,8 @@ function markup(input) {
       do {
         if (is(b[a], 10 /* NWL */)) {
           lines = lines + 1;
-          parse.line = parse.line + 1;
+          parse.lineNumber = parse.lineNumber + 1;
+          parse.lineIndex = a;
         }
         if (start === "---" && end === "---" && ltype === "ignore") {
           lexed.push(b[a]);
@@ -3607,11 +3695,11 @@ function markup(input) {
               lexed.push(">");
             } else {
               parse.error = parseError({
-                lineNumber: parse.line,
+                lineNumber: parse.lineNumber,
                 message: [
                   `Missing closing delimiter character: ${lexed.join(NIL)}`,
                   "\nTIP",
-                  "Prettify can autofix these issues when the correct rule is enabled"
+                  "esthetic can autofix these issues when the correct rule is enabled"
                 ]
               });
               return;
@@ -3693,7 +3781,7 @@ function markup(input) {
               if (a < c) {
                 do {
                   if (is(b[a], 10 /* NWL */))
-                    parse.line = parse.line + 1;
+                    parse.lineNumber = parse.lineNumber + 1;
                   if (rules.markup.preserveAttributes === true) {
                     lexed.push(b[a]);
                   } else {
@@ -3710,7 +3798,7 @@ function markup(input) {
                     while (a < c) {
                       a = a + 1;
                       if (is(b[a], 10 /* NWL */)) {
-                        parse.line = parse.line + 1;
+                        parse.lineNumber = parse.lineNumber + 1;
                         if (is(store[0], 61 /* EQS */)) {
                           isliq = false;
                           quote = NIL;
@@ -4012,7 +4100,7 @@ function markup(input) {
     const regex = "([{!=,;.?:&<>";
     let lexed = [];
     let ltoke = NIL;
-    let liner = parse.space;
+    let liner = parse.lineOffset;
     let name = NIL;
     if (embed === true) {
       if (jsxbrace === true) {
@@ -4058,7 +4146,7 @@ function markup(input) {
       let quotes = 0;
       do {
         if (is(b[a], 10 /* NWL */))
-          parse.line = parse.line + 1;
+          parse.lineNumber = parse.lineNumber + 1;
         if (embed === true) {
           if (quote === NIL) {
             if (is(b[a], 47 /* FWS */)) {
@@ -4221,7 +4309,7 @@ function markup(input) {
             let width = rules.wrap;
             let chars = ltoke.length;
             const store = [];
-            if (data.token[data.begin[parse.count]] === "<a>" && data.token[data.begin[data.begin[parse.count]]] === "<li>" && data.lines[data.begin[parse.count]] === 0 && parse.space === 0 && ltoke.length < rules.wrap) {
+            if (data.token[data.begin[parse.count]] === "<a>" && data.token[data.begin[data.begin[parse.count]]] === "<li>" && data.lines[data.begin[parse.count]] === 0 && parse.lineOffset === 0 && ltoke.length < rules.wrap) {
               push(record);
               break;
             }
@@ -4229,7 +4317,7 @@ function markup(input) {
               push(record);
               break;
             }
-            if (parse.space < 1 && parse.count > -1) {
+            if (parse.lineOffset < 1 && parse.count > -1) {
               let count = parse.count;
               do {
                 width = width - data.token[count].length;
@@ -4251,10 +4339,10 @@ function markup(input) {
             ltoke = store.join(parse.crlf);
             ltoke = NIL + ltoke + NIL;
           } else {
-            const nwl = ltoke.indexOf(NWL);
-            if (nwl > -1) {
-              push(record, { token: ltoke.slice(0, nwl) });
-              ltoke = ltoke.slice(nwl);
+            const at = ltoke.indexOf(NWL);
+            if (at > -1) {
+              push(record, { token: ltoke.slice(0, at) });
+              ltoke = ltoke.slice(at);
               if (/^\n+/.test(ltoke)) {
                 record.lines = 1;
               } else {
@@ -4274,32 +4362,34 @@ function markup(input) {
     if (a > now && a < c) {
       if (ws(b[a])) {
         let x = a;
-        parse.space = parse.space + 1;
+        parse.lineOffset = parse.lineOffset + 1;
         do {
-          if (is(b[x], 10 /* NWL */))
-            parse.line = parse.line + 1;
+          if (is(b[x], 10 /* NWL */)) {
+            parse.lineNumber = parse.lineNumber + 1;
+            parse.lineOffset = parse.lineOffset + 1;
+          }
           x = x - 1;
         } while (x > now && ws(b[x]));
       } else {
-        parse.space = 0;
+        parse.lineOffset = 0;
       }
     } else if (a !== now || a === now && embed === false) {
       ltoke = lexed.join(NIL).replace(SpaceEnd, NIL);
       liner = 0;
       if (record.token !== ltoke) {
         push(record, { token: ltoke });
-        parse.space = 0;
+        parse.lineOffset = 0;
       }
     }
     embed = false;
   }
   function parseSpace() {
-    parse.space = 1;
+    parse.lineOffset = 1;
     do {
       if (is(b[a], 10 /* NWL */)) {
-        parse.character = a;
-        parse.space = parse.space + 1;
-        parse.line = parse.line + 1;
+        parse.lineIndex = a;
+        parse.lineOffset = parse.lineOffset + 1;
+        parse.lineNumber = parse.lineNumber + 1;
       }
       if (ws(b[a + 1]) === false)
         break;
@@ -4330,8 +4420,7 @@ function markup(input) {
 // src/lexers/script.ts
 function script() {
   const { data, references, rules, source } = parse;
-  const cache = __spreadValues({}, rules.script);
-  rules.script = assign(rules.script, rules.json);
+  const option = parse.language === "json" ? rules.json : rules.script;
   const c = isArray(source) ? source : source.split(NIL);
   const b = c.length;
   const lword = [];
@@ -4383,7 +4472,7 @@ function script() {
       begin: parse.stack.index,
       ender: -1,
       lexer: "script",
-      lines: parse.space,
+      lines: parse.lineOffset,
       stack: parse.stack.token,
       token: ltoke,
       types: ltype
@@ -4427,13 +4516,13 @@ function script() {
     return NIL;
   }
   function esc(index) {
-    const cache2 = index;
+    const cache = index;
     do
       index = index - 1;
     while (is(c[index], 92 /* BWS */) && index > 0);
-    return (cache2 - index) % 2 === 1;
+    return (cache - index) % 2 === 1;
   }
-  function applySemicolon(isEnd) {
+  function applySemicolon(isEnd2) {
     const next = peek(1, false);
     const clist = parse.stack.length === 0 ? NIL : parse.stack.token;
     const record = {
@@ -4466,10 +4555,10 @@ function script() {
     if (is(data.token[data.begin[parse.count]], 123 /* LCB */) && record.stack === "data_type") {
       return;
     }
-    if (record.types !== void 0 && record.types.indexOf("liquid") > -1 && record.types.indexOf("liquid_string") < 0) {
+    if (record.types !== void 0 && record.types.indexOf("liquid") > -1 && record.types.indexOf("template_string") < 0) {
       return;
     }
-    if (is(next, 59 /* SEM */) && isEnd === false) {
+    if (is(next, 59 /* SEM */) && isEnd2 === false) {
       return;
     }
     if (data.lexer[parse.count - 1] !== "script" && (a < b && b === source.length - 1 || b < source.length - 1)) {
@@ -4498,13 +4587,13 @@ function script() {
         return;
       }
     }
-    if (record.types === "comment" || clist === "method" || clist === "paren" || clist === "expression" || clist === "array" || clist === "object" || clist === "switch" && record.stack !== "method" && data.token[data.begin[parse.count]] === "(" && data.token[data.begin[parse.count] - 1] !== "return" && data.types[data.begin[parse.count] - 1] !== "operator") {
+    if (record.types === "comment" || clist === "method" || clist === "paren" || clist === "expression" || clist === "array" || clist === "object" || clist === "switch" && record.stack !== "method" && is(data.token[data.begin[parse.count]], 40 /* LPR */) && data.token[data.begin[parse.count] - 1] !== "return" && data.types[data.begin[parse.count] - 1] !== "operator") {
       return;
     }
     if (data.stack[parse.count] === "expression" && (data.token[data.begin[parse.count] - 1] !== "while" || data.token[data.begin[parse.count] - 1] === "while" && data.stack[data.begin[parse.count] - 2] !== "do")) {
       return;
     }
-    if (next !== NIL && "=<>+*?|^:&%~,.()]".indexOf(next) > -1 && isEnd === false)
+    if (next !== NIL && "=<>+*?|^:&%~,.()]".indexOf(next) > -1 && isEnd2 === false)
       return;
     if (record.types === "comment") {
       i = parse.count;
@@ -4523,14 +4612,14 @@ function script() {
     if (record.stack === "method" && (data.token[record.begin - 1] === "function" || data.token[record.begin - 2] === "function")) {
       return;
     }
-    if (rules.script.variableList === "list")
+    if (option.variableList === "list")
       vstore.index[v] = parse.count;
-    ltoke = rules.script.correct === true ? ";" : "x;";
+    ltoke = option.correct === true ? ";" : "x;";
     ltype = "separator";
-    i = parse.space;
-    parse.space = 0;
+    i = parse.lineOffset;
+    parse.lineOffset = 0;
     push();
-    parse.space = i;
+    parse.lineOffset = i;
     applyBrace();
   }
   function cleanSemicolon() {
@@ -4561,7 +4650,7 @@ function script() {
         begin: data.begin[i],
         ender: -1,
         lexer: "script",
-        lines: parse.space,
+        lines: parse.lineOffset,
         stack: data.stack[i],
         token: ltoke,
         types: ltype
@@ -4573,7 +4662,7 @@ function script() {
     applySemicolon(false);
     if (wtest > -1)
       word();
-    comment = wrapCommentBlock({
+    comment = commentBlock({
       chars: c,
       end: b,
       lexer: "script",
@@ -4600,7 +4689,7 @@ function script() {
         begin: parse.stack.index,
         ender: -1,
         lexer: "script",
-        lines: parse.space,
+        lines: parse.lineOffset,
         stack: parse.stack.token,
         token: ltoke,
         types: ltype
@@ -4615,7 +4704,7 @@ function script() {
     applyBrace();
     if (wtest > -1)
       word();
-    comment = wrapCommentLine({
+    comment = commentLine({
       chars: c,
       end: b,
       lexer: "script",
@@ -4635,7 +4724,7 @@ function script() {
         begin: parse.stack.index,
         ender: -1,
         lexer: "script",
-        lines: parse.space,
+        lines: parse.lineOffset,
         stack: parse.stack.token,
         token: ltoke,
         types: ltype
@@ -5022,7 +5111,7 @@ function script() {
             } while (a < b && is(c[a + 1], 60 /* LAN */));
           }
           anglecount = anglecount + 1;
-          if (peek(1, false) === "/")
+          if (is(peek(1, false), 47 /* FWS */))
             endtag = true;
         } else if (is(c[a], 62 /* RAN */) && curlytest === false) {
           if (is(c[a + 1], 62 /* RAN */)) {
@@ -5134,7 +5223,7 @@ function script() {
         parse.splice({ data, howmany: parse.count - walk, index: walk });
       }
     } else {
-      if (rules.script.correct === false || tokea !== "++" && tokea !== "--" && tokeb !== "++" && tokeb !== "--") {
+      if (option.correct === false || tokea !== "++" && tokea !== "--" && tokeb !== "++" && tokeb !== "--") {
         return;
       }
       next = peek(1, false);
@@ -5249,7 +5338,7 @@ function script() {
     const endlen = ender.length;
     const start2 = a;
     const base = a + starting.length;
-    const qc = rules.script.quoteConvert;
+    const qc = option.quoteConvert;
     function cleanUp() {
       let linesSpace = 0;
       build = [];
@@ -5262,7 +5351,7 @@ function script() {
           if (c[ee] === NWL)
             linesSpace = linesSpace + 1;
         } while (ee < b && ws(c[ee + 1]));
-        parse.space = linesSpace;
+        parse.lineOffset = linesSpace;
       }
     }
     function finish() {
@@ -5280,11 +5369,11 @@ function script() {
         return input;
       }
       if (is(starting, 34 /* DQO */) && qc === "single") {
-        build[0] = "'";
-        build[build.length - 1] = "'";
+        build[0] = SQO;
+        build[build.length - 1] = SQO;
       } else if (is(starting, 39 /* SQO */) && qc === "double") {
-        build[0] = '"';
-        build[build.length - 1] = '"';
+        build[0] = DQO;
+        build[build.length - 1] = DQO;
       } else if (escape === true) {
         str = build[build.length - 1];
         build.pop();
@@ -5312,12 +5401,12 @@ function script() {
           ltoke = ltoke.replace(/\u0000/g, "\\u0000").replace(/\u0001/g, "\\u0001").replace(/\u0002/g, "\\u0002").replace(/\u0003/g, "\\u0003").replace(/\u0004/g, "\\u0004").replace(/\u0005/g, "\\u0005").replace(/\u0006/g, "\\u0006").replace(/\u0007/g, "\\u0007").replace(/\u0008/g, "\\u0008").replace(/\u0009/g, "\\u0009").replace(/\u000a/g, "\\u000a").replace(/\u000b/g, "\\u000b").replace(/\u000c/g, "\\u000c").replace(/\u000d/g, "\\u000d").replace(/\u000e/g, "\\u000e").replace(/\u000f/g, "\\u000f").replace(/\u0010/g, "\\u0010").replace(/\u0011/g, "\\u0011").replace(/\u0012/g, "\\u0012").replace(/\u0013/g, "\\u0013").replace(/\u0014/g, "\\u0014").replace(/\u0015/g, "\\u0015").replace(/\u0016/g, "\\u0016").replace(/\u0017/g, "\\u0017").replace(/\u0018/g, "\\u0018").replace(/\u0019/g, "\\u0019").replace(/\u001a/g, "\\u001a").replace(/\u001b/g, "\\u001b").replace(/\u001c/g, "\\u001c").replace(/\u001d/g, "\\u001d").replace(/\u001e/g, "\\u001e").replace(/\u001f/g, "\\u001f");
         } else if (starting.indexOf("#!") === 0) {
           ltoke = ltoke.slice(0, ltoke.length - 1);
-          parse.space = 2;
+          parse.lineOffset = 2;
         } else if (parse.stack.token !== "object" || parse.stack.token === "object" && not(peek(1, false), 58 /* COL */) && not(data.token[parse.count], 44 /* COM */) && not(data.token[parse.count], 123 /* LCB */)) {
           if (ltoke.length > rules.wrap && rules.wrap > 0 || rules.wrap !== 0 && is(data.token[parse.count], 43 /* PLS */) && (is(data.token[parse.count - 1], 46 /* DOT */) || is(data.token[parse.count - 1], 39 /* SQO */))) {
             let item = ltoke;
             let segment = NIL;
-            let q = qc === "double" ? '"' : qc === "single" ? "'" : item.charAt(0);
+            let q = qc === "double" ? DQO : qc === "single" ? SQO : item.charAt(0);
             const limit = rules.wrap;
             const uchar = /u[0-9a-fA-F]{4}/;
             const xchar = /x[0-9a-fA-F]{2}/;
@@ -5347,7 +5436,7 @@ function script() {
                 ltoke = segment;
                 ltype = "string";
                 push(NIL);
-                parse.space = 0;
+                parse.lineOffset = 0;
                 ltoke = "+";
                 ltype = "operator";
                 push(NIL);
@@ -5371,13 +5460,13 @@ function script() {
       parse.pop(data);
       if (is(data.token[0], 123 /* LCB */)) {
         if (is(c[a], 34 /* DQO */)) {
-          starting = '"';
+          starting = DQO;
           ending = '\\"';
-          build = ['"'];
+          build = [DQO];
         } else {
-          starting = "'";
+          starting = SQO;
           ending = "\\'";
-          build = ["'"];
+          build = [SQO];
         }
         escape = true;
       } else {
@@ -5404,9 +5493,9 @@ function script() {
               }
             }
           } else if (qc === "double" && is(c[ee], 34 /* DQO */) && is(c[a], 39 /* SQO */)) {
-            c[ee] = '\\"';
+            c[ee] = DQO;
           } else if (qc === "single" && is(c[ee], 39 /* SQO */) && is(c[a], 34 /* DQO */)) {
-            c[ee] = "\\'";
+            c[ee] = SQO;
           }
           build.push(c[ee]);
         } else if (ee > start2) {
@@ -5427,7 +5516,7 @@ function script() {
           build.push(c[ee]);
         }
         if (rules.language !== "json" && rules.language !== "javascript" && (is(starting, 34 /* DQO */) || is(starting, 39 /* SQO */)) && (ext === true || ee > start2) && not(c[ee - 1], 92 /* BWS */) && not(c[ee], 34 /* DQO */) && not(c[ee], 39 /* SQO */) && (is(c[ee], 10 /* NWL */) || ee === b - 1 === true)) {
-          parse.error = "Unterminated string in script on line number " + parse.line;
+          parse.error = "Unterminated string in script on line number " + parse.lineNumber;
           break;
         }
         if (c[ee] === ender[endlen - 1] && (not(c[ee - 1], 92 /* BWS */) || esc(ee - 1) === false)) {
@@ -5445,7 +5534,7 @@ function script() {
     let name = NIL;
     const next = peek(5, false);
     const g = parse.count;
-    const lines = parse.space;
+    const lines = parse.lineOffset;
     if (rules.language === "json" || brace.length < 1 || brace[brace.length - 1].charAt(0) !== "x" || /^x?(;|\}|\))$/.test(ltoke) === false) {
       return;
     }
@@ -5456,16 +5545,16 @@ function script() {
       name = data.token[data.begin[g - 2] - 1];
       if (data.token[g - 2] === "do" || is(data.token[g - 2], 41 /* RPR */) && "ifforwhilecatch".indexOf(name) > -1) {
         tstore = parse.pop(data);
-        ltoke = rules.script.correct === true ? "}" : "x}";
+        ltoke = option.correct === true ? "}" : "x}";
         ltype = "end";
         pstack = parse.stack.entry;
         push();
         brace.pop();
-        parse.space = lines;
+        parse.lineOffset = lines;
         return;
       }
       tstore = parse.pop(data);
-      ltoke = rules.script.correct === true ? "}" : "x}";
+      ltoke = option.correct === true ? "}" : "x}";
       ltype = "end";
       pstack = parse.stack.entry;
       push();
@@ -5473,10 +5562,10 @@ function script() {
       ltoke = ";";
       ltype = "end";
       parse.push(data, tstore, NIL);
-      parse.space = lines;
+      parse.lineOffset = lines;
       return;
     }
-    ltoke = rules.script.correct === true ? "}" : "x}";
+    ltoke = option.correct === true ? "}" : "x}";
     ltype = "end";
     if (data.token[parse.count] === "x}")
       return;
@@ -5484,7 +5573,7 @@ function script() {
       pstack = parse.stack.entry;
       push();
       brace.pop();
-      parse.space = lines;
+      parse.lineOffset = lines;
       return;
     }
     do {
@@ -5494,11 +5583,11 @@ function script() {
       if (data.stack[parse.count] === "do")
         break;
     } while (brace[brace.length - 1] === "x{");
-    parse.space = lines;
+    parse.lineOffset = lines;
   }
   function getCommaComment() {
     let x = parse.count;
-    if (data.stack[x] === "object" && rules.script.objectSort === true) {
+    if (data.stack[x] === "object" && option.objectSort === true) {
       ltoke = ",";
       ltype = "separator";
       cleanSemicolon();
@@ -5515,7 +5604,7 @@ function script() {
           begin: data.begin[x],
           ender: -1,
           lexer: "script",
-          lines: parse.space,
+          lines: parse.lineOffset,
           stack: data.stack[x],
           token: ",",
           types: "separator"
@@ -5532,9 +5621,9 @@ function script() {
     function newarray() {
       let arraylen = 0;
       const ar = data.token[count - 1] === "Array";
-      const startar = ar === true ? "[" : "{";
-      const endar = ar === true ? "]" : "}";
-      const namear = ar === true ? "array" : "object";
+      const startar = ar ? "[" : "{";
+      const endar = ar ? "]" : "}";
+      const namear = ar ? "array" : "object";
       if (ar === true && data.types[parse.count] === "number") {
         arraylen = Number(data.token[parse.count]);
         tstore = parse.pop(data);
@@ -5568,14 +5657,14 @@ function script() {
       }
     }
     if (is(x, 41 /* RPR */) || x === "x)" || is(x, 93 /* RSB */)) {
-      if (rules.script.correct === true)
+      if (option.correct === true)
         parseLogical();
       cleanSemicolon();
     }
     if (is(x, 41 /* RPR */) || x === "x)")
       applySemicolon(false);
     if (v > -1) {
-      if (is(x, 125 /* RCB */) && (rules.script.variableList === "list" && vstore.count[v] === 0 || data.token[parse.count] === "x;" && rules.script.variableList === "each")) {
+      if (is(x, 125 /* RCB */) && (option.variableList === "list" && vstore.count[v] === 0 || data.token[parse.count] === "x;" && option.variableList === "each")) {
         pop();
       }
       vstore.count[v] = vstore.count[v] - 1;
@@ -5596,13 +5685,13 @@ function script() {
     } else if (is(x, 93 /* RSB */)) {
       ltoke = "]";
     } else if (is(x, 125 /* RCB */)) {
-      if (not(ltoke, 44 /* COM */) && rules.script.correct === true) {
+      if (not(ltoke, 44 /* COM */) && option.correct === true) {
         parseLogical();
       }
       if (parse.stack.length > 0 && parse.stack.token !== "object") {
         applySemicolon(true);
       }
-      if (rules.script.objectSort === true && parse.stack.token === "object") {
+      if (option.objectSort === true && parse.stack.token === "object") {
         sortObject(data);
       }
       if (ltype === "comment") {
@@ -5618,7 +5707,7 @@ function script() {
     }
     lword.pop();
     pstack = parse.stack.entry;
-    if (is(x, 41 /* RPR */) && rules.script.correct === true && count - parse.count < 2 && (is(data.token[parse.count], 40 /* LPR */) || data.types[parse.count] === "number") && (data.token[count - 1] === "Array" || data.token[count - 1] === "Object") && data.token[count - 2] === "new") {
+    if (is(x, 41 /* RPR */) && option.correct === true && count - parse.count < 2 && (is(data.token[parse.count], 40 /* LPR */) || data.types[parse.count] === "number") && (data.token[count - 1] === "Array" || data.token[count - 1] === "Object") && data.token[count - 2] === "new") {
       newarray();
       newarr = true;
     }
@@ -5633,8 +5722,8 @@ function script() {
     } else {
       brace.pop();
     }
-    if (rules.script.endComma !== void 0 && rules.script.endComma !== "none" && parse.stack.token === "array" || parse.stack.token === "object" || parse.stack.token === "data_type") {
-      if (rules.script.endComma === "always" && not(data.token[parse.count], 44 /* COM */)) {
+    if (option.endComma !== void 0 && option.endComma !== "none" && parse.stack.token === "array" || parse.stack.token === "object" || parse.stack.token === "data_type") {
+      if (option.endComma === "always" && not(data.token[parse.count], 44 /* COM */)) {
         const begin = parse.stack.index;
         let y = parse.count;
         do {
@@ -5655,7 +5744,7 @@ function script() {
           ltoke = toke;
           ltype = type;
         }
-      } else if (rules.script.endComma === "never" && is(data.token[parse.count], 44 /* COM */)) {
+      } else if (option.endComma === "never" && is(data.token[parse.count], 44 /* COM */)) {
         parse.pop(data);
       }
     }
@@ -5667,7 +5756,7 @@ function script() {
       }
     }
     if (insert === true) {
-      ltoke = rules.script.correct === true ? "{" : "x{";
+      ltoke = option.correct === true ? "{" : "x{";
       ltype = "start";
       push(pword[0]);
       brace.push("x{");
@@ -5731,7 +5820,7 @@ function script() {
       if (paren > -1) {
         if (data.begin[paren - 1] === data.begin[data.begin[aa] - 1] || data.token[data.begin[aa]] === "x(") {
           paren = -1;
-          if (rules.script.correct === true) {
+          if (option.correct === true) {
             end(")");
           } else {
             end("x)");
@@ -5991,9 +6080,9 @@ function script() {
       f = f + 1;
     } while (f < a);
     if (ltoke.charAt(0) === "\u201C") {
-      parse.error = `Quote looking character (\u201C, \\u201c) used instead of actual quotes on line number ${parse.line}`;
+      parse.error = `Quote looking character (\u201C, \\u201c) used instead of actual quotes on line number ${parse.lineNumber}`;
     } else if (ltoke.charAt(0) === "\u201D") {
-      parse.error = `Quote looking character (\u201D, \\u201d) used instead of actual quotes on line number ${parse.line}`;
+      parse.error = `Quote looking character (\u201D, \\u201d) used instead of actual quotes on line number ${parse.lineNumber}`;
     }
     output = lex.join(NIL);
     wtest = -1;
@@ -6038,7 +6127,7 @@ function script() {
         data.types[parse.count] = "start";
       }
     }
-    if (rules.script.correct === true && (output === "Object" || output === "Array") && is(c[a + 1], 40 /* LPR */) && is(c[a + 2], 41 /* RPR */) && is(data.token[parse.count - 1], 61 /* EQS */) && data.token[parse.count] === "new") {
+    if (option.correct === true && (output === "Object" || output === "Array") && is(c[a + 1], 40 /* LPR */) && is(c[a + 2], 41 /* RPR */) && is(data.token[parse.count - 1], 61 /* EQS */) && data.token[parse.count] === "new") {
       if (output === "Object") {
         data.token[parse.count] = "{";
         ltoke = "}";
@@ -6058,13 +6147,13 @@ function script() {
     } else {
       g = parse.count;
       f = g;
-      if (rules.script.variableList !== "none" && (output === "var" || output === "let" || output === "const")) {
+      if (option.variableList !== "none" && (output === "var" || output === "let" || output === "const")) {
         if (data.types[g] === "comment") {
           do {
             g = g - 1;
           } while (g > 0 && data.types[g] === "comment");
         }
-        if (rules.script.variableList === "list" && v > -1 && vstore.index[v] === g && output === vstore.word[v]) {
+        if (option.variableList === "list" && v > -1 && vstore.index[v] === g && output === vstore.word[v]) {
           ltoke = ",";
           ltype = "separator";
           data.token[g] = ltoke;
@@ -6079,7 +6168,7 @@ function script() {
         vstore.index.push(g);
         vstore.word.push(output);
         g = f;
-      } else if (v > -1 && output !== vstore.word[v] && parse.count === vstore.index[v] && is(data.token[vstore.index[v]], 59 /* SEM */) && ltoke !== vstore.word[v] && rules.script.variableList === "list") {
+      } else if (v > -1 && output !== vstore.word[v] && parse.count === vstore.index[v] && is(data.token[vstore.index[v]], 59 /* SEM */) && ltoke !== vstore.word[v] && option.variableList === "list") {
         pop();
       }
       if (output === "from" && data.token[parse.count] === "x;" && is(data.token[parse.count - 1], 125 /* RCB */)) {
@@ -6210,7 +6299,7 @@ function script() {
     if (output === "do") {
       next = peek(1, true);
       if (next !== "{") {
-        ltoke = rules.script.correct === true ? "{" : "x{";
+        ltoke = option.correct === true ? "{" : "x{";
         ltype = "start";
         brace.push("x{");
         push("do");
@@ -6238,7 +6327,7 @@ function script() {
                 lexer: "script",
                 lines: 0,
                 stack: "if",
-                token: rules.script.correct === true ? "}" : "x}",
+                token: option.correct === true ? "}" : "x}",
                 types: "end"
               }
             });
@@ -6256,7 +6345,7 @@ function script() {
         }
       }
       if (next !== "if" && not(next, 123 /* LCB */)) {
-        ltoke = rules.script.correct === true ? "{" : "x{";
+        ltoke = option.correct === true ? "{" : "x{";
         ltype = "start";
         brace.push("x{");
         push("else");
@@ -6266,7 +6355,7 @@ function script() {
       next = peek(1, true);
       if (next !== "(") {
         paren = parse.count;
-        if (rules.script.correct === true) {
+        if (option.correct === true) {
           start("(");
         } else {
           start("x(");
@@ -6275,12 +6364,12 @@ function script() {
     }
   }
   function parseSpace() {
-    parse.space = 1;
+    parse.lineOffset = 1;
     do {
       if (is(c[a], 10 /* NWL */)) {
         parse.lineOffset = a;
-        parse.space = parse.space + 1;
-        parse.line = parse.line + 1;
+        parse.lineOffset = parse.lineOffset + 1;
+        parse.lineNumber = parse.lineNumber + 1;
       }
       if (ws(c[a + 1]) === false)
         break;
@@ -6292,7 +6381,7 @@ function script() {
       if (wtest > -1)
         word();
       parseSpace();
-      if (parse.space > 1 && lengthb < parse.count && not(c[a + 1], 59 /* SEM */) && not(c[a + 1], 125 /* RCB */)) {
+      if (parse.lineOffset > 1 && lengthb < parse.count && not(c[a + 1], 59 /* SEM */) && not(c[a + 1], 125 /* RCB */)) {
         applySemicolon(false);
         lengthb = parse.count;
       }
@@ -6310,24 +6399,24 @@ function script() {
       parseTokens("#!" + c[a + 2], NWL, "string");
     } else if (is(c[a], 47 /* FWS */) && (a === b - 1 || is(c[a + 1], 47 /* FWS */))) {
       parseLineComment();
-    } else if (is(c[a], 96 /* TQO */) || is(c[a], 125 /* RCB */) && parse.stack.token === "liquid_string") {
+    } else if (is(c[a], 96 /* TQO */) || is(c[a], 125 /* RCB */) && parse.stack.token === "template_string") {
       if (wtest > -1)
         word();
       ltoke = parseLiteral();
       if (is(ltoke, 125 /* RCB */) && ltoke.slice(ltoke.length - 2) === "${") {
-        ltype = "liquid_string_else";
-        push("liquid_string");
+        ltype = "template_string_else";
+        push("template_string");
       } else if (ltoke.slice(ltoke.length - 2) === "${") {
-        ltype = "liquid_string_start";
-        push("liquid_string");
+        ltype = "template_string_start";
+        push("template_string");
       } else if (is(ltoke[0], 125 /* RCB */)) {
-        ltype = "liquid_string_end";
+        ltype = "template_string_end";
         push();
       } else {
         ltype = "string";
         push();
       }
-    } else if (is(c[a], 34 /* DQO */) || is(c[a + 1], 39 /* SQO */)) {
+    } else if (is(c[a], 34 /* DQO */) || is(c[a], 39 /* SQO */)) {
       parseTokens(c[a], c[a], "string");
     } else if (is(c[a], 45 /* DSH */) && (a < b - 1 && not(c[a + 1], 61 /* EQS */) && not(c[a + 1], 45 /* DSH */)) && (ltype === "number" || ltype === "word" || ltype === "reference") && ltoke !== "return" && (ltype === "word" || ltype === "reference" || ltype === "number" || is(ltoke, 41 /* RPR */) || is(ltoke, 93 /* RSB */))) {
       if (wtest > -1)
@@ -6349,7 +6438,7 @@ function script() {
     } else if (is(c[a], 58 /* COL */) && is(c[a + 1], 58 /* COL */)) {
       if (wtest > -1)
         word();
-      if (rules.script.correct === true)
+      if (option.correct === true)
         parseLogical();
       cleanSemicolon();
       a = a + 1;
@@ -6359,14 +6448,14 @@ function script() {
     } else if (is(c[a], 44 /* COM */)) {
       if (wtest > -1)
         word();
-      if (rules.script.correct === true)
+      if (option.correct === true)
         parseLogical();
       if (tstype[tstype.length - 1] === true && data.stack[parse.count].indexOf("type") < 0) {
         tstype[tstype.length - 1] = false;
       }
       if (ltype === "comment") {
         getCommaComment();
-      } else if (v > -1 && vstore.count[v] === 0 && rules.script.variableList === "each") {
+      } else if (v > -1 && vstore.count[v] === 0 && option.variableList === "each") {
         cleanSemicolon();
         ltoke = ";";
         ltype = "separator";
@@ -6395,7 +6484,7 @@ function script() {
         ltype = "separator";
       }
       if (ws(c[a - 1]))
-        parse.space = 1;
+        parse.lineOffset = 1;
       push();
     } else if (is(c[a], 59 /* SEM */)) {
       if (wtest > -1)
@@ -6406,13 +6495,13 @@ function script() {
       if (classy[classy.length - 1] === 0)
         classy.pop();
       if (v > -1 && vstore.count[v] === 0) {
-        if (rules.script.variableList === "each") {
+        if (option.variableList === "each") {
           pop();
         } else {
           vstore.index[v] = parse.count + 1;
         }
       }
-      if (rules.script.correct === true)
+      if (option.correct === true)
         parseLogical();
       ltoke = ";";
       ltype = "separator";
@@ -6443,7 +6532,7 @@ function script() {
     } else if (wtest < 0 && c[a] !== NIL) {
       wtest = a;
     }
-    if (v > -1 && parse.count === vstore.index[v] + 1 && is(data.token[vstore.index[v]], 59 /* SEM */) && ltoke !== vstore.word[v] && ltype !== "comment" && rules.script.variableList === "list") {
+    if (v > -1 && parse.count === vstore.index[v] + 1 && is(data.token[vstore.index[v]], 59 /* SEM */) && ltoke !== vstore.word[v] && ltype !== "comment" && option.variableList === "list") {
       pop();
     }
     a = a + 1;
@@ -6461,10 +6550,9 @@ function script() {
   if (data.token[parse.count] === "x;" && (is(data.token[parse.count - 1], 125 /* RCB */) || is(data.token[parse.count - 1], 93 /* RSB */)) && data.begin[parse.count - 1] === 0) {
     parse.pop(data);
   }
-  if (rules.script.objectSort && data.begin.length > 0) {
+  if (option.objectSort && data.begin.length > 0) {
     sortCorrect(0, parse.count + 1);
   }
-  assign(rules.script, cache);
   return data;
 }
 
@@ -6483,18 +6571,18 @@ function style() {
       begin: parse.stack.index,
       ender: -1,
       lexer: "style",
-      lines: parse.space,
+      lines: parse.lineOffset,
       stack: parse.stack.token,
       token: ltoke,
       types: ltype
     }, structure);
   }
   function esctest(index) {
-    const slashy = index;
-    do {
+    const slash = index;
+    do
       index = index - 1;
-    } while (b[index] === "\\" && index > 0);
-    return (slashy - index) % 2 === 1;
+    while (is(b[index], 92 /* BWS */) && index > 0);
+    return (slash - index) % 2 === 1;
   }
   function value(input) {
     const x = input.replace(/\s*!important/, " !important").split(NIL);
@@ -6535,21 +6623,21 @@ function style() {
       let xx = start;
       if (start < 1)
         return true;
-      do {
+      do
         xx = xx - 1;
-      } while (xx > 0 && x[xx] === "\\");
+      while (xx > 0 && is(x[xx], 92 /* BWS */));
       return (start - xx) % 2 === 1;
     }
     if (ii < leng) {
       do {
         items.push(x[ii]);
-        if (x[ii - 1] !== "\\" || safeSlash() === false) {
+        if (not(x[ii - 1], 92 /* BWS */) || safeSlash() === false) {
           if (block === NIL) {
             if (is(x[ii], 34 /* DQO */)) {
-              block = '"';
+              block = DQO;
               dd = dd + 1;
             } else if (is(x[ii], 39 /* SQO */)) {
-              block = "'";
+              block = SQO;
               dd = dd + 1;
             } else if (is(x[ii], 40 /* LPR */)) {
               block = ")";
@@ -6626,31 +6714,32 @@ function style() {
     let nopush = false;
     function spaceStart() {
       out.push(b[aa]);
-      if (ws(b[aa + 1]))
-        do {
+      if (ws(b[aa + 1])) {
+        do
           aa = aa + 1;
-        } while (aa < c && ws(b[aa + 1]));
+        while (aa < c && ws(b[aa + 1]));
+      }
     }
     if (aa < c) {
       do {
         if (is(b[aa], 34 /* DQO */) || is(b[aa], 39 /* SQO */)) {
           if (func === null)
             func = false;
-          if (block[block.length - 1] === b[aa] && (b[aa - 1] !== "\\" || esctest(aa - 1) === false)) {
+          if (block[block.length - 1] === b[aa] && (not(b[aa - 1], 92 /* BWS */) || esctest(aa - 1) === false)) {
             block.pop();
             if (qc === "double") {
-              b[aa] = '"';
+              b[aa] = DQO;
             } else if (qc === "single") {
-              b[aa] = "'";
+              b[aa] = SQO;
             }
           } else if (not(block[block.length - 1], 34 /* DQO */) && not(block[block.length - 1], 39 /* SQO */) && (not(b[aa - 1], 92 /* BWS */) || esctest(aa - 1) === false)) {
             block.push(b[aa]);
             if (qc === "double") {
-              b[aa] = '"';
+              b[aa] = DQO;
             } else if (qc === "single") {
-              b[aa] = "'";
+              b[aa] = SQO;
             }
-          } else if (b[aa - 1] === "\\" && qc !== "none") {
+          } else if (is(b[aa - 1], 92 /* BWS */) && qc !== "none") {
             if (esctest(aa - 1) === true) {
               if (qc === "double" && is(b[aa], 39 /* SQO */)) {
                 out.pop();
@@ -6664,7 +6753,7 @@ function style() {
             b[aa] = "\\'";
           }
           out.push(b[aa]);
-        } else if (b[aa - 1] !== "\\" || esctest(aa - 1) === false) {
+        } else if (not(b[aa - 1], 92 /* BWS */) || esctest(aa - 1) === false) {
           if (is(b[aa], 40 /* LPR */)) {
             if (func === null)
               func = true;
@@ -6734,7 +6823,7 @@ function style() {
     }
     ltoke = out.join(NIL).replace(/\s+/g, WSP).replace(/^\s/, NIL).replace(/\s$/, NIL);
     if (func === true) {
-      if (grammar.css.atrules.has(ltoke) && rules.style.atRuleSpace === true) {
+      if (grammar.css.atrules(ltoke) && rules.style.atRuleSpace === true) {
         data.token[parse.count] = data.token[parse.count].replace(/\s*\(/g, " (").replace(/\s*\)\s*/g, ") ").replace(/,\(/g, ", (");
       } else {
         ltoke = ltoke.replace(/\s+\(/g, "(").replace(/\s+\)/g, ")").replace(/,\(/g, ", (");
@@ -6748,7 +6837,7 @@ function style() {
       }
     } else if (parse.count > -1 && data.token[parse.count].indexOf("extend(") === 0) {
       ltype = "pseudo";
-    } else if (func === true && /\d/.test(ltoke.charAt(0)) === false && /^rgba?\(/.test(ltoke) === false && ltoke.indexOf("url(") !== 0 && (ltoke.indexOf(WSP) < 0 || ltoke.indexOf(WSP) > ltoke.indexOf("(")) && ltoke.charAt(ltoke.length - 1) === ")") {
+    } else if (func === true && digit(ltoke.charAt(0)) === false && /^rgba?\(/.test(ltoke) === false && ltoke.indexOf("url(") !== 0 && (ltoke.indexOf(WSP) < 0 || ltoke.indexOf(WSP) > ltoke.indexOf("(")) && ltoke.charAt(ltoke.length - 1) === ")") {
       if (is(data.token[parse.count], 58 /* COL */)) {
         ltype = "value";
       } else {
@@ -6756,7 +6845,7 @@ function style() {
         ltype = "function";
       }
       ltoke = value(ltoke);
-    } else if (parse.count > -1 && `"'`.indexOf(data.token[parse.count].charAt(0)) > -1 && data.types[parse.count] === "variable") {
+    } else if (parse.count > -1 && SQO.indexOf(data.token[parse.count].charAt(0)) > -1 && data.types[parse.count] === "variable") {
       ltype = "item";
     } else if (is(out[0], 64 /* ATT */) || out[0] === "$") {
       if (data.types[parse.count] === "colon" && rules.language === "css" && (data.types[parse.count - 1] === "property" || data.types[parse.count - 1] === "variable")) {
@@ -6780,7 +6869,7 @@ function style() {
       nopush = false;
     }
   }
-  function item(type) {
+  function parseToken(type) {
     let aa = parse.count;
     let bb = 0;
     let first = NIL;
@@ -6817,7 +6906,7 @@ function style() {
         data.types[ss] = "selector";
       }
       if (is(data.token[ss - 1], 44 /* COM */) || is(data.token[ss - 1], 58 /* COL */) || data.types[ss - 1] === "comment" || data.types[ss - 1] === "pseudo") {
-        if (data.types[ss - 1] === "colon" && (data.types[ss] === "selector" || data.types[ss] === "at_rule") && (data.types[ss - 2] === "template" || data.types[ss - 2] === "template_start" || data.types[ss - 2] === "template_else" || data.types[ss - 2] === "template_end")) {
+        if (data.types[ss - 1] === "colon" && (data.types[ss] === "selector" || data.types[ss] === "at_rule") && (data.types[ss - 2] === "template" || data.types[ss - 2] === "liquid_start" || data.types[ss - 2] === "liquid_else" || data.types[ss - 2] === "liquid_end")) {
           data.token[ss - 1] = ":" + data.token[ss] + WSP;
           data.types[ss - 1] = "selector";
           parse.splice({
@@ -6921,9 +7010,9 @@ function style() {
         if (data.token[aa] === ":")
           data.types[bb] = "selector";
         if (data.token[aa].indexOf("=\u201C") > 0) {
-          parse.error = `Invalid Quote (\u201C, \\201c) used on line number ${parse.line}`;
+          parse.error = `Invalid Quote (\u201C, \\201c) used on line number ${parse.lineNumber}`;
         } else if (data.token[aa].indexOf("=\u201D") > 0) {
-          parse.error = `Invalid Quote (\u201D, \\201d) used on line number ${parse.line}`;
+          parse.error = `Invalid Quote (\u201D, \\201d) used on line number ${parse.lineNumber}`;
         }
       } else if (type === "end") {
         if (is(first, 36 /* DOL */) || is(first, 64 /* ATT */)) {
@@ -6944,9 +7033,9 @@ function style() {
           }
           data.token[aa] = value(data.token[aa]);
           if (data.token[aa].charAt(0) === "\u201C") {
-            parse.error = `Invalid Quote (\u201C, \\201c) used on line number ${parse.line}`;
+            parse.error = `Invalid Quote (\u201C, \\201c) used on line number ${parse.lineNumber}`;
           } else if (data.token[aa].charAt(0) === "\u201D") {
-            parse.error = `Invalid (\u201D, \\201d) used on line number ${parse.line}`;
+            parse.error = `Invalid (\u201D, \\201d) used on line number ${parse.lineNumber}`;
           }
         } else {
           if (is(first, 36 /* DOL */) || is(first, 64 /* ATT */)) {
@@ -6975,7 +7064,7 @@ function style() {
       }
     }
   }
-  function semiComment() {
+  function parseSeparatorComment() {
     let x = parse.count;
     do
       x = x - 1;
@@ -6990,14 +7079,14 @@ function style() {
         begin: parse.stack.index,
         ender: -1,
         lexer: "style",
-        lines: parse.space,
+        lines: parse.lineOffset,
         stack: parse.stack.token,
         token: ";",
         types: "separator"
       }
     });
   }
-  function template(open, end) {
+  function parseLiquid(open, end) {
     const store = [];
     let quote = NIL;
     let name = NIL;
@@ -7009,11 +7098,11 @@ function style() {
         if (endtype === "colon") {
           data.types[parse.count] = "value";
         } else {
-          item(endtype);
+          parseToken(endtype);
         }
       }
       if (is(b[a + 1], 32 /* WSP */)) {
-        data.lines[parse.count] = 1;
+        console.log(parse.lineOffset);
       }
       ltype = typeName;
       if (ltype.indexOf("start") > -1 || ltype.indexOf("else") > -1) {
@@ -7028,9 +7117,9 @@ function style() {
         store.push(b[a]);
         if (quote === NIL) {
           if (is(b[a], 34 /* DQO */)) {
-            quote = '"';
+            quote = DQO;
           } else if (is(b[a], 39 /* SQO */)) {
-            quote = "'";
+            quote = SQO;
           } else if (is(b[a], 47 /* FWS */)) {
             if (is(b[a + 1], 47 /* FWS */)) {
               quote = "/";
@@ -7095,18 +7184,18 @@ function style() {
                   name = name.slice(0, name.indexOf("("));
                 }
                 if (grammar.liquid.else.has(name)) {
-                  exit("template_else");
+                  exit("liquid_else");
                   return;
                 }
                 namesLen = templateNames.length - 1;
                 if (namesLen > -1) {
                   do {
                     if (name === templateNames[namesLen]) {
-                      exit("template_start");
+                      exit("liquid_start");
                       return;
                     }
                     if (name === "end" + templateNames[namesLen]) {
-                      exit("template_end");
+                      exit("liquid_end");
                       return;
                     }
                     namesLen = namesLen - 1;
@@ -7123,11 +7212,11 @@ function style() {
                 if (is(group[group.length - 2], 125 /* RCB */))
                   group = group.slice(0, group.length - 2);
                 if (group === "end") {
-                  exit("template_end");
+                  exit("liquid_end");
                   return;
                 }
               }
-              exit("template");
+              exit("liquid");
               return;
             }
             endlen = 0;
@@ -7145,21 +7234,21 @@ function style() {
       } while (a < c);
     }
   }
-  function comment(isLineComment) {
+  function parseComment(isLineComment) {
     let comm;
     if (isLineComment) {
-      comm = wrapCommentLine({
+      comm = commentLine({
         chars: b,
         start: a,
         end: c,
         lexer: "style",
         begin: "//",
-        ender: "\n"
+        ender: NWL
       });
       ltoke = comm[0];
-      ltype = /^(\/\/\s*@prettify-ignore-start)/.test(ltoke) ? "ignore" : "comment";
+      ltype = CommLineIgnoreStart.test(ltoke) ? "ignore" : "comment";
     } else {
-      comm = wrapCommentBlock({
+      comm = commentBlock({
         chars: b,
         start: a,
         end: c,
@@ -7168,13 +7257,13 @@ function style() {
         ender: "*/"
       });
       ltoke = comm[0];
-      ltype = /^(\/\*\s*@prettify-ignore-start)/.test(ltoke) ? "ignore" : "comment";
+      ltype = CommBlockIgnoreStart.test(ltoke) ? "ignore" : "comment";
     }
     push(NIL);
     a = comm[1];
   }
   function marginPadding() {
-    const lines = parse.space;
+    const lines = parse.lineOffset;
     const props = {
       data: {
         margin: [
@@ -7342,15 +7431,15 @@ function style() {
       }
     } while (aa > begin);
     removes();
-    parse.space = lines;
+    parse.lineOffset = lines;
   }
   function parseSpace() {
-    parse.space = 1;
+    parse.lineOffset = 1;
     do {
       if (is(b[a], 10 /* NWL */)) {
-        parse.lineOffset = a;
-        parse.space = parse.space + 1;
-        parse.line = parse.line + 1;
+        parse.lineIndex = a;
+        parse.lineOffset = parse.lineOffset + 1;
+        parse.lineNumber = parse.lineNumber + 1;
       }
       if (ws(b[a + 1]) === false)
         break;
@@ -7361,15 +7450,15 @@ function style() {
     if (ws(b[a])) {
       parseSpace();
     } else if (is(b[a], 47 /* FWS */) && is(b[a + 1], 42 /* ARS */)) {
-      comment(false);
+      parseComment(false);
     } else if (is(b[a], 47 /* FWS */) && is(b[a + 1], 47 /* FWS */)) {
-      comment(true);
+      parseComment(true);
     } else if (is(b[a], 123 /* LCB */) && is(b[a + 1], 37 /* PER */)) {
-      template("{%", "%}");
+      parseLiquid("{%", "%}");
     } else if (is(b[a], 123 /* LCB */) && is(b[a + 1], 123 /* LCB */)) {
-      template("{{", "}}");
+      parseLiquid("{{", "}}");
     } else if (is(b[a], 123 /* LCB */) || is(b[a], 40 /* LPR */) && is(data.token[parse.count], 58 /* COL */) && data.types[parse.count - 1] === "variable") {
-      item("start");
+      parseToken("start");
       ltype = "start";
       ltoke = b[a];
       if (is(b[a], 40 /* LPR */)) {
@@ -7397,7 +7486,7 @@ function style() {
       } else {
         if (is(b[a], 41 /* RPR */))
           mapper.pop();
-        item("end");
+        parseToken("end");
         if (is(b[a], 125 /* RCB */) && not(data.token[parse.count], 59 /* SEM */)) {
           if (data.types[parse.count] === "value" || data.types[parse.count] === "function" || data.types[parse.count] === "variable" && (is(data.token[parse.count - 1], 58 /* COL */) || is(data.token[parse.count - 1], 59 /* SEM */))) {
             if (rules.style.correct === true) {
@@ -7408,7 +7497,7 @@ function style() {
             ltype = "separator";
             push(NIL);
           } else if (data.types[parse.count] === "comment") {
-            semiComment();
+            parseSeparatorComment();
           }
         }
         nosort.pop();
@@ -7422,9 +7511,9 @@ function style() {
       }
     } else if (is(b[a], 59 /* SEM */) || is(b[a], 44 /* COM */)) {
       if (data.types[parse.count - 1] === "selector" || data.types[parse.count - 1] === "at_rule" || data.types[parse.count] !== "function" && is(data.token[parse.count - 1], 125 /* RCB */)) {
-        item("start");
+        parseToken("start");
       } else {
-        item("separator");
+        parseToken("separator");
       }
       if (data.types[parse.count] !== "separator" && esctest(a) === true) {
         ltoke = b[a];
@@ -7432,7 +7521,7 @@ function style() {
         push(NIL);
       }
     } else if (parse.count > -1 && is(b[a], 58 /* COL */) && data.types[parse.count] !== "end") {
-      item("colon");
+      parseToken("colon");
       ltoke = ":";
       ltype = "colon";
       push(NIL);
@@ -7444,11 +7533,8 @@ function style() {
     }
     a = a + 1;
   } while (a < c);
-  if (rules.style.sortProperties === true) {
+  if (rules.style.sortProperties === true)
     sortObject(data);
-    if (parse.mode === 2 /* Embed */)
-      sortCorrect(0, parse.count + 1);
-  }
   return data;
 }
 
@@ -7479,7 +7565,7 @@ function markup2() {
   const levels = getLevels();
   const ind = spaces();
   const build = [];
-  function isType(index, name) {
+  function isType2(index, name) {
     return data.types[index] === name;
   }
   function isToken(index, tag) {
@@ -7499,30 +7585,33 @@ function markup2() {
       linesout.push(parse.crlf);
       index = index + 1;
     } while (index < total);
-    if (tabs > 0) {
-      index = 0;
-      do {
-        linesout.push(ind);
-        index = index + 1;
-      } while (index < tabs);
+    if (data.types[a] !== "ignore" || data.types[a] === "ignore" && data.types[a + 1] !== "ignore") {
+      if (tabs > 0) {
+        index = 0;
+        do {
+          linesout.push(ind);
+          index = index + 1;
+        } while (index < tabs);
+      }
     }
     return linesout.join(NIL);
   }
   function ml() {
     let lines = data.token[a].split(parse.crlf);
     const line = data.lines[a + 1];
-    if (isType(a, "comment") && (is(data.token[a][1], 37 /* PER */) && rules.liquid.preserveComment === false || is(data.token[a][1], 37 /* PER */) === false && rules.markup.preserveComment === false)) {
+    if (isType2(a, "comment") && (is(data.token[a][1], 37 /* PER */) && rules.liquid.preserveComment === false || is(data.token[a][1], 37 /* PER */) === false && rules.markup.preserveComment === false)) {
       lines = lines.map((l) => l.trimStart());
     }
-    const lev = levels[a - 1] > -1 ? isType(a, "attribute") ? levels[a - 1] + 1 : levels[a - 1] : (() => {
+    const lev = levels[a - 1] > -1 ? isType2(a, "attribute") ? levels[a - 1] + 1 : levels[a - 1] : (() => {
       let bb = a - 1;
       let start = bb > -1 && isIndex(bb, "start") > -1;
-      if (levels[a] > -1 && isType(a, "attribute"))
+      if (levels[a] > -1 && isType2(a, "attribute"))
         return levels[a] + 1;
       do {
         bb = bb - 1;
-        if (levels[bb] > -1)
-          return isType(a, "content") && start === false ? levels[bb] : levels[bb] + 1;
+        if (levels[bb] > -1) {
+          return isType2(a, "content") && start === false ? levels[bb] : levels[bb] + 1;
+        }
         if (isIndex(bb, "start") > -1)
           start = true;
       } while (bb > 0);
@@ -7532,7 +7621,7 @@ function markup2() {
     data.lines[a + 1] = 0;
     const len = lines.length - 1;
     do {
-      if (isType(a, "comment")) {
+      if (isType2(a, "comment")) {
         if (aa === 0 && (is(data.token[a][1], 37 /* PER */) && rules.liquid.commentNewline === true || is(data.token[a][1], 37 /* PER */) === false && rules.markup.commentNewline === true)) {
           if (rules.preserveLine === 0) {
             build.push(nl(lev));
@@ -7566,15 +7655,15 @@ function markup2() {
     } while (aa < len);
     data.lines[a + 1] = line;
     build.push(lines[len]);
-    if (isType(a, "comment") && (isType(a + 1, "liquid_end") || isType(a - 1, "liquid_end"))) {
+    if (isType2(a, "comment") && (isType2(a + 1, "liquid_end") || isType2(a - 1, "liquid_end"))) {
       build.push(nl(levels[a]));
     } else if (levels[a] === -10) {
       build.push(WSP);
     } else if (levels[a] > 1) {
       build.push(nl(levels[a]));
-    } else if (levels[a] === 0 && a === 0 && isType(a, "comment")) {
+    } else if (levels[a] === 0 && a === 0 && isType2(a, "comment")) {
       build.push(nl(levels[a]));
-    } else if (isType(a, "comment") && levels[a] === 0 && (isType(a + 1, "liquid_start") || isType(a + 1, "ignore"))) {
+    } else if (isType2(a, "comment") && levels[a] === 0 && (isType2(a + 1, "liquid_start") || isType2(a + 1, "ignore"))) {
       build.push(nl(levels[a]));
     }
   }
@@ -7593,18 +7682,18 @@ function markup2() {
   function forward() {
     let x = a + 1;
     let y = 0;
-    if (isType(x, void 0))
+    if (isType2(x, void 0))
       return x - 1;
-    if (isType(x, "comment") || a < c - 1 && isIndex(x, "attribute") > -1) {
+    if (isType2(x, "comment") || a < c - 1 && isIndex(x, "attribute") > -1) {
       do {
-        if (isType(x, "jsx_attribute_start")) {
+        if (isType2(x, "jsx_attribute_start")) {
           y = x;
           do {
-            if (isType(x, "jsx_attribute_end") && data.begin[x] === y)
+            if (isType2(x, "jsx_attribute_end") && data.begin[x] === y)
               break;
             x = x + 1;
           } while (x < c);
-        } else if (isType(x, "comment") === false && isIndex(x, "attribute") < 0)
+        } else if (isType2(x, "comment") === false && isIndex(x, "attribute") < 0)
           return x;
         x = x + 1;
       } while (x < c);
@@ -7622,10 +7711,10 @@ function markup2() {
     let space = rules.markup.selfCloseSpace === true && end !== null && end[0] === "/>" ? WSP : NIL;
     data.token[a] = parent.replace(regend, NIL);
     do {
-      if (isType(y, "jsx_attribute_end") && data.begin[data.begin[y]] === a) {
+      if (isType2(y, "jsx_attribute_end") && data.begin[data.begin[y]] === a) {
         isjsx = false;
       } else if (data.begin[y] === a) {
-        if (isType(y, "jsx_attribute_start")) {
+        if (isType2(y, "jsx_attribute_start")) {
           isjsx = true;
         } else if (isIndex(y, "attribute") < 0 && isjsx === false) {
           break;
@@ -7635,18 +7724,19 @@ function markup2() {
       }
       y = y + 1;
     } while (y < c);
-    if (isType(y - 1, "comment_attribute"))
+    if (isType2(y - 1, "comment_attribute"))
       space = nl(levels[y - 2] - 1);
     data.token[y - 1] = `${data.token[y - 1]}${space}${end[0]}`;
-    if (isType(y, "comment") && data.lines[a + 1] < 2)
+    if (isType2(y, "comment") && data.lines[a + 1] < 2) {
       levels[a] = -10;
+    }
   }
   function onDelimiterForce() {
-    if (isType(a, "end") === false && not(data.token[a], 60 /* LAN */) && delim.get(data.begin[a]) >= 2 && isLast(data.token[a], 62 /* RAN */)) {
+    if (isType2(a, "end") === false && not(data.token[a], 60 /* LAN */) && delim.get(data.begin[a]) >= 2 && isLast(data.token[a], 62 /* RAN */)) {
       delim.delete(data.begin[a]);
       const newline = nl(levels[a - 1] - 1).replace(/\n+/, NWL);
       const replace = `${data.token[a].slice(0, -1)}${newline}>`;
-      if (isType(data.begin[a], "singleton")) {
+      if (isType2(data.begin[a], "singleton")) {
         if (is(data.token[a][data.token[a].length - 2], 47 /* FWS */)) {
           data.token[a] = `${data.token[a].slice(0, -2)}${newline}/>`;
         } else {
@@ -7671,7 +7761,7 @@ function markup2() {
     aa = a;
     do {
       aa = aa - 1;
-      if (isType(aa + 1, "attribute")) {
+      if (isType2(aa + 1, "attribute")) {
         level[aa] = -10;
       } else if (isToken(aa, "</li>") === false) {
         level[aa] = -20;
@@ -7694,17 +7784,17 @@ function markup2() {
       test = true;
     }
     if (test === true) {
-      if (isType(data.begin[x] - 1, "liquid")) {
+      if (isType2(data.begin[x] - 1, "liquid")) {
         level[data.begin[x] - 1] = indent;
       }
-      const ind2 = isType(next, "end") || isType(next, "liquid_end") ? indent + 1 : indent;
+      const ind2 = isType2(next, "end") || isType2(next, "liquid_end") ? indent + 1 : indent;
       do {
         level.push(ind2);
         x = x - 1;
       } while (x > comstart);
       if (ind2 === indent + 1)
         level[a] = indent;
-      if (isType(x, "attribute") || isType(x, "liquid_attribute") || isType(x, "jsx_attribute_start")) {
+      if (isType2(x, "attribute") || isType2(x, "liquid_attribute") || isType2(x, "jsx_attribute_start")) {
         level[data.begin[x]] = ind2;
       } else {
         level[x] = ind2;
@@ -7727,20 +7817,20 @@ function markup2() {
     if (next < c && (isIndex(next, "end") > -1 || isIndex(next, "start") > -1) && data.lines[next] > 0) {
       level.push(indent);
       ind2 = ind2 + 1;
-      if (a > 0 && isType(a, "singleton") && isIndex(a - 1, "attribute") > -1 && isType(data.begin[a - 1], "singleton")) {
-        if (data.begin[a] < 0 || isType(data.begin[a - 1], "singleton") && data.begin[data.ender[a] - 1] !== a) {
+      if (a > 0 && isType2(a, "singleton") && isIndex(a - 1, "attribute") > -1 && isType2(data.begin[a - 1], "singleton")) {
+        if (data.begin[a] < 0 || isType2(data.begin[a - 1], "singleton") && data.begin[data.ender[a] - 1] !== a) {
           level[a - 1] = indent;
         } else {
           level[a - 1] = indent + 1;
         }
       }
-    } else if (a > 0 && isType(a, "singleton") && isIndex(a - 1, "attribute") > -1) {
+    } else if (a > 0 && isType2(a, "singleton") && isIndex(a - 1, "attribute") > -1) {
       level[a - 1] = indent;
       count = data.token[a].length;
       level.push(-10);
     } else if (data.lines[next] === 0) {
       level.push(-20);
-    } else if ((rules.wrap === 0 || a < c - 2 && data.token[a] !== void 0 && data.token[a + 1] !== void 0 && data.token[a + 2] !== void 0 && data.token[a].length + data.token[a + 1].length + data.token[a + 2].length + 1 > rules.wrap && isIndex(a + 2, "attribute") > -1 || data.token[a] !== void 0 && data.token[a + 1] !== void 0 && data.token[a].length + data.token[a + 1].length > rules.wrap) && (isType(a + 1, "singleton") || isType(a + 1, "liquid"))) {
+    } else if ((rules.wrap === 0 || a < c - 2 && data.token[a] !== void 0 && data.token[a + 1] !== void 0 && data.token[a + 2] !== void 0 && data.token[a].length + data.token[a + 1].length + data.token[a + 2].length + 1 > rules.wrap && isIndex(a + 2, "attribute") > -1 || data.token[a] !== void 0 && data.token[a + 1] !== void 0 && data.token[a].length + data.token[a + 1].length > rules.wrap) && (isType2(a + 1, "singleton") || isType2(a + 1, "liquid"))) {
       level.push(indent);
     } else {
       count = count + 1;
@@ -7752,7 +7842,7 @@ function markup2() {
     if (count > rules.wrap) {
       let d = a;
       let e = Math.max(data.begin[a], 0);
-      if (isType(a, "content") && rules.markup.preserveText === false) {
+      if (isType2(a, "content") && rules.markup.preserveText === false) {
         let countx = 0;
         const chars = data.token[a].replace(/\s+/g, WSP).split(WSP);
         do {
@@ -7799,8 +7889,8 @@ function markup2() {
             count = 0;
             return;
           }
-          if (data.lines[d + 1] > 0 && (isType(d, "attribute") === false || isType(d, "attribute") && isType(d + 1, "attribute"))) {
-            if (isType(d, "singleton") === false || isType(d, "attribute") && isType(d + 1, "attribute")) {
+          if (data.lines[d + 1] > 0 && (isType2(d, "attribute") === false || isType2(d, "attribute") && isType2(d + 1, "attribute"))) {
+            if (isType2(d, "singleton") === false || isType2(d, "attribute") && isType2(d + 1, "attribute")) {
               count = data.token[a].length;
               if (data.lines[a + 1] > 0)
                 count = count + 1;
@@ -7818,7 +7908,7 @@ function markup2() {
       level[skip - 1] = -20;
     }
     do {
-      if (data.lexer[a + 1] === "markup" && data.begin[a + 1] < skip && isType(a + 1, "start") === false && isType(a + 1, "singleton") === false)
+      if (data.lexer[a + 1] === "markup" && data.begin[a + 1] < skip && isType2(a + 1, "start") === false && isType2(a + 1, "singleton") === false)
         break;
       level.push(0);
       a = a + 1;
@@ -7867,7 +7957,7 @@ function markup2() {
       if (isIndex(a, "start") > 0) {
         let x = a;
         do {
-          if (isType(x, "end") && data.begin[x] === a) {
+          if (isType2(x, "end") && data.begin[x] === a) {
             if (x < c - 1 && isIndex(x + 1, "attribute") > -1) {
               plural = true;
               break;
@@ -7878,28 +7968,46 @@ function markup2() {
       } else if (a < c - 1 && isIndex(a + 1, "attribute") > -1) {
         plural = true;
       }
-      if (isType(next, "end") || isType(next, "liquid_end")) {
-        return isType(parent, "singleton") ? indent + 2 : indent + 1;
+      if (isType2(next, "end") || isType2(next, "liquid_end")) {
+        return isType2(parent, "singleton") ? indent + 2 : indent + 1;
       }
-      if (isType(parent, "singleton"))
+      if (isType2(parent, "singleton"))
         return indent + 1;
       return indent;
     })();
-    if (plural === false && isType(a, "comment_attribute")) {
+    if (plural === false && isType2(a, "comment_attribute")) {
       level.push(indent);
       level[parent] = data.types[parent] === "singleton" ? indent + 1 : indent;
       return;
+    }
+    function doAttributeForce() {
+      if (rules.markup.forceAttribute === false && data.lines[a] === 1) {
+        level.push(-10);
+      } else {
+        if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1) {
+          if (rules.liquid.indentAttributes === true) {
+            if (isType2(a - 1, "liquid_attribute_start")) {
+              level[a - 1] = levatt + levliq;
+            }
+            level.push(levatt + levliq);
+          } else {
+            level.push(levatt);
+          }
+        } else {
+          level.push(-10);
+        }
+      }
     }
     if (levatt < 1)
       levatt = 1;
     attcount = 0;
     do
       attcount = attcount + 1;
-    while (isIndex(a + attcount, "attribute") > -1 && (isType(a + attcount, "end") === false || isType(a + attcount, "singleton") === false || isType(a + attcount, "start") === false || isType(a + attcount, "comment") === false));
+    while (isIndex(a + attcount, "attribute") > -1 && (isType2(a + attcount, "end") === false || isType2(a + attcount, "singleton") === false || isType2(a + attcount, "start") === false || isType2(a + attcount, "comment") === false));
     do {
       count = count + data.token[a].length + 1;
       if (data.types[a].indexOf("attribute") > 0) {
-        if (isType(a, "comment_attribute")) {
+        if (isType2(a, "comment_attribute")) {
           level.push(levatt);
         } else if (isIndex(a, "start") > 0 && isIndex(a, "liquid") < 0) {
           attstart = true;
@@ -7926,19 +8034,23 @@ function markup2() {
               onEmbedded();
             }
           }
-        } else if (isType(a, "liquid_attribute_start")) {
-          if (rules.liquid.indentAttributes === true) {
+        } else if (rules.liquid.indentAttributes === true) {
+          if (isType2(a, "liquid_attribute_start")) {
+            if (levliq > 0) {
+              level.push(levatt + levliq);
+            } else {
+              level.push(levatt);
+            }
             levliq = levliq + 1;
-            level.push(levatt + levliq);
+          } else if (isType2(a, "liquid_attribute_else")) {
+            level[a - 1] = levatt + levliq - 1;
+          } else if (isType2(a, "liquid_attribute_end")) {
+            levliq = levliq - 1;
+            level[a - 1] = levatt + levliq;
           } else {
-            level.push(levatt);
+            doAttributeForce();
           }
-        } else if (isType(a, "liquid_attribute_else") && rules.liquid.indentAttributes === true) {
-          level[a - 1] = levatt + levliq - 1;
-        } else if (isType(a, "liquid_attribute_end") && rules.liquid.indentAttributes === true) {
-          levliq = levliq - 1;
-          level[a - 1] = levatt + levliq;
-        } else if (isIndex(a, "end") > 0 && isType(a, "liquid_attribute_end") === false) {
+        } else if (isIndex(a, "end") > 0 && isType2(a, "liquid_attribute_end") === false) {
           if (level[a - 1] !== -20)
             level[a - 1] = level[data.begin[a]] - 1;
           if (data.lexer[a + 1] !== "markup") {
@@ -7946,27 +8058,24 @@ function markup2() {
           } else {
             level.push(levatt);
           }
+        } else if (isIndex(a, "liquid_attribute") > -1) {
+          length = length + data.token[a].length + 1;
+          if (rules.markup.preserveAttributes === true) {
+            level.push(-10);
+          } else if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1 || attstart === true || a < c - 1 && isIndex(a + 1, "attribute") > -1) {
+            doAttributeForce();
+          } else {
+            level.push(-10);
+          }
         } else {
           level.push(levatt);
         }
-      } else if (isType(a, "attribute")) {
+      } else if (isType2(a, "attribute")) {
         length = length + data.token[a].length + 1;
         if (rules.markup.preserveAttributes === true) {
           level.push(-10);
-        } else if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1 || attstart === true || a < c - 1 && isIndex(a + 1, "attribute") > 0) {
-          if (rules.markup.forceAttribute === false && data.lines[a] === 1) {
-            level.push(-10);
-          } else {
-            if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1) {
-              if (rules.liquid.indentAttributes === true) {
-                level.push(levatt + levliq);
-              } else {
-                level.push(levatt);
-              }
-            } else {
-              level.push(-10);
-            }
-          }
+        } else if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1 || attstart === true || a < c - 1 && isIndex(a + 1, "attribute") > -1) {
+          doAttributeForce();
         } else {
           level.push(-10);
         }
@@ -7979,11 +8088,11 @@ function markup2() {
       a = a + 1;
     } while (a < c);
     a = a - 1;
-    if (isIndex(a, "liquid") < 0 && isIndex(a, "end") > 0 && isIndex(a, "attribute") > 0 && isType(parent, "singleton") === false && level[a - 1] > 0 && plural === true) {
+    if (isIndex(a, "liquid") < 0 && isIndex(a, "end") > -1 && isIndex(a, "attribute") > 0 && isType2(parent, "singleton") === false && level[a - 1] > 0 && plural === true) {
       level[a - 1] = level[a - 1] - 1;
     }
     if (level[a] !== -20) {
-      if (jsx === true && isIndex(parent, "start") > -1 && isType(a + 1, "script_start")) {
+      if (jsx === true && isIndex(parent, "start") > -1 && isType2(a + 1, "script_start")) {
         level[a] = levatt;
       } else {
         if (isToken(a, "/") && level[a - 1] !== 10) {
@@ -8004,9 +8113,9 @@ function markup2() {
         level[parent] = levatt;
         let fa = a - 1;
         do {
-          if (isType(fa, "liquid") && level[fa] === -10) {
+          if (isType2(fa, "liquid") && level[fa] === -10) {
             level[fa] = levatt;
-          } else if (isType(fa, "attribute") && level[fa] === -10) {
+          } else if (isType2(fa, "attribute") && level[fa] === -10) {
             level[fa] = levatt;
           }
           fa = fa - 1;
@@ -8039,13 +8148,13 @@ function markup2() {
             onAttributeWrap(w);
           if (isIndex(w, "liquid") > -1 && level[w] === -10) {
             level[w] = levatt;
-          } else if (isType(w, "attribute") && level[w] === -10) {
+          } else if (isType2(w, "attribute") && level[w] === -10) {
             level[w] = levatt;
           }
           w = w - 1;
         } while (w > parent);
       }
-    } else if (rules.wrap > 0 && isType(a, "attribute") && data.token[a].length > rules.wrap && ws(data.token[a])) {
+    } else if (rules.wrap > 0 && isType2(a, "attribute") && data.token[a].length > rules.wrap && ws(data.token[a])) {
       onAttributeWrap(a);
     }
   }
@@ -8202,33 +8311,33 @@ function markup2() {
     }
   }
   function isLineBreak(idx) {
-    return isType(idx, "liquid") && data.token[idx].indexOf(parse.crlf) > 0;
+    return isType2(idx, "liquid") && data.token[idx].indexOf(parse.crlf) > 0;
   }
   function getLevels() {
     do {
       if (data.lexer[a] === "markup") {
-        if (isType(a, "doctype"))
+        if (isType2(a, "doctype"))
           level[a - 1] = indent;
         if (isIndex(a, "attribute") > -1) {
           onAttribute();
-        } else if (isType(a, "comment")) {
+        } else if (isType2(a, "comment")) {
           if (comstart < 0)
             comstart = a;
-          if (isType(a + 1, "comment") === false || a > 0 && isIndex(a - 1, "end") > -1) {
+          if (isType2(a + 1, "comment") === false || a > 0 && isIndex(a - 1, "end") > -1) {
             onComment();
           }
-        } else if (isType(a, "comment") === false) {
+        } else if (isType2(a, "comment") === false) {
           next = forward();
-          if (isType(next, "end") || isType(next, "liquid_end")) {
+          if (isType2(next, "end") || isType2(next, "liquid_end")) {
             indent = indent - 1;
-            if (isType(next, "liquid_end") && isType(data.begin[next] + 1, "liquid_else")) {
+            if (isType2(next, "liquid_end") && isType2(data.begin[next] + 1, "liquid_else")) {
               indent = indent - 1;
             }
             if (isToken(a, "</ol>") || isToken(a, "</ul>") || isToken(a, "</dl>")) {
               onAnchorList();
             }
           }
-          if (isType(a, "script_end") && isType(next, "end")) {
+          if (isType2(a, "script_end") && isType2(next, "end")) {
             if (data.lines[next] < 1) {
               level.push(-20);
             } else if (data.lines[next] > 1) {
@@ -8236,9 +8345,9 @@ function markup2() {
             } else {
               level.push(-10);
             }
-          } else if ((rules.markup.forceIndent === false || rules.markup.forceIndent === true && isType(next, "script_start")) && (isType(a, "content") || isType(a, "singleton") || isType(a, "liquid"))) {
+          } else if ((rules.markup.forceIndent === false || rules.markup.forceIndent === true && isType2(next, "script_start")) && (isType2(a, "content") || isType2(a, "singleton") || isType2(a, "liquid"))) {
             count = count + data.token[a].length;
-            if (data.lines[next] > 0 && isType(next, "script_start")) {
+            if (data.lines[next] > 0 && isType2(next, "script_start")) {
               level.push(-10);
             } else if (rules.wrap > 0 && (isIndex(a, "liquid") < 0 || next < c && isIndex(a, "liquid") > -1 && isIndex(next, "liquid") < 0)) {
               onContent();
@@ -8257,11 +8366,8 @@ function markup2() {
               if (isLineBreak(a))
                 onLineBreak();
             }
-          } else if (isType(a, "start") || isType(a, "liquid_start")) {
+          } else if (isType2(a, "start") || isType2(a, "liquid_start")) {
             indent = indent + 1;
-            if (isType(a, "liquid_start") && isType(next, "liquid_else")) {
-              indent = indent + 1;
-            }
             if (jsx === true && isToken(a + 1, "{")) {
               if (data.lines[next] === 0) {
                 level.push(-20);
@@ -8270,28 +8376,29 @@ function markup2() {
               } else {
                 level.push(-10);
               }
-            } else if (isType(a, "start") && isType(next, "end") || isType(a, "liquid_start") && isType(next, "liquid_end")) {
+            } else if (isType2(a, "start") && isType2(next, "end") || isType2(a, "liquid_start") && isType2(next, "liquid_end")) {
               level.push(-20);
-            } else if (isType(a, "start") && isType(next, "script_start")) {
+            } else if (isType2(a, "start") && isType2(next, "script_start")) {
               level.push(-10);
             } else if (rules.markup.forceIndent === true) {
               level.push(indent);
-            } else if (data.lines[next] === 0 && (isType(next, "content") || isType(next, "singleton") || isType(a, "start") && isType(next, "liquid"))) {
+            } else if (data.lines[next] === 0 && (isType2(next, "content") || isType2(next, "singleton") || isType2(a, "start") && isType2(next, "liquid"))) {
               level.push(-20);
             } else {
               level.push(indent);
             }
-          } else if (rules.markup.forceIndent === false && data.lines[next] === 0 && (isType(next, "content") || isType(next, "singleton"))) {
+          } else if (rules.markup.forceIndent === false && data.lines[next] === 0 && (isType2(next, "content") || isType2(next, "singleton"))) {
             level.push(-20);
-          } else if (isType(a + 2, "script_end")) {
+          } else if (isType2(a + 2, "script_end")) {
+            console.log(data.token[next], indent);
             level.push(-20);
-          } else if (isType(a, "liquid_else")) {
+          } else if (isType2(a, "liquid_else")) {
             level[a - 1] = indent - 1;
-            if (isType(next, "liquid_end")) {
+            if (isType2(next, "liquid_end")) {
               level[a - 1] = indent - 1;
             }
             level.push(indent);
-          } else if (rules.markup.forceIndent === true && (isType(a, "content") && (isType(next, "liquid") || isType(next, "content")) || isType(a, "liquid") && (isType(next, "content") || isType(next, "liquid")))) {
+          } else if (rules.markup.forceIndent === true && (isType2(a, "content") && (isType2(next, "liquid") || isType2(next, "content")) || isType2(a, "liquid") && (isType2(next, "content") || isType2(next, "liquid")))) {
             if (data.lines[next] < 1) {
               level.push(-20);
             } else if (data.lines[next] > 1) {
@@ -8299,23 +8406,21 @@ function markup2() {
             } else {
               level.push(-10);
             }
-          } else if (isType(a, "liquid_end") && isType(a - 1, "end") && isType(a - 2, "liquid_start")) {
-            level[a - 3] = level[a - 3] - 1;
-            if (isType(data.begin[a], "liquid_start") && isType(data.begin[a] + 1, "start") && isType(data.ender[data.begin[a] + 1], "liquid_end")) {
-              level[data.ender[data.begin[a] + 1] - 1] = level[data.ender[data.begin[a] + 1] - 1] - 1;
-              level.push(indent);
-            } else if (isType(data.begin[data.begin[a - 1] - 1], "liquid_start") && isType(data.begin[data.begin[a]], "start") && isType(data.ender[data.begin[a] + 1], "liquid_end")) {
-              console.log(parse.get(data.ender[data.begin[a] + 1]));
-              level[data.begin[data.begin[a - 1] - 1]] = level[data.begin[data.begin[a - 1] - 1]] - 1;
-              level.push(indent);
-            }
+          } else if (isType2(a, "liquid_start_bad")) {
+            indent = indent + 1;
+            level.push(indent);
+          } else if (isType2(next, "liquid_end_bad")) {
+            indent = indent - 1;
+            level.push(indent);
+          } else if (isType2(a, "ignore") && isType2(next, "end")) {
+            level.push(indent);
           } else {
-            if (isType(a, "liquid") && isLineBreak(a))
+            if (isType2(a, "liquid") && isLineBreak(a))
               onLineBreak();
             level.push(indent);
           }
         }
-        if (isType(a, "content") === false && isType(a, "singleton") === false && isType(a, "liquid") === false && isType(a, "attribute") === false) {
+        if (isType2(a, "content") === false && isType2(a, "singleton") === false && isType2(a, "liquid") === false && isType2(a, "attribute") === false) {
           count = 0;
         }
       } else {
@@ -8331,17 +8436,19 @@ function markup2() {
     let lastLevel = rules.indentLevel;
     do {
       if (data.lexer[a] === "markup") {
-        if ((isType(a, "start") || isType(a, "singleton") || isType(a, "xml")) && isIndex(a, "attribute") < 0 && a < c - 1 && data.types[a + 1] !== void 0 && isIndex(a + 1, "attribute") > -1) {
+        if ((isType2(a, "start") || isType2(a, "singleton") || isType2(a, "xml")) && isIndex(a, "attribute") < 0 && a < c - 1 && data.types[a + 1] !== void 0 && isIndex(a + 1, "attribute") > -1) {
           onAttributeEnd();
         }
-        if (isToken(a, void 0) === false && data.token[a].indexOf(parse.crlf) > 0 && (isType(a, "content") && rules.markup.preserveText === false || isType(a, "comment") || isType(a, "attribute"))) {
+        if (isToken(a, void 0) === false && data.token[a].indexOf(parse.crlf) > 0 && (isType2(a, "content") && rules.markup.preserveText === false || isType2(a, "comment") || isType2(a, "attribute"))) {
           ml();
-        } else if (isType(a, "comment") && (is(data.token[a][1], 37 /* PER */) && rules.liquid.preserveComment === false && rules.liquid.commentNewline === true || is(data.token[a][1], 37 /* PER */) === false && rules.markup.preserveComment === false && rules.markup.commentNewline === true) && (rules.preserveLine === 0 || build.length > 0 && build[build.length - 1].lastIndexOf(NWL) + 1 < 2)) {
+        } else if (isType2(a, "comment") && (is(data.token[a][1], 37 /* PER */) && rules.liquid.preserveComment === false && rules.liquid.commentNewline === true || is(data.token[a][1], 37 /* PER */) === false && rules.markup.preserveComment === false && rules.markup.commentNewline === true) && (rules.preserveLine === 0 || build.length > 0 && build[build.length - 1].lastIndexOf(NWL) + 1 < 2)) {
           build.push(
             nl(levels[a]),
             data.token[a],
             nl(levels[a])
           );
+        } else if (isIndex(a, "_preserve") > -1) {
+          build.push(data.token[a]);
         } else {
           if (rules.markup.delimiterForce === true)
             onDelimiterForce();
@@ -8350,14 +8457,16 @@ function markup2() {
             build.push(WSP);
           } else if (levels[a] > -1) {
             lastLevel = levels[a];
-            build.push(nl(levels[a]));
+            if (isIndex(a + 1, "_preserve") < 0) {
+              build.push(nl(levels[a]));
+            }
           }
         }
       } else {
         parse.start = a;
         parse.ender = extidx[a];
         const external = parse.external(lastLevel);
-        if (rules.language === "jsx" && (data.types[a - 1] === "liquid_string_end" || data.types[a - 1] === "jsx_attribute_start" || data.types[a - 1] === "script_start")) {
+        if (rules.language === "jsx" && (data.types[a - 1] === "template_string_end" || data.types[a - 1] === "jsx_attribute_start" || data.types[a - 1] === "script_start")) {
           build.push(external);
         } else {
           build.push(external);
@@ -8380,8 +8489,7 @@ function markup2() {
 // src/format/script.ts
 function script2() {
   const { data, rules } = parse;
-  const cache = __spreadValues({}, rules.script);
-  rules.script = assign(rules.script, rules.json);
+  const option = parse.language === "json" ? rules.json : rules.script;
   const exidx = {};
   const lexer = "script";
   const b = parse.ender < 1 || parse.ender > data.token.length ? data.token.length : parse.ender + 1;
@@ -8407,7 +8515,7 @@ function script2() {
     const count = [];
     function comment() {
       destructfix(false, false);
-      const ind = rules.script.commentIndent === true ? indent : 0;
+      const ind = option.commentIndent === true ? indent : 0;
       if (notcomment === false && /\/\u002a\s*global\s/.test(data.token[a])) {
         const glist = data.token[a].replace(/\/\u002a\s*global\s+/, NIL).replace(/\s*\u002a\/$/, NIL).split(",");
         let aa = glist.length;
@@ -8478,7 +8586,7 @@ function script2() {
           } else {
             level.push(indent);
           }
-          if (rules.script.commentIndent === true && level[a] > -1 && data.lines[a] < 3) {
+          if (option.commentIndent === true && level[a] > -1 && data.lines[a] < 3) {
             data.lines[a] = 3;
           }
         }
@@ -8512,7 +8620,7 @@ function script2() {
           data.lines[a] = 3;
         }
       }
-      if (rules.script.commentNewline === true && ctoke.startsWith("//") === false && data.lines[a] >= 3) {
+      if (option.commentNewline === true && ctoke.startsWith("//") === false && data.lines[a] >= 3) {
         data.lines[a] = 2;
       }
     }
@@ -8521,7 +8629,7 @@ function script2() {
       let d = listFix === true ? 0 : 1;
       const ei = extraindent[extraindent.length - 1] === void 0 ? [] : extraindent[extraindent.length - 1];
       const arrayCheck = override === false && data.stack[a] === "array" && listFix === true && not(ctoke, 91 /* LSB */);
-      if (destruct[destruct.length - 1] === false || data.stack[a] === "array" && rules.script.arrayFormat === "inline" || data.stack[a] === "object" && rules.script.objectIndent === "inline") {
+      if (destruct[destruct.length - 1] === false || data.stack[a] === "array" && option.arrayFormat === "inline" || data.stack[a] === "object" && option.objectIndent === "inline") {
         return;
       }
       destruct[destruct.length - 1] = false;
@@ -8639,7 +8747,7 @@ function script2() {
         if (not(ctoke, 41 /* RPR */) && ctoke !== "x)" && (data.lexer[a - 1] !== "markup" || data.lexer[a - 1] === "markup" && data.token[a - 2] !== "return")) {
           indent = indent - 1;
         }
-        if (is(ctoke, 125 /* RCB */) && data.stack[a] === "switch" && rules.script.noCaseIndent === false) {
+        if (is(ctoke, 125 /* RCB */) && data.stack[a] === "switch" && option.noCaseIndent === false) {
           indent = indent - 1;
         }
       }
@@ -8682,10 +8790,10 @@ function script2() {
         }
         vindex.pop();
       }
-      if (rules.script.bracePadding === false && ctoke !== "}" && ltype !== "markup") {
+      if (option.bracePadding === false && ctoke !== "}" && ltype !== "markup") {
         level[a - 1] = -20;
       }
-      if (rules.script.bracePadding === true && ltype !== "start" && ltoke !== ";" && (level[data.begin[a]] < -9 || destruct[destruct.length - 1] === true)) {
+      if (option.bracePadding === true && ltype !== "start" && ltoke !== ";" && (level[data.begin[a]] < -9 || destruct[destruct.length - 1] === true)) {
         level[data.begin[a]] = -10;
         level[a - 1] = -10;
         level.push(-20);
@@ -8910,7 +9018,7 @@ function script2() {
         level[a - 1] = -20;
         level.push(-20);
       } else if (ctoke === "]") {
-        if (commas[commas.length - 1] === true && destruct[destruct.length - 1] === false && rules.script.arrayFormat !== "inline" || is(ltoke, 93 /* RSB */) && level[a - 2] === indent + 1) {
+        if (commas[commas.length - 1] === true && destruct[destruct.length - 1] === false && option.arrayFormat !== "inline" || is(ltoke, 93 /* RSB */) && level[a - 2] === indent + 1) {
           level[a - 1] = indent;
           level[data.begin[a]] = indent + 1;
         } else if (level[a - 1] === -10) {
@@ -8948,7 +9056,7 @@ function script2() {
         } else if (rules.language === "jsx") {
           markuplist();
         }
-        if (rules.script.arrayFormat === "inline") {
+        if (option.arrayFormat === "inline") {
           let c = a;
           const begin = data.begin[a];
           do {
@@ -9248,7 +9356,7 @@ function script2() {
           return;
         }
         ternary.push(a);
-        if (rules.script.ternaryLine === true) {
+        if (option.ternaryLine === true) {
           level[a - 1] = -10;
         } else {
           let c = a - 1;
@@ -9301,7 +9409,7 @@ function script2() {
               if (data.token[c] === "?") {
                 ternary.pop();
                 endExtraInd();
-                if (rules.script.ternaryLine === true)
+                if (option.ternaryLine === true)
                   level[a - 1] = -10;
                 level.push(-10);
                 return;
@@ -9338,7 +9446,7 @@ function script2() {
         }
         if (data.stack[a] === "switch" && (ternary.length < 1 || ternary[ternary.length - 1] < data.begin[a])) {
           level[a - 1] = -20;
-          if (rules.script.caseSpace === true) {
+          if (option.caseSpace === true) {
             level.push(-10);
           } else {
             level.push(indent);
@@ -9513,7 +9621,7 @@ function script2() {
     function separator() {
       const ei = extraindent[extraindent.length - 1] === void 0 ? [] : extraindent[extraindent.length - 1];
       const propertybreak = () => {
-        if (rules.script.methodChain > 0) {
+        if (option.methodChain > 0) {
           let x = a;
           let y = data.begin[a];
           const z = [a];
@@ -9537,7 +9645,7 @@ function script2() {
               }
             }
           } while (x > y);
-          if (z.length < rules.script.methodChain) {
+          if (z.length < option.methodChain) {
             level[a - 1] = -20;
             return;
           }
@@ -9570,9 +9678,9 @@ function script2() {
             destructfix(false, false);
           }
         }
-        if (rules.script.methodChain === 0) {
+        if (option.methodChain === 0) {
           level[a - 1] = -20;
-        } else if (rules.script.methodChain < 0) {
+        } else if (option.methodChain < 0) {
           if (data.lines[a] > 0) {
             propertybreak();
           } else {
@@ -9598,22 +9706,22 @@ function script2() {
             } while (aa > data.begin[a]);
           }
         }
-        if (data.stack[a] === "array" && rules.script.arrayFormat === "indent") {
+        if (data.stack[a] === "array" && option.arrayFormat === "indent") {
           level[a - 1] = -20;
           level.push(indent);
           return;
         }
-        if (data.stack[a] === "array" && rules.script.arrayFormat === "inline") {
+        if (data.stack[a] === "array" && option.arrayFormat === "inline") {
           level[a - 1] = -20;
           level.push(-10);
           return;
         }
-        if (data.stack[a] === "object" && rules.script.objectIndent === "indent") {
+        if (data.stack[a] === "object" && option.objectIndent === "indent") {
           level[a - 1] = -20;
           level.push(indent);
           return;
         }
-        if (data.stack[a] === "object" && rules.script.objectIndent === "inline") {
+        if (data.stack[a] === "object" && option.objectIndent === "inline") {
           level[a - 1] = -20;
           level.push(-10);
           return;
@@ -9767,7 +9875,7 @@ function script2() {
       arrbreak.push(false);
       wordlist.push(false);
       itemcount.push(0);
-      if (rules.script.neverFlatten === true || deep === "attribute" || ltype === "generic" || rules.script.arrayFormat === "indent" && deep === "array" || deep === "class" && not(ltoke, 40 /* LPR */) && ltoke !== "x(" || is(ctoke, 91 /* LSB */) && data.token[a + 1] === "function") {
+      if (option.neverFlatten === true || deep === "attribute" || ltype === "generic" || option.arrayFormat === "indent" && deep === "array" || deep === "class" && not(ltoke, 40 /* LPR */) && ltoke !== "x(" || is(ctoke, 91 /* LSB */) && data.token[a + 1] === "function") {
         destruct.push(false);
       } else {
         if (deep === "expression" || deep === "method") {
@@ -9790,7 +9898,7 @@ function script2() {
         if (data.types[a - 1] !== "comment") {
           if (ltype === "markup") {
             level[a - 1] = indent;
-          } else if (rules.script.braceAllman === true && ltype !== "operator" && ltoke !== "return") {
+          } else if (option.braceAllman === true && ltype !== "operator" && ltoke !== "return") {
             level[a - 1] = indent - 1;
           } else if (data.stack[a + 1] !== "block" && (deep === "function" || is(ltoke, 41 /* RPR */) || ltoke === "x)" || is(ltoke, 44 /* COM */) || is(ltoke, 125 /* RCB */) || ltype === "markup")) {
             level[a - 1] = -10;
@@ -9799,19 +9907,19 @@ function script2() {
           }
         }
         if (deep === "object") {
-          if (rules.script.objectIndent === "indent") {
+          if (option.objectIndent === "indent") {
             destruct[destruct.length - 1] = false;
             level.push(indent);
             return;
           }
-          if (rules.script.objectIndent === "inline") {
+          if (option.objectIndent === "inline") {
             destruct[destruct.length - 1] = true;
             level.push(-20);
             return;
           }
         }
         if (deep === "switch") {
-          if (rules.script.noCaseIndent === true) {
+          if (option.noCaseIndent === true) {
             level.push(indent - 1);
             return;
           }
@@ -9845,7 +9953,7 @@ function script2() {
         if (ltoke === "async") {
           level[a - 1] = -10;
         } else if (deep === "method" || data.token[a - 2] === "function" && ltype === "reference") {
-          if (ltoke === "import" || ltoke === "in" || rules.script.functionNameSpace === true) {
+          if (ltoke === "import" || ltoke === "in" || option.functionNameSpace === true) {
             level[a - 1] = -10;
           } else if (is(ltoke, 125 /* RCB */) && data.stack[a - 1] === "function" || ltype === "word" || ltype === "reference" || ltype === "property") {
             level[a - 1] = -20;
@@ -9861,7 +9969,7 @@ function script2() {
           level.push(-20);
           return;
         }
-        if (is(ltoke, 45 /* DSH */) && (a < 2 || not(data.token[a - 2], 41 /* RPR */) && not(data.token[a - 2], 93 /* RSB */) && data.token[a - 2] !== "x)" && data.types[a - 2] !== "reference" && data.types[a - 2] !== "string" && data.types[a - 2] !== "number") || rules.script.functionSpace === false && ltoke === "function") {
+        if (is(ltoke, 45 /* DSH */) && (a < 2 || not(data.token[a - 2], 41 /* RPR */) && not(data.token[a - 2], 93 /* RSB */) && data.token[a - 2] !== "x)" && data.types[a - 2] !== "reference" && data.types[a - 2] !== "string" && data.types[a - 2] !== "number") || option.functionSpace === false && ltoke === "function") {
           level[a - 1] = -20;
         }
         level.push(-20);
@@ -9881,12 +9989,12 @@ function script2() {
           level.push(-20);
           return;
         }
-        if (rules.script.arrayFormat === "indent") {
+        if (option.arrayFormat === "indent") {
           destruct[destruct.length - 1] = false;
           level.push(indent);
           return;
         }
-        if (rules.script.arrayFormat === "inline") {
+        if (option.arrayFormat === "inline") {
           destruct[destruct.length - 1] = true;
           level.push(-20);
           return;
@@ -9974,7 +10082,7 @@ function script2() {
         level.push(-10);
       }
       if (a > 2 && (data.types[a - 2] === "template_string_else" || data.types[a - 2] === "template_string_start")) {
-        if (rules.script.bracePadding === true) {
+        if (option.bracePadding === true) {
           level[a - 2] = -10;
           level[a - 1] = -10;
         } else {
@@ -10006,7 +10114,7 @@ function script2() {
       if (ctoke === "else" && is(ltoke, 125 /* RCB */)) {
         if (data.token[a - 2] === "x}")
           level[a - 3] = level[a - 3] - 1;
-        if (rules.script.braceAllman === true || rules.script.elseNewline === true) {
+        if (option.braceAllman === true || option.elseNewline === true) {
           level[a - 1] = indent;
         }
       }
@@ -10016,7 +10124,7 @@ function script2() {
         level[a - 1] = -10;
       }
       if (ctoke === "function") {
-        if (rules.script.functionSpace === false && a < b - 1 && (is(data.token[a + 1], 40 /* LPR */) || data.token[a + 1] === "x(")) {
+        if (option.functionSpace === false && a < b - 1 && (is(data.token[a + 1], 40 /* LPR */) || data.token[a + 1] === "x(")) {
           level.push(-20);
           return;
         }
@@ -10048,7 +10156,7 @@ function script2() {
           }
           c = c - 1;
         } while (c > -1);
-      } else if (ctoke === "in" || (is(ltoke, 125 /* RCB */) || ltoke === "x}") && (ctoke === "catch" || ctoke === "else" && rules.script.elseNewline === false && rules.script.braceAllman === false)) {
+      } else if (ctoke === "in" || (is(ltoke, 125 /* RCB */) || ltoke === "x}") && (ctoke === "catch" || ctoke === "else" && option.elseNewline === false && option.braceAllman === false)) {
         level[a - 1] = -10;
       } else if (ctoke === "var" || ctoke === "let" || ctoke === "const") {
         vindex[vindex.length - 1] = a;
@@ -10087,7 +10195,7 @@ function script2() {
         level.push(-10);
         return;
       }
-      if (rules.script.bracePadding === false && a < b - 1 && is(data.token[a + 1], 125 /* RCB */)) {
+      if (option.bracePadding === false && a < b - 1 && is(data.token[a + 1], 125 /* RCB */)) {
         level.push(-20);
         return;
       }
@@ -10215,7 +10323,7 @@ function script2() {
       }
       return linesout.join(NIL);
     }
-    if (rules.script.vertical === true) {
+    if (option.vertical === true) {
       let vertical2 = function(end) {
         let longest = 0;
         let complex = 0;
@@ -10298,7 +10406,7 @@ function script2() {
     a = parse.start;
     do {
       if (data.lexer[a] === lexer) {
-        if (data.types[a] === "comment" && rules.script.commentIndent === true) {
+        if (data.types[a] === "comment" && option.commentIndent === true) {
           if (/\n/.test(data.token[a])) {
             const space = data.begin[a] > -1 ? is(data.token[a][2], 42 /* ARS */) ? repeatChar(levels[a], tab) + rules.indentChar : repeatChar(levels[a], tab) : rules.indentChar;
             const comm = data.token[a].split(/\n/);
@@ -10311,7 +10419,7 @@ function script2() {
           }
         }
         if (invisibles.indexOf(data.token[a]) < 0) {
-          if (not(data.token[a], 59 /* SEM */) || rules.script.noSemicolon === false) {
+          if (not(data.token[a], 59 /* SEM */) || option.noSemicolon === false) {
             build.push(data.token[a]);
           } else if (levels[a] < 0 && data.types[a + 1] !== "comment") {
             build.push(";");
@@ -10320,7 +10428,7 @@ function script2() {
         if (a < b - 1 && data.lexer[a + 1] !== lexer && data.begin[a] === data.begin[a + 1] && data.types[a + 1].indexOf("end") < 0 && not(data.token[a], 44 /* COM */)) {
           build.push(WSP);
         } else if (levels[a] > -1) {
-          if ((levels[a] > -1 && is(data.token[a], 123 /* LCB */) || levels[a] > -1 && is(data.token[a + 1], 125 /* RCB */)) && data.lines[a] < 3 && rules.script.braceNewline === true) {
+          if ((levels[a] > -1 && is(data.token[a], 123 /* LCB */) || levels[a] > -1 && is(data.token[a + 1], 125 /* RCB */)) && data.lines[a] < 3 && option.braceNewline === true) {
             if (data.lines[a + 1] < 3)
               build.push(nl(0));
           }
@@ -10352,7 +10460,6 @@ function script2() {
     parse.iterator = b - 1;
     return build.join(NIL);
   })();
-  assign(rules.script, cache);
   return output;
 }
 
@@ -10374,11 +10481,11 @@ function style2() {
   let indent = rules.indentLevel;
   let a = parse.start;
   let when = [NIL, NIL];
-  function isType(index, name) {
+  function isType2(index, name) {
     return data.types[index] === name;
   }
   function newline(tabs) {
-    const linesout = [];
+    const lines = [];
     const total = (() => {
       if (a === len - 1)
         return 1;
@@ -10392,64 +10499,68 @@ function style2() {
     if (tabs < 0)
       tabs = 0;
     do {
-      linesout.push(crlf);
+      lines.push(crlf);
       index = index + 1;
     } while (index < total);
     if (tabs > 0) {
       index = 0;
       do {
-        linesout.push(tab);
+        lines.push(tab);
         index = index + 1;
       } while (index < tabs);
     }
-    build.push(linesout.join(NIL));
+    build.push(lines.join(NIL));
   }
   do {
-    if (isType(a + 1, "end") || isType(a + 1, "liquid_end") || isType(a + 1, "liquid_else")) {
+    if (isType2(a + 1, "end") || isType2(a + 1, "liquid_end") || isType2(a + 1, "liquid_else")) {
       indent = indent - 1;
     }
-    if (isType(a, "liquid") && data.lines[a] > 0) {
+    if (isType2(a, "liquid") && data.lines[a] > 0) {
       build.push(data.token[a]);
       if (not(data.token[a + 1], 59 /* SEM */) && grammar.css.units.has(data.token[a + 1]) === false) {
         newline(indent);
       }
-    } else if (isType(a - 1, "selector") && isType(a, "liquid") && isType(a + 1, "selector")) {
+    } else if (isType2(a - 1, "selector") && isType2(a, "liquid") && isType2(a + 1, "selector")) {
       build.push(data.token[a]);
       if (isLast(data.token[a - 1], 45 /* DSH */) && (is(data.token[a + 1], 46 /* DOT */) || is(data.token[a + 1], 35 /* HSH */) || is(data.token[a + 1], 38 /* AND */))) {
         build.push(WSP);
       }
-    } else if (isType(a, "liquid_else")) {
+    } else if (isType2(a, "liquid_else")) {
       build.push(data.token[a]);
       indent = indent + 1;
       newline(indent);
-    } else if (isType(a, "start") || isType(a, "liquid_start")) {
+    } else if (isType2(a, "start") || isType2(a, "liquid_start")) {
       indent = indent + 1;
       build.push(data.token[a]);
-      if (isType(a + 1, "end") === false && isType(a + 1, "liquid_end") === false) {
+      if (isType2(a + 1, "end") === false && isType2(a + 1, "liquid_end") === false) {
         newline(indent);
       }
-    } else if (is(data.token[a], 59 /* SEM */) || (isType(a, "end") || isType(a, "liquid_end") || isType(a, "comment"))) {
+    } else if (is(data.token[a], 59 /* SEM */) || (isType2(a, "end") || isType2(a, "liquid_end") || isType2(a, "comment"))) {
       build.push(data.token[a]);
-      if (isType(a + 1, "value")) {
+      if (isType2(a + 1, "value")) {
         if (data.lines[a + 1] === 1) {
           build.push(WSP);
         } else if (data.lines[a + 1] > 1) {
           newline(indent);
         }
-      } else if (isType(a + 1, "separator") === false) {
-        if (isType(a + 1, "comment") === false || isType(a + 1, "comment") && data.lines[a + 1] > 1) {
+      } else if (isType2(a + 1, "separator") === false) {
+        if (isType2(a + 1, "comment") === false || isType2(a + 1, "comment") && data.lines[a + 1] > 1) {
           newline(indent);
         } else {
           build.push(WSP);
         }
+      } else if (isType2(a, "comment") && isType2(a + 1, "comment") === false) {
+        if (data.lines[a] > 1) {
+          newline(indent);
+        }
       }
     } else if (is(data.token[a], 58 /* COL */)) {
       build.push(data.token[a]);
-      if (isType(a + 1, "selector") === false && not(data.token[a + 1], 44 /* COM */)) {
+      if (isType2(a + 1, "selector") === false && not(data.token[a + 1], 44 /* COM */)) {
         build.push(WSP);
       }
-    } else if (isType(a, "selector") || isType(a, "at_rule")) {
-      if (rules.style.classPadding === true && isType(a - 1, "end") && data.lines[a] < 3) {
+    } else if (isType2(a, "selector") || isType2(a, "at_rule")) {
+      if (rules.style.classPadding === true && isType2(a - 1, "end") && data.lines[a] < 3) {
         newline(indent);
       }
       if (data.token[a].indexOf("and(") > 0) {
@@ -10463,17 +10574,17 @@ function style2() {
       } else {
         build.push(data.token[a]);
       }
-      if (isType(a + 1, "start")) {
+      if (isType2(a + 1, "start")) {
         build.push(WSP);
       }
     } else if (is(data.token[a], 44 /* COM */)) {
-      if (isType(a + 1, "value")) {
+      if (isType2(a + 1, "value")) {
         newline(indent);
         build.push(data.token[a]);
       } else {
         build.push(data.token[a]);
       }
-      if (isType(a + 1, "selector") || isType(a + 1, "property")) {
+      if (isType2(a + 1, "selector") || isType2(a + 1, "property")) {
         newline(indent);
       } else {
         build.push(WSP);
@@ -10483,7 +10594,7 @@ function style2() {
       newline(indent);
     } else if (data.token[a] === "x;") {
       newline(indent);
-    } else if ((isType(a, "variable") || isType(a, "function")) && rules.style.classPadding === true && isType(a - 1, "end") && data.lines[a] < 3) {
+    } else if ((isType2(a, "variable") || isType2(a, "function")) && rules.style.classPadding === true && isType2(a - 1, "end") && data.lines[a] < 3) {
       build.push(crlf);
       build.push(data.token[a]);
     } else if (not(data.token[a], 59 /* SEM */)) {
@@ -10492,7 +10603,9 @@ function style2() {
     a = a + 1;
   } while (a < len);
   parse.iterator = len - 1;
-  return build.join(NIL);
+  if (build[0] === parse.crlf || is(build[0], 32 /* WSP */))
+    build[0] = NIL;
+  return rules.endNewline === true ? build.join(NIL).replace(/\s*$/, parse.crlf) : build.join(NIL).replace(/\s+$/, NIL);
 }
 
 // src/format/index.ts
@@ -10558,12 +10671,13 @@ var _Parser = class {
     this.crlf = "\n";
     this.references = [[]];
     this.count = -1;
-    this.character = 0;
-    this.space = -1;
-    this.line = 1;
-    this.lineOffset = 0;
+    this.lineColumn = 0;
+    this.lineNumber = 1;
+    this.lineOffset = 1;
+    this.lineIndex = 0;
     this.rules = {
       crlf: false,
+      defaults: "none",
       language: "auto",
       endNewline: false,
       indentChar: " ",
@@ -10574,8 +10688,10 @@ var _Parser = class {
       liquid: {
         commentNewline: false,
         commentIndent: true,
+        correct: false,
         delimiterTrims: "preserve",
         ignoreTagList: [],
+        indentAttributes: false,
         lineBreakSeparator: "default",
         normalizeSpacing: true,
         preserveComment: false,
@@ -10599,6 +10715,8 @@ var _Parser = class {
         preserveText: false,
         preserveAttributes: false,
         selfCloseSpace: true,
+        selfCloseSVG: true,
+        stripAttributeLines: false,
         quoteConvert: "none"
       },
       json: assign({
@@ -10608,16 +10726,39 @@ var _Parser = class {
         objectIndent: "default",
         objectSort: false
       }, {
+        braceStyle: "none",
+        caseSpace: false,
+        commentIndent: false,
+        commentNewline: false,
+        correct: false,
+        elseNewline: false,
+        endComma: "never",
+        functionNameSpace: false,
+        functionSpace: false,
+        methodChain: 4,
+        neverFlatten: false,
+        noCaseIndent: false,
+        noSemicolon: false,
+        preserveComment: false,
+        quoteConvert: "none",
+        styleGuide: "none",
+        ternaryLine: false,
+        variableList: "none",
+        vertical: false
+      }, {
         quoteConvert: "double",
         endComma: "never",
         noSemicolon: true,
         vertical: false
       }),
       style: {
+        commentIndent: false,
+        commentNewline: false,
         correct: false,
         atRuleSpace: true,
         classPadding: false,
         noLeadZero: false,
+        preserveComment: false,
         sortSelectors: false,
         sortProperties: false,
         quoteConvert: "none"
@@ -10771,7 +10912,7 @@ var _Parser = class {
     data.lines.push(record.lines);
     if (data !== this.data)
       return;
-    this.space = 0;
+    this.lineOffset = 0;
     this.count = this.count + 1;
     if (record.lexer !== "style" && structure.replace(/[{}@<>%#]/g, NIL) === NIL) {
       structure = record.types === "else" ? "else" : getTagName(record.token);
@@ -10804,7 +10945,7 @@ var _Parser = class {
     }
     if (this.hooks.parse !== null) {
       this.hooks.parse[0].call({
-        line: this.line,
+        line: this.lineNumber,
         stack: this.stack.entry,
         language: this.language
       }, record, this.count);
@@ -10848,7 +10989,7 @@ var _Parser = class {
       if (splice.data === this.data) {
         this.count = this.count - splice.howmany + 1;
         if (begin !== this.data.begin[this.count] || token !== this.data.token[this.count]) {
-          this.space = 0;
+          this.lineOffset = 0;
         }
       }
     } else {
@@ -10861,16 +11002,16 @@ var _Parser = class {
       splice.data.lines.splice(splice.index, splice.howmany);
       if (splice.data === this.data) {
         this.count = this.count - splice.howmany;
-        this.space = 0;
+        this.lineOffset = 0;
       }
     }
   }
   spacer(args) {
-    this.space = 1;
+    this.lineOffset = 1;
     do {
       if (args.array[args.index] === NWL) {
-        this.space = this.space + 1;
-        this.line = this.line + 1;
+        this.lineOffset = this.lineOffset + 1;
+        this.lineNumber = this.lineNumber + 1;
       }
       if (ws(args.array[args.index + 1]) === false)
         break;
@@ -11075,7 +11216,7 @@ function detect2(sample) {
   };
 }
 
-// src/prettify.ts
+// src/esthetic.ts
 var _Instance = class {
   get data() {
     return parse.data;
@@ -11100,6 +11241,9 @@ var _Instance = class {
     if (typeof this.language === "string" && this.language !== parse.language) {
       parse.language = this.language;
       parse.lexer = getLexerName(parse.language);
+    } else {
+      this.language = options.language;
+      this.lexer = getLexerName(options.language);
     }
     if (typeof options === "object")
       this.rules(options);
@@ -11168,7 +11312,7 @@ var _Instance = class {
         } else {
           if (rule === "crlf") {
             parse.rules[rule] = options[rule];
-            parse.crlf = parse.rules[rule] ? "\r\n" : "\n";
+            parse.crlf = parse.rules[rule] ? CNL : NWL;
           } else if (rule === "language") {
             parse.rules[rule] = options[rule];
             if (parse.language !== parse.rules[rule]) {
@@ -11213,7 +11357,7 @@ Instance.events = {
   rules: [],
   parse: []
 };
-var Prettify = class extends Instance {
+var Esthetic = class extends Instance {
   liquid(source, options) {
     return this.format(source, options);
   }
@@ -11230,29 +11374,29 @@ var Prettify = class extends Instance {
     return this.format(source, options);
   }
 };
-var prettify_default = function(binding) {
-  const prettify2 = new Prettify();
+var esthetic_default = function(binding) {
+  const prettify = new Esthetic();
   for (const language of binding) {
-    defineProperties(prettify2[language], {
+    defineProperties(prettify[language], {
       sync: {
         value(source, options) {
-          prettify2.async = false;
-          prettify2.language = language;
-          prettify2.lexer = getLexerName(language);
-          return prettify2[language](source, options);
+          prettify.async = false;
+          prettify.language = language;
+          prettify.lexer = getLexerName(language);
+          return prettify[language](source, options);
         }
       }
     });
   }
-  defineProperties(prettify2.format, {
+  defineProperties(prettify.format, {
     sync: {
       value(source, options) {
-        prettify2.async = false;
-        return prettify2.format(source, options);
+        prettify.async = false;
+        return prettify.format(source, options);
       }
     }
   });
-  return prettify2;
+  return prettify;
 }([
   "liquid",
   "html",
@@ -11261,4 +11405,4 @@ var prettify_default = function(binding) {
   "css"
 ]);
 
-module.exports = prettify_default;
+module.exports = esthetic_default;

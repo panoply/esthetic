@@ -1,13 +1,9 @@
 import type { Types } from 'types/internal';
 import { is, isLast, not } from 'utils';
-import { cc, NIL, WSP, grammar } from 'shared';
+import { NIL, WSP } from 'chars';
+import { cc } from 'lexical/codes';
+import { grammar } from '@parse/grammar';
 import { parse } from '@parse/parser';
-
-/* -------------------------------------------- */
-/* MARKUP BEAUTIFICATION                        */
-/* -------------------------------------------- */
-
-// prettify.beautify.style =
 
 export function style () {
 
@@ -97,7 +93,7 @@ export function style () {
    */
   function newline (tabs: number) {
 
-    const linesout = [];
+    const lines = [];
 
     const total = (() => {
 
@@ -115,19 +111,19 @@ export function style () {
     if (tabs < 0) tabs = 0;
 
     do {
-      linesout.push(crlf);
+      lines.push(crlf);
       index = index + 1;
     } while (index < total);
 
     if (tabs > 0) {
       index = 0;
       do {
-        linesout.push(tab);
+        lines.push(tab);
         index = index + 1;
       } while (index < tabs);
     }
 
-    build.push(linesout.join(NIL));
+    build.push(lines.join(NIL));
 
   };
 
@@ -219,6 +215,13 @@ export function style () {
         } else {
 
           build.push(WSP);
+
+        }
+      } else if (isType(a, 'comment') && isType(a + 1, 'comment') === false) {
+
+        if (data.lines[a] > 1) {
+
+          newline(indent);
 
         }
       }
@@ -319,6 +322,12 @@ export function style () {
 
   parse.iterator = len - 1;
 
-  return build.join(NIL);
+  // console.log(data);
+
+  if (build[0] === parse.crlf || is(build[0], cc.WSP)) build[0] = NIL;
+
+  return rules.endNewline === true
+    ? build.join(NIL).replace(/\s*$/, parse.crlf)
+    : build.join(NIL).replace(/\s+$/, NIL);
 
 };

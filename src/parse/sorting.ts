@@ -1,5 +1,6 @@
 import { is, not, isArray } from 'utils';
-import { NIL, cc as ch } from 'shared';
+import { cc as ch } from 'lexical/codes';
+import { NIL } from 'chars';
 import { parse } from '@parse/parser';
 import type{ Data } from 'types/internal';
 
@@ -75,7 +76,7 @@ export function sortObject (data: Data) {
   /**
      * The current number of line spaces
      */
-  const lines = parse.space;
+  const lines = parse.lineOffset;
 
   /**
      * Whether or not the lexer is `style`
@@ -394,7 +395,7 @@ export function sortObject (data: Data) {
       } while (dd < keylen);
 
       parse.splice({ data, howmany: ff, index: cc + 1 });
-      parse.space = lines;
+      parse.lineOffset = lines;
       parse.concat(data, store);
 
     }

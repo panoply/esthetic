@@ -1,13 +1,13 @@
-import * as language from 'src/parse/detection';
-import { CommControl, CommIgnoreFile } from '@utils/regex';
-import { cc, NIL } from 'shared';
-import { keys } from '@utils/native';
-import { is, ws } from '@utils/helpers';
-import { definitions } from '@shared/definitions';
+import * as rx from 'lexical/regex';
+import { cc } from 'lexical/codes';
+import { NIL } from 'chars';
+import { keys, is, ws } from 'utils';
+import { parse } from '@parse/parser';
+import { definitions } from '@parse/definitions';
 
 /**
  * Parses the inline comment settings. This has been adapted from
- * the Prettify (formally PrettyDiff) comment parser and refactored
+ * the Esthetic (formally PrettyDiff) comment parser and refactored
  * to focus purely on the Prettify supported logics.
  *
  * Source Priorities:
@@ -17,12 +17,12 @@ import { definitions } from '@shared/definitions';
  *
  * Examples:
  *
- * - `/* @prettify width: 80 preserveLine: 4 *\/`
- * - `// @prettify width: 80 preserveLine: 4`
- * - `<!-- @prettify width: 80 preserveLine: 4 -->`
- * - `{% # @prettify width: 80 preserveLine: 4 %}`
+ * - `/* @esthetic width: 80 preserveLine: 4 *\/`
+ * - `// @esthetic width: 80 preserveLine: 4`
+ * - `<!-- @esthetic width: 80 preserveLine: 4 -->`
+ * - `{% # @esthetic width: 80 preserveLine: 4 %}`
  * - `{% comment %} @prettify width: 40 preserveLine: 2 {% endcomment %}`
- * - `# @prettify width: 80 preserveLine: 4`
+ * - `# @esthetic width: 80 preserveLine: 4`
  *
  * Parsing Considerations:
  *
@@ -32,31 +32,33 @@ import { definitions } from '@shared/definitions';
  * 4. Parameters are name value pairs separated by white space
  * 5. The delimiter separating name and value must be a colon character, eg: `:`
  */
-export function control () {
+export function control (source: string) {
 
-  const sindex = prettify.source.search(CommControl);
-  const signore = prettify.source.search(CommIgnoreFile);
+  const sindex = source.search(rx.CommControl);
+  const signore = source.search(rx.CommIgnoreFile);
   const k = keys(definitions);
   const len = k.length;
 
   let a = 0;
   let b = 0;
 
-  if (signore > -1 && prettify.source.slice(0, signore).trimStart() === NIL) return false;
+  // const lang = NIL;
+  // const lex = NIL;
 
-  if ((sindex > -1 && (sindex === 0 || "\"':".indexOf(prettify.source.charAt(sindex - 1)) < 0))) {
+  if (signore > -1 && source.slice(0, signore).trimStart() === NIL) return false;
+
+  const { rules } = parse;
+
+  if ((sindex > -1 && (sindex === 0 || "\"':".indexOf(source.charAt(sindex - 1)) < 0))) {
 
     const ops = [];
     const pdcom = sindex;
-    const source = prettify.source;
     const len = source.length;
 
     let a = pdcom;
     let b = 0;
     let quote = NIL;
     let item = NIL;
-    let lang = NIL;
-    let lex = NIL;
     let valkey = [];
     let op = [];
     let rcb: number;
@@ -86,7 +88,7 @@ export function control () {
     };
 
     do {
-      if (source.slice(a - 9, a) === '@prettify') break;
+      if (source.slice(a - 9, a) === '@esthetic') break;
       a = a + 1;
     } while (a < len);
 
@@ -168,9 +170,13 @@ export function control () {
 
       quote = source.slice(b, a + 1);
 
-      if (comment === '<!--') quote = quote.replace(/\s*-+>$/, NIL);
-      else if (comment === '//') quote = quote.replace(/\s+$/, NIL);
-      else quote = quote.replace(/\s*\u002a\/$/, NIL);
+      if (comment === '<!--') {
+        quote = quote.replace(/\s*-+>$/, NIL);
+      } else if (comment === '//') {
+        quote = quote.replace(/\s+$/, NIL);
+      } else {
+        quote = quote.replace(/\s*\u002a\/$/, NIL);
+      }
 
       ops.push(quote);
     }
@@ -186,7 +192,7 @@ export function control () {
         if (ops[a].indexOf(':') > 0) {
           op = [ ops[a].slice(0, ops[a].indexOf(':')), ops[a].slice(ops[a].indexOf(':') + 1) ];
         } else if (definitions[ops[a]] !== undefined && definitions[ops[a]].type === 'boolean') {
-          prettify.options[ops[a]] = true;
+          parse.rules[ops[a]] = true;
         }
 
         if (op.length === 2 && definitions[op[0]] !== undefined) {
@@ -204,11 +210,11 @@ export function control () {
 
           if (definitions[op[0]].type === 'number' && isNaN(Number(op[1])) === false) {
 
-            prettify.options[op[0]] = Number(op[1]);
+            rules[op[0]] = Number(op[1]);
 
           } else if (definitions[op[0]].type === 'boolean') {
 
-            prettify.options[op[0]] = op[1] === 'true';
+            rules[op[0]] = op[1] === 'true';
 
           } else {
 
@@ -222,149 +228,32 @@ export function control () {
                 b = b - 1;
 
                 if (valkey[b] === op[1]) {
-                  prettify.options[op[0]] = op[1];
+                  rules[op[0]] = op[1];
                   break;
                 }
               } while (b > 0);
 
             } else {
 
-              if (op[0] === 'language') {
-                lang = op[1];
-              } else if (op[0] === 'lexer') {
-                lex = op[1];
-              }
+              // if (op[0] === 'language') {
+              //   lang = op[1];
+              // } else if (op[0] === 'lexer') {
+              //   lex = op[1];
+              // }
 
-              prettify.options[op[0]] = op[1];
+              rules[op[0]] = op[1];
             }
           }
         }
       } while (a > 0);
 
-      if (lex === NIL && lang !== NIL) lex = language.setLexer(lang);
-
     }
-  }
-
-  if (prettify.options.lexer === 'script') {
-    if (prettify.options.script.styleGuide !== undefined) {
-      switch (prettify.options.script.styleGuide) {
-        case 'airbnb':
-          prettify.options.wrap = 80;
-          prettify.options.indentChar = ' ';
-          prettify.options.indentSize = 2;
-          prettify.options.preserveLine = 1;
-          prettify.options.script.correct = true;
-          prettify.options.script.quoteConvert = 'single';
-          prettify.options.script.variableList = 'each';
-          prettify.options.script.endComma = 'always';
-          prettify.options.script.bracePadding = true;
-          break;
-        case 'crockford':
-          prettify.options.indentChar = ' ';
-          prettify.options.indentSize = 4;
-          prettify.options.script.correct = true;
-          prettify.options.script.bracePadding = false;
-          prettify.options.script.elseNewline = false;
-          prettify.options.script.endComma = 'never';
-          prettify.options.script.noCaseIndent = true;
-          prettify.options.script.functionSpace = true;
-          prettify.options.script.variableList = 'each';
-          prettify.options.script.vertical = false;
-          break;
-        case 'google':
-          prettify.options.wrap = -1;
-          prettify.options.indentChar = ' ';
-          prettify.options.indentSize = 4;
-          prettify.options.preserveLine = 1;
-          prettify.options.script.correct = true;
-          prettify.options.script.quoteConvert = 'single';
-          prettify.options.script.vertical = false;
-          break;
-        case 'jquery':
-          prettify.options.wrap = 80;
-          prettify.options.indentChar = '\u0009';
-          prettify.options.indentSize = 1;
-          prettify.options.script.correct = true;
-          prettify.options.script.bracePadding = true;
-          prettify.options.script.quoteConvert = 'double';
-          prettify.options.script.variableList = 'each';
-          break;
-        case 'jslint':
-          prettify.options.indentChar = ' ';
-          prettify.options.indentSize = 4;
-          prettify.options.script.correct = true;
-          prettify.options.script.bracePadding = false;
-          prettify.options.script.elseNewline = false;
-          prettify.options.script.endComma = 'never';
-          prettify.options.script.noCaseIndent = true;
-          prettify.options.script.functionSpace = true;
-          prettify.options.script.variableList = 'each';
-          prettify.options.script.vertical = false;
-          break;
-        case 'standard':
-          prettify.options.wrap = 0;
-          prettify.options.indentChar = ' ';
-          prettify.options.indentSize = 2;
-          prettify.options.endNewline = false;
-          prettify.options.preserveLine = 1;
-          prettify.options.script.correct = true;
-          prettify.options.script.noSemicolon = true;
-          prettify.options.script.endComma = 'never';
-          prettify.options.script.braceNewline = false;
-          prettify.options.script.bracePadding = false;
-          prettify.options.script.braceAllman = false;
-          prettify.options.script.quoteConvert = 'single';
-          prettify.options.script.functionSpace = true;
-          prettify.options.script.ternaryLine = false;
-          prettify.options.script.variableList = 'each';
-          prettify.options.script.vertical = false;
-          break;
-        case 'yandex':
-          prettify.options.script.correct = true;
-          prettify.options.script.bracePadding = false;
-          prettify.options.script.quoteConvert = 'single';
-          prettify.options.script.variableList = 'each';
-          prettify.options.script.vertical = false;
-          break;
-      }
-    }
-
-    if (prettify.options.script.braceStyle !== undefined) {
-
-      switch (prettify.options.script.braceStyle) {
-        case 'collapse':
-          prettify.options.script.braceNewline = false;
-          prettify.options.script.bracePadding = false;
-          prettify.options.script.braceAllman = false;
-          prettify.options.script.objectIndent = 'indent';
-          prettify.options.script.neverFlatten = true;
-          break;
-        case 'collapse-preserve-inline':
-          prettify.options.script.braceNewline = false;
-          prettify.options.script.bracePadding = true;
-          prettify.options.script.braceAllman = false;
-          prettify.options.script.objectIndent = 'indent';
-          prettify.options.script.neverFlatten = false;
-          break;
-        case 'expand':
-          prettify.options.script.braceNewline = false;
-          prettify.options.script.bracePadding = false;
-          prettify.options.script.braceAllman = true;
-          prettify.options.script.objectIndent = 'indent';
-          prettify.options.script.neverFlatten = true;
-          break;
-      }
-
-    }
-
-    if (prettify.options.language === 'json') prettify.options.wrap = 0;
 
   }
 
   do {
 
-    if (prettify.options[keys[a]] !== undefined) {
+    if (rules[keys[a]] !== undefined) {
       b = definitions[keys[a]].lexer.length;
       do b = b - 1;
       while (b > 0);

@@ -1,6 +1,34 @@
+import { LiteralUnion } from 'type-fest';
 import { LanguageName } from '../shared';
 
 export interface GlobalRules {
+  /**
+   * **Default** none
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `recommended`
+   *
+   * A default ruleset style guide to use. This will assign rules according to a couple of presets.
+   *
+   * ---
+   *
+   * 👍 &nbsp;&nbsp;**recommended**
+   *
+   * This style guide is typically suited for most cases.
+   *
+   * 👍 &nbsp;&nbsp;**strict**
+   *
+   * This is a strict ruleset for developers who think highly of themselves.
+   *
+   * 👎 &nbsp;&nbsp;**none**
+   *
+   * This is the default and the most unobtrusive.
+   *
+   * 🤡 &nbsp;&nbsp;**liquid-prettier**
+   *
+   * You're a joke.
+   *
+   */
+  defaults?: LiteralUnion<'none' | 'recommended' | 'strict' | 'liquid-prettier', string> ;
   /**
    * **Default** `auto`
    *

@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@liquify/prettify": "link:.."
+    "esthetic": "link:.."
   }
 }

@@ -20,6 +20,17 @@ export type RuleNames = (
 )
 
 /**
+ * Language Rules names
+ */
+export type LanguageRuleNames = (
+  | 'global'
+  | 'liquid'
+  | 'markup'
+  | 'json'
+  | 'style'
+  | 'script'
+)
+/**
  * Lexer Names string literal
  */
 export type LexerName = (

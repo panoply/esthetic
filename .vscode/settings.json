@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "Æsthetic",
     "endcustom",
     "endrandom",
     "stylelint",
@@ -47,5 +48,8 @@
   "liquid.format.ignore": [
     "tests/samples/**"
   ],
+  "liquid.format.markup": {
+    "forceAttribute": 2
+  }
 
 }

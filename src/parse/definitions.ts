@@ -209,34 +209,6 @@ export const definitions: Definitions = {
           description: 'Converts single quotes to double quotes'
         }
       ]
-    },
-    valueForce: {
-      default: 'intent',
-      description: 'Controls force indentation applied in accordance with the attribute value expressions. This rule is Liquid specific.',
-      lexer: 'markup',
-      type: 'select',
-      values: [
-        {
-          rule: 'wrap',
-          description: 'Apply by wrap'
-        },
-        {
-          rule: 'newline',
-          description: 'Apply when newlines'
-        },
-        {
-          rule: 'intent',
-          description: 'Apply on either newline or wrap'
-        },
-        {
-          rule: 'always',
-          description: 'Always apply'
-        },
-        {
-          rule: 'never',
-          description: 'Never apply'
-        }
-      ]
     }
   },
   markup: {
@@ -370,6 +342,18 @@ export const definitions: Definitions = {
       lexer: 'markup',
       type: 'boolean'
     },
+    selfCloseSVG: {
+      default: true,
+      description: 'Whether or not SVG type tags should be converted to self closing void types.',
+      lexer: 'markup',
+      type: 'boolean'
+    },
+    stripAttributeLines: {
+      default: false,
+      description: 'Whether or not newlines contained within tag attributes should be removed or preserved.',
+      lexer: 'markup',
+      type: 'boolean'
+    },
     quoteConvert: {
       lexer: 'all',
       description: 'If the quotes should be converted to single quotes or double quotes.',
@@ -404,6 +388,18 @@ export const definitions: Definitions = {
       type: 'boolean',
       lexer: 'style'
     },
+    commentNewline: {
+      default: false,
+      description: 'If a blank new line should be forced above comments.',
+      lexer: 'all',
+      type: 'boolean'
+    },
+    commentIndent: {
+      default: false,
+      description: 'This will determine whether comments should always start at position 0 of each line or if comments should be indented according to the code.',
+      lexer: 'all',
+      type: 'boolean'
+    },
     sortSelectors: {
       default: false,
       type: 'boolean',
@@ -420,6 +416,12 @@ export const definitions: Definitions = {
       lexer: 'style',
       description: 'This will eliminate leading zeros from numbers expressed within values.',
       default: false,
+      type: 'boolean'
+    },
+    preserveComment: {
+      default: false,
+      description: 'Prevent comment reformatting due to option wrap.',
+      lexer: 'markup',
       type: 'boolean'
     },
     atRuleSpace: {

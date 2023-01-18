@@ -1,8 +1,8 @@
 import { parse } from '@parse/parser';
-import { NIL, NWL, getTagName } from 'shared';
+import { NIL, NWL } from 'chars';
+import * as rx from 'lexical/regex';
 import { join, repeatChar } from 'utils';
 import { Record, Syntactic } from 'types/internal';
-import { prettify } from '@prettify/model';
 
 export const enum ErrorTypes {
   /**
@@ -120,7 +120,7 @@ function errorMessage (error: ParseErrors, token: string, name: string) {
       message: 'Missing HTML > delimiter on end tag',
       details: join(
         `The ${token} tag is missing its closing delimiter resulting in malformed syntax.`,
-        'You can have Prettify autofix syntax errors like this by setting the markup rule "correct" to true.'
+        'You can have Esthetic autofix syntax errors like this by setting the markup rule "correct" to true.'
       )
     }),
     [ParseErrors.InvalidQuotationCharacter]: ({
@@ -185,7 +185,7 @@ function snippet (line: number) {
 
   } else {
 
-    prettify.error.snippet = join(
+    parse.error.snippet = join(
       `  ${line - 1}  │ ${lines[line - 2]}`,
       `» ${line}  │ ${lines[line - 1]}`,
       `  ↓  │  ${ws}`,
@@ -193,7 +193,7 @@ function snippet (line: number) {
       `  ${parse.lineNumber} │  ${lines[parse.lineNumber]}`
     );
 
-    return prettify.error.snippet;
+    return parse.error.snippet;
 
   }
 
@@ -211,7 +211,7 @@ function generate (context: Syntactic, errCode: ParseErrors) {
 
   const info = errorMessage(errCode, context.token, context.stack);
 
-  prettify.error.message = join(
+  parse.error.message = join(
     `Syntax Error (line ${context.line || parse.lineNumber}): ${info.message}`,
     NWL,
     snippet(context.line),
@@ -223,7 +223,7 @@ function generate (context: Syntactic, errCode: ParseErrors) {
     // 'tip' in info ? 'TIP' + NWL + info.tip : NIL
   );
 
-  return prettify.error.message;
+  return parse.error.message;
 
 }
 
@@ -237,7 +237,7 @@ export function syntactic (record: Record) {
 
   if (record.types === 'template_start' || record.types === 'start') {
 
-    const name = getTagName(record.token);
+    const name = rx.getTagName(record.token);
 
     if (record.types === 'start') {
 

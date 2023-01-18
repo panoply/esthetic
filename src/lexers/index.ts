@@ -1,6 +1,5 @@
-import { Lexers } from '@shared/enums';
+import { Lexers } from 'lexical/enum';
 import { markup } from './markup';
-// import { ParseStore } from 'types/next';
 import { script } from './script';
 import { style } from './style';
 

@@ -283,16 +283,24 @@ export interface Grammars {
      */
     embedded?: EmbeddedLiquid
   };
+  svg?: {
+    /**
+     * SVG Void Tags
+     *
+     * String list of SVG Void self-closing tags.
+     */
+    voids?: string[];
+    /**
+     * HTML Tags
+     *
+     * String list of SVG containing tag blocks
+     */
+    tags?: string[];
+  };
   /**
    * Extended token grammars for HTML
    */
   html?: {
-    /**
-     * SVG Tags
-     *
-     * String list of SVG related tags
-     */
-    svg?: string[]
     /**
      * HTML Tags
      *
