@@ -1799,8 +1799,8 @@ export function script () {
 
         do {
           ee = ee + 1;
-          if (c[ee] === NWL) linesSpace = linesSpace + 1;
-        } while (ee < b && u.ws(c[ee + 1]));
+          if (u.is(c[ee], cc.NWL)) linesSpace = linesSpace + 1;
+        } while (ee < b && u.ws(c[ee + 1]) === true);
 
         parse.lineOffset = linesSpace;
 
@@ -3758,7 +3758,7 @@ export function script () {
     do {
 
       if (u.is(c[a], cc.NWL)) {
-        parse.lineOffset = a;
+        parse.lineIndex = a;
         parse.lineOffset = parse.lineOffset + 1;
         parse.lineNumber = parse.lineNumber + 1;
       }
@@ -4163,6 +4163,7 @@ export function script () {
     sortCorrect(0, parse.count + 1);
   }
 
+  // console.log(data);
   return data;
 
 };

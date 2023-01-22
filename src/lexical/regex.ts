@@ -1,108 +1,236 @@
 /**
- * Strip the leading whitespace and newlines.
+ * Non Space
+ *
+ * Non whitespace or newline character
  *
  * ---
  *
- * @example
+ * ```js
  *
-* BEFORE: '  \n  foo  '
-* AFTER:  'foo  ' // leading whitespace and newlines are preserved
+ * '\S'
+ *
+ * ```
+ *
+ */
+export const NonSpace = /\S/;
+
+/**
+ * Empty Line
+ *
+ * Leading and ending whitespace or newline characters
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /^\s+$/
+ *
+ * ```
+ *
+ */
+export const EmptyLine = /^\s+$/;
+
+/**
+ * Whitespace and Newlines - `*` Zero or More
+ *
+ * Zero or more leading whitespace and newline characters
+ *
+ * ---
+ *
+ * ```js
+ *
+ * '\s*'
+ *
+ * ```
+ *
+ */
+export const Spaces = /\s*/;
+
+/**
+ * Whitespace and Newlines - `+` One or More
+ *
+ * Global captures for 1 or more leading whitespace and newline characters
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /\s+/g
+ *
+ * ```
+ *
 */
+export const SpacesGlob = /\s+/g;
+
+/**
+ * Leading Whitespace and Newlines
+ *
+ * 1 or more leading whitespace and newline characters
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /^\s+/
+ *
+ * BEFORE: '  \n  foo  '
+ * AFTER:  'foo  '
+ *
+ *
+ * ```
+ *
+ */
 export const SpaceLead = /^\s+/;
 
 /**
-* Strip the ending whitespace excluding newlines.
-*
-*
-* ---
-*
-* @see https://stackoverflow.com/a/3873354/2021554
-*
-* @example
-*
-* BEFORE: '  foo  \n  '
-* AFTER:  '  foo' // leading whitespace and newlines are preserved
-*/
+ *
+ * Ending Whitespace and Newlines
+ *
+ * 1 or more ending whitespace and newline characters
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /\s+$/
+ *
+ * BEFORE: '  foo   \n '
+ * AFTER:  '  foo'
+ *
+ *
+ * ```
+ */
 export const SpaceEnd = /\s+$/;
 
 /**
-* Strip the leading whitespace excluding newlines.
-*
-* This will remove carriage returns (`\r`), so if the input contains
-* `\r\n` pairs, they will be converted to just `\n`.
-*
-* ---
-*
-* @see https://stackoverflow.com/a/3873354/2021554
-*
-* @example
-*
-* BEFORE: ' \n  foo'
-* AFTER:  '\nfoo' // leading whitespace and newlines are preserved
-*/
-export const StripLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
+ * Leading Whitespace Only
+ *
+ * - `+` More Than 1
+ * - `^` Starter
+ *
+ * 1 or more **leading** whitespace only characters. This will remove carriage
+ * returns (`\r`), so if the input contains `\r\n` pairs, they can be converted to `\n`.
+ * This is a more fluent capture and uses unicodes.
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/
+ *
+ * BEFORE: ' \n  foo'
+ * AFTER:  '\nfoo'
+ *
+ *
+ * ```
+ */
+export const WhitespaceLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
 
 /**
-* Strip the ending whitespace excluding newlines.
-*
-* This will remove carriage returns (`\r`), so if the input contains
-* `\r\n` pairs, they will be converted to just `\n`.
-*
-* ---
-*
-* @see https://stackoverflow.com/a/3873354/2021554
-* @example
-*
-* BEFORE: '  foo  \n  '
-* AFTER:  '  foo\n' // leading whitespace and newlines are preserved
-*/
-export const StripEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
+ * Ending Whitespace Only
+ *
+ * 1 or more **ending** whitespace only characters. This will remove carriage
+ * returns (`\r`), so if the input contains `\r\n` pairs, they can be converted to `\n`.
+ * This is a more fluent capture and uses unicodes.
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/
+ *
+ * BEFORE: ' \n  foo'
+ * AFTER:  '\nfoo'
+ *
+ *
+ * ```
+ */
+export const WhitespaceEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
 
 /**
-* Captures more than 1 whitespace character occurances but does not touch newlines.
-*
-* ---
-*
-* @example
-*
-* ' \t\v\r '
-*/
-export const SpaceOnly = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
+ * All Whitespaces
+ *
+ * Global capture of more than 1 whitespace character occurances but does not touch newlines.
+ *
+ * ---
+ *
+ * ```js
+ *
+ * ' \t\v\r '
+ *
+ *
+ * ```
+ */
+export const WhitespaceGlob = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
 
 /**
-* Captures whitespace only
-*
-* ---
-*
-* @example
-*
-* '\t\v\r '
-*/
-export const Whitespace = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]/;
-/**
-* Captures more than 1 tab character occurances but does not touch newlines.
-*
-* ---
-*
-* @example
-*
-* BEFORE: 'foo   \t\n '
-* AFTER:  'foo   \n'
-*/
-export const TabsOnly = /\t+/g;
+ * Single Whitespace character only
+ *
+ * - No global flag
+ * - No starter or ender
+ *
+ * Captures single whitespace character but does not capture newlines
+ *
+ * ---
+ *
+ * ```js
+ *
+ * '\t\v\r '
+ *
+ * ```
+ */
+export const WhitespaceChar = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]/;
 
 /**
-* Regex is used to inject whitespace and equally distributes spacing
-* within Liquid tokens. It directly relates to `normalizeSpacing` rules.
-*
-* ---
-*
-* @see https://regex101.com/r/jxLNhv/1
-* @example
-*
-* BEFORE: '|filter:" foo "|append:123'
-* AFTER:  '| filter: " foo " | append: 123'
-*/
+ * Leading Newlines
+ *
+ * 1 or more leading newline characters
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /^\n+/
+ *
+ *
+ * ```
+ *
+ */
+export const NewlineLead = /^\n+/;
+
+/**
+ * All Tab Characters
+ *
+ * Global captures of more than 1 tab character occurances but does not touch newlines.
+ *
+ * ---
+ *
+ * ```js
+ *
+ * BEFORE: 'foo   \t\n '
+ * AFTER:  'foo   \n'
+ *
+ * ```
+ */
+export const TabsGlob = /\t+/g;
+
+/**
+ * Regex is used to inject whitespace and equally distributes spacing
+ * within Liquid tokens. It directly relates to `normalizeSpacing` rules.
+ *
+ * - `g` Global Flag
+ *
+ * ---
+ *
+ * https://regex101.com/r/jxLNhv/1
+ *
+ * ```js
+ *
+ * BEFORE: '|filter:" foo "|append:123'
+ * AFTER:  '| filter: " foo " | append: 123'
+ *
+ * ```
+ */
 export const SpaceInjectBefore = /[|:,[\]](?=[0-9a-z-])/g;
 
 /**
@@ -149,18 +277,49 @@ export const StripSpaceInject = /[.[\]] {1,}/g;
 export const CommControl = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic\s+/;
 
 /**
+ * Captures esthetic inline comment ignore next line
+ *
+ * ---
+ *
+ * @see https://regex101.com/r/SLG0Or/1
+ * @example
+ *
+ * LINE COMMENT:    // esthetic-ignore-(next|start|end)
+ * BLOCK COMMENT:   /* esthetic-ignore-(next|start|end)
+ * LINE LIQUID:     {% # esthetic-ignore-(next|start|end)
+ * BLOCK LIQUID:    {% comment %} esthetic-ignore-(next|start|end)
+ * HTML COMMENT:    <!-- esthetic-ignore-(next|start|end)
+ * YAML COMMENT:    # esthetic-ignore-(next|start|end)
+ */
+export const CommIgnore = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-(?:start|next|end)\b/;
+
+/**
+ * Captures esthetic inline comment ignore next line
+ *
+ * ---
+ *
+ * @see https://regex101.com/r/TTD6yY/1
+ * @example
+ *
+ * LINE LIQUID:    // {% # esthetic-ignore-(next|start|end)
+ * BLOCK LIQUID:   // {% comment %} esthetic-ignore-(next|start|end)
+ * HTML COMMENT:   //  <!-- esthetic-ignore-(next|start|end)
+ */
+export const CommMarkupIgnore = /({%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-(start|next|end)\b/;
+
+/**
 * Captures esthetic inline comment file ignores
 *
 * ---
-* @see https://regex101.com/r/nZJp18/1
+* @see https://regex101.com/r/Niv3Z0/1
 * @example
 *
-* LINE COMMENT:    // @esthetic-ignore
-* BLOCK COMMENT:   /* @esthetic-ignore
-* LINE LIQUID:     {% # @esthetic-ignore
-* BLOCK LIQUID:    {% comment %} @esthetic-ignore
-* HTML COMMENT:    <!-- @esthetic-ignore
-* YAML COMMENT:    # @esthetic-ignore
+* LINE COMMENT:    // esthetic-ignore
+* BLOCK COMMENT:   /* esthetic-ignore
+* LINE LIQUID:     {% # esthetic-ignore
+* BLOCK LIQUID:    {% comment %} esthetic-ignore
+* HTML COMMENT:    <!-- esthetic-ignore
+* YAML COMMENT:    # esthetic-ignore
 */
 export const CommIgnoreFile = /(\/[*/]|{%-?\s*(?:comment\s*-?%})|<!-{2})\s*esthetic-ignore\b/;
 
@@ -238,7 +397,39 @@ export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esth
  * HTML COMMENT:    <!-- @esthetic-ignore-next
  * YAML COMMENT:    # @esthetic-ignore-next
  */
-export const CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-next\b/;
+export const CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!--)\s*esthetic-ignore-next\b/;
+
+/**
+ * HTML Comment Opening Delimiter
+ *
+ * Opening delimiter for HTML comment tokens
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /^<!--+/
+ *
+ * ```
+ *
+ */
+export const HTMLCommDelimOpen = /^<!--+/;
+
+/**
+ * HTML Comment Closing Delimiter
+ *
+ * Closing delimiter for HTML comment tokens
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /--+>$/
+ *
+ * ```
+ *
+ */
+export const HTMLCommDelimClose = /--+>$/;
 
 /**
  * Liquid Tag Delimiters

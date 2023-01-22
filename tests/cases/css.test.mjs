@@ -1,5 +1,5 @@
 import test from 'ava';
-import { forAssert, forRules, css, liquid } from '@liquify/ava/prettify';
+import { forAssert, forRules, css, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test:  Liquid infused selectors', t => {

@@ -242,7 +242,7 @@ class Parser {
    * pattern follows as we progress to `qux` which has 2 newlines, equating
    * to a value line offset of `4` whereas `xxx` only has `2` so on and so forth.
    */
-  public lineOffset: number = 1;
+  public lineOffset: number = 0;
 
   /**
    * The character index of the last known newline, for example:
@@ -678,7 +678,6 @@ class Parser {
     }
 
     if (this.hooks.parse !== null) {
-
       this.hooks.parse[0].call({
         line: this.lineNumber,
         stack: this.stack.entry,
@@ -778,6 +777,34 @@ class Parser {
         this.lineOffset = 0;
       }
     }
+  }
+
+  /**
+   * Is Checksum
+   *
+   * Checks a record value on the last know entry in the
+   * data strcuture
+   */
+  public is<T extends keyof Record> (prop: T, value: Record[T]) {
+
+    return this.data[prop][this.count] === value;
+
+  }
+
+  /**
+   * Line Increment
+   *
+   * A small helper for incrementing newlines. Expects an `index` which
+   * matches the current iteration point and an optional `lines` parameter
+   * which will be incremented by `1` and the returning value.
+   */
+  public lines (index: number, lines?: number) {
+
+    this.lineNumber = this.lineNumber + 1;
+    this.lineIndex = index;
+
+    return lines + 1;
+
   }
 
   public spacer (args: Spacer): number {

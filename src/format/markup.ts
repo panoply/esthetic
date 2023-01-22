@@ -177,19 +177,19 @@ export function markup () {
 
     } while (index < total);
 
-    if (data.types[a] !== 'ignore' || (data.types[a] === 'ignore' && data.types[a + 1] !== 'ignore')) {
+    // if (data.types[a] !== 'ignore' || (data.types[a] === 'ignore' && data.types[a + 1] !== 'ignore')) {
 
-      if (tabs > 0) {
+    if (tabs > 0) {
 
-        index = 0;
+      index = 0;
 
-        do {
-          linesout.push(ind);
-          index = index + 1;
-        } while (index < tabs);
-      }
-
+      do {
+        linesout.push(ind);
+        index = index + 1;
+      } while (index < tabs);
     }
+
+    // }
 
     return linesout.join(NIL);
 
@@ -1691,7 +1691,7 @@ export function markup () {
 
       data.token[a] = token
         .join(NWL)
-        .replace(/\s*-?[%}]}$/, m => m.replace(/\s*/, WSP));
+        .replace(/\s*-?[%}]}$/, m => m.replace(rx.Spaces, WSP));
 
     } else {
 
@@ -1699,7 +1699,7 @@ export function markup () {
 
       data.token[a] = token
         .join(NWL)
-        .replace(/\s*-?[%}]}$/, m => m.replace(rx.StripEnd, space));
+        .replace(/\s*-?[%}]}$/, m => m.replace(rx.WhitespaceEnd, space));
     }
 
     // console.log(data.lines[a] - 1);
@@ -2072,9 +2072,12 @@ export function markup () {
             indent = indent - 1;
             level.push(indent);
 
-          } else if (isType(a, 'ignore') && isType(next, 'end')) {
+            // else if (isType(a, 'ignore') && isType(next, 'end')) {
 
-            level.push(indent);
+            //   console.log(data.token[a]);
+            //   level.push(indent);
+
+            // }
 
           } else {
 
@@ -2181,6 +2184,20 @@ export function markup () {
 
           build.push(data.token[a]);
 
+        } else if (isType(a + 1, 'ignore') && isType(a + 2, 'ignore')) {
+
+          // console.log(data.token[a + 1]);
+          build.push(
+            data.token[a],
+            nl(levels[a]).replace(rx.WhitespaceGlob, NIL),
+            data.token[a + 1],
+            repeatChar(data.lines[a + 2] - 1 === 0 ? 1 : data.lines[a + 2] - 1, NWL)
+          );
+
+          // console.log('lead', JSON.stringify(nl(levels[a]).replace(rx.SpaceOnly, NIL)));
+
+          a = a + 1;
+
         } else {
 
           if (rules.markup.delimiterForce === true) onDelimiterForce();
@@ -2265,8 +2282,6 @@ export function markup () {
       : build.join(NIL).replace(/\s+$/, NIL);
 
   };
-
-  // console.log(build);
 
   return format();
 

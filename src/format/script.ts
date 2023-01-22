@@ -947,7 +947,9 @@ export function script () {
               }
 
               if (level[aa] > -9 && data.token[aa] !== ',' && data.types[aa] !== 'markup') {
+
                 len = 0;
+
               } else {
 
                 if (level[aa] === -10) len = len + 1;
@@ -3459,24 +3461,23 @@ export function script () {
           ltoke = ctoke;
         }
 
-        if (count.length > 0 && data.token[a] !== ')') {
+        if (count.length > 0 && not(data.token[a], ch.RPR)) {
 
           if (data.types[a] === 'comment' && count[count.length - 1] > -1) {
 
             count[count.length - 1] = rules.wrap + 1;
 
-          } else if (
-            level[a] > -1 || (
-              data.token[a].charAt(0) === '`' &&
-              data.token[a].indexOf(NWL) > 0
-            )
-          ) {
+          } else if (level[a] > -1 || (is(data.token[a], ch.TQO) && data.token[a].indexOf(NWL) > 0)) {
 
             count[count.length - 1] = -1;
 
           } else if (count[count.length - 1] > -1) {
+
             count[count.length - 1] = count[count.length - 1] + data.token[a].length;
-            if (level[a] === -10) count[count.length - 1] = count[count.length - 1] + 1;
+
+            if (level[a] === -10) {
+              count[count.length - 1] = count[count.length - 1] + 1;
+            }
           }
         }
 
@@ -3765,8 +3766,6 @@ export function script () {
             data.lines[a] < 3 &&
             option.braceNewline === true
           ) {
-
-            // console.log(data.token[a]);
 
             // HOT PATCH
             //
