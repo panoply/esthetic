@@ -116,8 +116,12 @@ test('develop', async t => {
 
     const output = esthetic.format.sync(source, {
       language: 'liquid',
+      liquid: {
+        indentAttributes: true
+      },
       markup: {
-        forceAttribute: false
+        forceAttribute: 2,
+        stripAttributeLines: true
       }
 
     });

@@ -1,5 +1,5 @@
 import test from 'ava';
-import { forRules, forAssert, liquid } from '@liquify/ava/prettify';
+import { forRules, forAssert, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test.serial('Liquid structure variations', t => {
@@ -628,6 +628,7 @@ test.serial('Indenting attributes contained in Liquid block tags', t => {
       data-a="1"
       data-b="2"
       {% else %}
+
       data-c="3"
       data-d="4"
 
@@ -671,16 +672,8 @@ test.serial('Indenting attributes contained in Liquid block tags', t => {
         markup: {
           forceAttribute: true
         }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          indentAttributes: true
-        },
-        markup: {
-          forceAttribute: true
-        }
       }
+
     ]
   )(function (source, rules, label) {
 

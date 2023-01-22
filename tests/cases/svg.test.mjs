@@ -1,5 +1,5 @@
 import test from 'ava';
-import { forRules, forAssert, liquid } from '@liquify/ava/prettify';
+import { forRules, forAssert, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test: singleton <path>', t => {
