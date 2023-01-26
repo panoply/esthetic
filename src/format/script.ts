@@ -4,6 +4,7 @@ import { NIL, NWL, WSP } from 'chars';
 import { cc as ch } from 'lexical/codes';
 import { parse } from '@parse/parser';
 import { grammar } from '@parse/grammar';
+import { Modes } from 'lexical/enum';
 
 export function script () {
 
@@ -3776,7 +3777,14 @@ export function script () {
 
           }
 
-          build.push(nl(levels[a]));
+          if (parse.mode === Modes.Embed) {
+            if (parse.ender !== a) {
+              build.push(nl(levels[a]));
+            }
+          } else if (a !== b - 1) {
+            build.push(nl(levels[a]));
+          }
+
           lastLevel = levels[a];
 
         } else if (levels[a] === -10) {

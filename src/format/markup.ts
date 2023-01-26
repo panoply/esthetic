@@ -55,7 +55,7 @@ export function markup () {
   /**
    * Indentation level
    */
-  let indent = isNaN(rules.indentLevel) ? 0 : Number(rules.indentLevel);
+  let indent = isNaN(rules.indentLevel) ? 0 : rules.indentLevel;
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
@@ -91,7 +91,7 @@ export function markup () {
   /**
    * The newline / spacing store reference
    */
-  const level = parse.start > 0 ? Array(parse.start).fill(0, 0, parse.start) : [];
+  const level: number[] = parse.start > 0 ? Array(parse.start).fill(0, 0, parse.start) : [];
 
   /**
    * Holds the data~structure indentation levels
@@ -359,18 +359,11 @@ export function markup () {
 
       build.push(nl(levels[a]));
 
-    } else if (levels[a] === 0 && a === 0 && isType(a, 'comment')) {
+    } else {
 
       build.push(nl(levels[a]));
-
-    } else if (isType(a, 'comment') && levels[a] === 0 && (
-      isType(a + 1, 'liquid_start') ||
-      isType(a + 1, 'ignore')
-    )) {
-
-      build.push(nl(levels[a]));
-
     }
+
   };
 
   /**
@@ -636,7 +629,9 @@ export function markup () {
       // {% section 'foo' %} {% comment %}
       //
       if (isType(data.begin[x] - 1, 'liquid')) {
+
         level[data.begin[x] - 1] = indent;
+
       }
 
       const ind = (isType(next, 'end') || isType(next, 'liquid_end'))
@@ -644,8 +639,10 @@ export function markup () {
         : indent;
 
       do {
+
         level.push(ind);
         x = x - 1;
+
       } while (x > comstart);
 
       // Indent correction so that a following end tag
@@ -743,8 +740,8 @@ export function markup () {
       ) > rules.wrap && isIndex(a + 2, 'attribute') > -1
     ) || (
       data.token[a] !== undefined &&
-        data.token[a + 1] !== undefined &&
-        data.token[a].length + data.token[a + 1].length > rules.wrap
+      data.token[a + 1] !== undefined &&
+      data.token[a].length + data.token[a + 1].length > rules.wrap
     )) && (
       isType(a + 1, 'singleton') ||
       isType(a + 1, 'liquid')
@@ -768,6 +765,7 @@ export function markup () {
       isIndex(a - 1, 'attribute') > -1 &&
       data.lines[a] < 1
     ) {
+
       level[a - 1] = -20;
     }
 
@@ -1002,7 +1000,7 @@ export function markup () {
     /**
      * The number of attributes contained on the tag
      */
-    let attcount: number = data.types.indexOf('end', parent + 1);
+    let attcount: number = isIndex(parent + 1, 'end');
 
     /**
      * The token length
@@ -1055,10 +1053,12 @@ export function markup () {
     })();
 
     if (plural === false && isType(a, 'comment_attribute')) {
+
       // lev must be indent unless the "next" type is end then its indent + 1
       level.push(indent);
       level[parent] = data.types[parent] === 'singleton' ? indent + 1 : indent;
       return;
+
     }
 
     function doAttributeForce () {
@@ -1068,14 +1068,9 @@ export function markup () {
         level.push(-10);
 
       } else {
-
-        if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1) {
+        if (rules.markup.forceAttribute === true || (rules.markup.forceAttribute as number) >= 1) {
           if (rules.liquid.indentAttributes === true) {
-
-            if (isType(a - 1, 'liquid_attribute_start')) {
-              level[a - 1] = levatt + levliq;
-            }
-
+            if (isType(a - 1, 'liquid_attribute_start')) level[a - 1] = levatt + levliq;
             level.push(levatt + levliq);
           } else {
             level.push(levatt);
@@ -1208,7 +1203,7 @@ export function markup () {
 
           } else if (
             rules.markup.forceAttribute === true ||
-            rules.markup.forceAttribute >= 1 ||
+            (rules.markup.forceAttribute as number) >= 1 ||
             attstart === true || (
               a < c - 1 &&
               isIndex(a + 1, 'attribute') > -1
@@ -1241,7 +1236,7 @@ export function markup () {
 
         } else if (
           rules.markup.forceAttribute === true ||
-          rules.markup.forceAttribute >= 1 ||
+          (rules.markup.forceAttribute as number) >= 1 ||
           attstart === true || (
             a < c - 1 &&
             isIndex(a + 1, 'attribute') > -1
@@ -1318,7 +1313,7 @@ export function markup () {
         delim.set(parent, attcount);
       }
 
-    } else if (rules.markup.forceAttribute >= 1) {
+    } else if ((rules.markup.forceAttribute as number) >= 1) {
 
       if (attcount >= (rules.markup.forceAttribute as number)) {
 
@@ -1512,7 +1507,7 @@ export function markup () {
     if (level.length >= 2) {
       if (level[level.length - 2] < 0) {
         offset = level[level.length - 1] + 1;
-        console.log(offset);
+
       } else {
         offset = level[level.length - 2] + 1;
       }
@@ -1787,11 +1782,11 @@ export function markup () {
 
           if (comstart < 0) comstart = a;
 
-          if (isType(a + 1, 'comment') === false || (a > 0 && isIndex(a - 1, 'end') > -1)) {
+          // if (isType(a + 1, 'comment') === false || (a > 0 && isIndex(a - 1, 'end') > -1)) {
 
-            onComment();
+          onComment();
 
-          }
+          // }
 
         } else if (isType(a, 'comment') === false) {
 
@@ -1810,14 +1805,14 @@ export function markup () {
             //   // level[a - 1] = indent;
             // }
 
-            indent = indent - 1;
+            if (indent > -1) indent = indent - 1;
 
             if (
               isType(next, 'liquid_end') &&
               isType(data.begin[next] + 1, 'liquid_else')
             ) {
 
-              indent = indent - 1;
+              if (indent > -1) indent = indent - 1;
 
             }
 
@@ -1995,7 +1990,6 @@ export function markup () {
 
           } else if (isType(a + 2, 'script_end')) {
 
-            console.log(data.token[next], indent);
             level.push(-20);
 
           } else if (isType(a, 'liquid_else')) {
@@ -2186,7 +2180,8 @@ export function markup () {
 
         } else if (isType(a + 1, 'ignore') && isType(a + 2, 'ignore')) {
 
-          // console.log(data.token[a + 1]);
+          //  console.log(JSON.stringify(data.token[a + 2]));
+
           build.push(
             data.token[a],
             nl(levels[a]).replace(rx.WhitespaceGlob, NIL),
@@ -2200,6 +2195,8 @@ export function markup () {
 
         } else {
 
+          lastLevel = levels[a];
+
           if (rules.markup.delimiterForce === true) onDelimiterForce();
 
           // onContainedControls(build.length - 1);
@@ -2211,8 +2208,6 @@ export function markup () {
             build.push(WSP);
 
           } else if (levels[a] > -1) {
-
-            lastLevel = levels[a];
 
             // Exclude adding newlines to preserved regions. For example, if <script> external
             // blocks are preserved then the next known index in the data structure will
@@ -2226,9 +2221,8 @@ export function markup () {
             //
             if (isIndex(a + 1, '_preserve') < 0) {
 
-              // console.log(JSON.stringify(build, null, 2));
-
               build.push(nl(levels[a]));
+
             }
           }
 
@@ -2253,19 +2247,14 @@ export function markup () {
 
           build.push(external);
 
-          if (rules.markup.forceIndent === true || (
-            levels[parse.iterator] > -1 &&
-            a in extidx &&
-            extidx[a] > a
-          )) {
-
-            build.push(nl(levels[parse.iterator]));
-
+          if (rules.markup.forceIndent || (levels[parse.iterator] > -1 && a in extidx && extidx[a] > a)) {
+            a = parse.iterator;
+            build.push(nl(levels[a]));
           }
 
         }
 
-        a = parse.iterator;
+        if (a !== parse.iterator) a = parse.iterator;
 
       }
 

@@ -301,7 +301,7 @@ export function script () {
 
     }
 
-    if (rules.language === 'json') {
+    if (parse.language === 'json') {
 
       return; // RETURN EARLY
     }
@@ -1047,7 +1047,7 @@ export function script () {
 
     if (u.is(c[a], cc.SEM)) {
 
-      if (rules.language === 'typescript') {
+      if (parse.language === 'typescript') {
 
         if (data.stack[parse.count] === 'arguments') {
 
@@ -1254,7 +1254,7 @@ export function script () {
     ptype = (parse.count > 0) ? data.types[parse.count - 1] : NIL;
     next = peek(1, false);
 
-    if (rules.language !== 'jsx' && rules.language !== 'tsx' && u.digit(next) === false && (
+    if (parse.language !== 'jsx' && parse.language !== 'tsx' && u.digit(next) === false && (
       ltoke === 'function' ||
       ptoke === '=>' ||
       ptoke === 'void' ||
@@ -1364,7 +1364,7 @@ export function script () {
     }
 
     if (
-      rules.language !== 'typescript' && (
+      parse.language !== 'typescript' && (
         data.token[d] === 'return' ||
         data.types[d] === 'operator' ||
         data.types[d] === 'start' ||
@@ -1377,7 +1377,7 @@ export function script () {
     ) {
 
       ltype = 'markup';
-      rules.language = 'jsx';
+      parse.language = 'jsx';
 
       do {
 
@@ -1817,10 +1817,10 @@ export function script () {
       function bracketSpace (input: string) {
 
         if (
-          rules.language !== 'javascript' &&
-          rules.language !== 'typescript' &&
-          rules.language !== 'jsx' &&
-          rules.language !== 'tsx'
+          parse.language !== 'javascript' &&
+          parse.language !== 'typescript' &&
+          parse.language !== 'jsx' &&
+          parse.language !== 'tsx'
         ) {
 
           const spaceStart = (start: string) => start.replace(/\s*$/, ' ');
@@ -1889,7 +1889,7 @@ export function script () {
 
         ltype = 'string';
 
-        if (rules.language === 'json') {
+        if (parse.language === 'json') {
 
           ltoke = ltoke
             .replace(/\u0000/g, '\\u0000')
@@ -2134,8 +2134,8 @@ export function script () {
         }
 
         if (
-          rules.language !== 'json' &&
-          rules.language !== 'javascript' &&
+          parse.language !== 'json' &&
+          parse.language !== 'javascript' &&
           (u.is(starting, cc.DQO) || u.is(starting, cc.SQO)) &&
           (ext === true || ee > start) &&
           u.not(c[ee - 1], cc.BWS) &&
@@ -2180,7 +2180,7 @@ export function script () {
     const lines = parse.lineOffset;
 
     if (
-      rules.language === 'json' ||
+      parse.language === 'json' ||
       brace.length < 1 ||
       brace[brace.length - 1].charAt(0) !== 'x' ||
       (/^x?(;|\}|\))$/).test(ltoke) === false
@@ -3470,7 +3470,7 @@ export function script () {
 
       } else if (
         tstype[tstype.length - 1] === true ||
-        ((rules.language === 'typescript' || rules.language === 'flow') && tokel === 'type')
+        ((parse.language === 'typescript' || parse.language === 'flow') && tokel === 'type')
       ) {
 
         ltype = 'type';
@@ -3489,10 +3489,10 @@ export function script () {
         references[references.length - 1].push(output);
 
         if (
-          rules.language === 'javascript' ||
-          rules.language === 'jsx' ||
-          rules.language === 'typescript' ||
-          rules.language === 'tsx' // originally was "flow" changed to TSX
+          parse.language === 'javascript' ||
+          parse.language === 'jsx' ||
+          parse.language === 'typescript' ||
+          parse.language === 'tsx' // originally was "flow" changed to TSX
         ) {
 
           if (tokel === 'var' || (
@@ -3554,10 +3554,10 @@ export function script () {
           references[references.length - 1].push(output);
 
           if (
-            rules.language === 'javascript' ||
-            rules.language === 'jsx' ||
-            rules.language === 'typescript' ||
-            rules.language === 'tsx' // originally was "flow" changed to TSX
+            parse.language === 'javascript' ||
+            parse.language === 'jsx' ||
+            parse.language === 'typescript' ||
+            parse.language === 'tsx' // originally was "flow" changed to TSX
           ) {
             hoisting(d, output, true);
           } else {
@@ -3568,8 +3568,8 @@ export function script () {
           data.token[d] === 'let' ||
           data.token[d] === 'const' ||
           (data.token[d] === 'type' && (
-            rules.language === 'typescript' ||
-            rules.language === 'tsx' // originally was "flow" changed to TSX
+            parse.language === 'typescript' ||
+            parse.language === 'tsx' // originally was "flow" changed to TSX
           ))
         )) {
 
@@ -4038,6 +4038,7 @@ export function script () {
 
       ltoke = ';';
       ltype = 'separator';
+
       if (data.token[parse.count] === 'x}') {
         braceSemicolon();
       } else {

@@ -520,9 +520,17 @@ export function sortCorrect (start: number, end: number) {
  */
 function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]) {
 
-  let c = 0;
+  let c: number = 0;
+
   const len = item.length;
   const storeb = item;
+
+  /**
+   * Added for line preservation of attributes
+   *
+   * > This might cause issues is the style/script lexer, will need to investigate
+   */
+  const lines = storeb.map((x) => x[1]);
 
   /**
    * Safe Sort (Ascend Child)
@@ -559,7 +567,6 @@ function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]
     let e = 0;
     let ind = [];
     let key = storeb[c];
-    let tstore = '';
 
     const tkey = typeof key;
 
@@ -567,9 +574,7 @@ function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]
 
       do {
 
-        tstore = typeof storeb[a];
-
-        if (storeb[a] < key || tstore < tkey) {
+        if (storeb[a] < key || typeof storeb[a] < tkey) {
           key = storeb[a];
           ind = [ a ];
         } else if (storeb[a] === key) {
@@ -587,10 +592,17 @@ function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]
 
     if (a < b) {
       do {
+
+        // Changes the line value
+        // Remove this line if errors occur in style/script lexer
+        key[1] = lines[a];
+
         storeb[ind[e]] = storeb[a];
         storeb[a] = key;
+
         e = e + 1;
         a = a + 1;
+
       } while (a < b);
     }
 

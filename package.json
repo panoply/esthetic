@@ -46,14 +46,26 @@
     "specs": "node ./scripts/specs.cjs",
     "pack": "cd versions; pnpm pack ../ && cd ..",
     "release": "pnpm -w release --pkg $npm_package_name",
-    "test": "ava tests/**/*.test.mjs --serial",
+    "test": "ava --serial",
     "tests": "tests -t cases,rules,units",
     "test:dev": "ava tests/dev.test.mjs --watch",
+    "test:attributes": "ava tests/cases/attributes/*.test.mjs ---",
+    "test:html": "ava tests/cases/html/*.test.mjs ---",
+    "test:liquid": "ava tests/cases/liquid/*.test.mjs ---",
+    "test:json": "ava tests/cases/json/*.test.mjs ---",
+    "test:css": "ava tests/cases/css/.test.mjs ---",
     "test:units": "ava tests/units/*.test.mjs ---",
     "test:rules": "ava tests/rules/*.test.mjs ---",
     "test:cases": "ava tests/cases/*.test.mjs ---"
   },
   "ava": {
+    "files": [
+      "tests/cases/attributes/*.test.mjs",
+      "tests/cases/liquid/*.test.mjs",
+      "tests/cases/html/*.test.mjs",
+      "tests/cases/json/*.test.mjs",
+      "tests/cases/css/*.test.mjs"
+    ],
     "extensions": [
       "mjs"
     ],
@@ -105,6 +117,7 @@
     "@liquify/eslint-config": "workspace:^1.1.0",
     "@liquify/liquid-language-specs": "^0.1.7",
     "@liquify/prettier-config": "^1.0.1",
+    "@liquify/vellocet": "workspace:^0.0.5",
     "@types/benchmark": "^2.1.2",
     "ava": "^5.1.1",
     "benchmark": "^2.1.4",
