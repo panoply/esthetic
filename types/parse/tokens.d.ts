@@ -255,13 +255,13 @@ export enum MarkupTypes {
    */
   cdata = 'cdata',
   /**
-   * When a CDATA segment terminates an enclosed grammar parsed with a different lexer.
-   */
-  cdata_end = 'cdata_end',
-  /**
    * When a CDATA segment starts an enclosed grammar parsed with a different lexer.
    */
   cdata_start = 'cdata_start',
+  /**
+   * When a CDATA segment terminates an enclosed grammar parsed with a different lexer.
+   */
+  cdata_end = 'cdata_end',
   /**
    * Comment in XML or supporting template syntax.
    */
@@ -291,7 +291,7 @@ export enum MarkupTypes {
    *
    * <main>
    * <div>
-   * <style>
+   * <u>
    * <script>
    */
   start = 'start',
@@ -303,8 +303,7 @@ export enum MarkupTypes {
    *
    * </main>
    * </div>
-   * </style>
-   * </>
+   * </ul>
    */
   end = 'end',
   /**
@@ -395,6 +394,24 @@ export enum MarkupTypes {
    * A tag indicating it may contain JSON that needs to be passed to the script lexer.
    */
   json = 'json',
+  /**
+   * Indicates a HTML JSON start token tag reference, typically going to be `<script>`
+   * tag containing an attribute inferring contained JSON.
+   *
+   * ---
+   * @example
+   *
+   * <script type="application/json"> // JSON Start Token
+   */
+  json_start = 'json_start',
+  /**
+   * A tag attribute from a regular start or singular tag type.
+   * ---
+   * @example
+   *
+  * </script> // JSON Start Token
+  */
+  json_end = 'json_end',
   /**
    * Preserves the inner content of a script tag annotated with a JSON inferring attribute value, typically
    * `type="application/json"` or `type="application/ld+json"`. Similar to `script_preserve` the type will
@@ -550,7 +567,18 @@ export enum MarkupTypes {
    * {% stylesheet %}
    * {% style %}
    */
-  liquid_style = 'liquid_style',
+  liquid_style_start = 'liquid_style_start',
+  /**
+   * A template tag that an embedded language that requires the script lexer. This
+   * has identical behaviour to `style` type but for liquid type tokens.
+   *
+   * ---
+   * @example
+   *
+   * {% endstylesheet %}
+   * {% endstyle %}
+   */
+  liquid_style_end = 'liquid_style_end',
   /**
    * A template tag that an embedded language who's inner contents is excluded from
    * beautifcation. This has identical behaviour to `style_preserve` type but for liquid
@@ -592,7 +620,7 @@ export enum MarkupTypes {
    *
    * <{% if x %}div{% else %}main{% endif %}>
    */
-  liquid_start_bad = 'liquid_start_bad',
+  liquid_bad_start = 'liquid_bad_start',
   /**
    * Bad Liquid end tag
    *
@@ -601,7 +629,7 @@ export enum MarkupTypes {
    *
    * </{% if x %}div{% else %}main{% endif %}>
    */
-  liquid_end_bad = 'liquid_end_bad',
+  liquid_bad_end = 'liquid_bad_end',
   /**
    * A template tag that contains content or other tags not associated with
    * the template language and expects a closing tag. This is representative of

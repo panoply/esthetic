@@ -68,6 +68,9 @@
       "attributeSortList": [],
       "forceAttribute": 2
     }
+  },
+  "[liquid]": {
+    "editor.formatOnSave": true
   }
 
 }

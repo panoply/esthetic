@@ -2,6 +2,9 @@
 package/
 node_modules/
 tests/testa/node_modules
+tests/samples/
+tests/cases/todo
+
 versions/
 .pnpm-debug.log
 

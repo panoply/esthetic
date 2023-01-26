@@ -68,6 +68,13 @@ export const enum ParseErrors {
    */
   InvalidQuotationCharacter,
   /**
+   * Invalid Comment Attribute
+   *
+   * @example
+   * <div <!-- comment --> id="foo"> // Comment cannot be placed within a attribute
+   */
+  InvalidHTMLCommentAttribute,
+  /**
    * Invalid CDATA Termination
    *
    * @example
@@ -121,6 +128,14 @@ function errorMessage (error: ParseErrors, token: string, name: string) {
       details: join(
         `The ${token} tag is missing its closing delimiter resulting in malformed syntax.`,
         'You can have Esthetic autofix syntax errors like this by setting the markup rule "correct" to true.'
+      )
+    }),
+    [ParseErrors.InvalidHTMLCommentAttribute]: ({
+      message: 'Invalid HTML Comment Attribute',
+      details: join(
+        'HTML comments are not allowed inside tags, start or end, at all.',
+        `To resolve the issue, remove the comment ${token} or place it above the tag.`,
+        'For more information see: https://html.spec.whatwg.org/multipage/syntax.html#start-tags'
       )
     }),
     [ParseErrors.InvalidQuotationCharacter]: ({
