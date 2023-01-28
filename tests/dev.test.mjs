@@ -157,11 +157,11 @@ dev(async function (source) {
   });
 
   return {
-
     source: output,
-    logger: false,
+    repeat: 0,
     inspect: true,
-    colors: true
+    logger: false,
+    colors: false
   };
 
 });

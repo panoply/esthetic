@@ -4113,12 +4113,12 @@ function markup(input) {
     return parseDelimiter();
   }
   function parseContent() {
+    const lexed = [];
     const now = a;
     const jsxbrace = jsx === true && is(data.token[parse.count], 123 /* LCB */);
     const regex = "([{!=,;.?:&<>";
-    const lexed = [];
     let ltoke = NIL;
-    let liner = parse.lineOffset;
+    let lines = parse.lineOffset;
     let name = NIL;
     if (embed === true) {
       if (jsxbrace === true) {
@@ -4133,7 +4133,7 @@ function markup(input) {
       begin: parse.stack.index,
       ender: -1,
       lexer: "markup",
-      lines: liner,
+      lines,
       stack: getTagName(parse.stack.token) || "global",
       token: NIL,
       types: "content"
@@ -4163,7 +4163,7 @@ function markup(input) {
       let quotes = 0;
       do {
         if (is(b[a], 10 /* NWL */))
-          liner = parse.lines(a, liner);
+          lines = parse.lines(a, lines);
         if (embed === true) {
           if (data.types[parse.count] === "liquid_start") {
             const ename = `end${name}`;
@@ -4172,25 +4172,28 @@ function markup(input) {
               let i = ender;
               do {
                 if (ws(b[i]) === false) {
-                  if (is(b[i], 45 /* DSH */) && is(b[i - 1], 37 /* PER */) && is(b[i - 2], 123 /* LCB */)) {
-                    b.slice(i - 3, ender + ename.length).join(NIL);
-                    i = i - 3;
-                    break;
-                  } else if (is(b[i], 37 /* PER */) && is(b[i - 1], 123 /* LCB */)) {
+                  if (is(b[i], 37 /* PER */) && is(b[i - 1], 123 /* LCB */)) {
                     i = i - 2;
                     break;
                   }
                 }
               } while (b[i--]);
-              end = b.slice(i, b.indexOf("%", ender + ename.length) + 2).join(NIL);
+              end = b.slice(i + 1, b.indexOf("%", ender + ename.length) + 2).join(NIL);
               if (exp(ename).test(end)) {
-                output = b.slice(a, i).join(NIL);
+                lines = 1;
+                output = b.slice(a, i).join(NIL).replace(SpaceEnd, NIL);
+                a = i + end.length;
                 parse.external(language, output);
+                do
+                  if (is(b[i], 10 /* NWL */))
+                    lines = lines + 1;
+                while (ws(b[i--]));
                 push(record, {
                   token: inner(end),
-                  types: "liquid_end"
+                  types: "liquid_end",
+                  lines
                 });
-                a = i + end.length;
+                break;
               }
             }
           }
@@ -4286,14 +4289,14 @@ function markup(input) {
         }
         if (sgml() === true && is(b[a], 93 /* RSB */)) {
           a = a - 1;
-          liner = 0;
+          lines = 0;
           ltoke = lexed.join(NIL).replace(SpaceEnd, NIL);
           push(record, { token: ltoke });
           break;
         }
         if (embed === false && lexed.length > 0 && (is(b[a], 60 /* LAN */) && not(b[a + 1], 61 /* EQS */) && digit(b[a + 1]) === false && ws(b[a + 1]) === false || is(b[a], 91 /* LSB */) && is(b[a + 1], 37 /* PER */) || is(b[a], 123 /* LCB */) && (jsx === true || is(b[a + 1], 123 /* LCB */) || is(b[a + 1], 37 /* PER */)))) {
           a = a - 1;
-          liner = 0;
+          lines = 0;
           ltoke = parse.stack.token === "comment" ? lexed.join(NIL) : lexed.join(NIL).replace(SpaceEnd, NIL);
           record.token = ltoke;
           if (rules.wrap > 0 && rules.markup.preserveText === false) {
@@ -4369,7 +4372,7 @@ function markup(input) {
               }
             }
           }
-          liner = 0;
+          lines = 0;
           push(record, { token: ltoke });
           break;
         }
@@ -4393,7 +4396,7 @@ function markup(input) {
       }
     } else if (a !== now || a === now && embed === false) {
       ltoke = lexed.join(NIL).replace(SpaceEnd, NIL);
-      liner = 0;
+      lines = 0;
       if (record.token !== ltoke) {
         push(record, { token: ltoke });
         parse.lineOffset = 0;
@@ -7122,7 +7125,6 @@ function style() {
       if (is(b[a + 1], 32 /* WSP */)) ;
       ltype = typeName;
       ltoke = normalize(ltoke, rules.liquid);
-      console.log(ltoke);
       if (ltype.indexOf("start") > -1 || ltype.indexOf("else") > -1) {
         push(ltoke);
       } else {

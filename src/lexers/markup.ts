@@ -3709,6 +3709,11 @@ export function markup (input?: string) {
     /* -------------------------------------------- */
 
     /**
+     * The current lexed character references
+     */
+    const lexed: string[] = [];
+
+    /**
      * The current index content parse has began, ie: `a` number
      */
     const now = a;
@@ -3728,11 +3733,6 @@ export function markup (input?: string) {
     /* -------------------------------------------- */
 
     /**
-     * The current lexed character references
-     */
-    const lexed: string[] = [];
-
-    /**
      * The last known token
      */
     let ltoke: string = NIL;
@@ -3740,7 +3740,7 @@ export function markup (input?: string) {
     /**
      * The number of line spaces incurred, ie: `parse.lineOffset`
      */
-    let liner: number = parse.lineOffset;
+    let lines: number = parse.lineOffset;
 
     /**
      * The tag name or known name reference
@@ -3765,7 +3765,7 @@ export function markup (input?: string) {
       begin: parse.stack.index,
       ender: -1,
       lexer: 'markup',
-      lines: liner,
+      lines,
       stack: lx.getTagName(parse.stack.token) || 'global',
       token: NIL,
       types: 'content'
@@ -3835,7 +3835,7 @@ export function markup (input?: string) {
 
       do {
 
-        if (u.is(b[a], cc.NWL)) liner = parse.lines(a, liner);
+        if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
 
         // Embed code requires additional parsing to look for the appropriate end
         // tag, but that end tag cannot be quoted or commented
@@ -3854,16 +3854,7 @@ export function markup (input?: string) {
               do {
 
                 if (u.ws(b[i]) === false) {
-                  if (
-                    u.is(b[i], cc.DSH) &&
-                    u.is(b[i - 1], cc.PER) &&
-                    u.is(b[i - 2], cc.LCB)) {
-                    b.slice(i - 3, ender + ename.length).join(NIL);
-                    i = i - 3;
-                    break;
-                  } else if (
-                    u.is(b[i], cc.PER) &&
-                    u.is(b[i - 1], cc.LCB)) {
+                  if (u.is(b[i], cc.PER) && u.is(b[i - 1], cc.LCB)) {
                     i = i - 2;
                     break;
                   }
@@ -3872,20 +3863,31 @@ export function markup (input?: string) {
               } while (b[i--]);
 
               end = b
-                .slice(i, b.indexOf('%', ender + ename.length) + 2)
+                .slice(i + 1, b.indexOf('%', ender + ename.length) + 2)
                 .join(NIL);
 
               if (lq.exp(ename).test(end)) {
 
-                output = b.slice(a, i).join(NIL);
+                lines = 1;
+                output = b
+                  .slice(a, i)
+                  .join(NIL)
+                  .replace(rx.SpaceEnd, NIL);
+
+                a = i + end.length;
+
                 parse.external(language, output);
+
+                do if (u.is(b[i], cc.NWL)) lines = lines + 1;
+                while (u.ws(b[i--]));
 
                 push(record, {
                   token: inner(end),
-                  types: 'liquid_end'
+                  types: 'liquid_end',
+                  lines
                 });
 
-                a = i + end.length;
+                break;
 
               }
 
@@ -4105,7 +4107,7 @@ export function markup (input?: string) {
 
           a = a - 1;
 
-          liner = 0;
+          lines = 0;
           ltoke = lexed.join(NIL).replace(rx.SpaceEnd, NIL);
 
           push(record, { token: ltoke });
@@ -4135,7 +4137,7 @@ export function markup (input?: string) {
 
           a = a - 1;
 
-          liner = 0;
+          lines = 0;
           ltoke = parse.stack.token === 'comment'
             ? lexed.join(NIL)
             : lexed.join(NIL).replace(rx.SpaceEnd, NIL);
@@ -4280,7 +4282,7 @@ export function markup (input?: string) {
             }
           }
 
-          liner = 0;
+          lines = 0;
           push(record, { token: ltoke });
 
           break;
@@ -4320,7 +4322,7 @@ export function markup (input?: string) {
 
       // regular content at the end of the supplied source
       ltoke = lexed.join(NIL).replace(rx.SpaceEnd, NIL);
-      liner = 0;
+      lines = 0;
 
       // this condition prevents adding content that was just added in the loop above
       if (record.token !== ltoke) {
