@@ -5,260 +5,6 @@ import { cc as ch } from 'lexical/codes';
 import { NWL, NIL, WSP } from 'chars';
 import { sanitizeComment, ws, is, not } from 'utils';
 
-// export function comments <T extends RuleItems> (rules: T, source: string[], length: number) {
-
-//   function parseBlock (config: {
-//     lexer: LexerName,
-//     start: number,
-//     begin: string,
-//     ender: string
-//   }) {
-
-//     /* -------------------------------------------- */
-//     /* CONSTANTS                                    */
-//     /* -------------------------------------------- */
-
-//     /**
-//      * The composed output structure
-//      */
-//     const build: string[] = [];
-
-//     /**
-//      * An additional composed structure
-//      */
-//     const second: string[] = [];
-
-//     /**
-//      * Sanatized opening delimiter sequence
-//      */
-//     const sanitize: string = config.begin.replace(rx.CharEscape, sanitizeComment);
-
-//     /**
-//      * Whether or not we are dealing with a Liquid comment
-//      */
-//     const isliquid: boolean = is(config.begin[0], ch.LCB) && is(config.begin[1], ch.PER);
-
-//     /**
-//      * Regular expression for ignore comment starters
-//      */
-//     const isignore: RegExp = new RegExp(`^(${sanitize}\\s*esthetic-ignore-start)`);
-
-//     /**
-//      * Regular expression start type comment blocks
-//      */
-//     const start: RegExp = new RegExp(`(${sanitize}\\s*)`);
-//     /**
-//      * Liquid ending expression
-//      */
-//     const ender: RegExp = isliquid
-//       ? new RegExp(`\\s*${config.ender.replace(rx.LiquidDelimiters, i => is(i, ch.LCB) ? '{%-?\\s*' : '\\s*-?%}')}$`)
-//       : new RegExp(config.ender.replace(rx.CharEscape, sanitizeComment));
-
-//     /**
-//      * Starting index offset of the comment
-//      */
-//     let a = config.start;
-
-//     /**
-//      * An index offset reference point
-//      */
-//     let b = 0;
-
-//     const c = 0;
-//     const d = 0;
-
-//     /**
-//      * Length store reference
-//      */
-//     const len = 0;
-
-//     /**
-//      * Newlines store reference
-//      */
-//     const lines = [];
-
-//     /**
-//      * Whitespace reference
-//      */
-//     const space = NIL;
-
-//     /**
-//      * Iterator `b` line
-//      */
-//     const bline = NIL;
-
-//     /**
-//      * Whether or not empty line is contained
-//      */
-//     const emptyLine = false;
-
-//     /**
-//      * Whether or not bullet point lines are contained
-//      */
-//     const bulletLine = false;
-
-//     /**
-//      * Whether or not numbered lines are contained
-//      */
-//     const numberLine = false;
-
-//     /**
-//      * The generated output token
-//      */
-//     let output = NIL;
-
-//     /**
-//      * Termination length, ie: The `end` tag token size
-//      */
-//     let terml = config.ender.length - 1;
-
-//     /**
-//      * Last known character of the terminator, ie: `end[end.length - 1]`
-//      */
-//     let term = config.ender.charAt(terml);
-
-//     /**
-//      * Terminator wrap length
-//      */
-//     const twrap = 0;
-
-//     /* -------------------------------------------- */
-//     /* FUNCTIONS                                    */
-//     /* -------------------------------------------- */
-
-//     /**
-//      * Parse Empty Newlines
-//      *
-//      * Detects new lines and populates the `second[]` store build.
-//      */
-//     function parseEmptyLines () {
-
-//       if (rx.EmptyLine.test(lines[b + 1]) || lines[b + 1] === NIL) {
-//         do b = b + 1;
-//         while (b < len && (rx.EmptyLine.test(lines[b + 1]) || lines[b + 1] === NIL));
-//       }
-
-//       if (b < len - 1) second.push(NIL);
-
-//     };
-
-//     /**
-//      * Ignore Comment
-//      *
-//      * Detects and traverses an ignore control type comment.
-//      */
-//     function parseIgnoreComment (): [string, number] {
-
-//       let close: string = NWL;
-//       let token: string;
-//       let delim: string;
-
-//       a = a + 1;
-
-//       do {
-
-//         build.push(source[a]);
-
-//         // Supports comment start/end comment ignores using Liquid
-//         // tags. We don't have any knowledge of the comment formation
-//         // upon parse, this will re-assign the terminator
-//         //
-//         if (build.slice(build.length - 19).join(NIL) === 'esthetic-ignore-end') {
-
-//           if (isliquid) {
-
-//             const d = source.indexOf('{', a);
-
-//             if (is(source[d + 1], ch.PER)) {
-//               const token = source.slice(d, source.indexOf('}', d + 1) + 1).join(NIL);
-//               if (ender.test(token)) config.ender = token;
-//             }
-
-//           }
-
-//           a = a + 1;
-
-//           break;
-//         }
-
-//         a = a + 1;
-
-//       } while (a < length);
-
-//       b = a;
-
-//       terml = config.begin.length - 1;
-//       term = config.begin.charAt(terml);
-
-//       do {
-
-//         // Script OR Style Comment Blocks
-//         if (config.begin === '/*' && is(source[b - 1], ch.FWS) && (
-//           is(source[b], ch.ARS) ||
-//           is(source[b], ch.FWS)
-//         )) {
-
-//           break;
-//         }
-
-//         // Markup Comment Blocks
-//         if (
-//           config.begin !== '/*' &&
-//           source[b] === term &&
-//           source.slice(b - terml, b + 1).join(NIL) === config.begin
-//         ) {
-
-//           break;
-//         }
-
-//         b = b - 1;
-
-//       } while (b > config.start);
-
-//       if (config.begin === '/*' && is(source[b], ch.ARS)) {
-//         termination = '\u002a/';
-//       } else if (config.begin !== '/*') {
-//         termination = config.ender;
-//       }
-
-//       terml = termination.length - 1;
-//       term = termination.charAt(terml);
-
-//       if (termination !== NWL || source[a] !== NWL) {
-
-//         do {
-
-//           build.push(source[a]);
-
-//           if (termination === NWL && source[a + 1] === NWL) break;
-//           if (source[a] === term && source.slice(a - terml, a + 1).join(NIL) === termination) break;
-
-//           a = a + 1;
-
-//         } while (a < config.end);
-
-//       }
-
-//       if (source[a] === NWL) a = a - 1;
-
-//       output = build.join(NIL).replace(rx.WhitespaceEnd, NIL);
-
-//       return [ output, a ];
-
-//     }
-//   }
-
-//   function parseLine () {
-
-//   }
-
-//   return {
-//     parseBlock,
-//     parseLine
-//   };
-
-// }
-
 /**
  * Wrap Comment Block
  *
@@ -391,10 +137,8 @@ export function commentBlock (config: WrapComment): [string, number] {
   function parseEmptyLines () {
 
     if (rx.EmptyLine.test(lines[b + 1]) || lines[b + 1] === NIL) {
-
       do b = b + 1;
       while (b < len && (rx.EmptyLine.test(lines[b + 1]) || lines[b + 1] === NIL));
-
     }
 
     if (b < len - 1) second.push(NIL);
@@ -518,32 +262,33 @@ export function commentBlock (config: WrapComment): [string, number] {
 
   if (expignore.test(output) === true) return parseIgnoreComment();
 
-  if (((
-    isliquid === true &&
-    rules.liquid.preserveComment
-  ) || (
-    isliquid === false &&
-    rules.markup.preserveComment
-  ) || (
-    parse.lexer === 'style' &&
-    rules.style.preserveComment
-  ) || (
-    parse.lexer === 'script' &&
-    rules.style.preserveComment
-  )) ||
+  if (
+    ((
+      isliquid === true &&
+      rules.liquid.preserveComment === true
+    ) || (
+      isliquid === false &&
+      rules.markup.preserveComment === true
+    ) || (
+      parse.lexer === 'style' &&
+      rules.style.preserveComment === true
+    ) || (
+      parse.lexer === 'script' &&
+      rules.style.preserveComment === true
+    )) ||
     rules.wrap < 1 ||
     a === config.end || (
-    output.length <= rules.wrap &&
+      output.length <= rules.wrap &&
       output.indexOf(NWL) < 0
-  ) || (
-    config.begin === '/*' &&
-    output.indexOf(NWL) > 0 &&
-    output.replace(NWL, NIL).indexOf(NWL) > 0 &&
-    /\n(?!(\s*\*))/.test(output) === false
-  )) {
+    ) || (
+      config.begin === '/*' &&
+      output.indexOf(NWL) > 0 &&
+      output.replace(NWL, NIL).indexOf(NWL) > 0 &&
+      /\n(?!(\s*\*))/.test(output) === false
+    )
+  ) {
 
     return [ output, a ];
-
   }
 
   b = config.start;

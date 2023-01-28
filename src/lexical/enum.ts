@@ -1,10 +1,4 @@
 
-/**
- * Parser Modes
- *
- * Informs on the current operation in execution.
- * Helpful when switching between lexers in external regions
- */
 export const enum Modes {
   Parse = 1,
   Embed,

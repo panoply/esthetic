@@ -1161,7 +1161,7 @@ export function style () {
 
       if (is(b[a + 1], cc.WSP)) {
 
-        // console.log(parse.lineOffset);
+        console.log(parse.lineOffset);
 
         // data.lines[parse.count] = 1;
 

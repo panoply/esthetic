@@ -116,44 +116,14 @@ test('develop', async t => {
 
     const output = esthetic.format.sync(source, {
       language: 'liquid',
-      preserveLine: 2,
       liquid: {
-        correct: true,
-        commentIndent: true,
-        commentNewline: true,
-        delimiterTrims: 'strip',
-        lineBreakSeparator: 'before',
-        normalizeSpacing: true,
-        indentAttributes: true,
-        preserveComment: false,
-        quoteConvert: 'single',
-        valueForce: 'intent',
-        ignoreTagList: [
-          'capture',
-          'javascript'
-        ]
+        indentAttributes: true
       },
       markup: {
-        attributeCasing: 'preserve',
-        attributeSort: false,
-        attributeSortList: [],
-        correct: true,
-        delimiterForce: false,
-        preserveAttributes: false,
-        stripAttributeLines: false,
-        preserveComment: false,
-        preserveText: false,
-        quoteConvert: 'double',
-        selfCloseSpace: true,
-        commentNewline: true,
-        forceIndent: true,
-        commentIndent: true,
-        ignoreJS: false,
-        ignoreJSON: false,
-        ignoreCSS: false,
         forceAttribute: 2,
-        forceLeadAttribute: true
+        stripAttributeLines: true
       }
+
     });
 
     return {

@@ -29,17 +29,6 @@ export * from './rules/json';
 export * from './next';
 
 /**
- * Rule Language Items
- */
-export type RuleItems = (
-  | LiquidRules
-  | MarkupRules
-  | StyleRules
-  | ScriptRules
-  | JSONRules
-)
-
-/**
  * Language Beautification Options
  */
 export interface Rules extends GlobalRules {

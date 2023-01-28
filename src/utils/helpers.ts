@@ -3,7 +3,6 @@ import { NIL, NWL, WSP } from 'chars';
 import { LanguageName, LexerName } from 'types/shared';
 import { Prettify } from 'types/internal';
 import { getLanguageName } from './maps';
-import { parse } from '@parse/parser';
 
 /**
  * Blank Document
@@ -106,26 +105,6 @@ export function join (...message: string[]) {
 }
 
 /**
- * Newline Generate
- *
- * Returns a newline sequence. Expects a function callback to be
- * provided which will return `null` if `count` is less than or equal to `0`
- */
-export function nline (count: number, callback: (char: string) => void) {
-
-  if (count <= 0) return callback(null);
-
-  let char = NIL;
-  let i = 1;
-
-  do char += parse.crlf;
-  while (i++ < count);
-
-  return callback(char);
-
-}
-
-/**
  * Repeat Character
  *
  * Repeats a character x amount of times. Used for generating repeating characters
@@ -133,16 +112,14 @@ export function nline (count: number, callback: (char: string) => void) {
  */
 export function repeatChar (count: number, character: string = WSP) {
 
-  if (count <= 0) return character;
+  if (count === 0) return character;
 
   let char = NIL;
   let i = 1;
 
-  do char += character;
-  while (i++ < count);
+  do { char += character; } while (i++ < count);
 
   return char;
-
 }
 
 /**

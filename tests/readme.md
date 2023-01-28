@@ -1,12 +1,12 @@
-# Æsthetic Tests
+# Prettify Tests
 
-This directory contains the tests for Æsthetic.
+This directory contains the tests for Prettify.
 
 ### Peers
 
 - [AVA](https://github.com/avajs/ava)
 - [@liquify/ava](#)
-- [Æsthetic](https://github.com/panoply/esthetic)
+- [@liquify/prettify](https://github.com/panoply/prettify)
 
 ### Snapshot Assertions
 
@@ -33,18 +33,13 @@ Test description which will be passed in as the snapshot label. Accepts markdown
 The tests are split up into 4 different categories:
 
 - [Cases](#Cases)
-- [Ignores](#Ignores)
 - [Rules](#Rules)
 - [Units](#Units)
 - [Bench](#Bench)
 
 ### Cases
 
-The [cases](/cases) directory contains beautification edge cases. In the context of Æsthetic, edge cases refer to various code structures that Æsthetic understands and can reason about with. The [cases/samples](/cases/samples) directory is where the assertions exist and the [cases/snapshots](cases/snapshots) directory is where you can find the snapshot reports.
-
-### Ignores
-
-TODO
+The [cases](/cases) directory contains beautification edge cases. In the context of Prettify, edge cases refer to various code structures that Prettify understands and can reason about with. The [cases/samples](/cases/samples) directory is where the assertions exist and the [cases/snapshots](cases/snapshots) directory is where you can find the snapshot reports.
 
 ### Units
 

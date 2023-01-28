@@ -490,19 +490,6 @@ export const LiquidLineComment = /^{%-?\s*#/;
 export const LiquidBlockComment = /^{%-?\s*comment\b/;
 
 /**
- * Liquid Attribute
- *
- * ```js
- * /[%}]}=(?:["']|{[{%])/
- * ```
- *
- * ---
- * @see https://regex101.com/r/qw8avq/1
- *
- */
-export const LiquidAttr = /[%}]}=(?:["']|{[{%])/;
-
-/**
 * Character Escape
 *
 * Used in the `wrapCommentBlock` method of the `Parser` class.

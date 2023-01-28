@@ -1,8 +1,17 @@
-# Æsthetic Documentation
+# Prettify Documentation
 
-Æsthetic documentation website built using [11ty](https://www.11ty.dev/docs/) and served on [Netlify](https://netlify.com/).
+SPX (Single Page XHR) documentation website built using [11ty](https://www.11ty.dev/docs/) and served on Github pages. The generated files are published to the [docs branch](#) that mounts as a subdirectory using git worktree. The documentation is using SPX so feel free to use this strap as a starter for your next project.
 
-[æsthetic.dev](https://spx.js.org)
+[spx.js.org](https://spx.js.org)
+
+### Supports
+
+- Generated using 11ty
+- SCSS to CSS Compilation with SASS Dart
+- CSS Post Processing via PostCSS + CSSPurge
+- TypeScript Transpilation using ESBuild
+- SVG Sprites with SVGO
+- HTML Minification with HTML Terser
 
 # Development
 

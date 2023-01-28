@@ -1,9 +1,35 @@
 
-<div>
-1 NEWLINE FOLLOWING COMMENT
-</div>
+{% # HTML with nested tags matching first tag name %}
 
-{% # esthetic-ignore-next  %}
-<main>
-                                <h1>            </h1>
-</main>
+
+{% for one in array %}
+<div id="xxx">
+{% for two in array %}
+
+All this content will be ignored until closing of "for one"
+
+<!-- esthetic-ignore-start -->
+{%   for    two    in    array %}
+  <div></ div>
+
+<ul>
+
+<li> CONTENT AFTER WILL FORMAT </li>
+
+
+</ul>
+
+{% endfor %}
+<!-- esthetic-ignore-end -->
+
+{% endfor %}
+</div>
+{% endfor %}
+
+<div>
+<footer>
+<ul>
+<li> CONTENT AFTER WILL FORMAT </li>
+</ul>
+</footer>
+</div>

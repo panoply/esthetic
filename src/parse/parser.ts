@@ -520,23 +520,18 @@ class Parser {
 
     } else {
 
-      if (this.regions.size === 0) return this.source;
-
       const { id, lexer } = this.regions.get(this.start);
 
-      this.mode = Modes.Embed;
       this.language = id;
       this.rules.indentLevel = ref as number;
 
       const beautify = format(lexer);
 
-      this.mode = Modes.Format;
       this.rules.indentLevel = 0;
       this.language = this.rules.language;
       this.lexer = getLexerName(this.language);
 
       return beautify;
-
     }
 
   }
@@ -792,7 +787,7 @@ class Parser {
    */
   public is<T extends keyof Record> (prop: T, value: Record[T]) {
 
-    return this.count > 0 ? this.data[prop][this.count] === value : false;
+    return this.data[prop][this.count] === value;
 
   }
 

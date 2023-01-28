@@ -18,7 +18,7 @@ import { CNL, NWL } from 'lexical/chars';
 
 class Instance {
 
-  private events: Events = {
+  static events: Events = {
     format: [],
     language: [],
     rules: [],
@@ -46,9 +46,9 @@ class Instance {
     return detect;
   }
 
-  on (name: 'format' | 'rules' | 'parse' | 'language', callback: any) {
+  on (name: 'format' | 'rule' | 'parse' | 'language', callback: any) {
 
-    this.events[name].push(callback);
+    Instance.events[name].push(callback);
 
   }
 
@@ -78,8 +78,8 @@ class Instance {
 
     this.stats = action((output as string).length);
 
-    if (this.events.format.length > 0) {
-      for (const cb of this.events.format) {
+    if (Instance.events.format.length > 0) {
+      for (const cb of Instance.events.format) {
         if (cb.bind({ parsed: parse.data })(source as string, parse.rules) === false) {
           return source;
         }
@@ -114,8 +114,8 @@ class Instance {
 
     this.stats = action(parse.count);
 
-    if (this.events.parse.length > 0) {
-      for (const cb of this.events.parse) {
+    if (Instance.events.parse.length > 0) {
+      for (const cb of Instance.events.parse) {
         if (cb.bind({ parsed: parse.data })(source as string, parse.rules) === false) {
           return source;
         }
@@ -140,7 +140,7 @@ class Instance {
 
     let changes: RulesInternal;
 
-    if (this.events.rules.length > 0) changes = { ...parse.rules };
+    if (Instance.events.rules.length > 0) changes = { ...parse.rules };
 
     for (const rule in options) {
       if (rule in parse.rules) {
@@ -191,8 +191,8 @@ class Instance {
           }
         }
 
-        if (this.events.rules.length > 0) {
-          for (const cb of this.events.rules) {
+        if (Instance.events.rules.length > 0) {
+          for (const cb of Instance.events.rules) {
             cb(diff, parse.rules);
           }
         }
