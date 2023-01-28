@@ -4,104 +4,50 @@ import prettify from '@liquify/prettify';
 
 test('develop', async t => {
 
-  await dev(t)(async function (source) {
+  await dev(t)(async (source) => {
 
-    // prettify.grammar({
-    //   html: {
-    //     embedded: {
-    //       script: [
-    //         {
-    //           language: 'json',
-    //           attribute: {
-    //             type: [ 'application/ldss+json' ]
-    //           }
-    //         }
-    //       ]
-    //     }
-    //   },
-    //   liquid: {
-    //     embedded: {
-    //       capture: [
-    //         {
-    //           language: 'json',
-    //           argument: [
-    //             'json'
-    //           ]
-    //         }
-    //       ],
-    //       stylesheet: [
-    //         {
-    //           language: 'css',
-    //           argument: [
-    //             'foo'
-    //           ]
-    //         },
-    //         {
-    //           language: 'css',
-    //           argument: [
-    //             'foo',
-    //             'fo',
-    //             'foox'
-    //           ]
-    //         },
-    //         {
-    //           language: 'css',
-    //           argument: [
-    //             'foox'
-    //           ]
-    //         },
-    //         {
-    //           language: 'css',
-    //           argument: /['"]scss['"]/
-    //         }
-    //       ]
-    //     }
-    //   }
-    // });
-
-    //  prettify.rules.listen((changed) => console.log(changed));
-
-    prettify.rules({
-      language: 'json',
-      preserveLine: 0,
+    const output = await prettify.format(source, {
+      language: 'liquid',
       wrap: 0,
-      liquid: {
+      commentIndent: true,
+      crlf: false,
+      indentSize: 2,
+      preserveLine: 2,
+      endNewline: true,
+      markup: {
         correct: false,
-        valueForce: 'always',
+        quoteConvert: 'none',
+        delimiterSpacing: true,
+        selfCloseSpace: true,
+        commentNewline: true,
+        forceIndent: true,
+        attributeSort: false,
+        attributeSortList: [],
+        normalizeSpacing: true,
+        valueForce: 'intent',
+        attributeCasing: 'preserve',
         lineBreakSeparator: 'before',
-        ignoreTagList: [ 'javascript' ]
+        forceAttribute: 3,
+        forceLeadAttribute: false,
+        preserveAttributes: false,
+        preserveText: false
       },
       json: {
+        bracePadding: false,
+        braceAllman: true,
         arrayFormat: 'indent',
         objectIndent: 'indent',
-        braceAllman: true,
-        objectSort: true,
-        bracePadding: false
-
-      },
-      markup: {
-        correct: true,
-        delimiterForce: false,
-        selfCloseSpace: true,
-        forceAttribute: 3,
-        forceIndent: true,
-        forceLeadAttribute: false,
-        ignoreJS: false,
-        ignoreJSON: false,
-        ignoreCSS: false
-      },
-      script: {
-        correct: true,
-        noSemicolon: true,
-        vertical: true,
-        braceAllman: false
+        objectSort: false
       },
       style: {
-        classPadding: true
+        correct: false,
+        sortProperties: false,
+        sortSelectors: true,
+        noLeadZero: true,
+        quoteConvert: 'single',
+        classPadding: false
       }
     });
-
-    const output = await prettify.format(source);
 
     return {
       repeat: 0,

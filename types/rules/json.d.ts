@@ -1,4 +1,4 @@
-export interface JSONRules {
+export interface JSONOptions {
 
   /**
    * **Default:** `default`

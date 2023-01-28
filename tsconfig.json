@@ -4,16 +4,15 @@
     "node_modules/**",
     "package",
     "test",
-    "indexs.mjs",
-    "indexs.js",
+    "index.mjs",
+    "index.js",
     "index.d.ts"
   ],
   "include": [
     "src",
     "types",
-    "tests/**/*.mjs",
-    "tests/cases/attributes.test.js"
-  ],
+    "tests/**/*.mjs"
+, "tests/cases/attributes.test.js"  ],
   "compilerOptions": {
     "incremental": false,
     "allowJs": true,
@@ -26,8 +25,11 @@
       "types/*": [
         "./types/*"
       ],
+      "@options/*": [
+        "./src/options/*"
+      ],
       "@beautify/*": [
-        "src/format/*"
+        "./src/beautify/*"
       ],
       "@lexers/*": [
         "./src/lexers/*"
@@ -35,18 +37,15 @@
       "@comments/*": [
         "./src/comments/*"
       ],
-      "@shared/*": [
-        "./src/shared/*"
-      ],
-      "@parse/*": [
-        "src/parse/*"
+      "@parser/*": [
+        "./src/parser/*"
       ],
       "@utils/*": [
         "./src/utils/*"
       ],
       "@prettify/*": [
-        "src/modelx.ts",
-        "src/prettifyx.ts"
+        "./src/model.ts",
+        "./src/prettify.ts"
       ],
       "@liquify/ava/prettify": [
         "./node_modules/@liquify/ava/package/prettify.d.ts"

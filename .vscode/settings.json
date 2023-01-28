@@ -10,7 +10,7 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "**/LICENSE":true,
-  //  "**/node_modules": true
+    "**/node_modules": true
   },
   "workbench.colorCustomizations": {
     "window.inactiveBorder": "#00aeff",
@@ -21,6 +21,25 @@
       "decorations": [
         {
           "color": "#81D4FA",
+        }
+      ]
+    },
+    "(\\-)({%|{{|}}|%})": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#91EBC2"
+        },
+        {
+          "color": "#B1B1B1"
+        }
+      ]
+    },
+    "({%|{{|}}|%})": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#B1B1B1"
         }
       ]
     },

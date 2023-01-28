@@ -24,10 +24,6 @@ export enum StyleTypes {
    */
   function = 'function',
   /**
-   * Describes a CSS @ rule selector function
-   */
-  at_rule = 'at_rule',
-  /**
    * This is an internally used value that should not be exposed outside
    * the lexer unless the lexer receives an incomplete code sample.
    */
@@ -83,7 +79,7 @@ export enum StyleTypes {
    *
    * This infers Liquid code in Prettify
    */
-  liquid_else = 'liquid_else',
+  template_else = 'template_else',
   /**
    * Describes the closing sequence for a third party language template tag.
    *
@@ -92,7 +88,7 @@ export enum StyleTypes {
    *
    * This infers Liquid code in Prettify
    */
-  liquid_end = 'liquid_end',
+  template_end = 'template_end',
   /**
    * Describes the closing sequence for a third party language template tag.
    *
@@ -101,7 +97,7 @@ export enum StyleTypes {
    *
    * This infers Liquid code in Prettify
    */
-  liquid_start = 'liquid_start',
+  template_start = 'template_start',
   /**
    * Describes CSS property values, which is generally anything that follows a colon,
    * even if not a known property, but does not immediately precede some sort of structure opening.
@@ -185,7 +181,7 @@ export enum ScriptTypes {
    *
    * This infers Liquid code in Prettify
    */
-  liquid_else = 'liquid_else',
+  template_else = 'template_else',
   /**
    *  A terminal token of a template body
    *
@@ -194,23 +190,23 @@ export enum ScriptTypes {
    *
    * This infers Liquid code in Prettify
    */
-  liquid_end = 'liquid_end',
+  template_end = 'template_end',
   /**
    * A start token of a template body.
    */
-  liquid_start = 'liquid_start',
+  template_start = 'template_start',
   /**
    * A template (literal) string that terminates with `${`.
    */
-  liquid_string_end = 'liquid_string_end',
+  template_string_end = 'template_string_end',
   /**
    * A template string that starts with `}` and terminates with `${`.
    */
-  liquid_string_else = 'liquid_string_else',
+  template_string_else = 'template_string_else',
   /**
    * A template string that starts with `}`
    */
-  liquid_string_start = 'liquid_string_start',
+  template_string_start = 'template_string_start',
   /**
    *  A TypeScript data type declaration.
    */
@@ -304,7 +300,7 @@ export enum MarkupTypes {
    * </main>
    * </div>
    * </style>
-   * </>
+   * </script>
    */
   end = 'end',
   /**
@@ -353,6 +349,24 @@ export enum MarkupTypes {
    */
   script_end = 'script_end',
   /**
+   * Starting embedded Liquid tag containing JSON for Liquid Language
+   *
+   * ---
+   * @example
+   *
+   * {% schema %}
+   */
+  schema_start = 'schema_start',
+  /**
+   * Ending embedded Liquid tag containing JSON for Liquid Language
+   *
+   * ---
+   * @example
+   *
+   * {% endschema %}
+   */
+  schema_end = 'schema_end',
+  /**
    * SGML type notations, which can be deeply nested using square brace notation.
    *
    * @deprecated
@@ -375,40 +389,6 @@ export enum MarkupTypes {
    */
   style = 'style',
   /**
-   * Preserves the inner content of a style tag but allows beautification of the attribute tokens.
-   *
-   * Typically used when the `ignoreJSON` rule is inferred, but can also be applied when script type
-   * token uses a `data-prettify-ignore` attribute or alternatively when the inner contents of the script
-   * begin with a `@prettify-ignore` comment.
-   */
-  style_preserve = 'style_preserve',
-  /**
-   * A tag indicating it may contain JavaScript/TypeScript that need to be passed to the script lexer.
-   */
-  script = 'script',
-  /**
-   * Preserves the inner content of a script tag but allows beautification of the attribute tokens.
-   *
-   * Typically used when the `ignoreJS` rule is inferred, but can also be applied when script type
-   * tokens use a `data-prettify-ignore` attribute or alternatively when the inner contents of the script
-   * begin with a `@prettify-ignore` comment.
-   */
-  script_preserve = 'script_preserve',
-  /**
-   * A tag indicating it may contain JSON that needs to be passed to the script lexer.
-   */
-  json = 'json',
-  /**
-   * Preserves the inner content of a script tag annotated with a JSON inferring attribute value, typically
-   * `type="application/json"` or `type="application/ld+json"`. Similar to `script_preserve` the type will
-   * allows beautification of the attribute tokens but will not touch the inner contents of the tag.
-   *
-   * Typically used when the `ignoreJSON` rule is inferred, but can also be applied when script type
-   * token uses a `data-prettify-ignore` attribute or alternatively when the inner contents of the script
-   * begin with a `@prettify-ignore` comment.
-   */
-  json_preserve = 'json_preserve',
-  /**
    * A tag attribute from a regular start or singular tag type.
    * ---
    * @example
@@ -424,7 +404,7 @@ export enum MarkupTypes {
    *
    * <div id="{{ x }}">
    */
-  liquid_value_start = 'liquid_value_start',
+  template_value_start = 'template_value_start',
   /**
    * A tag attribute from a regular start or singular tag type.
    * ---
@@ -432,7 +412,7 @@ export enum MarkupTypes {
    *
    * <div id="{{ x }}">
    */
-  liquid_value_end = 'liquid_value_end',
+  template_value_end = 'template_value_end',
   /**
    * A tag attribute from a regular start or singular tag type.
    * ---
@@ -440,7 +420,7 @@ export enum MarkupTypes {
    *
    * <div id="{{ x }}">
    */
-  liquid_value = 'liquid_value',
+  template_value = 'template_value',
   /**
    * A start template tag being used within an attribute
    *
@@ -449,7 +429,7 @@ export enum MarkupTypes {
    *
    * <div {% if x %}>
    */
-  liquid_attribute_start = 'liquid_attribute_start',
+  template_attribute_start = 'template_attribute_start',
   /**
    * template tag acting as the else block of a condition but contained
    * within a HTML attribute
@@ -459,9 +439,9 @@ export enum MarkupTypes {
    *
    * <div {% if x %}data-attr{% else %}>
    */
-  liquid_attribute_else = 'liquid_attribute_else',
+  template_attribute_else = 'template_attribute_else',
   /**
-   * A closing template tag associated with a prior liquid_start tag type but
+   * A closing template tag associated with a prior template_start tag type but
    * contained within a HTML attribute
    *
    * ---
@@ -469,7 +449,7 @@ export enum MarkupTypes {
    *
    * <div {% if x %}data-attr{% else %}data-x{% endif %}>
    */
-  liquid_attribute_end = 'liquid_attribute_end',
+  template_attribute_end = 'template_attribute_end',
   /**
    * A tag attribute that conveys instructions to a template pre-parser opposed to
    * meta data describing the markup tag. This is representative of Liquid tags
@@ -480,7 +460,7 @@ export enum MarkupTypes {
    *
    * <div {{ foo }}>
    */
-  liquid_attribute = 'liquid_attribute',
+  template_attribute = 'template_attribute',
   /**
    * A tag attribute that represents a basic string value, typically used within conditional
    * based expressions, with this type being the resulting conditional. When this type is
@@ -490,10 +470,10 @@ export enum MarkupTypes {
    * @example
    *
    * // Where "foo" and "bar" both represent
-   * // a "liquid_attribute_chain" type
+   * // a "template_attribute_chain" type
    * <div data-{% if xx %}foo{% else %}bar{% endif %}="xxx">
    */
-  liquid_attribute_chain = 'liquid_attribute_chain',
+  template_attribute_chain = 'template_attribute_chain',
   /**
    * A tag delimited by a known convention of an external template language.
    * This is typically going to represent singleton Liquid tags or Liquid objects,
@@ -505,72 +485,7 @@ export enum MarkupTypes {
    * {{ object }}
    * {% tag %} // singleton
    */
-  liquid = 'liquid',
-  /**
-   * A template tag that an embedded language that requires the script lexer. This
-   * has identical behaviour to `script` type but for liquid type tokens.
-   *
-   * ---
-   * @example
-   *
-   * {% javascript %}
-   */
-  liquid_script = 'liquid_script',
-  /**
-   * A template tag that an embedded language who's inner contents is excluded from
-   * beautifcation. This has identical behaviour to `script_preserve` type but for liquid
-   * type tokens.
-   *
-   * ---
-   * @example
-   *
-   * {% javascript %}
-   */
-  liquid_script_preserve = 'liquid_script_preserve',
-  /**
-   * A template tag that an embedded language that requires the script lexer. This
-   * has identical behaviour to `style` type but for liquid type tokens.
-   *
-   * ---
-   * @example
-   *
-   * {% stylesheet %}
-   * {% style %}
-   */
-  liquid_style = 'liquid_style',
-  /**
-   * A template tag that an embedded language who's inner contents is excluded from
-   * beautifcation. This has identical behaviour to `style_preserve` type but for liquid
-   * type tokens.
-   *
-   * ---
-   * @example
-   *
-   * {% stylesheet %}
-   * {% style %}
-   */
-  liquid_style_preserve = 'liquid_style_preserve',
-  /**
-   * A template tag that an embedded language that requires the script lexer. This
-   * has identical behaviour to `json` type but for liquid type tokens.
-   *
-   * ---
-   * @example
-   *
-   * {% schema %}
-   */
-  liquid_json = 'liquid_json',
-  /**
-   * A template tag that an embedded language who's inner contents is excluded from
-   * beautifcation. This has identical behaviour to `json_preserve` type but for liquid
-   * type tokens.
-   *
-   * ---
-   * @example
-   *
-   * {% schema %}
-   */
-  liquid_json_preserve = 'liquid_json_preserve',
+  template = 'template',
   /**
    * A template tag that contains content or other tags not associated with
    * the template language and expects a closing tag. This is representative of
@@ -583,7 +498,7 @@ export enum MarkupTypes {
    * {% unless %}
    * {% if %}
    */
-  liquid_start = 'liquid_start',
+  template_start = 'template_start',
   /**
    * A template tag acting as the else block of a condition. This is representative of
    * Liquid tags.
@@ -595,9 +510,9 @@ export enum MarkupTypes {
    * {% elsif %}
    * {% when %}
    */
-  liquid_else = 'liquid_else',
+  template_else = 'template_else',
   /**
-   * A closing template tag associated with a prior liquid_start tag type.
+   * A closing template tag associated with a prior template_start tag type.
    *
    * ---
    * @example
@@ -606,7 +521,7 @@ export enum MarkupTypes {
    * {% endunless %}
    * {% endif %}
    */
-  liquid_end = 'liquid_end',
+  template_end = 'template_end',
   /**
    *  XML pragmas. Typically used to declare the document for an XML interpreter,
    * but otherwise not widely used.

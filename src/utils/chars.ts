@@ -36,16 +36,6 @@ export const enum cc {
   DOT = 46,
 
   /**
-   * `^` – Upp Character
-   */
-  UPP = 94,
-
-  /**
-   * `~` – Squiggle Dash
-   */
-  SDH = 94,
-
-  /**
    * `#` – Hashtag character
    */
   HSH = 35,
@@ -64,11 +54,6 @@ export const enum cc {
    * `{` – Left Curly Brace
    */
   LCB = 123,
-
-  /**
-   * `|` – Pipe Character
-   */
-  PIP = 124,
 
   /**
    * `}` – Right Curly Brace
@@ -187,10 +172,5 @@ export const enum cc {
   /**
    * `+` - Plus
    */
-  PLS = 43,
-
-  /**
-   * `&` - And
-   */
-  AND = 38
+  PLS = 43
 }

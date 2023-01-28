@@ -253,16 +253,9 @@ test.serial('Delimiter Trims', async t => {
   ]
   , async function (source, delimiterTrims, label) {
 
-    const output = await prettify.format(source, {
-      liquid: {
-        delimiterTrims
-      },
-      markup: {
-        forceAttribute: false
-      }
-    });
+    const output = await prettify.format(source, { markup: { delimiterTrims } });
 
-    t.snapshot(output, label({ liquid: { delimiterTrims } }));
+    t.snapshot(output, label({ markup: { delimiterTrims } }));
 
   });
 
@@ -277,12 +270,7 @@ test.serial('Quote Convert', async t => {
   ]
   , async function (source, quoteConvert, label) {
 
-    const output = await prettify.format(source, {
-      markup: {
-        quoteConvert,
-        forceAttribute: false
-      }
-    });
+    const output = await prettify.format(source, { markup: { quoteConvert } });
 
     t.snapshot(output, label({ markup: { quoteConvert } }));
 
@@ -300,14 +288,7 @@ test.serial('Self Close Space', async t => {
   ]
   , async function (source, selfCloseSpace, label) {
 
-    const output = await prettify.format(source, {
-      wrap: 0,
-      markup: {
-        selfCloseSpace,
-        forceAttribute: false,
-        forceLeadAttribute: false
-      }
-    });
+    const output = await prettify.format(source, { markup: { selfCloseSpace } });
 
     t.snapshot(output, label({ markup: { selfCloseSpace } }));
 

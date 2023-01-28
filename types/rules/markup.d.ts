@@ -1,4 +1,4 @@
-export interface MarkupRules {
+export interface MarkupOptions {
 
   /**
    * **Default** `false`
@@ -533,7 +533,7 @@ export interface MarkupRules {
    * Whether HTML and Liquid tags identified to be containing CSS or SCSS
    * should be ignored from beautification.
    */
-  ignoreCSS?: boolean;
+  ignoreStyles?: boolean;
 
   /**
    * **Default** `true`
@@ -541,7 +541,7 @@ export interface MarkupRules {
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
    *
    * Whether HTML and Liquid tags identified to be containing JavaScript
-   * should be ignored from beautification. When disabled, formatting will
+   * should be ignored from beautification. When enabled, formatting will
    * be applied in accordance with rules defined in the `script` lexer.
    *
    * _This rules is currently set to `true` by default as JavaScript formatting
@@ -549,18 +549,6 @@ export interface MarkupRules {
    * your on discretion_
    *
    */
-  ignoreJS?: boolean;
-
-  /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
-   *
-   * Whether HTML `<script>` tags annotated with a JSON identifiable attribute
-   * should be ignored from beautification. When disabled, formatting will be
-   * applied in accordancee with rules defined in the `json` ruleset.
-   *
-   */
-  ignoreJSON?: boolean;
+  ignoreScripts?: boolean;
 
 }

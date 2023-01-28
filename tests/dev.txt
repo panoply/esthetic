@@ -1,144 +1,268 @@
-{
-  "name": "t:sections.header.name",
-  "class": "section-header",
-  "settings": [
-    {
-      "type": "select",
-      "id": "color_scheme",
-      "options": [
-        {
-          "value": "accent-1",
-          "label": "t:sections.all.colors.accent_1.label"
+{% if section.settings.text_size == 6 %}
+  {% assign text_size = section.settings.text_size | prepend: "h" %}
+{% else %}
+  {% assign text_size = 6 | minus: section.settings.text_size | prepend: "h" %}
+{% endif %}
+
+{% capture overlay_style %}
+  background-color: rgba(0, 0, 0, {{ section.settings.overlay }});
+{% endcapture %}
+
+<div class="row jc-center py-{{- section.settings.gutter }}">
+  {% for block in section.blocks %}
+
+    {% if forloop.first %}
+      {% assign gutter = section.settings.gutter | prepend: "pr-" %}
+    {% elsif forloop.last %}
+      {% assign gutter = section.settings.gutter | prepend: "pl-" %}
+    {% else %}
+      {% assign gutter = section.settings.gutter | prepend: "px-" %}
+    {% endif %}
+
+    <div class="col-12 col-md pb-{{ section.settings.gutter }} pb-md-0 {{ gutter }}">
+
+      <div class="content">
+        <div class="overlay p-3" style="{{- overlay_style -}}">
+          <a
+            class=" {{- section.settings.align }} {{ text_size }} my-0"
+            href="/collections/{{- block.settings.collection -}}"
+            style=" color: {{- section.settings.text_color -}};"
+            title=" {{- block.settings.title -}}">
+            {% if section.settings.type == "text-button" %}
+              <span class="{{ section.settings.type }}" style="background-color: {{ section.settings.button_color }};">
+                {{ block.settings.title }}
+              </span>
+            {% else %}
+              {{ block.settings.title }}
+            {% endif %}
+          </a>
+        </div>
+        <div class="aspect-ratio">
+          {% if block.settings.image != blank %}
+            <img
+              class="img-fluid"
+              alt=" {{- block.settings.image.alt -}}"
+              data-src=" {{- block.settings.image | format: 'pjpg' | img_url: '1024x' -}}">
+          {% else %}
+            {{ "image" | placeholder_svg_tag: "img-fluid" }}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% schema %}
+  {
+    "name": "Collection list",
+    "tag": "section",
+    "class": "collection-list",
+    "max_blocks": 4,
+    "settings": [
+      {
+        "type": "header",
+        "content": "Style",
+        "info": "Customize a block list of collections"
+      },
+      {
+        "type": "range",
+        "id": "gutter",
+        "label": "Gutter",
+        "min": 0,
+        "max": 5,
+        "step": 1,
+        "default": 2
+      },
+      {
+        "type": "range",
+        "id": "overlay",
+        "label": "Overlay",
+        "min": 0,
+        "max": 1,
+        "step": 0.1,
+        "default": 0,
+        "info": "Use an overlay to better distinguish text"
+      },
+      {
+        "type": "select",
+        "id": "align",
+        "label": "Align",
+        "default": "jc-center ai-end",
+        "options": [
+          {
+            "value": "jc-start ai-start",
+            "label": "Top Left"
+          },
+          {
+            "value": "jc-center ai-start",
+            "label": "Top Center"
+          },
+          {
+            "value": "jc-end ai-start",
+            "label": "Top Right"
+          },
+          {
+            "value": "jc-start ai-center",
+            "label": "Middle Left"
+          },
+          {
+            "value": "jc-center ai-center",
+            "label": "Middle Center"
+          },
+          {
+            "value": "jc-end ai-center",
+            "label": "Middle Right"
+          },
+          {
+            "value": "jc-start ai-end",
+            "label": "Bottom Left"
+          },
+          {
+            "value": "jc-center ai-end",
+            "label": "Bottom Center"
+          },
+          {
+            "value": "jc-end ai-end",
+            "label": "Bottom Right"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Caption",
+        "info": "Customize the text caption to be displayed on each collection image block"
+      },
+      {
+        "type": "radio",
+        "id": "type",
+        "label": "Text Type",
+        "default": "text-normal",
+        "options": [
+          {
+            "value": "text-normal",
+            "label": "Normal"
+          },
+          {
+            "value": "text-button",
+            "label": "Button"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "text_size",
+        "label": "Text Size",
+        "min": 1,
+        "max": 6,
+        "step": 1,
+        "default": 3
+      },
+      {
+        "type": "color",
+        "label": "Text Colour",
+        "id": "text_color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "label": "Button Colour",
+        "id": "button_color",
+        "info": "Only applicable when Text Type is \"Button\", otherwise the preset is ignored.",
+        "default": "#111111"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "collection_gender",
+        "name": {
+          "en": "Collection Gender"
         },
-        {
-                "label": "t:sections.all.colors.accent_2.label",
-          "value": "accent-2",
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title"
+          },
+          {
+            "type": "collection",
+            "id": "url_men",
+            "label": "URL"
+          },
+          {
+            "type": "collection",
+            "id": "url_women",
+            "label": "URL"
+          },
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          }
+        ]
+      },
+      {
+        "type": "collection_links",
+        "name": {
+          "en": "Collection Item"
         },
-        {
-          "value": "background-1",
-          "label": "t:sections.all.colors.background_1.label"
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title"
+          },
+          {
+            "id": "collection",
+            "type": "collection",
+            "label": {
+              "en": "Collection",
+              "de": "Kategorie",
+              "fr": "Collection"
+            }
+          },
+          {
+            "type": "checkbox",
+            "id": "gender_popup",
+            "default": false,
+            "label": "Gender Popup",
+            "info": "Should a gender popup overlay be applied onClick?"
+          },
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Collection List",
+ "category": "Collection",
+        "settings": {
+          "align": "jc-center ai-end"
         },
-        {
-          "value": "background-2",
-          "label": "t:sections.all.colors.background_2.label"
-        },
-        {
-          "value": "inverse",
-          "label": "t:sections.all.colors.inverse.label"
-        }
-      ],
-      "default": "background-1",
-      "label": "t:sections.all.colors.label"
-    },
-    {
-      "type": "image_picker",
-      "id": "logo",
-      "label": "t:sections.header.settings.logo.label"
-    },
-    {
-      "type": "range",
-      "id": "logo_width",
-      "min": 50,
-      "max": 250,
-      "step": 10,
-      "default": 100,
-      "unit": "t:sections.header.settings.logo_width.unit",
-      "label": "t:sections.header.settings.logo_width.label"
-    },
-    {
-      "type": "select",
-      "id": "logo_position",
-      "options": [
-        {
-          "value": "middle-left",
-          "label": "t:sections.header.settings.logo_position.options__1.label"
-        },
-        {
-          "value": "top-left",
-          "label": "t:sections.header.settings.logo_position.options__2.label"
-        },
-        {
-          "value": "top-center",
-          "label": "t:sections.header.settings.logo_position.options__3.label"
-        }
-      ],
-      "default": "middle-left",
-      "label": "t:sections.header.settings.logo_position.label",
-      "info": "t:sections.header.settings.logo_position.info"
-    },
-    {
-      "type": "link_list",
-      "id": "menu",
-      "default": "main-menu",
-      "label": "t:sections.header.settings.menu.label"
-    },
-    {
-      "type": "select",
-      "id": "menu_type_desktop",
-      "options": [
-        {
-          "value": "dropdown",
-          "label": "t:sections.header.settings.menu_type_desktop.options__1.label"
-        },
-        {
-          "value": "mega",
-          "label": "t:sections.header.settings.menu_type_desktop.options__2.label"
-        }
-      ],
-      "default": "dropdown",
-      "label": "t:sections.header.settings.menu_type_desktop.label",
-      "info": "t:sections.header.settings.menu_type_desktop.info"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_line_separator",
-      "default": true,
-      "label": "t:sections.header.settings.show_line_separator.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_sticky_header",
-      "default": true,
-      "label": "t:sections.header.settings.enable_sticky_header.label",
-      "info": "t:sections.header.settings.enable_sticky_header.info"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.all.spacing"
-    },
-    {
-      "type": "range",
-      "id": "margin_bottom",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "t:sections.header.settings.margin_bottom.label",
-      "default": 0
-    },
-    {
-      "type": "header",
-      "content": "t:sections.all.padding.section_padding_heading"
-    },
-    {
-      "type": "range",
-      "id": "padding_top",
-      "min": 0,
-      "max": 36,
-      "step": 4,
-      "unit": "px",
-      "label": "t:sections.all.padding.padding_top",
-      "default": 20
-    },
-    {
-      "type": "range",
-      "id": "padding_bottom",
-      "min": 0,
-      "max": 36,
-      "step": 4,
-      "unit": "px",
-      "label": "t:sections.all.padding.padding_bottom",
-      "default": 20
-    }
-  ]
-}
+        "blocks": [
+          {
+            "type": "collection_links",
+            "settings": {
+              "title": "Collection Name"
+            }
+          },
+          {
+            "type": "collection_links",
+            "settings": {
+              "title": "Collection Name"
+            }
+          },
+          {
+            "type": "collection_links",
+            "settings": {
+              "title": "Collection Name"
+            }
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

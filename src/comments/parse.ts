@@ -1,5 +1,6 @@
-import { Record, WrapComment } from 'types/internal';
-import { parse } from '@parse/parser';
+import { Record, WrapComment } from 'types/prettify';
+import { parse } from '@parser/parse';
+import { prettify } from '@prettify/*';
 import { NWL, NIL, WSP, cc as ch } from '@utils/chars';
 import { sanitizeComment, ws, is, not } from '@utils/helpers';
 import { CharEscape, LiqDelims, StripEnd, StripLead } from '@utils/regex';
@@ -19,7 +20,7 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
   /**
    * Deconstructed Rules
    */
-  const { rules } = parse;
+  const { options } = prettify;
 
   /**
    * The composed output structure
@@ -30,6 +31,11 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
    * An additional composed structure
    */
   const second = [];
+
+  /**
+   * Line endings
+   */
+  const lf = options.crlf === true ? '\r\n' : NWL;
 
   /**
    * Sanatized opening delimiter sequence
@@ -166,9 +172,7 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
       if (build.slice(build.length - 20).join(NIL) === '@prettify-ignore-end') {
 
         if (liqcomm) {
-
           const d = config.chars.indexOf('{', a);
-
           if (is(config.chars[d + 1], ch.PER)) {
             const ender = config.chars.slice(d, config.chars.indexOf('}', d + 1) + 1).join(NIL);
             if (regEnd.test(ender)) config.ender = ender;
@@ -176,7 +180,6 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
         }
 
         a = a + 1;
-
         break;
       }
 
@@ -229,8 +232,13 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
 
         build.push(config.chars[a]);
 
-        if (termination === NWL && config.chars[a + 1] === NWL) break;
-        if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === termination) break;
+        if (termination === NWL && config.chars[a + 1] === NWL) {
+          break;
+        }
+
+        if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === termination) {
+          break;
+        }
 
         a = a + 1;
 
@@ -240,9 +248,7 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
 
     if (config.chars[a] === NWL) a = a - 1;
 
-    output = build
-      .join(NIL)
-      .replace(StripEnd, NIL);
+    output = build.join(NIL).replace(StripEnd, NIL);
 
     return [ output, a ];
   }
@@ -251,7 +257,7 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
 
     build.push(config.chars[a]);
 
-    if (config.chars[a] === NWL) parse.line = parse.line + 1;
+    if (config.chars[a] === NWL) parse.lineNumber = parse.lineNumber + 1;
     if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === config.ender) break;
 
     a = a + 1;
@@ -262,25 +268,15 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
 
   if (regIgnore.test(output) === true) return ignoreComment();
 
-  if (
-    ((
-      liqcomm === true &&
-      rules.liquid.preserveComment === true
-    ) || (
-      liqcomm === false &&
-      rules.markup.preserveComment === true
-    )) ||
-    rules.wrap < 1 ||
-    a === config.end || (
-      output.length <= rules.wrap &&
-      output.indexOf(NWL) < 0
-    ) || (
-      config.begin === '/*' &&
-      output.indexOf(NWL) > 0 &&
-      output.replace(NWL, NIL).indexOf(NWL) > 0 &&
-      /\n(?!(\s*\*))/.test(output) === false
-    )
-  ) {
+  if (options.preserveComment === true || options.wrap < 1 || a === config.end || (
+    output.length <= options.wrap &&
+    output.indexOf(NWL) < 0
+  ) || (
+    config.begin === '/*' &&
+    output.indexOf(NWL) > 0 &&
+    output.replace(NWL, NIL).indexOf(NWL) > 0 &&
+    (/\n(?!(\s*\*))/).test(output) === false
+  )) {
 
     return [ output, a ];
   }
@@ -325,8 +321,8 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
       emptyLines();
 
     } else if (
-      lines[b].replace(StripLead, NIL).length > rules.wrap &&
-      lines[b].replace(StripLead, NIL).indexOf(WSP) > rules.wrap
+      lines[b].replace(StripLead, NIL).length > options.wrap &&
+      lines[b].replace(StripLead, NIL).indexOf(WSP) > options.wrap
     ) {
 
       lines[b] = lines[b].replace(StripLead, NIL);
@@ -345,7 +341,7 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
         ? `   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`
         : `${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`;
 
-      twrap = b < 1 ? rules.wrap - (config.begin.length + 1) : rules.wrap;
+      twrap = b < 1 ? options.wrap - (config.begin.length + 1) : options.wrap;
 
       c = lines[b].length;
       d = lines[b].replace(StripLead, NIL).indexOf(WSP);
@@ -356,7 +352,7 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
 
         do {
           c = c - 1;
-          if (ws(lines[b].charAt(c)) && c <= rules.wrap) break;
+          if (ws(lines[b].charAt(c)) && c <= options.wrap) break;
         } while (c > 0);
 
         if (/^\s*\d+\.\s/.test(lines[b]) === true && /^\s*\d+\.\s/.test(lines[b + 1]) === false) {
@@ -384,9 +380,9 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
           numberLine = true;
           b = b - 1;
 
-        } else if (lines[b].replace(StripLead, NIL).indexOf(WSP) < rules.wrap) {
-          lines[b + 1] = lines[b].length > rules.wrap
-            ? lines[b].slice(c + 1) + parse.crlf + lines[b + 1]
+        } else if (lines[b].replace(StripLead, NIL).indexOf(WSP) < options.wrap) {
+          lines[b + 1] = lines[b].length > options.wrap
+            ? lines[b].slice(c + 1) + lf + lines[b + 1]
             : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
         }
 
@@ -399,10 +395,10 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
       } else if (
         lines[b + 1] !== undefined && (
           (
-            lines[b].length + bline.indexOf(WSP) > rules.wrap &&
+            lines[b].length + bline.indexOf(WSP) > options.wrap &&
             bline.indexOf(WSP) > 0
           ) || (
-            lines[b].length + bline.length > rules.wrap &&
+            lines[b].length + bline.length > options.wrap &&
             bline.indexOf(WSP) < 0
           )
         )
@@ -440,7 +436,7 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
 
   if (second.length > 0) {
 
-    if (second[second.length - 1].length > rules.wrap - (config.ender.length + 1)) {
+    if (second[second.length - 1].length > options.wrap - (config.ender.length + 1)) {
       second.push(config.ender);
     } else {
 
@@ -448,11 +444,11 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
       // second[second.length - 1] = `${second[second.length - 1]} ${config.ender}`;
     }
 
-    output = second.join(parse.crlf);
+    output = second.join(lf);
 
   } else {
     lines[lines.length - 1] = lines[lines.length - 1] + config.ender;
-    output = lines.join(parse.crlf);
+    output = lines.join(lf);
   }
 
   // console.log(output);
@@ -474,8 +470,7 @@ export function wrapCommentBlock (config: WrapComment): [string, number] {
  */
 export function wrapCommentLine (config: WrapComment): [string, number] {
 
-  const { wrap } = parse.rules;
-  const { preserveComment } = parse.rules[parse.lexer];
+  const { wrap, preserveComment } = prettify.options;
 
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
@@ -529,12 +524,12 @@ export function wrapCommentLine (config: WrapComment): [string, number] {
       ender: -1,
       types: 'comment',
       lexer: config.lexer,
-      lines: parse.space
+      lines: parse.linesSpace
     };
 
     if (parse.count > -1) {
-      record.begin = parse.stack.index;
-      record.stack = parse.stack.token;
+      record.begin = parse.structure[parse.structure.length - 1][1];
+      record.stack = parse.structure[parse.structure.length - 1][0];
       record.token = parse.data.token[parse.count];
     } else {
       record.begin = -1;
@@ -584,7 +579,7 @@ export function wrapCommentLine (config: WrapComment): [string, number] {
       record.token = lines[c];
       parse.push(parse.data, record as Record, NIL);
       record.lines = 2;
-      parse.space = 2;
+      parse.linesSpace = 2;
       c = c + 1;
 
     } while (c < d);

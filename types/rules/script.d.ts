@@ -1,4 +1,4 @@
-export interface ScriptRules {
+export interface ScriptOptions {
 
   /**
    * **Default** `false`
@@ -41,17 +41,6 @@ export interface ScriptRules {
    * type comments, line (`//`) comments will not be touched.
    */
   commentNewline?: boolean;
-
-  /**
-   * **Default** `true`
-   *
-   * This will determine whether comments should always start at position
-   * `0` of each line or if comments should be indented according to the code.
-   * It is unlikely you will ever want to set this to `false` so generally, just
-   * leave it to `true`
-   *
-   */
-  commentIndent?: boolean;
 
   /**
    * **Default: `none`**
@@ -350,13 +339,6 @@ export interface ScriptRules {
    * ```
    */
   variableList?: 'none' | 'each' | 'list';
-
-  /**
-   * **Default** `false`
-   *
-   * Prevent comment reformatting due to option wrap.
-   */
-  preserveComment?: boolean;
 
   /**
    * **Description**

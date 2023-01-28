@@ -1,24 +1,22 @@
-import type { Record, Types, LanguageName } from 'types/internal';
-import { parse } from '@parse/parser';
-import { sortSafe } from '@parse/sorting';
+import type { Record, Types, LanguageName, Syntactic, IParse, ParseStore } from 'types/internal';
 import { assign, isArray } from '@utils/native';
 import { wrapCommentBlock, wrapCommentLine } from '@comments/parse';
 import { cc, NIL, NWL, WSP } from '@utils/chars';
-import { SpaceLead, SpaceEnd, SpaceOnly, CommIgnoreNext, StripLead } from '@utils/regex';
+import { SpaceLead, SpaceEnd, SpaceOnly, CommIgnoreNext } from '@utils/regex';
 import { grammar } from '@shared/grammar';
-import { Languages, Lexers } from '@shared/enums';
+import { rules } from '../shared';
+import * as p from '../traverse';
 import * as u from '@utils/helpers';
-import * as external from '@parse/external';
-import {
-  getTagName,
-  isLiquid,
-  isLiquidControl,
-  isLiquidElse,
-  isLiquidEnd,
-  isLiquidLine,
-  isLiquidStart,
-  isValueLiquid
-} from '@utils/lexical';
+import * as ex from '../parse/external';
+import { lexers } from '.';
+import { Lexers } from '@utils/enums';
+
+// import { prettify } from '@prettify/model';
+// import * as error from 'src/parse/errors';
+
+/* -------------------------------------------- */
+/* LEXER                                        */
+/* -------------------------------------------- */
 
 /**
  * Markup Lexer
@@ -35,21 +33,17 @@ import {
  */
 // prettify.lexers.markup =
 
-export function markup (input?: string) {
+export function markup (source: string | string[], parse: ParseStore) {
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
   /* -------------------------------------------- */
 
+  console.log(source);
   /**
    * Parse data reference
    */
-  const { data, rules } = parse;
-
-  /**
-   * Source string, typically called from `parse.source` but can also be `input` parameter
-   */
-  const source = input || parse.source;
+  const { data } = parse;
 
   /**
    * Whether or not language mode is TSX / JSX
@@ -57,9 +51,14 @@ export function markup (input?: string) {
   const jsx = rules.language === 'jsx' || rules.language === 'tsx';
 
   /**
+   * Whether or not language mode is HTML or Liquid
+   */
+  // const markup = rules.language === 'html' || rules.language === 'liquid';
+
+  /**
    * Ignored Liquid Tags
    */
-  const ignored = new Set(rules.liquid.ignoreTagList);
+  const ig = new Set(rules.liquid.ignoreTagList);
 
   /**
    * Attribute sorting list length
@@ -69,7 +68,7 @@ export function markup (input?: string) {
   /**
    * The document source as an array list
    */
-  const b: string[] = isArray(source) ? source : source.split(NIL);
+  const b = isArray(source) ? source : source.split(NIL);
 
   /**
    * The length of the document source, ie: number of characters
@@ -81,11 +80,6 @@ export function markup (input?: string) {
   /* -------------------------------------------- */
 
   /**
-   * embed Tags parseExternal language
-   */
-  let language: LanguageName;
-
-  /**
    * Advancement reference
    */
   let a: number = 0;
@@ -94,6 +88,11 @@ export function markup (input?: string) {
    * embed Tag, eg: <scrip> or {% schema %} etc
    */
   let embed: boolean = false;
+
+  /**
+   * embed Tags embedded language
+   */
+  let language: LanguageName;
 
   /**
    * HTML String
@@ -144,8 +143,8 @@ export function markup (input?: string) {
       parse.pairs.set(parse.count + 1, {
         line: parse.line,
         token: record.token,
-        stack: getTagName(record.token),
-        expect: `end${getTagName(record.token)}`,
+        stack: u.getTagName(record.token),
+        expect: `end${u.getTagName(record.token)}`,
         syntax: 'Liquid'
       });
 
@@ -154,7 +153,7 @@ export function markup (input?: string) {
       parse.pairs.set(parse.count + 1, {
         line: parse.line,
         token: record.token,
-        stack: getTagName(record.token),
+        stack: u.getTagName(record.token),
         expect: `</${record.token.slice(1)}`,
         syntax: 'HTML'
       });
@@ -206,7 +205,7 @@ export function markup (input?: string) {
 
         const ref = parse.pairs.get(parse.stack.index);
 
-        if (ref.expect === getTagName(record.token)) {
+        if (ref.expect === u.getTagName(record.token)) {
 
           parse.pairs.delete(parse.stack.index);
 
@@ -255,17 +254,17 @@ export function markup (input?: string) {
    */
   function push <T extends Partial<Record> > (record: Record, structure: Types | T | T[] = NIL, param?: T) {
 
-    if (structure === NIL && param === undefined) {
+    if (typeof structure === 'string' && param === undefined) {
 
       // parse.error = error.syntactic(record);
-      parse.push(data, record, NIL);
+      p.push(data, record, NIL);
 
     } else if (typeof structure === 'object' && !(structure as T[]).length) {
 
       assign(record, structure);
 
       // p.error = error.syntactic(record);
-      parse.push(data, record, NIL);
+      p.push(data, record, NIL);
 
     } else if (isArray(structure)) {
 
@@ -274,7 +273,7 @@ export function markup (input?: string) {
         assign(record, entry);
 
         //  p.error = error.syntactic(record);
-        parse.push(data, record, NIL);
+        p.push(data, record, NIL);
 
         //  if (parse.error) return;
 
@@ -285,7 +284,7 @@ export function markup (input?: string) {
       assign(record, param);
 
       //  parse.error = error.syntactic(record);
-      parse.push(data, record, structure as Types);
+      p.push(data, record, structure as Types);
 
     } else {
       console.log('isssue');
@@ -308,12 +307,11 @@ export function markup (input?: string) {
 
     if (!((rules.language === 'html' || rules.language === 'liquid') && jsx === false)) return input;
     if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
-    if (!isLiquid(input, 3)) return input;
+    if (!u.isLiquid(input, 3)) return input;
 
     const end = input.length - 3;
 
     if (rules.liquid.delimiterTrims === 'force') {
-
       if (u.is(input[1], cc.PER)) {
 
         if (u.not(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
@@ -325,7 +323,6 @@ export function markup (input?: string) {
         if (u.not(input[end], cc.DSH)) input = input.replace(/}}$/, '-}}');
 
       }
-
     } else if (rules.liquid.delimiterTrims === 'strip') {
 
       input = input
@@ -466,7 +463,7 @@ export function markup (input?: string) {
     /**
      * The tag name
      */
-    const tname = getTagName(token);
+    const tname = u.getTagName(token);
 
     /**
      * Parse record - This is generated as a drop-in as
@@ -477,7 +474,7 @@ export function markup (input?: string) {
       ender: -1,
       lexer: 'markup',
       lines: data.lines[parse.count] > 0 ? 1 : 0,
-      stack: getTagName(parse.stack.token),
+      stack: u.getTagName(parse.stack.token),
       token: `</${parse.stack.token}>`,
       types: 'end'
     };
@@ -502,7 +499,7 @@ export function markup (input?: string) {
 
         push(record, {
           begin: parse.stack.index,
-          stack: getTagName(parse.stack.token),
+          stack: u.getTagName(parse.stack.token),
           token: `</${parse.stack.token}>`
         });
 
@@ -744,7 +741,7 @@ export function markup (input?: string) {
       if (count > 0) {
         do {
           record.begin = parse.stack.index;
-          record.stack = getTagName(parse.stack.token);
+          record.stack = u.getTagName(parse.stack.token);
           record.token = `</${parse.stack.token}>`;
 
           push(record, NIL);
@@ -754,7 +751,7 @@ export function markup (input?: string) {
 
       record.begin = parse.stack.index;
       record.lines = parse.space;
-      record.stack = getTagName(parse.stack.token);
+      record.stack = u.getTagName(parse.stack.token);
       record.token = token;
       record.types = 'end';
 
@@ -772,14 +769,14 @@ export function markup (input?: string) {
         if (
           data.types[parse.count - 1] === 'singleton' &&
           lastToken.charCodeAt(lastToken.length - 2) !== cc.FWS &&
-          `/${getTagName(lastToken)}` === tname
+          `/${u.getTagName(lastToken)}` === tname
         ) {
 
           data.types[parse.count - 1] = 'start';
         }
       }
 
-      if (parse.language === 'html' || parse.language === 'liquid') {
+      if (markup) {
 
         // HTML gets tag names in lowercase, if you want to
         // preserveLine case sensitivity beautify as XML
@@ -852,7 +849,7 @@ export function markup (input?: string) {
 
           record.begin = parse.stack.index;
           record.lines = parse.space;
-          record.stack = getTagName(parse.stack.token);
+          record.stack = u.getTagName(parse.stack.token);
           record.token = token;
           record.types = 'end';
 
@@ -882,52 +879,58 @@ export function markup (input?: string) {
      * Handling for <![CDATA[   ]]> markup (html) type comment expressions.
      * While rare this function correctly composes the data structures.
      *
-     * @next parseAttribute()
+     * @next attribute()
      */
-    function cdata (): ReturnType<typeof parseAttribute> {
+    function cdata (): ReturnType<typeof attribute> {
 
-      if (ltype !== 'cdata') return parseAttribute();
+      if (ltype !== 'cdata') return attribute();
 
-      // const { stack } = record;
+      const { stack } = record;
 
-      // if (stack === 'script' || stack === 'style') {
+      if (stack === 'script' || stack === 'style') {
 
-      //   const x = external.determine(stack, 'html');
+        let begin = parse.count;
+        let ender = parse.count;
 
-      //   let begin = parse.count;
-      //   let ender = parse.count;
+        if (data.types[ender] === 'attribute') {
+          do {
+            begin = begin - 1;
+            ender = ender - 1;
+          } while (data.types[ender] === 'attribute' && ender > -1);
+        }
 
-      //   if (data.types[ender] === 'attribute') {
-      //     do {
-      //       begin = begin - 1;
-      //       ender = ender - 1;
-      //     } while (data.types[ender] === 'attribute' && ender > -1);
-      //   }
+        token = token.replace(/^(\s*<!\[cdata\[)/i, NIL).replace(/(\]{2}>\s*)$/, NIL);
 
-      //   token = token.replace(/^(\s*<!\[cdata\[)/i, NIL).replace(/(\]{2}>\s*)$/, NIL);
+        push(record, {
+          begin,
+          token: '<![CDATA[',
+          types: 'cdata_start'
+        });
 
-      //   push(record, { begin, token: '<![CDATA[', types: 'cdata_start' });
+        parse.stack.push([ 'cdata', parse.count ]);
+        prettify.lexers[stack](token);
 
-      //   parse.stack.push([ 'cdata', parse.count ]);
-      //   parse.external(stack);
-      //   prettify.lexers[stack](token);
+        push(record, {
+          begin: parse.stack.index,
+          token: ']]>',
+          types: 'cdata_end'
+        });
 
-      //   push(record, { begin: parse.stack.index, token: ']]>', types: 'cdata_end' });
+        parse.stack.pop();
+      }
 
-      //   parse.stack.pop();
-      // }
-
-      return parseAttribute();
+      return attribute();
 
     }
 
     /**
      * Parse Template
      *
-     * This will parse template identified tokens and tags (Liquid).
-     * It aligns the the data `record` for identification.
+     * This will parse template identified tokens and
+     * tags (Liquid). It aligns the the data `record` for identification.
+
      */
-    function parseLiquid (): ReturnType<typeof cdata> {
+    function template (): ReturnType<typeof cdata> {
 
       /* -------------------------------------------- */
       /* LIQUID TOKEN                                 */
@@ -998,10 +1001,10 @@ export function markup (input?: string) {
      *
      * Utility function which will re-assign the `ltype` when HTML `void`
      * type tags. This only detects HTML tags, Liquid (template) types are
-     * handled by the `parseLiquid()` function.
+     * handled by the `template()` function.
      *
      */
-    function parseSingular (): ReturnType<typeof parseIgnore> {
+    function singular (): ReturnType<typeof ignored> {
 
       if (basic && ignore === false && ltype !== 'xml') {
 
@@ -1030,7 +1033,7 @@ export function markup (input?: string) {
         }
       }
 
-      return parseIgnore();
+      return ignored();
 
     }
 
@@ -1042,12 +1045,16 @@ export function markup (input?: string) {
      * handles `@prettify-ignore-next` ignore comments placed above tag regions.
      *
      */
-    function parseIgnore (): ReturnType<typeof parseLiquid> {
+    function ignored (): ReturnType<typeof template> {
 
       /**
        * The ender token name, used for Liquid tag ignores
        */
       let ender: string = NIL;
+
+      /**
+       * Whether or not the token is Liquid type
+       */
 
       if (CommIgnoreNext.test(data.token[parse.count])) {
 
@@ -1064,7 +1071,7 @@ export function markup (input?: string) {
 
         ender = null;
 
-      } else if (external.detect(tname, 'liquid') !== false && ignored.has(tname) === true) {
+      } else if (ex.detect(tname, 'liquid') !== false && ig.has(tname) === true) {
 
         ender = null;
 
@@ -1117,12 +1124,12 @@ export function markup (input?: string) {
             /**
              * The delimiter length used to validate endtag match
              */
-            let ee: number = 0;
+            let ee = 0;
 
             /**
              * The iterator index for matching entag
              */
-            let ff: number = 0;
+            let ff = 0;
 
             /**
              * Whether or not we've reached the endtag
@@ -1229,7 +1236,7 @@ export function markup (input?: string) {
 
             // Parse the attributes
             //
-            parseAttribute(true);
+            attribute(true);
 
             // Get Closing Token
             //
@@ -1254,7 +1261,7 @@ export function markup (input?: string) {
             embed = false;
             language = html;
 
-            return parseScript();
+            return script();
 
           }
 
@@ -1262,23 +1269,34 @@ export function markup (input?: string) {
 
       }
 
-      return parseLiquid();
+      return template();
 
     }
 
     /**
      * Parse exts
      *
-     * Determines whether or not the token contains an external region
+     * Determines whether or not the token contains an ext (embedded) region
      * like that of `<st>`, `<style>` and Liquid equivalents `{% schema %}` etc.
      * Some additional context is required before passing the contents of these tags
      * to different lexers. It's here where we establish that context.
      */
-    function parseExternal (): ReturnType<typeof parseSingular | typeof parseIgnore> {
+    function embedded (): ReturnType<typeof singular | typeof ignored> {
 
       //  cheat = correct();
 
-      if (u.is(token, cc.LAN) && u.is(token[1], cc.FWS)) return parseSingular();
+      if (u.is(token, cc.LAN) && u.is(token[1], cc.FWS)) return singular();
+
+      if ((u.is(token, cc.LAN) && u.is(token[1], cc.FWS)) || (
+        ex.detect(tname) === false || (
+          ex.detect(tname, 'liquid') &&
+          ig.has(tname)
+        )
+      )) {
+
+        return singular();
+
+      }
 
       /**
        * Length of the `attrs` store reference
@@ -1286,11 +1304,12 @@ export function markup (input?: string) {
       let item: number = attrs.length - 1;
 
       if (u.is(token, cc.LAN)) {
+
         if (item > -1) {
 
           do {
 
-            const q = external.determine(tname, 'html', attrname(attrs[item][0], false));
+            const q = ex.determine(tname, 'html', attrname(attrs[item][0], false));
 
             if (q !== false) {
               if (q.language === 'json' && rules.markup.ignoreJSON) {
@@ -1316,7 +1335,6 @@ export function markup (input?: string) {
                 language = q.language;
                 ltype = 'start';
                 embed = true;
-
                 break;
 
               }
@@ -1325,66 +1343,38 @@ export function markup (input?: string) {
             item = item - 1;
 
           } while (item > -1);
-
-        } else {
-
-          const q = external.determine(tname, 'html');
-
-          if (q !== false) {
-            if (q.language === 'json' && rules.markup.ignoreJSON) {
-
-              ltype = 'json_preserve';
-              ignore = true;
-
-            } else if (q.language === 'javascript' && rules.markup.ignoreJS) {
-
-              ltype = 'script_preserve';
-              ignore = true;
-
-            } else if (q.language === 'css' && rules.markup.ignoreCSS) {
-
-              ltype = 'style_preserve';
-              ignore = true;
-
-            } else {
-
-              language = q.language;
-              ltype = 'start';
-              embed = true;
-
-            }
-          }
         }
 
-      } else if (isLiquidStart(token, true)) {
+      } else if (u.isLiquidStart(token, true)) {
 
-        const q = external.determine(tname, 'liquid', token);
+        const q = ex.determine(tname, 'liquid', token);
 
         if (q !== false) {
 
-          if (ignored.has(tname)) {
+          if (ig.has(tname)) {
             ignore = true;
             preserve = false;
-            return parseIgnore();
+            return ignored();
           }
 
           embed = true;
           language = q.language;
 
         }
+
       }
 
       if (embed === true) {
         item = a + 1;
         if (item < c) {
           do {
-            if (u.ws(b[item]) === false) {
+            if ((/\s/).test(b[item]) === false) {
               if (b[item] === '<') {
-                if (b.slice(item + 1, item + 4).join(NIL) === '!--') {
+                if (b.slice(item + 1, item + 4).join('') === '!--') {
                   item = item + 4;
                   if (item < c) {
                     do {
-                      if (u.ws(b[item]) === false) {
+                      if ((/\s/).test(b[item]) === false) {
                         embed = false;
                         break;
                       }
@@ -1405,7 +1395,7 @@ export function markup (input?: string) {
         }
       }
 
-      return parseSingular();
+      return singular();
 
     }
 
@@ -1416,7 +1406,7 @@ export function markup (input?: string) {
      * tokens and populates the data structure. It is only responsible for
      * attribute expressions.
      */
-    function parseAttribute (advance = false): ReturnType<typeof parseScript> {
+    function attribute (advance = false): ReturnType<typeof script> {
 
       /* PUSH RECORD -------------------------------- */
 
@@ -1430,7 +1420,7 @@ export function markup (input?: string) {
       /**
        * The index of data record in the tree
        */
-      const begin: number = parse.count;
+      const begin = parse.count;
 
       /**
        * The tag name, ie: `tname`
@@ -1493,12 +1483,12 @@ export function markup (input?: string) {
       function quotes () {
 
         if (parse.attributes.has(begin)) {
-          if (idx + 1 === len && u.notLast(record.token, cc.RAN)) {
+          if (idx + 1 === len && u.not.last(record.token, cc.RAN)) {
             record.token = record.token + '>';
           }
         }
 
-        let lq = isLiquid(record.token, 5);
+        let lq = u.isLiquid(record.token, 5);
 
         if (ignore === true ||
           qc === 'none' ||
@@ -1603,7 +1593,7 @@ export function markup (input?: string) {
         if (!(!jsx && !jscomm && !nosort)) return;
 
         if (asl === 0) {
-          attrs = sortSafe(attrs, NIL, false);
+          attrs = p.sortSafe(attrs, NIL, false);
           return;
         }
 
@@ -1640,7 +1630,7 @@ export function markup (input?: string) {
 
         } while (dq < asl);
 
-        attrs = sortSafe(attrs, NIL, false);
+        attrs = p.sortSafe(attrs, NIL, false);
         attrs = tstore.concat(attrs);
         len = attrs.length;
 
@@ -1659,7 +1649,7 @@ export function markup (input?: string) {
           types: 'jsx_attribute_start'
         });
 
-        parse.external('jsx', value.slice(1, value.length - 1));
+        prettify.lexers.script(value.slice(1, value.length - 1));
 
         record.begin = parse.count;
 
@@ -1688,24 +1678,24 @@ export function markup (input?: string) {
        */
       function liqattr () {
 
-        if (isLiquidLine(attrs[idx][0])) {
+        if (u.isLiquidLine(attrs[idx][0])) {
 
           record.types = 'attribute';
           record.token = attrs[idx][0];
 
-        } else if (isLiquidEnd(attrs[idx][0])) {
+        } else if (u.isLiquidEnd(attrs[idx][0])) {
 
           record.token = attrs[idx][0];
           record.types = 'liquid_attribute_end';
           record.ender = record.begin;
 
-        } else if (isLiquidStart(attrs[idx][0])) {
+        } else if (u.isLiquidStart(attrs[idx][0])) {
 
           record.types = 'liquid_attribute_start';
           record.begin = parse.count;
           record.token = attrs[idx][0];
 
-        } else if (isLiquidElse(attrs[idx][0])) {
+        } else if (u.isLiquidElse(attrs[idx][0])) {
 
           record.types = 'liquid_attribute_else';
           record.token = attrs[idx][0];
@@ -1727,7 +1717,7 @@ export function markup (input?: string) {
 
       if (attrs.length < 1) {
         if (advance !== true) return;
-        return parseScript();
+        return script();
       }
 
       // Fixes Singleton Tags
@@ -1789,8 +1779,8 @@ export function markup (input?: string) {
             continue;
           }
 
-          if (attrs[idx][1] <= 1 && isLiquidLine(attrs[idx][0])) {
-            if (!isValueLiquid(attrs[idx][0])) {
+          if (attrs[idx][1] <= 1 && u.isLiquidLine(attrs[idx][0])) {
+            if (!u.isValueLiquid(attrs[idx][0])) {
 
               record.types = 'attribute';
               record.token = attrs[idx][0];
@@ -1808,24 +1798,9 @@ export function markup (input?: string) {
 
           if (eq < 0) {
 
-            if (isLiquidEnd(attrs[idx][0])) {
+            record.types = 'attribute';
 
-              record.token = attrs[idx][0];
-              record.types = 'liquid_attribute_end';
-              record.ender = record.begin;
-
-            } else if (isLiquidStart(attrs[idx][0])) {
-
-              record.types = 'liquid_attribute_start';
-              record.begin = parse.count;
-              record.token = attrs[idx][0];
-
-            } else if (isLiquidElse(attrs[idx][0])) {
-
-              record.types = 'liquid_attribute_else';
-              record.token = attrs[idx][0];
-
-            } else if (
+            if (
               u.is(attrs[idx][0], cc.HSH) ||
               u.is(attrs[idx][0], cc.LSB) ||
               u.is(attrs[idx][0], cc.LCB) ||
@@ -1842,10 +1817,6 @@ export function markup (input?: string) {
             }
 
             quotes();
-
-          } else if (isLiquid(attrs[idx][0], 6)) {
-
-            liqattr();
 
           } else {
 
@@ -1888,12 +1859,12 @@ export function markup (input?: string) {
               record.begin = begin;
               record.stack = stack;
 
-            } else if (isLiquidStart(value) && (
+            } else if (u.isLiquidStart(value) && (
               (
                 rules.liquid.valueForce === 'always' || (
                   (rules.liquid.valueForce === 'intent' || rules.liquid.valueForce === 'wrap') &&
                   rules.wrap > 0 &&
-                  Math.abs(a - parse.character) >= rules.wrap
+                  Math.abs(a - parse.lineStart) >= rules.wrap
                 )
               ) || (
                 value.indexOf(NWL) > 0 && (
@@ -1917,7 +1888,7 @@ export function markup (input?: string) {
 
               if (idx + 1 === len) {
                 markup(value.slice(1, -1));
-                data.token[parse.count] = `${data.token[parse.count]}${sq > -1 ? "'" : '"'}`;
+                data.token[parse.count] = `${data.token[parse.count]}${sq > -1 ? "'" : '"'}>`;
                 break;
               }
 
@@ -1949,7 +1920,7 @@ export function markup (input?: string) {
 
             } else {
 
-              if (isLiquid(name, 5)) {
+              if (u.isLiquid(name, 5)) {
 
                 liqattr();
 
@@ -1969,25 +1940,25 @@ export function markup (input?: string) {
         } while (idx < len);
       }
 
-      if (!advance) return parseScript();
+      if (!advance) return script();
 
     };
 
     /**
-     * Tag/Content Exclusion
+     * Exclude
      *
      * This is a utility function for obtaining ending liquid tags
      * before traversal. Specifically for handling comment blocks
      * and/or ignored markup tags like scripts or styles.
      */
-    function parseExclude (tag: string, from: number) {
+    function exclude (tag: string, from: number) {
 
       tag = tag.trimStart().split(/\s/)[0];
 
       // Lets look for liquid tokens keyword sbefore proceeding,
       // We are skipping ahead from the normal parse here.
       //
-      if (tag === 'comment' || ignored.has(tag)) {
+      if (tag === 'comment' || ig.has(tag)) {
 
         const idx1 = source.indexOf('{%', from);
 
@@ -2036,7 +2007,7 @@ export function markup (input?: string) {
      *
      * @note traverse() will run depending on current iteration
      */
-    function parseComments (lineComment?: boolean): ReturnType<typeof parseExternal> {
+    function comments (lineComment?: boolean): ReturnType<typeof embedded> {
 
       const comm = lineComment === true ? wrapCommentLine({
         chars: b,
@@ -2074,35 +2045,8 @@ export function markup (input?: string) {
         record.token = token;
         record.types = 'comment';
 
-        return parseExternal();
+        return embedded();
       }
-    }
-
-    /**
-     * Bad Liquid
-     *
-     * Handling for Liquid tokens which are used to express tag names.
-     *
-     * @note traverse() will run depending on current iteration
-     */
-    function parseBadLiquid (offset: number, char: string) {
-
-      const from: number = a;
-
-      let i: number = a + offset;
-
-      do {
-
-        const next = b.indexOf(char, i);
-
-        if (u.is(b[next + 1], cc.RCB) && u.is(b[next + 2], cc.RAN)) {
-          a = next + 3;
-          return b.slice(from, next + 3).join(NIL);
-        }
-
-        i = i + 1;
-      } while (i < c);
-
     }
 
     /**
@@ -2110,8 +2054,10 @@ export function markup (input?: string) {
      *
      * This is the first function to execute and prepares the traversal
      * for what to expect in terms of tag types.
+     *
+     * @next traverse()
      */
-    function parseDelimiter (): ReturnType< typeof parseComments | typeof parseExternal | typeof traverse> {
+    function delimiter (): ReturnType< typeof comments | typeof embedded | typeof traverse> {
 
       if (end === '---') {
 
@@ -2170,7 +2116,7 @@ export function markup (input?: string) {
 
           }
 
-        } else if (u.is(b[a + 1], cc.QWS)) {
+        } else if (b[a + 1] === '?') {
 
           end = '?>';
 
@@ -2262,13 +2208,13 @@ export function markup (input?: string) {
               tag = tag.trimEnd();
             }
 
-            parseExclude(tag, from);
+            exclude(tag, from);
 
             if (u.is(tag, cc.HSH)) {
               ltype = 'comment';
               end = '%}';
               lchar = end.charAt(end.length - 1);
-              return parseComments(true);
+              return comments(true);
             }
 
           } else {
@@ -2287,71 +2233,20 @@ export function markup (input?: string) {
         }
       }
 
-      if (rules.markup.preserveAttributes) preserve = true;
-      if (nowalk) return parseExternal();
+      if (rules.markup.preserveAttributes === true) preserve = true;
+      if (nowalk) return embedded();
 
       lchar = end.charAt(end.length - 1);
 
       if (ltype === 'comment' && (u.is(b[a], cc.LAN) || (u.is(b[a], cc.LCB) && u.is(b[a + 1], cc.PER)))) {
-        return parseComments();
+        return comments();
       } else if (a < c) {
         return traverse();
       }
 
-      return parseExternal();
+      return embedded();
 
     }
-
-    /**
-     * Scripts
-     *
-     * This the JSX related and does some additional processing for
-     * the data structures. This will likely undergo refactors as the
-     * script lexer operations are improved in later versions.
-     *
-     * This function concludes the `parseToken()` lexing operation.
-     */
-    function parseScript () {
-
-      if (rules.wrap > 0 && jsx === true) {
-
-        let clength: number = 0;
-        let bb: number = parse.count;
-        let cc: number = 0;
-
-        if (data.types[bb].indexOf('attribute') > -1) {
-
-          do {
-            clength = clength + data.token[bb].length + 1;
-            bb = bb - 1;
-          } while (data.lexer[bb] !== 'markup' || data.types[bb].indexOf('attribute') > -1);
-
-          if (data.lines[bb] === 1) clength = clength + data.token[bb].length + 1;
-
-        } else if (data.lines[bb] === 1) {
-
-          clength = data.token[bb].length + 1;
-        }
-
-        cc = bb - 1;
-
-        if (clength > 0 && data.types[cc] !== 'script_end') {
-          if (data.types[cc].indexOf('attribute') > -1) {
-            do {
-              clength = clength + data.token[cc].length + 1;
-              cc = cc - 1;
-            } while (data.lexer[cc] !== 'markup' || data.types[cc].indexOf('attribute') > -1);
-            if (data.lines[cc] === 1) clength = clength + data.token[cc].length + 1;
-          } else if (data.lines[cc] === 1) {
-            clength = data.token[cc].length + 1;
-          }
-        }
-      }
-
-      parse.space = 0;
-
-    }
-
     /**
      * Traverse
      *
@@ -2360,7 +2255,7 @@ export function markup (input?: string) {
      *
      *  @next ext()
      */
-    function traverse (): ReturnType<typeof parseExternal> {
+    function traverse (): ReturnType<typeof embedded> {
 
       /* -------------------------------------------- */
       /* CONSTANTS                                    */
@@ -2503,8 +2398,8 @@ export function markup (input?: string) {
         if (u.is(attr[0], cc.LCB) && u.is(attr[1], cc.PER)) nosort = true;
 
         if (quotes === false) {
-          if (isLiquidStart(attr)) within = within + 1;
-          if (isLiquidEnd(attr)) within = within - 1;
+          if (u.isLiquidStart(attr)) within = within + 1;
+          if (u.isLiquidEnd(attr)) within = within - 1;
         }
 
         attr = attr.replace(/^\u0020/, NIL).replace(/\u0020$/, NIL);
@@ -2514,8 +2409,8 @@ export function markup (input?: string) {
 
         attr = rules.crlf === true ? inner(store.join('\r\n')) : inner(store.join(NWL));
 
-        if (within > 0 || isLiquid(attr, 1)) {
-          if (isLiquid(attr, 5) === false) {
+        if (within > 0 || u.isLiquid(attr, 1)) {
+          if (u.isLiquid(attr, 5) === false) {
             lines = 0;
             if (u.is(b[a + 1], cc.NWL) || u.is(b[a], cc.NWL)) lines = 2;
             if (u.is(b[a], cc.WSP) && u.not(b[a + 1], cc.WSP)) lines = 1;
@@ -2555,22 +2450,22 @@ export function markup (input?: string) {
             attrs[ln][1] = lines;
             attr = NIL;
 
-          } else if (lines > 0 && attrs[ln][1] === 0 && isLiquidEnd(attr) === true) {
+          } else if (lines > 0 && attrs[ln][1] === 0 && u.isLiquidEnd(attr) === true) {
 
             attrs[ln][0] = attrs[ln][0] + attr;
             attrs[ln][1] = lines;
             attr = NIL;
 
-          } else if (lines > 0 && attrs[ln][1] === 0 && isLiquid(attrs[ln][0], 4)) {
+          } else if (lines > 0 && attrs[ln][1] === 0 && u.isLiquid(attrs[ln][0], 4)) {
 
             attrs[ln][0] = attrs[ln][0] + attr;
             attr = NIL;
 
-          } else if (attrs[ln][1] > 0 && lines === 0 && isLiquidControl(attr) === false) {
+          } else if (attrs[ln][1] > 0 && lines === 0 && u.isLiquidControl(attr) === false) {
 
             lines = attrs[ln][1];
 
-          } else if (attrs[ln][1] > 0 && lines > 0 && isLiquidEnd(attr) && !isLiquid(attr, 6)) {
+          } else if (attrs[ln][1] > 0 && lines > 0 && u.isLiquidEnd(attr) && !u.isLiquid(attr, 6)) {
 
             // Edge Case
             const i = attr.indexOf('{%');
@@ -3012,7 +2907,7 @@ export function markup (input?: string) {
                       u.is(b[a + 1], cc.PER)
                     )) {
 
-                      // Opening parseExternal template expression
+                      // Opening embedded template expression
                       //
                       quote = u.is(b[a + 1], cc.LCB) ? '}}' : b[a + 1] + '}';
 
@@ -3378,7 +3273,7 @@ export function markup (input?: string) {
             ))
           )) {
 
-            // Find the closing quote or parseExternal template expression
+            // Find the closing quote or embedded template expression
             //
             f = 0;
             e = quote.length - 1;
@@ -3402,7 +3297,7 @@ export function markup (input?: string) {
 
       icount = 0;
       token = lexed.join(NIL);
-      tname = getTagName(token);
+      tname = u.getTagName(token);
 
       if (ignore === false) token = inner(token);
 
@@ -3419,7 +3314,57 @@ export function markup (input?: string) {
         token = token.replace(/\s+/g, WSP);
       }
 
-      return parseExternal();
+      return embedded();
+
+    }
+
+    /**
+     * Scripts
+     *
+     * This the JSX related and does some additional processing for
+     * the data structures. This will likely undergo refactors as the
+     * script lexer operations are improved in later versions.
+     *
+     * This function concludes the `parseToken()` lexing operation.
+     */
+    function script () {
+
+      if (rules.wrap > 0 && jsx === true) {
+
+        let clength: number = 0;
+        let bb: number = parse.count;
+        let cc: number = 0;
+
+        if (data.types[bb].indexOf('attribute') > -1) {
+
+          do {
+            clength = clength + data.token[bb].length + 1;
+            bb = bb - 1;
+          } while (data.lexer[bb] !== 'markup' || data.types[bb].indexOf('attribute') > -1);
+
+          if (data.lines[bb] === 1) clength = clength + data.token[bb].length + 1;
+
+        } else if (data.lines[bb] === 1) {
+
+          clength = data.token[bb].length + 1;
+        }
+
+        cc = bb - 1;
+
+        if (clength > 0 && data.types[cc] !== 'script_end') {
+          if (data.types[cc].indexOf('attribute') > -1) {
+            do {
+              clength = clength + data.token[cc].length + 1;
+              cc = cc - 1;
+            } while (data.lexer[cc] !== 'markup' || data.types[cc].indexOf('attribute') > -1);
+            if (data.lines[cc] === 1) clength = clength + data.token[cc].length + 1;
+          } else if (data.lines[cc] === 1) {
+            clength = data.token[cc].length + 1;
+          }
+        }
+      }
+
+      parse.space = 0;
 
     }
 
@@ -3427,7 +3372,7 @@ export function markup (input?: string) {
     /* INVOKE                                       */
     /* -------------------------------------------- */
 
-    return parseDelimiter();
+    return delimiter();
 
   }
 
@@ -3453,11 +3398,6 @@ export function markup (input?: string) {
      */
     const jsxbrace = jsx === true && u.is(data.token[parse.count], cc.LCB);
 
-    /**
-     * Regex Characters
-     */
-    const regex = '([{!=,;.?:&<>';
-
     /* -------------------------------------------- */
     /* LEXICAL SCOPES                               */
     /* -------------------------------------------- */
@@ -3465,7 +3405,7 @@ export function markup (input?: string) {
     /**
      * The current lexed character references
      */
-    let lexed: string[] = [];
+    let lex: string[] = [];
 
     /**
      * The last known token
@@ -3486,9 +3426,11 @@ export function markup (input?: string) {
       if (jsxbrace === true) {
         name = 'script';
       } else if (parse.stack.index > -1) {
-        name = getTagName(data.token[parse.stack.index]);
+        name = u.getTagName(data.token[parse.stack.index]);
+      } else if (data.begin[parse.count] > 1) {
+        name = u.getTagName(data.token[data.begin[parse.count]]);
       } else {
-        name = getTagName(data.token[data.begin[parse.count]]);
+        name = u.getTagName(data.token[data.begin[parse.count]]);
       }
     }
 
@@ -3500,7 +3442,7 @@ export function markup (input?: string) {
       ender: -1,
       lexer: 'markup',
       lines: liner,
-      stack: getTagName(parse.stack.token) || 'global',
+      stack: u.getTagName(parse.stack.token) || 'global',
       token: NIL,
       types: 'content'
     };
@@ -3545,47 +3487,120 @@ export function markup (input?: string) {
 
     };
 
-    /**
-     * Strip
-     *
-     * Removes ending newlines from external regions
-     */
-    function strip (from: number) {
-
-      let i: number = from;
-
-      do if (u.ws(b[i]) === false) break;
-      while (a < i--);
-
-      return b.slice(a, i + 1);
-    }
-
     if (a < c) {
 
-      /**
-       * Ending token/character value
-       */
-      let end: string = NIL;
+      let end = NIL;
+      let quote = NIL;
+      let output = NIL;
+      let quotes = 0;
 
       /**
-       * Character reference
+       * HTML Script
+       *
        */
-      let quote: string = NIL;
+      function htmlScript () {
+
+        end = a === c - 9
+          ? end.slice(0, end.length - 1)
+          : end.slice(0, end.length - 2);
+
+        console.log(name, language, end);
+        if (end === '</script') {
+
+          output = lex
+            .join(NIL)
+            .replace(SpaceLead, NIL)
+            .replace(SpaceEnd, NIL);
+
+          console.log(output);
+
+          a = a - 1;
+
+          if (lex.length < 1) return true;
+
+          if ((/^<!--+/).test(output) && (/--+>$/).test(output)) {
+
+            push(record, { token: '<!--', types: 'comment' });
+
+            output = output.replace(/^<!--+/, NIL).replace(/--+>$/, NIL);
+
+            prettify.lexers.script(output);
+
+            push(record, { token: '-->' });
+
+          } else {
+
+            rules.language = language;
+
+            prettify.lexers.script(output);
+
+            if ((
+              language === 'json' &&
+              rules.json.objectSort
+            ) || (
+              language !== 'json' &&
+              rules.script.objectSort
+            )) p.sortCorrect(0, parse.count + 1);
+
+            rules.language = 'liquid';
+            embed = false;
+
+          }
+
+        }
+
+      }
 
       /**
-       * Liquid Ended
+       * HTML Embedded Style
        */
-      let lq: number = -1;
+      function htmlStyle () {
 
-      /**
-       * External output string capture
-       */
-      let output: string = NIL;
+        if (a === c - 8) {
+          end = end.slice(0, end.length - 1);
+        } else if (a === c - 9) {
+          end = end.slice(0, end.length - 2);
+        } else {
+          end = end.slice(0, end.length - 3);
+        }
 
-      /**
-       * Quotation character quotes
-       */
-      let quotes: number = 0;
+        if (end === '</style') {
+
+          let outside = lex
+            .join(NIL)
+            .replace(SpaceLead, NIL)
+            .replace(SpaceEnd, NIL);
+
+          a = a - 1;
+
+          if (lex.length < 1) return true;
+
+          if ((/^<!--+/).test(outside) && (/--+>$/).test(outside)) {
+
+            push(record, { token: '<!--', types: 'comment' });
+
+            outside = outside.replace(/^<!--+/, NIL).replace(/--+>$/, NIL);
+
+            prettify.lexers.style(outside);
+
+            push(record, { token: '-->' });
+
+          } else {
+
+            rules.language = language;
+            prettify.lexers.style(outside);
+
+            if (rules.style.sortProperties === true) p.sortCorrect(0, parse.count + 1);
+
+            rules.language = 'liquid';
+
+          }
+
+          return true;
+
+        }
+
+      }
 
       do {
 
@@ -3593,7 +3608,6 @@ export function markup (input?: string) {
 
         // Embed code requires additional parsing to look for the appropriate end
         // tag, but that end tag cannot be quoted or commented
-        //
         if (embed === true) {
           if (quote === NIL) {
 
@@ -3603,17 +3617,11 @@ export function markup (input?: string) {
                 quote = '*';
               } else if (u.is(b[a + 1], cc.FWS)) {
                 quote = '/';
-              } else if (!jsx && name === 'script' && u.not(b[a - 1], cc.LAN) && regex.indexOf(b[a - 1]) > -1) {
-                quote = 'r';
+              } else if (name === 'script' && '([{!=,;.?:&<>'.indexOf(b[a - 1]) > -1) {
+                if (jsx === false || u.not(b[a - 1], cc.LAN)) quote = 'reg';
               }
 
-            } else if (
-              esctest() === false && (
-                u.is(b[a], cc.DQO) ||
-                u.is(b[a], cc.SQO) ||
-                u.is(b[a], cc.TQO)
-              )
-            ) {
+            } else if ((u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO) || u.is(b[a], cc.TQO)) && esctest() === false) {
 
               quote = b[a];
 
@@ -3625,13 +3633,14 @@ export function markup (input?: string) {
 
               if (quotes === 0) {
 
-                output = lexed
+                output = lex
                   .join(NIL)
                   .replace(SpaceLead, NIL)
                   .replace(SpaceEnd, NIL);
 
-                parse.external(language, output);
-                parse.stack.update(parse.stack.index + 1); // Added incremental
+                lexers(Lexers.Script)(output);
+
+                parse.stack.index += 1; // Added incremental
 
                 if (data.types[parse.count] === 'end' && data.lexer[data.begin[parse.count] - 1] === 'script') {
 
@@ -3645,68 +3654,20 @@ export function markup (input?: string) {
 
                 }
 
-                push(record, {
-                  token: '}',
-                  types: 'script_end'
-                });
-
+                push(record, { token: '}', types: 'script_end' });
                 parse.stack.pop();
-
                 break;
               }
 
               quotes = quotes - 1;
-
             }
 
-            if (data.types[parse.count] === 'liquid_start') {
+            if (u.isLiquid(data.token[parse.count], 3) === false) {
 
-              lq = b.indexOf('%', a);
+              end = b.slice(a, a + 10).join(NIL).toLowerCase();
 
-              if (u.is(b[lq - 1], cc.LCB)) {
-
-                end = u.is(b[lq + 1], cc.DSH)
-                  ? b.slice(lq + 2, b.indexOf('%', lq + 3)).join(NIL).trimStart()
-                  : b.slice(lq + 1, b.indexOf('%', lq + 2)).join(NIL).trimStart();
-
-                if (end.startsWith(`end${name}`)) {
-
-                  lexed = b.slice(a, lq - 2);
-                  output = lexed
-                    .join(NIL)
-                    .replace(SpaceLead, NIL)
-                    .replace(SpaceEnd, NIL);
-
-                  parse.external(language, output);
-
-                  a = a + lexed.length;
-
-                  end = b
-                    .slice(a, b.indexOf('}', a) + 1)
-                    .join(NIL)
-                    .replace(SpaceLead, NIL)
-                    .replace(SpaceEnd, NIL);
-
-                  a = a + end.length;
-
-                  push(record, {
-                    types: 'liquid_end',
-                    token: inner(end)
-                  });
-
-                  break;
-
-                }
-
-              }
-
-            } else {
-
-              end = b
-                .slice(a, a + 10)
-                .join(NIL)
-                .toLowerCase();
-
+              // Script requires use of the script lexer
+              //
               if (name === 'script') {
 
                 end = a === c - 9
@@ -3715,28 +3676,50 @@ export function markup (input?: string) {
 
                 if (end === '</script') {
 
-                  output = lexed
+                  output = lex
                     .join(NIL)
                     .replace(SpaceLead, NIL)
                     .replace(SpaceEnd, NIL);
 
                   a = a - 1;
 
-                  if (lexed.length < 1) break;
+                  if (lex.length < 1) break;
 
                   if (/^<!--+/.test(output) && /--+>$/.test(output)) {
-
                     push(record, { token: '<!--', types: 'comment' });
 
                     output = output.replace(/^<!--+/, NIL).replace(/--+>$/, NIL);
-
-                    parse.external('javascript', output);
+                    lexers(Lexers.Script)(output);
 
                     push(record, { token: '-->' });
 
                   } else {
 
-                    parse.external(language, output);
+                    // console.log(output, lex);
+                    parse.external.set(parse.count + 1, { language, lexer: 'script' });
+
+                    console.log(parse.external);
+                    rules.language = language;
+                    lexers(Lexers.Script)(lex);
+                    //          prettify.lexers.script(lex);
+
+                    rules.language = 'liquid';
+
+                    // if ((
+                    //   language === 'json' &&
+                    //   rules.json.objectSort
+                    // ) || (
+                    //   language !== 'json' &&
+                    //   rules.script.objectSort
+                    // )) {
+                    //   // parse.sortCorrect(0, parse.count + 1);
+                    // }
+
+                    // rules.language = 'liquid';
+
+                    // console.log(b.slice(a));
+
+                    // console.log(a);
 
                   }
 
@@ -3744,104 +3727,71 @@ export function markup (input?: string) {
 
                 }
 
-              } else if (name === 'style') {
+              }
 
-                // Style requires use of the style lexer
-                //
-                //
-                if (a === c - 8) {
-                  end = end.slice(0, end.length - 1);
-                } else if (a === c - 9) {
-                  end = end.slice(0, end.length - 2);
-                } else {
-                  end = end.slice(0, end.length - 3);
-                }
+              // Style requires use of the style lexer
+              //
+              // if (name === 'style') if (htmlStyle()) break;
 
-                if (end === '</style') {
+            } else {
 
-                  let outside = lexed
-                    .join(NIL)
-                    .replace(SpaceLead, NIL)
-                    .replace(SpaceEnd, NIL);
+              if (ex.detect(name, 'liquid') && ig.has(name) === false) {
 
-                  a = a - 1;
+                const match = new RegExp(`\\s*{%-?\\s*end${name}`);
+                const inner = b.slice(a).join(NIL);
+                const ender = inner.search(match);
 
-                  if (lexed.length < 1) break;
+                lex = b.slice(a, a + ender);
 
-                  if ((/^<!--+/).test(outside) && (/--+>$/).test(outside)) {
+                output = lex.join(NIL);
 
-                    push(record, { token: '<!--', types: 'comment' });
+                //   parse.lexer(output, language);
 
-                    outside = outside.replace(/^<!--+/, NIL).replace(/--+>$/, NIL);
+                a = a + lex.length;
 
-                    parse.external('css', outside);
+                console.log('embedded here', embed, a, data);
 
-                    push(record, { token: '-->' });
-
-                  } else {
-
-                    parse.external(language, outside);
-
-                  }
-
-                  break;
-
-                }
+                embed = false;
+                break;
               }
 
             }
 
-          } else if (
-            quote === b[a] &&
-            esctest() === false && (
-              u.is(quote, cc.DQO) ||
-              u.is(quote, cc.SQO) ||
-              u.is(quote, cc.TQO) || (
-                u.is(quote, cc.ARS) &&
-                u.is(b[a + 1], cc.FWS)
-              )
-            )
-          ) {
-
+          } else if (quote === b[a] && esctest() === false && (
+            u.is(quote, cc.DQO) ||
+            u.is(quote, cc.SQO) ||
+            u.is(quote, cc.TQO) || (u.is(quote, cc.ARS) && u.is(b[a + 1], cc.FWS))
+          )) {
             quote = NIL;
-
           } else if (
             u.is(quote, cc.TQO) &&
             u.is(b[a], cc.DOL) &&
             u.is(b[a + 1], cc.LCB) &&
             esctest() === false
           ) {
-
             quote = '}';
-
           } else if (
             u.is(quote, cc.RCB) &&
             u.is(b[a], cc.RCB) &&
             esctest() === false
           ) {
-
             quote = '`';
-
           } else if (
             u.is(quote, cc.FWS) && (
               u.is(b[a], cc.NWL) ||
               u.is(b[a], cc.CAR)
             )
           ) {
-
             quote = NIL;
-
           } else if (
-            quote === 'r' &&
+            quote === 'reg' &&
             u.is(b[a], cc.FWS) &&
             esctest() === false
           ) {
-
             quote = NIL;
-
           } else if (
             u.is(quote, cc.FWS) &&
-            u.is(b[a], cc.RAN) &&
+            u.is(b[a], cc.LAN) &&
             u.is(b[a - 1], cc.DSH) &&
             u.is(b[a - 2], cc.DSH)
           ) {
@@ -3864,7 +3814,8 @@ export function markup (input?: string) {
           a = a - 1;
 
           liner = 0;
-          ltoke = lexed.join(NIL).replace(SpaceEnd, NIL);
+          ltoke = lex.join(NIL);
+          ltoke = ltoke.replace(SpaceEnd, NIL);
 
           push(record, { token: ltoke });
 
@@ -3873,12 +3824,10 @@ export function markup (input?: string) {
 
         // General Content Processing
         //
-        if (embed === false && lexed.length > 0 && (
+        if (embed === false && lex.length > 0 && (
           (
             u.is(b[a], cc.LAN) &&
-            u.not(b[a + 1], cc.EQS) &&
-            u.digit(b[a + 1]) === false &&
-            u.ws(b[a + 1]) === false
+            u.not(b[a + 1], cc.EQS) && !/[\s\d]/.test(b[a + 1])
           ) || (
             u.is(b[a], cc.LSB) &&
             u.is(b[a + 1], cc.PER)
@@ -3893,10 +3842,8 @@ export function markup (input?: string) {
 
           a = a - 1;
 
+          ltoke = parse.stack.token === 'comment' ? lex.join(NIL) : lex.join(NIL).replace(SpaceEnd, NIL);
           liner = 0;
-          ltoke = parse.stack.token === 'comment'
-            ? lexed.join(NIL)
-            : lexed.join(NIL).replace(SpaceEnd, NIL);
 
           record.token = ltoke;
 
@@ -3926,7 +3873,10 @@ export function markup (input?: string) {
             const store: string[] = [];
 
             /**
-             * Determines the character width limit before applying word wrapping.
+             * Word Wrapper
+             *
+             * Determines the character width limit before applying
+             * word wrapping.
              */
             function wrapper () {
 
@@ -4005,7 +3955,7 @@ export function markup (input?: string) {
 
             }
 
-            ltoke = lexed
+            ltoke = lex
               .join(NIL)
               .replace(SpaceLead, NIL)
               .replace(SpaceEnd, NIL)
@@ -4016,7 +3966,7 @@ export function markup (input?: string) {
 
             if (ltoke !== NIL && u.not(ltoke, cc.WSP)) store.push(ltoke);
 
-            ltoke = store.join(parse.crlf);
+            ltoke = rules.crlf === true ? store.join('\r\n') : store.join('\n');
             ltoke = NIL + ltoke + NIL;
 
           } else {
@@ -4029,7 +3979,9 @@ export function markup (input?: string) {
 
               ltoke = ltoke.slice(nwl);
 
-              if (/^\n+/.test(ltoke)) {
+              const m = ltoke.match(/^\n+/);
+
+              if (m === null) {
                 record.lines = 1;
               } else {
                 record.lines = 2;
@@ -4039,12 +3991,13 @@ export function markup (input?: string) {
           }
 
           liner = 0;
-          push(record, { token: ltoke });
 
+          push(record, { token: ltoke });
           break;
+
         }
 
-        lexed.push(b[a]);
+        lex.push(b[a]);
 
         a = a + 1;
       } while (a < c);
@@ -4071,7 +4024,7 @@ export function markup (input?: string) {
     } else if (a !== now || (a === now && embed === false)) {
 
       // regular content at the end of the supplied source
-      ltoke = lexed.join(NIL).replace(SpaceEnd, NIL);
+      ltoke = lex.join(NIL).replace(SpaceEnd, NIL);
       liner = 0;
 
       // this condition prevents adding content that was just added in the loop above
@@ -4083,6 +4036,7 @@ export function markup (input?: string) {
 
     embed = false;
 
+    // console.log(embed, data);
   };
 
   /**
@@ -4145,19 +4099,19 @@ export function markup (input?: string) {
 
   } while (a < c);
 
-  // if (syntactic.count > 0) {
+  if (syntactic.count > 0) {
 
-  // for (const e in syntactic) {
-  //   console.log(syntactic);
+    // for (const e in syntactic) {
+    //   console.log(syntactic);
 
-  //   parse.error = parseError({
-  //     message: `Parse Error (line ${syntactic[e].line})`,
-  //     lineNumber: syntactic[e].line
-  //   });
+    //   parse.error = parseError({
+    //     message: `Parse Error (line ${syntactic[e].line})`,
+    //     lineNumber: syntactic[e].line
+    //   });
 
-  // }
+    // }
 
-  // }
+  }
 
   // console.log(data);
 
