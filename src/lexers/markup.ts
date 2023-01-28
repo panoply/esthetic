@@ -68,6 +68,19 @@ export function markup (input?: string) {
   const c = b.length;
 
   /**
+   * Liquid Pairs
+   */
+  const pairs: {
+    start: number;
+    tname: string[],
+    index: number[],
+  } = {
+    start: -1,
+    tname: [],
+    index: []
+  };
+
+  /**
    * SVG Store reference for tracking singletons and blocks
    */
   const svg: {
@@ -1033,6 +1046,86 @@ export function markup (input?: string) {
       }
 
       return parseLiquid();
+
+    }
+
+    function parseLiquidTag () {
+
+      let i = token.indexOf('liquid') + 6;
+      let n = NIL;
+      let x = NIL;
+
+      push(record, {
+        token: inner(token.slice(0, i) + ' %}'),
+        types: 'liquid_tag'
+
+      });
+
+      const inset = '   ';
+      const lines = token.slice(i).split(NWL);
+      const ln = lines.length;
+
+      i = 0;
+
+      do {
+
+        x = lines[i].trim();
+        n = x.split(/\s/)[0];
+
+        if (n.startsWith('end')) {
+
+          push(record, {
+            token: inset + n,
+            types: 'liquid_end',
+            stack: n.slice(3)
+          });
+
+        } else if (n.startsWith('#')) {
+
+          push(record, {
+            token: inset + x,
+            types: 'comment'
+          });
+
+        } else if (n.startsWith('comment')) {
+
+          push(record, {
+            token: inset + x,
+            types: 'liquid_start'
+          });
+
+        } else {
+
+          if (grammar.liquid.tags.has(n)) {
+
+            push(record, n, {
+              token: inset + x,
+              types: 'liquid_start',
+              lines: 1
+            });
+
+          } else if (grammar.liquid.else.has(n)) {
+
+            push(record, n, {
+              token: inset + x,
+              types: 'liquid_else',
+              lines: 1
+            });
+
+          } else if (grammar.liquid.singleton.has(n)) {
+
+            push(record, n, {
+              token: inset + x,
+              types: 'liquid',
+              lines: 1
+            });
+
+          }
+        }
+
+        i = i + 1;
+
+      } while (i < ln);
 
     }
 
@@ -3080,8 +3173,6 @@ export function markup (input?: string) {
 
                       a = a + 1;
 
-                      // console.log(store.join(NIL));
-
                       // Newline Increments
                       //
                       if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
@@ -3666,8 +3757,13 @@ export function markup (input?: string) {
 
       icount = 0;
       token = lexed.join(NIL);
-
       tname = lx.getTagName(token);
+
+      if (ltype === 'liquid' && tname === 'liquid') {
+
+        return parseLiquidTag();
+
+      }
 
       if (ignore === false) token = inner(token);
 
