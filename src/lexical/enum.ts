@@ -18,58 +18,6 @@ export const enum Beautifiers {
   Style,
 }
 
-export const enum TokenType {
-  /**
-   * Liquid output token
-   *
-   * @example
-   * {{ output }}
-   */
-  LiquidOutput = 1,
-  /**
-   * Liquid start tag token (requires end tag)
-   *
-   * @example
-   * {% start %}
-   */
-  LiquidStartTag,
-  /**
-   * Liquid start tag token (requires start tag)
-   *
-   * @example
-   * {% endtag %}
-   */
-  LiquidEndTag,
-  /**
-   * Liquid singular tag token
-   *
-   * @example
-   * {% tag %}
-   */
-  LiquidSingular,
-  /**
-   * Markup start Tag
-   *
-   * @example
-   * <div>
-   */
-  MarkupStart,
-  /**
-   * Markup end Tag
-   *
-   * @example
-   * </div>
-   */
-  MarkupEnd,
-  /**
-   * Markup void tag
-   *
-   * @example
-   * <tag />
-   */
-  MarkupVoid
-}
-
 export const enum Languages {
   /**
    * Automatic Detetection

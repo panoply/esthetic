@@ -106,11 +106,11 @@
     "@liquify/liquid-language-specs": "^0.1.7",
     "@liquify/prettier-config": "^1.0.1",
     "@types/benchmark": "^2.1.2",
-    "ava": "^5.1.1",
+    "ava": "^5.1.0",
     "benchmark": "^2.1.4",
     "terser": "^5.16.1",
     "tsup": "^6.5.0",
-    "type-fest": "^3.5.3"
+    "type-fest": "^3.4.0"
   },
   "dependencies": {
     "ansis": "^1.5.5"

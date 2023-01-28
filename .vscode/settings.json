@@ -48,26 +48,8 @@
   "liquid.format.ignore": [
     "tests/samples/**"
   ],
-  "liquid.format.rules": {
-    "liquid": {
-      "commentIndent": true,
-      "commentNewline": true,
-      "delimiterTrims": "preserve",
-      "ignoreTagList": [],
-      "lineBreakSeparator": "before",
-      "normalizeSpacing": true,
-      "preserveComment": false,
-      "quoteConvert": "single",
-      "valueForce": "intent"
-    },
-    "markup": {
-      "quoteConvert": "double",
-      "commentNewline": true,
-      "forceIndent": true,
-      "ignoreJS": false,
-      "attributeSortList": [],
-      "forceAttribute": 2
-    }
+  "liquid.format.markup": {
+    "forceAttribute": 2
   }
 
 }

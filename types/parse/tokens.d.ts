@@ -514,12 +514,6 @@ export enum MarkupTypes {
    */
   liquid = 'liquid',
   /**
-   * This type is used when excluded liquid contained content, typically when the
-   * `esthetic-ignore-next` comment is used. It will prevent markup contained tags
-   * from having attributes formatted.
-   */
-  liquid_ignore = 'liquid_ignore',
-  /**
    * A template tag that an embedded language that requires the script lexer. This
    * has identical behaviour to `script` type but for liquid type tokens.
    *

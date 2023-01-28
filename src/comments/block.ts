@@ -136,9 +136,9 @@ export function commentBlock (config: WrapComment): [string, number] {
    */
   function parseEmptyLines () {
 
-    if (rx.EmptyLine.test(lines[b + 1]) || lines[b + 1] === NIL) {
+    if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL) {
       do b = b + 1;
-      while (b < len && (rx.EmptyLine.test(lines[b + 1]) || lines[b + 1] === NIL));
+      while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL));
     }
 
     if (b < len - 1) second.push(NIL);
@@ -165,16 +165,19 @@ export function commentBlock (config: WrapComment): [string, number] {
       // upon parse, this will re-assign the terminator
       //
       if (build.slice(build.length - 19).join(NIL) === 'esthetic-ignore-end') {
+
         if (isliquid) {
+
           const d = config.chars.indexOf('{', a);
+
           if (is(config.chars[d + 1], ch.PER)) {
-            const ender = config.chars
-              .slice(d, config.chars.indexOf('}', d + 1) + 1)
-              .join(NIL);
+            const ender = config.chars.slice(d, config.chars.indexOf('}', d + 1) + 1).join(NIL);
             if (regEnd.test(ender)) config.ender = ender;
           }
         }
+
         a = a + 1;
+
         break;
       }
 
@@ -238,7 +241,7 @@ export function commentBlock (config: WrapComment): [string, number] {
 
     if (config.chars[a] === NWL) a = a - 1;
 
-    output = build.join(NIL).replace(rx.WhitespaceEnd, NIL);
+    output = build.join(NIL).replace(rx.StripEnd, NIL);
 
     return [ output, a ];
 
@@ -248,11 +251,12 @@ export function commentBlock (config: WrapComment): [string, number] {
 
     build.push(config.chars[a]);
 
-    if (is(config.chars[a], ch.NWL)) parse.lineOffset = parse.lines(a, parse.lineOffset);
+    if (config.chars[a] === NWL) {
+      parse.lineNumber = parse.lineNumber + 1;
+      parse.lineOffset = parse.lineOffset + 1;
+    }
 
-    if (
-      config.chars[a] === term &&
-      config.chars.slice(a - terml, a + 1).join(NIL) === config.ender) break;
+    if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === config.ender) break;
 
     a = a + 1;
 
@@ -293,19 +297,9 @@ export function commentBlock (config: WrapComment): [string, number] {
 
   b = config.start;
 
-  if (
-    b > 0 &&
-    not(config.chars[b - 1], ch.NWL) &&
-    ws(config.chars[b - 1])
-  ) {
-
+  if (b > 0 && not(config.chars[b - 1], ch.NWL) && ws(config.chars[b - 1])) {
     do b = b - 1;
-    while (
-      b > 0 &&
-      not(config.chars[b - 1], ch.NWL) &&
-      ws(config.chars[b - 1])
-    );
-
+    while (b > 0 && not(config.chars[b - 1], ch.NWL) && ws(config.chars[b - 1]));
   }
 
   space = config.chars.slice(b, config.start).join(NIL);
@@ -334,18 +328,18 @@ export function commentBlock (config: WrapComment): [string, number] {
 
   do {
 
-    bline = (b < len - 1) ? lines[b + 1].replace(rx.WhitespaceLead, NIL) : NIL;
+    bline = (b < len - 1) ? lines[b + 1].replace(rx.StripLead, NIL) : NIL;
 
-    if (rx.EmptyLine.test(lines[b]) === true || lines[b] === NIL) {
+    if (/^\s+$/.test(lines[b]) === true || lines[b] === NIL) {
 
       parseEmptyLines();
 
     } else if (
-      lines[b].replace(rx.WhitespaceLead, NIL).length > rules.wrap &&
-      lines[b].replace(rx.WhitespaceLead, NIL).indexOf(WSP) > rules.wrap
+      lines[b].replace(rx.StripLead, NIL).length > rules.wrap &&
+      lines[b].replace(rx.StripLead, NIL).indexOf(WSP) > rules.wrap
     ) {
 
-      lines[b] = lines[b].replace(rx.WhitespaceLead, NIL);
+      lines[b] = lines[b].replace(rx.StripLead, NIL);
 
       c = lines[b].indexOf(WSP);
 
@@ -357,20 +351,14 @@ export function commentBlock (config: WrapComment): [string, number] {
 
     } else {
 
-      twrap = b < 1
-        ? rules.wrap - config.begin.length + 1
-        : rules.wrap;
+      lines[b] = (config.begin === '/*' && lines[b].indexOf('/*') !== 0)
+        ? `   ${lines[b].replace(rx.StripLead, NIL).replace(rx.StripEnd, NIL).replace(/\s+/g, WSP)}`
+        : `${lines[b].replace(rx.StripLead, NIL).replace(rx.StripEnd, NIL).replace(/\s+/g, WSP)}`;
 
-      lines[b] = (config.begin === '/*' && lines[b].indexOf('/*') !== 0 ? '   ' : NIL) + lines[b]
-        .replace(rx.WhitespaceLead, NIL)
-        .replace(rx.WhitespaceEnd, NIL)
-        .replace(rx.SpacesGlob, WSP);
-
-      d = lines[b]
-        .replace(rx.WhitespaceLead, NIL)
-        .indexOf(WSP);
+      twrap = b < 1 ? rules.wrap - (config.begin.length + 1) : rules.wrap;
 
       c = lines[b].length;
+      d = lines[b].replace(rx.StripLead, NIL).indexOf(WSP);
 
       if (c > twrap && d > 0 && d < twrap) {
 
@@ -381,15 +369,11 @@ export function commentBlock (config: WrapComment): [string, number] {
           if (ws(lines[b].charAt(c)) && c <= rules.wrap) break;
         } while (c > 0);
 
-        if (
-          /^\s*\d+\.\s/.test(lines[b]) === true &&
-          /^\s*\d+\.\s/.test(lines[b + 1]) === false) {
-
+        if (/^\s*\d+\.\s/.test(lines[b]) === true && /^\s*\d+\.\s/.test(lines[b + 1]) === false) {
           lines.splice(b + 1, 0, '1. ');
-
         }
 
-        if ((rx.EmptyLine).test(lines[b + 1]) === true || lines[b + 1] === NIL) {
+        if ((/^\s+$/).test(lines[b + 1]) === true || lines[b + 1] === NIL) {
 
           second.push(lines[b].slice(0, c));
           lines[b] = lines[b].slice(c + 1);
@@ -410,18 +394,13 @@ export function commentBlock (config: WrapComment): [string, number] {
           numberLine = true;
           b = b - 1;
 
-        } else if (lines[b].replace(rx.WhitespaceLead, NIL).indexOf(WSP) < rules.wrap) {
-
+        } else if (lines[b].replace(rx.StripLead, NIL).indexOf(WSP) < rules.wrap) {
           lines[b + 1] = lines[b].length > rules.wrap
             ? lines[b].slice(c + 1) + parse.crlf + lines[b + 1]
-            : lines[b].slice(c + 1) + WSP + lines[b + 1];
-
+            : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
         }
 
-        if (
-          emptyLine === false &&
-          bulletLine === false &&
-          numberLine === false) {
+        if (emptyLine === false && bulletLine === false && numberLine === false) {
 
           lines[b] = lines[b].slice(0, c);
 
@@ -445,7 +424,7 @@ export function commentBlock (config: WrapComment): [string, number] {
 
       } else if (
         lines[b + 1] !== undefined &&
-        rx.EmptyLine.test(lines[b + 1]) === false &&
+        /^\s+$/.test(lines[b + 1]) === false &&
         lines[b + 1] !== NIL &&
         /^\s*(?:[*-]|\d+\.)\s/.test(lines[b + 1]) === false
       ) {

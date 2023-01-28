@@ -1462,22 +1462,15 @@ var grammar = function() {
 }();
 
 // src/lexical/regex.ts
-var NonSpace = /\S/;
-var EmptyLine = /^\s+$/;
-var Spaces = /\s*/;
-var SpacesGlob = /\s+/g;
 var SpaceLead = /^\s+/;
 var SpaceEnd = /\s+$/;
-var WhitespaceLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
-var WhitespaceEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
-var WhitespaceGlob = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
-var NewlineLead = /^\n+/;
-var CommMarkupIgnore = /({%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-(start|next|end)\b/;
+var StripLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
+var StripEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
+var SpaceOnly = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
 var CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-start\b/;
 var CommLineIgnoreStart = /^\/\/\s*esthetic-ignore-start\b/;
 var CommBlockIgnoreStart = /^\/\*{1,2}(?:\s*|\n\s*\*\s*)esthetic-ignore-start\b/;
-var HTMLCommDelimOpen = /^<!--+/;
-var HTMLCommDelimClose = /--+>$/;
+var CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-next\b/;
 var LiquidDelimiters = /{%-?|-?%}/g;
 var LiquidTag = /^{%-?\s*liquid\b/;
 var LiquidComment = /^{%-?\s*(?:#|comment\b)/;
@@ -1509,10 +1502,10 @@ function commentBlock(config) {
   let term = config.ender.charAt(terml);
   let twrap = 0;
   function parseEmptyLines() {
-    if (EmptyLine.test(lines[b + 1]) || lines[b + 1] === NIL) {
+    if (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL) {
       do
         b = b + 1;
-      while (b < len && (EmptyLine.test(lines[b + 1]) || lines[b + 1] === NIL));
+      while (b < len && (/^\s+$/.test(lines[b + 1]) || lines[b + 1] === NIL));
     }
     if (b < len - 1)
       second.push(NIL);
@@ -1567,13 +1560,15 @@ function commentBlock(config) {
     }
     if (config.chars[a] === NWL)
       a = a - 1;
-    output = build.join(NIL).replace(WhitespaceEnd, NIL);
+    output = build.join(NIL).replace(StripEnd, NIL);
     return [output, a];
   }
   do {
     build.push(config.chars[a]);
-    if (is(config.chars[a], 10 /* NWL */))
-      parse.lineOffset = parse.lines(a, parse.lineOffset);
+    if (config.chars[a] === NWL) {
+      parse.lineNumber = parse.lineNumber + 1;
+      parse.lineOffset = parse.lineOffset + 1;
+    }
     if (config.chars[a] === term && config.chars.slice(a - terml, a + 1).join(NIL) === config.ender)
       break;
     a = a + 1;
@@ -1606,20 +1601,20 @@ function commentBlock(config) {
   len = lines.length;
   b = 0;
   do {
-    bline = b < len - 1 ? lines[b + 1].replace(WhitespaceLead, NIL) : NIL;
-    if (EmptyLine.test(lines[b]) === true || lines[b] === NIL) {
+    bline = b < len - 1 ? lines[b + 1].replace(StripLead, NIL) : NIL;
+    if (/^\s+$/.test(lines[b]) === true || lines[b] === NIL) {
       parseEmptyLines();
-    } else if (lines[b].replace(WhitespaceLead, NIL).length > rules.wrap && lines[b].replace(WhitespaceLead, NIL).indexOf(WSP) > rules.wrap) {
-      lines[b] = lines[b].replace(WhitespaceLead, NIL);
+    } else if (lines[b].replace(StripLead, NIL).length > rules.wrap && lines[b].replace(StripLead, NIL).indexOf(WSP) > rules.wrap) {
+      lines[b] = lines[b].replace(StripLead, NIL);
       c = lines[b].indexOf(WSP);
       second.push(lines[b].slice(0, c));
       lines[b] = lines[b].slice(c + 1);
       b = b - 1;
     } else {
-      twrap = b < 1 ? rules.wrap - config.begin.length + 1 : rules.wrap;
-      lines[b] = (config.begin === "/*" && lines[b].indexOf("/*") !== 0 ? "   " : NIL) + lines[b].replace(WhitespaceLead, NIL).replace(WhitespaceEnd, NIL).replace(SpacesGlob, WSP);
-      d = lines[b].replace(WhitespaceLead, NIL).indexOf(WSP);
+      lines[b] = config.begin === "/*" && lines[b].indexOf("/*") !== 0 ? `   ${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}` : `${lines[b].replace(StripLead, NIL).replace(StripEnd, NIL).replace(/\s+/g, WSP)}`;
+      twrap = b < 1 ? rules.wrap - (config.begin.length + 1) : rules.wrap;
       c = lines[b].length;
+      d = lines[b].replace(StripLead, NIL).indexOf(WSP);
       if (c > twrap && d > 0 && d < twrap) {
         c = twrap;
         do {
@@ -1630,7 +1625,7 @@ function commentBlock(config) {
         if (/^\s*\d+\.\s/.test(lines[b]) === true && /^\s*\d+\.\s/.test(lines[b + 1]) === false) {
           lines.splice(b + 1, 0, "1. ");
         }
-        if (EmptyLine.test(lines[b + 1]) === true || lines[b + 1] === NIL) {
+        if (/^\s+$/.test(lines[b + 1]) === true || lines[b + 1] === NIL) {
           second.push(lines[b].slice(0, c));
           lines[b] = lines[b].slice(c + 1);
           emptyLine = true;
@@ -1645,8 +1640,8 @@ function commentBlock(config) {
           lines[b] = lines[b].slice(c + 1);
           numberLine = true;
           b = b - 1;
-        } else if (lines[b].replace(WhitespaceLead, NIL).indexOf(WSP) < rules.wrap) {
-          lines[b + 1] = lines[b].length > rules.wrap ? lines[b].slice(c + 1) + parse.crlf + lines[b + 1] : lines[b].slice(c + 1) + WSP + lines[b + 1];
+        } else if (lines[b].replace(StripLead, NIL).indexOf(WSP) < rules.wrap) {
+          lines[b + 1] = lines[b].length > rules.wrap ? lines[b].slice(c + 1) + parse.crlf + lines[b + 1] : `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
         }
         if (emptyLine === false && bulletLine === false && numberLine === false) {
           lines[b] = lines[b].slice(0, c);
@@ -1654,7 +1649,7 @@ function commentBlock(config) {
       } else if (lines[b + 1] !== void 0 && (lines[b].length + bline.indexOf(WSP) > rules.wrap && bline.indexOf(WSP) > 0 || lines[b].length + bline.length > rules.wrap && bline.indexOf(WSP) < 0)) {
         second.push(lines[b]);
         b = b + 1;
-      } else if (lines[b + 1] !== void 0 && EmptyLine.test(lines[b + 1]) === false && lines[b + 1] !== NIL && /^\s*(?:[*-]|\d+\.)\s/.test(lines[b + 1]) === false) {
+      } else if (lines[b + 1] !== void 0 && /^\s+$/.test(lines[b + 1]) === false && lines[b + 1] !== NIL && /^\s*(?:[*-]|\d+\.)\s/.test(lines[b + 1]) === false) {
         second.push(lines[b]);
         emptyLine = true;
       } else {
@@ -1703,7 +1698,7 @@ function commentLine(config) {
       } while (b < config.end && not(config.chars[b], 10 /* NWL */));
       line = build.join(NIL);
       if (/^\/\/ (?:[*-]|\d+\.)/.test(line) === false && /^\/\/\s*$/.test(line) === false) {
-        output = `${output} ${line.replace(/(^\/\/\s*)/, NIL).replace(void 0, NIL)}`;
+        output = `${output} ${line.replace(/(^\/\/\s*)/, NIL).replace(StripEnd, NIL)}`;
         a = b - 1;
         traverse();
       }
@@ -1728,7 +1723,7 @@ function commentLine(config) {
     }
     let c = 0;
     let d = 0;
-    output = output.replace(/\s+/g, WSP).replace(void 0, NIL);
+    output = output.replace(/\s+/g, WSP).replace(StripEnd, NIL);
     d = output.length;
     if (wrap > d)
       return;
@@ -1746,7 +1741,7 @@ function commentLine(config) {
         }
       }
       lines.push(output.slice(0, c));
-      output = `// ${output.slice(c).replace(void 0, NIL)}`;
+      output = `// ${output.slice(c).replace(StripLead, NIL)}`;
       d = output.length;
     } while (wrap < d);
     c = 0;
@@ -1768,7 +1763,7 @@ function commentLine(config) {
   } else {
     a = a - 1;
   }
-  output = build.join(NIL).replace(void 0, NIL);
+  output = build.join(NIL).replace(StripEnd, NIL);
   if (CommLineIgnoreStart.test(output) === true) {
     let termination = NWL;
     a = a + 1;
@@ -1792,7 +1787,7 @@ function commentLine(config) {
     }
     if (config.chars[a] === NWL)
       a = a - 1;
-    output = build.join(NIL).replace(void 0, NIL);
+    output = build.join(NIL).replace(StripEnd, NIL);
     return [output, a];
   }
   if (output === "//" || preserveComment === true)
@@ -2669,6 +2664,7 @@ function markup(input) {
   let language;
   let embed = false;
   let html = markup ? rules.language : "html";
+  let within = 0;
   function push(record, structure = NIL, param) {
     if (structure === NIL && param === void 0) {
       parse.push(data, record, NIL);
@@ -2742,25 +2738,8 @@ function markup(input) {
         }
         q = 0;
       }
-      return char.replace(WhitespaceGlob, WSP).replace(/^({[{%]-?)/, "$1 ").replace(/([!=]=|[<>]=?)/g, " $1 ").replace(new RegExp(" +(?=[|[\\],:.])|(?<=[[.]) +", "g"), NIL).replace(new RegExp("(\\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))", "g"), " $1 ").replace(/([:,]$|[:,](?=\S))/g, "$1 ").replace(/(-?[%}]})$/, " $1").replace(WhitespaceGlob, WSP);
+      return char.replace(SpaceOnly, WSP).replace(/^({[{%]-?)/, "$1 ").replace(/([!=]=|[<>]=?)/g, " $1 ").replace(new RegExp(" +(?=[|[\\],:.])|(?<=[[.]) +", "g"), NIL).replace(new RegExp("(\\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))", "g"), " $1 ").replace(/([:,]$|[:,](?=\S))/g, "$1 ").replace(/(-?[%}]})$/, " $1").replace(SpaceOnly, WSP);
     }).join(NIL);
-  }
-  function indent(from = parse.iterator) {
-    if (from < 1)
-      return NIL;
-    let ws2 = NIL;
-    const nl = b.lastIndexOf(NWL, from);
-    if (nl > -1) {
-      ws2 = b.slice(b.lastIndexOf(NWL, from) + 1, from).join(NIL);
-      if (ws2.length > 0 && ws2.trim().length === 0)
-        return ws2;
-    }
-    return NIL;
-  }
-  function glue(from, to = -1, noTrim = false) {
-    if (!noTrim)
-      return b.slice(from, to).join(NIL).trimStart();
-    return b.slice(from, to).join(NIL);
   }
   function esc(idx) {
     let x = idx;
@@ -2899,91 +2878,43 @@ function markup(input) {
       return parseSVG();
     }
     function parseIgnore() {
-      if (parse.count < 1)
-        return parseSingular();
-      const comm = data.token[parse.count].match(CommMarkupIgnore);
       let ender = NIL;
-      if (comm !== null) {
-        if (comm[2] === "next" && grammar.html.voids.has(tname)) {
-          push(record, {
-            types: "ignore",
-            token: token.replace(">", `${attrs.map(([value]) => value).join(WSP)}>`)
-          });
-          return;
-        }
+      if (CommIgnoreNext.test(data.token[parse.count])) {
         ignore = true;
         preserve = false;
-        if (comm[2] === "start") {
-          end = is(comm[1], 60 /* LAN */) ? "-->" : "%}";
-          ender = data.token[parse.count].slice(comm[1].length).replace("-start", "-end").trimStart();
-        } else {
-          if (ltype.indexOf("liquid") > -1) {
-            if (grammar.liquid.tags.has(tname)) {
-              ender = `end${tname}`;
-            }
-          }
+        if (ltype.indexOf("liquid") > 0 && grammar.liquid.tags.has(tname)) {
+          ender = `end${tname}`;
+        } else if (grammar.html.voids.has(tname)) {
+          ender = null;
         }
-      } else if (detect(tname, "liquid") && ignored.has(tname)) {
+      } else if (grammar.html.voids.has(tname)) {
+        ender = null;
+      } else if (detect(tname, "liquid") !== false && ignored.has(tname) === true) {
         ender = null;
       }
-      if (ender !== null && preserve === false && ignore === true && (is(end, 62 /* RAN */) || end === "%}" || end === "}}" || end === "-->")) {
+      if (ender !== null && preserve === false && ignore === true && (end === ">" || end === "%}" || end === "}}")) {
         const tags = [];
         {
           preserve = true;
+          if (ltype !== "json_preserve" && ltype !== "script_preserve" && ltype !== "style_preserve" && ltype !== "liquid_json_preserve" && ltype !== "liquid_script_preserve" && ltype !== "liquid_style_preserve") {
+            ltype = "ignore";
+          }
           a = a + 1;
           if (a < c) {
-            if (ltype !== "json_preserve" && ltype !== "script_preserve" && ltype !== "style_preserve" && ltype !== "liquid_json_preserve" && ltype !== "liquid_script_preserve" && ltype !== "liquid_style_preserve") {
-              ltype = "ignore";
-            }
             let delim = NIL;
-            let tcount = 0;
-            let next = -1;
-            let name = NIL;
             let ee = 0;
             let ff = 0;
             let endtag = false;
             do {
-              if (is(b[a], 10 /* NWL */))
-                parse.lines(a);
+              if (is(b[a], 10 /* NWL */)) {
+                parse.lineNumber = parse.lineNumber + 1;
+                parse.lineIndex = a;
+              }
               tags.push(b[a]);
-              if (comm[2] === "start" && is(b[a], 60 /* LAN */) && is(b[a + 1], 33 /* BNG */) && is(b[a + 2], 45 /* DSH */) && is(b[a + 3], 45 /* DSH */)) {
-                next = b.indexOf(">", a + 4) + 1;
-                name = glue(a + 4, next - 2);
-                if (name.startsWith("esthetic-ignore-")) {
-                  if (name.startsWith("start", 16)) {
-                    tcount = tcount + 1;
-                  } else if (name.startsWith("end", 16)) {
-                    if (tcount > 0) {
-                      tcount = tcount - 1;
-                    } else {
-                      tags.push(...b.slice(a + 1, next));
-                      ltype = "ignore_region";
-                      a = next;
-                      break;
-                    }
-                  }
-                }
-              } else if (delim === NIL) {
+              if (delim === NIL) {
                 delim = is(b[a], 34 /* DQO */) ? DQO : is(b[a], 39 /* SQO */) ? SQO : NIL;
-                if (is(b[a], 123 /* LCB */) && (is(b[a + 1], 123 /* LCB */) || is(b[a + 1], 37 /* PER */))) {
-                  next = is(b[a + 1], 37 /* PER */) ? b.indexOf("}", a) + 1 : b.indexOf("}", a) + 2;
-                  name = glue(is(b[a + 2], 45 /* DSH */) ? a + 3 : a + 2, next);
-                  if (name.startsWith(tname)) {
-                    tcount = tcount + 1;
-                  } else if (name.startsWith(ender)) {
-                    if (tcount > 0) {
-                      tcount = tcount - 1;
-                    } else {
-                      if (is(b[a + 1], 123 /* LCB */))
-                        next = next + 1;
-                      if (is(b[next - 2], 37 /* PER */)) {
-                        tags.push(...b.slice(a + 1, next));
-                        ltype = "liquid_ignore";
-                        a = next - 1;
-                        break;
-                      }
-                    }
-                  }
+                if (not(tags[0], 123 /* LCB */) && is(b[a], 123 /* LCB */) && (is(b[a + 1], 123 /* LCB */) || is(b[a + 1], 37 /* PER */))) {
+                  delim = b[a + 1] + "}";
                 } else if (is(b[a], 60 /* LAN */) && basic === true) {
                   endtag = is(b[a + 1], 47 /* FWS */);
                 } else if (b[a] === lchar && not(b[a - 1], 47 /* FWS */)) {
@@ -2999,7 +2930,7 @@ function markup(input) {
                 ff = 0;
                 ee = delim.length - 1;
                 if (is(delim[ee], 125 /* RCB */)) {
-                  if (glue(a + (is(b[a + 2], 45 /* DSH */) ? 3 : 2), b.indexOf("%", a + 2)).startsWith(ender))
+                  if (b.slice(a + (is(b[a + 2], 45 /* DSH */) ? 3 : 2), b.indexOf("%", a + 2)).join(NIL).trim().startsWith(ender))
                     break;
                 } else if (ee > -1) {
                   do {
@@ -3016,30 +2947,11 @@ function markup(input) {
             } while (a < c);
           }
         }
-        if (ltype === "ignore_region") {
-          const begins = parse.iterator + b.slice(parse.iterator, a).join(NIL).search(NonSpace);
-          ltype = "ignore";
-          token = indent(begins) + b.slice(begins, a - tags.length + 1).join(NIL) + tags.join(NIL);
-          record.types = "ignore";
-          record.token = token;
-          push(record);
-          console.log(data);
-          return parseScript();
-        }
         if (ltype === "ignore") {
-          if (!parse.is("types", "ignore"))
-            data.types[parse.count] = "ignore";
-          const begins = parse.iterator + b.slice(parse.iterator, a).join(NIL).search(NonSpace);
+          token = token + tags.join(NIL);
+          token = token.replace(">", ` ${attrs.map(([value]) => value).join(WSP)}>`);
           attrs = [];
-          token = indent(begins) + b.slice(begins, a - tags.length + 1).join(NIL) + tags.join(NIL);
-          record.types = "ignore";
-          record.token = token;
-        } else if (ltype === "liquid_ignore") {
-          if (!parse.is("types", "ignore"))
-            data.types[parse.count] = "ignore";
-          const ws2 = a - token.length - tags.length + 1;
-          token = indent(ws2) + token + tags.join(NIL);
-          ltype = "ignore";
+          data.types[parse.count] = "ignore";
           record.types = "ignore";
           record.token = token;
         } else {
@@ -3048,7 +2960,7 @@ function markup(input) {
             parseAttribute(true);
             const close = tags.lastIndexOf("<");
             const inner2 = tags.slice(0, close).join(NIL);
-            if (!NonSpace.test(inner2)) {
+            if (!/\S/.test(inner2)) {
               push(record, [
                 {
                   lexer: "markup",
@@ -3358,7 +3270,6 @@ function markup(input) {
             idx = idx + 1;
             continue;
           }
-          console.log(attrs[idx]);
           if (attrs[idx][1] <= 1 && isChain(attrs[idx][0])) {
             if (!isValue(attrs[idx][0])) {
               record.types = "liquid_attribute_chain";
@@ -3458,7 +3369,6 @@ function markup(input) {
       }
     }
     function parseComments(lineComment) {
-      parse.iterator = a;
       const comm = lineComment === true ? commentLine({
         chars: b,
         end: c,
@@ -3476,9 +3386,8 @@ function markup(input) {
       });
       token = comm[0];
       a = comm[1];
-      if (CommMarkupIgnore.test(token)) {
-        push(record, { token: indent() + token, types: "ignore" });
-        parse.iterator = a + 1;
+      if (token.replace(start, NIL).trimStart().startsWith("esthetic-ignore-start")) {
+        push(record, { token, types: "ignore" });
       } else {
         if (is(token[0], 123 /* LCB */) && is(token[1], 37 /* PER */) && lineComment === false) {
           const begin = token.indexOf("%}", 2) + 2;
@@ -3604,9 +3513,8 @@ function markup(input) {
           ltype = "liquid";
         }
       }
-      if (preserve !== true && (rules.markup.preserveAttributes === true || parse.is("types", "ignore"))) {
+      if (rules.markup.preserveAttributes)
         preserve = true;
-      }
       if (nowalk)
         return parseExternal();
       lchar = end.charAt(end.length - 1);
@@ -3675,8 +3583,8 @@ function markup(input) {
             ignore = true;
         } else {
           attr = store.join(NIL);
-          if (jsx === false || jsx && notLast(attr, 125 /* RCB */))
-            attr = attr.replace(SpacesGlob, WSP);
+          if (jsx === false || jsx && !is(attr[attr.length - 1], 125 /* RCB */))
+            attr = attr.replace(/\s+/g, WSP);
           each = attrname(attr);
           if (each[0] === "data-esthetic-ignore")
             ignore = true;
@@ -3687,46 +3595,61 @@ function markup(input) {
           nosort = true;
         if (quotes === false) {
           if (isStart(attr))
-            ;
+            within = within + 1;
           if (isEnd(attr))
-            ;
+            within = within - 1;
         }
         attr = attr.replace(/^\u0020/, NIL).replace(/\u0020$/, NIL);
         store = attr.replace(/\r\n/g, NWL).split(NWL);
-        if (store.length < 1)
-          store[0] = store[0].replace(SpaceEnd, NIL);
-        attr = inner(store.join(parse.crlf));
-        if (rules.markup.stripAttributeLines === true && lines > 1)
-          lines = 1;
+        if (!store.length)
+          store[0] = store[0].replace(/\s+$/, NIL);
+        attr = rules.crlf === true ? inner(store.join("\r\n")) : inner(store.join(NWL));
+        if (within > 0 || isType(attr, 1)) {
+          if (isType(attr, 5) === false) {
+            lines = 0;
+            if (is(b[a + 1], 10 /* NWL */) || is(b[a], 10 /* NWL */))
+              lines = 2;
+            if (is(b[a], 32 /* WSP */) && not(b[a + 1], 32 /* WSP */))
+              lines = 1;
+          } else {
+            if (lines <= 2 && is(b[a + 1], 10 /* NWL */)) {
+              lines = 2;
+            } else if (is(b[a + 1], 32 /* WSP */)) {
+              lines = 1;
+            } else if (lines >= 1) {
+              lines = 0;
+            }
+          }
+        } else {
+          if (is(b[a + 1], 10 /* NWL */)) {
+            lines = 2;
+          } else if (is(b[a + 1], 32 /* WSP */)) {
+            lines = 1;
+          }
+        }
         if (attrs.length > 0) {
           const ln = attrs.length - 1;
           if (is(attr, 61 /* EQS */) || is(attr, 45 /* DSH */)) {
             attrs[ln][0] = attrs[ln][0] + attr;
             attrs[ln][1] = lines;
             attr = NIL;
-          } else if (lines === 0) {
-            if (attrs[ln][1] === 0) {
-              attrs[ln][0] = attrs[ln][0] + attr;
-              attrs[ln][1] = lines;
-              attr = NIL;
-            } else if (attrs[ln][1] > 0 && isControl(attr) === false) {
-              lines = attrs[ln][1];
-            }
-          } else if (lines > 0) {
-            if (attrs[ln][1] === 0) {
-              if (isEnd(attr)) {
-                attrs[ln][0] = attrs[ln][0] + attr;
-                attrs[ln][1] = lines;
-                attr = NIL;
-              } else if (isType(attrs[ln][0], 4 /* HasOpen */)) {
-                attrs[ln][0] = attrs[ln][0] + attr;
-                attr = NIL;
-              }
-            } else if (attrs[ln][1] > 0 && isEnd(attr) && isType(attr, 6 /* OpenTag */) === false) {
-              const i = attr.indexOf("{%");
-              attrs.push([attr.slice(0, i), lines]);
-              attr = attr.slice(i);
-            }
+          } else if (lines === 0 && attrs[ln][1] === 0) {
+            attrs[ln][0] = attrs[ln][0] + attr;
+            attrs[ln][1] = lines;
+            attr = NIL;
+          } else if (lines > 0 && attrs[ln][1] === 0 && isEnd(attr) === true) {
+            attrs[ln][0] = attrs[ln][0] + attr;
+            attrs[ln][1] = lines;
+            attr = NIL;
+          } else if (lines > 0 && attrs[ln][1] === 0 && isType(attrs[ln][0], 4)) {
+            attrs[ln][0] = attrs[ln][0] + attr;
+            attr = NIL;
+          } else if (attrs[ln][1] > 0 && lines === 0 && isControl(attr) === false) {
+            lines = attrs[ln][1];
+          } else if (attrs[ln][1] > 0 && lines > 0 && isEnd(attr) && !isType(attr, 6)) {
+            const i = attr.indexOf("{%");
+            attrs.push([attr.slice(0, i), lines]);
+            attr = attr.slice(i);
           }
         }
         if (attr !== NIL && attr !== WSP)
@@ -3745,8 +3668,11 @@ function markup(input) {
       if (parse.error)
         return;
       do {
-        if (is(b[a], 10 /* NWL */))
-          lines = parse.lines(a, lines);
+        if (is(b[a], 10 /* NWL */)) {
+          lines = lines + 1;
+          parse.lineNumber = parse.lineNumber + 1;
+          parse.lineIndex = a;
+        }
         if (start === "---" && end === "---" && ltype === "ignore") {
           lexed.push(b[a]);
           if (a > 3 && is(b[a], 45 /* DSH */) && is(b[a - 1], 45 /* DSH */) && is(b[a - 2], 45 /* DSH */))
@@ -3846,14 +3772,14 @@ function markup(input) {
               break;
             }
             if (ws(b[a]) === false && stest === true && b[a] !== lchar) {
-              icount = 0;
               stest = false;
+              icount = 0;
               quote = jsxquote;
               lexed.pop();
               if (a < c) {
                 do {
                   if (is(b[a], 10 /* NWL */))
-                    lines = parse.lines(a, lines);
+                    parse.lineNumber = parse.lineNumber + 1;
                   if (rules.markup.preserveAttributes === true) {
                     lexed.push(b[a]);
                   } else {
@@ -3862,20 +3788,21 @@ function markup(input) {
                   if (not(quote, 34 /* DQO */) || not(quote, 39 /* SQO */)) {
                     if (is(b[a - 1], 123 /* LCB */) && (is(b[a], 37 /* PER */) || is(b[a], 123 /* LCB */))) {
                       isliq = true;
-                    } else if (is(b[a], 125 /* RCB */) && (is(b[a - 1], 125 /* RCB */) || is(b[a - 1], 37 /* PER */))) {
+                    } else if ((is(b[a - 1], 125 /* RCB */) || is(b[a - 1], 37 /* PER */)) && is(b[a], 125 /* RCB */)) {
                       isliq = false;
                     }
                   }
                   if (jsx === false && qattr === false && isliq === true && rules.markup.preserveAttributes === false) {
                     while (a < c) {
                       a = a + 1;
-                      if (is(b[a], 10 /* NWL */))
-                        lines = parse.lines(a, lines);
-                      if (is(store[0], 61 /* EQS */)) {
-                        isliq = false;
-                        quote = NIL;
-                        tokenize(false);
-                        break;
+                      if (is(b[a], 10 /* NWL */)) {
+                        parse.lineNumber = parse.lineNumber + 1;
+                        if (is(store[0], 61 /* EQS */)) {
+                          isliq = false;
+                          quote = NIL;
+                          tokenize(false);
+                          break;
+                        }
                       }
                       store.push(b[a]);
                       if (is(store[0], 61 /* EQS */) && is(b[a + 1], 62 /* RAN */)) {
@@ -3885,7 +3812,7 @@ function markup(input) {
                         quote = NIL;
                         break;
                       }
-                      if (not(store[0], 61 /* EQS */) && is(b[a], 125 /* RCB */) && (is(b[a - 1], 125 /* RCB */) || is(b[a - 1], 37 /* PER */))) {
+                      if (is(store[0], 61 /* EQS */) === false && is(b[a], 125 /* RCB */) && (is(b[a - 1], 125 /* RCB */) || is(b[a - 1], 37 /* PER */))) {
                         isliq = false;
                         quote = NIL;
                         tokenize(false);
@@ -3912,9 +3839,10 @@ function markup(input) {
                     }
                   } else if (quote === NIL) {
                     if (b[a + 1] === lchar) {
-                      if (isLast(store, 47 /* FWS */) || isLast(store, 63 /* QWS */) && ltype === "xml") {
+                      if (is(store[store.length - 1], 47 /* FWS */) || is(store[store.length - 1], 63 /* QWS */) && ltype === "xml") {
                         store.pop();
-                        preserve === false || lexed.pop();
+                        if (preserve === true)
+                          lexed.pop();
                         a = a - 1;
                       }
                       if (store.length > 0)
@@ -3985,7 +3913,7 @@ function markup(input) {
                         break;
                       }
                     }
-                  } else if (jsx === true && (is(quote, 125 /* RCB */) || is(quote, 10 /* NWL */) && is(b[a], 10 /* NWL */) || is(quote, 42 /* ARS */) && is(b[a - 1], 42 /* ARS */) && is(b[a], 47 /* FWS */))) {
+                  } else if (jsx === true && (is(quote, 125 /* RCB */) || is(quote, 10 /* NWL */) && is(b[a], 10 /* NWL */) || quote === "*/" && is(b[a - 1], 42 /* ARS */) && is(b[a], 47 /* FWS */))) {
                     if (is(b[a], 96 /* TQO */)) {
                       a = a + 1;
                       do {
@@ -4009,7 +3937,7 @@ function markup(input) {
                               if (!/^\s*$/.test(token))
                                 attrs.push([token, lines]);
                             } else {
-                              token = token.replace(SpacesGlob, WSP);
+                              token = token.replace(/\s+/g, WSP);
                               if (token !== WSP)
                                 attrs.push([token, lines]);
                             }
@@ -4030,7 +3958,7 @@ function markup(input) {
                       quote = NIL;
                       break;
                     }
-                  } else if (is(b[icount - 1], 61 /* EQS */) && is(b[a], 123 /* LCB */) && is(b[a + 1], 37 /* PER */) && (is(quote, 34 /* DQO */) || is(quote, 39 /* SQO */))) {
+                  } else if (is(b[a], 123 /* LCB */) && is(b[a + 1], 37 /* PER */) && is(b[icount - 1], 61 /* EQS */) && (is(quote, 34 /* DQO */) || is(quote, 39 /* SQO */))) {
                     quote = quote + "{%";
                     icount = 0;
                   } else if (is(b[a - 1], 37 /* PER */) && is(b[a], 125 /* RCB */) && (quote === '"{%' || quote === "'{%")) {
@@ -4092,7 +4020,7 @@ function markup(input) {
               }
               if (quote === end)
                 quote = NIL;
-            } else if (basic && not(end, 10 /* NWL */) && not(b[a - 1], 60 /* LAN */) && ws(b[a])) {
+            } else if (basic && not(end, 10 /* NWL */) && ws(b[a]) && not(b[a - 1], 60 /* LAN */)) {
               stest = true;
             } else if (basic && jsx && is(b[a], 47 /* FWS */) && (is(b[a + 1], 42 /* ARS */) || is(b[a + 1], 47 /* FWS */))) {
               stest = true;
@@ -4120,8 +4048,10 @@ function markup(input) {
                 } while (e > -1);
               }
               if (e < 0) {
-                if (is(lexed[f], 62 /* RAN */) && is(b[a], 62 /* RAN */) && is(b[a - 1], 125 /* RCB */) && ws(b[a + 1]) && attrs.length > 0 && attrs[attrs.length - 1][1] === 0) {
-                  attrs[attrs.length - 1][1] = is(b[a + 1], 32 /* WSP */) ? 1 : 2;
+                if (is(lexed[f], 62 /* RAN */) && is(b[a], 62 /* RAN */) && attrs.length > 0) {
+                  if (attrs[attrs.length - 1][1] === 0 && is(b[a - 1], 125 /* RCB */) && ws(b[a + 1])) {
+                    attrs[attrs.length - 1][1] = is(b[a + 1], 32 /* WSP */) ? 1 : 2;
+                  }
                 }
                 break;
               }
@@ -4131,7 +4061,7 @@ function markup(input) {
             e = quote.length - 1;
             if (e > -1) {
               do {
-                if (not(b[a - f], quote.charCodeAt(e)))
+                if (b[a - f] !== quote.charAt(e))
                   break;
                 f = f + 1;
                 e = e - 1;
@@ -4156,7 +4086,7 @@ function markup(input) {
       record.token = token;
       record.types = ltype;
       if (preserve === false && jsx === false) {
-        token = token.replace(SpacesGlob, WSP);
+        token = token.replace(/\s+/g, WSP);
       }
       return parseExternal();
     }
@@ -4278,9 +4208,9 @@ function markup(input) {
                   output = lexed.join(NIL).replace(SpaceLead, NIL).replace(SpaceEnd, NIL);
                   if (lexed.length < 1)
                     break;
-                  if (HTMLCommDelimOpen.test(output) && HTMLCommDelimClose.test(output)) {
+                  if (/^<!--+/.test(output) && /--+>$/.test(output)) {
                     push(record, { token: "<!--", types: "comment" });
-                    output = output.replace(HTMLCommDelimOpen, NIL).replace(HTMLCommDelimClose, NIL);
+                    output = output.replace(/^<!--+/, NIL).replace(/--+>$/, NIL);
                     parse.external("javascript", output);
                     push(record, { token: "-->" });
                   } else {
@@ -4298,9 +4228,9 @@ function markup(input) {
                     output = lexed.join(NIL).replace(SpaceLead, NIL).replace(SpaceEnd, NIL);
                     if (lexed.length < 1)
                       break;
-                    if (HTMLCommDelimOpen.test(output) && HTMLCommDelimClose.test(output)) {
+                    if (/^<!--+/.test(output) && /--+>$/.test(output)) {
                       push(record, { token: "<!--", types: "comment" });
-                      output = output.replace(HTMLCommDelimOpen, NIL).replace(HTMLCommDelimClose, NIL);
+                      output = output.replace(/^<!--+/, NIL).replace(/--+>$/, NIL);
                       parse.external("css", output);
                       push(record, { token: "-->" });
                     } else {
@@ -4398,7 +4328,7 @@ function markup(input) {
               if (width < 1)
                 width = ltoke.indexOf(WSP);
             }
-            ltoke = lexed.join(NIL).replace(SpaceLead, NIL).replace(SpaceEnd, NIL).replace(SpacesGlob, WSP);
+            ltoke = lexed.join(NIL).replace(SpaceLead, NIL).replace(SpaceEnd, NIL).replace(/\s+/g, WSP);
             do
               wrapper2();
             while (width < chars);
@@ -4411,7 +4341,7 @@ function markup(input) {
             if (at > -1) {
               push(record, { token: ltoke.slice(0, at) });
               ltoke = ltoke.slice(at);
-              if (NewlineLead.test(ltoke)) {
+              if (/^\n+/.test(ltoke)) {
                 record.lines = 1;
               } else {
                 record.lines = 2;
@@ -5416,9 +5346,9 @@ function script() {
         linesSpace = 1;
         do {
           ee = ee + 1;
-          if (is(c[ee], 10 /* NWL */))
+          if (c[ee] === NWL)
             linesSpace = linesSpace + 1;
-        } while (ee < b && ws(c[ee + 1]) === true);
+        } while (ee < b && ws(c[ee + 1]));
         parse.lineOffset = linesSpace;
       }
     }
@@ -6435,7 +6365,7 @@ function script() {
     parse.lineOffset = 1;
     do {
       if (is(c[a], 10 /* NWL */)) {
-        parse.lineIndex = a;
+        parse.lineOffset = a;
         parse.lineOffset = parse.lineOffset + 1;
         parse.lineNumber = parse.lineNumber + 1;
       }
@@ -7653,12 +7583,14 @@ function markup2() {
       linesout.push(parse.crlf);
       index = index + 1;
     } while (index < total);
-    if (tabs > 0) {
-      index = 0;
-      do {
-        linesout.push(ind);
-        index = index + 1;
-      } while (index < tabs);
+    if (data.types[a] !== "ignore" || data.types[a] === "ignore" && data.types[a + 1] !== "ignore") {
+      if (tabs > 0) {
+        index = 0;
+        do {
+          linesout.push(ind);
+          index = index + 1;
+        } while (index < tabs);
+      }
     }
     return linesout.join(NIL);
   }
@@ -8370,10 +8302,10 @@ function markup2() {
       idx = idx + 1;
     } while (idx < token.length);
     if (rules.liquid.normalizeSpacing === true) {
-      data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, (m) => m.replace(Spaces, WSP));
+      data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, (m) => m.replace(/\s*/, WSP));
     } else {
       const space = repeatChar(data.lines[a] - 1 === -1 ? rules.indentSize : data.lines[a] - 1);
-      data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, (m) => m.replace(WhitespaceEnd, space));
+      data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, (m) => m.replace(StripEnd, space));
     }
   }
   function isLineBreak(idx) {
@@ -8478,6 +8410,8 @@ function markup2() {
           } else if (isType2(next, "liquid_end_bad")) {
             indent = indent - 1;
             level.push(indent);
+          } else if (isType2(a, "ignore") && isType2(next, "end")) {
+            level.push(indent);
           } else {
             if (isType2(a, "liquid") && isLineBreak(a))
               onLineBreak();
@@ -8513,14 +8447,6 @@ function markup2() {
           );
         } else if (isIndex(a, "_preserve") > -1) {
           build.push(data.token[a]);
-        } else if (isType2(a + 1, "ignore") && isType2(a + 2, "ignore")) {
-          build.push(
-            data.token[a],
-            nl(levels[a]).replace(WhitespaceGlob, NIL),
-            data.token[a + 1],
-            repeatChar(data.lines[a + 2] - 1 === 0 ? 1 : data.lines[a + 2] - 1, NWL)
-          );
-          a = a + 1;
         } else {
           if (rules.markup.delimiterForce === true)
             onDelimiterForce();
@@ -10326,16 +10252,15 @@ function script2() {
           ltype = ctype;
           ltoke = ctoke;
         }
-        if (count.length > 0 && not(data.token[a], 41 /* RPR */)) {
+        if (count.length > 0 && data.token[a] !== ")") {
           if (data.types[a] === "comment" && count[count.length - 1] > -1) {
             count[count.length - 1] = rules.wrap + 1;
-          } else if (level[a] > -1 || is(data.token[a], 96 /* TQO */) && data.token[a].indexOf(NWL) > 0) {
+          } else if (level[a] > -1 || data.token[a].charAt(0) === "`" && data.token[a].indexOf(NWL) > 0) {
             count[count.length - 1] = -1;
           } else if (count[count.length - 1] > -1) {
             count[count.length - 1] = count[count.length - 1] + data.token[a].length;
-            if (level[a] === -10) {
+            if (level[a] === -10)
               count[count.length - 1] = count[count.length - 1] + 1;
-            }
           }
         }
       } else {
@@ -10746,7 +10671,7 @@ var _Parser = class {
     this.count = -1;
     this.lineColumn = 0;
     this.lineNumber = 1;
-    this.lineOffset = 0;
+    this.lineOffset = 1;
     this.lineIndex = 0;
     this.rules = {
       crlf: false,
@@ -11078,14 +11003,6 @@ var _Parser = class {
         this.lineOffset = 0;
       }
     }
-  }
-  is(prop, value) {
-    return this.data[prop][this.count] === value;
-  }
-  lines(index, lines) {
-    this.lineNumber = this.lineNumber + 1;
-    this.lineIndex = index;
-    return lines + 1;
   }
   spacer(args) {
     this.lineOffset = 1;

@@ -47,7 +47,7 @@
       "@parse/*": [
         "src/parse/*"
       ],
-      "@liquify/ava/esthetic": [
+      "@liquify/ava/prettify": [
         "./node_modules/@liquify/ava/package/esthetic.d.ts"
       ]
     }

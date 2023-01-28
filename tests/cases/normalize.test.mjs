@@ -1,5 +1,5 @@
 import test from 'ava';
-import { forAssert, liquid } from '@liquify/ava/esthetic';
+import { forAssert, liquid } from '@liquify/ava/prettify';
 import esthetic from 'esthetic';
 
 test('Spacing in object expressions', t => {
