@@ -2,58 +2,43 @@
 
 This directory contains the tests for Æsthetic.
 
-### Peers
+### Integrated Modules
 
 - [AVA](https://github.com/avajs/ava)
-- [@liquify/ava](#)
+- [@liquify/ava](https://github.com/panoply/ava)
 - [Æsthetic](https://github.com/panoply/esthetic)
 
-### Snapshot Assertions
+# Overview
 
-Prettify uses [Snapshot Testing](https://github.com/avajs/ava/blob/main/docs/04-snapshot-testing.md) for assertion differences when comparing unformatted and formatted code samples. Sample contents are provided within Plain Text files and can include descriptions which will be passed to AVA's snapshot reports.
+Æsthetic uses the powerful [AVA](https://github.com/avajs/ava) test runner together with a small helper utility that helps alleviate some of the complexities involved with testing tools of its criteria. Æsthetic's tests are verbose, mostly assertions and are grouped on a per-language basis.
 
-# Samples
+### Commands
 
-The "samples" directory contains code snippets used in tests and organized according to language specificity. Samples contain irregular structures which Prettify will reason with and generates snapshots from in post-beautification cycles.
+Tests are invoked from the projects root (see [package.json](https://github.com/panoply/esthetic/blob/next/package.json) scripts).
 
-### Writing Sample Files
+```bash
 
-The samples accept descriptions that can be written at the very beginning of the file/s before the code snippet starts. Description should be encapsulated between triple dashed characters. The dashes inform upon where the description ends and the code sample begins. The test utilities will check for descriptions when reading files and use the descriptions in the markdown reports that AVA generates.
+# GLOBALS
 
-```txt
----
-Test description which will be passed in as the snapshot label. Accepts markdown
----
+pnpm test             # Run all tests
+pnpm tests            # Run specific tests
 
-// code sample goes here
+# DEV MODE
+
+pnpm test:dev
+
+# LANGUAGES
+
+pnpm test:liquid      # Run liquid tests
+pnpm test:html        # Run HTML tests
+pnpm test:css         # Run CSS tests
+pnpm test:json        # Run JSON tests
+pnpm test:xml         # Run XML tests
+
+# FLAGS
+
+pnpm <cmd>  --watch   # Run in watch mode
+
 ```
 
-# Tests
-
-The tests are split up into 4 different categories:
-
-- [Cases](#Cases)
-- [Ignores](#Ignores)
-- [Rules](#Rules)
-- [Units](#Units)
-- [Bench](#Bench)
-
-### Cases
-
-The [cases](/cases) directory contains beautification edge cases. In the context of Æsthetic, edge cases refer to various code structures that Æsthetic understands and can reason about with. The [cases/samples](/cases/samples) directory is where the assertions exist and the [cases/snapshots](cases/snapshots) directory is where you can find the snapshot reports.
-
-### Ignores
-
-TODO
-
-### Units
-
-TODO
-
-### Rules
-
-TODO
-
-### Bench
-
-TODO
+ `dev.test.mjs` file contained in the root of this directory
