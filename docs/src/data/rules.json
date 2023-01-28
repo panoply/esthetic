@@ -1,0 +1,461 @@
+{
+  "groups": [
+    "Global",
+    "Liquid",
+    "HTML",
+    "XML",
+    "CSS",
+    "JSON",
+    "Script"
+  ],
+  "urls": [
+    {
+      "group": "global",
+      "title": "crlf",
+      "url": "/rules/crlf/"
+    },
+    {
+      "group": "global",
+      "title": "endNewline",
+      "url": "/rules/endNewline/"
+    },
+    {
+      "group": "global",
+      "title": "language",
+      "url": "/rules/language/"
+    },
+    {
+      "group": "global",
+      "title": "indentChar",
+      "url": "/rules/indentChar/"
+    },
+    {
+      "group": "global",
+      "title": "indentSize",
+      "url": "/rules/indentSize/"
+    },
+    {
+      "group": "global",
+      "title": "preserveLine",
+      "url": "/rules/preserveLine/"
+    },
+    {
+      "group": "global",
+      "title": "preset",
+      "url": "/rules/preset/"
+    },
+    {
+      "group": "global",
+      "title": "wrap",
+      "url": "/rules/wrap/"
+    },
+    {
+      "group": "liquid",
+      "title": "correct",
+      "url": "/rules/liquid/correct/"
+    },
+    {
+      "group": "liquid",
+      "title": "commentNewline",
+      "url": "/rules/liquid/commentNewline/"
+    },
+    {
+      "group": "liquid",
+      "title": "commentIndent",
+      "url": "/rules/liquid/commentIndent/"
+    },
+    {
+      "group": "liquid",
+      "title": "delimiterTrims",
+      "url": "/rules/liquid/delimiterTrims/"
+    },
+    {
+      "group": "liquid",
+      "title": "indentAttributes",
+      "url": "/rules/liquid/indentAttributes/"
+    },
+    {
+      "group": "liquid",
+      "title": "ignoreTagList",
+      "url": "/rules/liquid/ignoreTagList/"
+    },
+    {
+      "group": "liquid",
+      "title": "lineBreakSeparator",
+      "url": "/rules/liquid/lineBreakSeparator/"
+    },
+    {
+      "group": "liquid",
+      "title": "normalizeSpacing",
+      "url": "/rules/liquid/normalizeSpacing/"
+    },
+    {
+      "group": "liquid",
+      "title": "preserveComment",
+      "url": "/rules/liquid/preserveComment/"
+    },
+    {
+      "group": "liquid",
+      "title": "quoteConvert",
+      "url": "/rules/liquid/quoteConvert/"
+    },
+
+    {
+      "group": "html",
+      "title": "attributeCasing",
+      "url": "/rules/html/attributeCasing/"
+    },
+    {
+      "group": "html",
+      "title": "attributeSort",
+      "url": "/rules/html/attributeSort/"
+    },
+    {
+      "group": "html",
+      "title": "attributeSortList",
+      "url": "/rules/html/attributeSortList/"
+    },
+    {
+      "group": "html",
+      "title": "commentIndent",
+      "url": "/rules/html/commentIndent/"
+    },
+    {
+      "group": "html",
+      "title": "commentNewline",
+      "url": "/rules/html/commentNewline/"
+    },
+    {
+      "group": "html",
+      "title": "correct",
+      "url": "/rules/html/correct/"
+    },
+    {
+      "group": "html",
+      "title": "delimiterForce",
+      "url": "/rules/html/delimiterForce/"
+    },
+    {
+      "group": "html",
+      "title": "forceAttribute",
+      "url": "/rules/html/forceAttribute/"
+    },
+    {
+      "group": "html",
+      "title": "forceLeadAttribute",
+      "url": "/rules/html/forceLeadAttribute/"
+    },
+    {
+      "group": "html",
+      "title": "forceIndent",
+      "url": "/rules/html/forceIndent/"
+    },
+    {
+      "group": "html",
+      "title": "ignoreCSS",
+      "url": "/rules/html/ignoreCSS/"
+    },
+    {
+      "group": "html",
+      "title": "ignoreJS",
+      "url": "/rules/html/ignoreJS/"
+    },
+    {
+      "group": "html",
+      "title": "ignoreJSON",
+      "url": "/rules/html/ignoreJSON/"
+    },
+    {
+      "group": "html",
+      "title": "preserveAttributes",
+      "url": "/rules/html/preserveAttributes/"
+    },
+    {
+      "group": "html",
+      "title": "preserveComment",
+      "url": "/rules/html/preserveComment/"
+    },
+    {
+      "group": "html",
+      "title": "preserveText",
+      "url": "/rules/html/preserveText/"
+    },
+    {
+      "group": "html",
+      "title": "selfCloseSpace",
+      "url": "/rules/html/selfCloseSpace/"
+    },
+    {
+      "group": "html",
+      "title": "selfCloseSVG",
+      "url": "/rules/html/selfCloseSVG/"
+    },
+    {
+      "group": "html",
+      "title": "stripAttributeLines",
+      "url": "/rules/html/stripAttributeLines/"
+    },
+    {
+      "group": "html",
+      "title": "quoteConvert",
+      "url": "/rules/html/quoteConvert/"
+    },
+
+    {
+      "group": "xml",
+      "title": "attributeSort",
+      "url": "/rules/xml/attributeSort/"
+    },
+    {
+      "group": "xml",
+      "title": "attributeSortList",
+      "url": "/rules/xml/attributeSortList/"
+    },
+    {
+      "group": "xml",
+      "title": "commentIndent",
+      "url": "/rules/xml/commentIndent/"
+    },
+    {
+      "group": "xml",
+      "title": "commentNewline",
+      "url": "/rules/xml/commentNewline/"
+    },
+    {
+      "group": "xml",
+      "title": "correct",
+      "url": "/rules/xml/correct/"
+    },
+    {
+      "group": "xml",
+      "title": "forceAttribute",
+      "url": "/rules/xml/forceAttribute/"
+    },
+    {
+      "group": "xml",
+      "title": "forceIndent",
+      "url": "/rules/xml/forceIndent/"
+    },
+    {
+      "group": "xml",
+      "title": "namingConvention",
+      "url": "/rules/xml/attributeCasing/"
+    },
+    {
+      "group": "xml",
+      "title": "preserveAttributes",
+      "url": "/rules/xml/preserveAttributes/"
+    },
+    {
+      "group": "xml",
+      "title": "preserveComment",
+      "url": "/rules/xml/preserveComment/"
+    },
+    {
+      "group": "xml",
+      "title": "preserveText",
+      "url": "/rules/xml/preserveText/"
+    },
+    {
+      "group": "xml",
+      "title": "selfCloseSpace",
+      "url": "/rules/xml/selfCloseSpace/"
+    },
+    {
+      "group": "xml",
+      "title": "stripAttributeLines",
+      "url": "/rules/xml/stripAttributeLines/"
+    },
+
+    {
+      "group": "css",
+      "title": "atRuleSpace",
+      "url": "/rules/css/atRuleSpace/"
+    },
+    {
+      "group": "css",
+      "title": "classPadding",
+      "url": "/rules/css/classPadding/"
+    },
+    {
+      "group": "css",
+      "title": "correct",
+      "url": "/rules/css/correct/"
+    },
+    {
+      "group": "css",
+      "title": "commentIndent",
+      "url": "/rules/css/commentIndent/"
+    },
+    {
+      "group": "css",
+      "title": "commentNewline",
+      "url": "/rules/css/commentNewline/"
+    },
+    {
+      "group": "css",
+      "title": "preserveComment",
+      "url": "/rules/css/preserveComment/"
+    },
+    {
+      "group": "css",
+      "title": "noLeadZero",
+      "url": "/rules/css/noLeadZero/"
+    },
+    {
+      "group": "css",
+      "title": "sortProperties",
+      "url": "/rules/css/sortProperties/"
+    },
+    {
+      "group": "css",
+      "title": "sortSelectors",
+      "url": "/rules/css/sortSelectors/"
+    },
+    {
+      "group": "css",
+      "title": "quoteConvert",
+      "url": "/rules/css/quoteConvert/"
+    },
+    {
+      "group": "json",
+      "title": "allowComments",
+      "url": "/rules/json/allowComments/"
+    },
+    {
+      "group": "json",
+      "title": "arrayFormat",
+      "url": "/rules/json/arrayFormat/"
+    },
+    {
+      "group": "json",
+      "title": "braceAllman",
+      "url": "/rules/json/braceAllman/"
+    },
+    {
+      "group": "json",
+      "title": "bracePadding",
+      "url": "/rules/json/bracePadding/"
+    },
+    {
+      "group": "json",
+      "title": "objectIndent",
+      "url": "/rules/json/objectIndent/"
+    },
+    {
+      "group": "json",
+      "title": "objectSort",
+      "url": "/rules/json/objectSort/"
+    },
+    {
+      "group": "script",
+      "title": "arrayFormat",
+      "url": "/rules/script/arrayFormat/"
+    },
+    {
+      "group": "script",
+      "title": "braceAllman",
+      "url": "/rules/script/braceAllman/"
+    },
+    {
+      "group": "script",
+      "title": "braceStyle",
+      "url": "/rules/script/braceStyle/"
+    },
+    {
+      "group": "script",
+      "title": "bracePadding",
+      "url": "/rules/script/bracePadding/"
+    },
+    {
+      "group": "script",
+      "title": "commentIndent",
+      "url": "/rules/script/commentIndent/"
+    },
+    {
+      "group": "script",
+      "title": "commentNewline",
+      "url": "/rules/script/commentNewline/"
+    },
+    {
+      "group": "script",
+      "title": "correct",
+      "url": "/rules/script/correct/"
+    },
+    {
+      "group": "script",
+      "title": "elseNewline",
+      "url": "/rules/script/elseNewline/"
+    },
+    {
+      "group": "script",
+      "title": "endComma",
+      "url": "/rules/script/endComma/"
+    },
+    {
+      "group": "script",
+      "title": "functionNameSpace",
+      "url": "/rules/script/functionNameSpace/"
+    },
+    {
+      "group": "script",
+      "title": "functionSpace",
+      "url": "/rules/script/functionSpace/"
+    },
+    {
+      "group": "script",
+      "title": "methodChain",
+      "url": "/rules/script/methodChain/"
+    },
+    {
+      "group": "script",
+      "title": "neverFlatten",
+      "url": "/rules/script/neverFlatten/"
+    },
+    {
+      "group": "script",
+      "title": "noCaseIndent",
+      "url": "/rules/script/noCaseIndent/"
+    },
+    {
+      "group": "script",
+      "title": "noSemicolon",
+      "url": "/rules/script/noSemicolon/"
+    },
+    {
+      "group": "script",
+      "title": "objectIndent",
+      "url": "/rules/script/objectIndent/"
+    },
+    {
+      "group": "script",
+      "title": "objectSort",
+      "url": "/rules/script/objectSort/"
+    },
+    {
+      "group": "script",
+      "title": "preserveComment",
+      "url": "/rules/script/preserveComment/"
+    },
+    {
+      "group": "script",
+      "title": "ternaryLine",
+      "url": "/rules/script/ternaryLine/"
+    },
+    {
+      "group": "script",
+      "title": "quoteConvert",
+      "url": "/rules/script/quoteConvert/"
+    },
+    {
+      "group": "script",
+      "title": "variableList",
+      "url": "/rules/script/variableList/"
+    },
+    {
+      "group": "script",
+      "title": "vertical",
+      "url": "/rules/script/vertical/"
+    }
+  ]
+}

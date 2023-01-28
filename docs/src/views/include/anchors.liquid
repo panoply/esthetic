@@ -1,0 +1,21 @@
+<nav
+  class="mt-5 pt-5 mb-2 pl-4 bl"
+  data-controller="sticky"
+  data-sticky-offset-value="20">
+
+  <h6>ANCHORS</h6>
+
+  <ul class="list-dash mt-3">
+    {% for link in collections.all %}
+      {% if link.url == page.url %}
+        {% for anchor in link.data.anchors %}
+          <li>
+            <a href="#{{ anchor | slugify }}">
+              {{ anchor }}
+            </a>
+          </li>
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  </ul>
+</nav>

@@ -1,0 +1,89 @@
+{% liquid
+
+  assign sample = false
+
+  if page.url == '/'
+    assign is_open = 'false'
+    assign hidden = 'false'
+    assign active = ''
+  else
+    assign is_open = 'true'
+    assign hidden = 'true'
+    assign active = 'drawer-active'
+  endif
+
+  assign in_rules = false
+
+  if page.url contains '/rules'
+    unless page.url contains '/usage'
+      assign in_rules = true
+    endunless
+  endif
+
+%}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Æsthetic | {{ title }}</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{'/style.css' | url }}" rel="stylesheet">
+    <script src="{{'/bundle.min.js' | url }}"></script>
+  </head>
+  <body>
+
+    {%- if page.url == '/' -%}
+
+      {% include 'landing' %}
+
+    {% else %}
+
+      {% include 'navbar' %}
+
+      <main id="main" class="container-fluid">
+        <div class="row">
+
+          <div class="col-auto px-0">
+            {% if in_rules %}
+
+              {%- include 'sidebar'
+                , links: rules
+                , type: 'rules' %}
+
+            {% else %}
+
+              {%- include 'sidebar'
+                , links: main
+                , type: 'main' %}
+
+            {% endif %}
+          </div>
+
+          <div class="col-7 px-5 py-5">
+
+            <div class="d-block">
+              {% include 'breadcrumbs' %}
+            </div>
+
+            <div class="px-4">
+              {{ content }}
+            </div>
+
+          </div>
+
+          <div
+            id="anchors"
+            class="col-auto pl-5">
+            {% include 'anchors' %}
+          </div>
+        </div>
+      </main>
+
+    {%- endif -%}
+
+    {% svgsprite %}
+
+  </body>
+</html>

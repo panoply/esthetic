@@ -1,0 +1,61 @@
+<div class="row gx-2 breadcrumb mt-4 mb-5">
+  <div class="col-auto">
+    {% svg "home", 'icon icon-home' %}
+  </div>
+  <div class="col-auto">
+    {% svg "chevron-right", 'icon icon-right' %}
+  </div>
+  <div class="col-auto">
+   {{ markup.mode | capitalize }}
+  </div>
+  <div class="col-auto">
+    {% svg "chevron-right", 'icon icon-right' %}
+  </div>
+  <div class="col-auto fc-gray">
+    {{ markup.title | replace: 'Esthetic', 'Æsthetic' }}
+  </div>
+</div>
+
+<div class="row ai-center jc-between mb-2">
+  <div class="col-auto">
+    <h1 class="my-0">{{ markup.title }}</h1>
+  </div>
+  <div class="col-auto">
+    <code>{{ markup.rule }}</code>
+  </div>
+</div>
+
+{{ markup.description }}
+
+
+<h1>Examples</h1>
+
+{% for option in markup.options %}
+
+  <h5 class="mb-4">{{ option.title }}</h5>
+  <p>{{ option.description }}</p>
+  <div class="row mt-1">
+  <div class="col">
+    <h6 class="mb-0">BEFORE</h6>
+  </div>
+  <div class="col">
+    <h6 class="mb-0">AFTER</h6>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+  {% code %}{{ option.example.before }}{% endcode %}
+
+  </div>
+  <div class="col">
+
+{% code %}{{ option.example.after }}{% endcode %}
+
+  </div>
+
+</div>
+
+{% endfor %}
+
+

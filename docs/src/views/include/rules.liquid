@@ -1,0 +1,75 @@
+{%- if page.url == '/' -%}
+  {%- assign is_open = 'false' -%}
+  {%- assign hidden = 'false' -%}
+  {%- assign active = '' -%}
+{%- else -%}
+  {%- assign is_open = 'true' -%}
+  {%- assign hidden = 'true' -%}
+  {%- assign active = 'drawer-active' -%}
+{%- endif -%}
+
+<div
+  data-controller="sticky"
+  data-sticky-offset-value="51">
+  <aside
+    id="sidebar"
+    class="drawer-panel drawer-left {{ drawer }} sidebar vh-100 br"
+    data-controller="drawer">
+    <div class="container-fluid g-0">
+
+      <form class="p-4">
+        <input
+          class="fm-input fm-sm rd-2"
+          type="search"
+          placeholder="Search...">
+      </form>
+
+      <nav
+        class="accordion mb-2 bx-0"
+        data-controller="accordion">
+
+
+
+        {%- for link in rules.data %}
+
+          {% assign base = link.title
+           | slugify
+           | prepend: '/' %}
+
+          {% assign url = link.links
+           | first
+           | slugify
+           | prepend: '/'
+           | prepend: base
+           | append: '/' %}
+
+
+
+          <button class="accordion-btn px-3 py-2 {% if page.url contains base %}initial{%- endif -%}">
+            {{ link.title }}
+          </button>
+
+          <div class="accordion-fold bt bg-gray {% if page.url contains base %}expanded{%- endif -%}">
+            <ul
+              class="py-4 px-2  ml-0"
+              id="{{- link.data.title | slugify -}}">
+
+              {%- for item in link.links %}
+                <li class="pt-1 pl-3">
+                  <a
+                    href="/rules/{{ base -}}/{{- item | slugify }}/"
+                    {% if page.url == url %}
+                    class="active"
+                    {% endif %}>
+                    {{- item | replace: 'Esthetic', 'Æsthetic' -}}
+                  </a>
+                </li>
+              {%- endfor -%}
+
+            </ul>
+          </div>
+        {%- endfor -%}
+      </nav>
+    </div>
+  </aside>
+</div>

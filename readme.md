@@ -788,17 +788,17 @@ try {
 
 Inline control is supported and can be applied within comments. Inline control allows your to ignore files, code regions or apply custom formatting options. Comments use the following structures:
 
-- `@Æsthetic-ignore`
-- `@Æsthetic-ignore-next`
-- `@Æsthetic-ignore-start`
-- `@Æsthetic-ignore-end`
+- `esthetic-ignore`
+- `esthetic-ignore-next`
+- `esthetic-ignore-start`
+- `esthetic-ignore-end`
 
 ## Disable Æsthetic
 
 You can prevent Æsthetic from formatting a file by placing an inline control comment at the type of the document.
 
 ```liquid
-{% # @Æsthetic-ignore %}
+{% # esthetic-ignore %}
 
 <div>
   <ul>
@@ -813,28 +813,28 @@ Lexer modes provide comment ignore control and support ignoring regions (blocks)
 
 ### HTML Comments
 
-- `<!-- @Æsthetic-ignore-start -->`
-- `<!-- @Æsthetic-ignore-end -->`
+- `<!-- esthetic-ignore-start -->`
+- `<!-- esthetic-ignore-end -->`
 
 ### Liquid Block Comments
 
-- `{% comment %} @Æsthetic-ignore-start {% endcomment %}`
-- `{% comment %} @Æsthetic-ignore-end {% endcomment %}`
+- `{% comment %} esthetic-ignore-start {% endcomment %}`
+- `{% comment %} esthetic-ignore-end {% endcomment %}`
 
 ### Liquid Line Comments
 
-- `{% # @Æsthetic-ignore-start %}`
-- `{% # @Æsthetic-ignore-end %}`
+- `{% # esthetic-ignore-start %}`
+- `{% # esthetic-ignore-end %}`
 
 ### Block Comments
 
-- `/* @Æsthetic-ignore-start */`
-- `/* @Æsthetic-ignore-end */`
+- `/* esthetic-ignore-start */`
+- `/* esthetic-ignore-end */`
 
 ### Line Comments
 
-- `// @Æsthetic-ignore-start`
-- `// @Æsthetic-ignore-end`
+- `// esthetic-ignore-start`
+- `// esthetic-ignore-end`
 
 ## Ignore Next
 
@@ -842,60 +842,60 @@ Similar to region ignores, you can instead have Æsthetic ignore the next known 
 
 ### HTML Comments
 
-- `<!-- @Æsthetic-ignore-next -->`
+- `<!-- esthetic-ignore-next -->`
 
 ### Liquid Block Comments
 
-- `{% comment %} @Æsthetic-ignore-next {% endcomment %}`
+- `{% comment %} esthetic-ignore-next {% endcomment %}`
 
 ### Liquid Line Comments
 
-- `{% # @Æsthetic-ignore-next %}`
+- `{% # esthetic-ignore-next %}`
 
 ### Block Comments
 
-- `/* @Æsthetic-ignore-next */`
+- `/* esthetic-ignore-next */`
 
 ### Line Comments
 
-- `// @Æsthetic-ignore-next`
+- `// esthetic-ignore-next`
 
 # Comment Rules
 
-Æsthetic provides inline formatting support via comments. Inline formatting adopts a similar approach used in linters and other projects. The difference is how inline formats are expressed, in Æsthetic you express formats using inline annotation at the top of the document with a value of `@Æsthetic` followed by either a space of newline.
+Æsthetic provides inline formatting support via comments. Inline formatting adopts a similar approach used in linters and other projects. The difference is how inline formats are expressed, in Æsthetic you express formats using inline annotation at the top of the document with a value of `esthetic` followed by either a space of newline.
 
 **Not all inline ignore capabilities are operational**
 
 #### HTML Comments
 
 ```html
-<!-- @Æsthetic forceAttribute: true indentLevel: 4 -->
+<!-- esthetic forceAttribute: true indentLevel: 4 -->
 ```
 
 #### Liquid Block Comments
 
 ```liquid
 {% comment %}
-  @Æsthetic forceAttribute: true indentLevel: 4
+  esthetic forceAttribute: true indentLevel: 4
 {% endcomment %}
 ```
 
 #### Liquid Line Comments
 
 ```liquid
-{% # @Æsthetic forceAttribute: true indentLevel: 4 %}
+{% # esthetic forceAttribute: true indentLevel: 4 %}
 ```
 
 #### Block comment
 
 ```css
-/* @Æsthetic forceAttribute: true indentLevel: 4 */
+/* esthetic forceAttribute: true indentLevel: 4 */
 ```
 
 ### Line comments
 
 ```javascript
-// @Æsthetic forceAttribute: true indentLevel: 4
+// esthetic forceAttribute: true indentLevel: 4
 ```
 
 # Caveats

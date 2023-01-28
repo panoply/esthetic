@@ -1,0 +1,372 @@
+code[class*='language-'],
+pre[class*='language-'] {
+  color: $white;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
+    monospace;
+  text-shadow: 0 1px rgb(0 0 0 / 30%);
+  font-size: 1em;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.5;
+  font-variant-ligatures: none;
+  -moz-tab-size: 2;
+  -o-tab-size: 2;
+  tab-size: 2;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+@media print {
+  code[class*='language-'],
+  pre[class*='language-'] {
+    text-shadow: none;
+  }
+}
+
+:not(pre) > code {
+  background: #efefef;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.2rem;
+}
+
+/* Code blocks */
+pre[class*='language-'] {
+  padding: 1.5rem;
+  margin: 0 1.2rem 40px 0;
+  overflow: auto;
+  border-radius: 4px;
+  background: #282a36;
+  color: $white;
+  position: relative;
+
+  // [data-theme='dark'] & {
+  //   color: var(--color-neutral-100);
+  // }
+
+  &.line-numbers-mode {
+    padding-left: calc(1.5rem + 1.7em + 1.2rem);
+  }
+}
+
+:not(pre) > code[class*='language-'],
+pre[class*='language-'] {
+  background: #282a36;
+  border-radius: 0.3em;
+  white-space: normal;
+}
+
+.token {
+  &.selector,
+  &.inserted {
+    color: $green;
+  }
+
+  &.atrule,
+  &.attr-value,
+  &.keyword,
+  &.important,
+  &.deleted {
+    color: $pink;
+  }
+
+  &.regex,
+  &.statement {
+    color: $cyan;
+  }
+
+  &.placeholder,
+  &.variable {
+    color: $white;
+  }
+
+  &.important,
+  &.statement,
+  &.bold {
+    font-weight: bold;
+  }
+
+  &.punctuation {
+    color: $white;
+  }
+
+  &.entity {
+    cursor: help;
+  }
+
+  &.italic {
+    font-style: italic;
+  }
+
+  &.namespace {
+    opacity: 0.7;
+  }
+
+  &.comment,
+  &.prolog,
+  &.doctype,
+  &.cdata {
+    color: #ccc;
+  }
+
+  &.operator,
+  &.boolean,
+  &.number {
+    color: $purple;
+  }
+
+  &.attr-name,
+  &.string,
+  &.entity,
+  &.url {
+    color: $yellow;
+  }
+}
+
+.language-bash {
+  color: rgb(214 214 214) !important;
+}
+
+.language-css .token.string,
+.style .token.string {
+  color: $yellow;
+}
+
+code.language-javascript,
+code.language-js {
+  color: $white;
+
+  .token {
+    &.parameter-type,
+    &.return-type,
+    &.semi {
+      color: $gray-300;
+    }
+
+    &.punctuation {
+      color: $gray-400;
+    }
+
+    &.comment {
+      color: $gray-600;
+    }
+
+    &.parameter-optional,
+    &.parameter {
+      color: $orange;
+    }
+
+    &.type-object,
+    &.type-array {
+      color: #30adc3;
+    }
+
+    &.types {
+      color: $sea;
+    }
+
+    &.method,
+    &.keyword,
+    &.browser-objects,
+    &.variable {
+      color: $cyan;
+    }
+
+    &.op,
+    &.tag,
+    &.punctuation-chars,
+    &.operator,
+    &.module {
+      color: $pink;
+    }
+
+    &.function {
+      color: $green;
+    }
+
+    &.number {
+      color: $salmon;
+    }
+
+    &.nil,
+    &.boolean {
+      color: $purple;
+    }
+
+    &.attr-name {
+      color: $green;
+    }
+
+    &.attr-value {
+      color: $yellow;
+    }
+
+    &.style {
+      color: $cyan;
+    }
+
+    &.script {
+      color: $cyan;
+
+      .token.keyword {
+        color: $cyan;
+      }
+    }
+  }
+}
+
+code.language-html {
+  color: $white;
+
+  .token {
+    &.punctuation {
+      color: #becaff;
+    }
+
+    &.comment {
+      color: $gray-600;
+    }
+
+    &.tag {
+      color: #ff93bc;
+    }
+
+    &.attr-name {
+      color: #91ebc2;
+    }
+
+    &.attr-value {
+      color: $yellow;
+    }
+
+    &.style {
+      color: $cyan;
+    }
+
+    &.script {
+      color: $gray-200;
+
+      .token.function {
+        color: $cyan;
+      }
+
+      .token.keyword {
+        color: $cyan;
+      }
+    }
+  }
+}
+
+code.language-bash {
+  color: $white;
+}
+
+code.language-json {
+  .token {
+    &.property {
+      color: $white;
+    }
+
+    &.operator {
+      color: $red;
+    }
+  }
+}
+
+code.language-markup {
+  color: $gray-200;
+
+  .token {
+    &.tag {
+      color: $pink;
+    }
+
+    &.attr-name {
+      color: $green;
+    }
+
+    &.attr-value {
+      color: $yellow;
+    }
+
+    &.style {
+      color: $cyan;
+    }
+
+    &.script {
+      color: $cyan;
+
+      .token.function {
+        color: $cyan;
+      }
+
+      .token.keyword {
+        color: $cyan;
+      }
+    }
+  }
+}
+
+/* Line highlight plugin */
+
+.line-numbers-wrapper {
+  position: absolute;
+  top: 0;
+  left: 1.2rem;
+  text-align: right;
+  padding-top: 1.5rem;
+  font-size: 1em;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
+    monospace;
+  line-height: 1.5;
+  color: rgba(128, 128, 128, 0.783);
+  font-variant-ligatures: none;
+
+  .line-number {
+    user-select: none;
+    color: var(--icon-color);
+    display: inline-block;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    width: 1.2em;
+  }
+}
+
+.token.tab:not(:empty),
+.token.cr,
+.token.lf,
+.token.space {
+  position: relative;
+}
+
+.token.tab:not(:empty):before,
+.token.cr:before,
+.token.lf:before,
+.token.space:before {
+  color: #808080;
+  opacity: 0.6;
+  position: absolute;
+}
+
+.token.tab:not(:empty):before {
+  content: '\21E5';
+}
+
+.token.cr:before {
+  content: '\240D';
+}
+
+.token.crlf:before {
+  content: '\240D\240A';
+}
+.token.lf:before {
+  content: '\240A';
+}
+
+.token.space:before {
+  content: '\00B7';
+}

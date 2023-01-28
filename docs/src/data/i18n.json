@@ -1,0 +1,17 @@
+{
+  "docs": {
+    "en": "Docs"
+  },
+  "rules": {
+    "en": "Rules"
+  },
+  "playground": {
+    "en": "Playground"
+  },
+  "before": {
+    "en": "Before"
+  },
+  "after": {
+    "en": "After"
+  }
+}

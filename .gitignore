@@ -8,5 +8,6 @@ tests/cases/todo
 versions/
 .pnpm-debug.log
 
-docs
+docs/old
+docs/public
 packages/samples
