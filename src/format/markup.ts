@@ -1,8 +1,8 @@
-import { cc, WSP, NIL, NWL } from 'shared';
+import { cc, WSP, NIL, NWL } from '@utils/chars';
 import { Types } from 'types/internal';
 import { StripEnd } from '@utils/regex';
-import { is, isLast, not, repeatChar, ws } from '@utils/helpers';
-import { getTagName } from '@shared/lexical';
+import { is, isLast, not, notLast, repeatChar, ws } from '@utils/helpers';
+import { getTagName } from '@utils/lexical';
 import { grammar } from '@shared/grammar';
 import { parse } from '@parse/parser';
 
@@ -82,6 +82,11 @@ export function markup () {
    * Whether or not language mode is TSX / JSX
    */
   const jsx = rules.language === 'jsx' || rules.language === 'tsx';
+
+  /**
+   * Force Attribute rule reference (used for handling newline attribute values)
+   */
+  const attrs = rules.markup.forceAttribute;
 
   /**
    * Delimiter forcing references
@@ -477,8 +482,12 @@ export function markup () {
 
     if (isType(y - 1, 'comment_attribute')) space = nl(levels[y - 2] - 1);
 
-    // Connects the ending delimiter of HTML tags, eg: >
-    data.token[y - 1] = `${data.token[y - 1]}${space}${end[0]}`;
+    if (!parse.attributes.has(a)) {
+
+      // Connects the ending delimiter of HTML tags, eg: >
+      data.token[y - 1] = `${data.token[y - 1]}${space}${end[0]}`;
+
+    }
 
     // HOT PATCH
     //
@@ -498,7 +507,11 @@ export function markup () {
    */
   function onDelimiterForce () {
 
-    if (
+    if (parse.attributes.has(a) && is(data.token[a], cc.LAN) && notLast(data.token[a], cc.RAN)) {
+
+      delim.set(a, 2);
+
+    } else if (
       isType(a, 'end') === false &&
       not(data.token[a], cc.LAN) &&
       delim.get(data.begin[a]) >= 2 &&
@@ -912,7 +925,8 @@ export function markup () {
   /**
    * Attribute Wrap
    *
-   * This function is responsible for wrapping applied to attributes.
+   * This function is responsible for wrapping
+   * applied to attributes.
    */
   function onAttributeWrap (index: number) {
 
@@ -960,7 +974,7 @@ export function markup () {
     /**
      * The parent node - used to determine forced leading attribute
      */
-    const parent: number = a - 1;
+    const parent = a - 1;
 
     /* -------------------------------------------- */
     /* LOCAL SCOPES                                 */
@@ -969,7 +983,7 @@ export function markup () {
     /**
      * References index position of `a` - we use a reference of `w` to infer "wrap"
      */
-    let w: number = a;
+    let w = a;
 
     /**
      * Plural - Unsure what this does, I assume it determines more than 1 attribute
@@ -979,31 +993,26 @@ export function markup () {
     /**
      * Whether or not the attribute is a start type
      */
-    let attstart: boolean = false;
+    let attrstart: boolean = false;
 
     /**
      * The number of attributes contained on the tag
      */
-    let attcount: number = data.types.indexOf('end', parent + 1);
+    let attcount = data.types.indexOf('end', parent + 1);
 
     /**
      * The token length
      */
-    let length: number = data.token[parent].length + 1;
-
-    /**
-     * Liquid level
-     */
-    let levliq: number = 0;
+    let len = data.token[parent].length + 1;
 
     /**
      * The level to be applied to identation
      */
-    let levatt: number = (() => {
+    let lev = (() => {
 
       if (isIndex(a, 'start') > 0) {
 
-        let x: number = a;
+        let x = a;
 
         do {
 
@@ -1015,6 +1024,7 @@ export function markup () {
           }
 
           x = x + 1;
+
         } while (x < c);
 
       } else if (a < c - 1 && isIndex(a + 1, 'attribute') > -1) {
@@ -1024,10 +1034,7 @@ export function markup () {
       }
 
       if (isType(next, 'end') || isType(next, 'liquid_end')) {
-
-        return isType(parent, 'singleton')
-          ? indent + 2
-          : indent + 1;
+        return indent + (isType(parent, 'singleton') ? 2 : 1);
       }
 
       if (isType(parent, 'singleton')) return indent + 1;
@@ -1037,9 +1044,11 @@ export function markup () {
     })();
 
     if (plural === false && isType(a, 'comment_attribute')) {
+
       // lev must be indent unless the "next" type is end then its indent + 1
       level.push(indent);
       level[parent] = data.types[parent] === 'singleton' ? indent + 1 : indent;
+
       return;
     }
 
@@ -1047,7 +1056,7 @@ export function markup () {
     /* BEGIN WALK                                   */
     /* -------------------------------------------- */
 
-    if (levatt < 1) levatt = 1;
+    if (lev < 1) lev = 1;
 
     attcount = 0;
 
@@ -1059,7 +1068,8 @@ export function markup () {
       isType(a + attcount, 'comment') === false
     ));
 
-    // First, set attels and determine if there
+    let levlq = 0;
+    // First, set levels and determine if there
     // are template attributes. When we have template
     // attributes we handle them in a similar manner
     // as HTML attributes, with only slight differences.
@@ -1072,11 +1082,11 @@ export function markup () {
 
         if (isType(a, 'comment_attribute')) {
 
-          level.push(levatt);
+          level.push(lev);
 
         } else if (isIndex(a, 'start') > 0 && isIndex(a, 'liquid') < 0) {
 
-          attstart = true;
+          attrstart = true;
 
           // Typically this condition when true infers the last attribute token
           // in languages like JSX
@@ -1097,7 +1107,7 @@ export function markup () {
               if (jsx) {
                 level.push(-20);
               } else {
-                level.push(levatt);
+                level.push(lev);
               }
 
             } else {
@@ -1108,7 +1118,7 @@ export function markup () {
               if (jsx) {
                 level.push(-20);
               } else {
-                level.push(levatt + 1);
+                level.push(lev + 1);
               }
 
             }
@@ -1121,41 +1131,38 @@ export function markup () {
 
         } else if (isType(a, 'liquid_attribute_start')) {
 
-          if (rules.liquid.indentAttributes === true) {
-            levliq = levliq + 1;
-            level.push(levatt + levliq);
-          } else {
-            level.push(levatt);
-          }
+          levlq = levlq + 1;
 
-        } else if (isType(a, 'liquid_attribute_else') && rules.liquid.indentAttributes === true) {
+          level.push(lev + levlq);
 
-          level[a - 1] = levatt + levliq - 1;
+        } else if (isType(a, 'liquid_attribute_else')) {
 
-        } else if (isType(a, 'liquid_attribute_end') && rules.liquid.indentAttributes === true) {
+          level[a - 1] = lev + levlq - 1;
 
-          levliq = levliq - 1;
-          level[a - 1] = levatt + levliq;
+        } else if (isType(a, 'liquid_attribute_end')) {
 
-        } else if (isIndex(a, 'end') > 0 && isType(a, 'liquid_attribute_end') === false) {
+          levlq = levlq - 1;
+          level[a - 1] = lev + levlq;
+
+        } else if (isIndex(a, 'end') > 0) {
 
           if (level[a - 1] !== -20) level[a - 1] = level[data.begin[a]] - 1;
 
           if (data.lexer[a + 1] !== 'markup') {
             level.push(-20);
           } else {
-            level.push(levatt);
+            level.push(lev);
           }
 
         } else {
 
-          level.push(levatt);
+          level.push(lev);
 
         }
 
       } else if (isType(a, 'attribute')) {
 
-        length = length + data.token[a].length + 1;
+        len = len + data.token[a].length + 1;
 
         if (rules.markup.preserveAttributes === true) {
 
@@ -1164,40 +1171,41 @@ export function markup () {
         } else if (
           rules.markup.forceAttribute === true ||
           rules.markup.forceAttribute >= 1 ||
-          attstart === true || (
+          attrstart === true || (
             a < c - 1 &&
             isIndex(a + 1, 'attribute') > 0
           )
         ) {
 
           if (rules.markup.forceAttribute === false && data.lines[a] === 1) {
-            level.push(-10);
-          } else {
-            if (rules.markup.forceAttribute === true || rules.markup.forceAttribute >= 1) {
-              if (rules.liquid.indentAttributes === true) {
-                level.push(levatt + levliq);
-              } else {
-                level.push(levatt);
-              }
-            } else {
 
-              level.push(-10);
+            level.push(-10);
+
+          } else {
+
+            if (rules.markup.forceAttribute === true) {
+
+              level.push(lev + levlq);
+
+            } else {
+              if (levlq !== 0) {
+                level.push(lev + levlq);
+              } else {
+                level.push(-10);
+              }
             }
           }
+
         } else {
+
           level.push(-10);
+
         }
 
       } else if (data.begin[a] < parent + 1) {
 
         break;
 
-      }
-
-      if (rules.wrap === 0) {
-        data.token[a] = data.token[a]
-          .replace(/ +/g, WSP)
-          .replace(/\n+/g, NWL);
       }
 
       a = a + 1;
@@ -1222,18 +1230,16 @@ export function markup () {
 
       if (jsx === true && isIndex(parent, 'start') > -1 && isType(a + 1, 'script_start')) {
 
-        level[a] = levatt;
+        level[a] = lev;
 
       } else {
 
         // We need to handle self closers if they get indentation
-        // likely happening with JSX.
+        // likely hapening with JSX.
         //
         if (isToken(a, '/') && level[a - 1] !== 10) {
-
           level[a - 1] = -10;
         } else {
-
           level[a] = level[parent];
         }
 
@@ -1244,7 +1250,7 @@ export function markup () {
     if (rules.markup.forceAttribute === true) {
 
       count = 0;
-      level[parent] = levatt;
+      level[parent] = lev;
 
       if (attcount >= 2 && rules.markup.delimiterForce === true) {
         delim.set(parent, attcount);
@@ -1254,16 +1260,16 @@ export function markup () {
 
       if (attcount >= (rules.markup.forceAttribute as number)) {
 
-        level[parent] = levatt;
+        level[parent] = lev;
 
         let fa = a - 1;
 
         do {
 
           if (isType(fa, 'liquid') && level[fa] === -10) {
-            level[fa] = levatt;
+            level[fa] = lev;
           } else if (isType(fa, 'attribute') && level[fa] === -10) {
-            level[fa] = levatt;
+            level[fa] = lev;
           }
 
           fa = fa - 1;
@@ -1301,12 +1307,12 @@ export function markup () {
     if (w > parent + 1) {
 
       // finally, indent attributes if tag length exceeds the wrap limit
-      if (rules.markup.selfCloseSpace === false) length = length - 1;
+      if (rules.markup.selfCloseSpace === false) len = len - 1;
 
-      if (length > rules.wrap && rules.wrap > 0 && rules.markup.forceAttribute === false) {
+      if (len > rules.wrap && rules.wrap > 0 && rules.markup.forceAttribute === false) {
 
         if (rules.markup.forceLeadAttribute === true) {
-          level[parent] = levatt;
+          level[parent] = lev;
           w = w - 1;
         }
 
@@ -1317,9 +1323,9 @@ export function markup () {
           if (data.token[w].length > rules.wrap && ws(data.token[w])) onAttributeWrap(w);
 
           if (isIndex(w, 'liquid') > -1 && level[w] === -10) {
-            level[w] = levatt;
+            level[w] = lev;
           } else if (isType(w, 'attribute') && level[w] === -10) {
-            level[w] = levatt;
+            level[w] = lev;
           }
 
           w = w - 1;
@@ -1327,7 +1333,6 @@ export function markup () {
         } while (w > parent);
 
       }
-
     } else if (
       rules.wrap > 0 &&
       isType(a, 'attribute') &&
@@ -1338,8 +1343,6 @@ export function markup () {
       onAttributeWrap(a);
 
     }
-
-    // console.log(data.token[a]);
 
   };
 
@@ -1713,6 +1716,12 @@ export function markup () {
 
         if (isIndex(a, 'attribute') > -1) {
 
+          if (parse.attributes.has(data.begin[a]) && attrs !== true) {
+            rules.markup.forceAttribute = true;
+          } else if (attrs !== rules.markup.forceAttribute) {
+            rules.markup.forceAttribute = attrs;
+          }
+
           onAttribute();
 
         } else if (isType(a, 'comment')) {
@@ -1729,10 +1738,7 @@ export function markup () {
 
           next = forward();
 
-          if ((
-            isType(next, 'end') ||
-            isType(next, 'liquid_end')
-          )) {
+          if (isType(next, 'end') || isType(next, 'liquid_end')) {
 
             // Handle force Value for void tags
             //
@@ -1997,32 +2003,6 @@ export function markup () {
               level.push(indent);
             } else {
               level.push(-10);
-            }
-
-          } else if (
-            isType(a, 'liquid_end') &&
-            isType(a - 1, 'end') &&
-            isType(a - 2, 'liquid_start')
-          ) {
-
-            level[a - 3] = level[a - 3] - 1;
-
-            if ((
-              isType(data.begin[a], 'liquid_start') &&
-              isType(data.begin[a] + 1, 'start') &&
-              isType(data.ender[data.begin[a] + 1], 'liquid_end')
-            )) {
-
-              level[data.ender[data.begin[a] + 1] - 1] = level[data.ender[data.begin[a] + 1] - 1] - 1;
-              level.push(indent);
-            } else if ((
-              isType(data.begin[data.begin[a - 1] - 1], 'liquid_start') &&
-              isType(data.begin[data.begin[a]], 'start') &&
-              isType(data.ender[data.begin[a] + 1], 'liquid_end')
-            )) {
-              console.log(parse.get(data.ender[data.begin[a] + 1]));
-              level[data.begin[data.begin[a - 1] - 1]] = level[data.begin[data.begin[a - 1] - 1]] - 1;
-              level.push(indent);
             }
 
           } else {

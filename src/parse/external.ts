@@ -1,4 +1,4 @@
-import { grammar } from 'shared';
+import { grammar } from '@shared/grammar';
 
 /**
  * Determine External
@@ -36,20 +36,10 @@ export function determine (tag: string, ref: 'html' | 'liquid', attrs?: any) {
 
     const token = grammar.liquid.embed[tag];
 
-    if (token.args.size > 0 && attrs) {
-
-      const arg = attrs.slice(attrs.indexOf(tag) + tag.length).match(/\s*(.*)(?=\s)/)[0];
-
+    if (token.args.size > 0) {
       for (const [ match, key ] of token.args) {
-        if (match.has(arg)) {
-          return key;
-        } else {
-          for (const test of match) {
-            if (test instanceof RegExp && test.test(arg)) return key;
-          }
-        }
+        if (match instanceof RegExp && match.test(attrs)) return key;
       }
-
     }
 
     return token;

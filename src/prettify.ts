@@ -1,9 +1,8 @@
-import type { Rules, LanguageName, Events, RulesChanges, RulesInternal, LexerName, Stats, ParseHook } from 'types/internal';
+import type { Rules, LanguageName, Events, RulesChanges } from 'types/internal';
 import { grammar } from '@shared/grammar';
 import { parse } from '@parse/parser';
-import { defineProperties } from '@utils/native';
+import { assign, defineProperties } from '@utils/native';
 import { Modes } from '@shared/enums';
-import { stats } from '@utils/helpers';
 import { getLexerName, getLexerType } from '@utils/maps';
 import { definitions } from '@shared/definitions';
 import { detect } from '@parse/detection';
@@ -12,49 +11,43 @@ import { detect } from '@parse/detection';
 /* LANGUAGE EXPORT                              */
 /* -------------------------------------------- */
 
-class Instance {
+export default (function () {
 
-  static events: Events = {
-    format: [],
+  const events: Events = {
+    before: [],
     language: [],
     rules: [],
-    parse: []
+    after: []
   };
 
-  public async: boolean;
-  public language: LanguageName;
-  public lexer: LexerName;
-  public stats: Stats;
+  defineProperties(format, {
+    sync: {
+      value: format.bind({ sync: true })
+    }
+  });
 
-  get data () {
-    return parse.data;
-  }
+  defineProperties(rules, {
+    listen: {
+      value (callback: Events['rules'][number]) {
+        events.rules.push(callback);
+      }
+    }
+  });
 
-  get grammar () {
-    return grammar.extend;
-  }
+  defineProperties(parse, {
+    stats: {
+      get () {
+        return parse.stats;
+      }
+    },
+    sync: {
+      value: parser.bind({ sync: true })
+    }
+  });
 
-  get definitions () {
-    return definitions;
-  }
+  function format (this: { sync: boolean, language?: LanguageName}, source: string | Buffer, options?: Rules) {
 
-  get detect () {
-    return detect;
-  }
-
-  on (name: 'format' | 'rule' | 'parse' | 'language', callback: any) {
-
-    Instance.events[name].push(callback);
-
-  }
-
-  hook (name: 'parse', callback: ParseHook) {
-
-    parse.hooks[name] = [ callback ];
-
-  }
-
-  format (source: string | Buffer, options?: Rules) {
+    console.time('time');
 
     parse.source = source;
 
@@ -63,23 +56,17 @@ class Instance {
       parse.lexer = getLexerName(parse.language);
     }
 
-    if (typeof options === 'object') this.rules(options);
+    if (typeof options === 'object') rules(options);
 
-    const invoke = getLexerType(this.language);
-    const action = stats(this.language, this.lexer);
-    const output = parse.document(invoke);
+    const output = parse.full(getLexerType(parse.language));
 
-    this.stats = action((output as string).length);
+    console.timeEnd('time');
 
-    if (Instance.events.format.length > 0) {
-      for (const cb of Instance.events.format) {
-        if (cb.bind({ parsed: parse.data })(source as string, parse.rules) === false) {
-          return source;
-        }
-      }
-    }
+    // if (s.events.dispatch('before', rules, source) === false) return source;
 
-    if (!this.async) {
+    // if (s.events.dispatch('after', output, rules) === false) return source;
+
+    if (this.sync === true) {
       if (parse.error.length) throw new Error(parse.error);
       return output;
     }
@@ -87,61 +74,29 @@ class Instance {
     // RESOLVE OUTPUT AS PROMISE
     //
     return new Promise((resolve, reject) => {
+
       if (parse?.error?.length) return reject(parse.error);
+
       return resolve(output);
+
     });
 
   };
 
-  parse (source: string | Buffer, options?: Rules) {
-
-    parse.source = source;
-
-    if (typeof options === 'object') this.rules(options);
-
-    this.lexer = getLexerName(parse.language);
-
-    const invoke = getLexerType(this.language);
-    const action = stats(this.language, this.lexer);
-    const parsed = parse.document(invoke, Modes.Parse);
-
-    this.stats = action(parse.count);
-
-    if (Instance.events.parse.length > 0) {
-      for (const cb of Instance.events.parse) {
-        if (cb.bind({ parsed: parse.data })(source as string, parse.rules) === false) {
-          return source;
-        }
-      }
-    }
-
-    if (!this.async) {
-      if (parse.error.length) throw new Error(parse.error);
-      return parsed;
-    }
-
-    return new Promise((resolve, reject) => {
-      if (parse.error.length) return reject(parse.error);
-      return resolve(parsed);
-    });
-
-  };
-
-  rules (options?: Rules) {
+  function rules (options?: Rules) {
 
     if (typeof options === 'undefined') return parse.rules;
 
-    let changes: RulesInternal;
+    let changes: Rules;
 
-    if (Instance.events.rules.length > 0) changes = { ...parse.rules };
+    if (events.rules.length > 0) {
+      changes = assign<Rules, Rules>({}, parse.rules as Rules);
+    }
 
     for (const rule in options) {
       if (rule in parse.rules) {
-
         if (typeof parse.rules[rule] === 'object') {
-          if (parse.rules[rule] !== options[rule]) {
-            parse.rules[rule] = { ...parse.rules[rule], ...options[rule] };
-          }
+          assign(parse.rules[rule], options[rule]);
         } else {
           if (rule === 'crlf') {
             parse.rules[rule] = options[rule];
@@ -156,7 +111,6 @@ class Instance {
             parse.rules[rule] = options[rule];
           }
         }
-
       }
 
       if (changes) {
@@ -164,17 +118,18 @@ class Instance {
         const diff: RulesChanges = {};
 
         for (const rule in options) {
+
           if (
             rule !== 'liquid' &&
             rule !== 'markup' &&
             rule !== 'script' &&
             rule !== 'style' &&
-            rule !== 'json') {
-
-            if (changes[rule] !== options[rule]) diff[rule] = { from: changes[rule], to: options[rule] };
-
+            rule !== 'json'
+          ) {
+            if (changes[rule] !== options[rule]) {
+              diff[rule] = { from: changes[rule], to: options[rule] };
+            }
           } else {
-
             for (const prop in options[rule]) {
               if (changes[rule][prop] !== options[rule][prop]) {
                 if (!(rule in diff)) diff[rule] = {};
@@ -184,78 +139,56 @@ class Instance {
           }
         }
 
-        if (Instance.events.rules.length > 0) {
-          for (const cb of Instance.events.rules) {
-            cb(diff, parse.rules);
-          }
-        }
+        //  for (const cb of s.events.rules) cb(diff, prettify.rules);
+
       }
     }
 
-    return parse.rules;
+    return rules;
 
   }
 
-}
+  function parser (this: { sync: boolean }, source: string, options?: Rules) {
 
-class Prettify extends Instance {
+    parse.source = source;
 
-  liquid (source: string | Buffer, options?: Rules) {
-    return this.format(source, options);
-  }
+    if (typeof options === 'object') rules(options);
 
-  html (source: string | Buffer, options?: Rules) {
-    return this.format(source, options);
-  }
+    const lexer = getLexerType(parse.language);
+    const parsed = parse.full(lexer, Modes.Parse);
 
-  xml (source: string | Buffer, options?: Rules) {
-    return this.format(source, options);
-  }
+    if (this.sync === true) {
+      if (parse.error.length) throw new Error(parse.error);
+      return parsed;
+    }
 
-  css (source: string | Buffer, options?: Rules) {
-    return this.format(source, options);
-  }
-
-  json (source: string | Buffer, options?: Rules) {
-    return this.format(source, options);
-  }
-
-}
-
-export default (function (binding) {
-
-  const prettify = new Prettify();
-
-  for (const language of binding) {
-    defineProperties(prettify[language], {
-      sync: {
-        value (source: string | Buffer, options?: Rules) {
-
-          prettify.async = false;
-          prettify.language = language;
-          prettify.lexer = getLexerName(language);
-
-          return prettify[language](source, options);
-        }
-      }
+    return new Promise((resolve, reject) => {
+      if (parse.error.length) return reject(parse.error);
+      return resolve(parsed);
     });
-  }
 
-  defineProperties(prettify.format, {
-    sync: {
-      value (source: string | Buffer, options?: Rules) {
-        prettify.async = false;
-        return prettify.format(source, options);
-      }
+  };
+
+  return {
+    format,
+    rules,
+    parse: parser,
+    liquid: format.bind({ language: 'liquid' }),
+    html: format.bind({ language: 'html' }),
+    css: format.bind({ language: 'css' }),
+    json: format.bind({ language: 'json' }),
+    get data () {
+      return parse.data;
+    },
+    get grammar () {
+      return grammar.extend;
+    },
+    get definitions () {
+      return definitions;
+    },
+    get language () {
+      return detect;
     }
-  });
 
-  return prettify;
-
-})([
-  'liquid',
-  'html',
-  'xml',
-  'json',
-  'css'
-]);
+  };
+})();

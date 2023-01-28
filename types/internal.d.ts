@@ -136,25 +136,22 @@ export interface RulesChanges extends GlobalRuleChanges {
 
 export interface Events {
   /**
-   * Invoked immeadiatly after formatting has complete but
-   * before returning the beautified result. You can cancel
-   * and return input opposed to generated output by returning
-   * a boolean `false`.
+   * The before formatting hooks
    */
-  format: ((this: { rules: Rules; data: Data; }, input?: string) => void | false)[];
+  before?: ((rules?: Rules, input?: string) => void | false)[];
   /**
-   * Invoked when the language changes
+   * The language detection listener event
    */
   language?: ((language?: Language) => void | Language)[];
   /**
-   * Invoked when rules update change or update, the first parameter returns
-   * the diffed rule changes (ie: the changed rules), second is a copy if current rules.
+   * The rules update event, the second parameter returns
+   * the diffed rule changes (ie: the changed rules)
    */
   rules?: ((changes?: RulesChanges, rules?: Rules) => void)[];
   /**
-   * Invoked on after a full parse has completed
+   * The after formatting events
    */
-  parse?: ((this: { rules: Rules }, data: Data) => void | false)[];
+  after?: ((this: { parsed: Data }, output?: string, rules?: Rules) => void | false)[];
 }
 
 export interface Language {
@@ -381,52 +378,6 @@ export interface Prettify {
   };
 }
 
-export type EventNames = (
-  | 'format'
-  | 'parse'
-  | 'rules'
- );
-
-/**
- * Lifecycle Events
- */
-export type EventListeners<T extends EventNames> = (
-  T extends 'format' ? (
-  /**
-   * Trigger a callback to execute immeadiatly after beautification
-   * has completed. The function will trigger before the returning
-   * promise has fulfilled and is invoked in an isolated nammer.
-   *
-   * > _Returning `false` will cancel formatting._
-   */
-    output?: string,
-  /**
-    * Holds reference to current rules
-    */
-    rules?: Rules
-
-  ) => false | void : T extends 'rules' ? (
-    /**
-     * Holds reference to rules which changed
-     */
-    changes?: RulesChanges,
-    /**
-     * Holds reference to current rules
-     */
-    rules?: Rules
-
-  ) => void : T extends 'parse' ? (
-    /**
-     * The generated data structure
-     */
-    data?: Data,
-  /**
-     * Holds reference to current rules
-     */
-    rules?: Rules
-  ) => void | false : never
-)
-
 export interface Parse<T> {
 
   (source: string): Promise<T>;
@@ -437,6 +388,12 @@ export interface Parse<T> {
    * export which resolves a promise.
    */
   sync?(source: string): T;
+  /**
+   * **Parse Stats**
+   *
+   * Return some execution information
+   */
+  get stats(): Stats
 
 }
 
@@ -463,4 +420,32 @@ export interface Format<T extends string, O extends Rules> {
    * - JSON
    */
   sync(source: T, rules?: O): T;
+  /**
+   * **Before Format**
+   *
+   * Trigger a callback to execute right before beautification
+   * begins. The function will be invoked in an isolated manner.
+   *
+   * > _Returning `false` will cancel formatting._
+   */
+  before: (callback: (rules: Rules, input: string) => void | false) => void;
+  /**
+   * **After Format**
+   *
+   * Trigger a callback to execute immeadiatly after beautification
+   * has completed. The function will trigger before the returning
+   * promise has fulfilled and is invoked in an isolated nammer.
+   *
+   * > _Returning `false` will cancel formatting._
+   */
+  after: (callback: (output: string, rules: Rules) => void | false) => void
+  /**
+   * **Format Stats**
+   *
+   * Trigger a callback to execute immeadiatly after beautification
+   * has completed. The function will trigger before the returning
+   * promise has fulfilled and is invoked in an isolated nammer.
+   */
+  get stats(): Stats
+
 }

@@ -148,8 +148,4 @@ export interface Stats {
    * The offical language name that was parsed
    */
   language: LanguageOfficialName;
-  /**
-   * The lexer name
-   */
-  lexer: LexerName;
 }

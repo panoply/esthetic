@@ -4,7 +4,7 @@ import { wrapCommentBlock, wrapCommentLine } from '@comments/parse';
 import { parse } from '@parse/parser';
 import { grammar } from '@shared/grammar';
 import { is, not, ws } from '@utils/helpers';
-import { cc, NIL, WSP } from 'shared';
+import { cc, NIL, WSP } from '@utils/chars';
 import { sortCorrect, sortObject } from '@parse/sorting';
 import { Modes } from '@shared/enums';
 

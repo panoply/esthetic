@@ -1,9 +1,10 @@
 import * as language from 'src/parse/detection';
 import { CommControl, CommIgnoreFile } from '@utils/regex';
-import { cc, NIL } from 'shared';
+import { cc, NIL } from '@utils/chars';
 import { keys } from '@utils/native';
 import { is, ws } from '@utils/helpers';
 import { definitions } from '@shared/definitions';
+
 
 /**
  * Parses the inline comment settings. This has been adapted from

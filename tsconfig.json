@@ -26,17 +26,11 @@
       "types/*": [
         "./types/*"
       ],
-      "format": [
-        "src/format/index.ts"
+      "@beautify/*": [
+        "src/format/*"
       ],
-      "lexers": [
-        "./src/lexers/index.ts"
-      ],
-      "shared": [
-        "./src/shared/index.ts"
-      ],
-      "utils": [
-        "./src/utils/index.ts"
+      "@lexers/*": [
+        "./src/lexers/*"
       ],
       "@comments/*": [
         "./src/comments/*"

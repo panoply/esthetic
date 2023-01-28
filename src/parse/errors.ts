@@ -1,8 +1,9 @@
-import { parse } from '@parse/parser';
-import { NIL, NWL, getTagName } from 'shared';
-import { join, repeatChar } from 'utils';
+import { NIL, NWL } from '@utils/chars';
+import { join, repeatChar } from '@utils/helpers';
+import { getTagName } from '@utils/lexical';
 import { Record, Syntactic } from 'types/internal';
 import { prettify } from '@prettify/model';
+import { parse } from '@parse/parser';
 
 export const enum ErrorTypes {
   /**

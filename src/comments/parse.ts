@@ -1,6 +1,6 @@
 import { Record, WrapComment } from 'types/internal';
 import { parse } from '@parse/parser';
-import { NWL, NIL, WSP, cc as ch } from 'shared';
+import { NWL, NIL, WSP, cc as ch } from '@utils/chars';
 import { sanitizeComment, ws, is, not } from '@utils/helpers';
 import { CharEscape, LiqDelims, StripEnd, StripLead } from '@utils/regex';
 

@@ -33,7 +33,12 @@ export const defineProperties = Object.defineProperties;
  */
 export const isArray = Array.isArray;
 
-/**
- * Native Console Warn
- */
-export const warn = console.warn;
+export class Struct extends Array {
+
+  pop () {
+    console.log(this);
+    const i = this.length - 1;
+    return i > 0 ? this.splice(i, 1)[0] : this[i];
+  }
+
+}

@@ -269,4 +269,14 @@ export interface LiquidRules {
   | 'stylesheet'
   | 'javascript', string>>;
 
+  /**
+   * **Default** `intent`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `intent`
+   *
+   * Controls force indentation applied in accordance with the attribute value expressions.
+   * This rule is Liquid specific.
+   *
+   */
+  valueForce?: 'wrap' | 'newline' | 'intent' | 'always' | 'never';
 }
