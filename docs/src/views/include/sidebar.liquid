@@ -1,0 +1,63 @@
+{% liquid
+
+  if page.url == '/'
+    assign url =
+    assign opened = 'false'
+    assign hidden = 'false'
+    assign active = ''
+  else
+    assign opened = 'true'
+    assign hidden = 'true'
+    assign active = 'drawer-active'
+  endif
+
+%}
+
+<div data-controller="sticky" data-sticky-offset-value="51">
+  <aside
+    id="sidebar"
+    class="drawer-panel drawer-left {{ drawer }} sidebar vh-100 br"
+    data-controller="drawer">
+
+    <div class="container-fluid g-0">
+
+      <form class="p-4">
+        <input
+          class="fm-input fm-sm bd bd-1 rd-2"
+          type="search"
+          placeholder="Search...">
+      </form>
+
+      <nav class="accordion mb-2 bx-0" data-controller="accordion">
+        {% for group in links.groups %}
+
+          {% if group == 'Global' %}
+            {% assign group_name = 'rules' %}
+            {% assign group_global = group | downcase %}
+          {% else %}
+            {% assign group_name = group | downcase %}
+          {% endif %}
+
+          <button class="accordion-btn px-3 py-2 {% if page.url contains group_name %}initial{%- endif -%}">
+            {{ group }}
+          </button>
+
+          <div class="accordion-fold bt bg-gray {% if page.url contains group_name %}expanded{%- endif -%}">
+            <ul class="py-4 px-2 ml-0" id="{{ link.title | slugify }}">
+              {% for item in links.urls %}
+                {% if item.group == group_name or item.group == group_global and group_name == 'rules' %}
+                  <li class="pt-1 pl-3">
+                    <a href="{{ item.url }}" {% if page.url == item.url %}class="fw-bold"{% endif %}>
+                      {{ item.title }}
+                    </a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+
+        {% endfor %}
+      </nav>
+    </div>
+  </aside>
+</div>

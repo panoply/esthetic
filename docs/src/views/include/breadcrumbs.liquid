@@ -1,0 +1,54 @@
+{% liquid
+  assign parent = ''
+  assign child = ''
+  assign rules = page.url | slice: 1, 6
+  if rules == 'rules'
+    assign links = rules.data
+  else
+    assign links = sidebar.data
+  endif
+%}
+
+{%- for link in links %}
+
+  {% assign base = link.title
+   | slugify
+   | prepend: '/' %}
+
+  {% for item in link.links %}
+
+
+    {% assign url = item
+     | slugify
+     | prepend: '/'
+     | prepend: base
+     | append: '/' %}
+
+    {% if page.url == url %}
+      {% assign parent = link.title %}
+      {% assign child = item %}
+      {% break %}
+    {% endif %}
+
+  {% endfor %}
+
+
+{% endfor %}
+
+<div class="row gx-2 breadcrumb mt-4 pl-4 mb-5">
+  <div class="col-auto">
+    {% svg "home", 'icon icon-home' %}
+  </div>
+  <div class="col-auto">
+    {% svg "chevron-right", 'icon icon-right' %}
+  </div>
+  <div class="col-auto">
+    {{ parent }}
+  </div>
+  <div class="col-auto">
+    {% svg "chevron-right", 'icon icon-right' %}
+  </div>
+  <div class="col-auto fc-gray">
+    {{ child | replace: 'Esthetic', 'Æsthetic' }}
+  </div>
+</div>
