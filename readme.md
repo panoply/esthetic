@@ -124,15 +124,15 @@ _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit_
 
 # Usage
 
-The tool provides a granular set of beautification rules. Each supported language exposes different formatting rules. You can either use the `esthetic.format` method to beautify all languages within a matching nexus or alternatively you can use [language specific](#language-specific) methods. Æsthetic will attempt to automatically detect the language you've provided and from here forward input to an appropriate lexer for handling when using `esthetic.format` but it is recommended that your specify a `language` value.
+The tool provides a granular set of beautification rules. Each supported language exposes different formatting rules. You can either use the `Æsthetic.format` method to beautify all languages within a matching nexus or alternatively you can use [language specific](#language-specific) methods. Æsthetic will attempt to automatically detect the language you've provided and from here forward input to an appropriate lexer for handling when using `Æsthetic.format` but it is recommended that your specify a `language` value.
 
 <!-- prettier-ignore -->
 ```typescript
-import esthetic from 'esthetic';
+import { format } from 'esthetic';
 
 const code = '<div class="example">{% if x %} {{ x }} {% endif %}</div>';
 
-esthetic.format(code, {
+format(code, {
   language: 'liquid',
   indentSize: 2,
   markup: {
@@ -166,20 +166,20 @@ esthetic.format(code, {
 - [Events](#events)
 - [Hooks](#hooks)
 
-The `rules` method is completely optional and helpful when you are making repeated calls to the `esthetic.format()` or wish to control rules at a different point within your application. When calling the `p`Return the current rules being used by invoking `esthetic.rules()`
+The `rules` method is completely optional and helpful when you are making repeated calls to the `Æsthetic.format()` or wish to control rules at a different point within your application. When calling the `p`Return the current rules being used by invoking `Æsthetic.rules()`
 
 ## Format
 
-There format method can be used to beautify code and accepts either a string or buffer type argument. An optional `rules` parameter can also be passed for setting beautification options. By default the method resolves to a promise but you can also invoke this in a synchronous manner using `esthetic.esthetic.sync()`.
+There format method can be used to beautify code and accepts either a string or buffer type argument. An optional `rules` parameter can also be passed for setting beautification options. By default the method resolves to a promise but you can also invoke this in a synchronous manner using `Æsthetic.format.sync()`.
 
-> When an error occurs the `esthetic.format.sync` method throws an instance of an Error.
+> When an error occurs the `Æsthetic.format.sync` method throws an instance of an Error.
 
 <!-- prettier-ignore -->
 ```typescript
-import esthetic from "esthetic";
+import { format } from "esthetic";
 
 // Async formatting
-esthetic.format('.class { font-size: 0.95rem; }', {
+format('.class { font-size: 0.95rem; }', {
   language: 'css',
   style: {
     noLeadZero: true
@@ -192,7 +192,7 @@ esthetic.format('.class { font-size: 0.95rem; }', {
 
 
 // Sync formatting
-const output = esthetic.format.sync('.class { font-size: 0.95rem; }', {
+const output = Æsthetic.format.sync('.class { font-size: 0.95rem; }', {
   language: 'css',
   style: {
     noLeadZero: true
@@ -205,51 +205,51 @@ console.log(output)
 
 ### Language Specific
 
-Language specific formatting methods work the same as `esthetic.format` but are refined to operate on a language specific level. These methods accept only relative rules as a second parameter as the `language` option is inferred.
+Language specific formatting methods work the same as `Æsthetic.format` but are refined to operate on a language specific level. These methods accept only relative rules as a second parameter as the `language` option is inferred.
 
 > Currently, only stable language specific methods are made available.
 
 ```ts
-import esthetic from "esthetic";
+import { format } from "esthetic";
 
 // Liquid
 //
-esthetic.liquid('..'): Promise<string>;
-esthetic.liquid.sync('..'): string;
+format.liquid('..'): Promise<string>;
+format.liquid.sync('..'): string;
 
 // HTML
 //s
-esthetic.html('..'): Promise<string>;
-esthetic.html.sync('..'): string;
+format.html('..'): Promise<string>;
+format.html.sync('..'): string;
 
 // HTML
 //
-esthetic.xml('..'): Promise<string>;
-esthetic.xml.sync('..'): string;
+format.xml('..'): Promise<string>;
+format.xml.sync('..'): string;
 
 // CSS
 //
-esthetic.css('..'): Promise<string>;
-esthetic.css.sync('..'): string;
+format.css('..'): Promise<string>;
+format.css.sync('..'): string;
 
 // JSON
 //
-esthetic.json('..'): Promise<string>;
-esthetic.json.sync('..'): string;
+format.json('..'): Promise<string>;
+format.json.sync('..'): string;
 ```
 
 ## Parse
 
-The `parse` method can be used to inspect the data structures that Æsthetic constructs. Æsthetic is using the Sparser lexing algorithm under the hood the generated parse tree returned is representative of sparser's data structures. Similar to `esthetic.format` you can also invoke this both asynchronously and synchronously.
+The `parse` method can be used to inspect the data structures that Æsthetic constructs. Æsthetic is using the Sparser lexing algorithm under the hood the generated parse tree returned is representative of sparser's data structures. Similar to `Æsthetic.format` you can also invoke this both asynchronously and synchronously.
 
 ```typescript
-import esthetic from "esthetic";
+import { parse } from "esthetic";
 
 // The generated sparser data structure
-esthetic.parse('...'): Promise<Data>;
+parse('...'): Promise<Data>;
 
 // The generated sparser data structure
-esthetic.parse.sync('...'): Data;
+parse.sync('...'): Data;
 ```
 
 ## Grammar
@@ -257,10 +257,10 @@ esthetic.parse.sync('...'): Data;
 The `grammar` method allows you to extend beautification to support custom tags and provide Æsthetic with additional context about certain keywords and structures. This is a great feature for folks using custom Liquid variations or those who require some special behavior from the beautification cycle.
 
 ```typescript
-import esthetic from "esthetic";
+import { grammar } from "esthetic";
 
 // Detects a language from a string sample
-esthetic.grammar({
+grammar({
   html: {
     // Extend void tag handling
     voids: [
@@ -321,14 +321,14 @@ esthetic.grammar({
 The `language` method is a utility method that Æsthetic uses under the hood in the beautification process. The method is not _perfect_ but can detect and determine the language from the sample string provided.
 
 ```typescript
-import esthetic from "esthetic";
+import Æsthetic from "esthetic";
 
 // Detects a language from a string sample
-esthetic.language(sample: string)
+Æsthetic.language(sample: string)
 
 ```
 
-> You can augment the language reference detected in the `esthetic.language.listen` event.
+> You can augment the language reference detected in the `Æsthetic.language.listen` event.
 
 ## Rules
 
@@ -336,10 +336,10 @@ The `rules` methods will augment formatting options (rules). Formatting options 
 
 <!-- prettier-ignore -->
 ```typescript
-import esthetic from 'esthetic';
+import { rules, format } from 'esthetic';
 
 // Define rules to be used when formatting
-esthetic.rules({
+rules({
   language: 'html',
   indentSize: 4,
   markup: {
@@ -359,7 +359,7 @@ esthetic.rules({
 });
 
 // When calling format, the rules will be used.
-esthetic.format('<div id="x" class="x"> etc etc </div>').then(output => {
+format('<div id="x" class="x"> etc etc </div>').then(output => {
 
   console.log(output);
 
@@ -371,11 +371,11 @@ esthetic.format('<div id="x" class="x"> etc etc </div>').then(output => {
 
 Æsthetic provides event dispatching. Events are invoked at different stages of the beautification cycle and can also inform upon changes occurring in rules.
 
-> When listening to the `esthetic.on('format')` event you cancel out of formatting by returning `false` in the event.
+> When listening to the `Æsthetic.on('format')` event you cancel out of formatting by returning `false` in the event.
 
 <!-- prettier-ignore -->
 ```typescript
-import esthetic from 'esthetic';
+import * as esthetic from 'esthetic';
 
 // Formatting Event
 //
@@ -428,7 +428,7 @@ esthetic.on('parse', function (data) {
 
 <!-- prettier-ignore -->
 ```typescript
-import esthetic from 'esthetic';
+import * as esthetic from 'esthetic';
 
 esthetic.hook('parse', function(record, index) {
 
@@ -464,7 +464,7 @@ The definitions is a named export that exposes a definition list of the availabl
 
 <!-- prettier-ignore -->
 ```typescript
-import esthetic from 'esthetic';
+import * as esthetic from 'esthetic';
 
 // Print the definitions to console
 console.log(esthetic.definitions);
@@ -744,12 +744,12 @@ The `format` method returns a promise, so when beautification fails and a parse 
 
 <!-- prettier-ignore -->
 ```typescript
-import esthetic from 'esthetic';
+import Æsthetic from 'esthetic';
 
 // Invalid code
 const code = '{% if x %} {{ x }} {% endless %}';
 
-esthetic.format(code).then(output => console.log(output)).catch(error => {
+Æsthetic.format(code).then(output => console.log(output)).catch(error => {
 
   // Print the PrettyDiff error
   console.error(error);
@@ -771,7 +771,7 @@ const code = '{% if x %} {{ x }} {% endless %}';
 
 try {
 
-  const output = esthetic.formatSync(code)
+  const output = Æsthetic.formatSync(code)
 
 } catch (error) {
 
