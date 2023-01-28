@@ -494,7 +494,8 @@ Prettify provides a granular set of beautification options (rules). The projects
     lineBreakSeparator: 'default',
     normalizeSpacing: true,
     preserveComment: true,
-    quoteConvert: 'double'
+    quoteConvert: 'double',
+    valueForce: 'intent'
   },
   markup: {
     attributeCasing: 'preserve',
@@ -600,7 +601,8 @@ Refer to the [typings](https://github.com/panoply/prettify/blob/pre-release/type
     lineBreakSeparator: 'default',
     normalizeSpacing: true,
     preserveComment: true,
-    quoteConvert: 'double'
+    quoteConvert: 'double',
+    valueForce: 'intent'
   }
 }
 ```
