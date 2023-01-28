@@ -14,7 +14,7 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "**/LICENSE":true,
-   "**/node_modules": true
+  //  "**/node_modules": true
   },
   "workbench.colorCustomizations": {
     "window.inactiveBorder": "#00aeff",

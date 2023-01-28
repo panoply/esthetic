@@ -1,10 +1,10 @@
 import test from 'ava';
-import { forSample, liquid } from '@liquify/ava/esthetic';
+import { forRules, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Liquid delimiter handling', t => {
 
-  forSample(
+  forRules(
     [
       liquid`
 

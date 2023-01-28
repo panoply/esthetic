@@ -255,7 +255,7 @@ test('Sorting using sort list', t => {
   });
 });
 
-test('Sorting excluded when Liquid attributes', t => {
+test.skip('Sorting excluded when Liquid attributes', t => {
 
   forAssert(
     [

@@ -1,10 +1,10 @@
 import test from 'ava';
-import { forAssert, forSample, liquid } from '@liquify/ava/esthetic';
+import { forRules, forAssert, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test: singleton <path>', t => {
 
-  forSample(
+  forRules(
     [
 
       liquid`
@@ -96,7 +96,7 @@ test('Structure Test: singleton <path>', t => {
 
 test('Structure Test: singleton <circle>', t => {
 
-  forSample(
+  forRules(
     [
 
       liquid`
@@ -151,7 +151,7 @@ test('Structure Test: singleton <circle>', t => {
 
 test('Structure Test: singleton <use>', t => {
 
-  forSample(
+  forRules(
     [
 
       liquid`
@@ -189,7 +189,7 @@ test('Structure Test: singleton <use>', t => {
 
 test('Structure Test: singleton <polygon>', t => {
 
-  forSample(
+  forRules(
     [
 
       liquid`
@@ -235,7 +235,7 @@ test('Structure Test: singleton <polygon>', t => {
 
 test('Structure Test: singleton <polyline>', t => {
 
-  forSample(
+  forRules(
     [
 
       liquid`
@@ -295,7 +295,7 @@ test('Structure Test: singleton <polyline>', t => {
 
 test('Structure Test: singleton <rect>', t => {
 
-  forSample(
+  forRules(
     [
 
       liquid`{% # rect expressed without closer %}
@@ -351,7 +351,7 @@ test('Structure Test: singleton <rect>', t => {
 
 test('Structure Test: singleton <ellipse>', t => {
 
-  forSample(
+  forRules(
     [
 
       liquid`{% # use ellipse expressed without closer %}
@@ -407,7 +407,7 @@ test('Structure Test: singleton <ellipse>', t => {
 
 test('Structure Test: singleton <stop>', t => {
 
-  forSample(
+  forRules(
     [
 
       liquid`{% # stop expressed without closer %}
@@ -451,6 +451,7 @@ test('Structure Test: singleton <stop>', t => {
   });
 });
 
+test.todo('Improve Tests');
 test('Convert and correct singletons to self closing tokens', t => {
 
   forAssert([
