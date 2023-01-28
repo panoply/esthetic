@@ -11,8 +11,7 @@
   "include": [
     "src",
     "types",
-    "tests/**/*.mjs",
-    "tests/cases/attributes.test.js"
+    "tests"
   ],
   "compilerOptions": {
     "incremental": false,

@@ -1,10 +1,10 @@
 import test from 'ava';
-import { forRules, liquid } from '@liquify/ava/esthetic';
+import { forRule, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Casing rule cases', t => {
 
-  forRules(
+  forRule(
     [
       liquid`
 

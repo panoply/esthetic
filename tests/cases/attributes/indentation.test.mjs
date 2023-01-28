@@ -1,10 +1,10 @@
 import test from 'ava';
-import { forRules, liquid } from '@liquify/ava/esthetic';
+import { forRule, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test.skip('Indenting attributes contained in Liquid block tags', t => {
 
-  forRules(
+  forRule(
     [
       liquid`
 

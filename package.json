@@ -53,7 +53,7 @@
     "test:html": "ava tests/cases/html/*.test.mjs ---",
     "test:liquid": "ava tests/cases/liquid/*.test.mjs ---",
     "test:json": "ava tests/cases/json/*.test.mjs ---",
-    "test:css": "ava tests/cases/css/.test.mjs ---",
+    "test:css": "ava tests/cases/css/*.test.mjs ---",
     "test:units": "ava tests/units/*.test.mjs ---",
     "test:rules": "ava tests/rules/*.test.mjs ---",
     "test:cases": "ava tests/cases/*.test.mjs ---"

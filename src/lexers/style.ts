@@ -7,7 +7,9 @@ import { sortCorrect, sortObject } from '@parse/sorting';
 import { digit, is, not, ws } from 'utils';
 import { DQO, NIL, NWL, SQO, WSP } from 'chars';
 import * as rx from 'lexical/regex';
+import * as lq from 'lexical/liquid';
 import { cc } from 'lexical/codes';
+import { getTagName } from 'lexical/lexing';
 
 /* -------------------------------------------- */
 /* LEXER                                        */
@@ -24,8 +26,6 @@ import { cc } from 'lexical/codes';
  * - LESS
  * - Liquid.
  */
-// prettify.lexers.style =
-
 export function style () {
 
   /**
@@ -148,7 +148,7 @@ export function style () {
     /**
      * Zero Dot Expression
      */
-    const zerodot = (/(\s|\(|,)-?0+\.?\d+([a-z]|\)|,|\s)/g);
+    const zerodot = /(\s|\(|,)-?0+\.?\d+([a-z]|\)|,|\s)/g;
 
     /**
      * Dot Expression
@@ -1151,7 +1151,6 @@ export function style () {
         : data.types[parse.count];
 
       if (ltype === 'item') {
-
         if (endtype === 'colon') {
           data.types[parse.count] = 'value';
         } else {
@@ -1168,6 +1167,9 @@ export function style () {
       }
 
       ltype = typeName;
+      ltoke = lq.normalize(ltoke, rules.liquid);
+
+      // console.log(ltoke);
 
       if (ltype.indexOf('start') > -1 || ltype.indexOf('else') > -1) {
         push(ltoke);
@@ -1218,60 +1220,17 @@ export function style () {
               quote = store.join(NIL);
 
               if (ws(quote.charAt(start))) {
-                do { start = start + 1; } while (ws(quote.charAt(start)));
+                do start = start + 1;
+                while (ws(quote.charAt(start)));
               }
 
               endlen = start;
 
-              do {
-                endlen = endlen + 1;
-              } while (endlen < end.length && !ws(quote.charAt(endlen)));
+              do endlen = endlen + 1;
+              while (endlen < end.length && !ws(quote.charAt(endlen)));
 
               if (endlen === quote.length) endlen = endlen - end.length;
-
-              if (open === '{%') {
-
-                if (is(quote[2], cc.DSH)) {
-
-                  quote = quote.replace(/^{%-\s*/, '{%- ');
-                  quote = quote.endsWith('-%}')
-                    ? quote.replace(/\s*-%}$/, ' -%}')
-                    : quote.replace(/\s*%}$/, ' %}');
-
-                  name = quote.slice(4);
-
-                } else {
-
-                  quote = quote.replace(/^{%\s*/, '{% ');
-                  quote = quote.endsWith('-%}')
-                    ? quote.replace(/\s*-%}$/, ' -%}')
-                    : quote.replace(/\s*%}$/, ' %}');
-                  name = quote.slice(3);
-                }
-
-              }
-
-              // HOTFIX
-              // Prevent whitespace removals of output tag values
-              if (open === '{{') {
-
-                if (is(quote[2], cc.DSH)) {
-
-                  quote = quote.replace(/^{{-\s*/, '{{- ');
-                  quote = quote.endsWith('-}}')
-                    ? quote.replace(/\s*-}}$/, ' -}}')
-                    : quote.replace(/\s*}}$/, ' }}');
-
-                } else {
-
-                  quote = quote.replace(/^{{\s*/, '{{ ');
-                  quote = quote.endsWith('-}}')
-                    ? quote.replace(/\s*-}}$/, ' -}}')
-                    : quote.replace(/\s*%}}$/, ' }}');
-
-                }
-
-              }
+              if (open === '{%') name = getTagName(quote);
 
               if (ltype === 'item' && data.types[parse.count - 1] === 'colon' && (
                 data.types[parse.count - 2] === 'property' ||
@@ -1338,9 +1297,8 @@ export function style () {
                 const ending = group.length;
                 let begin = 0;
 
-                do {
-                  begin = begin + 1;
-                } while (
+                do begin = begin + 1;
+                while (
                   begin < ending &&
                   ws(group.charAt(begin)) === false &&
                   group.charCodeAt(start) !== cc.LPR
@@ -1368,7 +1326,7 @@ export function style () {
 
           if (is(quote, cc.DQO) || is(quote, cc.SQO)) {
             quote = NIL;
-          } else if (is(quote, cc.FWS) && (b[a] === '\r' || is(b[a], cc.NWL))) {
+          } else if (is(quote, cc.FWS) && (is(b[a], cc.CAR) || is(b[a], cc.NWL))) {
             quote = NIL;
           } else if (is(quote, cc.ARS) && is(b[a + 1], cc.FWS)) {
             quote = NIL;
@@ -1428,6 +1386,8 @@ export function style () {
   };
 
   /**
+   * Margin Padding
+   *
    * Consolidate margin and padding values
    */
   function marginPadding () {

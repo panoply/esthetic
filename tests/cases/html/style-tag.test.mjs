@@ -1,5 +1,5 @@
 import test from 'ava';
-import { forAssert, liquid, forRules } from '@liquify/ava/esthetic';
+import { forAssert, liquid, forSample } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test: Empty <style> tags', t => {
@@ -158,7 +158,7 @@ test('Structure Test: Empty <style> tags', t => {
 
 test('Structure Test: Newline Preservation and indentation levels', t => {
 
-  forRules(
+  forSample(
     [
 
       liquid`{% # Global placed scripts newline and indentation %}
