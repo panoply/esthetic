@@ -1,10 +1,10 @@
 import test from 'ava';
-import { forAssert, forRules, css, liquid } from '@liquify/ava/esthetic';
+import { forAssert, forSample, css, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test:  Liquid infused selectors', t => {
 
-  forRules([
+  forSample([
     css`
 
       /* Space should be respected at grid */
@@ -103,7 +103,7 @@ test('Structure Test: Attribute selectors expressions', t => {
 
 test('Structure Test: Complex pseudo selectors', t => {
 
-  forRules([
+  forSample([
 
     css`
 
@@ -179,7 +179,7 @@ test('Structure Test: Complex pseudo selectors', t => {
 
 test('Structure Test: CSS variable expressions with Liquid infusion', async t => {
 
-  forRules([
+  forSample([
 
     css`
 

@@ -10,7 +10,6 @@ import * as lx from 'lexical/lexing';
 import * as lq from 'lexical/liquid';
 import * as u from 'utils';
 import * as external from '@parse/external';
-import { LT } from 'lexical/enum';
 
 /**
  * Markup Lexer
@@ -315,95 +314,7 @@ export function markup (input?: string) {
     if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
     if (!lq.isType(input, 3)) return input;
 
-    if (rules.liquid.delimiterTrims === 'force') {
-
-      if (u.is(input[1], cc.PER)) {
-
-        if (u.not(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
-        if (u.not(input[input.length - 3], cc.DSH)) input = input.replace(/%}$/, '-%}');
-
-      } else {
-
-        if (u.not(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
-        if (u.not(input[input.length - 3], cc.DSH)) input = input.replace(/}}$/, '-}}');
-
-      }
-
-    } else if (rules.liquid.delimiterTrims === 'strip') {
-
-      input = input
-        .replace(/^{%-/, '{%')
-        .replace(/-%}$/, '%}')
-        .replace(/^{{-/, '{{')
-        .replace(/-}}$/, '}}');
-
-    } else if (rules.liquid.delimiterTrims === 'tags' && u.is(input[1], cc.PER)) {
-
-      if (u.not(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
-      if (u.not(input[input.length - 3], cc.DSH)) input = input.replace(/%}$/, '-%}');
-
-    } else if (rules.liquid.delimiterTrims === 'outputs' && u.is(input[1], cc.LCB)) {
-
-      if (u.not(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
-      if (u.not(input[input.length - 3], cc.DSH)) input = input.replace(/}}$/, '-}}');
-    }
-
-    // ensure normalize spacing is enabld
-    if (rules.liquid.normalizeSpacing === false) return input;
-
-    // skip line comments or liquid tag
-    if (rx.LiquidComment.test(input) || rx.LiquidTag.test(input)) return input;
-
-    /**
-     * The starting quotation code character
-     */
-    let t: cc.DQO | cc.SQO;
-
-    /**
-     * Quotation Reference
-     *
-     * Tracks string quotes allowing them to be skipped.
-     *
-     * - `0` token is not a string
-     * - `1` We have encountered a string, eg: {{ '^
-     * - `2` We have closed the last known string, eg: {{ 'foo'^
-     */
-    let q: 0 | 1 | 2 = 0;
-
-    return input.split(/(["']{1})/).map((char, idx, arr) => {
-
-      const quotation = u.is(char[0], cc.DQO) || u.is(char[0], cc.SQO);
-
-      if (q > 0 || (quotation && q === 0 && u.not(arr[idx - 1], cc.BWS)) || quotation) {
-
-        if (q === 0) t = char.charCodeAt(0);
-
-        // Move forward for nested quote type, eg: DQO or SQO
-        if (q === 1 && u.not(arr[idx - 1], cc.BWS)) {
-          if (t === char.charCodeAt(0)) q = 2;
-          return char;
-        }
-
-        if (q !== 2) {
-          q = q === 0 ? 1 : q === 1 ? u.is(arr[idx - 1], cc.BWS) ? 1 : 2 : 0;
-          return char;
-        }
-
-        q = 0;
-
-      }
-
-      return char
-        .replace(rx.WhitespaceGlob, WSP)
-        .replace(/^({[{%]-?)/, '$1 ')
-        .replace(/([!=]=|[<>]=?)/g, ' $1 ')
-        .replace(/ +(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
-        .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
-        .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
-        .replace(/(-?[%}]})$/, ' $1')
-        .replace(rx.WhitespaceGlob, WSP);
-
-    }).join(NIL);
+    return lq.normalize(input, rules.liquid);
 
   };
 
@@ -3819,7 +3730,7 @@ export function markup (input?: string) {
     /**
      * The current lexed character references
      */
-    let lexed: string[] = [];
+    const lexed: string[] = [];
 
     /**
      * The last known token
@@ -3913,11 +3824,6 @@ export function markup (input?: string) {
       let quote: string = NIL;
 
       /**
-       * Liquid Ended
-       */
-      let lq: number = -1;
-
-      /**
        * External output string capture
        */
       let output: string = NIL;
@@ -3935,6 +3841,58 @@ export function markup (input?: string) {
         // tag, but that end tag cannot be quoted or commented
         //
         if (embed === true) {
+
+          if (data.types[parse.count] === 'liquid_start') {
+
+            const ename = `end${name}`;
+            const ender = source.indexOf(`end${name}`, a);
+
+            if (ender > -1) {
+
+              let i: number = ender;
+
+              do {
+
+                if (u.ws(b[i]) === false) {
+                  if (
+                    u.is(b[i], cc.DSH) &&
+                    u.is(b[i - 1], cc.PER) &&
+                    u.is(b[i - 2], cc.LCB)) {
+                    b.slice(i - 3, ender + ename.length).join(NIL);
+                    i = i - 3;
+                    break;
+                  } else if (
+                    u.is(b[i], cc.PER) &&
+                    u.is(b[i - 1], cc.LCB)) {
+                    i = i - 2;
+                    break;
+                  }
+                }
+
+              } while (b[i--]);
+
+              end = b
+                .slice(i, b.indexOf('%', ender + ename.length) + 2)
+                .join(NIL);
+
+              if (lq.exp(ename).test(end)) {
+
+                output = b.slice(a, i).join(NIL);
+                parse.external(language, output);
+
+                push(record, {
+                  token: inner(end),
+                  types: 'liquid_end'
+                });
+
+                a = i + end.length;
+
+              }
+
+            }
+
+          }
+
           if (quote === NIL) {
 
             if (u.is(b[a], cc.FWS)) {
@@ -3999,64 +3957,59 @@ export function markup (input?: string) {
 
             }
 
-            if (data.types[parse.count] === 'liquid_start') {
+            if (name === 'script') {
 
-              lq = b.indexOf('%', a);
+              end = b
+                .slice(a + 1, a + 9)
+                .join(NIL)
+                .toLowerCase();
 
-              if (u.is(b[lq - 1], cc.LCB)) {
+              if (end === '</script') {
 
-                end = glue(lq + 2, b.indexOf('%', lq + (u.is(b[lq + 1], cc.DSH) ? 3 : 2)));
+                output = lexed.join(NIL).trimEnd();
 
-                if (end.startsWith(`end${name}`)) {
+                if (lexed.length < 1) break;
 
-                  lexed = b.slice(a, lq - 2);
+                if (rx.HTMLCommDelimOpen.test(output) && rx.HTMLCommDelimClose.test(output)) {
 
-                  if (lexed.length < 1) break;
+                  push(record, { token: '<!--', types: 'comment' });
 
-                  output = lexed
-                    .join(NIL)
-                    .replace(rx.SpaceLead, NIL)
-                    .replace(rx.SpaceEnd, NIL);
+                  output = output
+                    .replace(rx.HTMLCommDelimOpen, NIL)
+                    .replace(rx.HTMLCommDelimClose, NIL);
+
+                  parse.external('javascript', output);
+
+                  push(record, { token: '-->' });
+
+                } else {
 
                   parse.external(language, output);
 
-                  a = a + lexed.length;
-
-                  end = b
-                    .slice(a, b.indexOf('}', a) + 1)
-                    .join(NIL)
-                    .replace(rx.SpaceLead, NIL)
-                    .replace(rx.SpaceEnd, NIL);
-
-                  a = a + end.length;
-
-                  push(record, {
-                    types: 'liquid_end',
-                    token: inner(end)
-                  });
-
-                  break;
-
                 }
+
+                break;
 
               }
 
-            } else {
+            } else if (name === 'style') {
 
-              if (name === 'script') {
+              if (u.is(b[a + 1], cc.LAN) && u.is(b[a + 2], cc.FWS)) {
 
                 end = b
-                  .slice(a + 1, a + 9)
+                  .slice(a + 1, a + 8)
                   .join(NIL)
                   .toLowerCase();
 
-                if (end === '</script') {
+                if (end === '</style') {
 
-                  output = lexed.join(NIL).trimEnd();
+                  output = lexed
+                    .join(NIL)
+                    .trimEnd();
 
                   if (lexed.length < 1) break;
 
-                  if (rx.HTMLCommDelimOpen.test(output) && rx.HTMLCommDelimClose.test(output)) {
+                  if ((rx.HTMLCommDelimOpen).test(output) && (rx.HTMLCommDelimClose).test(output)) {
 
                     push(record, { token: '<!--', types: 'comment' });
 
@@ -4064,7 +4017,7 @@ export function markup (input?: string) {
                       .replace(rx.HTMLCommDelimOpen, NIL)
                       .replace(rx.HTMLCommDelimClose, NIL);
 
-                    parse.external('javascript', output);
+                    parse.external('css', output);
 
                     push(record, { token: '-->' });
 
@@ -4077,48 +4030,7 @@ export function markup (input?: string) {
                   break;
 
                 }
-
-              } else if (name === 'style') {
-
-                if (u.is(b[a + 1], cc.LAN) && u.is(b[a + 2], cc.FWS)) {
-
-                  end = b
-                    .slice(a + 1, a + 8)
-                    .join(NIL)
-                    .toLowerCase();
-
-                  if (end === '</style') {
-
-                    output = lexed
-                      .join(NIL)
-                      .trimEnd();
-
-                    if (lexed.length < 1) break;
-
-                    if ((rx.HTMLCommDelimOpen).test(output) && (rx.HTMLCommDelimClose).test(output)) {
-
-                      push(record, { token: '<!--', types: 'comment' });
-
-                      output = output
-                        .replace(rx.HTMLCommDelimOpen, NIL)
-                        .replace(rx.HTMLCommDelimClose, NIL);
-
-                      parse.external('css', output);
-
-                      push(record, { token: '-->' });
-
-                    } else {
-
-                      parse.external(language, output);
-
-                    }
-
-                    break;
-
-                  }
-                }
               }
-
             }
 
           } else if (
