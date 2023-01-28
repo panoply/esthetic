@@ -1,5 +1,5 @@
 import { LanguageName, LanguageOfficialName } from 'types/internal';
-import { Lexers } from 'lexical/enum';
+import { Lexers } from '@shared/enums';
 
 /**
  * Get Language Name

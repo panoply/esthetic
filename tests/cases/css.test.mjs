@@ -1,43 +1,65 @@
 import test from 'ava';
-import { forAssert, forRules, css, liquid } from '@liquify/ava/prettify';
-import esthetic from 'esthetic';
+import { forAssert, forRules, css } from '@liquify/ava/prettify';
+import prettify from '@liquify/prettify';
 
-test('Structure Test:  Liquid infused selectors', t => {
+test('Liquid infused selectors', t => {
 
-  forRules([
-    css`
+  forAssert([
+    [
+      css`
 
-      /* Space should be respected at grid */
+        /* Space should be respected at grid */
 
-      .image-grid-{{ respect.spacing }} .grid {
-        color: #111;
-      }
+        .image-grid-{{ respect.spacing }} .grid {
+          color: #111;
+        }
 
-    `,
-    css`
+      `,
+      css`
 
-      /* Template infused class should be preserved */
+        /* Space should be respected at grid */
+        .image-grid-{{ respect.spacing }} .grid {
+          color: #111;
+        }
 
-      .image-grid-{{ respect.spacing }}-class {
-        color: #111;
-      }
+      `
+    ],
+    [
+      css`
 
-    `
-  ])(
-    {
+        /* Template infused class should be preserved */
+
+        .image-grid-{{ respect.spacing }}-class {
+          color: #111;
+        }
+
+      `,
+      css`
+
+        /* Template infused class should be preserved */
+
+        .image-grid-{{ respect.spacing }}-class {
+          color: #111;
+        }
+
+      `
+    ]
+  ])(function (source, expect) {
+
+    const output = prettify.formatSync(source, {
       language: 'css'
-    }
-  )(function (source, rules) {
 
-    const output = esthetic.format.sync(source, rules);
+    });
 
-    t.deepEqual(output, source);
+    t.deepEqual(output, expect);
+
+    // t.log(output);
 
   });
 
 });
 
-test('Structure Test: Attribute selectors expressions', t => {
+test('Attribute selectors expressions', t => {
 
   forAssert([
     [
@@ -88,7 +110,7 @@ test('Structure Test: Attribute selectors expressions', t => {
     ]
   ])(function (source, expect) {
 
-    const output = esthetic.format.sync(source, {
+    const output = prettify.formatSync(source, {
       language: 'css'
 
     });
@@ -101,87 +123,129 @@ test('Structure Test: Attribute selectors expressions', t => {
 
 });
 
-test('Structure Test: Complex pseudo selectors', t => {
+test('Complex pseudo selectors', t => {
 
-  forRules([
+  forAssert([
+    [
+      css`
 
-    css`
+        /* Isolated pseudo selector with webkit property */
 
-      /* Isolated pseudo selector with webkit property */
+        ::-webkit-search-decoration { -webkit-appearance: none;      }
 
-      ::-webkit-search-decoration {
-        -webkit-appearance: none;
-      }
+      `,
+      css`
 
-    `
-    ,
-
-    css`
-
-      /* multiple pseudo selector stacking */
-
-      ::-webkit-datetime-edit-fields-wrapper,
-      ::-webkit-datetime-edit-text,
-      ::-webkit-datetime-edit-minute,
-      ::-webkit-datetime-edit-hour-field,
-      ::-webkit-datetime-edit-day-field,
-      ::-webkit-datetime-edit-month-field,
-      ::-webkit-datetime-edit-year-field {
-        padding: 0;
-      }
-
-    `
-    ,
-    css`
-
-      /* multiple "not" selector chaining */
-
-      [list]:not([type=datetime-local]):not([type=month])::-webkit-calendar-picker-indicator {
-        display: none !important;
-      }
-
-    `
-    ,
-    css`
-
-      /* media query pseudo selector nesting */
-
-      @media (prefers-reduced-motion: no-preference) {
-
-        :root {
-          scroll-behavior: smooth;
-        }
+        /* Isolated pseudo selector with webkit property */
 
         ::-webkit-search-decoration {
           -webkit-appearance: none;
         }
 
-      }
+      `
+    ],
+    [
+      css`
 
-    `
+        /* multiple pseudo selector stacking */
 
-  ])(
-    {
-      language: 'css',
-      style: {
-        atRuleSpace: true
-      }
-    }
-  )(function (source, rules) {
+        ::-webkit-datetime-edit-fields-wrapper, ::-webkit-datetime-edit-text,
+        ::-webkit-datetime-edit-minute, ::-webkit-datetime-edit-hour-field,
+        ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-month-field,
+        ::-webkit-datetime-edit-year-field {
+          padding: 0;
+        }
 
-    const output = esthetic.format.sync(source, rules);
+      `,
+      css`
 
-    t.deepEqual(output, source);
+        /* multiple pseudo selector stacking */
+
+        ::-webkit-datetime-edit-fields-wrapper,
+        ::-webkit-datetime-edit-text,
+        ::-webkit-datetime-edit-minute,
+        ::-webkit-datetime-edit-hour-field,
+        ::-webkit-datetime-edit-day-field,
+        ::-webkit-datetime-edit-month-field,
+        ::-webkit-datetime-edit-year-field {
+          padding: 0;
+        }
+
+      `
+    ],
+    [
+      css`
+
+        /* multiple "not" selector chaining */
+
+        [list]:not([type=datetime-local]):not([type=month])::-webkit-calendar-picker-indicator {
+          display: none !important;
+        }
+
+      `,
+      css`
+
+        /* multiple "not" selector chaining */
+
+        [list]:not([type=datetime-local]):not([type=month])::-webkit-calendar-picker-indicator {
+          display: none !important;
+        }
+
+      `
+    ],
+    [
+
+      css`
+
+        /* media query pseudo selector nesting */
+
+        @media (prefers-reduced-motion: no-preference) {
+
+        :root { scroll-behavior: smooth; }
+
+        ::-webkit-search-decoration { -webkit-appearance: none; }
+
+        }
+
+      `,
+      css`
+
+        /* media query pseudo selector nesting */
+
+        @media (prefers-reduced-motion: no-preference) {
+
+          :root {
+            scroll-behavior: smooth;
+          }
+
+          ::-webkit-search-decoration {
+            -webkit-appearance: none;
+          }
+
+        }
+
+      `
+    ]
+  ])(function (source, expect) {
+
+    const output = prettify.formatSync(source, { language: 'css' });
+
+    t.deepEqual(output, expect);
 
   });
 
 });
 
-test('Structure Test: CSS variable expressions with Liquid infusion', async t => {
+test('CSS variable expressions', async t => {
 
-  forRules([
+  forAssert([
+    [
+      css`
 
-    css`
+      :root { --main-bg-color: brown;--my-background: #fff; --my-var: 0.985rem;}
+
+      `,
+      css`
 
       :root {
         --main-bg-color: brown;
@@ -189,36 +253,28 @@ test('Structure Test: CSS variable expressions with Liquid infusion', async t =>
         --my-var: 0.985rem;
       }
 
-    `
-    ,
-    css`
+      `
+    ],
+    [
+      css`
 
       :root {
         --font-body-family: {{ settings.type_body_font.family }};
       }
 
-    `
-    ,
-
-    liquid`
+      `,
+      css`
 
       :root {
-        --{{ settings.type_body_font.family }}-main: brown;
-        --my-background: #fff;
-        --my-var-{{ settings.type_body_font.family }}: 0.985rem;
+        --font-body-family: {{ settings.type_body_font.family }};
       }
+      `
+    ]
+  ])(function (source, expect) {
 
-    `
+    const actual = prettify.formatSync(source, { language: 'css' });
 
-  ])(
-    {
-      language: 'css'
-    }
-  )(function (source, rules) {
-
-    const actual = esthetic.format.sync(source, rules);
-
-    t.deepEqual(actual, source);
+    t.deepEqual(actual, expect);
 
   });
 
@@ -299,7 +355,7 @@ test('Sorting selector names', t => {
     ]
   )(function (source, rules, label) {
 
-    const snapshot = esthetic.format.sync(source, rules);
+    const snapshot = prettify.formatSync(source, rules);
 
     t.snapshot(snapshot, label);
 
@@ -358,7 +414,7 @@ test('Sorting class properties', t => {
     ]
   )(function (source, rules, label) {
 
-    const snapshot = esthetic.format.sync(source, rules);
+    const snapshot = prettify.formatSync(source, rules);
 
     t.snapshot(snapshot, label);
 

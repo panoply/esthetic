@@ -1,9 +1,7 @@
 /* eslint no-unmodified-loop-condition: "off" */
 import { lexers } from 'lexers';
 import { format } from 'format';
-import { Lexers, Modes } from 'lexical/enum';
-import * as lx from 'lexical/lexing';
-import { NIL, NWL } from 'chars';
+import { Lexers, Modes, NIL, NWL, getTagName } from 'shared';
 import { getLexerName, getLexerType, assign, ws } from 'utils';
 import type { LiteralUnion } from 'type-fest';
 import type {
@@ -187,79 +185,24 @@ class Parser {
   public count: number = -1;
 
   /**
-   * The current line column character starting from left side of the
-   * beginning of a newline. For example
-   *
-   * ```
-   *
-   * 1 | xxx
-   * 2 | hello world
-   *               ^   // Column 11
-   *
-   * ```
-   *
-   * In the example above, the column reference equals `[11]` and points
-   * to the letter `d` in cases where we need this context, it exists
-   * at this point.
+   * The current line character number
    */
-  public lineColumn: number = 0;
+  public character: number = 0;
 
   /**
-   * The current line number. This is used in errors and counts the
-   * number of lines as we have spaned during traversal. For example:
-   *
-   * ```
-   *
-   * 1 | hello  // Line 1
-   * 2 | world  // Line 2
-   *
-   *
-   * ```
+   * Stores the 'lines' value before the next token
    */
-  public lineNumber: number = 1;
+  public space: number = -1;
 
   /**
-   * The record `lines` value count before the next token, for example:
-   *
-   * ```
-   *
-   * 1 | foo  // line offset is: 0
-   * 2 | bar  // line offset is: 2
-   * 3
-   * 4 | baz  // line offset is: 3
-   * 5
-   * 6
-   * 7 | qux  // line offset is: 4
-   * 8 | xxx  // line offset is: 2
-   *
-   *
-   * ```
-   *
-   * Where `foo` is `0` as it exists on line `1` but `bar` is `2` because
-   * it counts line `1` as a single line and given it exists on line `2`
-   * another line offset increment is applies. The word `baz` is similar to
-   * `bar` but has a count of `3` given a newline exists above it and this
-   * pattern follows as we progress to `qux` which has 2 newlines, equating
-   * to a value line offset of `4` whereas `xxx` only has `2` so on and so forth.
+   * The current line number
    */
-  public lineOffset: number = 1;
+  public line = 1;
 
   /**
-   * The character index of the last known newline, for example:
-   *
-   * ```
-   *
-   * 1 | abcdefgh
-   * 2 | ijklmnop
-   *     ^
-   *
-   * ```
-   *
-   * Where character `i` is index `[8]` and index `[8]` is the
-   * beginning of line `2`.
-   *
+   * The offset index of the last known newline
    */
-  public lineIndex: number = 0;
+  public lineOffset = 0;
 
   /**
    * The offset index of the last known newline
@@ -271,7 +214,6 @@ class Parser {
    */
   public rules: Rules = {
     crlf: false,
-    defaults: 'none',
     language: 'auto',
     endNewline: false,
     indentChar: ' ',
@@ -282,10 +224,8 @@ class Parser {
     liquid: {
       commentNewline: false,
       commentIndent: true,
-      correct: false,
       delimiterTrims: 'preserve',
       ignoreTagList: [],
-      indentAttributes: false,
       lineBreakSeparator: 'default',
       normalizeSpacing: true,
       preserveComment: false,
@@ -309,36 +249,14 @@ class Parser {
       preserveText: false,
       preserveAttributes: false,
       selfCloseSpace: true,
-      selfCloseSVG: true,
-      stripAttributeLines: false,
       quoteConvert: 'none'
     },
-    json: assign<JSONRules, ScriptRules, ScriptRules>({
+    json: assign<JSONRules, ScriptRules>({
       arrayFormat: 'default',
       braceAllman: false,
       bracePadding: false,
       objectIndent: 'default',
       objectSort: false
-    }, {
-      braceStyle: 'none',
-      caseSpace: false,
-      commentIndent: false,
-      commentNewline: false,
-      correct: false,
-      elseNewline: false,
-      endComma: 'never',
-      functionNameSpace: false,
-      functionSpace: false,
-      methodChain: 4,
-      neverFlatten: false,
-      noCaseIndent: false,
-      noSemicolon: false,
-      preserveComment: false,
-      quoteConvert: 'none',
-      styleGuide: 'none',
-      ternaryLine: false,
-      variableList: 'none',
-      vertical: false
     }, {
       quoteConvert: 'double',
       endComma: 'never',
@@ -346,13 +264,10 @@ class Parser {
       vertical: false
     }),
     style: {
-      commentIndent: false,
-      commentNewline: false,
       correct: false,
       atRuleSpace: true,
       classPadding: false,
       noLeadZero: false,
-      preserveComment: false,
       sortSelectors: false,
       sortProperties: false,
       quoteConvert: 'none'
@@ -607,13 +522,13 @@ class Parser {
 
     if (data !== this.data) return;
 
-    this.lineOffset = 0;
+    this.space = 0;
     this.count = this.count + 1;
 
     if (record.lexer !== 'style' && structure.replace(/[{}@<>%#]/g, NIL) === NIL) {
       structure = record.types === 'else'
         ? 'else'
-        : lx.getTagName(record.token);
+        : getTagName(record.token);
     }
 
     if (record.types === 'start' || record.types.indexOf('_start') > 0) {
@@ -680,7 +595,7 @@ class Parser {
     if (this.hooks.parse !== null) {
 
       this.hooks.parse[0].call({
-        line: this.lineNumber,
+        line: this.line,
         stack: this.stack.entry,
         language: this.language
       }, record, this.count);
@@ -759,7 +674,7 @@ class Parser {
 
         this.count = (this.count - splice.howmany) + 1;
         if (begin !== this.data.begin[this.count] || token !== this.data.token[this.count]) {
-          this.lineOffset = 0;
+          this.space = 0;
         }
       }
 
@@ -775,7 +690,7 @@ class Parser {
 
       if (splice.data === this.data) {
         this.count = this.count - splice.howmany;
-        this.lineOffset = 0;
+        this.space = 0;
       }
     }
   }
@@ -785,13 +700,13 @@ class Parser {
     // * array - the characters to scan
     // * index - the index to start scanning from
     // * end   - the length of the array, to break the loop
-    this.lineOffset = 1;
+    this.space = 1;
 
     do {
 
       if (args.array[args.index] === NWL) {
-        this.lineOffset = this.lineOffset + 1;
-        this.lineNumber = this.lineNumber + 1;
+        this.space = this.space + 1;
+        this.line = this.line + 1;
       }
 
       if (ws(args.array[args.index + 1]) === false) break;

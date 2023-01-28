@@ -1,5 +1,5 @@
 /* eslint-disable no-extend-native */
-import { NIL, NWL, WSP } from 'chars';
+import { NIL, NWL, WSP } from 'shared';
 import { LanguageName, LexerName } from 'types/shared';
 import { Prettify } from 'types/internal';
 import { getLanguageName } from './maps';
@@ -11,35 +11,36 @@ import { getLanguageName } from './maps';
  * Instead of Prettify passing an empty document to a lexer, we
  * quickly reason with the input.
  */
-// export function blank (language: LanguageName) {
+export function blank (language: LanguageName) {
 
-//   const crlf = prettify.rules.crlf === true ? '\r\n' : '\n';
-//   const input = prettify.source.match(/\n/g);
-//   const timer = stats(languageName);
+  ;
+  const crlf = prettify.rules.crlf === true ? '\r\n' : '\n';
+  const input = prettify.source.match(/\n/g);
+  const timer = stats(languageName);
 
-//   let output: string = NIL;
+  let output: string = NIL;
 
-//   if (input === null) {
+  if (input === null) {
 
-//     if (prettify.rules.endNewline) output = crlf;
+    if (prettify.rules.endNewline) output = crlf;
 
-//     prettify.stats = timer(output.length);
+    prettify.stats = timer(output.length);
 
-//   } else {
+  } else {
 
-//     output = input[0].length > prettify.rules.preserveLine
-//       ? repeatChar(prettify.rules.preserveLine, crlf)
-//       : repeatChar(input[0].length, crlf);
+    output = input[0].length > prettify.rules.preserveLine
+      ? repeatChar(prettify.rules.preserveLine, crlf)
+      : repeatChar(input[0].length, crlf);
 
-//     if (prettify.rules.endNewline) output += crlf;
+    if (prettify.rules.endNewline) output += crlf;
 
-//     prettify.stats = timer(output.length);
+    prettify.stats = timer(output.length);
 
-//   }
+  }
 
-//   return output;
+  return output;
 
-// }
+}
 
 /**
  * Convert Upcase

@@ -1,12 +1,12 @@
 import test from 'ava';
-import { dev } from '@liquify/ava/esthetic';
-import esthetic from 'esthetic';
+import { dev } from '@liquify/ava/prettify';
+import prettify from '@liquify/prettify';
 
 test('develop', async t => {
 
   await dev(t)(function (source) {
 
-    // esthetic.grammar({
+    // prettify.grammar({
     //   html: {
     //     embedded: {
     //       script: [
@@ -59,9 +59,9 @@ test('develop', async t => {
     //   }
     // });
 
-    //  esthetic.rules.listen((changed) => console.log(changed));
+    //  prettify.rules.listen((changed) => console.log(changed));
 
-    // esthetic.rules({
+    // prettify.rules({
     //   language: 'liquid',
     //   preserveLine: 0,
     //   wrap: 0,
@@ -101,7 +101,7 @@ test('develop', async t => {
     //   }
     // });
 
-    esthetic.grammar({
+    prettify.grammar({
       liquid: {
         embedded: {
           capture: [
@@ -114,12 +114,19 @@ test('develop', async t => {
       }
     });
 
-    const output = esthetic.format.sync(source, {
-      language: 'liquid',
+    const output = prettify.liquid.sync(source, {
+      wrap: 0,
+      liquid: {
+        indentAttributes: true,
+        valueForce: 'always',
+        normalizeSpacing: true,
+        ignoreTagList: [ ]
+      },
       markup: {
-        forceAttribute: false
+        correct: true,
+        forceAttribute: true,
+        ignoreJS: false
       }
-
     });
 
     return {
@@ -128,7 +135,7 @@ test('develop', async t => {
       logger: false,
       finish: () => {
         t.log(output);
-        t.log(esthetic.stats);
+        t.log(prettify.stats);
       }
     };
 

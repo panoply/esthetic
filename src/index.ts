@@ -1,6 +1,6 @@
 import './parse/parser';
-import './parse/grammar';
+import './shared/grammar';
 import './lexers/index';
 import './format/index';
 
-export { default } from './esthetic';
+export { default } from './prettify';

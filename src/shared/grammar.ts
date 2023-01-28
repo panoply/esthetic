@@ -1,5 +1,5 @@
 import { Grammars, EmbeddedHTML, EmbeddedLiquid, LanguageName } from 'types/internal';
-import { isArray } from 'utils';
+import { isArray } from '@utils/native';
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -191,12 +191,42 @@ function LiquidGrammar (grammar: Grammars['liquid'] = {
 }
 
 /**
- * SVG Grammar
+ * HTML Grammar
  *
- * Builds the grammar module for SVG (markup) containing tokens.
+ * Builds the grammar module for HTML (markup) languages.
  */
-function SVGGrammar (grammar: Grammars['svg'] = {
-  tags: [
+function HTMLGrammar (grammar: Grammars['html'] = {
+  embedded: {
+    script: [
+      {
+        language: 'javascript'
+      },
+      {
+        language: 'json',
+        attribute: {
+          type: [
+            'application/json',
+            'application/ld+json'
+          ]
+        }
+      },
+      {
+        language: 'jsx',
+        attribute: {
+          type: [
+            'text/jsx',
+            'application/jsx'
+          ]
+        }
+      }
+    ],
+    style: [
+      {
+        language: 'css'
+      }
+    ]
+  },
+  svg: [
     'a',
     'altGlyph',
     'altGlyphDef',
@@ -276,71 +306,7 @@ function SVGGrammar (grammar: Grammars['svg'] = {
     'use',
     'view',
     'vkern'
-  ]
-}) {
-
-  const TAGS = new Set(grammar.tags);
-
-  return {
-    get grammar () {
-      return grammar;
-    },
-    get tags () {
-      return TAGS;
-    },
-    extend (rules: Grammars['svg']) {
-
-      for (const rule in rules) {
-        if (isArray(rules[rule])) {
-          for (const tag of rules[rule]) {
-            if (rule === 'tags' && TAGS.has(tag) === false) {
-              grammar.tags.push(tag);
-              TAGS.add(tag);
-            }
-          }
-        }
-      }
-
-    }
-  };
-}
-
-/**
- * HTML Grammar
- *
- * Builds the grammar module for HTML (markup) languages.
- */
-function HTMLGrammar (grammar: Grammars['html'] = {
-  embedded: {
-    script: [
-      {
-        language: 'javascript'
-      },
-      {
-        language: 'json',
-        attribute: {
-          type: [
-            'application/json',
-            'application/ld+json'
-          ]
-        }
-      },
-      {
-        language: 'jsx',
-        attribute: {
-          type: [
-            'text/jsx',
-            'application/jsx'
-          ]
-        }
-      }
-    ],
-    style: [
-      {
-        language: 'css'
-      }
-    ]
-  },
+  ],
   voids: [
     'area',
     'base',
@@ -481,6 +447,7 @@ function HTMLGrammar (grammar: Grammars['html'] = {
   ]
 }) {
 
+  const SVG = new Set(grammar.svg);
   const TAGS = new Set(grammar.tags);
   const VOIDS = new Set(grammar.voids);
   const EMBEDDED: {
@@ -506,6 +473,9 @@ function HTMLGrammar (grammar: Grammars['html'] = {
     get grammar () {
       return grammar;
     },
+    get svg () {
+      return SVG;
+    },
     get tags () {
       return TAGS;
     },
@@ -527,6 +497,9 @@ function HTMLGrammar (grammar: Grammars['html'] = {
             } else if (rule === 'voids' && VOIDS.has(tag) === false) {
               grammar.voids.push(tag);
               VOIDS.add(tag);
+            } else if (rule === 'svg' && SVG.has(tag) === false) {
+              grammar.svg.push(tag);
+              SVG.add(tag);
             }
           }
         } else if (rule === 'embedded') {
@@ -785,6 +758,9 @@ function CSSGrammar (grammar: Grammars['css'] = {
     get units () {
       return UNITS;
     },
+    get atrules () {
+      return ATRULES;
+    },
     get pseudoClasses () {
       return PSEUDO_CLASSES;
     },
@@ -799,11 +775,6 @@ function CSSGrammar (grammar: Grammars['css'] = {
     },
     get webkitClasses () {
       return WEBKIT_CLASSES;
-    },
-    atrules (token: string) {
-
-      return ATRULES.has(token.slice(0, token.indexOf('(')).trim());
-
     },
     extend (rules: Grammars['css']) {
 
@@ -990,17 +961,11 @@ export const grammar = (function () {
    */
   const html = HTMLGrammar();
 
-  /**
-   * SVG Grammars
-   */
-  const svg = SVGGrammar();
-
   return {
     html,
     liquid,
     js,
     css,
-    svg,
     /**
      * Extend Grammars
      */
@@ -1016,28 +981,15 @@ export const grammar = (function () {
             css.extend(options.css);
           } else if (language === 'js') {
             js.extend(options.js);
-          } else if (language === 'svg') {
-            js.extend(options.js);
           }
         }
       }
 
       return {
-        get html () {
-          return html.grammar;
-        },
-        get liquid () {
-          return liquid.grammar;
-        },
-        get js () {
-          return js.grammar;
-        },
-        get css () {
-          return css.grammar;
-        },
-        get svg () {
-          return css.grammar;
-        }
+        get html () { return html.grammar; },
+        get liquid () { return liquid.grammar; },
+        get js () { return js.grammar; },
+        get css () { return css.grammar; }
       };
     }
   };

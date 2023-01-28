@@ -1,12 +1,5 @@
 export interface StyleRules {
   /**
-   * **Default** `true`
-   *
-   * Insert a single whitespace character betwen @ rules.
-   */
-  atRuleSpace?: boolean;
-
-  /**
    * **Default** `false`
    *
    * Automatically correct some sloppiness in code. This rules acts a very
@@ -16,31 +9,11 @@ export interface StyleRules {
   correct?: boolean;
 
   /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
-   *
-   * If a blank new line should be forced above comments.
-   */
-  commentNewline?: boolean;
-
-  /**
    * **Default** `true`
    *
-   * This will determine whether comments should always start at position
-   * `0` of each line or if comments should be indented according to the code.
-   * It is unlikely you will ever want to set this to `false` so generally, just
-   * leave it to `true`
-   *
+   * Insert a single whitespace character betwen @ rules.
    */
-  commentIndent?: boolean;
-
-  /**
-   * **Default** `false`
-   *
-   * Prevent comment reformatting due to option wrap.
-   */
-  preserveComment?: boolean;
+  atRuleSpace?: boolean;
 
   /**
    * This option will alphabetically sort CSS properties contained

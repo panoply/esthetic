@@ -1,6 +1,6 @@
 import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/prettify';
-import esthetic from 'esthetic';
+import prettify from '@liquify/prettify';
 
 test('Liquid delimiter trims strip', t => {
 
@@ -77,12 +77,7 @@ test('Liquid delimiter trims strip', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
-      language: 'liquid',
-      liquid: {
-        delimiterTrims: 'strip'
-      }
-    });
+    const actual = prettify.formatSync(source, { language: 'liquid' });
 
     t.is(actual, expect);
 

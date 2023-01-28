@@ -1,20 +1,16 @@
-import { grammar } from '@parse/grammar';
+import type { Rules, LanguageName, Events, RulesChanges, RulesInternal, LexerName, Stats, ParseHook } from 'types/internal';
+import { grammar } from '@shared/grammar';
 import { parse } from '@parse/parser';
-import { definitions } from '@parse/definitions';
+import { defineProperties } from '@utils/native';
+import { Modes } from '@shared/enums';
+import { stats } from '@utils/helpers';
+import { getLexerName, getLexerType } from '@utils/maps';
+import { definitions } from '@shared/definitions';
 import { detect } from '@parse/detection';
-import { Modes } from 'lexical/enum';
-import { getLexerName, getLexerType, stats, defineProperties } from 'utils';
-import type {
-  Rules,
-  LanguageName,
-  Events,
-  RulesChanges,
-  RulesInternal,
-  LexerName,
-  Stats,
-  ParseHook
-} from 'types/internal';
-import { CNL, NWL } from 'lexical/chars';
+
+/* -------------------------------------------- */
+/* LANGUAGE EXPORT                              */
+/* -------------------------------------------- */
 
 class Instance {
 
@@ -65,9 +61,6 @@ class Instance {
     if (typeof this.language === 'string' && this.language !== parse.language) {
       parse.language = this.language;
       parse.lexer = getLexerName(parse.language);
-    } else {
-      this.language = options.language;
-      this.lexer = getLexerName(options.language);
     }
 
     if (typeof options === 'object') this.rules(options);
@@ -152,7 +145,7 @@ class Instance {
         } else {
           if (rule === 'crlf') {
             parse.rules[rule] = options[rule];
-            parse.crlf = parse.rules[rule] ? CNL : NWL;
+            parse.crlf = parse.rules[rule] ? '\r\n' : '\n';
           } else if (rule === 'language') {
             parse.rules[rule] = options[rule];
             if (parse.language !== parse.rules[rule]) {
@@ -205,7 +198,7 @@ class Instance {
 
 }
 
-class Esthetic extends Instance {
+class Prettify extends Instance {
 
   liquid (source: string | Buffer, options?: Rules) {
     return this.format(source, options);
@@ -231,15 +224,17 @@ class Esthetic extends Instance {
 
 export default (function (binding) {
 
-  const prettify = new Esthetic();
+  const prettify = new Prettify();
 
   for (const language of binding) {
     defineProperties(prettify[language], {
       sync: {
         value (source: string | Buffer, options?: Rules) {
+
           prettify.async = false;
           prettify.language = language;
           prettify.lexer = getLexerName(language);
+
           return prettify[language](source, options);
         }
       }

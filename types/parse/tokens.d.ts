@@ -202,15 +202,15 @@ export enum ScriptTypes {
   /**
    * A template (literal) string that terminates with `${`.
    */
-  template_string_end = 'liquid_string_end',
+  liquid_string_end = 'liquid_string_end',
   /**
    * A template string that starts with `}` and terminates with `${`.
    */
-  template_string_else = 'liquid_string_else',
+  liquid_string_else = 'liquid_string_else',
   /**
    * A template string that starts with `}`
    */
-  template_string_start = 'liquid_string_start',
+  liquid_string_start = 'liquid_string_start',
   /**
    *  A TypeScript data type declaration.
    */
@@ -340,7 +340,7 @@ export enum MarkupTypes {
    * ---
    * @example
    *
-   * <div id={}>  // After { character
+   * <img id={}>  // After { character
    */
   script_start = 'script_start',
   /**
@@ -349,11 +349,14 @@ export enum MarkupTypes {
    * ---
    * @example
    *
-   * <div id={}> // Before } character
+   * <img id={}> // Before } character
    */
   script_end = 'script_end',
   /**
    * SGML type notations, which can be deeply nested using square brace notation.
+   *
+   * @deprecated
+   * This will no longer be provided in Prettify
    */
   sgml = 'sgml',
   /**
@@ -438,16 +441,6 @@ export enum MarkupTypes {
    * <div id="{{ x }}">
    */
   liquid_value = 'liquid_value',
-  /**
-   * A tag attribute from a regular start or singular tag type.
-   * ---
-   * @example
-   *
-  * <div
-  *   {% # comment %}
-  *   id="x">
-  */
-  liquid_comment_attribute = 'liquid_comment_attribute',
   /**
    * A start template tag being used within an attribute
    *
@@ -578,24 +571,6 @@ export enum MarkupTypes {
    * {% schema %}
    */
   liquid_json_preserve = 'liquid_json_preserve',
-  /**
-   * Bad Liquid start tag
-   *
-   * ---
-   * @example
-   *
-   * <{% if x %}div{% else %}main{% endif %}>
-   */
-  liquid_start_bad = 'liquid_start_bad',
-  /**
-   * Bad Liquid end tag
-   *
-   * ---
-   * @example
-   *
-   * </{% if x %}div{% else %}main{% endif %}>
-   */
-  liquid_end_bad = 'liquid_end_bad',
   /**
    * A template tag that contains content or other tags not associated with
    * the template language and expects a closing tag. This is representative of
