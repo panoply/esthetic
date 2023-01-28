@@ -1,8 +1,5 @@
 [build]
-  publish = "public"
-
-  [build.environment]
-    NPM_FLAGS = "--prefix=/dev/null"
+  command = "pnpm run build"
 
 
 # REQUEST HEADERS
