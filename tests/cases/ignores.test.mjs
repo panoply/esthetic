@@ -2,139 +2,73 @@ import test from 'ava';
 import { forSample, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-/**
- * COMMENTS
- *
- * This is a helper function that will quickly parse and replace occurances
- * found in the samples.
- */
-function comments (samples) {
-
-  return [
-    {
-      start: '<!-- esthetic-ignore-next -->',
-      ender: ''
-    },
-    {
-      start: '{% # esthetic-ignore-next %}',
-      ender: ''
-    },
-    {
-      start: '<!-- esthetic-ignore-start -->',
-      ender: '<!-- esthetic-ignore-end -->'
-    },
-    {
-      start: '{% comment %} esthetic-ignore-start {% endcomment %}',
-      ender: '{% comment %} esthetic-ignore-end {% endcomment %}'
-    }
-  ].flatMap(({ start, ender }) => {
-
-    return samples.map(sample => {
-
-      return sample
-        .replace(/<!--__start__-->/g, start)
-        .replace(/<!--__ender__-->/g, ender);
-
-    });
-
-  });
-}
-
-test('Ignore comment newlines and indentation', async t => {
+test('HTML type comment: esthetic-ignore-next - Newlines and indentation', async t => {
 
   await forSample(
-    comments([
-      liquid`{% # 1 newline following comment is respected %}
+    [
+      liquid`
+
+        {% # Ensuring single newline following comment is respected %}
 
         <div>
-        1 NEWLINE FOLLOWING COMMENT
+        BELOW NEWLINES EQUAL 1
         </div>
 
-        <!--__start__-->
+        <!-- esthetic-ignore-next -->
         <main>
           <h1></h1>
         </main>
-        <!--__ender__-->
 
       `,
-      liquid`{% # 2 newlines following comment are respected %}
+      liquid`
+
+        {% # Ensuring 2 newlines following comment are respected  %}
 
         <div>
-        2 NEWLINES FOLLOWING COMMENT
+        BELOW NEWLINES EQUAL 2
         </div>
 
-        <!--__start__-->
+        <!-- esthetic-ignore-next -->
 
         <main>
-                 <h1>     ignored       </h1>
+          <h1></h1>
         </main>
-        <!--__ender__-->
+
       `,
-      liquid`{% # 3 newlines following comment are respected %}
+      liquid`
 
-        <div>
-        3 NEWLINES FOLLOWING COMMENT
-        </div>
+        {% # Ensuring a newline is forced when ignore next comment is on same line %}
 
-        <!--__start__-->
+         <div>
+          BELOW NEWLINES EQUAL 1
+         </div>
 
-
-        <main>
-                 <h1>     ignored       </h1>
-        </main>
-        <!--__ender__-->
-      `,
-      liquid`{% # Apply newline forced when comment on same line %}
-
-        <div>
-         1 NEWLINE IS FORCED FOLLOW COMMENT
-        </div>
-
-        <aside>
-        <!--__start__--><main>
-
-                 <h1>     ignored       </h1>
-        </main>
-        <!--__ender__-->
-
-        <nav>
-            <h1> NEWLINE WILL BE APPLIED </h1><!--__start__--><div>THIS WILL BE IGNORED</div><!--__ender__-->
-        </nav>
-
-                   <!--__start__--> <div>   THIS WILL BE IGNORED   </div> <!--__ender__-->
-        </aside>
+         <!-- esthetic-ignore-next --><main>
+           <h1></h1>
+         </main>
 
        `,
-      liquid`{% # Respect Spacing of contained ignore content %}
+      liquid`
 
-        <!--__start__-->
+        {% # Respect Spacing of contained ignore content %}
+
+        <!-- esthetic-ignore-next -->
         <main>
 
         <h1>
 
-        EXTRANEOUS INDENTATION
+        Span Multiple Lines
 
         </h1>
 
-          <div>
-            LEFT SIDE SINGLE INDENTATION
-          </div>
                                         <div>
                                           FAR RIGHT INDENTATION
-
-                    CENTER INDENTATION
-
                                         </div>
                   <div>
                     FAR RIGHT INDENTATION
                   </div>
 
-        <div>
-          LEFT SIDE NO INDENTATION
-        </div>
-
         </main>
-        <!--__ender__-->
 
         <footer>
         <ul>
@@ -142,61 +76,25 @@ test('Ignore comment newlines and indentation', async t => {
         </ul>
         </footer>
       `,
-      liquid`{% # Respecting ignored indentation and newlines %}
+      liquid`
+
+        {% # Invalid characters in following start tag %}
 
         <header>
         <ul>
-        <li> CONTENT BEFORE WILL FORMAT </li>
+        <li> CONTENT BEFORE FORMAT </li>
         </ul>
         </header>
-                                  <!--__start__-->
-                                  <div>
 
+        <!-- esthetic-ignore-next -->
 
+          <main ~~~%#!>
 
+        <#>  Ignored Content  </#>
 
+        <p  >   </ p  >
 
-
-                                    THIS WILL BE IGNORED
-
-
-
-
-
-
-                                  </div>
-                                  <!--__ender__-->
-
-                                  <main>
-
-                                    FORMAT WILL BE APPLIED HERE
-
-                                            <ul>
-                                <li> FORMAT WILL RESPECT </li>
-                      <li> FORMAT WILL RESPECT </li>
-                                <li> FORMAT WILL RESPECT </li>
-                      <li> FORMAT WILL RESPECT </li>
-                                            </ul>
-
-                                  <!--__start__-->
-                                  <div>
-
-
-
-
-
-
-                                    THIS WILL BE IGNORED
-
-
-
-
-
-
-                                  </div>
-                                  <!--__ender__-->
-
-                                  </main>
+          </main >
 
         <footer>
         <ul>
@@ -204,7 +102,7 @@ test('Ignore comment newlines and indentation', async t => {
         </ul>
         </footer>
       `
-    ])
+    ]
   )(
     {
       language: 'liquid'
@@ -219,14 +117,14 @@ test('Ignore comment newlines and indentation', async t => {
 
 });
 
-test('Ignore comment edge cases', async t => {
+test('HTML type comment: esthetic-ignore-next - edge cases', async t => {
 
   await forSample(
-    comments([
+    [
 
       liquid`
 
-        {% # Extraneous spacing and newlines following the ignore comment %}
+        {% # Extraneous spacing and newlines following the ignore next comment %}
 
         <header>
         <ul>
@@ -234,7 +132,7 @@ test('Ignore comment edge cases', async t => {
         </ul>
         </header>
 
-        <!--__start__-->
+        <!-- esthetic-ignore-next -->
 
         <main
         id  ="xxx" data - = passes
@@ -246,7 +144,6 @@ test('Ignore comment edge cases', async t => {
 
         </main
         >
-        <!--__ender__-->
 
         <footer>
         <ul>
@@ -264,7 +161,7 @@ test('Ignore comment edge cases', async t => {
         </ul>
         </header>
 
-        <!--__start__-->
+        <!-- esthetic-ignore-next -->
 
           <main ~~~%#!>
 
@@ -273,7 +170,6 @@ test('Ignore comment edge cases', async t => {
         <p  >   </ p  >
 
           </main >
-        <!--__ender__-->
 
         <footer>
         <ul>
@@ -281,7 +177,7 @@ test('Ignore comment edge cases', async t => {
         </ul>
         </footer>
       `
-    ])
+    ]
   )(
     {
       language: 'liquid'
@@ -296,7 +192,7 @@ test('Ignore comment edge cases', async t => {
 
 });
 
-test('HTML Comment: ignore next - followed by markup', async t => {
+test('HTML type comment: esthetic-ignore-next - followed by markup', async t => {
 
   await forSample(
     [
@@ -311,7 +207,7 @@ test('HTML Comment: ignore next - followed by markup', async t => {
         </ul>
         </header>
 
-        <!--__start__-->
+        <!-- esthetic-ignore-next -->
         <main    id="xxx"  data - = passes   >
 
         <h1>  Ignored Content   </h1>
@@ -450,7 +346,7 @@ test('HTML Comment: ignore next - followed by markup', async t => {
 
 });
 
-test('HTML Comment: ignore next - followed by liquid', async t => {
+test('HTML type comment: esthetic-ignore-next - followed by liquid', async t => {
 
   await forSample(
     [
@@ -550,163 +446,6 @@ test('HTML Comment: ignore next - followed by liquid', async t => {
     // if (this.index === this.size - 1) {
     //   t.log(input);
     // }
-
-    t.snapshot(input, label);
-
-  });
-
-});
-
-test('HTML Comment: ignore start/end - Newlines and indentation', async t => {
-
-  await forSample(
-    [
-      liquid`{% # 1 newline following comment is respected %}
-
-        <div>
-        1 NEWLINE FOLLOWING START COMMENT
-        </div>
-
-        <!-- esthetic-ignore-start -->
-        <main>
-        <h1>     ignored       </h1>
-        </main>
-        <!-- esthetic-ignore-end -->
-      `,
-      liquid`{% # 2 newlines following comment are respected %}
-
-        <div>
-        2 NEWLINES FOLLOWING START COMMENT
-        </div>
-
-        <!-- esthetic-ignore-start -->
-
-        <main>
-                 <h1>     ignored       </h1>
-        </main>
-        <!-- esthetic-ignore-end -->
-      `,
-      liquid`{% # 3 newlines following comment are respected %}
-
-        <div>
-        3 NEWLINES FOLLOWING START COMMENT
-        </div>
-
-        <!-- esthetic-ignore-start -->
-
-
-        <main>
-                 <h1>     ignored       </h1>
-        </main>
-        <!-- esthetic-ignore-end -->
-      `,
-      liquid`{% # Respect Spacing of contained ignore content %}
-
-        <!-- esthetic-ignore-start -->
-        <main>
-
-        <h1>
-
-        EXTRANEOUS INDENTATION
-
-        </h1>
-
-          <div>
-            LEFT SIDE SINGLE INDENTATION
-          </div>
-                                        <div>
-                                          FAR RIGHT INDENTATION
-
-                    CENTER INDENTATION
-
-                                        </div>
-                  <div>
-                    FAR RIGHT INDENTATION
-                  </div>
-
-        <div>
-          LEFT SIDE NO INDENTATION
-        </div>
-
-        </main>
-        <!-- esthetic-ignore-end -->
-
-        <footer>
-        <ul>
-        <li> SPACING IS RESPECTED AFTER IGNORE </li>
-        </ul>
-        </footer>
-      `,
-      liquid`{% # Respecting ignored indentation and newlines %}
-
-        <header>
-        <ul>
-        <li> CONTENT BEFORE WILL FORMAT </li>
-        </ul>
-        </header>
-                                  <!-- esthetic-ignore-start -->
-                                  <div>
-
-
-
-
-
-
-                                    THIS WILL BE IGNORED
-
-
-
-
-
-
-                                  </div>
-                                  <!-- esthetic-ignore-end -->
-
-                                  <main>
-
-                                    FORMAT WILL BE APPLIED HERE
-
-                                            <ul>
-                                <li> FORMAT WILL RESPECT </li>
-                      <li> FORMAT WILL RESPECT </li>
-                                <li> FORMAT WILL RESPECT </li>
-                      <li> FORMAT WILL RESPECT </li>
-                                            </ul>
-
-                                  <!-- esthetic-ignore-start -->
-                                  <div>
-
-
-
-
-
-
-                                    THIS WILL BE IGNORED
-
-
-
-
-
-
-                                  </div>
-                                  <!-- esthetic-ignore-end -->
-
-                                  </main>
-
-        <footer>
-        <ul>
-        <li> CONTENT AFTER WILL FORMAT </li>
-        </ul>
-        </footer>
-      `
-    ]
-  )(
-    {
-      language: 'liquid'
-    }
-  )(async function (source, rules, label) {
-
-    const input = await esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
