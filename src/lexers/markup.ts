@@ -68,19 +68,6 @@ export function markup (input?: string) {
   const c = b.length;
 
   /**
-   * Liquid Pairs
-   */
-  const pairs: {
-    start: number;
-    tname: string[],
-    index: number[],
-  } = {
-    start: -1,
-    tname: [],
-    index: []
-  };
-
-  /**
    * SVG Store reference for tracking singletons and blocks
    */
   const svg: {
@@ -921,7 +908,7 @@ export function markup (input?: string) {
     }
 
     /**
-     * Parse Template
+     * Parse Liquid
      *
      * This will parse template identified tokens and tags (Liquid).
      * It aligns the the data `record` for identification.
@@ -993,6 +980,144 @@ export function markup (input?: string) {
     }
 
     /**
+     * Parse Liquid Tag
+     *
+     * This will parse a Liquid tag {% liquid %} who's inner contents
+     * contain liquid expressions
+     */
+    function parseLiquidTag () {
+
+      /**
+       * Iterator reference
+       */
+      let i = token.indexOf('liquid') + 6;
+
+      /**
+       * The ending delimiter reference
+       */
+      let ender = NIL;
+      /**
+       * The atomic token reference
+       */
+      let liner = NIL;
+
+      /**
+       * The Liquid tag name
+       */
+      let lname = NIL;
+
+      /**
+       * The lines offset reference
+       */
+      let lines = 0;
+
+      // Inserts the starting token into the data struture, eg: {% liquid
+      //
+      push(record, {
+        token: inner(token.slice(0, i)),
+        types: 'liquid_start',
+        stack: 'liquid'
+      });
+
+      /**
+       * Split token onto newlines
+       */
+      const nl = token.slice(i).split(NWL);
+
+      i = 0; // Reset Iterators
+
+      do {
+
+        liner = nl[i].trim();
+        lname = liner.split(/\s/)[0];
+
+        if (liner.endsWith('%}')) {
+          ender = u.is(lname[lname.length - 3], cc.DSH) ? '-%}' : '%}';
+          lname = lname.replace(/-?%}$/, NIL);
+        }
+
+        if (lname.startsWith('end')) {
+
+          push(record, {
+            token: lname,
+            types: 'liquid_end',
+            lines: lines + 1
+          });
+
+          lines = 0;
+
+        } else if (lname.startsWith('#')) {
+
+          push(record, {
+            token: liner,
+            types: 'comment',
+            lines: lines + 1
+          });
+
+          lines = 0;
+
+        } else if (lname.startsWith('comment')) {
+
+          push(record, {
+            token: liner,
+            types: 'liquid_start',
+            lines: lines + 1
+          });
+
+          lines = 0;
+
+        } else {
+
+          if (grammar.liquid.tags.has(lname)) {
+
+            push(record, {
+              token: liner,
+              types: 'liquid_start',
+              lines: lines + 1
+            });
+
+            lines = 0;
+
+          } else if (grammar.liquid.else.has(lname)) {
+
+            push(record, {
+              token: liner,
+              types: 'liquid_else',
+              lines: lines + 1
+            });
+
+            lines = 0;
+
+          } else if (grammar.liquid.singleton.has(lname)) {
+
+            push(record, {
+              token: liner,
+              types: 'liquid',
+              lines: lines + 1
+            });
+
+            lines = 0;
+
+          }
+        }
+
+        if (ender !== NIL) {
+
+          push(record, {
+            token: ender,
+            types: 'liquid_end'
+          });
+
+        }
+
+        i = i + 1;
+        lines = lines + 1;
+
+      } while (i < nl.length);
+
+    }
+
+    /**
      * Parse SVG
      *
      * This will parse SVG tag structures and correctly apply singular
@@ -1046,86 +1171,6 @@ export function markup (input?: string) {
       }
 
       return parseLiquid();
-
-    }
-
-    function parseLiquidTag () {
-
-      let i = token.indexOf('liquid') + 6;
-      let n = NIL;
-      let x = NIL;
-
-      push(record, {
-        token: inner(token.slice(0, i) + ' %}'),
-        types: 'liquid_tag'
-
-      });
-
-      const inset = '   ';
-      const lines = token.slice(i).split(NWL);
-      const ln = lines.length;
-
-      i = 0;
-
-      do {
-
-        x = lines[i].trim();
-        n = x.split(/\s/)[0];
-
-        if (n.startsWith('end')) {
-
-          push(record, {
-            token: inset + n,
-            types: 'liquid_end',
-            stack: n.slice(3)
-          });
-
-        } else if (n.startsWith('#')) {
-
-          push(record, {
-            token: inset + x,
-            types: 'comment'
-          });
-
-        } else if (n.startsWith('comment')) {
-
-          push(record, {
-            token: inset + x,
-            types: 'liquid_start'
-          });
-
-        } else {
-
-          if (grammar.liquid.tags.has(n)) {
-
-            push(record, n, {
-              token: inset + x,
-              types: 'liquid_start',
-              lines: 1
-            });
-
-          } else if (grammar.liquid.else.has(n)) {
-
-            push(record, n, {
-              token: inset + x,
-              types: 'liquid_else',
-              lines: 1
-            });
-
-          } else if (grammar.liquid.singleton.has(n)) {
-
-            push(record, n, {
-              token: inset + x,
-              types: 'liquid',
-              lines: 1
-            });
-
-          }
-        }
-
-        i = i + 1;
-
-      } while (i < ln);
 
     }
 
