@@ -631,6 +631,30 @@ export enum MarkupTypes {
    */
   liquid_bad_end = 'liquid_bad_end',
   /**
+   * Liquid opening delimiter
+   *
+   * ---
+   * @example
+   *
+   * {%
+   * {%-
+   * {{
+   * {{-
+   */
+  liquid_open = 'liquid_open',
+  /**
+   * Liquid closing delimiter
+   *
+   * ---
+   * @example
+   *
+   * %}
+   * -%}
+   * }}
+   * }}
+   */
+  liquid_close = 'liquid_close',
+  /**
    * A template tag that contains content or other tags not associated with
    * the template language and expects a closing tag. This is representative of
    * Liquid tags.
