@@ -1,5 +1,4 @@
-import { Types, Structure, LanguageOfficialName, LanguageName } from '../shared';
-import { LangMap } from 'src/parse/detection';
+import { Types, LanguageOfficialName, LanguageName } from '../shared';
 import { ErrorTypes, ParseErrors } from 'src/parse/errors';
 import { StackItem } from 'types/next';
 
@@ -96,7 +95,7 @@ export interface Syntactic {
   expect?: string;
   token?: string;
   stack?: string;
-  type?: LangMap;
+  type?: Types;
 }
 
 /**
@@ -210,95 +209,6 @@ export interface WrapComment {
   start: number;
   begin: string;
   ender: string;
-}
-
-export interface XParse {
-
-  /**
-   * Parse Error
-   */
-  error: string;
-  /**
-   * Stores the final index location of the data arrays
-   */
-  count: number;
-  /**
-   *  Stores the name of the data arrays.  This is used for internal automation
-   */
-  datanames: string[];
-  /**
-   * Stores the current line number from the input string for logging parse errors
-   */
-  lineNumber: number;
-  /**
-   * Stores the 'lines' value before the next token
-   */
-  linesSpace: number;
-  /**
-   * Stores the various data arrays of the parse table
-   */
-  data: Data;
-  /**
-   * Stores the final index location of the data arrays
-   */
-  parse?: IParse;
-  /**
-   * Stores the declared variable names for the script lexer.
-   * This must be stored outside the script lexer since some languages
-   * recursive use of the script lexer
-   */
-  references: string[][];
-  /**
-   * Stores the stack and begin values by stacking depth
-   */
-  structure: Structure[];
-  /**
-   * An extension of `Array.prototype.concat` to work across
-   * the data structure. This is an expensive operation.
-   */
-  concat(data: Data, array: Data): void;
-  /**
-   * The function that sorts object properties
-   */
-  objectSort(data: Data): void;
-  /**
-   * An extension of `Array.prototype.pop` to work across the data structure
-   */
-  pop(data: Data): Record;
-  /**
-   * An extension of `Array.prototype.push` to work across the data structure
-   */
-  push(data: Data, record: Record, structure: string): void;
-  /**
-   * A custom sort tool that is a bit more intelligent and
-   * multidimensional than `Array.prototype.sort`
-   */
-  safeSort(array: [ token: string,
-    lines: number,
-    chain?: boolean][], operation: string, recursive: boolean): [ token: string,
-    lines: number,
-    chain?: boolean][];
-  /**
-   * This functionality provides corrections to the `begin` and `ender` values after use of objectSort
-   */
-  sortCorrection(start: number, end: number): void;
-  /**
-   * A simple tool to take note of whitespace between tokens parseSpacer
-   */
-  spacer(args: Spacer): number;
-  /**
-   * An extension of `Array.prototype.splice` to work across the data structure
-   */
-  splice(spliceData: Splice): void;
-  /**
-   * Parsing block comments and simultaneously applying word wrap
-   */
-  wrapCommentBlock(config: WrapComment): [string, number];
-  /**
-   * Parsing block comments and applying word wrap
-   */
-  wrapCommentLine(config: WrapComment): [string, number];
-
 }
 
 /**
