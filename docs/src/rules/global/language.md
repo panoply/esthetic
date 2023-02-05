@@ -1,7 +1,7 @@
 ---
 title: 'Global Rules - Language'
 layout: base
-permalink: '/rules/language/index.html'
+permalink: '/rules/global/language/index.html'
 ---
 
 #### Language

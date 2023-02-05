@@ -11,7 +11,7 @@
 /* CUSTOM ------------------------------------- */
 
 @import '@brixtol/bootstrap/sass/headings';
-// @import "@brixtol/bootstrap/sass/code";
+@import '@brixtol/bootstrap/sass/code';
 @import '@brixtol/bootstrap/sass/spacing';
 @import '@brixtol/bootstrap/sass/display';
 @import '@brixtol/bootstrap/sass/helpers';
@@ -27,12 +27,12 @@
 @import '@brixtol/bootstrap/sass/spinner';
 @import '@brixtol/bootstrap/sass/buttons';
 @import '@brixtol/bootstrap/sass/ratio';
-// @import "@brixtol/bootstrap/sass/tooltip";
+@import '@brixtol/bootstrap/sass/tooltip';
 
 /* COMPONENTS -------------------------------- */
 
 @import '@brixtol/bootstrap/sass/components/dropdown';
-@import '@brixtol/bootstrap/sass/components/accordion';
+// @import '@brixtol/bootstrap/sass/components/accordion';
 
 /* FORMS -------------------------------------- */
 
@@ -55,6 +55,7 @@
 /* COMPONENTS                                   */
 /* -------------------------------------------- */
 
+@import 'styles/accordion';
 @import 'styles/svg';
 @import 'styles/overwrites';
 @import 'styles/navbar';

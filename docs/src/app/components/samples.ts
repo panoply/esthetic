@@ -4,6 +4,7 @@ import m from 'mithril';
 import esthetic from 'esthetic';
 import { global } from '../samples/global';
 
+
 /* -------------------------------------------- */
 /* CLASS                                        */
 /* -------------------------------------------- */

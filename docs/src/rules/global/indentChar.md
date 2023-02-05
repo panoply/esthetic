@@ -1,7 +1,7 @@
 ---
 title: 'Global Rules - Indent Character'
 layout: base
-permalink: '/rules/indentChar/index.html'
+permalink: '/rules/global/indentChar/index.html'
 ---
 
 &nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `' '`

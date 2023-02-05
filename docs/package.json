@@ -49,12 +49,15 @@
     "@brixtol/bootstrap": "^1.4.3",
     "@hotwired/stimulus": "^3.2.1",
     "@panoply/viewports": "^0.0.3",
+    "blissfuljs": "^1.0.6",
+    "codejar": "^3.6.0",
     "esthetic": "link:..",
     "mithril": "^2.2.2",
     "prismjs": "^1.29.0",
     "relapse": "^0.5.0",
     "spx": "0.0.4-beta.1",
-    "stickybits": "^3.7.11"
+    "stickybits": "^3.7.11",
+    "textarea-code": "^4.0.1"
   },
   "devDependencies": {
     "@11ty/eleventy": "^1.0.2",
@@ -66,6 +69,7 @@
     "@panoply/11ty": "^0.1.0",
     "@sardine/eleventy-plugin-tinyhtml": "^0.2.0",
     "@sissel/stylelint-config": "^1.0.0",
+    "@types/blissfuljs": "^0.0.35",
     "@types/browser-sync": "^2.26.3",
     "@types/markdown-it": "^12.2.3",
     "@types/prismjs": "^1.26.0",

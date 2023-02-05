@@ -45,7 +45,7 @@ format('<div id="x" class="x"> etc etc </div>').then(output => {
 
 Æsthetic provides a granular set of beautification options (rules). The projects [Typings](https://github.com/panoply/Æsthetic/tree/pre-release/types/rules) explains in good detail the effect each available rule has on code. You can also checkout the [Playground](https://liquify.dev/Æsthetic) to get a better idea of how code will be beautified.
 
-```json
+```js
 {
   "language": "auto",
   "indentSize": 2,
@@ -143,7 +143,7 @@ format('<div id="x" class="x"> etc etc </div>').then(output => {
 
 Global rules will be applied to all lexer modes. You cannot override globals on a per lexer basis. Globals are exposed as first level properties.
 
-```json
+```js
 {
   "language": "auto",
   "indentSize": 2,
@@ -161,7 +161,7 @@ Refer to the [typings](https://github.com/panoply/Æsthetic/blob/pre-release/typ
 
 - **Liquid**
 
-```json
+```js
 {
   "liquid": {
     "commentIndent": false,
@@ -189,7 +189,7 @@ Refer to the [typings](https://github.com/panoply/Æsthetic/blob/pre-release/typ
 - **JSX**
 - **TSX**
 
-```ts
+```js
 {
   markup: {
     attributeCasing: 'preserve',
@@ -224,7 +224,7 @@ Refer to the [typings](https://github.com/panoply/Æsthetic/blob/pre-release/typ
 - **SCSS/SASS**
 - **LESS**
 
-```json
+```js
 {
   "style": {
     "atRuleSpace": false,
@@ -252,7 +252,7 @@ Refer to the [typings](https://github.com/panoply/Æsthetic/blob/pre-release/typ
 - **JSX**
 - **TSX**
 
-```ts
+```js
 {
   script: {
     arrayFormat: 'default',
@@ -294,7 +294,7 @@ Refer to the [JSON](/docs/rules/json.md) declaration file for description. Rules
 - **JSON**
 - **JSONC**
 
-```json
+```js
 {
   "arrayFormat": "default",
   "braceAllman": true,

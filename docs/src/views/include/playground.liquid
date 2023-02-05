@@ -1,0 +1,37 @@
+<main id="main" class="container-fluid">
+  <div class="row g-0 vh-100" data-controller="playground">
+
+    <aside class="col-2 vh-100 br d-none" data-playground-target="rules">
+    </aside>
+
+    <div class="col">
+
+      <div class="row g-0">
+
+        <div class="col-6 vh-100 relative" style="position: relative;">
+
+        <div class="code-editor">
+        <textarea
+          spellcheck="false"
+          is="textarea-code"
+          data-playground-target="textarea"
+          data-action="scroll->playground#onScroll keyup->playground#onInput input->playground#onInput"></textarea>
+          <pre class="vh-100 m-0"><code class="vh-100 language-html" data-playground-target="editor"></code></pre>
+        </div>
+
+        </div>
+        <div class="col-6 bl">
+
+        <div class="code-editor">
+        <pre class="vh-100 m-0 language-html">
+          <code
+          class="vh-100 language-html"
+          data-playground-target="output"
+        ></code>
+        </pre>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

@@ -1,7 +1,7 @@
 ---
 title: 'Global Rules - Indent Character'
 layout: base
-permalink: '/rules/preserveLine/index.html'
+permalink: '/rules/global/preserveLine/index.html'
 ---
 
 # Preserve Line

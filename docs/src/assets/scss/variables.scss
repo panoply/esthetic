@@ -3,7 +3,7 @@
 /* -------------------------------------------- */
 
 $variable-prefix: null;
-
+$enable-font-smoothing: true;
 /* -------------------------------------------- */
 /* EDITABLE OPTIONS                             */
 /* -------------------------------------------- */
@@ -14,7 +14,7 @@ $enable-rfs: true;
 /* PALETTE                                      */
 /* -------------------------------------------- */
 
-$white: #fff;
+$white: rgb(240, 240, 240);
 $black: #1c1e21;
 $blue: #0d6efd;
 $indigo: #6610f2;
@@ -120,15 +120,29 @@ $container-max-widths: (
 /* BODY                                         */
 /* -------------------------------------------- */
 
-$body-bg: $gray-100;
-$body-color: $gray-900;
+$body-bg: #0f1215; // $black; //#282a36; // $gray-100;
+$body-color: $white; //$gray-900;
+$code-bg: #181b20; //$black; // #282a36;
+$code-inline-bg: $code-bg; // #efefef;
+$link-color: $white;
+
+$letter-spacing-base: inherit;
+$letter-spacing-heading: inherit;
+
+$font-weight-normal: 200;
+$font-weight-lighter: 200;
+$font-weight-light: 100;
+$font-weight-bold: 500;
+$font-weight-bolder: bolder;
 
 /* -------------------------------------------- */
 /* BORDER                                       */
 /* -------------------------------------------- */
 
 $border-width: 0.01rem;
-
+$border-color: #3c3c3c; // $gray-600; //$gray-400;
+$accordion-border-color: $border-color; //$gray-400;
+$accordion-border-width: $border-width;
 /* -------------------------------------------- */
 /* FONT FAMILY                                  */
 /* -------------------------------------------- */
@@ -141,8 +155,8 @@ $font-family-base: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
   'Segoe UI Symbol';
 
 $font-family-heading: $font-family-base;
-$font-family-code: SFMono-Regular, Menlo, Monaco, 'Courier New',
-  Courier, monospace;
+$font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
+  monospace;
 
 // stylelint-enable
 
@@ -154,12 +168,17 @@ $font-size-base: 1rem;
 
 $font-size-xs: $font-size-base * 0.625; // 0.6875rem
 $font-size-md: 0.901rem; // 0.7771rem
-$font-size-sm: $font-size-base * 0.775; // 0.8525rem
+$font-size-sm: $font-size-base * 0.875; // 0.8525rem
 $font-size-lg: $font-size-base * 1.25; // 1.375rem
 
 /* -------------------------------------------- */
 /* FONT HEADINGS                                */
 /* -------------------------------------------- */
+
+$line-height-base: 1.4;
+$line-height-sm: 1.25;
+$line-height-lg: 2;
+$line-height-xl: 2.4;
 
 $headings-letter-spacing: $headings-letter-spacing;
 $headings-font-family: $font-family-heading;
@@ -168,7 +187,7 @@ $headings-font-style: null;
 $headings-font-weight: 600;
 $headings-line-height: 1.2;
 $headings-color: null;
-$headings-uppercase: false;
+$headings-uppercase: true;
 
 $h1-font-size: $font-size-base * 2.2;
 $h2-font-size: $font-size-base * 1.9;
@@ -180,3 +199,22 @@ $h6-font-size: $font-size-base;
 /* -------------------------------------------- */
 /* PARAGRAPH                                    */
 /* -------------------------------------------- */
+
+$input-bg: rgb(18, 20, 23);
+$input-disabled-bg: $gray-100;
+$input-disabled-border-color: $gray-200;
+$input-color: $body-color;
+$input-border-color: $gray-400;
+
+$tooltip-bg: #000;
+$tooltip-font-family: $font-family-base;
+$tooltip-font-style: normal;
+$tooltip-font-size: $font-size-xs;
+$tooltip-font-color: $white;
+$tooltip-padding-y: 0.3rem;
+$tooltip-padding-x: 0.6rem;
+$tooltip-arrow-size: 5px;
+$tooltip-radius: 0;
+$tooltip-border-width: 0.03rem;
+$tooltip-animation: true;
+$tooltip-use-outline: false;

@@ -12,42 +12,42 @@
     {
       "group": "global",
       "title": "crlf",
-      "url": "/rules/crlf/"
+      "url": "/rules/global/crlf/"
     },
     {
       "group": "global",
       "title": "endNewline",
-      "url": "/rules/endNewline/"
+      "url": "/rules/global/endNewline/"
     },
     {
       "group": "global",
       "title": "language",
-      "url": "/rules/language/"
+      "url": "/rules/global/language/"
     },
     {
       "group": "global",
       "title": "indentChar",
-      "url": "/rules/indentChar/"
+      "url": "/rules/global/indentChar/"
     },
     {
       "group": "global",
       "title": "indentSize",
-      "url": "/rules/indentSize/"
+      "url": "/rules/global/indentSize/"
     },
     {
       "group": "global",
       "title": "preserveLine",
-      "url": "/rules/preserveLine/"
+      "url": "/rules/global/preserveLine/"
     },
     {
       "group": "global",
       "title": "preset",
-      "url": "/rules/preset/"
+      "url": "/rules/global/preset/"
     },
     {
       "group": "global",
       "title": "wrap",
-      "url": "/rules/wrap/"
+      "url": "/rules/global/wrap/"
     },
     {
       "group": "liquid",
@@ -68,6 +68,11 @@
       "group": "liquid",
       "title": "delimiterTrims",
       "url": "/rules/liquid/delimiterTrims/"
+    },
+    {
+      "group": "liquid",
+      "title": "delimiterPlacement",
+      "url": "/rules/liquid/delimiterPlacement/"
     },
     {
       "group": "liquid",

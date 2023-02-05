@@ -7,8 +7,165 @@ const markdownit = require('markdown-it');
 const mdcontainer = require('markdown-it-container')
 const anchor = require('markdown-it-anchor');
 const Prism = require('prismjs');
-const languages = require("prismjs/components/");
 
+
+// Prism.languages.style = Prism.languages.extend('css', css(base));
+// Prism.languages.script = Prism.languages.extend('javascript', js(base));
+
+
+/* -------------------------------------------- */
+/* INSERT BEFORE                                */
+/* -------------------------------------------- */
+
+
+
+Prism.languages.html = Prism.languages.extend('markup', {
+  'tag': {
+    pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
+    greedy: true,
+    inside: {
+      'tag': {
+        pattern: /^<\/?[^\s>\/]+/,
+        inside: {
+          'punctuation': /^<\/?/,
+          'namespace': /^[^\s>\/:]+:/
+        }
+      },
+      'special-attr': [],
+      'attr-value': {
+        pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/,
+        inside: {
+          'tag-name': {
+            lookbehind: true,
+            pattern: /({%-?)\s*\b([a-z]+)\b(?=[\s-])/i
+          },
+          string: {
+            greedy: true,
+            pattern: /"[^"]*"|'[^']*'/,
+            inside: {
+              punctuation: /{[{%]-?|-?[%}]}/,
+              'attr-object': {
+                lookbehind: true,
+                pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
+              },
+              'attr-property': {
+                lookbehind: true,
+                pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
+              }
+            }
+          },
+          'attr-object': {
+            lookbehind: true,
+            pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
+          },
+          'attr-property': {
+            lookbehind: true,
+            pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
+          },
+          'punctuation-chars': {
+            global: true,
+            pattern: /[.,|:?]/
+          },
+          'punctuation': [
+            {
+              pattern: /{[{%]-?|-?[%}]}/,
+            },
+            {
+              pattern: /^=/,
+              alias: 'attr-equals'
+            },
+            {
+              pattern: /^(\s*)["']|["']$/,
+              lookbehind: true
+            }
+          ]
+        }
+      },
+      'punctuation': /\/?>/,
+      'attr-name': {
+        pattern: /[^\s>\/]+/,
+        inside: {
+          'namespace': /^[^\s>\/:]+:/
+        }
+      }
+
+    }
+  },
+  'delimiters': {
+    pattern: /{[{%]-?[\s\S]*-?[%}]}/,
+    inside: {
+    'liquid-comment': {
+      lookbehind: true,
+      global: true,
+      pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
+    },
+    'liquid-tag': {
+      lookbehind: true,
+      pattern: /({%-?)\s*\b([a-z]+)\b(?=[\s-%])/i
+    },
+    'liquid-tagged': {
+      greedy: true,
+      multiline: true,
+      pattern: /\n\s+\b((?:end)?[a-z]+|echo)\b/
+    },
+    'liquid-object': {
+      lookbehind: true,
+      pattern: /[a-z_$][\w$]+(?=\.\s*)/i
+    },
+    'liquid-property': {
+      lookbehind: true,
+      pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
+    },
+    'liquid-filter': {
+      lookbehind: true,
+      pattern: /(\|)\s*(\w+)(?=[:]?)/
+    },
+    'liquid-string': {
+      lookbehind: true,
+      pattern: /['"].*?['"]/
+    },
+    'liquid-punctuation': {
+      global: true,
+      pattern: /[.,|:?]/
+    },
+    'liquid-operator': {
+      pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:and|contains(?=\s)|or)\b/
+    },
+    'liquid-boolean': {
+      pattern: /\b(?:true|false|nil)\b/
+    },
+    'liquid-number': {
+      pattern: /\b(?:\d+)\b/
+    },
+    'liquid-parameter': {
+      lookbehind: true,
+      global: true,
+      greedy: true,
+      pattern: /(,)\s*(\w+)(?=:)/i
+    },
+    'liquid-style': {
+      inside: Prism.languages.style,
+      lookbehind: true,
+      pattern: /(\{%-?\s*style(?:sheet)?\s*-?%\})([\s\S]+?)(?=\{%-?\s*endstyle(?:sheet)?\s*-?%\})/
+    },
+    'liquid-javascript': {
+      inside: Prism.languages.script,
+      lookbehind: true,
+      pattern: /(\{%-?\s*javascript\s*-?%\})([\s\S]*?)(?=\{%-?\s*endjavascript\s*-?%\})/
+    },
+    'liquid-schema': {
+      inside: Prism.languages.json,
+      lookbehind: true,
+      pattern: /(\{%-?\s*schema\s*-?%\})([\s\S]+?)(?=\{%-?\s*endschema\s*-?%\})/
+    }
+  }
+}
+});
+
+
+
+//Prism.languages.extend('html', Prism.languages.html);
+//Prism.languages.extend('liquid', liquid)
 
 /**
  * Prism Theme
@@ -75,6 +232,8 @@ Prism.languages.insertBefore('js', 'keyword', {
   }
 });
 
+let store;
+
 /**
  * Highlight Code
  *
@@ -83,53 +242,203 @@ Prism.languages.insertBefore('js', 'keyword', {
  * @param {string} lang code language
  * @returns {string} highlighted result wrapped in pre
  */
-function highlighter(md, str, lang) {
+function highlighter (md, raw, language) {
 
-  let result = "";
+  let result = '';
 
-  if (lang) {
+  if (language) {
+
+    if(language === 'json:rules') return raw
+
     try {
-      languages([lang]);
-      result = Prism.highlight(str, Prism.languages[lang], lang);
+
+      result = Prism.highlight(raw, Prism.languages[language], language);
+
     } catch (err) {
+
       console.error(lang, err);
-      result = md.utils.escapeHtml(str);
+
+      result = md.utils.escapeHtml(raw);
+
     }
+
   } else {
-    result = md.utils.escapeHtml(str);
+
+    result = md.utils.escapeHtml(raw);
+
   }
 
-  return `<pre class="language-${lang}"><code>${result}</code></pre>`;
+
+  return `<pre class="language-${language}"><code>${result}</code></pre>|${raw}`;
 
 };
+
+function getInputSource (md, raw) {
+
+  if(raw.indexOf('</pre>|') > -1) {
+
+    const index = raw.indexOf('</pre>|') + 6
+
+    return  {
+      source: md.utils.escapeHtml(raw.slice(index + 1)),
+      syntax: `\n${raw.slice(0, index)}\n`
+    }
+
+  }
+
+  return {
+    source: null,
+    syntax: raw
+  }
+
+}
+
+function getEditorLines (target, raw) {
+
+  const lines = [ ...Array(raw.split("\n").length - 1) ]
+  const numbers = lines.map((_, i) => (`<span class="line-number">${i + 1}</span><br>`)).join('');
+
+  return [
+    /* html */`
+    <div
+      data-editor-target="${target}Lines"
+      class="line-numbers-wrapper"
+      aria-hidden="true">
+      ${numbers}
+    </div>
+    `
+   , lines.length - 1
+  ]
+
+}
+
+function getCodeInput (raw, language) {
+
+  const lines = getEditorLines('input', raw)
+  const output = raw
+  .replace(/<\/pre>\n/, `${lines[0]}</pre>`)
+  .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode" data-action="scroll->editor#onScroll"')
+  .replace(/<code>/, `<code data-editor-target="input" class="language-${language}">`)
+
+  return [
+    /* html */`
+    <div class="row editor-tabs">
+      <div class="col-auto pl-0 pr-1">
+        <button
+          class="selected"
+          data-action="editor#before"
+          aria-label="Before Formatting"
+          data-tooltip="top">
+          Before
+        </button>
+      </div>
+      <div class="col-auto pr-0">
+        <button
+          data-action="editor#after"
+          aria-label="After Formatting"
+          data-tooltip="top">
+         After
+        </button>
+      </div>
+    </div>
+    ${output}
+    `
+  ].join('')
+
+}
+
+function getRuleSamples (raw, language) {
+
+  const code = raw.slice(raw.indexOf("<code>"), raw.indexOf("</code>"));
+  const [ lines, count ] = getEditorLines('output', code)
+
+  return [
+    /* html */`<pre class="hide-scroll line-numbers-mode language-${language}">`
+    ,
+    /* html */`<code data-editor-target="output" class="language-${language}">`
+    ,
+    /* html */`${'\n'.repeat(count)}`
+    ,
+    /* html */`</code>`
+    ,
+    /* html */`${lines}`
+    ,
+    /* html */`</pre>`
+
+  ].join('')
+
+}
+
+function getFormatRules (md, raw, tokens, index) {
+
+  const language = tokens[index - 3].info.trim();
+  const rules = {
+    language: 'liquid',
+    liquid: {
+      delimiterPlacement: 'force-inline'
+    }
+  }
+
+  return md.utils.escapeHtml(JSON.stringify(rules))
+}
+
+function getCodeBlocks (md, fence, ...args) {
+
+
+  const [ tokens, index ] = args;
+  const language = tokens[index].info.trim();
+  const raw = fence(...args);
+
+  if(language === 'json:rules') {
+    const json =raw.slice(raw.indexOf('>', raw.indexOf('<code') +1) + 1, raw.indexOf('</code'))
+    store = JSON.parse(json.trim())
+    return ''
+  }
+
+  const { source, syntax } = getInputSource(md, raw)
+  const input = getCodeInput(syntax, language, 'input')
+
+  if(syntax === null) return input
+
+  const rules = getFormatRules(md, raw, tokens, index)
+  const output = getRuleSamples(syntax, language, 'output')
+
+  return [
+    // /* html */`
+    // </div>
+    // </div>
+    // `
+    ,
+    /* html */`
+    <div
+      data-controller="editor"
+      data-editor-mode-value="initial"
+      data-editor-rules-value="${md.utils.escapeHtml(JSON.stringify(store))}"
+      data-editor-input-value="${source.trim()}"
+      data-editor-output-value="${source.trim()}">
+      ${input.trim()}
+    </div>`
+    ,
+    // /* html */`
+    // <div class="row px-5">
+    // <div class="col-8">
+    // `
+
+  ].join('')
+
+}
 
 /**
  * Line Numbers
  *
  * @param {markdownit} md
- * @license MIT License. See file header.
  */
-function lineNumbers (md)  {
+function codeblocks (md)  {
 
   const { fence } = md.renderer.rules;
 
-  md.renderer.rules.fence = (...args) => {
+  md.renderer.rules.fence = (...args) =>  getCodeBlocks(md, fence, ...args)
 
-    const [ tokens, idx ] = args;
-    const lang = tokens[idx].info.trim();
-    const raw = fence(...args);
-    const code = raw.slice( raw.indexOf("<code>"), raw.indexOf("</code>"));
-    const lines = code.split("\n");
-    const numbers = [ ...Array(lines.length - 1) ]
-    const lineNo = numbers.map((_, i) => (`<span class="line-number">${i + 1}</span><br>`)).join("");
-    const lineNoWrap = `<div class="line-numbers-wrapper" aria-hidden="true">${lineNo}</div>`;
-
-    return raw
-      .replace(/<\/pre>\n/, `${lineNoWrap}</pre>`)
-      .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode"')
-      .replace(/<code>/, `<code class="language-${lang}">`)
-
-  };
 };
 
 /**
@@ -140,25 +449,92 @@ function lineNumbers (md)  {
  * @param {number} index The index of the current token in the tokens array.
  * @returns {string} The markup for the alert.
  */
-function containers(type, tokens, index) {
+function notes (tokens, index) {
 
   if (tokens[index].nesting === 1) {
-    if(type === 'note') return `<blockquote class="${type}">`.trim();
+
+    return `<blockquote class="note">`
   }
 
   return '</blockquote>'
 
 }
 
+function rule (md, tokens, idx) {
+
+  if (tokens[idx].nesting === 1) {
+
+    var m = tokens[idx].info.trim().match(/^rule\s+(.*)$/);
+
+    if (tokens[idx].nesting === 1) {
+
+      let tooltip = ''
+
+      if('🤡' === m[1]) {
+        tooltip = "The choice of a clown"
+      } else if ('🙌' === m[1]) {
+        tooltip = "The recommended choice"
+      } else if ('👍' === m[1]) {
+        tooltip = "Good choice, no remark to be had."
+      } else if ('👎' === m[1]) {
+        tooltip = "Not recommended"
+      } else if ('😳' === m[1]) {
+        tooltip = "We live in a society, we're not animals"
+      }  else {
+        tooltip = m[1]
+      }
+
+
+      // opening tag
+      return [
+
+        /* html */`
+        <div class="rule-title d-flex ai-center">
+        <div
+          class="h5 mr-3"
+          aria-label="${tooltip}"
+          data-tooltip="top">
+        ${md.utils.escapeHtml(m[1])}
+        </div>
+        `
+      ].join('')
+    }
+
+
+  }
+
+  return '</div>'
+
+}
+
+
+/**
+ * Generates HTML markup for various blocks
+ *
+ * @param {markdownit} md
+ * @param {Array<markdownit>} tokens Array of MarkdownIt tokens to use.
+ * @param {number} idx The index of the current token in the tokens array.
+ * @returns {string} The markup for the alert.
+ */
+function options (tokens, idx) {
+
+  if (tokens[idx].nesting === 1) {
+
+    return /*html */`
+      <div
+        data-controller="accordion"
+        data-accordion-multiple-value="true"
+        class="accordion accordion-markdown">`
+
+  }
+
+  return '</div>'
+
+}
 
 module.exports = eleventy(function (config) {
 
   config.addPlugin(navigation);
-  config.addPlugin(highlight, {
-    init: Prism,
-    alwaysWrapLineHighlights: true,
-    templateFormats: ["liquid"]
-  });
 
   const md = markdownit({
     html: true,
@@ -167,11 +543,18 @@ module.exports = eleventy(function (config) {
     breaks: false,
     highlight: (str, lang) => highlighter(md, str, lang)
   })
-
-  md.use(anchor)
-  md.use(lineNumbers)
-  md.use(mdcontainer, 'note', { render: (tokens, idx) => containers('note', tokens, idx) })
-  md.disable("code");
+  .use(anchor)
+  .use(codeblocks)
+  .use(mdcontainer, 'note', {
+    render: (tokens, idx) => notes(tokens, idx)
+  })
+  .use(mdcontainer, 'rule', {
+    render: (tokens, idx) => rule(md, tokens, idx)
+  })
+  .use(mdcontainer, 'options', {
+    render: (tokens, idx) => options(tokens, idx)
+  })
+  .disable("code");
 
   config.setBrowserSyncConfig();
   config.setLibrary('md', md);
@@ -200,27 +583,27 @@ module.exports = eleventy(function (config) {
 
 
 
-  config.addPlugin(htmlmin, {
-    collapseBooleanAttributes: false,
-    collapseWhitespace: true,
-    decodeEntities: true,
-    html5: true,
-    removeAttributeQuotes: true,
-    removeComments: true,
-    removeOptionalTags: true,
-    sortAttributes: true,
-    sortClassName: true
-  });
+  // config.addPlugin(htmlmin, {
+  //   collapseBooleanAttributes: false,
+  //   collapseWhitespace: true,
+  //   decodeEntities: true,
+  //   html5: true,
+  //   removeAttributeQuotes: true,
+  //   removeComments: true,
+  //   removeOptionalTags: true,
+  //   sortAttributes: true,
+  //   sortClassName: true
+  // });
 
   return {
     htmlTemplateEngine: 'liquid',
     passthroughFileCopy: false,
+    markdownTemplateEngine: false,
     pathPrefix: '',
     templateFormats: [
       'liquid',
       'json',
-      'md',
-      'html',
+      'md'
     ],
     dir: {
       input: 'src',

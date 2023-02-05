@@ -1,26 +1,45 @@
 <header class="container-fluid navbar bb">
-  <div class="row ai-center bg-white w-100 pr-0">
+  <div id="navbar" class="row ai-center bg-white w-100 pr-0">
     <a
       href="/"
-      class="col-auto italic fc-black fs-lg pl-4 pr-0"
+      class="col-auto italic fc-white fs-lg pl-4 pr-0"
       style="font-weight: 800;">Æ<small>STHETIC</small>
     </a>
     <small class="col-auto pl-0">
       <strong class="col-auto fs-sm mr-5">
-        <span class="fs-xs fw-light">v&nbsp;</span>0.1.0</strong>
+      <span class="fs-xs fw-light">v&nbsp;</span>0.1.0</strong>
     </small>
-    <a
-      href="{{ '/' | url }}"
-      class="col-auto fw-bolder ">Docs</a>
-    <a
-      href="{{ '/rules/' | url }}"
-      class="col-auto off">Rules</a>
-    <a
-      href="{{ '/examples' | url }}"
-      class="col-auto ji-end off">Playground</a>
+
+    {%
+      liquid
+
+      assign active = NIL
+      assign navs = main.urls | map: 'url'
+      assign rule = rules.urls | map: 'url',
+
+      if navs contains page.url
+        assign active = 1
+      elsif rule contains page.url or page.url == '/rules/'
+        assign active = 2
+      else
+        assign active = 3
+      endif
+    %}
+
+    {% for link in navbar %}
+
+
+      <a
+        href="{{ link.url }}"
+        title="{{ link.title }}"
+        class="col-auto fw-bolder {% unless forloop.index == active %}off{% endunless %}">
+          {{ link.title }}
+      </a>
+    {% endfor %}
+
     <a
       href="https://github.com/panoply/esthetic"
-      class="col-auto ji-end pr-0">
+      class="col-auto ml-auto pr-0">
       {% svg "github", 'icon icon-github' %}
     </a>
   </div>

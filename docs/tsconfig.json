@@ -4,6 +4,7 @@
   "compilerOptions": {
     "target": "ES6",
     "lib": ["es2020", "dom", "dom.iterable"],
+    "typeRoots": ["node_modules/@types"],
     "module": "ES6",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

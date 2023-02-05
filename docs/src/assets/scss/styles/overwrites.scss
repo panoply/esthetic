@@ -17,7 +17,7 @@ h6 {
     padding-top: 75px;
     padding-right: 75px;
     color: $gray-600;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' %3E%3Ccircle cx='12' cy='5' r='3'%3E%3C/circle%3E%3Cline x1='12' y1='22' x2='12' y2='8'%3E%3C/line%3E%3Cpath d='M5 12H2a10 10 0 0 0 20 0h-3'%3E%3C/path%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='#6c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' ><circle cx='12' cy='5' r='3'></circle><line x1='12' y1='22' x2='12' y2='8'></line><path d='M5 12H2a10 10 0 0 0 20 0h-3'></path></svg>");
     background-repeat: no-repeat;
     background-position-x: 90%;
     background-position-y: 65px;
@@ -26,36 +26,64 @@ h6 {
   }
 }
 
+.rule-title {
+}
+
+h4 {
+  font-family: $font-family-code;
+  font-size: $h5-font-size;
+  text-transform: lowercase;
+  background-color: $code-inline-bg;
+  padding: 5px 8px;
+  width: fit-content;
+  border-radius: 5px;
+  font-weight: 400;
+}
+
 blockquote {
   margin-top: 40px;
   margin-bottom: 40px;
-  padding: 30px 20px 10px;
-  background-color: $gray-200;
-  border: $border-width $gray-400 solid;
+  margin-right: 15px;
+
+  padding: 20px;
+  padding-left: 65px;
+  background-color: $code-inline-bg;
+  border: $border-width $border-color solid;
   border-radius: 0.5rem;
   position: relative;
+  width: fit-content;
+
+  > p code {
+    //background: #363f4e;
+    color: #76fffc;
+    padding: 0.1rem;
+
+    font-weight: 200;
+    text-shadow: 0 0.04rem rgb(0 0 0);
+    -webkit-font-smoothing: antialiased;
+  }
 
   &.note {
-    background-image: url(icon-note($gray-400));
-    background-size: 20px;
-    background-repeat: no-repeat;
-    background-position-x: 0;
-    background-position: 98% center;
-
-    &::before {
-      content: 'NOTE';
-      color: $gray-500;
-      font-size: $font-size-sm;
-      font-weight: $font-weight-bold;
-      position: absolute;
-      top: 8px;
-      left: 20px;
-    }
+    background-image: url(icon-info($gray-600));
+    background-repeat: no-repeat no-repeat;
+    background-position: 25px center;
+    background-size: 2.5%;
   }
 
   > p {
     margin: 0;
-    color: $black;
+    color: $body-color;
+    font-size: $font-size-sm;
+    font-family: $font-family-base;
+    font-weight: 200;
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+[data-tooltip] {
+  &:after {
+    text-transform: none;
   }
 }
 

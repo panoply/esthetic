@@ -1,10 +1,10 @@
 ---
 title: 'Global Rules - End Newline'
 layout: base
-permalink: '/rules/endNewline/index.html'
+permalink: '/rules/global/endNewline/index.html'
 ---
 
-#### End Newline
+# End Newline
 
 Whether or not files should end with an empty newline.
 
@@ -12,30 +12,42 @@ Whether or not files should end with an empty newline.
 If you are using Æsthetic within a text editor and this rule is undefined or omitted then your text editor settings will be used, in vscode that is `*.endWithNewline` where `*` is a language name. If an `.editorconfig` file is found present in root, those rules will be applied in **precedence** over your text editor settings.
 :::
 
-# Rule Options
+# Options
 
 This is a global rule definition and will be used for all languages.
 
-#### Disabled `false`
+::: options
 
-The `endNewline` rule is **disabled** (`false`) by default. Documents will strip additional newlines from the end of input. In the below sample, notice how no newline follows the closing `</div>` tag.
+### `false`
+
+> Strip additional newlines from the end of input.
+
+### `true`
+
+> Insert a newline at the end of input
+
+:::
+
+# Example
+
+Toggle the sample below to see how this rule works.
 
 <!-- prettier-ignore -->
 ```html
-<div class="xxx">
-  <!-- DOCUMENT WILL NOT END WITH AN EMPTY NEWLINE -->
-<div>
-```
-
-#### Enabled `true`
-
-When the `endNewline` rule is **enabled** (`true`)carriage return and line feed termination is used.
-
-<!-- prettier-ignore -->
-```html
-<ul>␍␊
-  <li>Foo</li>␍␊
-  <li>Bar</li>␍␊
-  <li>Baz</li>␍␊
-</ul>␍␊
+<html>
+<head>
+<title>Æsthetic | End Newline</title>
+</head>
+<body>
+<main class="container">
+<div id="xxx">
+<ul>
+<li>Foo</li>
+<li>Bar</li>
+<li>Baz</li>
+</ul>
+</div>
+</main>
+</body>
+</html>
 ```

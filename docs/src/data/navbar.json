@@ -1,14 +1,31 @@
 [
   {
     "title": "Docs",
-    "url": "/docs"
+    "url": "/introduction/what-is-esthetic/",
+    "group": [
+      "introduction",
+      "usage",
+      "parse",
+      "integrate",
+      "misc"
+    ]
   },
   {
     "title": "Rules",
-    "url": "/rules"
+    "url": "/rules/",
+    "group": [
+      "global",
+      "liquid",
+      "html",
+      "xml",
+      "css",
+      "json",
+      "script"
+    ]
   },
   {
     "title": "Playground",
-    "url": "/playground"
+    "url": "/playground/",
+    "group": ["format", "parser", "grammar", "language"]
   }
 ]

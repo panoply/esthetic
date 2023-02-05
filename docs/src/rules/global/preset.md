@@ -1,6 +1,6 @@
 ---
 title: 'Global Rules - Default'
-permalink: '/rules/preset/index.html'
+permalink: '/rules/global/preset/index.html'
 layout: base
 ---
 
@@ -17,7 +17,7 @@ The `preset` rule is a global option that will set a different **default** rules
 This is the default style guide rulset. It is most unobtrusive preset option.
 
 <!-- prettier-ignore -->
-```json
+```js
 {
   "preset": "none",
   "language": "auto",
@@ -140,12 +140,12 @@ This is the default style guide rulset. It is most unobtrusive preset option.
 }
 ```
 
-#### `reccomended`
+#### `recommended`
 
 This style guide is typically suited for most cases.
 
 <!-- prettier-ignore -->
-```json
+```js
 {
   "language": "auto",
   "indentSize": 2,
@@ -244,7 +244,7 @@ This style guide is typically suited for most cases.
 This is a strict ruleset for developers who think highly of themselves.
 
 <!-- prettier-ignore -->
-```json
+```js
 {
   "language": "auto",
   "indentSize": 2,

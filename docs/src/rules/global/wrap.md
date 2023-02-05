@@ -1,7 +1,7 @@
 ---
 title: 'Global Rules - Wrap'
 layout: base
-permalink: '/rules/wrap/index.html'
+permalink: '/rules/global/wrap/index.html'
 ---
 
 &nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `0`

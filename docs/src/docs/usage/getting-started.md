@@ -8,7 +8,7 @@ permalink: '/usage/getting-started/index.html'
 
 Æsthetic can be consumed via the NPM registry and used in both browser and node environments. It provides both ESM and CJS exports.
 
-```bash
+```
 pnpm add esthetic
 ```
 
@@ -16,7 +16,7 @@ pnpm add esthetic
 
 Use the [unpkg](https://unpkg.com/@liquify/prettify) CDN for quick usage in web browser.
 
-```bash
+```
 https://unpkg.com/@liquify/prettify
 ```
 
@@ -24,7 +24,7 @@ https://unpkg.com/@liquify/prettify
 
 The module also provided JSON Schema Store reference for usage in JSON files via `$schema` properties or within text editors like [VSCode](https://code.visualstudio.com/) which support store digestion.
 
-```bash
+```
 https://unpkg.com/@liquify/prettify/schema.json
 ```
 

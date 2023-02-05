@@ -38,6 +38,10 @@
 
       {% include 'landing' %}
 
+    {%- elsif page.url == '/playground/' -%}
+
+      {% include 'playground' %}
+
     {% else %}
 
       {% include 'navbar' %}
@@ -61,23 +65,28 @@
             {% endif %}
           </div>
 
-          <div class="col-7 px-5 py-5">
+          <div class="col px-5 py-5">
 
             <div class="d-block">
               {% include 'breadcrumbs' %}
             </div>
 
-            <div class="px-4">
-              {{ content }}
-            </div>
+             <div class="px-5">
+
+                {{ content }}
+
+              </div>
+
 
           </div>
 
-          <div
-            id="anchors"
-            class="col-auto pl-5">
+
+          <div class="col-2">
             {% include 'anchors' %}
           </div>
+
+
+
         </div>
       </main>
 

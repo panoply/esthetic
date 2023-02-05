@@ -1,7 +1,7 @@
 ---
 title: 'Global Rules - Indent Size'
 layout: base
-permalink: '/rules/indentSize/index.html'
+permalink: '/rules/global/indentSize/index.html'
 ---
 
 &nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `2`

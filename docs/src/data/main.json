@@ -10,146 +10,122 @@
     {
       "group": "introduction",
       "title": "What is Æsthetic?",
-      "url": "/introduction/what-is-esthetic?/",
-      "index": 1
+      "url": "/introduction/what-is-esthetic/"
     },
     {
       "group": "introduction",
       "title": "Motivation",
-      "url": "/introduction/motivation/",
-      "index": 2
+      "url": "/introduction/motivation/"
     },
     {
       "group": "introduction",
       "title": "Language Support",
-      "url": "/introduction/language-support/",
-      "index": 3
+      "url": "/introduction/language-support/"
     },
     {
       "group": "introduction",
       "title": "Limitations",
-      "url": "/introduction/limitations/",
-      "index": 4
+      "url": "/introduction/limitations/"
     },
     {
       "group": "usage",
       "title": "Getting Started",
-      "url": "/usage/getting-started/",
-      "index": 4
+      "url": "/usage/getting-started/"
     },
     {
       "group": "usage",
       "title": "Rules",
-      "url": "/usage/rules/",
-      "index": 6
+      "url": "/usage/rules/"
     },
     {
       "group": "usage",
       "title": "Formatting",
-      "url": "/usage/formatting/",
-      "index": 7
+      "url": "/usage/formatting/"
     },
     {
       "group": "usage",
       "title": "Parsing",
-      "url": "/usage/parsing/",
-      "index": 8
+      "url": "/usage/parsing/"
     },
     {
       "group": "usage",
       "title": "Inline Control",
-      "url": "/usage/inline-control/",
-      "index": 9
+      "url": "/usage/inline-control/"
     },
     {
       "group": "usage",
       "title": "Language",
-      "url": "/usage/language/",
-      "index": 10
+      "url": "/usage/language/"
     },
     {
       "group": "usage",
       "title": "Events and Hooks",
-      "url": "/usage/events-and-hooks/",
-      "index": 11
+      "url": "/usage/events-and-hooks/"
     },
     {
       "group": "parse",
       "title": "Architecture",
-      "url": "/parse/architecture/",
-      "index": 12
+      "url": "/parse/architecture/"
     },
     {
       "group": "parse",
       "title": "Tokens",
-      "url": "/parse/tokens/",
-      "index": 13
+      "url": "/parse/tokens/"
     },
     {
       "group": "parse",
       "title": "Data Structure",
-      "url": "/parse/data-structure/",
-      "index": 13
+      "url": "/parse/data-structure/"
     },
     {
       "group": "parse",
       "title": "Lexers",
-      "url": "/parse/lexers/",
-      "index": 14
+      "url": "/parse/lexers/"
     },
     {
       "group": "parse",
       "title": "Error Handling",
-      "url": "/parse/error-handling/",
-      "index": 15
+      "url": "/parse/error-handling/"
     },
     {
       "group": "parse",
       "title": "Terminology",
-      "url": "/parse/terminology/",
-      "index": 16
+      "url": "/parse/terminology/"
     },
     {
       "group": "integrate",
       "title": "Text Editor",
-      "url": "/integrate/text-editor/",
-      "index": 17
+      "url": "/integrate/text-editor/"
     },
     {
       "group": "integrate",
       "title": "Linters",
-      "url": "/integrate/linters/",
-      "index": 18
+      "url": "/integrate/linters/"
     },
     {
       "group": "integrate",
       "title": "Browser",
-      "url": "/integrate/browser/",
-      "index": 18
+      "url": "/integrate/browser/"
     },
     {
       "group": "integrate",
       "title": "Node",
-      "url": "/integrate/node/",
-      "index": 20
+      "url": "/integrate/node/"
     },
     {
       "group": "misc",
       "title": "Benchmarks",
-      "url": "/misc/benchmarks/",
-      "index": 21
+      "url": "/misc/benchmarks/"
     },
     {
       "group": "misc",
       "title": "Contributing",
-      "url": "/misc/contributing/",
-      "index": 22
+      "url": "/misc/contributing/"
     },
     {
       "group": "misc",
       "title": "Acknowledgements",
-      "url": "/misc/acknowledgement/",
-      "index": 23
+      "url": "/misc/acknowledgement/"
     }
   ]
 }

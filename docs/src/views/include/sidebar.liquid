@@ -31,23 +31,48 @@
       <nav class="accordion mb-2 bx-0" data-controller="accordion">
         {% for group in links.groups %}
 
-          {% if group == 'Global' %}
-            {% assign group_name = 'rules' %}
-            {% assign group_global = group | downcase %}
-          {% else %}
-            {% assign group_name = group | downcase %}
-          {% endif %}
+          {%-
+            liquid
 
-          <button class="accordion-btn px-3 py-2 {% if page.url contains group_name %}initial{%- endif -%}">
+            assign name = group | downcase
+
+            if type == 'rules'
+              if page.url == '/rules/' and name == 'global'
+                assign open = true
+              else
+                assign open = false
+                assign size = name | size | plus: 7
+                assign slice = page.url | slice: size, 50
+                assign item = page.url | remove: slice | remove: '/rules/' | strip
+                if item == name
+                  assign open = true
+                endif
+              endif
+            else
+              if page.url contains name
+                assign open = true
+              else
+                assign open = false
+              endif
+            endif
+          %}
+
+
+
+          <button class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}">
             {{ group }}
           </button>
 
-          <div class="accordion-fold bt bg-gray {% if page.url contains group_name %}expanded{%- endif -%}">
+          <div class="accordion-fold {% if open %}expanded{%- endif -%}">
             <ul class="py-4 px-2 ml-0" id="{{ link.title | slugify }}">
               {% for item in links.urls %}
-                {% if item.group == group_name or item.group == group_global and group_name == 'rules' %}
+                {% if item.group == name %}
                   <li class="pt-1 pl-3">
-                    <a href="{{ item.url }}" {% if page.url == item.url %}class="fw-bold"{% endif %}>
+                    <a
+                      href="{{ item.url }}"
+                      {% if page.url == item.url %}
+                        class="fc-pink"
+                      {% endif %}>
                       {{ item.title }}
                     </a>
                   </li>

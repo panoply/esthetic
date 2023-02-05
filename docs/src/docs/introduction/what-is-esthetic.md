@@ -14,13 +14,13 @@ The main purpose of Æsthetic is to beautify code input by restructuring formati
 
 ### Why Æsthetic?
 
-Æsthetic implements an original parser approach and provides developers with a granular set of beautification rules resulting in user refined output. Preferred syntax style quirks and aestheticals are core to the programming experience. Æsthetic offers scaled control at the formatting level and does not impose opinionated conventions.
+Æsthetic implements an original parser approach and provides developers with a granular set of beautification rules resulting in user refined output. Preferred syntax style quirks and aestheticism is core to the programming experience. Æsthetic offers scaled control at the formatting level and does not impose opinionated conventions.
 
-The most noteable selling point and aspect of the project is that the lexing algorithm and parse approach is an original strategic concept. Parsers typically produce an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (abstract syntax tree) whereas given that Æesthetic is built atop of an implementation of Sparser, it produces a uniformed table like structure resulting in fast traversal operations.
+The most notable selling point and aspect of the project is that the lexing algorithm and parse approach is an original strategic concept. Parsers typically produce an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (abstract syntax tree) whereas given that Æesthetic is built atop of an implementation of Sparser, it produces a uniformed table like structure resulting in fast traversal operations.
 
 # Goals
 
-Æsthetic has modest goals and despite running atop of Sparser which is universal and language aware it is not focused on supporting additional languages or exposing diff alogirthms. The focal point for Æesthetic is client side (front-end) flavoured languages with the extended support for beautificaiton of the Liquid template language. Overall, the goals of Æsthetic are align with goals specified in PrettyDiff:
+Æsthetic has modest goals and despite running atop of Sparser which is universal and language aware it is not focused on supporting additional languages or exposing diff algorithms. The focal point for Æesthetic is client side (front-end) flavoured languages with the extended support for beautification of the Liquid template language. Overall, the goals of Æsthetic are align with goals specified in PrettyDiff:
 
 #### Portability
 
