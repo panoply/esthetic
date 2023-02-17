@@ -2145,6 +2145,7 @@ export function script () {
         ) {
 
           parse.error = 'Unterminated string in script on line number ' + parse.lineNumber;
+
           break;
 
         }
