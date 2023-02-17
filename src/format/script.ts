@@ -3498,24 +3498,25 @@ export function script () {
   const output = (() => {
 
     const build = [];
+    const tab = rules.indentChar.repeat(rules.indentSize);
 
-    const tab = (() => {
+    // const tab = (() => {
 
-      const tabby = [];
-      const chars = rules.indentChar;
+    //   const tabby = [];
+    //   const chars = rules.indentChar;
 
-      let index = rules.indentSize;
+    //   let index = rules.indentSize;
 
-      if (typeof index !== 'number' || index < 1) return NIL;
+    //   if (typeof index !== 'number' || index < 1) return NIL;
 
-      do {
-        tabby.push(chars);
-        index = index - 1;
-      } while (index > 0);
+    //   do {
+    //     tabby.push(chars);
+    //     index = index - 1;
+    //   } while (index > 0);
 
-      return tabby.join(NIL);
+    //   return tabby.join(NIL);
 
-    })();
+    // })();
 
     const pres = rules.preserveLine + 1;
     const invisibles = [
@@ -3532,7 +3533,6 @@ export function script () {
 
     function nl (tabs: number) {
 
-      const linesout = [];
       const total = (() => {
 
         if (a === b - 1) return 1;
@@ -3543,29 +3543,31 @@ export function script () {
 
       })();
 
-      let index = 0;
+      return parse.crlf.repeat(total) + tab.repeat(tabs);
 
-      if (tabs < 0) tabs = 0;
+      // let index = 0;
 
-      do {
+      // if (tabs < 0) tabs = 0;
 
-        linesout.push(parse.crlf);
-        index = index + 1;
+      // do {
 
-      } while (index < total);
+      //   linesout.push(parse.crlf);
+      //   index = index + 1;
 
-      if (tabs > 0) {
+      // } while (index < total);
 
-        index = 0;
+      // if (tabs > 0) {
 
-        do {
-          linesout.push(tab);
-          index = index + 1;
-        } while (index < tabs);
+      //   index = 0;
 
-      }
+      //   do {
+      //     linesout.push(tab);
+      //     index = index + 1;
+      //   } while (index < tabs);
 
-      return linesout.join(NIL);
+      // }
+
+      // return  linesout.join(NIL);
 
     };
 
