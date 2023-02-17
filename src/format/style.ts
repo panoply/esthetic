@@ -34,19 +34,20 @@ export function style () {
   /**
    * Single unit of indentation
    */
-  const tab = (() => {
+  const tab = rules.indentChar.repeat(rules.indentSize);
+  // const tab = (() => {
 
-    let aa = 0;
-    const bb = [];
+  //   let aa = 0;
+  //   const bb = [];
 
-    do {
-      bb.push(rules.indentChar);
-      aa = aa + 1;
-    } while (aa < rules.indentSize);
+  //   do {
+  //     bb.push(rules.indentChar);
+  //     aa = aa + 1;
+  //   } while (aa < rules.indentSize);
 
-    return bb.join(NIL);
+  //   return bb.join(NIL);
 
-  })();
+  // })();
 
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
