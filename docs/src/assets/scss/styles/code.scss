@@ -34,13 +34,28 @@ pre[class*='language-'] {
   //background: $code-inline-bg; // #efefef;
   //padding: 0.1rem 0.4rem;
   //border-radius: 0.2rem;
-  color: $gray-500;
+  color: #6eb2d3;
   font-weight: 100;
   font-weight: 200;
   text-shadow: 0 0.04rem rgb(0 0 0);
   -webkit-font-smoothing: antialiased;
 }
 
+li > a {
+  &::before {
+    content: '–';
+    color: $gray-600;
+    margin-right: 10px;
+  }
+}
+
+a {
+  &:hover {
+    code {
+      color: $gray-500;
+    }
+  }
+}
 .editor-output {
   background-color: $code-bg;
   border-bottom: 1px solid $black;
@@ -331,7 +346,12 @@ code.language-js {
 code.language-html {
   color: $white;
 
-  .token {
+  .token.grammar {
+    color: $gray-300;
+  }
+
+  .token,
+  .token.grammar {
     &.punctuation {
       color: #becaff;
     }

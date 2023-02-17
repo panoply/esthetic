@@ -10,6 +10,7 @@ import { StyleRules } from './rules/style';
 import { ScriptRules } from './rules/script';
 import { JSONRules } from './rules/json';
 import { Grammars } from './misc/grammar';
+import { EventListeners } from './events';
 
 /* -------------------------------------------- */
 /* RE-EXPORT                                    */
@@ -27,6 +28,7 @@ export * from './rules/style';
 export * from './rules/script';
 export * from './rules/json';
 export * from './next';
+export * from './events';
 
 /**
  * Rule Language Items
@@ -143,29 +145,6 @@ export interface RulesChanges extends GlobalRuleChanges {
    * Script Rule Changes
    */
   script?: ScriptRuleChanges;
-}
-
-export interface Events {
-  /**
-   * Invoked immeadiatly after formatting has complete but
-   * before returning the beautified result. You can cancel
-   * and return input opposed to generated output by returning
-   * a boolean `false`.
-   */
-  format: ((this: { rules: Rules; data: Data; }, input?: string) => void | false)[];
-  /**
-   * Invoked when the language changes
-   */
-  language?: ((language?: Language) => void | Language)[];
-  /**
-   * Invoked when rules update change or update, the first parameter returns
-   * the diffed rule changes (ie: the changed rules), second is a copy if current rules.
-   */
-  rules?: ((changes?: RulesChanges, rules?: Rules) => void)[];
-  /**
-   * Invoked on after a full parse has completed
-   */
-  parse?: ((this: { rules: Rules }, data: Data) => void | false)[];
 }
 
 export interface Language {
@@ -297,14 +276,14 @@ export interface Grammar {
 }
 
 /**
- * Prettify (Internal)
+ * Esthetic (Internal)
  *
  * The internal Factory for Prettify. The `index.d.ts` located
  * in the root of the project is an exposed factory, this interface
  * is internal facing and at its core maintains a reference of the
  * user defined options together with operations to be applied.
  */
-export interface Prettify {
+export interface Esthetic {
   /**
    * Returns Input Source
    */
@@ -355,7 +334,7 @@ export interface Prettify {
   /**
    * Reference to operation events
    */
-  events?: Events;
+  events?: EventListeners
   /**
    * The supporting lexers
    */
@@ -392,52 +371,6 @@ export interface Prettify {
   };
 }
 
-export type EventNames = (
-  | 'format'
-  | 'parse'
-  | 'rules'
- );
-
-/**
- * Lifecycle Events
- */
-export type EventListeners<T extends EventNames> = (
-  T extends 'format' ? (
-  /**
-   * Trigger a callback to execute immeadiatly after beautification
-   * has completed. The function will trigger before the returning
-   * promise has fulfilled and is invoked in an isolated nammer.
-   *
-   * > _Returning `false` will cancel formatting._
-   */
-    output?: string,
-  /**
-    * Holds reference to current rules
-    */
-    rules?: Rules
-
-  ) => false | void : T extends 'rules' ? (
-    /**
-     * Holds reference to rules which changed
-     */
-    changes?: RulesChanges,
-    /**
-     * Holds reference to current rules
-     */
-    rules?: Rules
-
-  ) => void : T extends 'parse' ? (
-    /**
-     * The generated data structure
-     */
-    data?: Data,
-  /**
-     * Holds reference to current rules
-     */
-    rules?: Rules
-  ) => void | false : never
-)
-
 export interface Parse<T> {
 
   (source: string): Promise<T>;
@@ -455,7 +388,7 @@ export interface Format<T extends string, O extends Rules> {
 
   (source: T, rules?: O): Promise<T>;
   /**
-   * **PRETTIFY 🎀**
+   * **ÆSTHETIC**
    *
    * The new generation beautification tool for Liquid. Sync
    * export which throws if error.

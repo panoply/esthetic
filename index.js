@@ -93,7 +93,9 @@ function stats(language, lexer) {
   const store = {
     lexer,
     language: getLanguageName(language),
-    chars: 0
+    chars: 0,
+    time: "",
+    size: ""
   };
   const start = Date.now();
   return (output) => {
@@ -151,7 +153,6 @@ function sanitizeComment(input) {
 
 // src/utils/native.ts
 var assign = Object.assign;
-var defineProperties = Object.defineProperties;
 var isArray = Array.isArray;
 
 // src/parse/sorting.ts
@@ -1464,7 +1465,6 @@ var grammar = function() {
 // src/lexical/regex.ts
 var NonSpace = /\S/;
 var EmptyLine = /^\s+$/;
-var Spaces = /\s*/;
 var SpacesGlob = /\s+/g;
 var SpaceLead = /^\s+/;
 var SpaceEnd = /\s+$/;
@@ -1999,6 +1999,38 @@ var definitions = {
         }
       ]
     },
+    delimiterPlacement: {
+      default: "preserve",
+      description: "Controls the placement of Liquid delimiters",
+      lexer: "markup",
+      type: "select",
+      values: [
+        {
+          rule: "preserve",
+          description: "Preserve delimiters"
+        },
+        {
+          rule: "default",
+          description: "Use defaults"
+        },
+        {
+          rule: "consistent",
+          description: "Place line break character at the start of expressions"
+        },
+        {
+          rule: "inline",
+          description: "Place line break character at the end of expressions"
+        },
+        {
+          rule: "force-inline",
+          description: "Place line break character at the end of expressions"
+        },
+        {
+          rule: "force-multiline",
+          description: "Place line break character at the end of expressions"
+        }
+      ]
+    },
     quoteConvert: {
       lexer: "all",
       description: "If the quotes should be converted to single quotes or double quotes.",
@@ -2511,58 +2543,133 @@ function getTagName(tag, slice = NaN) {
   const tname = name.slice(0, name.search(/[\s=|!<>,.[]|-?[%}]}/));
   return isNaN(slice) ? tname : tname.slice(slice);
 }
+function qc(to) {
+  return (m, i, input) => not(input[i - 1], 92 /* BWS */) ? to : m;
+}
 
 // src/lexical/liquid.ts
-function normalize(input, rules) {
-  if (rules.delimiterTrims === "force") {
-    if (is(input[1], 37 /* PER */)) {
-      if (not(input[2], 45 /* DSH */))
-        input = input.replace(/^{%/, "{%-");
-      if (not(input[input.length - 3], 45 /* DSH */))
-        input = input.replace(/%}$/, "-%}");
-    } else {
-      if (not(input[2], 45 /* DSH */))
-        input = input.replace(/^{{/, "{{-");
-      if (not(input[input.length - 3], 45 /* DSH */))
-        input = input.replace(/}}$/, "-}}");
-    }
-  } else if (rules.delimiterTrims === "strip") {
-    input = input.replace(/^{%-/, "{%").replace(/-%}$/, "%}").replace(/^{{-/, "{{").replace(/-}}$/, "}}");
-  } else if (rules.delimiterTrims === "tags" && is(input[1], 37 /* PER */)) {
-    if (not(input[2], 45 /* DSH */))
-      input = input.replace(/^{%/, "{%-");
-    if (not(input[input.length - 3], 45 /* DSH */))
-      input = input.replace(/%}$/, "-%}");
-  } else if (rules.delimiterTrims === "outputs" && is(input[1], 123 /* LCB */)) {
-    if (not(input[2], 45 /* DSH */))
-      input = input.replace(/^{{/, "{{-");
-    if (not(input[input.length - 3], 45 /* DSH */))
-      input = input.replace(/}}$/, "-}}");
+function openDelims(input, rules) {
+  const o = is(input[2], 45 /* DSH */) ? 3 : 2;
+  const token = input.slice(o);
+  let open;
+  if (rules.delimiterTrims === "never") {
+    open = `{${input[1]}`;
+  } else if (rules.delimiterTrims === "always" || rules.delimiterTrims === "outputs" && is(input[1], 123 /* LCB */) || rules.delimiterTrims === "tags" && is(input[1], 37 /* PER */)) {
+    open = `{${input[1]}-`;
+  } else {
+    open = input.slice(0, o);
   }
+  if (rules.delimiterPlacement === "preserve") {
+    open += /^\s*\n/.test(token) ? NWL : WSP;
+  } else if (rules.delimiterPlacement === "force") {
+    open += NWL;
+  } else if (rules.delimiterPlacement === "inline" || rules.delimiterPlacement === "default") {
+    open += WSP;
+  } else if (rules.delimiterPlacement === "consistent") {
+    if (/^\s*\n/.test(token)) {
+      open += NWL;
+    } else {
+      open += WSP;
+    }
+  }
+  return open + token.trim();
+}
+function closeDelims(input, rules) {
+  const c = is(input[input.length - 3], 45 /* DSH */) ? input.length - 3 : input.length - 2;
+  const token = input.slice(0, c) || NIL;
+  let close;
+  if (rules.delimiterTrims === "never") {
+    close = `${input[input.length - 2]}}`;
+  } else if (rules.delimiterTrims === "always" || rules.delimiterTrims === "outputs" && is(input[1], 123 /* LCB */) || rules.delimiterTrims === "tags" && is(input[1], 37 /* PER */)) {
+    close = `-${input[input.length - 2]}}`;
+  } else {
+    close = input.slice(c);
+  }
+  if (rules.delimiterPlacement === "preserve") {
+    close = (/\s*\n\s*$/.test(token) ? NWL : WSP) + close;
+  } else if (rules.delimiterPlacement === "force") {
+    close = NWL + close;
+  } else if (rules.delimiterPlacement === "inline" || rules.delimiterPlacement === "default") {
+    close = WSP + close;
+  } else if (rules.delimiterPlacement === "consistent") {
+    if (/^\s*\n/.test(token)) {
+      close = NWL + close;
+    } else {
+      close = WSP + close;
+    }
+  }
+  return token.trim() + close;
+}
+function normalize(input, tname, rules) {
+  const [o, c] = delims(input);
+  let open;
+  let token = input.slice(o, c);
+  let close;
+  if (rules.delimiterTrims === "never") {
+    open = `{${input[1]}`;
+    close = `${input[input.length - 2]}}`;
+  } else if (rules.delimiterTrims === "always" || rules.delimiterTrims === "outputs" && is(input[1], 123 /* LCB */) || rules.delimiterTrims === "tags" && is(input[1], 37 /* PER */)) {
+    open = `{${input[1]}-`;
+    close = `-${input[input.length - 2]}}`;
+  } else {
+    open = input.slice(0, o);
+    close = input.slice(c);
+  }
+  if (tname === "else" || tname === "break" || tname === "continue" || tname === "increment" || tname === "decrement" || tname.startsWith("end")) {
+    open += WSP;
+    close = WSP + close;
+  } else {
+    if (rules.delimiterPlacement === "preserve") {
+      open += /^\s*\n/.test(token) ? NWL : WSP;
+      close = (/\s*\n\s*$/.test(token) ? NWL : WSP) + close;
+    } else if (rules.delimiterPlacement === "force") {
+      open += NWL;
+      close = NWL + close;
+    } else if (rules.delimiterPlacement === "inline" || rules.delimiterPlacement === "default") {
+      open += WSP;
+      close = WSP + close;
+    } else if (rules.delimiterPlacement === "consistent") {
+      if (/^\s*\n/.test(token)) {
+        open += NWL;
+        close = NWL + close;
+      } else {
+        open += WSP;
+        close = WSP + close;
+      }
+    }
+  }
+  token = token.trim();
   if (rules.normalizeSpacing === false)
-    return input;
+    return open + token + close;
   if (LiquidComment.test(input) || LiquidTag.test(input))
-    return input;
+    return open + token + close;
   let t;
   let q = 0;
-  return input.split(/(["']{1})/).map((char, idx, arr) => {
+  const clean = (char) => char.replace(WhitespaceGlob, WSP).replace(/([!=]=|[<>]=?)/g, " $1 ").replace(new RegExp("\\s+(?=[|[\\],:.])|(?<=[[.]) +", "g"), NIL).replace(new RegExp("(\\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))", "g"), " $1 ").replace(/([:,]$|[:,](?=\S))/g, "$1 ").replace(WhitespaceGlob, WSP);
+  const x = token.split(/(["'])/).map((char, idx, arr) => {
     const quotation = is(char[0], 34 /* DQO */) || is(char[0], 39 /* SQO */);
-    if (q > 0 || quotation && q === 0 && not(arr[idx - 1], 92 /* BWS */) || quotation) {
+    if (q > 0 || quotation && q === 0 && not(arr[arr[idx - 1].length - 1], 92 /* BWS */) || quotation) {
       if (q === 0)
         t = char.charCodeAt(0);
-      if (q === 1 && not(arr[idx - 1], 92 /* BWS */)) {
+      if (q === 1 && not(arr[arr[idx - 1].length - 1], 92 /* BWS */)) {
         if (t === char.charCodeAt(0))
-          q = 2;
+          q = 0;
         return char;
-      }
-      if (q !== 2) {
-        q = q === 0 ? 1 : q === 1 ? is(arr[idx - 1], 92 /* BWS */) ? 1 : 2 : 0;
+      } else if (q !== 2) {
+        q = q === 0 ? 1 : q === 1 ? is(arr[arr[idx - 1].length - 1], 92 /* BWS */) ? 1 : 2 : 0;
         return char;
       }
       q = 0;
     }
-    return char.replace(WhitespaceGlob, WSP).replace(/^({[{%]-?)/, "$1 ").replace(/([!=]=|[<>]=?)/g, " $1 ").replace(new RegExp(" +(?=[|[\\],:.])|(?<=[[.]) +", "g"), NIL).replace(new RegExp("(\\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))", "g"), " $1 ").replace(/([:,]$|[:,](?=\S))/g, "$1 ").replace(/(-?[%}]})$/, " $1").replace(WhitespaceGlob, WSP);
-  }).join(NIL);
+    return clean(char);
+  });
+  return open + x.join(NIL) + close;
+}
+function delims(input) {
+  return [
+    is(input[2], 45 /* DSH */) ? 3 : 2,
+    is(input[input.length - 3], 45 /* DSH */) ? input.length - 3 : input.length - 2
+  ];
 }
 function exp(input, fuse = true) {
   return fuse ? new RegExp(`{%-?\\s*${input}\\s*-?%}`) : new RegExp(`{%-?\\s*${input}`);
@@ -2701,10 +2808,12 @@ function detect(tag, language) {
 // src/lexers/markup.ts
 function markup(input) {
   const { data, rules } = parse;
+  const { lineBreakSeparator, forceFilterWrap, preserveInternal, delimiterPlacement } = rules.liquid;
   const source = input || parse.source;
   const jsx = parse.language === "jsx" || parse.language === "tsx";
   const ignored = new Set(rules.liquid.ignoreTagList);
   const asl = rules.markup.attributeSortList.length;
+  const lw = jsx || preserveInternal === true ? -1 : forceFilterWrap > 0 ? forceFilterWrap : rules.wrap > 0 ? rules.wrap - rules.wrap / 4 : -1;
   const b = isArray(source) ? source : source.split(NIL);
   const c = b.length;
   const svg = {
@@ -2735,14 +2844,14 @@ function markup(input) {
       console.log("isssue");
     }
   }
-  function inner(input2) {
+  function inner(input2, tname) {
     if (parse.language !== "html" && parse.language !== "liquid" && jsx === false)
       return input2;
     if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input2))
       return input2;
     if (!isType(input2, 3))
       return input2;
-    return normalize(input2, rules.liquid);
+    return normalize(input2, tname, rules.liquid);
   }
   function indent(from, token = NIL) {
     if (from < 1)
@@ -2795,9 +2904,6 @@ function markup(input) {
     }
     return [x, NIL];
   }
-  function parseError(ref) {
-    console.log(ref);
-  }
   function parseToken(end) {
     const record = {
       lexer: "markup",
@@ -2827,20 +2933,22 @@ function markup(input) {
       return parseAttribute();
     }
     function parseLiquid() {
-      if (record.types.indexOf("liquid") === -1)
+      if (record.types.indexOf("liquid") < 0)
         return cdata();
+      if (record.token === NIL)
+        record.token = token;
       if (is(token[0], 123 /* LCB */) && is(token[1], 37 /* PER */)) {
         if (grammar.liquid.else.has(tname)) {
-          record.types = "liquid_else";
+          record.types = ltype = "liquid_else";
         } else if (grammar.liquid.tags.has(tname)) {
-          record.types = "liquid_start";
+          record.types = ltype = "liquid_start";
         } else if (tname.startsWith("end")) {
           const name = tname.slice(3);
           if (grammar.liquid.tags.has(name)) {
-            record.types = "liquid_end";
+            record.types = ltype = "liquid_end";
           } else {
             record.stack = name;
-            record.types = "liquid_end";
+            record.types = ltype = "liquid_end";
             let i = 0;
             do {
               if (data.types[i] === "liquid" && data.stack[i] === name) {
@@ -2855,11 +2963,242 @@ function markup(input) {
         }
       }
       if (rules.liquid.quoteConvert === "double") {
-        record.token = record.token.replace(/'/g, DQO);
+        record.token = token = record.token.replace(/'/g, qc(DQO));
       } else if (rules.liquid.quoteConvert === "single") {
-        record.token = record.token.replace(/"/g, SQO);
+        record.token = token = record.token.replace(/"/g, qc(SQO));
       }
-      return cdata();
+      if (lw < 0 || record.types.indexOf("end") > -1 || tname === "else")
+        return cdata();
+      return token.length >= lw ? parseInternal(token.split(NIL)) : cdata();
+    }
+    function parseInternal(input2) {
+      const control = grammar.liquid.control.has(tname) || tname === "elsif";
+      const lexed = [];
+      const ender = is(token[token.length - 3], 45 /* DSH */) ? token.length - 3 : token.length - 2;
+      let i = 0;
+      let t;
+      let q = 0;
+      function qskip(at, string = input2) {
+        const quotes = is(string[at], 34 /* DQO */) || is(string[at], 39 /* SQO */);
+        if (q > 0 || quotes && q === 0 && not(string[at - 1], 92 /* BWS */) || quotes) {
+          if (q === 0)
+            t = string[i].charCodeAt(0);
+          if (q === 1 && not(string[at - 1], 92 /* BWS */) && t === string[at].charCodeAt(0)) {
+            q = 0;
+            return at;
+          } else if (q === 0) {
+            q = 1;
+            t = string[at].charCodeAt(0);
+          }
+          return qskip(at + 1, string);
+        }
+        q = 0;
+        return at;
+      }
+      let p = 0;
+      do {
+        i = qskip(i);
+        if (control) {
+          if (ws(token[i - 1]) && (token.startsWith("or", i) || token.startsWith("and", i))) {
+            lexed.push(token.slice(p, i).trim());
+            p = i;
+          }
+        } else {
+          if (is(input2[i], 124 /* PIP */)) {
+            lexed.push(token.slice(p, i).trim());
+            p = i;
+          } else if (is(input2[i], 44 /* COM */) && is(input2[p], 124 /* PIP */) === false) {
+            lexed.push(token.slice(p, i).trim());
+            p = i;
+          } else if (i === ender) {
+            lexed.push(token.slice(p, i).trim());
+          }
+        }
+        i = i + 1;
+      } while (i < input2.length);
+      if (lexed.length > 0) {
+        i = 1;
+        const width = lw - lw / 10 - parse.lineDepth;
+        do {
+          if (lexed[i].length > width) {
+            const store = [];
+            let x = 0;
+            let param = 0;
+            let comma = ",";
+            p = 0;
+            do {
+              x = qskip(x, lexed[i]);
+              if (is(lexed[i][x], 44 /* COM */)) {
+                if (p === 0) {
+                  store.push(lexed[i].slice(p, param).trim());
+                  if (lineBreakSeparator === "after") {
+                    if (rules.liquid.forceLeadArgument) {
+                      store.push(NWL, lexed[i].slice(param, x).trim() + comma, NWL);
+                    } else {
+                      store.push(lexed[i].slice(param, x).trim() + comma, NWL);
+                    }
+                  } else {
+                    comma = "  , ";
+                    if (rules.liquid.forceLeadArgument) {
+                      store.push(NWL, lexed[i].slice(param, x).trim());
+                    } else {
+                      store.push(WSP + lexed[i].slice(param, x).trim());
+                    }
+                  }
+                } else {
+                  if (lineBreakSeparator === "before") {
+                    store.push(NWL, comma + lexed[i].slice(p, x).trim());
+                  } else {
+                    store.push(lexed[i].slice(p, x).trim() + comma, NWL);
+                  }
+                }
+                p = x + 1;
+              } else if (is(lexed[i][x], 58 /* COL */) && param === 0) {
+                param = x + 1;
+              } else if (x + 1 === lexed[i].length) {
+                if (lineBreakSeparator === "before") {
+                  store.push(NWL, comma + lexed[i].slice(p, x + 1).trim());
+                } else {
+                  store.push(lexed[i].slice(p, x + 1).trim());
+                }
+              }
+              x = x + 1;
+            } while (x < lexed[i].length);
+            lexed[i] = store.join(NIL);
+          }
+          i = i + 1;
+        } while (i < lexed.length);
+        if (delimiterPlacement === "inline") {
+          lexed[lexed.length - 1] = lexed[lexed.length - 1] + WSP + token.slice(ender);
+        } else if (delimiterPlacement === "force" || delimiterPlacement === "default") {
+          lexed.push(token.slice(ender));
+        } else if (delimiterPlacement === "preserve") {
+          if (is(token[ender - 1], 32 /* WSP */)) {
+            lexed[lexed.length - 1] = lexed[lexed.length - 1] + WSP + token.slice(ender);
+          } else {
+            lexed.push(token.slice(ender));
+          }
+        } else if (delimiterPlacement === "consistent") {
+          if (is(lexed[0][2], 10 /* NWL */) || is(lexed[0][3], 10 /* NWL */)) {
+            lexed.push(token.slice(ender));
+          } else {
+            lexed[lexed.length - 1] = lexed[lexed.length - 1] + WSP + token.slice(ender);
+          }
+        }
+        record.token = token = lexed.join(NWL);
+      }
+      return parseAttribute();
+    }
+    function parseLiquidTag() {
+      let i = token.indexOf("liquid") + 6;
+      let liner = NIL;
+      let lname = NIL;
+      let lines = 1;
+      push(record, {
+        token: openDelims(token.slice(0, i), rules.liquid),
+        types: "liquid_start",
+        stack: "liquid"
+      });
+      const nl = token.slice(i).split(NWL);
+      const delim = closeDelims(nl.pop().trim(), rules.liquid).split(/\s/).filter(Boolean);
+      if (delimiterPlacement === "inline") {
+        if (delim.length > 1) {
+          nl.push(delim[0] + WSP + delim[1]);
+        } else {
+          nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
+        }
+      } else if (delimiterPlacement === "force" || delimiterPlacement === "default") {
+        if (delim.length > 1) {
+          nl.push(delim[0], delim[1]);
+        } else {
+          nl.push(delim[0]);
+        }
+      } else if (delimiterPlacement === "preserve") {
+        if (/\s*\n-?%}$/.test(token)) {
+          if (delim.length > 1) {
+            nl.push(delim[0], delim[1]);
+          } else {
+            nl.push(delim[0]);
+          }
+        } else {
+          if (delim.length > 1) {
+            nl.push(delim[0] + WSP + delim[1]);
+          } else {
+            nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
+          }
+        }
+      } else if (delimiterPlacement === "consistent") {
+        if (/^{%-?\s*\n/.test(token)) {
+          if (delim.length > 1) {
+            nl.push(delim[0], delim[1]);
+          } else {
+            nl.push(delim[0]);
+          }
+        } else {
+          if (delim.length > 1) {
+            nl.push(delim[0] + WSP + delim[1]);
+          } else {
+            nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
+          }
+        }
+      }
+      i = 0;
+      do {
+        liner = nl[i].trim();
+        lname = liner.split(/\s/)[0];
+        if (i === nl.length - 1) {
+          push(record, {
+            token: liner,
+            types: "liquid_end"
+          });
+        } else if (lname.startsWith("end")) {
+          record.token = liner;
+          record.types = "liquid_end";
+          record.lines = lines;
+          push(record);
+          lines = 1;
+        } else if (lname.startsWith("#")) {
+          record.token = liner;
+          record.types = "liquid";
+          record.lines = lines <= 1 ? 2 : lines;
+          push(record);
+          lines = 1;
+        } else if (lname.startsWith("comment")) {
+          record.token = liner;
+          record.types = "liquid_start";
+          record.lines = lines;
+          push(record);
+          lines = 1;
+        } else {
+          if (grammar.liquid.tags.has(lname)) {
+            record.token = liner;
+            record.types = "liquid_start";
+            record.lines = lines;
+            push(record);
+            lines = 1;
+          } else if (grammar.liquid.else.has(lname)) {
+            record.token = liner;
+            record.types = "liquid_else";
+            record.lines = lines;
+            push(record);
+            lines = 1;
+          } else if (grammar.liquid.singleton.has(lname)) {
+            record.token = liner;
+            record.types = "liquid";
+            record.lines = lines <= 1 ? 2 : lines;
+            push(record);
+            lines = 1;
+          } else if (liner.trim().length > 0) {
+            record.token = liner;
+            record.types = "content";
+            record.lines = lines;
+            push(record);
+            lines = 1;
+          }
+        }
+        i = i + 1;
+        lines = lines + 1;
+      } while (i < nl.length);
     }
     function parseSVG() {
       if (tname === "svg")
@@ -3121,24 +3460,25 @@ function markup(input) {
       return parseIgnore();
     }
     function parseAttribute(advance = false) {
-      push(record);
+      if (advance !== null)
+        push(record);
       const begin = parse.count;
       const stack = tname.replace(/\/$/, NIL);
-      const qc = rules.markup.quoteConvert;
+      const qc2 = rules.markup.quoteConvert;
       let idx = 0;
       let eq = 0;
       let dq = 0;
       let name = NIL;
       let value = NIL;
       let len = attrs.length;
-      function quotes() {
+      function qconvert() {
         if (parse.attributes.has(begin)) {
           if (idx + 1 === len && notLast(record.token, 62 /* RAN */)) {
             record.token = record.token + ">";
           }
         }
         let liq = record.types.indexOf("liquid_attribute") > -1;
-        if (ignore === true || qc === "none" || record.types.indexOf("attribute") < 0 || liq === false && qc === "single" && record.token.indexOf(DQO) < 0 || liq === false && qc === "double" && record.token.indexOf(SQO) < 0) {
+        if (ignore === true || qc2 === "none" || record.types.indexOf("attribute") < 0 || liq === false && qc2 === "single" && record.token.indexOf(DQO) < 0 || liq === false && qc2 === "double" && record.token.indexOf(SQO) < 0) {
           push(record);
         } else {
           let ee = 0;
@@ -3146,19 +3486,19 @@ function markup(input) {
           const ch = record.token.split(NIL);
           const eq2 = record.token.indexOf("=");
           const ln = ch.length - 1;
-          if (not(ch[eq2 + 1], 34 /* DQO */) && not(ch[ch.length - 1], 34 /* DQO */) && qc === "single" && liq === false) {
+          if (not(ch[eq2 + 1], 34 /* DQO */) && not(ch[ch.length - 1], 34 /* DQO */) && qc2 === "single" && liq === false) {
             push(record);
-          } else if (not(ch[eq2 + 1], 39 /* SQO */) && not(ch[ch.length - 1], 39 /* SQO */) && qc === "double" && liq === false) {
+          } else if (not(ch[eq2 + 1], 39 /* SQO */) && not(ch[ch.length - 1], 39 /* SQO */) && qc2 === "double" && liq === false) {
             push(record);
           } else {
             ee = eq2 + 2;
             if (liq === false) {
-              if (qc === "double") {
+              if (qc2 === "double") {
                 if (record.token.slice(eq2 + 2, ln).indexOf(DQO) > -1)
                   ex = true;
                 ch[eq2 + 1] = DQO;
                 ch[ch.length - 1] = DQO;
-              } else if (qc === "single") {
+              } else if (qc2 === "single") {
                 if (record.token.slice(eq2 + 2, ln).indexOf(SQO) > -1)
                   ex = true;
                 ch[eq2 + 1] = SQO;
@@ -3174,22 +3514,23 @@ function markup(input) {
                   liq = false;
                 }
                 if (liq === true) {
-                  if (is(ch[ee], 34 /* DQO */) && qc === "double") {
+                  if (is(ch[ee], 34 /* DQO */) && qc2 === "double") {
                     ch[ee] = SQO;
-                  } else if (is(ch[ee], 39 /* SQO */) && qc === "single") {
+                  } else if (is(ch[ee], 39 /* SQO */) && qc2 === "single") {
                     ch[ee] = DQO;
                   }
                 } else {
-                  if (is(ch[ee], 39 /* SQO */) && qc === "double") {
+                  if (is(ch[ee], 39 /* SQO */) && qc2 === "double") {
                     ch[ee] = DQO;
-                  } else if (is(ch[ee], 34 /* DQO */) && qc === "single") {
+                  } else if (is(ch[ee], 34 /* DQO */) && qc2 === "single") {
                     ch[ee] = SQO;
                   }
                 }
                 ee = ee + 1;
               } while (ee < ln);
             }
-            push(record, { token: ch.join(NIL) });
+            record.token = ch.join(NIL);
+            push(record);
           }
         }
       }
@@ -3240,9 +3581,9 @@ function markup(input) {
         record.stack = parse.stack.token;
         record.token = "}";
         record.types = "jsx_attribute_end";
-        quotes();
+        qconvert();
       }
-      function liqattr() {
+      function lqattr() {
         if (isChain(attrs[idx][0])) {
           record.types = "liquid_attribute_chain";
           record.token = attrs[idx][0];
@@ -3254,7 +3595,7 @@ function markup(input) {
           record.types = "liquid_attribute_start";
           record.begin = parse.count;
           record.token = attrs[idx][0];
-          quotes();
+          qconvert();
           return true;
         } else if (isElse(attrs[idx][0])) {
           record.types = "liquid_attribute_else";
@@ -3263,7 +3604,7 @@ function markup(input) {
           record.types = "attribute";
           record.token = attrs[idx][0];
         }
-        quotes();
+        qconvert();
         return false;
       }
       if (attrs.length < 1) {
@@ -3303,7 +3644,7 @@ function markup(input) {
           if (jsx === true && /^\/[/*]/.test(attrs[idx][0])) {
             record.types = "comment_attribute";
             record.token = attrs[idx][0];
-            quotes();
+            qconvert();
             idx = idx + 1;
             continue;
           }
@@ -3311,7 +3652,7 @@ function markup(input) {
             if (!isValue(attrs[idx][0])) {
               record.types = "liquid_attribute_chain";
               record.token = attrs[idx][0];
-              quotes();
+              qconvert();
               idx = idx + 1;
               continue;
             }
@@ -3340,9 +3681,9 @@ function markup(input) {
               record.types = "liquid_attribute";
               record.token = rules.markup.attributeCasing === "preserve" ? attrs[idx][0] : attrs[idx][0].toLowerCase();
             }
-            quotes();
+            qconvert();
           } else if (isType(attrs[idx][0], 6)) {
-            liqattr();
+            lqattr();
           } else {
             name = attrs[idx][0].slice(0, eq);
             value = attrs[idx][0].slice(eq + 1);
@@ -3367,11 +3708,11 @@ function markup(input) {
               record.stack = stack;
             } else {
               if (isType(name, 6)) {
-                liqattr();
+                lqattr();
               } else {
                 record.types = "attribute";
                 record.token = attrs[idx][0];
-                quotes();
+                qconvert();
               }
             }
           }
@@ -3679,9 +4020,9 @@ function markup(input) {
         if (attrs.length > 0) {
           const [value] = attrs[attrs.length - 1];
           if (value.indexOf("=\u201C") > 0) {
-            parse.error = parseError("Invalid quote character (\u201C, &#x201c) used.");
+            parse.error = "Invalid quote character (\u201C, &#x201c) used.";
           } else if (value.indexOf("=\u201D") > 0) {
-            parse.error = parseError("Invalid quote character (\u201D, &#x201d) used.");
+            parse.error = "Invalid quote character (\u201D, &#x201d) used.";
           }
         }
         store = [];
@@ -3711,14 +4052,11 @@ function markup(input) {
               lexed.pop();
               lexed.push(">");
             } else {
-              parse.error = parseError({
-                lineNumber: parse.lineNumber,
-                message: [
-                  `Missing closing delimiter character: ${lexed.join(NIL)}`,
-                  "\nTIP",
-                  "esthetic can autofix these issues when the correct rule is enabled"
-                ]
-              });
+              parse.error = [
+                `Missing closing delimiter character: ${lexed.join(NIL)}`,
+                "\nTIP",
+                "esthetic can autofix these issues when the correct rule is enabled"
+              ].join(NIL);
               return;
             }
             break;
@@ -3737,7 +4075,7 @@ function markup(input) {
           }
         }
         if (ltype === "cdata" && is(b[a], 62 /* RAN */) && is(b[a - 1], 93 /* RSB */) && not(b[a - 2], 93 /* RSB */)) {
-          parse.error = parseError(`CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`);
+          parse.error = `CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`;
           break;
         }
         if (ltype === "comment") {
@@ -3787,7 +4125,7 @@ function markup(input) {
               }
             }
             if (is(b[a], 60 /* LAN */) && basic === true && preserve === false && lexed.length > 1 && />{2,3}/.test(end) === false) {
-              parse.error = parseError(`Invalid structure detected ${b.slice(a, a + 8).join(NIL)}`);
+              parse.error = `Invalid structure detected ${b.slice(a, a + 8).join(NIL)}`;
               break;
             }
             if (ws(b[a]) === false && stest === true && b[a] !== lchar) {
@@ -4078,7 +4416,7 @@ function markup(input) {
                 break;
               }
             }
-          } else if (is(b[a], quote.charCodeAt(quote.length - 1)) && (jsx === true && is(end, 125 /* RCB */) && (not(b[a - 1], 92 /* BWS */) || esc(a) === false) || (jsx === false || not(end, 125 /* RCB */)))) {
+          } else if (is(b[a], quote.charCodeAt(quote.length - 1)) && not(b[a - 1], 92 /* BWS */) && (jsx === true && is(end, 125 /* RCB */) && esc(a) === false || (jsx === false || not(end, 125 /* RCB */)))) {
             f = 0;
             e = quote.length - 1;
             if (e > -1) {
@@ -4098,8 +4436,11 @@ function markup(input) {
       icount = 0;
       token = lexed.join(NIL);
       tname = getTagName(token);
-      if (ignore === false)
-        token = inner(token);
+      if (ignore === false) {
+        if (ltype === "liquid" && tname === "liquid")
+          return parseLiquidTag();
+        token = inner(token, tname);
+      }
       if (tname === "xml") {
         html = "xml";
       } else if (html === NIL && tname === "html") {
@@ -4107,9 +4448,8 @@ function markup(input) {
       }
       record.token = token;
       record.types = ltype;
-      if (preserve === false && jsx === false) {
+      if (preserve === false && jsx === false)
         token = token.replace(SpacesGlob, WSP);
-      }
       return parseExternal();
     }
     return parseDelimiter();
@@ -5361,7 +5701,7 @@ function script() {
     const endlen = ender.length;
     const start2 = a;
     const base = a + starting.length;
-    const qc = option.quoteConvert;
+    const qc2 = option.quoteConvert;
     function cleanUp() {
       let linesSpace = 0;
       build = [];
@@ -5391,10 +5731,10 @@ function script() {
         }
         return input;
       }
-      if (is(starting, 34 /* DQO */) && qc === "single") {
+      if (is(starting, 34 /* DQO */) && qc2 === "single") {
         build[0] = SQO;
         build[build.length - 1] = SQO;
-      } else if (is(starting, 39 /* SQO */) && qc === "double") {
+      } else if (is(starting, 39 /* SQO */) && qc2 === "double") {
         build[0] = DQO;
         build[build.length - 1] = DQO;
       } else if (escape === true) {
@@ -5429,7 +5769,7 @@ function script() {
           if (ltoke.length > rules.wrap && rules.wrap > 0 || rules.wrap !== 0 && is(data.token[parse.count], 43 /* PLS */) && (is(data.token[parse.count - 1], 46 /* DOT */) || is(data.token[parse.count - 1], 39 /* SQO */))) {
             let item = ltoke;
             let segment = NIL;
-            let q = qc === "double" ? DQO : qc === "single" ? SQO : item.charAt(0);
+            let q = qc2 === "double" ? DQO : qc2 === "single" ? SQO : item.charAt(0);
             const limit = rules.wrap;
             const uchar = /u[0-9a-fA-F]{4}/;
             const xchar = /x[0-9a-fA-F]{2}/;
@@ -5506,18 +5846,18 @@ function script() {
     ee = base;
     if (ee < b) {
       do {
-        if (not(data.token[0], 123 /* LCB */) && not(data.token[0], 91 /* LSB */) && qc !== "none" && (is(c[ee], 34 /* DQO */) || is(c[ee], 39 /* SQO */))) {
+        if (not(data.token[0], 123 /* LCB */) && not(data.token[0], 91 /* LSB */) && qc2 !== "none" && (is(c[ee], 34 /* DQO */) || is(c[ee], 39 /* SQO */))) {
           if (is(c[ee - 1], 92 /* BWS */)) {
             if (esc(ee - 1) === true) {
-              if (qc === "double" && is(c[ee], 39 /* SQO */)) {
+              if (qc2 === "double" && is(c[ee], 39 /* SQO */)) {
                 build.pop();
-              } else if (qc === "single" && is(c[ee], 34 /* DQO */)) {
+              } else if (qc2 === "single" && is(c[ee], 34 /* DQO */)) {
                 build.pop();
               }
             }
-          } else if (qc === "double" && is(c[ee], 34 /* DQO */) && is(c[a], 39 /* SQO */)) {
+          } else if (qc2 === "double" && is(c[ee], 34 /* DQO */) && is(c[a], 39 /* SQO */)) {
             c[ee] = DQO;
-          } else if (qc === "single" && is(c[ee], 39 /* SQO */) && is(c[a], 34 /* DQO */)) {
+          } else if (qc2 === "single" && is(c[ee], 39 /* SQO */) && is(c[a], 34 /* DQO */)) {
             c[ee] = SQO;
           }
           build.push(c[ee]);
@@ -6729,7 +7069,7 @@ function style() {
   function buildToken() {
     const block = [];
     const out = [];
-    const qc = rules.style.quoteConvert;
+    const qc2 = rules.style.quoteConvert;
     let aa = a;
     let bb = 0;
     let outy = NIL;
@@ -6750,29 +7090,29 @@ function style() {
             func = false;
           if (block[block.length - 1] === b[aa] && (not(b[aa - 1], 92 /* BWS */) || esctest(aa - 1) === false)) {
             block.pop();
-            if (qc === "double") {
+            if (qc2 === "double") {
               b[aa] = DQO;
-            } else if (qc === "single") {
+            } else if (qc2 === "single") {
               b[aa] = SQO;
             }
           } else if (not(block[block.length - 1], 34 /* DQO */) && not(block[block.length - 1], 39 /* SQO */) && (not(b[aa - 1], 92 /* BWS */) || esctest(aa - 1) === false)) {
             block.push(b[aa]);
-            if (qc === "double") {
+            if (qc2 === "double") {
               b[aa] = DQO;
-            } else if (qc === "single") {
+            } else if (qc2 === "single") {
               b[aa] = SQO;
             }
-          } else if (is(b[aa - 1], 92 /* BWS */) && qc !== "none") {
+          } else if (is(b[aa - 1], 92 /* BWS */) && qc2 !== "none") {
             if (esctest(aa - 1) === true) {
-              if (qc === "double" && is(b[aa], 39 /* SQO */)) {
+              if (qc2 === "double" && is(b[aa], 39 /* SQO */)) {
                 out.pop();
-              } else if (qc === "single" && is(b[aa], 34 /* DQO */)) {
+              } else if (qc2 === "single" && is(b[aa], 34 /* DQO */)) {
                 out.pop();
               }
             }
-          } else if (qc === "double" && is(b[aa], 34 /* DQO */)) {
+          } else if (qc2 === "double" && is(b[aa], 34 /* DQO */)) {
             b[aa] = '\\"';
-          } else if (qc === "single" && is(b[aa], 39 /* SQO */)) {
+          } else if (qc2 === "single" && is(b[aa], 39 /* SQO */)) {
             b[aa] = "\\'";
           }
           out.push(b[aa]);
@@ -7578,17 +7918,19 @@ function markup2() {
   function isIndex(index, name) {
     return index > -1 && (data.types[index] || NIL).indexOf(name);
   }
-  function nl(tabs) {
+  function nl(tabs, newlines = true) {
     const linesout = [];
     const pres = rules.preserveLine + 1;
     const total = Math.min(data.lines[a + 1] - 1, pres);
     let index = 0;
     if (tabs < 0)
       tabs = 0;
-    do {
-      linesout.push(parse.crlf);
-      index = index + 1;
-    } while (index < total);
+    if (newlines) {
+      do {
+        linesout.push(parse.crlf);
+        index = index + 1;
+      } while (index < total);
+    }
     if (tabs > 0) {
       index = 0;
       do {
@@ -8081,9 +8423,7 @@ function markup2() {
       } else if (data.begin[a] < parent + 1) {
         break;
       }
-      if (rules.wrap === 0) {
-        data.token[a] = data.token[a].replace(/ +/g, WSP).replace(/\n+/g, NWL);
-      }
+      data.token[a] = data.token[a].replace(/ +/g, WSP).replace(/\n+/g, NWL);
       a = a + 1;
     } while (a < c);
     a = a - 1;
@@ -8157,160 +8497,6 @@ function markup2() {
       onAttributeWrap(a);
     }
   }
-  function onLiquidTag(indent2, token) {
-    let idx = 1;
-    let name = NIL;
-    let toke = NIL;
-    let ind2 = indent2;
-    do {
-      toke = token[idx].trimStart();
-      JSON.stringify(token[idx]);
-      if (idx === token.length - 1) {
-        token[idx] = ind2.slice(1) + toke;
-        break;
-      }
-      if (toke.indexOf(WSP) > -1) {
-        name = toke.slice(0, toke.indexOf(WSP));
-      } else {
-        name = toke.trimEnd();
-      }
-      if (grammar.liquid.tags.has(name)) {
-        token[idx] = ind2 + toke;
-        ind2 += repeatChar(rules.indentSize);
-      } else if (grammar.liquid.else.has(name)) {
-        token[idx] = ind2.slice(rules.indentSize) + toke;
-      } else if (toke.startsWith("end")) {
-        ind2 = ind2.slice(rules.indentSize);
-        token[idx] = ind2 + toke;
-      } else {
-        token[idx] = ind2 + toke;
-      }
-      idx = idx + 1;
-    } while (idx < token.length);
-    data.token[a] = token.join(NWL);
-  }
-  function onLineBreak() {
-    const token = data.token[a].split(NWL);
-    const trims = is(data.token[a][2], 45 /* DSH */);
-    let offset = 0;
-    let idx = 0;
-    let nls = 0;
-    let tok = NIL;
-    let chr = NIL;
-    let arg = false;
-    if (level.length >= 2) {
-      if (level[level.length - 2] < 0) {
-        offset = level[level.length - 1] + 1;
-      } else {
-        offset = level[level.length - 2] + 1;
-      }
-    } else if (level.length === 1) {
-      offset = level[level.length - 1] + 1;
-    }
-    let ind2 = trims ? repeatChar(offset * rules.indentSize) : repeatChar(offset * rules.indentSize - 1);
-    if (getTagName(data.token[a]) === "liquid")
-      return onLiquidTag(ind2, token);
-    do {
-      if (idx === 0) {
-        tok = token[idx].trimEnd();
-        if (tok.endsWith(",")) {
-          chr = "," + WSP;
-          token[idx] = tok.slice(0, -1);
-        } else if (tok.endsWith("|")) {
-          chr = "|" + WSP;
-          token[idx] = tok.slice(0, -1);
-        } else if (/^{[{%]-?$/.test(tok)) {
-          token[idx] = tok;
-          idx = idx + 1;
-          do {
-            tok = token[idx].trim();
-            if (tok.length > 0)
-              break;
-            token.splice(idx, 1);
-            if (idx > token.length)
-              break;
-          } while (idx < token.length);
-          const close = token[token.length - 1].trim();
-          if (/^-?[%}]}$/.test(close)) {
-            nls = 1;
-            if (trims) {
-              token[idx] = ind2 + tok;
-              token[token.length - 1] = ind2.slice(2) + close;
-              ind2 = ind2.slice(2) + repeatChar(rules.indentSize);
-            } else {
-              token[idx] = ind2 + repeatChar(rules.indentSize) + tok;
-              token[token.length - 1] = ind2.slice(1) + close;
-              ind2 = ind2 + repeatChar(rules.indentSize);
-            }
-          } else {
-            token[idx] = ind2 + repeatChar(rules.indentSize) + tok;
-          }
-        } else if (tok.endsWith(",") === false && is(token[idx + 1].trimStart(), 44 /* COM */) && rules.liquid.lineBreakSeparator === "after") {
-          token[idx] = tok + ",";
-        }
-        idx = idx + 1;
-        continue;
-      }
-      tok = token[idx].trim();
-      if (is(tok, 44 /* COM */) && rules.liquid.lineBreakSeparator === "after") {
-        if (tok.endsWith("%}")) {
-          tok = WSP + tok.slice(1);
-        } else {
-          tok = WSP + tok.slice(1) + ",";
-        }
-      }
-      if (tok.length === 0) {
-        token.splice(idx, 1);
-        continue;
-      }
-      if (idx === token.length - 1 && nls === 1)
-        break;
-      if (tok.endsWith(",") && rules.liquid.lineBreakSeparator === "before") {
-        if (arg && is(token[idx - 1].trimStart(), 124 /* PIP */)) {
-          token[idx] = ind2 + WSP + WSP + tok.slice(0, -1);
-          chr = WSP + WSP + "," + WSP;
-        } else {
-          if (arg) {
-            token[idx] = ind2 + chr + tok.slice(0, -1);
-            chr = WSP + WSP + "," + WSP;
-            if (token[idx + 1].trim().startsWith("|"))
-              arg = false;
-          } else {
-            token[idx] = ind2 + chr + tok.slice(0, -1);
-            chr = "," + WSP;
-          }
-        }
-      } else if (tok.endsWith("|")) {
-        token[idx] = ind2 + chr + tok.slice(0, -1);
-        chr = ind2 + "|" + WSP;
-      } else if (tok.endsWith(":")) {
-        if (token[idx + 1].endsWith(","))
-          arg = true;
-        token[idx] = ind2 + chr + tok;
-        chr = NIL;
-      } else {
-        if (arg) {
-          token[idx] = ind2 + chr + tok;
-          chr = NIL;
-          if (token[idx + 1].trim().startsWith("|"))
-            arg = false;
-        } else {
-          token[idx] = ind2 + chr + tok;
-          chr = NIL;
-        }
-      }
-      idx = idx + 1;
-    } while (idx < token.length);
-    if (rules.liquid.normalizeSpacing === true) {
-      data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, (m) => m.replace(Spaces, WSP));
-    } else {
-      const space = repeatChar(data.lines[a] - 1 === -1 ? rules.indentSize : data.lines[a] - 1);
-      data.token[a] = token.join(NWL).replace(/\s*-?[%}]}$/, (m) => m.replace(WhitespaceEnd, space));
-    }
-  }
-  function isLineBreak(idx) {
-    return isType2(idx, "liquid") && data.token[idx].indexOf(parse.crlf) > 0;
-  }
   function getLevels() {
     do {
       if (data.lexer[a] === "markup") {
@@ -8347,22 +8533,16 @@ function markup2() {
             count = count + data.token[a].length;
             if (data.lines[next] > 0 && isType2(next, "script_start")) {
               level.push(-10);
-            } else if (rules.wrap > 0 && (isIndex(a, "liquid") < 0 || next < c && isIndex(a, "liquid") > -1 && isIndex(next, "liquid") < 0)) {
+            } else if (rules.wrap > 0 && isType2(a, "singleton") === false && (isIndex(a, "liquid") < 0 || next < c && isIndex(a, "liquid") > -1 && isIndex(next, "liquid") < 0)) {
               onContent();
             } else if (next < c && (isIndex(next, "end") > -1 || isIndex(next, "start") > -1) && (data.lines[next] > 0 || isIndex(a, "liquid_") > -1)) {
               level.push(indent);
-              if (isLineBreak(a))
-                onLineBreak();
             } else if (data.lines[next] === 0) {
               level.push(-20);
-              if (isLineBreak(a))
-                onLineBreak();
             } else if (data.lines[next] === 1) {
               level.push(-10);
             } else {
               level.push(indent);
-              if (isLineBreak(a))
-                onLineBreak();
             }
           } else if (isType2(a, "start") || isType2(a, "liquid_start")) {
             indent = indent + 1;
@@ -8410,8 +8590,6 @@ function markup2() {
             indent = indent - 1;
             level.push(indent);
           } else {
-            if (isType2(a, "liquid") && isLineBreak(a))
-              onLineBreak();
             level.push(indent);
           }
         }
@@ -8426,6 +8604,24 @@ function markup2() {
     } while (a < c);
     return level;
   }
+  function onLiquidLines() {
+    const lines = data.token[a].split(NWL);
+    const length = lines.length;
+    let indent2 = NWL + nl(levels[a - 1 > -1 ? a - 1 : a], false) + "  ";
+    let i = 0;
+    do {
+      if (i === 0) {
+        build.push(lines[i], indent2);
+      } else if (i === length - 1) {
+        build.push(lines[i]);
+      } else {
+        if (i + 1 === length - 1 && (lines[i + 1].length === 2 || lines[i + 1].length === 3))
+          indent2 = indent2.slice(0, -2);
+        build.push(lines[i], indent2);
+      }
+      i = i + 1;
+    } while (i < length);
+  }
   function format2() {
     a = parse.start;
     let lastLevel = rules.indentLevel;
@@ -8434,14 +8630,15 @@ function markup2() {
         if ((isType2(a, "start") || isType2(a, "singleton") || isType2(a, "xml")) && isIndex(a, "attribute") < 0 && a < c - 1 && data.types[a + 1] !== void 0 && isIndex(a + 1, "attribute") > -1) {
           onAttributeEnd();
         }
-        if (isToken(a, void 0) === false && data.token[a].indexOf(parse.crlf) > 0 && (isType2(a, "content") && rules.markup.preserveText === false || isType2(a, "comment") || isType2(a, "attribute"))) {
+        if (isType2(a, "liquid_tag")) {
+          const ender = data.token[a].search(/-?%}$/);
+          const delim2 = data.token[a].slice(ender);
+          data.token[data.ender[a]] = data.token[data.ender[a]] + nl(levels[a]) + delim2;
+          data.token[a] = data.token[a].slice(0, ender);
+        } else if (isToken(a, void 0) === false && data.token[a].indexOf(parse.crlf) > 0 && (isType2(a, "content") && rules.markup.preserveText === false || isType2(a, "comment") || isType2(a, "attribute"))) {
           ml();
         } else if (isType2(a, "comment") && (is(data.token[a][1], 37 /* PER */) && rules.liquid.preserveComment === false && rules.liquid.commentNewline === true || is(data.token[a][1], 37 /* PER */) === false && rules.markup.preserveComment === false && rules.markup.commentNewline === true) && (rules.preserveLine === 0 || build.length > 0 && build[build.length - 1].lastIndexOf(NWL) + 1 < 2)) {
-          build.push(
-            nl(levels[a]),
-            data.token[a],
-            nl(levels[a])
-          );
+          build.push(nl(levels[a]), data.token[a], nl(levels[a]));
         } else if (isIndex(a, "_preserve") > -1) {
           build.push(data.token[a]);
         } else if (isType2(a + 1, "ignore") && isType2(a + 2, "ignore")) {
@@ -8456,7 +8653,11 @@ function markup2() {
           lastLevel = levels[a];
           if (rules.markup.delimiterForce === true)
             onDelimiterForce();
-          build.push(data.token[a]);
+          if (/\n/.test(data.token[a]) === true && isIndex(a, "liquid") > -1 && isType2(a, "liquid_end") === false && isType2(a, "liquid_else") === false) {
+            onLiquidLines();
+          } else {
+            build.push(data.token[a]);
+          }
           if (levels[a] === -10 && a < c - 1) {
             build.push(WSP);
           } else if (levels[a] > -1) {
@@ -10280,18 +10481,7 @@ function script2() {
   })();
   const output = (() => {
     const build = [];
-    const tab = (() => {
-      const tabby = [];
-      const chars = rules.indentChar;
-      let index = rules.indentSize;
-      if (typeof index !== "number" || index < 1)
-        return NIL;
-      do {
-        tabby.push(chars);
-        index = index - 1;
-      } while (index > 0);
-      return tabby.join(NIL);
-    })();
+    const tab = rules.indentChar.repeat(rules.indentSize);
     const pres = rules.preserveLine + 1;
     const invisibles = [
       "x;",
@@ -10303,7 +10493,6 @@ function script2() {
     let a = parse.start;
     let lastLevel = rules.indentLevel;
     function nl(tabs) {
-      const linesout = [];
       const total = (() => {
         if (a === b - 1)
           return 1;
@@ -10313,21 +10502,7 @@ function script2() {
           return data.lines[a + 1] - 1;
         return 1;
       })();
-      let index = 0;
-      if (tabs < 0)
-        tabs = 0;
-      do {
-        linesout.push(parse.crlf);
-        index = index + 1;
-      } while (index < total);
-      if (tabs > 0) {
-        index = 0;
-        do {
-          linesout.push(tab);
-          index = index + 1;
-        } while (index < tabs);
-      }
-      return linesout.join(NIL);
+      return parse.crlf.repeat(total) + tab.repeat(tabs);
     }
     if (option.vertical === true) {
       let vertical2 = function(end) {
@@ -10481,15 +10656,7 @@ function style2() {
   const { data, rules, crlf } = parse;
   const len = parse.ender > 0 ? parse.ender + 1 : data.token.length;
   const pres = rules.preserveLine + 1;
-  const tab = (() => {
-    let aa = 0;
-    const bb = [];
-    do {
-      bb.push(rules.indentChar);
-      aa = aa + 1;
-    } while (aa < rules.indentSize);
-    return bb.join(NIL);
-  })();
+  const tab = rules.indentChar.repeat(rules.indentSize);
   let indent = rules.indentLevel;
   let a = parse.start;
   let when = [NIL, NIL];
@@ -10685,6 +10852,7 @@ var _Parser = class {
     this.count = -1;
     this.lineColumn = 0;
     this.lineNumber = 1;
+    this.lineDepth = 2;
     this.lineOffset = 0;
     this.lineIndex = 0;
     this.rules = {
@@ -10702,11 +10870,16 @@ var _Parser = class {
         commentIndent: true,
         correct: false,
         delimiterTrims: "preserve",
+        delimiterPlacement: "preserve",
+        forceArgumentWrap: 0,
+        forceFilterWrap: 0,
+        forceLeadArgument: false,
         ignoreTagList: [],
         indentAttributes: false,
-        lineBreakSeparator: "default",
+        lineBreakSeparator: "before",
         normalizeSpacing: true,
         preserveComment: false,
+        preserveInternal: false,
         quoteConvert: "none"
       },
       markup: {
@@ -10819,7 +10992,7 @@ var _Parser = class {
     return this.env === "node" && Buffer.isBuffer(_Parser.input) ? _Parser.input.toString() : _Parser.input;
   }
   set source(source) {
-    _Parser.input = this.env === "node" ? Buffer.isBuffer(source) ? source : Buffer.from(source) : source;
+    _Parser.input = this.env !== "node" ? source : Buffer.isBuffer(source) ? source : Buffer.from(source);
   }
   get current() {
     return {
@@ -10935,6 +11108,7 @@ var _Parser = class {
     }
     if (record.types === "start" || record.types.indexOf("_start") > 0) {
       this.stack.push([structure, this.count]);
+      this.lineDepth = this.lineDepth + this.rules.indentSize;
     } else if (record.types === "end" || record.types.indexOf("_end") > 0) {
       let ender = 0;
       const length = this.stack.length;
@@ -10949,6 +11123,7 @@ var _Parser = class {
       if (ender > 0)
         data.ender[data.begin[this.count] + 1] = ender;
       this.stack.pop();
+      this.lineDepth = this.lineDepth - this.rules.indentSize;
     } else if (record.types === "else" || record.types.indexOf("_else") > 0) {
       if (structure === NIL)
         structure = "else";
@@ -11241,11 +11416,10 @@ function detect2(sample) {
 }
 
 // src/esthetic.ts
-var Instance = class {
+var Esthetic = class {
   constructor() {
     this.events = {
       format: [],
-      language: [],
       rules: [],
       parse: []
     };
@@ -11273,21 +11447,37 @@ var Instance = class {
     if (typeof this.language === "string" && this.language !== parse.language) {
       parse.language = this.language;
       parse.lexer = getLexerName(parse.language);
-    } else {
-      this.language = options.language;
-      this.lexer = getLexerName(options.language);
     }
-    if (typeof options === "object")
+    if (typeof options === "object") {
+      if (this.language !== parse.language) {
+        this.language = options.language;
+        this.lexer = getLexerName(options.language);
+      } else if (this.lexer !== parse.lexer) {
+        this.lexer = getLexerName(options.language);
+      }
       this.rules(options);
-    const invoke = getLexerType(this.language);
-    const action = stats(this.language, this.lexer);
+    }
+    const invoke = getLexerType(this.language || parse.language);
+    const action = stats(this.language || parse.language, this.lexer || parse.lexer);
     const output = parse.document(invoke);
-    this.stats = action(output.length);
+    const timing = action(output.length);
+    this.stats = timing;
     if (this.events.format.length > 0) {
       for (const cb of this.events.format) {
-        if (cb.bind({ parsed: parse.data })(source, parse.rules) === false) {
+        if (cb.call({ get data() {
+          return parse.data;
+        } }, {
+          get output() {
+            return source;
+          },
+          get stats() {
+            return timing;
+          },
+          get rules() {
+            return parse.rules;
+          }
+        }) === false)
           return source;
-        }
       }
     }
     if (!this.async) {
@@ -11310,12 +11500,21 @@ var Instance = class {
     const invoke = getLexerType(this.language);
     const action = stats(this.language, this.lexer);
     const parsed = parse.document(invoke, 1 /* Parse */);
-    this.stats = action(parse.count);
+    const statistic = this.stats = action(parse.count);
     if (this.events.parse.length > 0) {
       for (const cb of this.events.parse) {
-        if (cb.bind({ parsed: parse.data })(source, parse.rules) === false) {
+        if (cb({
+          get data() {
+            return parse.data;
+          },
+          get stats() {
+            return statistic;
+          },
+          get rules() {
+            return parse.rules;
+          }
+        }) === false)
           return source;
-        }
       }
     }
     if (!this.async) {
@@ -11373,16 +11572,13 @@ var Instance = class {
           }
         }
         if (this.events.rules.length > 0) {
-          for (const cb of this.events.rules) {
+          for (const cb of this.events.rules)
             cb(diff, parse.rules);
-          }
         }
       }
     }
     return parse.rules;
   }
-};
-var Esthetic = class extends Instance {
   liquid(source, options) {
     return this.format(source, options);
   }
@@ -11399,30 +11595,22 @@ var Esthetic = class extends Instance {
     return this.format(source, options);
   }
 };
-var esthetic_default = function(binding) {
-  const prettify = new Esthetic();
+var esthetic = ((binding) => {
+  const esthetic2 = new Esthetic();
+  esthetic2.format.sync = function(source, options) {
+    esthetic2.async = false;
+    return esthetic2.format(source, options);
+  };
   for (const language of binding) {
-    defineProperties(prettify[language], {
-      sync: {
-        value(source, options) {
-          prettify.async = false;
-          prettify.language = language;
-          prettify.lexer = getLexerName(language);
-          return prettify[language](source, options);
-        }
-      }
-    });
+    esthetic2[language].sync = function(source, options) {
+      esthetic2.async = false;
+      esthetic2.language = language;
+      esthetic2.lexer = getLexerName(language);
+      return esthetic2[language](source, options);
+    };
   }
-  defineProperties(prettify.format, {
-    sync: {
-      value(source, options) {
-        prettify.async = false;
-        return prettify.format(source, options);
-      }
-    }
-  });
-  return prettify;
-}([
+  return esthetic2;
+})([
   "liquid",
   "html",
   "xml",
@@ -11430,4 +11618,4 @@ var esthetic_default = function(binding) {
   "css"
 ]);
 
-module.exports = esthetic_default;
+module.exports = esthetic;

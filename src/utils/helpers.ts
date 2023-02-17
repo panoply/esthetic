@@ -1,9 +1,10 @@
 /* eslint-disable no-extend-native */
 import { NIL, NWL, WSP } from 'chars';
 import { LanguageName, LexerName } from 'types/shared';
-import { Prettify } from 'types/internal';
+import { Stats } from 'types/internal';
 import { getLanguageName } from './maps';
 import { parse } from '@parse/parser';
+import { cc } from 'lexical/codes';
 
 /**
  * Blank Document
@@ -61,22 +62,24 @@ export function upcase (text: string) {
  */
 export function stats (language: LanguageName, lexer: LexerName) {
 
-  const store: Partial<Prettify['stats']> = {
+  const store: Stats = {
     lexer,
     language: getLanguageName(language),
-    chars: 0
+    chars: 0,
+    time: '',
+    size: ''
   };
 
   const start: number = Date.now();
 
-  return (output: number): Prettify['stats'] => {
+  return (output: number): Stats => {
 
     const time = +(Date.now() - start).toFixed(0);
     store.time = time > 1000 ? `${time}s` : `${time}ms`;
     store.chars = output;
     store.size = size(output);
 
-    return store as Prettify['stats'];
+    return store;
   };
 
 }
@@ -210,6 +213,28 @@ export function digit (string: string) {
   return /\d/.test(string);
 
 }
+
+/**
+ * Skip escaped
+ *
+ * Skips backward slash
+ */
+export function esc (array: string[], size: number) {
+
+  return (code: string, i: number) => {
+
+    do {
+
+      if (is(array[i], cc.DQO) || is(array[i], cc.SQO)) {
+        if (not(array[i - 1], cc.BWS) && code === array[i]) return i + 1;
+      }
+
+      i = i + 1;
+    } while (i < size);
+
+  };
+
+};
 
 /**
  * Size

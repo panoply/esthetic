@@ -1,8 +1,20 @@
-    {% style %}
+<div>
+<ul>
+<li>
 
+ {% liquid
+  capture model_size
+    if product.vendor == 'Spring / Summer 23'
+      if gender == 'men'
+        echo "product_page.model_size" | t: size: model.wearing, height: '183cm', weight: weight_kg
+      else
+        echo "product_page.model_size" | t: size: model.wearing, height: '173cm', weight: weight_kg
+      endif
+    else
+      echo "product_page.model_size" | t: size: model.wearing, height: height_cm, weight: weight_kg
+    endif
+  endcapture%}
+</li>
+</ul>
+</div>
 
-          .class {
-            font-size: 20px;
-            background: pink;
-          }
-        {% endstyle %}

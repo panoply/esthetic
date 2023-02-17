@@ -432,6 +432,14 @@ export enum MarkupTypes {
    */
   attribute = 'attribute',
   /**
+   *  XML pragmas. Typically used to declare the document for an XML interpreter,
+   * but otherwise not widely used.
+   */
+  xml = 'xml'
+}
+
+export enum LiquidTypes {
+  /**
    * A tag attribute from a regular start or singular tag type.
    * ---
    * @example
@@ -464,7 +472,7 @@ export enum MarkupTypes {
   *   {% # comment %}
   *   id="x">
   */
-  liquid_comment_attribute = 'liquid_comment_attribute',
+  liquid_attribute_comment = 'liquid_attribute_comment',
   /**
    * A start template tag being used within an attribute
    *
@@ -691,10 +699,49 @@ export enum MarkupTypes {
    */
   liquid_end = 'liquid_end',
   /**
-   *  XML pragmas. Typically used to declare the document for an XML interpreter,
-   * but otherwise not widely used.
+   * A Liquid tag condition contained within a Liquid token
+   *
+   * ---
+   * @example
+   *
+   * foo == bar
+   * foo != bar
+   * foo or bar
+   * foo and bar
    */
-  xml = 'xml'
+  liquid_condition = 'liquid_condition',
+  /**
+   * A Liquid tag argument, typically takes the shape of
+   * of an object `property: value` structure
+   *
+   * ---
+   * @example
+   *
+   * foo: 'bar',
+   * bar: 1000
+   */
+  liquid_argument = 'liquid_argument',
+  /**
+   * A Liquid tag argument, typically takes the shape of
+   * of an object `property: value` structure
+   *
+   * ---
+   * @example
+   *
+   * foo: 'bar',
+   * bar: 1000
+   */
+  liquid_parameter = 'liquid_parameter',
+  /**
+   * A Liquid tag or filter argument, typically takes the shape of
+   * of an objects property > value structure
+   *
+   * ---
+   * @example
+   *
+   * | filter: 'value'
+   */
+  liquid_filter = 'liquid_filter',
 }
 
 /**

@@ -44,6 +44,13 @@ export const enum ParseErrors {
    */
   MissingHTMLStartTag,
   /**
+   * Missing Liquid Filter Argument
+   *
+   * @example
+   * {{ xxx || }}
+   */
+  MissingLiquidFilter,
+  /**
    * Invalid HTML End Tag Placement
    *
    * @example
@@ -81,6 +88,13 @@ export const enum ParseErrors {
    * ]]> // Invalid CDATA ending
    */
   InvalidCDATATermination,
+  /**
+   * Invalid Liquid Character Sequence
+   *
+   * @example
+   * {% render 'x',, %} // double commas is not valid
+   */
+  InvalidLiquidCharacterSequence,
   /**
    * Unterminated String
    *
@@ -151,6 +165,13 @@ function errorMessage (error: ParseErrors, token: string, name: string) {
       details: join(
         `The CDATA ${token} bracket state sequence provided is invalid resulting in a parse error.`,
         'For more information see: https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-bracket-state'
+      )
+    }),
+    [ParseErrors.InvalidLiquidCharacterSequence]: ({
+      message: 'Invalid Liquid Character Sequence',
+      details: join(
+        `The ${name} tag has invalid sequence of characters defined.`,
+        `To resolve the issue, fix the ${token} tag character order.`
       )
     }),
     [ParseErrors.UnterminateString]: ({

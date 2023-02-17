@@ -6,7 +6,7 @@ layout: base
 
 # Preset
 
-The `preset` rule is a global option that will set a different **default** ruleset style guide. Using the `preset` rule will assign formatting rules from which Æsthetic will default.
+The `preset` rule is a global option that will set a different **default** rule set style guide. Using the `preset` rule will assign formatting rules from which Æsthetic will default.
 
 # Rule Options
 
@@ -31,7 +31,9 @@ This is the default style guide rulset. It is most unobtrusive preset option.
     "commentIndent": false,
     "commentNewline": false,
     "correct": true,
+    "delimiterPlacement": "preserve",
     "delimiterTrims": "preserve",
+    "forceFilerWrap": 0,
     "ignoreTagList": [],
     "indentAttributes": false,
     "lineBreakSeparator": "default",

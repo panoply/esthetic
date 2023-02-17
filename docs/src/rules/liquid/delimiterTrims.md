@@ -6,11 +6,11 @@ permalink: '/rules/liquid/delimiterTrims/index.html'
 
 # Delimiter Trims
 
-How delimiter whitespace trim dashes (`{%-`, `-%}`, `{{-` and `-}}`) should handled in Liquid tags and output object tokens.
+Delimiter whitespace trim dashes `{%-`, `-%}`, `{{-` and `-}}` control. This rule can be used for handling trim `-` application of Liquid tags and output tokens.
 
 ::: note
 
-This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ foo }}"` and `'{{ foo }}'` are left intact.
+This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ foo }}"` and/or `'{{ foo }}'`. Tags which exist in string values or those contained between quotation characters are left intact.
 
 :::
 

@@ -190,6 +190,38 @@ export const definitions: Definitions = {
         }
       ]
     },
+    delimiterPlacement: {
+      default: 'preserve',
+      description: 'Controls the placement of Liquid delimiters',
+      lexer: 'markup',
+      type: 'select',
+      values: [
+        {
+          rule: 'preserve',
+          description: 'Preserve delimiters'
+        },
+        {
+          rule: 'default',
+          description: 'Use defaults'
+        },
+        {
+          rule: 'consistent',
+          description: 'Place line break character at the start of expressions'
+        },
+        {
+          rule: 'inline',
+          description: 'Place line break character at the end of expressions'
+        },
+        {
+          rule: 'force-inline',
+          description: 'Place line break character at the end of expressions'
+        },
+        {
+          rule: 'force-multiline',
+          description: 'Place line break character at the end of expressions'
+        }
+      ]
+    },
     quoteConvert: {
       lexer: 'all',
       description: 'If the quotes should be converted to single quotes or double quotes.',

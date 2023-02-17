@@ -1,6 +1,12 @@
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `false`
-
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `true`
+---
+title: 'Markup - Strip Attribute Lines'
+layout: base
+permalink: '/rules/markup/stripAttributeLines/index.html'
+anchors:
+  - Comment Indent
+  - Enabled
+  - Disable
+---
 
 #### Strip Attribute Lines
 

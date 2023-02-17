@@ -1,6 +1,12 @@
 import { dev } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
+// esthetic.on('format', ({ stats }) => {
+
+//   console.log(stats);
+
+// });
+
 dev(async function (source) {
 
   // esthetic.grammar({
@@ -98,61 +104,29 @@ dev(async function (source) {
   //   }
   // });
 
-  esthetic.grammar({
-    liquid: {
-      embedded: {
-        capture: [
-          {
-            language: 'json',
-            argument: [ 'json_tag' ]
-          }
-        ]
-      }
-    }
-  });
+  // esthetic.grammar({
+  //   liquid: {
+  //     embedded: {
+  //       capture: [
+  //         {
+  //           language: 'json',
+  //           argument: [ 'json_tag' ]
+  //         }
+  //       ]
+  //     }
+  //   }
+  // });
 
-  const output = esthetic.format.sync(source, {
-    language: 'liquid',
-    preserveLine: 2,
+  const output = esthetic.liquid.sync(source, {
+    wrap: 120,
     liquid: {
-      correct: true,
-      commentIndent: true,
-      commentNewline: true,
-      delimiterTrims: 'strip',
+      delimiterTrims: 'preserve',
+      delimiterPlacement: 'consistent',
       lineBreakSeparator: 'before',
-      normalizeSpacing: true,
+      forceFilterWrap: 80,
+      forceLeadArgument: false,
       indentAttributes: true,
-      preserveComment: false,
-      quoteConvert: 'single',
-      valueForce: 'intent',
-      ignoreTagList: [
-        'capture',
-        'javascript'
-      ]
-    },
-    style: {
-      correct: true
-    },
-    markup: {
-      attributeCasing: 'preserve',
-      attributeSort: false,
-      attributeSortList: [],
-      correct: true,
-      delimiterForce: false,
-      preserveAttributes: false,
-      stripAttributeLines: false,
-      preserveComment: false,
-      preserveText: false,
-      quoteConvert: 'double',
-      selfCloseSpace: true,
-      commentNewline: true,
-      forceIndent: true,
-      commentIndent: true,
-      ignoreJS: false,
-      ignoreJSON: false,
-      ignoreCSS: false,
-      forceAttribute: 2,
-      forceLeadAttribute: true
+      quoteConvert: 'double'
     }
   });
 
@@ -161,7 +135,11 @@ dev(async function (source) {
     repeat: 0,
     inspect: true,
     logger: false,
-    colors: false
+    colors: false,
+    finish: () => {
+      console.log(esthetic.stats);
+      // console.log(esthetic.data);
+    }
   };
 
 });

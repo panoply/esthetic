@@ -6,7 +6,7 @@ permalink: '/rules/global/wrap/index.html'
 
 &nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `0`
 
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `0`
+&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `120`
 
 #### Wrap
 

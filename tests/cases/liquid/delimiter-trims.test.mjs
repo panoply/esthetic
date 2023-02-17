@@ -120,7 +120,7 @@ test('Liquid Delimiter Trims: Tag token insertion', t => {
   });
 });
 
-test('Liquid Delimiter Trims: Stripping from tokens', t => {
+test('Liquid Delimiter Trims (never): Stripping from tokens', t => {
 
   forAssert(
     [
@@ -202,7 +202,7 @@ test('Liquid Delimiter Trims: Stripping from tokens', t => {
     const actual = esthetic.format.sync(source, {
       language: 'liquid',
       liquid: {
-        delimiterTrims: 'strip'
+        delimiterTrims: 'never'
       }
     });
 
@@ -211,7 +211,7 @@ test('Liquid Delimiter Trims: Stripping from tokens', t => {
   });
 });
 
-test('Liquid Delimiter Trims: Forcing trims on all tokens', t => {
+test('Liquid Delimiter Trims (always): Forcing trims on all tokens', t => {
 
   forAssert(
     [
@@ -305,7 +305,7 @@ test('Liquid Delimiter Trims: Forcing trims on all tokens', t => {
     const actual = esthetic.format.sync(source, {
       language: 'liquid',
       liquid: {
-        delimiterTrims: 'force'
+        delimiterTrims: 'always'
       }
     });
 

@@ -1,4 +1,4 @@
-import { assign } from './native';
+import { assign, isArray } from './native';
 import {
   LanguageRuleNames,
   LiquidRules,
@@ -8,6 +8,307 @@ import {
   ScriptRules,
   StyleRules
 } from 'types/internal';
+
+export function isValidType (language: LanguageRuleNames, rule: string, value: any) {
+
+  if (language === 'global') {
+
+    switch (rule) {
+      case 'indentChar':
+
+        return typeof value === 'string';
+
+      case 'preset':
+      case 'language':
+
+        return isValidChoice(rule, value);
+
+      case 'crlf':
+      case 'endNewline':
+
+        return typeof value === 'boolean';
+
+      case 'indentLevel':
+      case 'indentSize':
+      case 'preserveLine':
+      case 'wrap':
+
+        return typeof value === 'number';
+
+      default:
+        return false;
+    }
+
+  } else if (language === 'liquid') {
+
+    switch (rule) {
+      case 'commentNewline':
+      case 'commentIndent':
+      case 'correct':
+      case 'indentAttributes':
+      case 'normalizeSpacing':
+      case 'preserveComment':
+
+        return typeof value === 'boolean';
+
+      case 'forceFilterWrap':
+
+        return typeof value === 'number';
+
+      case 'ignoreTagList':
+
+        return isArray(value);
+
+      case 'lineBreakSeparator':
+      case 'delimiterPlacement':
+      case 'delimiterTrims':
+      case 'quoteConvert':
+
+        return isValidChoice(rule, value);
+
+      default:
+        return false;
+    }
+
+  } else if (language === 'markup') {
+
+    switch (rule) {
+
+      case 'forceAttribute':
+
+        return typeof value === 'number' ? value > 0 : typeof value === 'boolean';
+
+      case 'attributeSort':
+      case 'correct':
+      case 'commentNewline':
+      case 'commentIndent':
+      case 'delimiterForce':
+      case 'forceLeadAttribute':
+      case 'forceIndent':
+      case 'ignoreCSS':
+      case 'ignoreJS':
+      case 'ignoreJSON':
+      case 'preserveComment':
+      case 'preserveText':
+      case 'preserveAttributes':
+      case 'selfCloseSpace':
+      case 'selfCloseSVG':
+      case 'stripAttributeLines':
+
+        return typeof value === 'boolean';
+
+      case 'attributeCasing':
+      case 'quoteConvert':
+
+        return isValidChoice(rule, value);
+
+      case 'attributeSortList':
+
+        return isArray(value);
+
+      default:
+        return false;
+    }
+
+  } else if (language === 'style') {
+
+    switch (rule) {
+
+      case 'correct':
+      case 'atRuleSpace':
+      case 'classPadding':
+      case 'noLeadZero':
+      case 'sortSelectors':
+      case 'sortProperties':
+
+        return typeof value === 'boolean';
+
+      case 'quoteConvert':
+
+        return isValidChoice(rule, value);
+
+      default:
+        return false;
+
+    }
+  } else if (language === 'json') {
+
+    switch (rule) {
+
+      case 'arrayFormat':
+      case 'objectIndent':
+
+        return isValidChoice(rule, value);
+
+      case 'allowComments':
+      case 'braceAllman':
+      case 'bracePadding':
+      case 'objectSort':
+
+        return typeof value === 'boolean';
+
+    }
+  }
+
+}
+
+export function isValidChoice (rule: string, value: string) {
+
+  if (rule === 'language') {
+
+    switch (value) {
+      case 'text':
+      case 'auto':
+      case 'markup':
+      case 'html':
+      case 'liquid':
+      case 'xml':
+      case 'javascript':
+      case 'typescript':
+      case 'jsx':
+      case 'tsx':
+      case 'json':
+      case 'less':
+      case 'scss':
+      case 'sass':
+      case 'css':
+        return true;
+      default:
+        return {
+          message: 'Unsupported Language name reference was provided',
+          provided: value,
+          expected: [
+            'text',
+            'auto',
+            'markup',
+            'html',
+            'liquid',
+            'xml',
+            'javascript',
+            'typescript',
+            'jsx',
+            'tsx',
+            'json',
+            'less',
+            'scss',
+            'sass',
+            'css'
+          ]
+        };
+    }
+
+  } else if (rule === 'attributeCasing') {
+
+    switch (value) {
+
+      case 'preserve':
+      case 'lowercase':
+      case 'lowercase-name':
+      case 'lowercase-value':
+        return true;
+      default:
+        return {
+          message: 'Invalid option provided.',
+          provided: value,
+          expected: [
+            'preserve',
+            'lowercase',
+            'lowercase-name',
+            'lowercase-value'
+          ]
+        };
+    }
+
+  } else if (rule === 'delimiterForce') {
+
+    switch (value) {
+
+      case 'preserve':
+      case 'never':
+      case 'always':
+      case 'tags':
+      case 'outputs':
+        return true;
+      default:
+        return false;
+    }
+
+  } else if (rule === 'delimiterPlacement') {
+
+    switch (value) {
+
+      case 'default':
+      case 'inline':
+      case 'preserve':
+      case 'consistent':
+      case 'force':
+        return true;
+      default:
+        return false;
+    }
+
+  } else if (rule === 'lineBreakSeparator') {
+
+    switch (value) {
+
+      case 'preserve':
+      case 'before':
+      case 'after':
+        return true;
+      default:
+        return false;
+    }
+
+  } else if (rule === 'quoteConvert') {
+
+    switch (value) {
+
+      case 'none':
+      case 'double':
+      case 'single':
+        return true;
+      default:
+        return false;
+    }
+
+  } else if (rule === 'objectIndent' || rule === 'arrayFormat') {
+
+    switch (value) {
+
+      case 'default':
+      case 'indent':
+      case 'inline':
+        return true;
+      default:
+        return false;
+    }
+
+  } else if (rule === 'endComma') {
+
+    switch (value) {
+
+      case 'none':
+      case 'always':
+      case 'never':
+        return true;
+      default:
+        return false;
+    }
+
+  } else if (rule === 'variableList') {
+
+    switch (value) {
+
+      case 'none':
+      case 'each':
+      case 'list':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+}
 
 export function merge (defaultRules: RulesInternal, userRules: RulesInternal): Rules {
 

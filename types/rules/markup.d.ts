@@ -9,7 +9,7 @@ export interface MarkupRules {
    * reason with the intended structures in order to reduce chaos in otherwise
    * unreadble and terrible code.
    *
-   * _The option enables Prettify to go about fixing code. It's not
+   * _The option enables Æsthetic to go about fixing code. It's not
    * going to produce miracles and for the most part it will have little effect
    * overall but can help in some situations._
    *

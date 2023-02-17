@@ -1,5 +1,7 @@
 /* eslint-disable object-curly-newline */
 
+import { Events } from './types/events';
+
 import {
   LiquidFormat,
   HTMLFormat,
@@ -16,7 +18,7 @@ import {
   Parse,
   ParseError,
   Grammars,
-  EventListeners
+  Stats
 } from './types/internal';
 
 export {
@@ -35,7 +37,7 @@ export {
   LexerName
 } from './types/internal';
 
-declare const prettify: {
+declare const esthetic: {
   /**
    * **Liquid Æsthetic**
    *
@@ -70,9 +72,17 @@ declare const prettify: {
    * **Defintions**
    *
    * Rule defintions which describe the different formatting options
-   * prettify offers.
+   * esthetic offers.
    */
   get definitions(): Definitions;
+  /**
+   * **Stats**
+   *
+   * Maintains a reference of statistic information about the
+   * operation, also available in events like `esthetic.on('format')` and
+   * `esthetic.on('parse')` arguments.
+   */
+  get stats(): Stats;
   /**
    * **Error**
    *
@@ -119,7 +129,7 @@ declare const prettify: {
    * Hook listener wich will be invoked when beautification
    * options change or are augmented.
    */
-  on: EventListeners<'format' | 'parse' | 'rules'>;
+  on: Events;
 
   /**
    * **Rules**
@@ -128,6 +138,7 @@ declare const prettify: {
    * current beautification rules, then do not provide a parameter.
    */
   rules: (rules?: Rules) => Rules;
+
   /**
    * **Grammar**
    *
@@ -141,6 +152,7 @@ declare const prettify: {
    * > To return the current grammar presets, then do not provide a parameter.
    */
   grammar: (grammar?: Grammars) => Grammars;
+
   /**
    * **Language**
    *
@@ -151,4 +163,4 @@ declare const prettify: {
 
 };
 
-export default prettify;
+export default esthetic;

@@ -17,83 +17,9 @@ const Prism = require('prismjs');
 /* INSERT BEFORE                                */
 /* -------------------------------------------- */
 
-
-
-Prism.languages.html = Prism.languages.extend('markup', {
-  'tag': {
-    pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
-    greedy: true,
-    inside: {
-      'tag': {
-        pattern: /^<\/?[^\s>\/]+/,
-        inside: {
-          'punctuation': /^<\/?/,
-          'namespace': /^[^\s>\/:]+:/
-        }
-      },
-      'special-attr': [],
-      'attr-value': {
-        pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/,
-        inside: {
-          'tag-name': {
-            lookbehind: true,
-            pattern: /({%-?)\s*\b([a-z]+)\b(?=[\s-])/i
-          },
-          string: {
-            greedy: true,
-            pattern: /"[^"]*"|'[^']*'/,
-            inside: {
-              punctuation: /{[{%]-?|-?[%}]}/,
-              'attr-object': {
-                lookbehind: true,
-                pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
-              },
-              'attr-property': {
-                lookbehind: true,
-                pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
-              }
-            }
-          },
-          'attr-object': {
-            lookbehind: true,
-            pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
-          },
-          'attr-property': {
-            lookbehind: true,
-            pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
-          },
-          'punctuation-chars': {
-            global: true,
-            pattern: /[.,|:?]/
-          },
-          'punctuation': [
-            {
-              pattern: /{[{%]-?|-?[%}]}/,
-            },
-            {
-              pattern: /^=/,
-              alias: 'attr-equals'
-            },
-            {
-              pattern: /^(\s*)["']|["']$/,
-              lookbehind: true
-            }
-          ]
-        }
-      },
-      'punctuation': /\/?>/,
-      'attr-name': {
-        pattern: /[^\s>\/]+/,
-        inside: {
-          'namespace': /^[^\s>\/:]+:/
-        }
-      }
-
-    }
-  },
-  'delimiters': {
-    pattern: /{[{%]-?[\s\S]*-?[%}]}/,
-    inside: {
+const grammar = {
+ pattern: /{[{%]-?[\s\S]*-?[%}]}/,
+  inside: {
     'liquid-comment': {
       lookbehind: true,
       global: true,
@@ -160,6 +86,67 @@ Prism.languages.html = Prism.languages.extend('markup', {
     }
   }
 }
+
+const html = (
+  /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/
+)
+
+Prism.languages.html = Prism.languages.extend('markup', {
+  'tag': {
+    pattern: html,
+    greedy: true,
+    inside: {
+      'tag': {
+        pattern: /^<\/?[^\s>\/]+/,
+        inside: {
+          'punctuation': /^<\/?/,
+          'namespace': /^[^\s>\/:]+:/
+        }
+      },
+      'special-attr': [],
+      'attr-value': {
+        pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/,
+        inside: {
+          'tag-name': grammar,
+          string: {
+            greedy: true,
+            pattern: /"[^"]*"|'[^']*'/,
+            inside: {
+              punctuation: /{[{%]-?|-?[%}]}/,
+              'attr-object': {
+                lookbehind: true,
+                pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
+              },
+              'attr-property': {
+                lookbehind: true,
+                pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
+              }
+            }
+          },
+          'attr-object': {
+            lookbehind: true,
+            pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
+          },
+          'attr-property': {
+            lookbehind: true,
+            pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
+          },
+          'punctuation-chars': {
+            global: true,
+            pattern: /[.,|:?]/
+          }
+        }
+      },
+      'punctuation': /\/?>/,
+      'attr-name': {
+        pattern: /[^\s>\/]+/,
+        inside: {
+          'namespace': /^[^\s>\/:]+:/
+        }
+      }
+    }
+  },
+  'delimiters': grammar
 });
 
 
@@ -256,7 +243,7 @@ function highlighter (md, raw, language) {
 
     } catch (err) {
 
-      console.error(lang, err);
+      console.log(lang, err);
 
       result = md.utils.escapeHtml(raw);
 
@@ -295,7 +282,8 @@ function getInputSource (md, raw) {
 
 function getEditorLines (target, raw) {
 
-  const lines = [ ...Array(raw.split("\n").length - 1) ]
+  const count = raw.trim().split("\n").length -1
+  const lines = [ ...Array(count > 0 ? count : 1) ]
   const numbers = lines.map((_, i) => (`<span class="line-number">${i + 1}</span><br>`)).join('');
 
   return [
@@ -317,7 +305,7 @@ function getCodeInput (raw, language) {
   const lines = getEditorLines('input', raw)
   const output = raw
   .replace(/<\/pre>\n/, `${lines[0]}</pre>`)
-  .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode" data-action="scroll->editor#onScroll"')
+  .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode"')
   .replace(/<code>/, `<code data-editor-target="input" class="language-${language}">`)
 
   return [
@@ -341,8 +329,7 @@ function getCodeInput (raw, language) {
         </button>
       </div>
     </div>
-    ${output}
-    `
+    ${output}`
   ].join('')
 
 }
@@ -364,7 +351,6 @@ function getRuleSamples (raw, language) {
     /* html */`${lines}`
     ,
     /* html */`</pre>`
-
   ].join('')
 
 }
@@ -390,7 +376,7 @@ function getCodeBlocks (md, fence, ...args) {
   const raw = fence(...args);
 
   if(language === 'json:rules') {
-    const json =raw.slice(raw.indexOf('>', raw.indexOf('<code') +1) + 1, raw.indexOf('</code'))
+    const json =raw.slice(raw.indexOf('>', raw.indexOf('<code') + 1) + 1, raw.indexOf('</code'))
     store = JSON.parse(json.trim())
     return ''
   }
@@ -471,15 +457,15 @@ function rule (md, tokens, idx) {
       let tooltip = ''
 
       if('🤡' === m[1]) {
-        tooltip = "The choice of a clown"
+        tooltip = "The choice of a clown."
       } else if ('🙌' === m[1]) {
-        tooltip = "The recommended choice"
+        tooltip = "The recommended choice, 10x vibes."
       } else if ('👍' === m[1]) {
         tooltip = "Good choice, no remark to be had."
       } else if ('👎' === m[1]) {
         tooltip = "Not recommended"
       } else if ('😳' === m[1]) {
-        tooltip = "We live in a society, we're not animals"
+        tooltip = "We live in a society, we are not animals"
       }  else {
         tooltip = m[1]
       }

@@ -12,7 +12,7 @@ Whether or not files should end with an empty newline.
 If you are using Æsthetic within a text editor and this rule is undefined or omitted then your text editor settings will be used, in vscode that is `*.endWithNewline` where `*` is a language name. If an `.editorconfig` file is found present in root, those rules will be applied in **precedence** over your text editor settings.
 :::
 
-# Options
+# Rule Options
 
 This is a global rule definition and will be used for all languages.
 

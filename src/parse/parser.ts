@@ -86,6 +86,7 @@ class Parser {
    */
   static region: string | string[] = NIL;
 
+  static range: { lineNumber: number; depth: number };
   public hooks: {
     /**
      * The before formatting hooks
@@ -104,10 +105,7 @@ class Parser {
       readonly language: LanguageName;
       readonly levels: number[];
       readonly structure: string[]
-    }, token: string, level?: number) => void | {
-      token?: string;
-      level?: number
-    })[];
+    }, token: string, level?: number) => void | { token?: string; level?: number })[];
 
   } = { parse: null, format: null };
 
@@ -206,7 +204,7 @@ class Parser {
 
   /**
    * The current line number. This is used in errors and counts the
-   * number of lines as we have spaned during traversal. For example:
+   * number of lines as we have spanned during traversal. For example:
    *
    * ```
    *
@@ -217,6 +215,27 @@ class Parser {
    * ```
    */
   public lineNumber: number = 1;
+
+  /**
+   * The current line depth. This keep a reference to the indentation
+   * depth currently traversed and used to capture the left most indent level.
+   *
+   * ```
+   *
+   * 1 | <div>        // 2
+   * 2 | <ul>         // 4
+   * 3 | <li>         // 6
+   * 4 | {{ HERE }}   // 8
+   * 5 | </li>        // 6
+   * 6 | </ul>        // 4
+   * 7 | </div>       // 2
+   *
+   * ```
+   *
+   * In the example above, it is assumed that `indentChar` is set to a value
+   * of `2` (default). For every `start` token, the depth increases.
+   */
+  public lineDepth: number = 2;
 
   /**
    * The record `lines` value count before the next token, for example:
@@ -284,11 +303,16 @@ class Parser {
       commentIndent: true,
       correct: false,
       delimiterTrims: 'preserve',
+      delimiterPlacement: 'preserve',
+      forceArgumentWrap: 0,
+      forceFilterWrap: 0,
+      forceLeadArgument: false,
       ignoreTagList: [],
       indentAttributes: false,
-      lineBreakSeparator: 'default',
+      lineBreakSeparator: 'before',
       normalizeSpacing: true,
       preserveComment: false,
+      preserveInternal: false,
       quoteConvert: 'none'
     },
     markup: {
@@ -407,9 +431,9 @@ class Parser {
 
   set source (source: string | Buffer) {
 
-    Parser.input = this.env === 'node'
-      ? Buffer.isBuffer(source) ? source : Buffer.from(source)
-      : source;
+    Parser.input = this.env !== 'node' ? source
+      : Buffer.isBuffer(source) ? source : Buffer.from(source);
+
   }
 
   get current () {
@@ -624,6 +648,7 @@ class Parser {
     if (record.types === 'start' || record.types.indexOf('_start') > 0) {
 
       this.stack.push([ structure, this.count ]);
+      this.lineDepth = this.lineDepth + this.rules.indentSize;
 
     } else if (record.types === 'end' || record.types.indexOf('_end') > 0) {
 
@@ -664,6 +689,7 @@ class Parser {
       if (ender > 0) data.ender[data.begin[this.count] + 1] = ender;
 
       this.stack.pop();
+      this.lineDepth = this.lineDepth - this.rules.indentSize;
 
     } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
 
@@ -672,13 +698,10 @@ class Parser {
         data.types[this.count - 1] === 'start' ||
         data.types[this.count - 1].indexOf('_start') > 0
       )) {
-
         this.stack.push([ structure, this.count ]);
-
       } else {
         this.final(data);
         this.stack.update(structure === NIL ? 'else' : structure, this.count);
-
       }
     }
 

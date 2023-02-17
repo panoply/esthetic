@@ -135,7 +135,7 @@ export interface JSONRules {
    * > `indent`
    *  "Always indent each index of an array
    */
-  objectIndent?: 'default' | 'indent';
+  objectIndent?: 'default' | 'inline' | 'indent';
 
   /**
    * **Default:** `false`

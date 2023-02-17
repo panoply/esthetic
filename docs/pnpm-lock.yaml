@@ -29,6 +29,7 @@ specifiers:
   markdown-it: ^13.0.1
   markdown-it-anchor: ^8.6.6
   markdown-it-container: ^3.0.0
+  mergerino: ^0.4.0
   mithril: ^2.2.2
   netlify-cli: ^12.10.0
   postcss: ^8.4.21
@@ -48,6 +49,7 @@ dependencies:
   blissfuljs: 1.0.6
   codejar: 3.6.0
   esthetic: link:..
+  mergerino: 0.4.0
   mithril: 2.2.2
   prismjs: 1.29.0
   relapse: 0.5.0
@@ -8835,6 +8837,10 @@ packages:
   /merge2/1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
+
+  /mergerino/0.4.0:
+    resolution: {integrity: sha512-dvyWWLp9GN7OZoAoqn1u2ewCDV06oggVi6AwFsgHxUV8jNnaTOMEyux3fZ7Njm7Hg/ypK2+M0p6liCIEWcJnbg==}
+    dev: false
 
   /methods/1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}

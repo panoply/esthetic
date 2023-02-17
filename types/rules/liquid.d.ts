@@ -50,8 +50,8 @@ export interface LiquidRules {
    * of the following options:
    *
    * - `preserve`
-   * - `strip`
-   * - `force`
+   * - `never`
+   * - `always`
    * - `tags`
    * - `outputs`
    *
@@ -160,7 +160,293 @@ export interface LiquidRules {
    *
    * ```
    */
-  delimiterTrims?: 'preserve' | 'strip' | 'force' | 'tags' | 'outputs';
+  delimiterTrims?:
+  | 'preserve'
+  | 'never'
+  | 'always'
+  | 'tags'
+  | 'outputs'
+  | 'multiline';
+
+  /**
+   * **default** `preserve`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `consistent`
+   *
+   * Controls how opening and closing delimiters should be beautified.
+   *
+   * - `preserve`
+   * - `default`
+   * - `inline`
+   * - `consistent`
+   * - `force-inline`
+   * - `force-multiline`
+   *
+   * ---
+   *
+   * #### Preserve Example
+   *
+   * *Below is an example of `preserve` which is the default option which will
+   * not apply adjustments to delimiters*
+   *
+   * ```liquid
+   *
+   * <!-- Before Formatting -->
+   *
+   * {{ object.prop
+   * }}
+   *
+   * <!-- After Formatting -->
+   *
+   * {{ object.prop
+   * }}
+   * ```
+   *
+   * ---
+   *
+   * #### Default Example
+   *
+   * *Below is an example of `default` which format delimiters in a default manner. This
+   * option option replicates the Liquid Prettier plugin style.*
+   *
+   * ```liquid
+   *
+   * <!-- Before Formatting -->
+   *
+   * <div>
+   *
+   *   {% # multiline outputs will force leading and ending delimiter %}
+   *   {{ object.prop
+   *     | filter_1: 'foo'
+   *     | filter_3: 'bar'
+   *     | filter_3: 'baz' }}
+   *
+   *   {% liquid
+   *     # The default option will force the ending delimiter
+   *     # on this tag but inline the leading delimiter
+   *     echo 'foo' %}
+   *
+   * </div>
+   *
+   * <!-- After Formatting -->
+   *
+   * <div>
+   *
+   *   {% # multiline outputs will force leading and ending delimiter %}
+   *   {{
+   *     object.prop
+   *     | filter_1: 'foo'
+   *     | filter_3: 'bar'
+   *     | filter_3: 'baz'
+   *   }}
+   *
+   *   {% liquid
+   *     # The default option will force the ending delimiter
+   *     # on this tag but inline the leading delimiter
+   *   %}
+   *
+   * </div>
+   *
+   * ```
+   *
+   * ---
+   *
+   * #### Inline Example
+   *
+   * *Below is an example of `inline` which strip newlines and always inline the
+   * delimiter expression.*
+   *
+   * ```liquid
+   *
+   * <!-- Before Formatting -->
+   *
+   * {{
+   *   object.prop
+   * }}
+   *
+   * <!-- After Formatting -->
+   *
+   * {{ object.prop }}
+   *
+   * ```
+   *
+   * ---
+   *
+   * #### Consistent Example
+   *
+   * *Below is an example of `consistent` which will force delimiter according to
+   * the leading delimiter. When a newline follows the leading delimiter (`{{` or `{%`)
+   * then the ending delimiter will be forced*
+   *
+   * ```liquid
+   *
+   * <!-- Before Formatting -->
+   *
+   * {{ object.prop
+   * }}
+   *
+   * {%
+   *   tag %}
+   *
+   * <!-- After Formatting -->
+   *
+   * {{ object.prop }}
+   *
+   * {%
+   *   tag
+   * %}
+   *
+   * ```
+   *
+   * ---
+   *
+   * #### Force Inline Example
+   *
+   * *Below is an example of `force-inline` which will force both the leading and
+   * ending delimiters.*
+   *
+   * ```liquid
+   *
+   * <!-- Before Formatting -->
+   *
+   * {{ object.prop }}
+   *
+   * {% tag %}
+   *
+   * <!-- After Formatting -->
+   *
+   * {{
+   *   object.prop
+   * }}
+   *
+   * {%
+   *   tag
+   * %}
+   *
+   * ```
+   * ---
+   *
+   * #### Force Multiline Example
+   *
+   * *Below is an example of `force-multiline` which will apply forcing to both the leading and
+   * ending delimiter only when the inner contents of the tag has newlined content.*
+   *
+   * ```liquid
+   *
+   * <!-- Before Formatting -->
+   *
+   * {{
+   *  object.prop
+   * }}
+   *
+   * {% if condition_1 == assertion_1
+   *    or condition_2 == assertion_2 %}
+   *
+   *   {{ object.prop
+   *     | filter_1: 'foo'
+   *     | filter_3: 'bar'
+   *     | filter_3: 'baz' }}
+   *
+   *   {% liquid
+   *     # The default option will force the ending delimiter
+   *     # on this tag but inline the leading delimiter
+   *   %}
+   *
+   * {% endif %}
+   *
+   * <!-- After Formatting -->
+   *
+   * {{ object.prop }}
+   *
+   * {%
+   *   if condition_1 == assertion_1
+   *   or condition_2 == assertion_2
+   * %}
+   *
+   *   {{
+   *     object.prop
+   *     | filter_1: 'foo'
+   *     | filter_3: 'bar'
+   *     | filter_3: 'baz'
+   *   }}
+   *
+   *   {%
+   *     liquid
+   *     # The force-multiline option will force the ending delimiter
+   *   %}
+   *
+   * {% endif %}
+   *
+   * ```
+   */
+  delimiterPlacement?:
+  | 'default'
+  | 'inline'
+  | 'preserve'
+  | 'consistent'
+  | 'force'
+
+  /**
+   * **Default** `true`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
+   * Forces lead argument in multiline structures.
+   *
+   */
+  forceLeadArgument?: boolean;
+
+  /**
+   * **Default** `0`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `50`
+   *
+   * Forces filter pipes `|` onto newlines when the filters contained on the token
+   * exceed the defined wrap limit. By default, filters will be forced according to
+   * the global `wrap` limit.
+   *
+   */
+  forceFilterWrap?: number;
+
+  /**
+   * **Default** `0`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `50`
+   *
+   * Forces arguments onto newlines when arguments exceed the defined wrap limit.
+   * By default, filters will be forced according to the global `wrap` limit.
+   */
+  forceArgumentWrap?: number;
+
+  /**
+   * **Default** `false`
+   *
+   * Applies indentation of Liquid contained attributes contained on markup tags.
+   * This rule will emulate the liquid-prettier-plugin logic.
+   */
+  indentAttributes?: boolean;
+
+  /**
+   * **Default** `[]`
+   *
+   * Prevent indentation from being applied to containing content of the tag.
+   */
+  dedentTagList?: Array<LiteralUnion<
+  | 'form'
+  | 'paginate'
+  | 'capture'
+  | 'case'
+  | 'for'
+  | 'if'
+  | 'raw'
+  | 'tablerow'
+  | 'liquid'
+  | 'unless'
+  | 'schema'
+  | 'style'
+  | 'script'
+  | 'stylesheet'
+  | 'javascript', string>>;
 
   /**
    * **Default** `true`
@@ -226,7 +512,18 @@ export interface LiquidRules {
    * In situations where you write a multiline tag expression this rule can augment the
    * order of leading operator characters such as the parameter comma `,` separator.
    */
-  lineBreakSeparator?: 'default' | 'before' | 'after';
+  lineBreakSeparator?: 'before' | 'after';
+
+  /**
+   * **Default** `wrap`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `newline`
+   *
+   * Controls the strategy to use when forcing filters, arguments or other tag contained
+   * structures onto newlines.
+   *
+   */
+  lineBreakForcing?: boolean;
 
   /**
    * **Default** `false`
@@ -238,10 +535,38 @@ export interface LiquidRules {
   /**
    * **Default** `false`
    *
-   * Applies indentation of Liquid contained attributes contained on markup tags.
-   * This rule will emulate the liquid-prettier-plugin logic.
+   * Prevent the internals structures of Liquid tokens from being formatted. When enabled, Æsthetic
+   * will preserve the internal formations of output and tags.
    */
-  indentAttributes?: boolean;
+  preserveInternal?: boolean;
+
+  /**
+   * **Default** `[]`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is subjective
+   *
+   * A list of Liquid tags that should have their insides preserved but still
+   * respect left side identation. This rule is different from `ignoreTagList`
+   * in the sense that tags defined here will respect indentation levels whereas
+   * tags defined in `ignoreTagList` not dot adhere or respect levels or indentation.
+   *
+   */
+  preserveTagList?: Array<LiteralUnion<
+  | 'form'
+  | 'paginate'
+  | 'capture'
+  | 'case'
+  | 'for'
+  | 'if'
+  | 'raw'
+  | 'tablerow'
+  | 'liquid'
+  | 'unless'
+  | 'schema'
+  | 'style'
+  | 'script'
+  | 'stylesheet'
+  | 'javascript', string>>;
 
   /**
    * **Default** `[]`
