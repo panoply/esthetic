@@ -1,11 +1,99 @@
+/* eslint-disable prefer-const */
 import { grammar } from '@parse/grammar';
 import { is, not } from 'utils';
 import { cc } from './codes';
 import { LT } from './enum';
-import { NIL, WSP } from './chars';
+import { NIL, NWL, WSP } from './chars';
 import { LiquidRules } from 'types/internal';
 import { LiquidComment, LiquidTag, WhitespaceGlob } from './regex';
 
+export function openDelims (input: string, rules: LiquidRules) {
+
+  const o = is(input[2], cc.DSH) ? 3 : 2;
+  const token = input.slice(o);
+
+  let open: string;
+
+  if (rules.delimiterTrims === 'never') {
+    open = `{${input[1]}`;
+  } else if ((
+    rules.delimiterTrims === 'always'
+  ) || (
+    rules.delimiterTrims === 'outputs' &&
+    is(input[1], cc.LCB)
+  ) || (
+    rules.delimiterTrims === 'tags' &&
+    is(input[1], cc.PER)
+  )) {
+    open = `{${input[1]}-`;
+  } else {
+    open = input.slice(0, o);
+  }
+
+  if (rules.delimiterPlacement === 'preserve') {
+    open += /^\s*\n/.test(token) ? NWL : WSP;
+  } else if (rules.delimiterPlacement === 'force') {
+    open += NWL;
+  } else if (rules.delimiterPlacement === 'inline' || rules.delimiterPlacement === 'default') {
+    open += WSP;
+  } else if (rules.delimiterPlacement === 'consistent') {
+    if (/^\s*\n/.test(token)) {
+      open += NWL;
+    } else {
+      open += WSP;
+    }
+  }
+
+  return open + token.trim();
+
+}
+
+export function closeDelims (input: string, rules: LiquidRules) {
+
+  const c = is(input[input.length - 3], cc.DSH) ? input.length - 3 : input.length - 2;
+  const token = input.slice(0, c) || NIL;
+
+  let close: string;
+
+  if (rules.delimiterTrims === 'never') {
+
+    close = `${input[input.length - 2]}}`;
+
+  } else if ((
+    rules.delimiterTrims === 'always'
+  ) || (
+    rules.delimiterTrims === 'outputs' &&
+    is(input[1], cc.LCB)
+  ) || (
+    rules.delimiterTrims === 'tags' &&
+    is(input[1], cc.PER)
+  )) {
+
+    close = `-${input[input.length - 2]}}`;
+
+  } else {
+
+    close = input.slice(c);
+
+  }
+
+  if (rules.delimiterPlacement === 'preserve') {
+    close = (/\s*\n\s*$/.test(token) ? NWL : WSP) + close;
+  } else if (rules.delimiterPlacement === 'force') {
+    close = NWL + close;
+  } else if (rules.delimiterPlacement === 'inline' || rules.delimiterPlacement === 'default') {
+    close = WSP + close;
+  } else if (rules.delimiterPlacement === 'consistent') {
+    if (/^\s*\n/.test(token)) {
+      close = NWL + close;
+    } else {
+      close = WSP + close;
+    }
+  }
+
+  return token.trim() + close;
+
+}
 /**
  * Inner
  *
@@ -17,46 +105,99 @@ import { LiquidComment, LiquidTag, WhitespaceGlob } from './regex';
  * - `}}` or `-}}`
  * - `%}`or `-%}`
  */
-export function normalize (input: string, rules: LiquidRules) {
+export function normalize (input: string, tname: string, rules: LiquidRules) {
 
-  if (rules.delimiterTrims === 'force') {
+  const [ o, c ] = delims(input);
 
-    if (is(input[1], cc.PER)) {
+  /**
+   * Opening Delimiter
+   */
+  let open: string;
 
-      if (not(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
-      if (not(input[input.length - 3], cc.DSH)) input = input.replace(/%}$/, '-%}');
+  /**
+   * The inner token content
+   */
+  let token: string = input.slice(o, c);
 
-    } else {
+  /**
+   * Closing Delimiter
+   */
+  let close: string;
 
-      if (not(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
-      if (not(input[input.length - 3], cc.DSH)) input = input.replace(/}}$/, '-}}');
+  if (rules.delimiterTrims === 'never') {
+
+    open = `{${input[1]}`;
+    close = `${input[input.length - 2]}}`;
+
+  } else if ((
+    rules.delimiterTrims === 'always'
+  ) || (
+    rules.delimiterTrims === 'outputs' &&
+    is(input[1], cc.LCB)
+  ) || (
+    rules.delimiterTrims === 'tags' &&
+    is(input[1], cc.PER)
+  )) {
+
+    open = `{${input[1]}-`;
+    close = `-${input[input.length - 2]}}`;
+
+  } else {
+
+    open = input.slice(0, o);
+    close = input.slice(c);
+
+  }
+
+  if (
+    tname === 'else' ||
+    tname === 'break' ||
+    tname === 'continue' ||
+    tname === 'increment' ||
+    tname === 'decrement' || tname.startsWith('end')) {
+
+    open += WSP;
+    close = WSP + close;
+
+  } else {
+
+    if (rules.delimiterPlacement === 'preserve') {
+
+      open += /^\s*\n/.test(token) ? NWL : WSP;
+      close = (/\s*\n\s*$/.test(token) ? NWL : WSP) + close;
+
+    } else if (rules.delimiterPlacement === 'force') {
+
+      open += NWL;
+      close = NWL + close;
+
+    } else if (rules.delimiterPlacement === 'inline' || rules.delimiterPlacement === 'default') {
+
+      open += WSP;
+      close = WSP + close;
+
+    } else if (rules.delimiterPlacement === 'consistent') {
+
+      if (/^\s*\n/.test(token)) {
+        open += NWL;
+        close = NWL + close;
+
+      } else {
+        open += WSP;
+        close = WSP + close;
+      }
 
     }
 
-  } else if (rules.delimiterTrims === 'strip') {
-
-    input = input
-      .replace(/^{%-/, '{%')
-      .replace(/-%}$/, '%}')
-      .replace(/^{{-/, '{{')
-      .replace(/-}}$/, '}}');
-
-  } else if (rules.delimiterTrims === 'tags' && is(input[1], cc.PER)) {
-
-    if (not(input[2], cc.DSH)) input = input.replace(/^{%/, '{%-');
-    if (not(input[input.length - 3], cc.DSH)) input = input.replace(/%}$/, '-%}');
-
-  } else if (rules.delimiterTrims === 'outputs' && is(input[1], cc.LCB)) {
-
-    if (not(input[2], cc.DSH)) input = input.replace(/^{{/, '{{-');
-    if (not(input[input.length - 3], cc.DSH)) input = input.replace(/}}$/, '-}}');
   }
 
+  token = token.trim();
+
   // ensure normalize spacing is enabld
-  if (rules.normalizeSpacing === false) return input;
+  if (rules.normalizeSpacing === false) return open + token + close;
 
   // skip line comments or liquid tag
-  if (LiquidComment.test(input) || LiquidTag.test(input)) return input;
+  if (LiquidComment.test(input) || LiquidTag.test(input)) return open + token + close;
 
   /**
    * The starting quotation code character
@@ -74,22 +215,30 @@ export function normalize (input: string, rules: LiquidRules) {
    */
   let q: 0 | 1 | 2 = 0;
 
-  return input.split(/(["']{1})/).map((char, idx, arr) => {
+  const clean = (char: string) => char
+    .replace(WhitespaceGlob, WSP)
+    .replace(/([!=]=|[<>]=?)/g, ' $1 ')
+    .replace(/\s+(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
+    .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
+    .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
+    .replace(WhitespaceGlob, WSP);
+
+  const x = token.split(/(["'])/).map((char, idx, arr) => {
 
     const quotation = is(char[0], cc.DQO) || is(char[0], cc.SQO);
 
-    if (q > 0 || (quotation && q === 0 && not(arr[idx - 1], cc.BWS)) || quotation) {
+    if (q > 0 || (quotation && q === 0 && not(arr[arr[idx - 1].length - 1], cc.BWS)) || quotation) {
 
       if (q === 0) t = char.charCodeAt(0);
 
       // Move forward for nested quote type, eg: DQO or SQO
-      if (q === 1 && not(arr[idx - 1], cc.BWS)) {
-        if (t === char.charCodeAt(0)) q = 2;
-        return char;
-      }
+      if (q === 1 && not(arr[arr[idx - 1].length - 1], cc.BWS)) {
+        if (t === char.charCodeAt(0)) q = 0;
 
-      if (q !== 2) {
-        q = q === 0 ? 1 : q === 1 ? is(arr[idx - 1], cc.BWS) ? 1 : 2 : 0;
+        return char;
+
+      } else if (q !== 2) {
+        q = q === 0 ? 1 : q === 1 ? is(arr[arr[idx - 1].length - 1], cc.BWS) ? 1 : 2 : 0;
         return char;
       }
 
@@ -97,19 +246,28 @@ export function normalize (input: string, rules: LiquidRules) {
 
     }
 
-    return char
-      .replace(WhitespaceGlob, WSP)
-      .replace(/^({[{%]-?)/, '$1 ')
-      .replace(/([!=]=|[<>]=?)/g, ' $1 ')
-      .replace(/ +(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
-      .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
-      .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
-      .replace(/(-?[%}]})$/, ' $1')
-      .replace(WhitespaceGlob, WSP);
+    return clean(char);
 
-  }).join(NIL);
+  });
+
+  return open + x.join(NIL) + close;
 
 };
+
+/**
+ * Delimiters
+ *
+ * Determines the indexes of Liquid tag delimiters from provided input.
+ * Returns an array where `[0]` is opening index and `[1]` is closing
+ */
+export function delims (input: string): [ open: number, close: number ] {
+
+  return [
+    is(input[2], cc.DSH) ? 3 : 2,
+    is(input[input.length - 3], cc.DSH) ? input.length - 3 : input.length - 2
+  ];
+
+}
 
 /**
  * Expression

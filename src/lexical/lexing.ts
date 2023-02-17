@@ -41,3 +41,19 @@ export function getTagName (tag: string, slice: number = NaN) {
     : tname.slice(slice);
 
 };
+
+/**
+ * Quote Conversion
+ *
+ * Converts quotes while excluding escaped instances.
+ * Returns a function and is intended to be used within a `replace`.
+ *
+ * @example
+ *
+ * string.replace(/"/g, lx.qc("'"))
+ */
+export function qc (to: string) {
+
+  return (m: string, i: number, input: string) => not(input[i - 1], cc.BWS) ? to : m;
+
+}

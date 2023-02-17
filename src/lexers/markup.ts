@@ -21,11 +21,10 @@ import * as external from '@parse/external';
  * - HTML
  * - XML
  * - JSX
+ * - TSX
  * - SGML
  * - Liquid.
  */
-// esthetic.lexers.markup =
-
 export function markup (input?: string) {
 
   /* -------------------------------------------- */
@@ -36,6 +35,11 @@ export function markup (input?: string) {
    * Parse data reference
    */
   const { data, rules } = parse;
+
+  /**
+   * Frequent Liquid destructed rules
+   */
+  const { lineBreakSeparator, forceFilterWrap, preserveInternal, delimiterPlacement } = rules.liquid;
 
   /**
    * Source string, typically called from `parse.source` but can also be `input` parameter
@@ -56,6 +60,13 @@ export function markup (input?: string) {
    * Attribute sorting list length
    */
   const asl = rules.markup.attributeSortList.length;
+
+  /**
+   * Liquid tag Wrapping
+   */
+  const lw = jsx || preserveInternal === true ? -1 : forceFilterWrap > 0
+    ? forceFilterWrap
+    : rules.wrap > 0 ? rules.wrap - rules.wrap / 4 : -1;
 
   /**
    * The document source as an array list
@@ -90,7 +101,7 @@ export function markup (input?: string) {
   let a: number = 0;
 
   /**
-   * embed Tags parseExternal language
+   * External tag language
    */
   let language: LanguageName;
 
@@ -120,136 +131,136 @@ export function markup (input?: string) {
    * This is a store The `parse.data.begin` index. This will typically
    * reference the `parse.count` value, incremented by `1`
    */
-  function syntactic (record: Record) {
+  // function syntactic (record: Record) {
 
-    function excerpt (no: number) {
+  //   function excerpt (no: number) {
 
-      const line = source.split(NWL);
+  //     const line = source.split(NWL);
 
-      return [
-        `${no - 2} │ ${line[no - 3].trim().length === 0 ? '␤' : line[no - 3].trim()}`,
-        `${no - 1} │ ${line[no - 2].trim().length === 0 ? '␤' : line[no - 2].trim()}`,
-        `${no} │ ${line[no - 1].trim()}\n`
-      ];
-    }
+  //     return [
+  //       `${no - 2} │ ${line[no - 3].trim().length === 0 ? '␤' : line[no - 3].trim()}`,
+  //       `${no - 1} │ ${line[no - 2].trim().length === 0 ? '␤' : line[no - 2].trim()}`,
+  //       `${no} │ ${line[no - 1].trim()}\n`
+  //     ];
+  //   }
 
-    function error (line: number, message: string[]) {
+  //   function error (line: number, message: string[]) {
 
-      parse.error = parseError({
-        lineNumber: line,
-        sample: excerpt(line),
-        message
-      });
+  //     parse.error = parseError({
+  //       lineNumber: line,
+  //       sample: excerpt(line),
+  //       message
+  //     });
 
-    }
+  //   }
 
-    if (record.types === 'liquid_start') {
+  //   if (record.types === 'liquid_start') {
 
-      parse.pairs.set(parse.count + 1, {
-        line: parse.lineNumber,
-        token: record.token,
-        stack: lx.getTagName(record.token),
-        expect: `end${lx.getTagName(record.token)}`,
-        syntax: 'Liquid'
-      });
+  //     parse.pairs.set(parse.count + 1, {
+  //       line: parse.lineNumber,
+  //       token: record.token,
+  //       stack: lx.getTagName(record.token),
+  //       expect: `end${lx.getTagName(record.token)}`,
+  //       syntax: 'Liquid'
+  //     });
 
-    } else if (record.types === 'start') {
+  //   } else if (record.types === 'start') {
 
-      parse.pairs.set(parse.count + 1, {
-        line: parse.lineNumber,
-        token: record.token,
-        stack: lx.getTagName(record.token),
-        expect: `</${record.token.slice(1)}`,
-        syntax: 'HTML'
-      });
+  //     parse.pairs.set(parse.count + 1, {
+  //       line: parse.lineNumber,
+  //       token: record.token,
+  //       stack: lx.getTagName(record.token),
+  //       expect: `</${record.token.slice(1)}`,
+  //       syntax: 'HTML'
+  //     });
 
-    } else if (record.types === 'end') {
+  //   } else if (record.types === 'end') {
 
-      if (parse.pairs.has(parse.stack.index)) {
+  //     if (parse.pairs.has(parse.stack.index)) {
 
-        const ref = parse.pairs.get(parse.stack.index);
+  //       const ref = parse.pairs.get(parse.stack.index);
 
-        if (ref.expect === record.token) {
+  //       if (ref.expect === record.token) {
 
-          parse.pairs.delete(parse.stack.index);
+  //         parse.pairs.delete(parse.stack.index);
 
-        } else if (ref.syntax === 'HTML') {
+  //       } else if (ref.syntax === 'HTML') {
 
-          error(ref.line, [
-            `Incomplete HTML syntactic structure for: ${ref.token}`,
-            'The start/open type tag is missing an end/close type.\n'
-          ]);
+  //         error(ref.line, [
+  //           `Incomplete HTML syntactic structure for: ${ref.token}`,
+  //           'The start/open type tag is missing an end/close type.\n'
+  //         ]);
 
-        } else if (ref.syntax === 'Liquid') {
+  //       } else if (ref.syntax === 'Liquid') {
 
-          // Allow for conditional based wrapping of Liquid tokens
-          // For example
-          //
-          // {% if x %}
-          // <tag>
-          // {% endif %}
-          //
-          if (!grammar.liquid.control.has(data.stack[parse.stack.index])) {
-            error(ref.line, [
-              `Incomplete Liquid syntactic structure for: ${ref.token}`,
-              'The start/open type tag is missing an end/close type.\n'
-            ]);
-          }
-        } else {
+  //         // Allow for conditional based wrapping of Liquid tokens
+  //         // For example
+  //         //
+  //         // {% if x %}
+  //         // <tag>
+  //         // {% endif %}
+  //         //
+  //         if (!grammar.liquid.control.has(data.stack[parse.stack.index])) {
+  //           error(ref.line, [
+  //             `Incomplete Liquid syntactic structure for: ${ref.token}`,
+  //             'The start/open type tag is missing an end/close type.\n'
+  //           ]);
+  //         }
+  //       } else {
 
-          error(parse.lineNumber, [
-            `Invalid syntactic placement of: ${record.token}\n`
-          ]);
+  //         error(parse.lineNumber, [
+  //           `Invalid syntactic placement of: ${record.token}\n`
+  //         ]);
 
-        }
-      }
+  //       }
+  //     }
 
-    } else if (record.types === 'liquid_end') {
+  //   } else if (record.types === 'liquid_end') {
 
-      if (parse.pairs.has(parse.stack.index)) {
+  //     if (parse.pairs.has(parse.stack.index)) {
 
-        const ref = parse.pairs.get(parse.stack.index);
+  //       const ref = parse.pairs.get(parse.stack.index);
 
-        if (ref.expect === lx.getTagName(record.token)) {
+  //       if (ref.expect === lx.getTagName(record.token)) {
 
-          parse.pairs.delete(parse.stack.index);
+  //         parse.pairs.delete(parse.stack.index);
 
-        } else if (ref.syntax === 'Liquid') {
+  //       } else if (ref.syntax === 'Liquid') {
 
-          error(ref.line, [
-            `Incomplete Liquid syntactic structure for: ${ref.token}`,
-            'The start/open type tag is missing an end/close type.\n'
-          ]);
+  //         error(ref.line, [
+  //           `Incomplete Liquid syntactic structure for: ${ref.token}`,
+  //           'The start/open type tag is missing an end/close type.\n'
+  //         ]);
 
-        } else if (ref.syntax === 'HTML') {
+  //       } else if (ref.syntax === 'HTML') {
 
-          // Allow for conditional based wrapping of Liquid tokens
-          // For example
-          //
-          // {% if x %}
-          // <tag>
-          // {% endif %}
-          //
-          if (!grammar.liquid.control.has(data.stack[parse.stack.index])) {
-            error(ref.line, [
-            `Incomplete HTML syntactic structure for: ${ref.token}`,
-            'The start/open type tag is missing an end/close type.\n'
-            ]);
-          }
+  //         // Allow for conditional based wrapping of Liquid tokens
+  //         // For example
+  //         //
+  //         // {% if x %}
+  //         // <tag>
+  //         // {% endif %}
+  //         //
+  //         if (!grammar.liquid.control.has(data.stack[parse.stack.index])) {
+  //           error(ref.line, [
+  //           `Incomplete HTML syntactic structure for: ${ref.token}`,
+  //           'The start/open type tag is missing an end/close type.\n'
+  //           ]);
+  //         }
 
-        } else {
+  //       } else {
 
-          parse.error = parseError({
-            lineNumber: parse.lineNumber,
-            sample: excerpt(parse.lineNumber),
-            message: `Invalid syntactic placement of: ${record.token}\n`
-          });
+  //         parse.error = parseError({
+  //           lineNumber: parse.lineNumber,
+  //           sample: excerpt(parse.lineNumber),
+  //           message: `Invalid syntactic placement of: ${record.token}\n`
+  //         });
 
-        }
+  //       }
 
-      }
-    }
-  }
+  //     }
+  //   }
+  // }
 
   /**
    * Push Record
@@ -308,13 +319,13 @@ export function markup (input?: string) {
    * - `}}` or `-}}`
    * - `%}`or `-%}`
    */
-  function inner (input: string) {
+  function inner (input: string, tname: string) {
 
     if (parse.language !== 'html' && parse.language !== 'liquid' && jsx === false) return input;
     if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
     if (!lq.isType(input, 3)) return input;
 
-    return lq.normalize(input, rules.liquid);
+    return lq.normalize(input, tname, rules.liquid);
 
   };
 
@@ -748,119 +759,119 @@ export function markup (input?: string) {
 
     };
 
-    function correct () {
+    // function correct () {
 
-      // determine if the current end tag is actually part of an HTML singleton
-      if (ltype === 'end') {
+    //   // determine if the current end tag is actually part of an HTML singleton
+    //   if (ltype === 'end') {
 
-        const lastToken = data.token[parse.count];
+    //     const lastToken = data.token[parse.count];
 
-        if (
-          data.types[parse.count - 1] === 'singleton' &&
-          lastToken.charCodeAt(lastToken.length - 2) !== cc.FWS &&
-          `/${lx.getTagName(lastToken)}` === tname
-        ) {
+    //     if (
+    //       data.types[parse.count - 1] === 'singleton' &&
+    //       lastToken.charCodeAt(lastToken.length - 2) !== cc.FWS &&
+    //       `/${lx.getTagName(lastToken)}` === tname
+    //     ) {
 
-          data.types[parse.count - 1] = 'start';
-        }
-      }
+    //       data.types[parse.count - 1] = 'start';
+    //     }
+    //   }
 
-      if (parse.language === 'html' || parse.language === 'liquid') {
+    //   if (parse.language === 'html' || parse.language === 'liquid') {
 
-        // HTML gets tag names in lowercase, if you want to
-        // preserveLine case sensitivity beautify as XML
-        if (
-          u.is(token[0], cc.LAN) &&
-          u.not(token[1], cc.BNG) &&
-          u.not(token[1], cc.QWS) && (
-            parse.count < 0 ||
-            data.types[parse.count].indexOf('liquid') < 0
-          )
-        ) {
+    //     // HTML gets tag names in lowercase, if you want to
+    //     // preserveLine case sensitivity beautify as XML
+    //     if (
+    //       u.is(token[0], cc.LAN) &&
+    //       u.not(token[1], cc.BNG) &&
+    //       u.not(token[1], cc.QWS) && (
+    //         parse.count < 0 ||
+    //         data.types[parse.count].indexOf('liquid') < 0
+    //       )
+    //     ) {
 
-          token = token.toLowerCase();
-        }
+    //       token = token.toLowerCase();
+    //     }
 
-        // console.log(parse.stack.token);
+    //     // console.log(parse.stack.token);
 
-        if (
-          grammar.html.tags.has(parse.stack.token) &&
-          peers(tname.slice(1), parse.stack[parse.stack.length - 2][0])
-        ) {
+    //     if (
+    //       grammar.html.tags.has(parse.stack.token) &&
+    //       peers(tname.slice(1), parse.stack[parse.stack.length - 2][0])
+    //     ) {
 
-          // Looks for HTML tags missing an ending pair when encountering
-          // an ending tag for a parent node
-          insert(0);
+    //       // Looks for HTML tags missing an ending pair when encountering
+    //       // an ending tag for a parent node
+    //       insert(0);
 
-        } else if (
-          parse.stack.length > 3 &&
-          grammar.html.tags.has(parse.stack.token) &&
-          grammar.html.tags.has(parse.stack[parse.stack.length - 2][0]) &&
-          grammar.html.tags.has(parse.stack[parse.stack.length - 3][0]) &&
-          peers(tname, parse.stack[parse.stack.length - 4][0])
-        ) {
+    //     } else if (
+    //       parse.stack.length > 3 &&
+    //       grammar.html.tags.has(parse.stack.token) &&
+    //       grammar.html.tags.has(parse.stack[parse.stack.length - 2][0]) &&
+    //       grammar.html.tags.has(parse.stack[parse.stack.length - 3][0]) &&
+    //       peers(tname, parse.stack[parse.stack.length - 4][0])
+    //     ) {
 
-          // Looks for consecutive missing end tags
-          insert(3);
+    //       // Looks for consecutive missing end tags
+    //       insert(3);
 
-        } else if (
-          parse.stack.length > 2 &&
-          grammar.html.tags.has(parse.stack.token) &&
-          grammar.html.tags.has(parse.stack[parse.stack.length - 2][0]) &&
-          peers(tname, parse.stack[parse.stack.length - 3][0])
-        ) {
+    //     } else if (
+    //       parse.stack.length > 2 &&
+    //       grammar.html.tags.has(parse.stack.token) &&
+    //       grammar.html.tags.has(parse.stack[parse.stack.length - 2][0]) &&
+    //       peers(tname, parse.stack[parse.stack.length - 3][0])
+    //     ) {
 
-          // Looks for consecutive missing end tags
-          insert(2);
+    //       // Looks for consecutive missing end tags
+    //       insert(2);
 
-        } else if (
-          parse.stack.length > 1 &&
-          grammar.html.tags.has(parse.stack.token) &&
-          peers(tname, parse.stack[parse.stack.length - 2][0])
-        ) {
+    //     } else if (
+    //       parse.stack.length > 1 &&
+    //       grammar.html.tags.has(parse.stack.token) &&
+    //       peers(tname, parse.stack[parse.stack.length - 2][0])
+    //     ) {
 
-          // Looks for consecutive missing end tags
-          insert(1);
+    //       // Looks for consecutive missing end tags
+    //       insert(1);
 
-        } else if (peers(tname, parse.stack.token)) {
+    //     } else if (peers(tname, parse.stack.token)) {
 
-          // Certain tags cannot contain other certain tags if such tags are peers
-          insert(0);
+    //       // Certain tags cannot contain other certain tags if such tags are peers
+    //       insert(0);
 
-        } else if (
-          u.is(tname[0], cc.FWS) &&
-          grammar.html.tags.has(parse.stack.token) &&
-          parse.stack.token !== tname.slice(1)
-        ) {
+    //     } else if (
+    //       u.is(tname[0], cc.FWS) &&
+    //       grammar.html.tags.has(parse.stack.token) &&
+    //       parse.stack.token !== tname.slice(1)
+    //     ) {
 
-          // Looks for consecutive missing end tags if the current token is an end tag
-          fix(token, false);
+    //       // Looks for consecutive missing end tags if the current token is an end tag
+    //       fix(token, false);
 
-          record.begin = parse.stack.index;
-          record.lines = parse.lineOffset;
-          record.stack = lx.getTagName(parse.stack.token);
-          record.token = token;
-          record.types = 'end';
+    //       record.begin = parse.stack.index;
+    //       record.lines = parse.lineOffset;
+    //       record.stack = lx.getTagName(parse.stack.token);
+    //       record.token = token;
+    //       record.types = 'end';
 
-          data.lines[parse.count - 1] = 0;
+    //       data.lines[parse.count - 1] = 0;
 
-        }
+    //     }
 
-        // Inserts a trailing slash into singleton tags if they do not already have it
-        if (jsx === false && grammar.html.voids.has(tname)) {
+    //     // Inserts a trailing slash into singleton tags if they do not already have it
+    //     if (jsx === false && grammar.html.voids.has(tname)) {
 
-          if (rules.markup.correct === true && /\/>$/.test(token) === false) {
-            token = token.slice(0, token.length - 1) + ' />';
-          }
+    //       if (rules.markup.correct === true && /\/>$/.test(token) === false) {
+    //         token = token.slice(0, token.length - 1) + ' />';
+    //       }
 
-          return true;
-        }
+    //       return true;
+    //     }
 
-      }
+    //   }
 
-      return false;
+    //   return false;
 
-    }
+    // }¨
 
     /**
      * Parse CDATA
@@ -919,33 +930,33 @@ export function markup (input?: string) {
       /* LIQUID TOKEN                                 */
       /* -------------------------------------------- */
 
-      if (record.types.indexOf('liquid') === -1) return cdata();
+      if (record.types.indexOf('liquid') < 0) return cdata();
+
+      if (record.token === NIL) record.token = token;
 
       if (u.is(token[0], cc.LCB) && u.is(token[1], cc.PER)) {
 
         if (grammar.liquid.else.has(tname)) {
 
-          record.types = 'liquid_else';
+          record.types = ltype = 'liquid_else';
 
         } else if (grammar.liquid.tags.has(tname)) {
 
-          record.types = 'liquid_start';
+          record.types = ltype = 'liquid_start';
 
         } else if (tname.startsWith('end')) {
 
           const name = tname.slice(3);
 
           if (grammar.liquid.tags.has(name)) {
-
-            record.types = 'liquid_end';
-
+            record.types = ltype = 'liquid_end';
           } else {
 
             // Unknown tag handling for situations where a custom endtag
             // name is used, we will look for a matching start tag name
             //
             record.stack = name;
-            record.types = 'liquid_end';
+            record.types = ltype = 'liquid_end';
 
             let i = 0;
 
@@ -966,16 +977,300 @@ export function markup (input?: string) {
           record.stack = tname;
 
         }
-
       }
 
       if (rules.liquid.quoteConvert === 'double') {
-        record.token = record.token.replace(/'/g, DQO);
+        record.token = token = record.token.replace(/'/g, lx.qc(DQO));
       } else if (rules.liquid.quoteConvert === 'single') {
-        record.token = record.token.replace(/"/g, SQO);
+        record.token = token = record.token.replace(/"/g, lx.qc(SQO));
       }
 
-      return cdata();
+      if (lw < 0 || record.types.indexOf('end') > -1 || tname === 'else') return cdata();
+
+      return token.length >= lw
+        ? parseInternal(token.split(NIL))
+        : cdata();
+
+    }
+
+    /**
+     * Parse Internal Liquid
+     *
+     * Additional lexing is required when Liquid tokens exceed wrap or
+     * when newlines sequences are detected within the tags. This function
+     * will traverse the tag and determine the structure contained within.
+     *
+     * We do not apply lexing for all Liquid tags, this helps keeps the traversal
+     * and parse performant and we do not extend the data structures with additional
+     * types to describe the internals. The result of the walk is to apply newlines
+     * and simply correct the Liquid token in preparation for formatting. We don't need to
+     * understand the contained formations of Liquid tags as the `lq.normalize()` function
+     * will process and apply formatting in most if not all cases.
+     */
+    function parseInternal (input: string[]) {
+
+      const control = grammar.liquid.control.has(tname) || tname === 'elsif';
+
+      /**
+       * The lexed entries to be addition to stack
+       */
+      const lexed: string[] = [];
+
+      /**
+       * The index at which token terminates from ending delimiter
+       */
+      const ender: number = u.is(token[token.length - 3], cc.DSH) ? token.length - 3 : token.length - 2;
+
+      /* -------------------------------------------- */
+      /* LEXICAL SCOPE                                */
+      /* -------------------------------------------- */
+
+      /**
+       * Iterator reference
+       */
+      let i = 0;
+
+      /**
+       * Token Type Reference
+       */
+      let t: cc.DQO | cc.SQO;
+
+      /**
+       * Quotation Reference
+       *
+       * Tracks string quotes allowing them to be skipped.
+       *
+       * - `0` token is not a string
+       * - `1` We have encountered a string, eg: {{ '^
+       * - `2` We have closed the last known string, eg: {{ 'foo'^
+       */
+      let q: 0 | 1 | 2 = 0;
+
+      /**
+       * Quotation Skips
+       *
+       * Digests quotation sequences and excludes them from the
+       * token traversal. This prevents invalid or malformed results
+       * from occuring.
+       */
+      function qskip (at: number, string: string | string[] = input) {
+
+        const quotes = u.is(string[at], cc.DQO) || u.is(string[at], cc.SQO);
+
+        if (q > 0 || (quotes && q === 0 && u.not(string[at - 1], cc.BWS)) || quotes) {
+
+          if (q === 0) t = string[i].charCodeAt(0);
+
+          // Move forward for nested quote type, eg: DQO or SQO
+          if (q === 1 && u.not(string[at - 1], cc.BWS) && t === string[at].charCodeAt(0)) {
+
+            q = 0;
+            return at;
+
+          } else if (q === 0) {
+            q = 1;
+            t = string[at].charCodeAt(0);
+          }
+
+          return qskip(at + 1, string);
+
+        }
+
+        q = 0;
+
+        return at;
+
+      }
+
+      // STEP 1
+      //
+      // We are going to quickly analyze the token for occurances of
+      // filters and other lexeme sequences like conditional operator keywords.
+      // Following this traversal, we break down the formations and apply
+      // intended structures, lets begin:
+      //
+      // ----------------------------------------------------------------------
+
+      /**
+       * Previous index occurance, this is a tracer reference
+       */
+      let p: number = 0;
+
+      do {
+
+        i = qskip(i); // skip strings occurances
+
+        if (control) {
+
+          if (u.ws(token[i - 1]) && (token.startsWith('or', i) || token.startsWith('and', i))) {
+
+            lexed.push(token.slice(p, i).trim());
+
+            p = i; // last known match
+
+          }
+
+        } else {
+
+          if (u.is(input[i], cc.PIP)) {
+
+            lexed.push(token.slice(p, i).trim());
+
+            p = i; // last known match
+
+          } else if (u.is(input[i], cc.COM) && u.is(input[p], cc.PIP) === false) {
+
+            lexed.push(token.slice(p, i).trim());
+
+            p = i;
+
+          } else if (i === ender) {
+
+            lexed.push(token.slice(p, i).trim());
+          }
+
+        }
+
+        i = i + 1;
+
+      } while (i < input.length);
+
+      // STEP 2
+      //
+      // At this point the lexed[] store has gathered a workable reference or
+      // sequences we will analyze and apply the correct structures upon
+      //
+      // ----------------------------------------------------------------------
+
+      if (lexed.length > 0) {
+
+        i = 1; // Reset iterator reference, skip first entry
+
+        /**
+         * Wrap limit to exceed before forcing is applied
+         */
+        const width = lw - lw / 10 - parse.lineDepth;
+
+        do {
+
+          if (lexed[i].length > width) {
+
+            /**
+             * Sequence store where new structures are inserted
+             */
+            const store: string[] = [];
+
+            /**
+             * Iterator reference for character in arguments
+             */
+            let x: number = 0;
+
+            /**
+             * The parameter colon reference, eg: `| filter:` - the index at `:`
+             */
+            let param = 0;
+
+            /**
+             * The number of spaces to indent
+             */
+            let comma = ',';
+
+            p = 0; // Reset previous tracer reference
+
+            do {
+
+              x = qskip(x, lexed[i]);
+
+              if (u.is(lexed[i][x], cc.COM)) {
+
+                if (p === 0) {
+
+                  store.push(lexed[i].slice(p, param).trim());
+
+                  if (lineBreakSeparator === 'after') {
+
+                    if (rules.liquid.forceLeadArgument) {
+                      store.push(NWL, lexed[i].slice(param, x).trim() + comma, NWL);
+                    } else {
+                      store.push(lexed[i].slice(param, x).trim() + comma, NWL);
+                    }
+
+                  } else {
+
+                    comma = '  , ';
+
+                    if (rules.liquid.forceLeadArgument) {
+                      store.push(NWL, lexed[i].slice(param, x).trim());
+                    } else {
+                      store.push(WSP + lexed[i].slice(param, x).trim());
+                    }
+                  }
+
+                } else {
+
+                  if (lineBreakSeparator === 'before') {
+                    store.push(NWL, comma + lexed[i].slice(p, x).trim());
+                  } else {
+                    store.push(lexed[i].slice(p, x).trim() + comma, NWL);
+                  }
+                }
+
+                p = x + 1;
+
+              } else if (u.is(lexed[i][x], cc.COL) && param === 0) {
+
+                param = x + 1;
+
+              } else if (x + 1 === lexed[i].length) {
+
+                if (lineBreakSeparator === 'before') {
+                  store.push(NWL, comma + lexed[i].slice(p, x + 1).trim());
+                } else {
+                  store.push(lexed[i].slice(p, x + 1).trim());
+                }
+              }
+
+              x = x + 1;
+            } while (x < lexed[i].length);
+
+            lexed[i] = store.join(NIL);
+
+          }
+
+          i = i + 1;
+        } while (i < lexed.length);
+
+        if (delimiterPlacement === 'inline') {
+
+          lexed[lexed.length - 1] = lexed[lexed.length - 1] + WSP + token.slice(ender);
+
+        } else if (delimiterPlacement === 'force' || delimiterPlacement === 'default') {
+
+          lexed.push(token.slice(ender));
+
+        } else if (delimiterPlacement === 'preserve') {
+
+          if (u.is(token[ender - 1], cc.WSP)) {
+            lexed[lexed.length - 1] = lexed[lexed.length - 1] + WSP + token.slice(ender);
+          } else {
+            lexed.push(token.slice(ender));
+          }
+
+        } else if (delimiterPlacement === 'consistent') {
+
+          if (u.is(lexed[0][2], cc.NWL) || u.is(lexed[0][3], cc.NWL)) {
+            lexed.push(token.slice(ender));
+          } else {
+            lexed[lexed.length - 1] = lexed[lexed.length - 1] + WSP + token.slice(ender);
+          }
+
+        }
+
+        record.token = token = lexed.join(NWL);
+
+      }
+
+      return parseAttribute();
 
     }
 
@@ -993,10 +1288,6 @@ export function markup (input?: string) {
       let i = token.indexOf('liquid') + 6;
 
       /**
-       * The ending delimiter reference
-       */
-      let ender = NIL;
-      /**
        * The atomic token reference
        */
       let liner = NIL;
@@ -1009,12 +1300,12 @@ export function markup (input?: string) {
       /**
        * The lines offset reference
        */
-      let lines = 0;
+      let lines = 1;
 
       // Inserts the starting token into the data struture, eg: {% liquid
       //
       push(record, {
-        token: inner(token.slice(0, i)),
+        token: lq.openDelims(token.slice(0, i), rules.liquid),
         types: 'liquid_start',
         stack: 'liquid'
       });
@@ -1024,6 +1315,61 @@ export function markup (input?: string) {
        */
       const nl = token.slice(i).split(NWL);
 
+      const delim = lq
+        .closeDelims(nl.pop().trim(), rules.liquid)
+        .split(/\s/)
+        .filter(Boolean);
+
+      if (delimiterPlacement === 'inline') {
+
+        if (delim.length > 1) {
+          nl.push(delim[0] + WSP + delim[1]);
+        } else {
+          nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
+        }
+
+      } else if (delimiterPlacement === 'force' || delimiterPlacement === 'default') {
+
+        if (delim.length > 1) {
+          nl.push(delim[0], delim[1]);
+        } else {
+          nl.push(delim[0]);
+        }
+
+      } else if (delimiterPlacement === 'preserve') {
+
+        if (/\s*\n-?%}$/.test(token)) {
+          if (delim.length > 1) {
+            nl.push(delim[0], delim[1]);
+          } else {
+            nl.push(delim[0]);
+          }
+        } else {
+          if (delim.length > 1) {
+            nl.push(delim[0] + WSP + delim[1]);
+          } else {
+            nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
+          }
+        }
+
+      } else if (delimiterPlacement === 'consistent') {
+
+        if (/^{%-?\s*\n/.test(token)) {
+          if (delim.length > 1) {
+            nl.push(delim[0], delim[1]);
+          } else {
+            nl.push(delim[0]);
+          }
+        } else {
+          if (delim.length > 1) {
+            nl.push(delim[0] + WSP + delim[1]);
+          } else {
+            nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
+          }
+        }
+
+      }
+
       i = 0; // Reset Iterators
 
       do {
@@ -1031,82 +1377,85 @@ export function markup (input?: string) {
         liner = nl[i].trim();
         lname = liner.split(/\s/)[0];
 
-        if (liner.endsWith('%}')) {
-          ender = u.is(lname[lname.length - 3], cc.DSH) ? '-%}' : '%}';
-          lname = lname.replace(/-?%}$/, NIL);
-        }
-
-        if (lname.startsWith('end')) {
+        if (i === nl.length - 1) {
 
           push(record, {
-            token: lname,
-            types: 'liquid_end',
-            lines: lines + 1
+            token: liner,
+            types: 'liquid_end'
           });
 
-          lines = 0;
+        } else if (lname.startsWith('end')) {
+
+          record.token = liner;
+          record.types = 'liquid_end';
+          record.lines = lines;
+
+          push(record);
+
+          lines = 1;
 
         } else if (lname.startsWith('#')) {
 
-          push(record, {
-            token: liner,
-            types: 'comment',
-            lines: lines + 1
-          });
+          record.token = liner;
+          record.types = 'liquid';
+          record.lines = lines <= 1 ? 2 : lines;
 
-          lines = 0;
+          push(record);
+
+          lines = 1;
 
         } else if (lname.startsWith('comment')) {
 
-          push(record, {
-            token: liner,
-            types: 'liquid_start',
-            lines: lines + 1
-          });
+          record.token = liner;
+          record.types = 'liquid_start';
+          record.lines = lines;
 
-          lines = 0;
+          push(record);
+
+          lines = 1;
 
         } else {
 
           if (grammar.liquid.tags.has(lname)) {
 
-            push(record, {
-              token: liner,
-              types: 'liquid_start',
-              lines: lines + 1
-            });
+            record.token = liner;
+            record.types = 'liquid_start';
+            record.lines = lines;
 
-            lines = 0;
+            push(record);
+
+            lines = 1;
 
           } else if (grammar.liquid.else.has(lname)) {
 
-            push(record, {
-              token: liner,
-              types: 'liquid_else',
-              lines: lines + 1
-            });
+            record.token = liner;
+            record.types = 'liquid_else';
+            record.lines = lines;
 
-            lines = 0;
+            push(record);
+
+            lines = 1;
 
           } else if (grammar.liquid.singleton.has(lname)) {
 
-            push(record, {
-              token: liner,
-              types: 'liquid',
-              lines: lines + 1
-            });
+            record.token = liner;
+            record.types = 'liquid';
+            record.lines = lines <= 1 ? 2 : lines;
 
-            lines = 0;
+            push(record);
 
+            lines = 1;
+
+          } else if (liner.trim().length > 0) {
+
+            record.token = liner;
+            record.types = 'content';
+            record.lines = lines;
+
+            push(record);
+
+            lines = 1;
           }
-        }
-
-        if (ender !== NIL) {
-
-          push(record, {
-            token: ender,
-            types: 'liquid_end'
-          });
 
         }
 
@@ -1691,7 +2040,7 @@ export function markup (input?: string) {
 
       /* PUSH RECORD -------------------------------- */
 
-      push(record);
+      if (advance !== null) push(record);
 
       /* -------------------------------------------- */
       /* CONSTANTS                                    */
@@ -1760,7 +2109,7 @@ export function markup (input?: string) {
        *
        * Converts quotation characters and pushes the attribute record.
        */
-      function quotes () {
+      function qconvert () {
 
         if (parse.attributes.has(begin)) {
           if (idx + 1 === len && u.notLast(record.token, cc.RAN)) {
@@ -1833,9 +2182,15 @@ export function markup (input?: string) {
 
               do {
 
-                if (u.is(ch[ee - 1], cc.LCB) && (u.is(ch[ee], cc.PER) || u.is(ch[ee], cc.LCB))) {
+                if (u.is(ch[ee - 1], cc.LCB) && (
+                  u.is(ch[ee], cc.PER) ||
+                  u.is(ch[ee], cc.LCB)
+                )) {
                   liq = true;
-                } else if (u.is(ch[ee], cc.RCB) && (u.is(ch[ee - 1], cc.PER) || u.is(ch[ee - 1], cc.RCB))) {
+                } else if (u.is(ch[ee], cc.RCB) && (
+                  u.is(ch[ee - 1], cc.PER) ||
+                  u.is(ch[ee - 1], cc.RCB)
+                )) {
                   liq = false;
                 }
 
@@ -1858,7 +2213,9 @@ export function markup (input?: string) {
               } while (ee < ln);
             }
 
-            push(record, { token: ch.join(NIL) });
+            record.token = ch.join(NIL);
+
+            push(record);
 
           }
         }
@@ -1949,7 +2306,7 @@ export function markup (input?: string) {
         record.token = '}';
         record.types = 'jsx_attribute_end';
 
-        quotes();
+        qconvert();
 
       }
 
@@ -1959,7 +2316,7 @@ export function markup (input?: string) {
        * Liquid infused attribute handling for record type assignment. Accepts an
        * optional `skipEnd` parameter to prevent checking of `endtag` liquid tokens.
        */
-      function liqattr (): boolean {
+      function lqattr (): boolean {
 
         if (lq.isChain(attrs[idx][0])) {
 
@@ -1978,7 +2335,7 @@ export function markup (input?: string) {
           record.begin = parse.count;
           record.token = attrs[idx][0];
 
-          quotes();
+          qconvert();
 
           return true;
 
@@ -1994,7 +2351,7 @@ export function markup (input?: string) {
 
         }
 
-        quotes();
+        qconvert();
 
         return false;
 
@@ -2064,7 +2421,7 @@ export function markup (input?: string) {
             record.types = 'comment_attribute';
             record.token = attrs[idx][0];
 
-            quotes();
+            qconvert();
 
             idx = idx + 1;
             continue;
@@ -2077,8 +2434,7 @@ export function markup (input?: string) {
 
               record.types = 'liquid_attribute_chain';
               record.token = attrs[idx][0];
-
-              quotes();
+              qconvert();
 
               idx = idx + 1;
               continue;
@@ -2130,11 +2486,11 @@ export function markup (input?: string) {
 
             }
 
-            quotes();
+            qconvert();
 
           } else if (lq.isType(attrs[idx][0], 6)) {
 
-            liqattr();
+            lqattr();
 
           } else {
 
@@ -2181,14 +2537,14 @@ export function markup (input?: string) {
 
               if (lq.isType(name, 6)) {
 
-                liqattr();
+                lqattr();
 
               } else {
 
                 record.types = 'attribute';
                 record.token = attrs[idx][0];
 
-                quotes();
+                qconvert();
 
               }
 
@@ -2252,9 +2608,7 @@ export function markup (input?: string) {
 
           }
         }
-
       }
-
     }
 
     /**
@@ -2373,7 +2727,7 @@ export function markup (input?: string) {
      * This is the first function to execute and prepares the traversal
      * for what to expect in terms of tag types.
      */
-    function parseDelimiter (): ReturnType< typeof parseComments | typeof parseExternal | typeof traverse> {
+    function parseDelimiter (): ReturnType<typeof parseComments | typeof parseExternal | typeof traverse> {
 
       if (end === '---') {
 
@@ -2654,7 +3008,7 @@ export function markup (input?: string) {
      *
      *  @next ext()
      */
-    function traverse (): ReturnType<typeof parseExternal> {
+    function traverse (): ReturnType<typeof parseExternal | typeof parseLiquidTag> {
 
       /* -------------------------------------------- */
       /* CONSTANTS                                    */
@@ -2923,11 +3277,11 @@ export function markup (input?: string) {
 
           if (value.indexOf('=\u201c') > 0) { // “
 
-            parse.error = parseError('Invalid quote character (\u201c, &#x201c) used.');
+            parse.error = 'Invalid quote character (\u201c, &#x201c) used.';
 
           } else if (value.indexOf('=\u201d') > 0) { // ”
 
-            parse.error = parseError('Invalid quote character (\u201d, &#x201d) used.');
+            parse.error = 'Invalid quote character (\u201d, &#x201d) used.';
 
           }
         }
@@ -3009,14 +3363,11 @@ export function markup (input?: string) {
 
             } else {
 
-              parse.error = parseError({
-                lineNumber: parse.lineNumber,
-                message: [
-                  `Missing closing delimiter character: ${lexed.join(NIL)}`,
-                  '\nTIP',
-                  'esthetic can autofix these issues when the correct rule is enabled'
-                ]
-              });
+              parse.error = [
+                `Missing closing delimiter character: ${lexed.join(NIL)}`,
+                '\nTIP',
+                'esthetic can autofix these issues when the correct rule is enabled'
+              ].join(NIL);
 
               return;
 
@@ -3062,10 +3413,9 @@ export function markup (input?: string) {
           ltype === 'cdata' &&
           u.is(b[a], cc.RAN) &&
           u.is(b[a - 1], cc.RSB) &&
-          u.not(b[a - 2], cc.RSB)
-        ) {
+          u.not(b[a - 2], cc.RSB)) {
 
-          parse.error = parseError(`CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`);
+          parse.error = `CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`;
           break;
 
         }
@@ -3149,11 +3499,14 @@ export function markup (input?: string) {
               preserve === false &&
               lexed.length > 1 &&
               />{2,3}/.test(end) === false) {
-              parse.error = parseError(`Invalid structure detected ${b.slice(a, a + 8).join(NIL)}`);
+              parse.error = `Invalid structure detected ${b.slice(a, a + 8).join(NIL)}`;
               break;
             }
 
             // HTML/Liquid Attribute Sequences
+            //
+            // The traversal operations contained within this condition
+            // pertain directly to attributes and innner markup <tag> content
             //
             if (u.ws(b[a]) === false && stest === true && b[a] !== lchar) {
 
@@ -3222,17 +3575,15 @@ export function markup (input?: string) {
                       //
                       if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
 
-                      if (
-                        u.is(store[0], cc.EQS) && (
-                          u.is(store[1], cc.LCB) ||
-                          u.is(store[1], cc.PER)
-                        ) && (
-                          u.is(store[store.length - 2], cc.RCB) ||
-                          u.is(store[store.length - 2], cc.PER)
-                        ) && (
-                          u.is(store[store.length - 1], cc.RCB)
-                        )
-                      ) {
+                      if (u.is(store[0], cc.EQS) && (
+                        u.is(store[1], cc.LCB) ||
+                        u.is(store[1], cc.PER)
+                      ) && (
+                        u.is(store[store.length - 2], cc.RCB) ||
+                        u.is(store[store.length - 2], cc.PER)
+                      ) && (
+                        u.is(store[store.length - 1], cc.RCB)
+                      )) {
 
                         isliq = false;
                         quote = NIL;
@@ -3623,7 +3974,12 @@ export function markup (input?: string) {
 
                 } while (a < c);
               }
-            } else if (u.is(end, cc.NWL) === false && (u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO))) {
+            } else if (
+              u.is(end, cc.NWL) === false && (
+                u.is(b[a], cc.DQO) ||
+                u.is(b[a], cc.SQO)
+              )
+            ) {
 
               // Opening quote
               quote = b[a];
@@ -3640,10 +3996,14 @@ export function markup (input?: string) {
 
               quote = '-->';
 
-            } else if (u.is(b[a], cc.LCB) && u.not(lexed[0], cc.LCB) && u.not(end, cc.NWL) && (
-              u.is(b[a + 1], cc.LCB) ||
-              u.is(b[a + 1], cc.PER)
-            )) {
+            } else if (
+              u.is(b[a], cc.LCB) &&
+              u.not(lexed[0], cc.LCB) &&
+              u.not(end, cc.NWL) && (
+                u.is(b[a + 1], cc.LCB) ||
+                u.is(b[a + 1], cc.PER)
+              )
+            ) {
 
               if (u.is(b[a + 1], cc.LCB)) {
 
@@ -3661,7 +4021,6 @@ export function markup (input?: string) {
 
                     if (u.is(b[a], cc.NWL)) lines = lines + 1;
                     store.push(b[a]);
-
                     a = a + 1;
                   } while (a < c && b[a - 1] + b[a] !== quote);
 
@@ -3765,20 +4124,21 @@ export function markup (input?: string) {
 
               }
             }
-          } else if ((
-            u.is(b[a], quote.charCodeAt(quote.length - 1)) && ((
-              jsx === true &&
-              u.is(end, cc.RCB) && (
-                u.not(b[a - 1], cc.BWS) ||
+          } else if (
+            u.is(b[a], quote.charCodeAt(quote.length - 1)) &&
+            u.not(b[a - 1], cc.BWS) && (
+              (
+                jsx === true &&
+                u.is(end, cc.RCB) &&
                 esc(a) === false
+              ) || (
+                jsx === false ||
+                u.not(end, cc.RCB)
               )
-            ) || (
-              jsx === false ||
-              u.not(end, cc.RCB)
-            ))
-          )) {
+            )
+          ) {
 
-            // Find the closing quote or parseExternal template expression
+            // Find the closing quote or external template expression
             //
             f = 0;
             e = quote.length - 1;
@@ -3804,13 +4164,10 @@ export function markup (input?: string) {
       token = lexed.join(NIL);
       tname = lx.getTagName(token);
 
-      if (ltype === 'liquid' && tname === 'liquid') {
-
-        return parseLiquidTag();
-
+      if (ignore === false) {
+        if (ltype === 'liquid' && tname === 'liquid') return parseLiquidTag();
+        token = inner(token, tname);
       }
-
-      if (ignore === false) token = inner(token);
 
       if (tname === 'xml') {
         html = 'xml';
@@ -3821,9 +4178,7 @@ export function markup (input?: string) {
       record.token = token;
       record.types = ltype;
 
-      if (preserve === false && jsx === false) {
-        token = token.replace(rx.SpacesGlob, WSP);
-      }
+      if (preserve === false && jsx === false) token = token.replace(rx.SpacesGlob, WSP);
 
       return parseExternal();
 
@@ -4517,8 +4872,6 @@ export function markup (input?: string) {
 
     } else if (u.is(b[a], cc.LAN)) {
 
-      // console.log(data);
-
       parseToken(NIL);
 
     } else if (u.is(b[a], cc.LCB) && (jsx || u.is(b[a + 1], cc.LCB) || u.is(b[a + 1], cc.PER))) {
@@ -4552,8 +4905,6 @@ export function markup (input?: string) {
   // }
 
   // }
-
-  // console.log(data);
 
   return data;
 

@@ -156,7 +156,7 @@ export const WhitespaceEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/
  *
  * ```js
  *
- * ' \t\v\r '
+ * ' \t\v\r'
  *
  *
  * ```
@@ -197,6 +197,23 @@ export const WhitespaceChar = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]/;
  *
  */
 export const NewlineLead = /^\n+/;
+
+/**
+ * Newlines
+ *
+ * 1 or more newline characters
+ *
+ * ---
+ *
+ * ```js
+ *
+ * /\n+/g
+ *
+ *
+ * ```
+ *
+ */
+export const Newlines = /\n+/g;
 
 /**
  * All Tab Characters
@@ -501,6 +518,16 @@ export const LiquidBlockComment = /^{%-?\s*comment\b/;
  *
  */
 export const LiquidAttr = /[%}]}=(?:["']|{[{%])/;
+
+/**
+ * Liquid Filter Existence
+ *
+ * ```js
+ * /\|\s*[a-z0-9_]+/
+ * ```
+ *
+ */
+export const LiquidFilter = /\|\s*[a-z0-9_]+/;
 
 /**
 * Character Escape
