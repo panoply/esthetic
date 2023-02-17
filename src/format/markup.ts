@@ -1589,7 +1589,15 @@ export function markup () {
               //
               // {% if x %}{% endif %}
               //
-              level.push(-20);
+              // NOTE:
+              //
+              // We will not apply this logic to {% liquid %} type tokens
+              //
+              if (data.stack[a] === 'liquid') {
+                level.push(indent);
+              } else {
+                level.push(-20);
+              }
 
             } else if ((isType(a, 'start') && isType(next, 'script_start'))) {
 
@@ -1813,15 +1821,7 @@ export function markup () {
 
         }
 
-        if (isType(a, 'liquid_tag')) {
-
-          const ender = data.token[a].search(/-?%}$/);
-          const delim = data.token[a].slice(ender);
-
-          data.token[data.ender[a]] = data.token[data.ender[a]] + nl(levels[a]) + delim;
-          data.token[a] = data.token[a].slice(0, ender);
-
-        } else if (isToken(a, undefined) === false && data.token[a].indexOf(parse.crlf) > 0 && ((
+        if (isToken(a, undefined) === false && data.token[a].indexOf(parse.crlf) > 0 && ((
           isType(a, 'content') && rules.markup.preserveText === false) ||
           isType(a, 'comment') ||
           isType(a, 'attribute')

@@ -149,6 +149,8 @@ export function normalize (input: string, tname: string, rules: LiquidRules) {
 
   }
 
+  if (!tname) tname = token.trimStart().split(/\s/)[0] || '';
+
   if (
     tname === 'else' ||
     tname === 'break' ||

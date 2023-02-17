@@ -1315,60 +1315,12 @@ export function markup (input?: string) {
        */
       const nl = token.slice(i).split(NWL);
 
-      const delim = lq
-        .closeDelims(nl.pop().trim(), rules.liquid)
-        .split(/\s/)
-        .filter(Boolean);
+      const ender = nl.pop().trim();
+      const match = u.is(ender[ender.length - 3], cc.DSH) ? ender.length - 3 : ender.length - 2;
+      const slice = ender.slice(0, match);
+      const delim = ender.slice(match);
 
-      if (delimiterPlacement === 'inline') {
-
-        if (delim.length > 1) {
-          nl.push(delim[0] + WSP + delim[1]);
-        } else {
-          nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
-        }
-
-      } else if (delimiterPlacement === 'force' || delimiterPlacement === 'default') {
-
-        if (delim.length > 1) {
-          nl.push(delim[0], delim[1]);
-        } else {
-          nl.push(delim[0]);
-        }
-
-      } else if (delimiterPlacement === 'preserve') {
-
-        if (/\s*\n-?%}$/.test(token)) {
-          if (delim.length > 1) {
-            nl.push(delim[0], delim[1]);
-          } else {
-            nl.push(delim[0]);
-          }
-        } else {
-          if (delim.length > 1) {
-            nl.push(delim[0] + WSP + delim[1]);
-          } else {
-            nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
-          }
-        }
-
-      } else if (delimiterPlacement === 'consistent') {
-
-        if (/^{%-?\s*\n/.test(token)) {
-          if (delim.length > 1) {
-            nl.push(delim[0], delim[1]);
-          } else {
-            nl.push(delim[0]);
-          }
-        } else {
-          if (delim.length > 1) {
-            nl.push(delim[0] + WSP + delim[1]);
-          } else {
-            nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
-          }
-        }
-
-      }
+      if (slice.length !== 0) nl.push(slice);
 
       i = 0; // Reset Iterators
 
@@ -1377,14 +1329,7 @@ export function markup (input?: string) {
         liner = nl[i].trim();
         lname = liner.split(/\s/)[0];
 
-        if (i === nl.length - 1) {
-
-          push(record, {
-            token: liner,
-            types: 'liquid_end'
-          });
-
-        } else if (lname.startsWith('end')) {
+        if (lname.startsWith('end')) {
 
           record.token = liner;
           record.types = 'liquid_end';
@@ -1463,6 +1408,12 @@ export function markup (input?: string) {
         lines = lines + 1;
 
       } while (i < nl.length);
+
+      push(record, {
+        token: delim,
+        types: 'liquid_end',
+        lines: 2
+      });
 
     }
 

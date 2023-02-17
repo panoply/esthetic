@@ -2572,32 +2572,6 @@ function openDelims(input, rules) {
   }
   return open + token.trim();
 }
-function closeDelims(input, rules) {
-  const c = is(input[input.length - 3], 45 /* DSH */) ? input.length - 3 : input.length - 2;
-  const token = input.slice(0, c) || NIL;
-  let close;
-  if (rules.delimiterTrims === "never") {
-    close = `${input[input.length - 2]}}`;
-  } else if (rules.delimiterTrims === "always" || rules.delimiterTrims === "outputs" && is(input[1], 123 /* LCB */) || rules.delimiterTrims === "tags" && is(input[1], 37 /* PER */)) {
-    close = `-${input[input.length - 2]}}`;
-  } else {
-    close = input.slice(c);
-  }
-  if (rules.delimiterPlacement === "preserve") {
-    close = (/\s*\n\s*$/.test(token) ? NWL : WSP) + close;
-  } else if (rules.delimiterPlacement === "force") {
-    close = NWL + close;
-  } else if (rules.delimiterPlacement === "inline" || rules.delimiterPlacement === "default") {
-    close = WSP + close;
-  } else if (rules.delimiterPlacement === "consistent") {
-    if (/^\s*\n/.test(token)) {
-      close = NWL + close;
-    } else {
-      close = WSP + close;
-    }
-  }
-  return token.trim() + close;
-}
 function normalize(input, tname, rules) {
   const [o, c] = delims(input);
   let open;
@@ -2613,6 +2587,8 @@ function normalize(input, tname, rules) {
     open = input.slice(0, o);
     close = input.slice(c);
   }
+  if (!tname)
+    tname = token.trimStart().split(/\s/)[0] || "";
   if (tname === "else" || tname === "break" || tname === "continue" || tname === "increment" || tname === "decrement" || tname.startsWith("end")) {
     open += WSP;
     close = WSP + close;
@@ -3098,58 +3074,17 @@ function markup(input) {
         stack: "liquid"
       });
       const nl = token.slice(i).split(NWL);
-      const delim = closeDelims(nl.pop().trim(), rules.liquid).split(/\s/).filter(Boolean);
-      if (delimiterPlacement === "inline") {
-        if (delim.length > 1) {
-          nl.push(delim[0] + WSP + delim[1]);
-        } else {
-          nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
-        }
-      } else if (delimiterPlacement === "force" || delimiterPlacement === "default") {
-        if (delim.length > 1) {
-          nl.push(delim[0], delim[1]);
-        } else {
-          nl.push(delim[0]);
-        }
-      } else if (delimiterPlacement === "preserve") {
-        if (/\s*\n-?%}$/.test(token)) {
-          if (delim.length > 1) {
-            nl.push(delim[0], delim[1]);
-          } else {
-            nl.push(delim[0]);
-          }
-        } else {
-          if (delim.length > 1) {
-            nl.push(delim[0] + WSP + delim[1]);
-          } else {
-            nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
-          }
-        }
-      } else if (delimiterPlacement === "consistent") {
-        if (/^{%-?\s*\n/.test(token)) {
-          if (delim.length > 1) {
-            nl.push(delim[0], delim[1]);
-          } else {
-            nl.push(delim[0]);
-          }
-        } else {
-          if (delim.length > 1) {
-            nl.push(delim[0] + WSP + delim[1]);
-          } else {
-            nl[nl.length - 1] = nl[nl.length - 1] + WSP + delim[0];
-          }
-        }
-      }
+      const ender = nl.pop().trim();
+      const match = is(ender[ender.length - 3], 45 /* DSH */) ? ender.length - 3 : ender.length - 2;
+      const slice = ender.slice(0, match);
+      const delim = ender.slice(match);
+      if (slice.length !== 0)
+        nl.push(slice);
       i = 0;
       do {
         liner = nl[i].trim();
         lname = liner.split(/\s/)[0];
-        if (i === nl.length - 1) {
-          push(record, {
-            token: liner,
-            types: "liquid_end"
-          });
-        } else if (lname.startsWith("end")) {
+        if (lname.startsWith("end")) {
           record.token = liner;
           record.types = "liquid_end";
           record.lines = lines;
@@ -3197,6 +3132,11 @@ function markup(input) {
         i = i + 1;
         lines = lines + 1;
       } while (i < nl.length);
+      push(record, {
+        token: delim,
+        types: "liquid_end",
+        lines: 2
+      });
     }
     function parseSVG() {
       if (tname === "svg")
@@ -8553,7 +8493,11 @@ function markup2() {
                 level.push(-10);
               }
             } else if (isType2(a, "start") && isType2(next, "end") || isType2(a, "liquid_start") && isType2(next, "liquid_end")) {
-              level.push(-20);
+              if (data.stack[a] === "liquid") {
+                level.push(indent);
+              } else {
+                level.push(-20);
+              }
             } else if (isType2(a, "start") && isType2(next, "script_start")) {
               level.push(-10);
             } else if (rules.markup.forceIndent === true) {
@@ -8628,12 +8572,7 @@ function markup2() {
         if ((isType2(a, "start") || isType2(a, "singleton") || isType2(a, "xml")) && isIndex(a, "attribute") < 0 && a < c - 1 && data.types[a + 1] !== void 0 && isIndex(a + 1, "attribute") > -1) {
           onAttributeEnd();
         }
-        if (isType2(a, "liquid_tag")) {
-          const ender = data.token[a].search(/-?%}$/);
-          const delim2 = data.token[a].slice(ender);
-          data.token[data.ender[a]] = data.token[data.ender[a]] + nl(levels[a]) + delim2;
-          data.token[a] = data.token[a].slice(0, ender);
-        } else if (isToken(a, void 0) === false && data.token[a].indexOf(parse.crlf) > 0 && (isType2(a, "content") && rules.markup.preserveText === false || isType2(a, "comment") || isType2(a, "attribute"))) {
+        if (isToken(a, void 0) === false && data.token[a].indexOf(parse.crlf) > 0 && (isType2(a, "content") && rules.markup.preserveText === false || isType2(a, "comment") || isType2(a, "attribute"))) {
           ml();
         } else if (isType2(a, "comment") && (is(data.token[a][1], 37 /* PER */) && rules.liquid.preserveComment === false && rules.liquid.commentNewline === true || is(data.token[a][1], 37 /* PER */) === false && rules.markup.preserveComment === false && rules.markup.commentNewline === true) && (rules.preserveLine === 0 || build.length > 0 && build[build.length - 1].lastIndexOf(NWL) + 1 < 2)) {
           build.push(nl(levels[a]), data.token[a], nl(levels[a]));
