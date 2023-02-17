@@ -6,7 +6,7 @@ import { LiquidRules } from './rules/liquid';
 import { MarkupRules } from './rules/markup';
 import { StyleRules } from './rules/style';
 import { ScriptRules } from './rules/script';
-import { MarkupTypes, StyleTypes, ScriptTypes, ExtraTypes } from './parse/tokens';
+import { MarkupTypes, StyleTypes, ScriptTypes, LiquidTypes, ExtraTypes } from './parse/tokens';
 
 /**
  * Option Rule Names Stirng Literal
@@ -137,7 +137,13 @@ export class StructureEntries extends Array<Structure> {
 /**
  * Token Types string literal
  */
-export type Types = LiteralUnion<`${MarkupTypes | ExtraTypes | ScriptTypes | StyleTypes}`, string>
+export type Types = LiteralUnion<`${
+  | MarkupTypes
+  | ExtraTypes
+  | ScriptTypes
+  | LiquidTypes
+  | StyleTypes
+}`, string>
 
 /**
  * Statistic Reporting Model
