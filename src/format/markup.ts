@@ -1875,8 +1875,7 @@ export function markup () {
           if (
             /\n/.test(data.token[a]) === true &&
             isIndex(a, 'liquid') > -1 &&
-            isType(a, 'liquid_end') === false &&
-            isType(a, 'liquid_else') === false
+            isType(a, 'liquid_end') === false
           ) {
 
             onLiquidLines();

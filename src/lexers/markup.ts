@@ -1108,6 +1108,9 @@ export function markup (input?: string) {
 
             p = i; // last known match
 
+          } else if (i === ender) {
+
+            lexed.push(token.slice(p, i).trim());
           }
 
         } else {
@@ -1127,6 +1130,7 @@ export function markup (input?: string) {
           } else if (i === ender) {
 
             lexed.push(token.slice(p, i).trim());
+
           }
 
         }
