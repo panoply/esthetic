@@ -1,10 +1,20 @@
 {
   "cSpell.words": [
     "Æsthetic",
+    "Amato",
     "endcustom",
     "endrandom",
+    "estheticrc",
     "stylelint",
     "toets"
+  ],
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "package.json"
+      ],
+      "url": "./schema.json"
+    }
   ],
   "files.exclude": {
     "**/.git": true,
@@ -70,7 +80,8 @@
     }
   },
   "[liquid]": {
-    "editor.formatOnSave": true
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "sissel.shopify-liquid"
   }
 
 }
