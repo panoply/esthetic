@@ -46,6 +46,7 @@ When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attribu
 
 ```json:rules
 {
+  "language": "liquid",
   "liquid": {
     "indentAttributes": false
   },
@@ -71,7 +72,8 @@ When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attribu
         data-foo="bar"
       {% endunless %}
     {% endif %}
-  {% endif %}>
+  {% endif %}
+  data-id="bar">
 
   {% # All attributes will have indentation removed %}
 
@@ -90,6 +92,7 @@ When the `indentAttributes` rule is **enabled** (i.e: `true`) all HTML attribute
 
 ```json:rules
 {
+  "language": "liquid",
   "liquid": {
     "indentAttributes": true
   },
@@ -112,7 +115,8 @@ When the `indentAttributes` rule is **enabled** (i.e: `true`) all HTML attribute
   id="xxxxx"
   data-baz="100"
   {% endif %}
-  {% endif %}>
+  {% endif %}
+  data-id="bar">
 
   {% # All attributes will have indentation applied %}
 

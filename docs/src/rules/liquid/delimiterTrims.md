@@ -96,7 +96,7 @@ When the `delimiterTrims` rule is set to `tags` then Liquid tokens using `{%` an
 
 :::
 
-When the `delimiterTrims` rule is set to `outputs` then Liquid tokens using `{{` and `}}` delimiters will have trims applied. This rule will leave tag type token (`{% and `%}`) delimiter trims intact. In the sample the `if`, `render`and`endif` tag delimiter trims will be preserved but the`{{ foo }}`and `{{ bar }}` output types will have trims inserted.
+When the `delimiterTrims` rule is set to `outputs` then Liquid tokens using `{{` and `}}` delimiters will have trims applied. This rule will leave tag type token `{%` and `%}` delimiter trims intact. In the sample the `if`, `render` and `endif` tag delimiter trims will be preserved but the `{{ foo }}`and `{{ bar }}` output tags will have trims inserted.
 
 ```json:rules
 {

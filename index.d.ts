@@ -14,12 +14,11 @@ import {
   Rules,
   Definitions,
   Language,
-  Format,
-  Parse,
-  ParseError,
   Grammars,
-  Stats
-} from './types/internal';
+  Stats,
+  IParseError,
+  Settings
+} from './types/export';
 
 export {
   Definition,
@@ -35,7 +34,7 @@ export {
   LanguageName,
   LanguageOfficialName,
   LexerName
-} from './types/internal';
+} from './types/export';
 
 declare const esthetic: {
   /**
@@ -88,40 +87,35 @@ declare const esthetic: {
    *
    * Returns the the Parse Error or `null` if no error
    */
-  get error(): ParseError;
-  /**
-   * **ÆSTHETIC**
-   *
-   * A formatting method which exposes all formatting options.
-   * If you are target a specific language, then use the specific
-   * language name exports for easier control.
-   *
-   * Support for the following languages:
-   *
-   * - Liquid + HTML
-   * - Liquid + XHTML
-   * - Liquid + XML
-   * - Liquid + CSS
-   * - Liquid + SCSS
-   * - Liquid + SASS
-   * - Liquid + LESS
-   * - Liquid + JavaScript
-   * - Liquid + TypeScript
-   * - Liquid + JSX
-   * - Liquid + TSX
-   * - HTML
-   * - CSS
-   * - JSON
-   */
-  format?: Format<string, Rules>;
+  get error(): IParseError;
 
   /**
-   * **Parse (async)**
+   * **ÆSTHETIC Format**
    *
-   * Returns the Sparser data~structure. Returns a promise.
-   * You can access the sync method as a function method.
+   * The new generation beautification tool for Liquid. Sync
+   * export which throws if error.
+   *
+   * - Liquid
+   * - HTML
+   * - XML
+   * - CSS
+   * - SCSS
+   * - SASS
+   * - LESS
+   * - JavaScript
+   * - TypeScript
+   * - JSX
+   * - TSX
+   * - JSON
    */
-  parse: Parse<string>;
+  format: (source: string, rules?: Rules) => string;
+
+  /**
+   * **ÆSTHETIC Parse**
+   *
+   * Returns the Sparser data~structure parse table.
+   */
+  parse: (source: string) => string;
 
   /**
    * **Change Listener**
@@ -130,6 +124,16 @@ declare const esthetic: {
    * options change or are augmented.
    */
   on: Events;
+
+  /**
+   * **Settings**
+   *
+   * Set format rules to be applied to syntax. To return the
+   * current beautification rules, then do not provide a parameter.
+   *
+   * **NOTE YET AVAILABLE**
+   */
+  settings:(options: Settings) => Settings;
 
   /**
    * **Rules**
@@ -142,12 +146,11 @@ declare const esthetic: {
   /**
    * **Grammar**
    *
-   * Extend the Prettify built-in grammar references.
-   * By default, Prettify supports all current specification standards.
+   * Extend built-in grammar references.
+   * By default, Æsthetics supports all current specification standards.
    *
    * This is helpful when you need to provide additional
-   * context and handling in Liquid but you can also extend
-   * the core languages.
+   * context and handling in Liquid but you can also extend the core languages.
    *
    * > To return the current grammar presets, then do not provide a parameter.
    */
@@ -159,7 +162,7 @@ declare const esthetic: {
    * Automatic language detection based on the string input.
    * Returns lexer, language and official name.
    */
-  language: (sample: string) => Language;
+  detect: (sample: string) => Language;
 
 };
 

@@ -154,10 +154,6 @@ export interface Stats {
    */
   time: string;
   /**
-   * The source string size, ie: bytes, kb or mb
-   */
-  size: LiteralUnion<`${string} ${'B' | 'KB' | 'MB' | 'TB'}`, string>;
-  /**
    * The number of characters contained in the source string.
    */
   chars: number;

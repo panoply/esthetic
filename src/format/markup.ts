@@ -1,8 +1,8 @@
-import type { Types } from 'types/internal';
+import type { Types } from 'types/export';
 import * as rx from 'lexical/regex';
 import { cc } from 'lexical/codes';
 import { WSP, NIL, NWL } from 'chars';
-import { is, isLast, not, repeatChar, ws } from 'utils';
+import { is, isLast, not, repeatChar, ws } from '@utils';
 import { parse } from '@parse/parser';
 
 /* -------------------------------------------- */
@@ -1737,7 +1737,7 @@ export function markup () {
 
   }
 
-  function onLiquidLines () {
+  function onLiquidForce () {
 
     /**
      * Split the token for every newline
@@ -1750,20 +1750,49 @@ export function markup () {
     const length = lines.length;
 
     /**
-     * The indentation level
-     */
-    let indent: string = NWL + nl(levels[a - 1 > -1 ? a - 1 : a], false) + '  ';
-
-    /**
      * Iterator reference
      */
     let i: number = 0;
+
+    /**
+     * The indentation level
+     */
+    let indent: string = NWL;
+
+    // DETERMINE STRUCTURE
+    //
+    // We quickly determine the structure of the token which will
+    // indicate the delimiter placement imposed. We need to prevent
+    // incorrect output when dealing with global level tokens which
+    // are contained within any nodes and also catch the correct spaces.
+    //
+    if (a - 1 > 0) {
+
+      indent += nl(levels[a - 1], false) + '  ';
+
+    } else {
+
+      if (lines[0].length === 2 || lines[0].length === 3) indent += '  ';
+
+    }
 
     do {
 
       if (i === 0) {
 
-        build.push(lines[i], indent);
+        if (i + 1 === length - 1 && (
+          lines[i + 1].length === 2 ||
+          lines[i + 1].length === 3)) {
+
+          if (indent.length > 1) indent = indent.slice(0, -2);
+
+          build.push(lines[i], indent, lines[i + 1]);
+
+          break;
+
+        } else {
+          build.push(lines[i], indent);
+        }
 
       } else if (i === length - 1) {
 
@@ -1872,14 +1901,8 @@ export function markup () {
 
           if (rules.markup.delimiterForce === true) onDelimiterForce();
 
-          if (
-            /\n/.test(data.token[a]) === true &&
-            isIndex(a, 'liquid') > -1 &&
-            isType(a, 'liquid_end') === false
-          ) {
-
-            onLiquidLines();
-
+          if (/\n/.test(data.token[a]) && isIndex(a, 'liquid') > -1 && !isType(a, 'liquid_end')) {
+            onLiquidForce();
           } else {
             build.push(data.token[a]);
           }

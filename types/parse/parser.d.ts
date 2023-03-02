@@ -1,5 +1,5 @@
+import { Languages } from 'lexical/enum';
 import { Types, LanguageOfficialName, LanguageName } from '../shared';
-import { ErrorTypes, ParseErrors } from 'src/parse/errors';
 import { StackItem } from 'types/next';
 
 export interface Scope {
@@ -32,7 +32,7 @@ export interface VariableDeclarations {
 /* DATA STRUCTURE                               */
 /* -------------------------------------------- */
 
-export interface ParseError {
+export interface IParseError {
   /**
    * The error message, to be thrown (combines all refs in this model)
    */
@@ -46,13 +46,9 @@ export interface ParseError {
    */
   snippet?: string;
   /**
-   * The Error Type
+   * The parse error code enum reference
    */
-  type?: ErrorTypes;
-  /**
-   * Snippet Error Sample
-   */
-  code?: ParseErrors;
+  code?: number;
   /**
    * The error syntax Language (Proper Name)
    */
@@ -61,13 +57,36 @@ export interface ParseError {
    * The range based location of the error.
    */
   location?: {
+    /**
+     * The starting point of the error
+     */
     start: {
+      /**
+       * The starting line number of the error
+       */
       line: number;
+      /**
+       * Thestarting  character numer of the error
+       */
       character: number;
+      /**
+       * The starting index offset of the error
+       */
+      offset: number;
     };
     end: {
+      /**
+       * The ending line number of the error
+       */
       line: number;
+      /**
+       * The ending  character numer of the error
+       */
       character: number;
+      /**
+       * The ending index offset of the error
+       */
+      offset: number;
     }
   };
 }
@@ -95,7 +114,7 @@ export interface Syntactic {
   expect?: string;
   token?: string;
   stack?: string;
-  type?: Types;
+  type?: Languages
 }
 
 /**

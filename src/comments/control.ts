@@ -1,7 +1,7 @@
 import * as rx from 'lexical/regex';
 import { cc } from 'lexical/codes';
 import { NIL } from 'chars';
-import { keys, is, ws } from 'utils';
+import { keys, is, ws } from '@utils';
 import { parse } from '@parse/parser';
 import { definitions } from '@parse/definitions';
 

@@ -3,7 +3,8 @@ import { parse } from '@parse/parser';
 import { definitions } from '@parse/definitions';
 import { detect } from '@parse/detection';
 import { Modes } from 'lexical/enum';
-import { getLexerName, getLexerType, stats } from 'utils';
+import { CNL, NWL } from 'lexical/chars';
+import { getLexerName, getLexerType, stats } from '@utils';
 import type {
   Rules,
   LanguageName,
@@ -13,17 +14,16 @@ import type {
   Stats,
   ParseHook,
   EventListeners
-} from 'types/internal';
-import { CNL, NWL } from 'lexical/chars';
+} from 'types/export';
 
 class Esthetic {
 
-  public async: boolean;
   public language: LanguageName;
   public lexer: LexerName;
   public stats: Stats;
   private events: EventListeners = {
     format: [],
+    error: [],
     rules: [],
     parse: []
   };
@@ -44,7 +44,9 @@ class Esthetic {
     return detect;
   }
 
-  on (name: 'format' | 'rules' | 'parse' | 'language', callback: any) {
+  // settings (settings: Settings) {}
+
+  on (name: 'error' | 'format' | 'rules' | 'parse' | 'language', callback: any) {
     this.events[name].push(callback);
   }
 
@@ -56,13 +58,9 @@ class Esthetic {
 
     parse.source = source;
 
-    // try {
-
     if (typeof this.language === 'string' && this.language !== parse.language) {
-
       parse.language = this.language;
       parse.lexer = getLexerName(parse.language);
-
     }
 
     if (typeof options === 'object') {
@@ -81,37 +79,49 @@ class Esthetic {
     const invoke = getLexerType(this.language || parse.language);
     const action = stats(this.language || parse.language, this.lexer || parse.lexer as LexerName);
     const output = parse.document(invoke);
-    const timing = action((output as string).length);
+
+    if (parse.error !== null) {
+
+      if (this.events.error.length > 0) {
+        // @ts-ignore
+        for (const cb of this.events.error) cb(parse.error);
+        return output;
+      } else {
+        throw parse.error;
+      }
+    }
+
+    const timing = action((output as string)?.length);
 
     this.stats = timing;
 
     if (this.events.format.length > 0) {
       for (const cb of this.events.format) {
-        if (cb.call({ get data () { return parse.data; } }, {
-          get output () { return source; },
-          get stats () { return timing; },
-          get rules () { return parse.rules; }
-        }) === false) return source;
+
+        const fn = cb.call(
+          {
+            get data () {
+              return parse.data;
+            }
+          }, {
+            get output () {
+              return source;
+            },
+            get stats () {
+              return timing;
+            },
+            get rules () {
+              return parse.rules;
+            }
+          }
+        );
+
+        if (fn === false) return source;
+
       }
     }
 
-    if (!this.async) {
-      if (parse.error.length) throw new Error(parse.error);
-      return output;
-    }
-
-    // RESOLVE OUTPUT AS PROMISE
-    //
-    return new Promise((resolve, reject) => {
-      if (parse?.error?.length) return reject(parse.error);
-      return resolve(output);
-    });
-
-    // } catch (e) {
-
-    //   throw new Error('Æsthetic (Internal Error)', e);
-
-    // }
+    return output;
 
   };
 
@@ -131,7 +141,7 @@ class Esthetic {
     if (this.events.parse.length > 0) {
       for (const cb of this.events.parse) {
 
-        if (cb({
+        const fn = cb({
           get data () {
             return parse.data;
           },
@@ -141,20 +151,23 @@ class Esthetic {
           get rules () {
             return parse.rules;
           }
-        }) === false) return source;
+        });
+
+        if (fn === false) return source;
 
       }
     }
 
-    if (!this.async) {
-      if (parse.error.length) throw new Error(parse.error);
-      return parsed;
+    if (parse.error !== null) {
+
+      // @ts-ignore
+      if (this.events.error.length > 0) for (const cb of this.events.error) cb(parse.error);
+
+      return [];
+
     }
 
-    return new Promise((resolve, reject) => {
-      if (parse.error.length) return reject(parse.error);
-      return resolve(parsed);
-    });
+    return parsed;
 
   };
 
@@ -225,51 +238,45 @@ class Esthetic {
   }
 
   liquid (source: string | Buffer, options?: Rules) {
+
+    this.language = 'liquid';
+    this.lexer = getLexerName('liquid');
+
     return this.format(source, options);
   }
 
   html (source: string | Buffer, options?: Rules) {
+
+    this.language = 'html';
+    this.lexer = getLexerName('html');
+
     return this.format(source, options);
   }
 
   xml (source: string | Buffer, options?: Rules) {
+
+    this.language = 'xml';
+    this.lexer = getLexerName('xml');
+
     return this.format(source, options);
   }
 
   css (source: string | Buffer, options?: Rules) {
+
+    this.language = 'css';
+    this.lexer = getLexerName('css');
+
     return this.format(source, options);
   }
 
   json (source: string | Buffer, options?: Rules) {
+
+    this.language = 'json';
+    this.lexer = getLexerName('json');
+
     return this.format(source, options);
   }
 
 }
 
-export const esthetic = ((binding) => {
-
-  const esthetic = new Esthetic();
-
-  (esthetic.format as any).sync = function (source: string | Buffer, options?: Rules) {
-    esthetic.async = false;
-    return esthetic.format(source, options);
-  };
-
-  for (const language of binding) {
-    esthetic[language].sync = function (source: string | Buffer, options?: Rules) {
-      esthetic.async = false;
-      esthetic.language = language;
-      esthetic.lexer = getLexerName(language);
-      return esthetic[language](source, options);
-    };
-  }
-
-  return esthetic;
-
-})([
-  'liquid',
-  'html',
-  'xml',
-  'json',
-  'css'
-]);
+export const esthetic = new Esthetic();

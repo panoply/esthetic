@@ -1,10 +1,10 @@
 /* eslint-disable prefer-const */
 import { grammar } from '@parse/grammar';
-import { is, not } from 'utils';
+import { is, not } from '@utils';
 import { cc } from './codes';
 import { LT } from './enum';
 import { NIL, NWL, WSP } from './chars';
-import { LiquidRules } from 'types/internal';
+import { LiquidRules } from 'types/export';
 import { LiquidComment, LiquidTag, WhitespaceGlob } from './regex';
 
 export function openDelims (input: string, rules: LiquidRules) {

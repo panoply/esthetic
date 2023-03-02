@@ -1,7 +1,7 @@
 ---
-title: 'Getting Started'
+title: 'Installation'
 layout: base
-permalink: '/usage/getting-started/index.html'
+permalink: '/usage/installation/index.html'
 ---
 
 # Installation

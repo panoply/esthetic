@@ -7,11 +7,10 @@ const markdownit = require('markdown-it');
 const mdcontainer = require('markdown-it-container')
 const anchor = require('markdown-it-anchor');
 const Prism = require('prismjs');
-
+const languages = require("prismjs/components/");
 
 // Prism.languages.style = Prism.languages.extend('css', css(base));
 // Prism.languages.script = Prism.languages.extend('javascript', js(base));
-
 
 /* -------------------------------------------- */
 /* INSERT BEFORE                                */
@@ -219,19 +218,23 @@ Prism.languages.insertBefore('js', 'keyword', {
   }
 });
 
+
 let store;
+let input;
 
 /**
- * Highlight Code
+ * Highlights code blocks contained within markdown files. Some contained
+ * code blocks may use a language identifier separated by colon `:` character.
+ * In such cases, this typically infers some higher order logic will be applied
+ * in the next known code block. Typically this is found in the rules.
  *
  * @param {markdownit} md markdown-it
- * @param {string} str code
+ * @param {string} str code input
  * @param {string} lang code language
- * @returns {string} highlighted result wrapped in pre
  */
 function highlighter (md, raw, language) {
 
-  let result = '';
+  let code = '';
 
   if (language) {
 
@@ -239,36 +242,107 @@ function highlighter (md, raw, language) {
 
     try {
 
-      result = Prism.highlight(raw, Prism.languages[language], language);
+      languages([language]);
+
+      code = Prism.highlight(raw, Prism.languages[language], language);
+      input = raw
 
     } catch (err) {
 
-      console.log(lang, err);
+      code = md.utils.escapeHtml(raw);
 
-      result = md.utils.escapeHtml(raw);
-
+      console.error(
+        'HIGHLIGHTER ERROR\n',
+        'LANGUAGE: ' + language + '\n\n', err);
     }
 
   } else {
-
-    result = md.utils.escapeHtml(raw);
-
+    code = md.utils.escapeHtml(raw);
   }
 
 
-  return `<pre class="language-${language}"><code>${result}</code></pre>|${raw}`;
+  return `<pre class="language-${language}"><code>${code}</code></pre>`;
 
 };
 
+/**
+ * Generates editor lines for rule sample code blocks
+ *
+ * @param {'input' | 'output'} target the name of the stimulus target
+ * @param {string} raw The code input source
+ */
+function getEditorLines (target, raw) {
+
+  const count = raw.trim().split("\n").length -1
+  const lines = [ ...Array(count > 0 ? count : 1) ]
+  const numbers = lines.map((_, i) => (`<span class="line-number">${i + 1}</span><br>`)).join('');
+
+  return [
+    /* html */`
+    <div
+      data-example-target="${target}Lines"
+      class="line-numbers-wrapper"
+      aria-hidden="true">
+      ${numbers}
+    </div>
+   `
+  ].join('')
+
+}
+
+function getCodeInput (raw, language) {
+
+  const lines = getEditorLines('input', raw)
+
+  const output = raw
+  .replace(/<\/pre>\n/, `${lines}</pre>`)
+  .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode"')
+  .replace(/<code>/, `<code data-example-target="input" class="language-${language}">`)
+
+  return [
+    /* html */`
+    <div class="row editor-tabs">
+      <div class="col-auto pl-0 pr-1">
+        <button
+          class="selected"
+          data-action="example#before"
+          aria-label="Before Formatting"
+          data-tooltip="top">
+          Before
+        </button>
+      </div>
+      <div class="col-auto pr-0">
+        <button
+          data-action="example#after"
+          aria-label="After Formatting"
+          data-tooltip="top">
+         After
+        </button>
+      </div>
+    </div>
+
+    ${output}`
+
+  ].join()
+
+}
+
+/**
+ * Extracts code input source from `<pre></pre>` code regions.
+ * When the raw input ends with a `|` character
+ *
+ * @param {markdownit} md markdown-it
+ * @param {string} raw The character to join
+ */
 function getInputSource (md, raw) {
 
-  if(raw.indexOf('</pre>|') > -1) {
+  if(raw.indexOf('</pre>') > -1) {
 
-    const index = raw.indexOf('</pre>|') + 6
+    const index = raw.indexOf('</pre>')
 
     return  {
-      source: md.utils.escapeHtml(raw.slice(index + 1)),
-      syntax: `\n${raw.slice(0, index)}\n`
+      source: md.utils.escapeHtml(raw.slice(5, index)),
+      syntax: `\n${raw.slice(0, index  + 6)}\n`
     }
 
   }
@@ -280,61 +354,7 @@ function getInputSource (md, raw) {
 
 }
 
-function getEditorLines (target, raw) {
-
-  const count = raw.trim().split("\n").length -1
-  const lines = [ ...Array(count > 0 ? count : 1) ]
-  const numbers = lines.map((_, i) => (`<span class="line-number">${i + 1}</span><br>`)).join('');
-
-  return [
-    /* html */`
-    <div
-      data-editor-target="${target}Lines"
-      class="line-numbers-wrapper"
-      aria-hidden="true">
-      ${numbers}
-    </div>
-    `
-   , lines.length - 1
-  ]
-
-}
-
-function getCodeInput (raw, language) {
-
-  const lines = getEditorLines('input', raw)
-  const output = raw
-  .replace(/<\/pre>\n/, `${lines[0]}</pre>`)
-  .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode"')
-  .replace(/<code>/, `<code data-editor-target="input" class="language-${language}">`)
-
-  return [
-    /* html */`
-    <div class="row editor-tabs">
-      <div class="col-auto pl-0 pr-1">
-        <button
-          class="selected"
-          data-action="editor#before"
-          aria-label="Before Formatting"
-          data-tooltip="top">
-          Before
-        </button>
-      </div>
-      <div class="col-auto pr-0">
-        <button
-          data-action="editor#after"
-          aria-label="After Formatting"
-          data-tooltip="top">
-         After
-        </button>
-      </div>
-    </div>
-    ${output}`
-  ].join('')
-
-}
-
-function getRuleSamples (raw, language) {
+function getRuleExample (raw, language) {
 
   const code = raw.slice(raw.indexOf("<code>"), raw.indexOf("</code>"));
   const [ lines, count ] = getEditorLines('output', code)
@@ -342,7 +362,7 @@ function getRuleSamples (raw, language) {
   return [
     /* html */`<pre class="hide-scroll line-numbers-mode language-${language}">`
     ,
-    /* html */`<code data-editor-target="output" class="language-${language}">`
+    /* html */`<code data-example-target="output" class="language-${language}">`
     ,
     /* html */`${'\n'.repeat(count)}`
     ,
@@ -355,18 +375,6 @@ function getRuleSamples (raw, language) {
 
 }
 
-function getFormatRules (md, raw, tokens, index) {
-
-  const language = tokens[index - 3].info.trim();
-  const rules = {
-    language: 'liquid',
-    liquid: {
-      delimiterPlacement: 'force-inline'
-    }
-  }
-
-  return md.utils.escapeHtml(JSON.stringify(rules))
-}
 
 function getCodeBlocks (md, fence, ...args) {
 
@@ -376,39 +384,28 @@ function getCodeBlocks (md, fence, ...args) {
   const raw = fence(...args);
 
   if(language === 'json:rules') {
-    const json =raw.slice(raw.indexOf('>', raw.indexOf('<code') + 1) + 1, raw.indexOf('</code'))
+    const json = raw.slice(raw.indexOf('>', raw.indexOf('<code') + 1) + 1, raw.indexOf('</code'))
     store = JSON.parse(json.trim())
     return ''
   }
 
+  if(store === undefined) return raw
+
   const { source, syntax } = getInputSource(md, raw)
-  const input = getCodeInput(syntax, language, 'input')
+  const output = getCodeInput(syntax, language)
+  const rules = md.utils.escapeHtml(JSON.stringify(store))
 
-  if(syntax === null) return input
-
-  const rules = getFormatRules(md, raw, tokens, index)
-  const output = getRuleSamples(syntax, language, 'output')
+  store = undefined
 
   return [
-    // /* html */`
-    // </div>
-    // </div>
-    // `
-    ,
     /* html */`
     <div
-      data-controller="editor"
-      data-editor-mode-value="initial"
-      data-editor-rules-value="${md.utils.escapeHtml(JSON.stringify(store))}"
-      data-editor-input-value="${source.trim()}"
-      data-editor-output-value="${source.trim()}">
-      ${input.trim()}
+      data-controller="example"
+      data-example-rules-value="${rules}"
+      data-example-input-value="${source.trim()}"
+      data-example-output-value="${source.trim()}">
+      ${output.trim()}
     </div>`
-    ,
-    // /* html */`
-    // <div class="row px-5">
-    // <div class="col-8">
-    // `
 
   ].join('')
 
@@ -437,12 +434,7 @@ function codeblocks (md)  {
  */
 function notes (tokens, index) {
 
-  if (tokens[index].nesting === 1) {
-
-    return `<blockquote class="note">`
-  }
-
-  return '</blockquote>'
+  return tokens[index].nesting === 1 ? `<blockquote class="note">` : '</blockquote>'
 
 }
 
@@ -459,13 +451,13 @@ function rule (md, tokens, idx) {
       if('🤡' === m[1]) {
         tooltip = "The choice of a clown."
       } else if ('🙌' === m[1]) {
-        tooltip = "The recommended choice, 10x vibes."
+        tooltip = "Authors choice"
       } else if ('👍' === m[1]) {
-        tooltip = "Good choice, no remark to be had."
+        tooltip = "Good choice."
       } else if ('👎' === m[1]) {
         tooltip = "Not recommended"
       } else if ('😳' === m[1]) {
-        tooltip = "We live in a society, we are not animals"
+        tooltip = "We live in a society, we're not animals"
       }  else {
         tooltip = m[1]
       }
@@ -506,11 +498,13 @@ function options (tokens, idx) {
 
   if (tokens[idx].nesting === 1) {
 
-    return /*html */`
+    return [
+      /*html */`
       <div
         data-controller="accordion"
         data-accordion-multiple-value="true"
-        class="accordion accordion-markdown">`
+        class="accordion accordion-markdown">
+    `].join('')
 
   }
 

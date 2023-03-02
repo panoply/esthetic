@@ -1,4 +1,4 @@
-import { Format, Rules } from '../internal';
+import { Format, Rules } from '../export';
 import { Except } from 'type-fest';
 
 /**

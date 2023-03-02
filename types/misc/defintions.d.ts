@@ -1,4 +1,4 @@
-import { GlobalRules, LiquidRules, MarkupRules, ScriptRules, StyleRules } from '../internal';
+import { GlobalRules, LiquidRules, MarkupRules, ScriptRules, StyleRules } from '../export';
 
 /**
  * Option defintion type string Literal

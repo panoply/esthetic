@@ -117,11 +117,11 @@ dev(async function (source) {
   //   }
   // });
 
-  const output = esthetic.liquid.sync(source, {
+  const output = esthetic.liquid(source, {
     wrap: 120,
     liquid: {
       delimiterTrims: 'preserve',
-      delimiterPlacement: 'consistent',
+      delimiterPlacement: 'force',
       lineBreakSeparator: 'before',
       forceFilterWrap: 80,
       forceLeadArgument: false,

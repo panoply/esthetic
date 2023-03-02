@@ -4,11 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "esthetic": "esthetic ./command/** -f -w --liquid",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "esthetic": {
+    "markup": {
+      "forceAttribute": true
+    }
+  },
   "dependencies": {
     "esthetic": "link:.."
   }

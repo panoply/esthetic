@@ -13,15 +13,23 @@
     "types",
     "tests"
   ],
+  "typeAcquisition": {
+    "enable": true,
+    "include": ["node"],
+  },
   "compilerOptions": {
+    "types": ["node"],
     "incremental": false,
     "allowJs": true,
     "declaration": true,
     "removeComments": false,
-    "module": "ES2015",
+    "module": "ESNext",
     "emitDeclarationOnly": true,
     "baseUrl": ".",
     "paths": {
+      "./index.js": [
+        "./index.js"
+      ],
       "types/*": [
         "./types/*"
       ],
@@ -40,7 +48,7 @@
       "comments": [
         "./src/comments/index.ts"
       ],
-      "utils": [
+      "@utils": [
         "./src/utils/index.ts"
       ],
       "@parse/*": [

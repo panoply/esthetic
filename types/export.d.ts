@@ -2,7 +2,7 @@
 
 import { LiteralUnion } from 'type-fest';
 import { LanguageName, LanguageOfficialName, LexerName, Stats } from './shared';
-import { Data, ParseError } from './parse/parser';
+import { Data, IParseError } from './parse/parser';
 import { GlobalRules } from './rules/global';
 import { LiquidRules } from './rules/liquid';
 import { MarkupRules } from './rules/markup';
@@ -21,6 +21,7 @@ export * from './parse/tokens';
 export * from './parse/parser';
 export * from './misc/grammar';
 export * from './misc/defintions';
+export * from './misc/settings';
 export * from './rules/global';
 export * from './rules/liquid';
 export * from './rules/markup';
@@ -315,7 +316,7 @@ export interface Esthetic {
   /**
    * Informative reference to parse errors
    */
-  error: ParseError;
+  error: IParseError;
   /**
    * The current environment Prettify was invoked
    */
@@ -371,22 +372,8 @@ export interface Esthetic {
   };
 }
 
-export interface Parse<T> {
-
-  (source: string): Promise<T>;
-  /**
-   * **Parse (sync)**
-   *
-   * Returns the Sparser data~structure. Async
-   * export which resolves a promise.
-   */
-  sync?(source: string): T;
-
-}
-
 export interface Format<T extends string, O extends Rules> {
 
-  (source: T, rules?: O): Promise<T>;
   /**
    * **ÆSTHETIC**
    *
@@ -406,5 +393,6 @@ export interface Format<T extends string, O extends Rules> {
    * - Liquid + TSX
    * - JSON
    */
-  sync(source: T, rules?: O): T;
+  (source: T, rules?: O): T
+
 }

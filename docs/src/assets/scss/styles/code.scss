@@ -252,7 +252,16 @@ pre[class*='language-'] {
 }
 
 .language-bash {
-  color: rgb(214 214 214) !important;
+  color: $white;
+
+  .token {
+    &.punctuation {
+      color: $pink;
+    }
+    &.comment {
+      color: #636363;
+    }
+  }
 }
 
 .language-css .token.string,

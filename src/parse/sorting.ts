@@ -1,8 +1,8 @@
-import { is, not, isArray } from 'utils';
+import { is, not, isArray } from '@utils';
 import { cc as ch } from 'lexical/codes';
 import { NIL } from 'chars';
 import { parse } from '@parse/parser';
-import type{ Data } from 'types/internal';
+import type{ Data } from 'types/export';
 
 /* -------------------------------------------- */
 /* EXPORTS                                      */
@@ -574,7 +574,14 @@ function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]
 
       do {
 
-        if (storeb[a] < key || typeof storeb[a] < tkey) {
+        // The typeof comparison was originally:
+        //
+        // typeof storeb[a] < tkey
+        //
+        // If error occur, change it back
+        //
+        // eslint-disable-next-line valid-typeof
+        if (storeb[a] < key || typeof storeb[a] === tkey) {
           key = storeb[a];
           ind = [ a ];
         } else if (storeb[a] === key) {

@@ -23,14 +23,19 @@
       "url": "/introduction/language-support/"
     },
     {
-      "group": "introduction",
-      "title": "Limitations",
-      "url": "/introduction/limitations/"
+      "group": "usage",
+      "title": "Install",
+      "url": "/usage/install/"
     },
     {
       "group": "usage",
-      "title": "Getting Started",
-      "url": "/usage/getting-started/"
+      "title": "CLI",
+      "url": "/usage/cli/"
+    },
+    {
+      "group": "usage",
+      "title": "Config Files",
+      "url": "/usage/config-files/"
     },
     {
       "group": "usage",
@@ -44,23 +49,28 @@
     },
     {
       "group": "usage",
-      "title": "Parsing",
-      "url": "/usage/parsing/"
-    },
-    {
-      "group": "usage",
       "title": "Inline Control",
       "url": "/usage/inline-control/"
     },
     {
       "group": "usage",
-      "title": "Language",
-      "url": "/usage/language/"
+      "title": "Parse",
+      "url": "/usage/parsing/"
     },
     {
       "group": "usage",
-      "title": "Events and Hooks",
-      "url": "/usage/events-and-hooks/"
+      "title": "Settings",
+      "url": "/usage/settings/"
+    },
+    {
+      "group": "usage",
+      "title": "Events",
+      "url": "/usage/events/"
+    },
+    {
+      "group": "usage",
+      "title": "Utilities",
+      "url": "/usage/utilities/"
     },
     {
       "group": "parse",
@@ -111,6 +121,11 @@
       "group": "integrate",
       "title": "Node",
       "url": "/integrate/node/"
+    },
+    {
+      "group": "misc",
+      "title": "Limitations",
+      "url": "/misc/limitations/"
     },
     {
       "group": "misc",

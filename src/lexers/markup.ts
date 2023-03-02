@@ -1,4 +1,4 @@
-import type { Record, Types, LanguageName } from 'types/internal';
+import type { Record, Types, LanguageName } from 'types/export';
 import { parse } from '@parse/parser';
 import { sortSafe } from '@parse/sorting';
 import { grammar } from '@parse/grammar';
@@ -8,8 +8,10 @@ import { cc } from 'lexical/codes';
 import * as rx from 'lexical/regex';
 import * as lx from 'lexical/lexing';
 import * as lq from 'lexical/liquid';
-import * as u from 'utils';
+import * as u from '@utils';
 import * as external from '@parse/external';
+import { ParseError } from 'lexical/errors';
+import { MarkupError } from '@parse/errors';
 
 /**
  * Markup Lexer
@@ -126,153 +128,17 @@ export function markup (input?: string) {
   /* -------------------------------------------- */
 
   /**
-   * Syntactical Tracking
-   *
-   * This is a store The `parse.data.begin` index. This will typically
-   * reference the `parse.count` value, incremented by `1`
-   */
-  // function syntactic (record: Record) {
-
-  //   function excerpt (no: number) {
-
-  //     const line = source.split(NWL);
-
-  //     return [
-  //       `${no - 2} │ ${line[no - 3].trim().length === 0 ? '␤' : line[no - 3].trim()}`,
-  //       `${no - 1} │ ${line[no - 2].trim().length === 0 ? '␤' : line[no - 2].trim()}`,
-  //       `${no} │ ${line[no - 1].trim()}\n`
-  //     ];
-  //   }
-
-  //   function error (line: number, message: string[]) {
-
-  //     parse.error = parseError({
-  //       lineNumber: line,
-  //       sample: excerpt(line),
-  //       message
-  //     });
-
-  //   }
-
-  //   if (record.types === 'liquid_start') {
-
-  //     parse.pairs.set(parse.count + 1, {
-  //       line: parse.lineNumber,
-  //       token: record.token,
-  //       stack: lx.getTagName(record.token),
-  //       expect: `end${lx.getTagName(record.token)}`,
-  //       syntax: 'Liquid'
-  //     });
-
-  //   } else if (record.types === 'start') {
-
-  //     parse.pairs.set(parse.count + 1, {
-  //       line: parse.lineNumber,
-  //       token: record.token,
-  //       stack: lx.getTagName(record.token),
-  //       expect: `</${record.token.slice(1)}`,
-  //       syntax: 'HTML'
-  //     });
-
-  //   } else if (record.types === 'end') {
-
-  //     if (parse.pairs.has(parse.stack.index)) {
-
-  //       const ref = parse.pairs.get(parse.stack.index);
-
-  //       if (ref.expect === record.token) {
-
-  //         parse.pairs.delete(parse.stack.index);
-
-  //       } else if (ref.syntax === 'HTML') {
-
-  //         error(ref.line, [
-  //           `Incomplete HTML syntactic structure for: ${ref.token}`,
-  //           'The start/open type tag is missing an end/close type.\n'
-  //         ]);
-
-  //       } else if (ref.syntax === 'Liquid') {
-
-  //         // Allow for conditional based wrapping of Liquid tokens
-  //         // For example
-  //         //
-  //         // {% if x %}
-  //         // <tag>
-  //         // {% endif %}
-  //         //
-  //         if (!grammar.liquid.control.has(data.stack[parse.stack.index])) {
-  //           error(ref.line, [
-  //             `Incomplete Liquid syntactic structure for: ${ref.token}`,
-  //             'The start/open type tag is missing an end/close type.\n'
-  //           ]);
-  //         }
-  //       } else {
-
-  //         error(parse.lineNumber, [
-  //           `Invalid syntactic placement of: ${record.token}\n`
-  //         ]);
-
-  //       }
-  //     }
-
-  //   } else if (record.types === 'liquid_end') {
-
-  //     if (parse.pairs.has(parse.stack.index)) {
-
-  //       const ref = parse.pairs.get(parse.stack.index);
-
-  //       if (ref.expect === lx.getTagName(record.token)) {
-
-  //         parse.pairs.delete(parse.stack.index);
-
-  //       } else if (ref.syntax === 'Liquid') {
-
-  //         error(ref.line, [
-  //           `Incomplete Liquid syntactic structure for: ${ref.token}`,
-  //           'The start/open type tag is missing an end/close type.\n'
-  //         ]);
-
-  //       } else if (ref.syntax === 'HTML') {
-
-  //         // Allow for conditional based wrapping of Liquid tokens
-  //         // For example
-  //         //
-  //         // {% if x %}
-  //         // <tag>
-  //         // {% endif %}
-  //         //
-  //         if (!grammar.liquid.control.has(data.stack[parse.stack.index])) {
-  //           error(ref.line, [
-  //           `Incomplete HTML syntactic structure for: ${ref.token}`,
-  //           'The start/open type tag is missing an end/close type.\n'
-  //           ]);
-  //         }
-
-  //       } else {
-
-  //         parse.error = parseError({
-  //           lineNumber: parse.lineNumber,
-  //           sample: excerpt(parse.lineNumber),
-  //           message: `Invalid syntactic placement of: ${record.token}\n`
-  //         });
-
-  //       }
-
-  //     }
-  //   }
-  // }
-
-  /**
    * Push Record
    *
    * Pushes a record into the parse table populating the data structure.
    * All tokenized tags and content will pass through this function.
    */
-  function push <T extends Partial<Record> > (record: Record, structure: Types | T | T[] = NIL, param?: T) {
+  function push <T extends Partial<Record>> (record: Record, structure: Types | T | T[] = NIL, param?: T) {
 
     if (structure === NIL && param === undefined) {
 
       // parse.error = error.syntactic(record);
+
       parse.push(data, record, NIL);
 
     } else if (typeof structure === 'object' && !(structure as T[]).length) {
@@ -280,6 +146,7 @@ export function markup (input?: string) {
       u.assign(record, structure);
 
       // p.error = error.syntactic(record);
+
       parse.push(data, record, NIL);
 
     } else if (u.isArray(structure)) {
@@ -555,53 +422,6 @@ export function markup (input?: string) {
   /* -------------------------------------------- */
   /* PARSE HANDLERS                               */
   /* -------------------------------------------- */
-
-  /**
-   * Parse Error
-   *
-   * This function is responsible cancelling the traversal and
-   * returning a parse error when the lexing encounters an error.
-   * The `parse.error` is assigned a string value that informs about the issue.
-   */
-  function parseError (ref?: string | {
-    lineNumber: number;
-    lineSpace?: number;
-    sample?: string[];
-    message: string | string[]
-  }) {
-
-    console.log(ref);
-
-    // if (typeof ref === 'object') {
-
-    //   parse.diagnostic.line = ref.line;
-    //   parse.diagnostic.character = ref.lineSpace || parse.lineOffset;
-
-    //   return u.join(
-    //     `Parse Error (line ${ref.line}):\n`,
-    //     typeof ref.message === 'string' ? ref.message : u.join(...ref.message),
-    //     ...(ref.sample || [])
-    //   );
-
-    // } else if (typeof ref === 'string') {
-
-    //   parse.diagnostic.line = parse.lineNumber;
-    //   parse.diagnostic.character = parse.lineOffset;
-
-    //   return u.join(
-    //     `Parse Error (line ${parse.lineNumber}):\n`,
-    //     ref
-    //   );
-
-    // } else {
-
-    //   parse.diagnostic.line = parse.lineNumber;
-    //   parse.diagnostic.character = parse.lineOffset;
-
-    //   return 'Parse Error:\n' + parse.error;
-
-    // }
-  }
 
   /**
    * Parses tags, attrs, and template elements.
@@ -1255,9 +1075,13 @@ export function markup (input?: string) {
         } else if (delimiterPlacement === 'preserve') {
 
           if (u.is(token[ender - 1], cc.WSP)) {
+
             lexed[lexed.length - 1] = lexed[lexed.length - 1] + WSP + token.slice(ender);
+
           } else {
+
             lexed.push(token.slice(ender));
+
           }
 
         } else if (delimiterPlacement === 'consistent') {
@@ -1479,14 +1303,14 @@ export function markup (input?: string) {
     }
 
     /**
-     * Singular Types
+     * Parse Singleton
      *
      * Utility function which will re-assign the `ltype` when HTML `void`
      * type tags. This only detects HTML tags, Liquid (template) types are
      * handled by the `parseLiquid()` function.
      *
      */
-    function parseSingular (): ReturnType<typeof parseSVG> {
+    function parseSingleton (): ReturnType<typeof parseSVG> {
 
       if (basic && ignore === false && ltype !== 'xml') {
 
@@ -1521,9 +1345,9 @@ export function markup (input?: string) {
      * handles `@prettify-ignore-next` ignore comments placed above tag regions.
      *
      */
-    function parseIgnore (): ReturnType<typeof parseSingular | typeof parseScript> {
+    function parseIgnore (): ReturnType<typeof parseSingleton | typeof parseScript> {
 
-      if (parse.count < 1) return parseSingular();
+      if (parse.count < 1) return parseSingleton();
 
       /**
        * The ender token name, used for Liquid tag ignores
@@ -1719,12 +1543,6 @@ export function markup (input?: string) {
           }
         }
 
-        // console.log(token);
-
-        // token = token + tags.join(NIL);
-        // token = token.replace('>', ` ${attrs.map(([ value ]) => value).join(WSP)}>`);
-        //  attrs = [];
-
         if (ltype === 'ignore') {
 
           if (!parse.is('types', 'ignore')) data.types[parse.count] = 'ignore';
@@ -1866,7 +1684,7 @@ export function markup (input?: string) {
 
       }
 
-      return parseSingular();
+      return parseSingleton();
 
     }
 
@@ -1878,7 +1696,7 @@ export function markup (input?: string) {
      * Some additional context is required before passing the contents of these tags
      * to different lexers. It's here where we establish that context.
      */
-    function parseExternal (): ReturnType<typeof parseSingular | typeof parseIgnore> {
+    function parseExternal (): ReturnType<typeof parseSingleton | typeof parseIgnore> {
 
       //  cheat = correct();
 
@@ -3232,11 +3050,13 @@ export function markup (input?: string) {
 
           if (value.indexOf('=\u201c') > 0) { // “
 
-            parse.error = 'Invalid quote character (\u201c, &#x201c) used.';
+            parse.error = MarkupError(ParseError.InvalidQuotation, value);
+            // parse.error = 'Invalid quote character (\u201c, &#x201c) used.';
 
           } else if (value.indexOf('=\u201d') > 0) { // ”
 
-            parse.error = 'Invalid quote character (\u201d, &#x201d) used.';
+            parse.error = MarkupError(ParseError.InvalidQuotation, value);
+            //  parse.error = 'Invalid quote character (\u201d, &#x201d) used.';
 
           }
         }
@@ -3318,11 +3138,10 @@ export function markup (input?: string) {
 
             } else {
 
-              parse.error = [
-                `Missing closing delimiter character: ${lexed.join(NIL)}`,
-                '\nTIP',
-                'esthetic can autofix these issues when the correct rule is enabled'
-              ].join(NIL);
+              parse.error = MarkupError(
+                ParseError.MissingHTMLEndingDelimiter,
+                lexed.join(NIL)
+              );
 
               return;
 
@@ -3370,7 +3189,8 @@ export function markup (input?: string) {
           u.is(b[a - 1], cc.RSB) &&
           u.not(b[a - 2], cc.RSB)) {
 
-          parse.error = `CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`;
+          parse.error = MarkupError(ParseError.InvalidQuotation, lexed.join(NIL));
+          // parse.error = `CDATA tag (${lexed.join(NIL)}) not properly terminated with "]]>`;
           break;
 
         }

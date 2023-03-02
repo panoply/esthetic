@@ -3,22 +3,26 @@
   "version": "0.5.5-beta.1",
   "license": "MIT",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <n.savvidis@gmx.com>",
-  "description": "Æsthetic ~ Language beautification support for multiple languages with the Sparser lexing algorithm",
+  "description": "Æsthetic ~ Language beautification support leveraging the Sparser lexing algorithm.",
   "keywords": [
+    "æsthetic",
+    "aesthetic",
     "esthetic",
     "formatting",
     "prettify",
     "beautify",
+    "prettier",
+    "jsbeautify",
     "beautification",
     "liquid",
     "html",
     "css",
+    "parser",
     "shopify",
     "liquify",
     "format",
     "formatter",
     "prettydiff",
-    "prettier",
     "sparser"
   ],
   "engines": {
@@ -32,18 +36,21 @@
   "bugs": {
     "url": "https://github.com/panoply/esthetic/issues"
   },
+  "bin": {
+    "esthetic": "./dist/cli.js"
+  },
   "types": "./index.d.ts",
-  "main": "./index.js",
-  "module": "./index.mjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "exports": {
     "types": "./index.d.ts",
-    "require": "./index.js",
-    "import": "./index.mjs"
+    "require": "./dist/index.js",
+    "import": "./dist/index.mjs",
+    "default": "./dist/index.js"
   },
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup --minify-identifiers --minify-whitespace && terser index.js -o index.js && terser index.mjs --module -o index.mjs && gzip-size index.mjs --include-original",
-    "specs": "node ./scripts/specs.cjs",
+    "build": "tsup --minify && gzip-size index.mjs --include-original",
     "pack": "cd versions; pnpm pack ../ && cd ..",
     "release": "pnpm -w release --pkg $npm_package_name",
     "test": "ava --serial",
@@ -78,6 +85,7 @@
     "ignorePatterns": [
       "index.js",
       "index.mjs",
+      "cli.js",
       "**/node_modules/*"
     ],
     "extends": [
@@ -116,17 +124,18 @@
   "devDependencies": {
     "@liquify/ava": "workspace:^0.0.6",
     "@liquify/eslint-config": "workspace:^1.1.0",
-    "@liquify/liquid-language-specs": "^0.1.7",
-    "@liquify/prettier-config": "^1.0.1",
-    "@liquify/vellocet": "workspace:^0.0.5",
+    "@liquify/prettier-config": "^1.2.0",
     "@types/benchmark": "^2.1.2",
-    "ava": "^5.1.1",
+    "ava": "^5.2.0",
     "benchmark": "^2.1.4",
-    "terser": "^5.16.1",
-    "tsup": "^6.5.0",
-    "type-fest": "^3.5.3"
+    "terser": "^5.16.5",
+    "tsup": "^6.6.3",
+    "type-fest": "^3.6.1"
   },
   "dependencies": {
-    "ansis": "^1.5.5"
+    "ansis": "^1.5.5",
+    "chokidar": "^3.5.3",
+    "fast-glob": "^3.2.12",
+    "minimist": "^1.2.8"
   }
 }

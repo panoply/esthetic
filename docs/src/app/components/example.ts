@@ -1,7 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import esthetic, { Rules } from 'esthetic'
 import Prism from 'prismjs'
-import { CodeJar } from 'codejar';
 
 
 /* -------------------------------------------- */
@@ -199,12 +198,27 @@ Prism.languages.html = Prism.languages.extend('markup', {
 }
 });
 
+Prism.languages.bash = {
+  keyword: {
+    pattern: /(esthetic\s)/
+  },
+  argument: {
+    pattern: /\<(.*?)\>/
+  },
+  punctuation: {
+    pattern: /[<>]|--?(?=[a-z])/
+  },
+  comment: {
+    pattern: /#.*?(?=\n)/
+  }
+}
+
 
 /* -------------------------------------------- */
 /* CLASS                                        */
 /* -------------------------------------------- */
 
-export class Editor extends Controller {
+export class Example extends Controller {
 
   /**
    * Stimulus: Targets
@@ -226,12 +240,24 @@ export class Editor extends Controller {
     mode: String
   };
 
+  /**
+   * The code input target provided on initial render
+   */
   inputTarget: HTMLElement
+  /**
+   * The code input lines target provided on initial render
+   */
   inputLinesTarget: HTMLDivElement
+  /**
+   * The input value escaped string
+   */
   inputValue: string;
+  /**
+   * The input lines value escaped
+   */
   inputLines: string;
-  outputLines: string
 
+  outputLines: string
   outputTarget: HTMLElement
   outputLinesTarget: HTMLDivElement
   outputValue: string;
@@ -240,6 +266,7 @@ export class Editor extends Controller {
   modeValue: 'initial' | 'before' | 'after'
 
 
+  rules: Rules;
   timer: NodeJS.Timeout
   button: HTMLButtonElement
 
@@ -248,7 +275,7 @@ export class Editor extends Controller {
   getLines (input: string) {
 
     const split = input.split('\n')
-    const numbers = [ ...Array(split.length - 1) ]
+    const numbers = [ ...Array(split.length) ]
     const lines = numbers.map((_, i) => (`<span class="line-number">${i + 1}</span><br>`))
 
     return lines.join('')
@@ -302,7 +329,7 @@ export class Editor extends Controller {
 
 
     this.rules = esthetic.rules()
-    this.button = this.element.querySelector('button[data-action="editor#before"]')
+    this.button = this.element.querySelector('button[data-action="example#before"]')
     this.inputLines = this.inputLinesTarget.innerHTML
     this.outputLines = this.inputLines
 
@@ -315,7 +342,7 @@ export class Editor extends Controller {
 
       console.log(input, this.rulesValue)
 
-      const output = esthetic.format.sync(input.toString(), this.rulesValue)
+      const output = esthetic.format(input.toString(), this.rulesValue)
 
 
       this.outputValue = output

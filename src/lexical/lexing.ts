@@ -1,4 +1,4 @@
-import { is, not, isLast } from 'utils';
+import { is, not, isLast } from '@utils';
 import { NIL } from './chars';
 import { cc } from './codes';
 

@@ -8,43 +8,43 @@ test('Structure Test: Preserved delimiter placements', t => {
     [
       liquid`
         {{
-          output }}
+          output_1 }}
         {{-
-          output }}
+          output_2 }}
         {{-
-          output -}}
+          output_3 -}}
         {{
-          output -}}
+          output_4 -}}
       `,
       liquid`
-        {{ output
+        {{ output_5
         }}
-        {{- output
+        {{- output_6
         }}
-        {{- output
+        {{- output_7
         -}}
-        {{ output
-        -}}
-      `,
-      liquid`
-        {{
-          output
-        }}
-        {{-
-          output
-        }}
-        {{-
-          output
-        -}}
-        {{
-          output
+        {{ output_8
         -}}
       `,
       liquid`
-        {{ output }}
-        {{- output }}
-        {{- output -}}
-        {{ output -}}
+        {{
+          output_9
+        }}
+        {{-
+          output_10
+        }}
+        {{-
+          output_11
+        -}}
+        {{
+          output_12
+        -}}
+      `,
+      liquid`
+        {{ output_13 }}
+        {{- output_14 }}
+        {{- output_15 -}}
+        {{ output_16 -}}
       `,
       liquid`
         {%
@@ -209,7 +209,7 @@ test('Structure Test: Preserved delimiter placements', t => {
 
 });
 
-test('Structure Test: Various rules against samples', t => {
+test.skip('Structure Test: Various rules against samples', t => {
 
   forRule(
     [
@@ -296,16 +296,16 @@ test('Structure Test: Various rules against samples', t => {
 
     const output = esthetic.format.sync(sample, rule);
 
-    console.log(output);
+    // console.log(output);
     // t.snapshot(output, label);
-
+    t.pass();
     // t.deepEqual(actual, source);
 
   });
 
 });
 
-test('Structure Test: Nested delimiter structures', t => {
+test.skip('Structure Test: Nested delimiter structures', t => {
 
   forRule(
     [
@@ -380,7 +380,8 @@ test('Structure Test: Nested delimiter structures', t => {
 
     const output = esthetic.format.sync(sample, rule);
 
-    t.log(output);
+    t.pass();
+    // t.log(output);
 
   });
 

@@ -1,5 +1,4 @@
-import { Grammars, EmbeddedHTML, EmbeddedLiquid, LanguageName } from 'types/internal';
-import { isArray } from 'utils';
+import { Grammars, EmbeddedHTML, EmbeddedLiquid, LanguageName } from 'types/export';
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -119,7 +118,7 @@ function LiquidGrammar (grammar: Grammars['liquid'] = {
     extend (rules: Grammars['liquid']) {
 
       for (const rule in rules) {
-        if (isArray(rules[rule])) {
+        if (Array.isArray(rules[rule])) {
           for (const tag of rules[rule]) {
             if (rule === 'tags' && TAGS.has(tag) === false) {
               grammar.tags.push(tag);
@@ -168,7 +167,7 @@ function LiquidGrammar (grammar: Grammars['liquid'] = {
 
           for (const [ match ] of EMBEDDED[tag].args) {
             if (match === null) continue;
-            if (isArray(argument)) {
+            if (Array.isArray(argument)) {
               for (const arg of argument) if (!match.has(arg)) match.add(arg);
             } else {
               const exp = new RegExp(argument);
@@ -291,7 +290,7 @@ function SVGGrammar (grammar: Grammars['svg'] = {
     extend (rules: Grammars['svg']) {
 
       for (const rule in rules) {
-        if (isArray(rules[rule])) {
+        if (Array.isArray(rules[rule])) {
           for (const tag of rules[rule]) {
             if (rule === 'tags' && TAGS.has(tag) === false) {
               grammar.tags.push(tag);
@@ -519,7 +518,7 @@ function HTMLGrammar (grammar: Grammars['html'] = {
 
       for (const rule in rules) {
 
-        if (isArray(rules[rule])) {
+        if (Array.isArray(rules[rule])) {
           for (const tag of rules[rule]) {
             if (rule === 'tags' && TAGS.has(tag) === false) {
               grammar.tags.push(tag);
@@ -574,7 +573,7 @@ function HTMLGrammar (grammar: Grammars['html'] = {
 
             const curr = EMBEDDED[tag].attr.get(language).attr.get(attr);
 
-            if (isArray(attribute[attr])) {
+            if (Array.isArray(attribute[attr])) {
               for (const arg of attribute[attr] as string[]) if (!curr.value.has(arg)) curr.value.add(arg);
             } else {
               const exp = new RegExp(attribute[attr] as string);
@@ -809,7 +808,7 @@ function CSSGrammar (grammar: Grammars['css'] = {
 
       for (const rule in rules) {
 
-        if (isArray(rules[rule])) {
+        if (Array.isArray(rules[rule])) {
           for (const tag of rules[rule]) {
             if (rule === 'units' && !UNITS.has(tag)) {
               grammar[rule].push(tag);
@@ -823,7 +822,7 @@ function CSSGrammar (grammar: Grammars['css'] = {
 
         if (typeof rules[rule] === 'object') {
           for (const prop in rules[rule]) {
-            if (isArray(rules[rule][prop])) {
+            if (Array.isArray(rules[rule][prop])) {
               for (const tag of rules[rule][prop]) {
                 if (rule === 'webkit') {
 
@@ -947,7 +946,7 @@ function JavaScriptGrammar (grammar: Grammars['js'] = {
 
       for (const rule in rules) {
 
-        if (isArray(rules[rule])) {
+        if (Array.isArray(rules[rule])) {
           for (const tag of rules[rule]) {
             if (rule === 'keywords' && !KEYWORDS.has(tag)) {
               grammar[rule].push(tag);

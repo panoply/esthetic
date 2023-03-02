@@ -1,4 +1,4 @@
-import { LanguageName, LanguageOfficialName } from 'types/internal';
+import { LanguageName, LanguageOfficialName } from 'types/export';
 import { Lexers } from 'lexical/enum';
 
 /**

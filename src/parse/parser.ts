@@ -1,10 +1,12 @@
 /* eslint no-unmodified-loop-condition: "off" */
 import { lexers } from 'lexers';
 import { format } from 'format';
-import { Lexers, Modes } from 'lexical/enum';
+import { Languages, Lexers, Modes } from 'lexical/enum';
 import * as lx from 'lexical/lexing';
 import { NIL, NWL } from 'chars';
-import { getLexerName, getLexerType, assign, ws } from 'utils';
+import { getLexerName, getLexerType, assign, ws } from '@utils';
+import { MarkupError } from '@parse/errors';
+import { ParseError } from 'lexical/errors';
 import type { LiteralUnion } from 'type-fest';
 import type {
   LanguageName,
@@ -18,7 +20,7 @@ import type {
   Rules,
   JSONRules,
   ScriptRules
-} from 'types/internal';
+} from 'types/export';
 
 /**
  * Parse Stack
@@ -156,7 +158,10 @@ class Parser {
    */
   public pairs: Map<number, Syntactic> = new Map();
 
-  public error: string = NIL;
+  /**
+   * Parse Error reference. Defaults to `null` and will be assigned an object reference exception
+   */
+  public error: string = null;
 
   /**
    * Hardcoded string reference to CRLF rule
@@ -203,8 +208,9 @@ class Parser {
   public lineColumn: number = 0;
 
   /**
-   * The current line number. This is used in errors and counts the
-   * number of lines as we have spanned during traversal. For example:
+   * The current line number. Line numbers start at index `1` instead of `0`,
+   * which is something to keep in mind if referencing. This is used in errors
+   * and counts the number of lines as we have spanned during traversal. For example:
    *
    * ```
    *
@@ -456,10 +462,15 @@ class Parser {
    */
   public reset () {
 
-    this.error = NIL;
+    this.error = null;
     this.count = -1;
     this.start = 0;
     this.ender = 0;
+    this.lineColumn = 0;
+    this.lineNumber = 1;
+    this.lineDepth = 2;
+    this.lineIndex = 0;
+    this.lineOffset = 0;
     this.mode = Modes.Parse;
     this.data.begin = [];
     this.data.ender = [];
@@ -573,7 +584,6 @@ class Parser {
   private final (data: Data) {
 
     let a = this.count;
-
     const begin = data.begin[a];
 
     if ((
@@ -599,8 +609,7 @@ class Parser {
       if (data.begin[a] === begin || (
         data.begin[data.begin[a]] === begin &&
         data.types[a].indexOf('attribute') > -1 &&
-        data.types[a].indexOf('attribute_end') < 0
-      )) {
+        data.types[a].indexOf('attribute_end') < 0)) {
 
         data.ender[a] = this.count;
 
@@ -619,13 +628,57 @@ class Parser {
   };
 
   /**
+   * Syntactical Tracking
+   *
+   * This is a store The `parse.data.begin` index. This will typically
+   * reference the `parse.count` value, incremented by `1`
+   */
+  private synctactic (record: Record, stack: string) {
+
+    if (record.types === 'liquid_start' || record.types === 'start') {
+
+      this.pairs.set(this.count, {
+        line: this.lineNumber,
+        token: record.token,
+        type: record.types === 'start' ? Languages.HTML : Languages.Liquid,
+        stack
+      });
+
+    } else if (this.pairs.has(this.stack.index) && (
+      record.types === 'end' ||
+      record.types === 'liquid_end'
+    )) {
+
+      const pair = this.pairs.get(this.stack.index);
+
+      if (pair.type === Languages.Liquid) {
+
+        if (pair.stack !== this.stack.token) {
+          this.error = MarkupError(ParseError.MissingLiquidEndTag, pair.token, pair.line);
+        } else {
+          this.pairs.delete(this.scopes.index);
+        }
+
+      } else if (pair.type === Languages.HTML) {
+
+        if (`</${pair.stack}>` !== record.token) {
+          this.error = MarkupError(ParseError.MissingHTMLEndTag, pair.token, pair.line);
+        } else {
+          this.pairs.delete(this.scopes.index);
+        }
+
+      }
+
+    }
+  }
+
+  /**
    * Push Structure
    *
    * An extension of `Array.prototype.push` to work across the data structure
    */
-  public push (data: Data, record: Record, structure: string = NIL) {
+  public push (data: Data, record: Record, token: string = NIL) {
 
-    // parse_push_datanames
     data.begin.push(record.begin);
     data.ender.push(record.ender);
     data.lexer.push(record.lexer);
@@ -636,18 +689,23 @@ class Parser {
 
     if (data !== this.data) return;
 
-    this.lineOffset = 0;
     this.count = this.count + 1;
 
-    if (record.lexer !== 'style' && structure.replace(/[{}@<>%#]/g, NIL) === NIL) {
-      structure = record.types === 'else'
-        ? 'else'
-        : lx.getTagName(record.token);
+    if (record.lexer !== 'style' && token.replace(/[{}<>%]/g, NIL) === NIL) {
+      if (record.types === 'else') {
+        token = 'else';
+      } else {
+        token = lx.getTagName(record.token);
+      }
     }
+
+    if (record.lexer === 'markup') this.synctactic(record, token);
+
+    this.lineOffset = 0;
 
     if (record.types === 'start' || record.types.indexOf('_start') > 0) {
 
-      this.stack.push([ structure, this.count ]);
+      this.stack.push([ token, this.count ]);
       this.lineDepth = this.lineDepth + this.rules.indentSize;
 
     } else if (record.types === 'end' || record.types.indexOf('_end') > 0) {
@@ -656,6 +714,9 @@ class Parser {
       // are children of start/end blocks not associated with
       // the if/else chain
 
+      /**
+       * Holds reference to the data structures `ender` index
+       */
       let ender: number = 0;
 
       /**
@@ -693,24 +754,26 @@ class Parser {
 
     } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
 
-      if (structure === NIL) structure = 'else';
+      if (token === NIL) token = 'else';
       if (this.count > 0 && (
         data.types[this.count - 1] === 'start' ||
         data.types[this.count - 1].indexOf('_start') > 0
       )) {
-        this.stack.push([ structure, this.count ]);
+        this.stack.push([ token, this.count ]);
       } else {
         this.final(data);
-        this.stack.update(structure === NIL ? 'else' : structure, this.count);
+        this.stack.update(token === NIL ? 'else' : token, this.count);
       }
     }
 
     if (this.hooks.parse !== null) {
+
       this.hooks.parse[0].call({
         line: this.lineNumber,
         stack: this.stack.entry,
         language: this.language
       }, record, this.count);
+
     }
 
   }

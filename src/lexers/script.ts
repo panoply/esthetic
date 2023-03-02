@@ -1,14 +1,14 @@
 /* eslint-disable no-mixed-operators */
 /* eslint-disable no-control-regex */
 
-import { Record, ScriptRules, Structure, Types, VariableDeclarations } from 'types/internal';
+import { Record, ScriptRules, Structure, Types, VariableDeclarations } from 'types/export';
 import { commentBlock, commentLine } from 'comments';
 import { parse } from '@parse/parser';
 import { sortCorrect, sortObject } from '@parse/sorting';
 import { DQO, NIL, NWL, SQO } from 'chars';
 import * as rx from 'lexical/regex';
 import { cc } from 'lexical/codes';
-import * as u from 'utils';
+import * as u from '@utils';
 
 // prettify.lexers.script =
 

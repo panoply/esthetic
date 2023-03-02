@@ -7,7 +7,7 @@ import {
   RulesInternal,
   ScriptRules,
   StyleRules
-} from 'types/internal';
+} from 'types/export';
 
 export function isValidType (language: LanguageRuleNames, rule: string, value: any) {
 
@@ -175,7 +175,7 @@ export function isValidChoice (rule: string, value: string) {
         return true;
       default:
         return {
-          message: 'Unsupported Language name reference was provided',
+          message: 'Unsupported Language identifier was provided',
           provided: value,
           expected: [
             'text',

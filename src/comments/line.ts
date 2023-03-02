@@ -1,9 +1,9 @@
-import { Record, WrapComment } from 'types/internal';
+import { Record, WrapComment } from 'types/export';
 import { parse } from '@parse/parser';
 import * as rx from 'lexical/regex';
 import { cc as ch } from 'lexical/codes';
 import { NWL, NIL, WSP } from 'chars';
-import { ws, is, not } from 'utils';
+import { ws, is, not } from '@utils';
 
 /**
  * Wrap Comment Lines
@@ -47,7 +47,7 @@ export function commentLine (config: WrapComment): [string, number] {
       line = build.join(NIL);
 
       if (/^\/\/ (?:[*-]|\d+\.)/.test(line) === false && /^\/\/\s*$/.test(line) === false) {
-        output = `${output} ${line.replace(/(^\/\/\s*)/, NIL).replace(rx.StripEnd, NIL)}`;
+        output = `${output} ${line.replace(/(^\/\/\s*)/, NIL).replace(rx.SpaceEnd, NIL)}`;
         a = b - 1;
         traverse();
       }
@@ -87,7 +87,7 @@ export function commentLine (config: WrapComment): [string, number] {
 
     output = output
       .replace(/\s+/g, WSP)
-      .replace(rx.StripEnd, NIL);
+      .replace(rx.SpaceEnd, NIL);
 
     d = output.length;
 
@@ -111,7 +111,7 @@ export function commentLine (config: WrapComment): [string, number] {
 
       lines.push(output.slice(0, c));
 
-      output = `// ${output.slice(c).replace(rx.StripLead, NIL)}`;
+      output = `// ${output.slice(c).replace(rx.SpaceLead, NIL)}`;
 
       d = output.length;
     } while (wrap < d);
@@ -146,7 +146,7 @@ export function commentLine (config: WrapComment): [string, number] {
     a = a - 1;
   }
 
-  output = build.join(NIL).replace(rx.StripEnd, NIL);
+  output = build.join(NIL).replace(rx.SpaceEnd, NIL);
 
   if (rx.CommLineIgnoreStart.test(output) === true) {
 
@@ -191,7 +191,7 @@ export function commentLine (config: WrapComment): [string, number] {
 
     if (config.chars[a] === NWL) a = a - 1;
 
-    output = build.join(NIL).replace(rx.StripEnd, NIL);
+    output = build.join(NIL).replace(rx.SpaceEnd, NIL);
 
     return [ output, a ];
   }

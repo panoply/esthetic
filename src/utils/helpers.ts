@@ -1,7 +1,7 @@
 /* eslint-disable no-extend-native */
 import { NIL, NWL, WSP } from 'chars';
 import { LanguageName, LexerName } from 'types/shared';
-import { Stats } from 'types/internal';
+import { Stats } from 'types/export';
 import { getLanguageName } from './maps';
 import { parse } from '@parse/parser';
 import { cc } from 'lexical/codes';
@@ -66,8 +66,7 @@ export function stats (language: LanguageName, lexer: LexerName) {
     lexer,
     language: getLanguageName(language),
     chars: 0,
-    time: '',
-    size: ''
+    time: ''
   };
 
   const start: number = Date.now();
@@ -77,7 +76,6 @@ export function stats (language: LanguageName, lexer: LexerName) {
     const time = +(Date.now() - start).toFixed(0);
     store.time = time > 1000 ? `${time}s` : `${time}ms`;
     store.chars = output;
-    store.size = size(output);
 
     return store;
   };

@@ -1,9 +1,9 @@
-import { WrapComment } from 'types/internal';
+import { WrapComment } from 'types/export';
 import { parse } from '@parse/parser';
 import * as rx from 'lexical/regex';
 import { cc as ch } from 'lexical/codes';
 import { NWL, NIL, WSP } from 'chars';
-import { sanitizeComment, ws, is, not } from 'utils';
+import { sanitizeComment, ws, is, not } from '@utils';
 
 // export function comments <T extends RuleItems> (rules: T, source: string[], length: number) {
 

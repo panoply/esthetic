@@ -1,4 +1,4 @@
-import { Data, Rules, RulesChanges } from './internal';
+import { Data, IParseError, Rules, RulesChanges } from './export';
 import { Stats } from './shared';
 
 export type EventNames = (
@@ -54,17 +54,23 @@ export interface ParseEventParams {
  * Array list of event listeners
  */
 export declare interface EventListeners {
-
   /**
    * Format Event
    *
    * Trigger a callback to execute immeadiatly after beautification
-   * has completed. The callback will fire before the returning
-   * promise has fulfilled (when use async mode) or before output in sync,.
+   * has completed. The callback will fire before the returning the formatted output.
    *
    * > _Returning `false` will cancel formatting and the provided input source will be returned_
    */
   format: ((this: FormatEventScope, param: FormatEventParams) => false | void)[];
+  /**
+   * Error Event
+   *
+   * Invoked when a parse error is encountered. The callback contains the
+   * exception reference and error information.
+   *
+   */
+  error: ((error?: IParseError) => void)[]
   /**
    * Parse Event
    *
@@ -85,12 +91,19 @@ export declare interface Events {
    * Format Event
    *
    * Trigger a callback to execute immeadiatly after beautification
-   * has completed. The callback will fire before the returning
-   * promise has fulfilled (when use async mode) or before output in sync,.
+   * has completed. The callback will fire before the returning the formatted output.
    *
    * > _Returning `false` will cancel formatting and the provided input source will be returned_
    */
   (name: 'format', callback: (this: FormatEventScope, param?: FormatEventParams) => false | void);
+  /**
+   * Error Event
+   *
+   * Invoked when a parse error is encountered. The callback contains the
+   * exception reference and error information.
+   *
+   */
+  (name: 'error', callback: (error?: IParseError) => void);
   /**
    * Parse Event
    *
@@ -111,5 +124,6 @@ export declare interface Events {
      * Holds reference to current rules
      */
     rules?: Rules
+
   ) => void);
 }
