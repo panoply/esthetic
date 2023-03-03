@@ -1,6 +1,9 @@
-<img src="https://raw.githubusercontent.com/panoply/esthetic/next/docs/src/assets/svg/logo.svg">
+<br>
+<p align="center">
+<img src="https://raw.githubusercontent.com/panoply/esthetic/next/docs/src/assets/svg/esthetic.svg" width="300px">
+</p>
 
-# Æsthetic
+<br>
 
 New generation code beautification tool for formatting HTML, Liquid, CSS/SCSS, JavaScript, TypeScript and more! Æsthetic leverages the [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and its parse approach has been repurposed from the distributed source of the late and powerful [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
 
