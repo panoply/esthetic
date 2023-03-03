@@ -1,6 +1,4 @@
-### v0.4.4-beta.1
-
-_This module is in its infancy and working towards an official release candidate. Refer to the [Language Support](#language-support) before using the module and please note that this readme will be subject to change._
+<img src="https://raw.githubusercontent.com/panoply/esthetic/next/docs/src/assets/svg/logo.svg">
 
 # Æsthetic
 
