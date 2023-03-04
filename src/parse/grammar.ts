@@ -1,4 +1,4 @@
-import { Grammars, EmbeddedHTML, EmbeddedLiquid, LanguageName } from 'types/export';
+import { Grammars, EmbeddedHTML, EmbeddedLiquid, LanguageName } from 'types';
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */

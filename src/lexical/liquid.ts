@@ -1,11 +1,11 @@
 /* eslint-disable prefer-const */
-import { grammar } from '@parse/grammar';
-import { is, not } from '@utils';
-import { cc } from './codes';
-import { LT } from './enum';
-import { NIL, NWL, WSP } from './chars';
-import { LiquidRules } from 'types/export';
-import { LiquidComment, LiquidTag, WhitespaceGlob } from './regex';
+import { grammar } from 'parse/grammar';
+import { is, not } from 'utils';
+import { cc } from 'lexical/codes';
+import { LT } from 'lexical/enum';
+import { NIL, NWL, WSP } from 'lexical/chars';
+import { LiquidRules } from 'types/index';
+import { LiquidComment, LiquidTag, WhitespaceGlob } from 'lexical/regex';
 
 export function openDelims (input: string, rules: LiquidRules) {
 

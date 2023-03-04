@@ -1,4 +1,4 @@
-import type { Definitions } from 'types/export';
+import type { Definitions } from 'types';
 
 export const definitions: Definitions = {
   global: {

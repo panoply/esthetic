@@ -15,7 +15,8 @@ export const enum Lexers {
   Markup = 1,
   Script,
   Style,
-  Ignore
+  Ignore,
+  Auto
 }
 
 export const enum Beautifiers {

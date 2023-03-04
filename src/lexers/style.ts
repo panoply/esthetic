@@ -1,10 +1,10 @@
 /* eslint-disable no-use-before-define */
-import type { Types } from 'types/export';
+import type { Types } from 'types';
 import { commentBlock, commentLine } from 'comments';
-import { parse } from '@parse/parser';
-import { grammar } from '@parse/grammar';
-import { sortCorrect, sortObject } from '@parse/sorting';
-import { digit, is, not, ws } from '@utils';
+import { parse } from 'parse/parser';
+import { grammar } from 'parse/grammar';
+import { sortCorrect, sortObject } from 'parse/sorting';
+import { digit, is, not, ws } from 'utils';
 import { DQO, NIL, NWL, SQO, WSP } from 'chars';
 import * as rx from 'lexical/regex';
 import * as lq from 'lexical/liquid';
@@ -1167,7 +1167,7 @@ export function style () {
       }
 
       ltype = typeName;
-      ltoke = lq.normalize(ltoke, rules.liquid);
+      ltoke = lq.normalize(ltoke, name, rules.liquid);
 
       // console.log(ltoke);
 

@@ -1,9 +1,9 @@
 /* eslint-disable no-extend-native */
 import { NIL, NWL, WSP } from 'chars';
 import { LanguageName, LexerName } from 'types/shared';
-import { Stats } from 'types/export';
+import { Stats } from 'types/index';
 import { getLanguageName } from './maps';
-import { parse } from '@parse/parser';
+import { parse } from 'parse/parser';
 import { cc } from 'lexical/codes';
 
 /**
@@ -238,6 +238,8 @@ export function esc (array: string[], size: number) {
  * Size
  *
  * Converts byte size to killobyte, megabyte, gigabyte or terrabyte
+ *
+ * @deprecated
  */
 export function size (bytes: number): string {
 

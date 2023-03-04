@@ -1,17 +1,17 @@
-import type { Record, Types, LanguageName } from 'types/export';
-import { parse } from '@parse/parser';
-import { sortSafe } from '@parse/sorting';
-import { grammar } from '@parse/grammar';
+import type { Record, Types, LanguageName } from 'types/index';
+import { parse } from 'parse/parser';
+import { sortSafe } from 'parse/sorting';
+import { grammar } from 'parse/grammar';
+import { MarkupError } from 'parse/errors';
 import { commentBlock } from 'comments';
 import { DQO, NIL, NWL, SQO, WSP } from 'chars';
+import * as external from 'parse/external';
+import { ParseError } from 'lexical/errors';
 import { cc } from 'lexical/codes';
 import * as rx from 'lexical/regex';
 import * as lx from 'lexical/lexing';
 import * as lq from 'lexical/liquid';
-import * as u from '@utils';
-import * as external from '@parse/external';
-import { ParseError } from 'lexical/errors';
-import { MarkupError } from '@parse/errors';
+import * as u from 'utils';
 
 /**
  * Markup Lexer
@@ -20,12 +20,11 @@ import { MarkupError } from '@parse/errors';
  * template languages in options but has been refactored to solely
  * focus and support the following language only:
  *
+ * - Liquid
  * - HTML
  * - XML
  * - JSX
  * - TSX
- * - SGML
- * - Liquid.
  */
 export function markup (input?: string) {
 
@@ -41,7 +40,7 @@ export function markup (input?: string) {
   /**
    * Frequent Liquid destructed rules
    */
-  const { lineBreakSeparator, forceFilterWrap, preserveInternal, delimiterPlacement } = rules.liquid;
+  const { lineBreakSeparator, filterWrap, preserveInternal, delimiterPlacement } = rules.liquid;
 
   /**
    * Source string, typically called from `parse.source` but can also be `input` parameter
@@ -66,8 +65,8 @@ export function markup (input?: string) {
   /**
    * Liquid tag Wrapping
    */
-  const lw = jsx || preserveInternal === true ? -1 : forceFilterWrap > 0
-    ? forceFilterWrap
+  const lw = jsx || preserveInternal === true ? -1 : filterWrap > 0
+    ? filterWrap
     : rules.wrap > 0 ? rules.wrap - rules.wrap / 4 : -1;
 
   /**
@@ -845,6 +844,8 @@ export function markup (input?: string) {
       /* LEXICAL SCOPE                                */
       /* -------------------------------------------- */
 
+      let f = 0;
+
       /**
        * Iterator reference
        */
@@ -883,10 +884,8 @@ export function markup (input?: string) {
 
           // Move forward for nested quote type, eg: DQO or SQO
           if (q === 1 && u.not(string[at - 1], cc.BWS) && t === string[at].charCodeAt(0)) {
-
             q = 0;
             return at;
-
           } else if (q === 0) {
             q = 1;
             t = string[at].charCodeAt(0);
@@ -940,6 +939,7 @@ export function markup (input?: string) {
             lexed.push(token.slice(p, i).trim());
 
             p = i; // last known match
+            f = f + 1;
 
           } else if (u.is(input[i], cc.COM) && u.is(input[p], cc.PIP) === false) {
 
@@ -977,89 +977,105 @@ export function markup (input?: string) {
 
         do {
 
-          if (lexed[i].length > width) {
+          if (i === 1 && lexed.length === 1) break;
 
-            /**
+          // if (lexed[i].length > width) {
+
+          /**
              * Sequence store where new structures are inserted
              */
-            const store: string[] = [];
+          const store: string[] = [];
 
-            /**
+          /**
              * Iterator reference for character in arguments
              */
-            let x: number = 0;
+          let x: number = 0;
 
-            /**
+          /**
              * The parameter colon reference, eg: `| filter:` - the index at `:`
              */
-            let param = 0;
+          let param = 0;
 
-            /**
+          /**
              * The number of spaces to indent
              */
-            let comma = ',';
+          let comma = ',';
 
-            p = 0; // Reset previous tracer reference
+          p = 0; // Reset previous tracer reference
 
-            do {
+          do {
 
-              x = qskip(x, lexed[i]);
+            x = qskip(x, lexed[i]);
 
-              if (u.is(lexed[i][x], cc.COM)) {
+            if (u.is(lexed[i][x], cc.COM)) {
 
-                if (p === 0) {
+              if (p === 0) {
 
-                  store.push(lexed[i].slice(p, param).trim());
+                const initial = lexed[i].slice(p, param).trim();
 
-                  if (lineBreakSeparator === 'after') {
+                if (initial.length > 0) store.push(initial);
 
-                    if (rules.liquid.forceLeadArgument) {
-                      store.push(NWL, lexed[i].slice(param, x).trim() + comma, NWL);
-                    } else {
-                      store.push(lexed[i].slice(param, x).trim() + comma, NWL);
-                    }
+                if (lineBreakSeparator === 'after') {
 
+                  if (rules.liquid.forceLeadArgument) {
+                    store.push(NWL, lexed[i].slice(param, x).trim() + comma, NWL);
                   } else {
-
-                    comma = '  , ';
-
-                    if (rules.liquid.forceLeadArgument) {
-                      store.push(NWL, lexed[i].slice(param, x).trim());
-                    } else {
-                      store.push(WSP + lexed[i].slice(param, x).trim());
-                    }
+                    store.push(lexed[i].slice(param, x).trim() + comma, NWL);
                   }
 
                 } else {
 
-                  if (lineBreakSeparator === 'before') {
-                    store.push(NWL, comma + lexed[i].slice(p, x).trim());
+                  comma = f > 0 ? '  , ' : ', ';
+
+                  if (rules.liquid.forceLeadArgument) {
+                    store.push(NWL, lexed[i].slice(param, x).trim());
                   } else {
-                    store.push(lexed[i].slice(p, x).trim() + comma, NWL);
+
+                    store.push(WSP + lexed[i].slice(param, x).trim());
+
                   }
                 }
 
-                p = x + 1;
-
-              } else if (u.is(lexed[i][x], cc.COL) && param === 0) {
-
-                param = x + 1;
-
-              } else if (x + 1 === lexed[i].length) {
+              } else {
 
                 if (lineBreakSeparator === 'before') {
-                  store.push(NWL, comma + lexed[i].slice(p, x + 1).trim());
+                  store.push(NWL, comma + lexed[i].slice(p, x).trim());
                 } else {
-                  store.push(lexed[i].slice(p, x + 1).trim());
+                  store.push(lexed[i].slice(p, x).trim() + comma, NWL);
                 }
               }
 
-              x = x + 1;
-            } while (x < lexed[i].length);
+              p = x + 1;
 
-            lexed[i] = store.join(NIL);
+            } else if (u.is(lexed[i][x], cc.COL) && param === 0) {
 
-          }
+              param = x + 1;
+
+            } else if (x + 1 === lexed[i].length) {
+
+              if (lineBreakSeparator === 'before') {
+
+                if (rx.NewlineLead.test(lexed[i].slice(p))) {
+                  store.push(comma + lexed[i].slice(p, x + 1).trim());
+                  console.log(store);
+                } else {
+                  store.push(NWL, comma + lexed[i].slice(p, x + 1).trim());
+                }
+
+              } else {
+
+                store.push(lexed[i].slice(p, x + 1).trim());
+
+              }
+
+            }
+
+            x = x + 1;
+          } while (x < lexed[i].length);
+
+          lexed[i] = store.join(NIL);
+
+          // }
 
           i = i + 1;
         } while (i < lexed.length);

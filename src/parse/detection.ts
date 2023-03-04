@@ -1,7 +1,7 @@
-import type { LanguageName, LexerName } from 'types/export';
+import type { LanguageName, LexerName } from 'types';
 import { cc } from 'lexical/codes';
 import { NIL } from 'chars';
-import { is } from '@utils';
+import { is } from 'utils';
 
 interface ReturnValue {
   language: LanguageName,

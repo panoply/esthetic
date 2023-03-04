@@ -1,6 +1,6 @@
-import { is, not, isLast } from '@utils';
-import { NIL } from './chars';
-import { cc } from './codes';
+import { is, not, isLast } from 'utils';
+import { NIL } from 'lexical/chars';
+import { cc } from 'lexical/codes';
 
 /**
  * Get Tag Name
@@ -36,9 +36,7 @@ export function getTagName (tag: string, slice: number = NaN) {
 
   const tname = name.slice(0, name.search(/[\s=|!<>,.[]|-?[%}]}/));
 
-  return isNaN(slice)
-    ? tname
-    : tname.slice(slice);
+  return isNaN(slice) ? tname : tname.slice(slice);
 
 };
 

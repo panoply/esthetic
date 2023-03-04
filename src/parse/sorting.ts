@@ -1,8 +1,8 @@
-import { is, not, isArray } from '@utils';
+import { parse } from 'parse/parser';
+import { is, not, isArray } from 'utils';
 import { cc as ch } from 'lexical/codes';
 import { NIL } from 'chars';
-import { parse } from '@parse/parser';
-import type{ Data } from 'types/export';
+import type{ Data } from 'types';
 
 /* -------------------------------------------- */
 /* EXPORTS                                      */

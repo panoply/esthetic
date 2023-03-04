@@ -1,9 +1,9 @@
-import type { Types } from 'types/export';
-import { is, isLast, not } from '@utils';
+import type { Types } from 'types/index';
+import { is, isLast, not } from 'utils';
 import { NIL, WSP } from 'chars';
 import { cc } from 'lexical/codes';
-import { grammar } from '@parse/grammar';
-import { parse } from '@parse/parser';
+import { grammar } from 'parse/grammar';
+import { parse } from 'parse/parser';
 
 export function style () {
 

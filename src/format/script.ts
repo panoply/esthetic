@@ -1,9 +1,9 @@
-import type { Types, ScriptRules } from 'types/export';
-import { repeatChar, is, not } from '@utils';
+import type { Types, ScriptRules } from 'types/index';
+import { repeatChar, is, not } from 'utils';
 import { NIL, NWL, WSP } from 'chars';
 import { cc as ch } from 'lexical/codes';
-import { parse } from '@parse/parser';
-import { grammar } from '@parse/grammar';
+import { parse } from 'parse/parser';
+import { grammar } from 'parse/grammar';
 import { Modes } from 'lexical/enum';
 
 export function script () {

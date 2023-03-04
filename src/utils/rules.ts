@@ -7,7 +7,7 @@ import {
   RulesInternal,
   ScriptRules,
   StyleRules
-} from 'types/export';
+} from 'types/index';
 
 export function isValidType (language: LanguageRuleNames, rule: string, value: any) {
 

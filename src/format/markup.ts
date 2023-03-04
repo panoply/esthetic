@@ -1,9 +1,9 @@
-import type { Types } from 'types/export';
+import type { Types } from 'types/index';
 import * as rx from 'lexical/regex';
 import { cc } from 'lexical/codes';
 import { WSP, NIL, NWL } from 'chars';
-import { is, isLast, not, repeatChar, ws } from '@utils';
-import { parse } from '@parse/parser';
+import { is, isLast, not, repeatChar, ws } from 'utils';
+import { parse } from 'parse/parser';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */

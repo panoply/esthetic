@@ -1,6 +1,6 @@
-import { parse } from '@parse/parser';
+import { parse } from 'parse/parser';
 import { NWL } from 'lexical/chars';
-import { join, getLanguageName } from '@utils';
+import { join, getLanguageName } from 'utils';
 import { ParseError } from 'lexical/errors';
 
 export function MarkupError (error: ParseError, token: string, start?: number) {
@@ -20,6 +20,35 @@ export function MarkupError (error: ParseError, token: string, start?: number) {
   );
 
 }
+
+/**
+ * Rule Errors
+ *
+ * Generates the error string to throw if an invalid rule was provided
+ */
+export function RuleError (error: {
+  option: string;
+  message: string;
+  provided: any;
+  expected: string[]
+}) {
+
+  return join(
+    `Rule Error: ${error.message}`
+    , NWL
+    , 'Definition:'
+    , `  ${error.option}`
+    , 'Provided:'
+    , `  ${error.provided} `
+    , 'Expected:'
+    , `  ${error.expected.join('  \n')} `
+  );
+
+}
+
+/* -------------------------------------------- */
+/* PRIVATES                                     */
+/* -------------------------------------------- */
 
 /**
  * Error Snippet

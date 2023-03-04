@@ -4,8 +4,8 @@ import { format } from 'format';
 import { Languages, Lexers, Modes } from 'lexical/enum';
 import * as lx from 'lexical/lexing';
 import { NIL, NWL } from 'chars';
-import { getLexerName, getLexerType, assign, ws } from '@utils';
-import { MarkupError } from '@parse/errors';
+import { getLexerName, getLexerType, assign, ws } from 'utils';
+import { MarkupError } from 'parse/errors';
 import { ParseError } from 'lexical/errors';
 import type { LiteralUnion } from 'type-fest';
 import type {
@@ -20,7 +20,7 @@ import type {
   Rules,
   JSONRules,
   ScriptRules
-} from 'types/export';
+} from 'types';
 
 /**
  * Parse Stack
@@ -89,9 +89,17 @@ class Parser {
   static region: string | string[] = NIL;
 
   static range: { lineNumber: number; depth: number };
+
+  /**
+   * Hooks
+   *
+   * Event Listeners which will trigger during traversal and the
+   * formatting cycle. This is a future feature to allow consumers
+   * to augment and adjust tokens.
+   */
   public hooks: {
     /**
-     * The before formatting hooks
+     * Parse hooks
      */
     parse?: ((this: {
       readonly line: number;
@@ -100,7 +108,7 @@ class Parser {
     }, node: Record, index?: number) => void | Record)[];
 
     /**
-     * The before formatting hooks
+     * Format hooks
      */
     format?: ((this: {
       readonly record: Record;
@@ -296,7 +304,7 @@ class Parser {
    */
   public rules: Rules = {
     crlf: false,
-    defaults: 'none',
+    preset: 'none',
     language: 'auto',
     endNewline: false,
     indentChar: ' ',
@@ -305,13 +313,12 @@ class Parser {
     preserveLine: 2,
     wrap: 0,
     liquid: {
+      argumentWrap: 0,
       commentNewline: false,
       commentIndent: true,
-      correct: false,
       delimiterTrims: 'preserve',
       delimiterPlacement: 'preserve',
-      forceArgumentWrap: 0,
-      forceFilterWrap: 0,
+      filterWrap: 0,
       forceLeadArgument: false,
       ignoreTagList: [],
       indentAttributes: false,
@@ -319,6 +326,7 @@ class Parser {
       normalizeSpacing: true,
       preserveComment: false,
       preserveInternal: false,
+      dedentTagList: [],
       quoteConvert: 'none'
     },
     markup: {
