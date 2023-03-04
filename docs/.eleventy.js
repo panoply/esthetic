@@ -218,6 +218,21 @@ Prism.languages.insertBefore('js', 'keyword', {
   }
 });
 
+Prism.languages.bash = {
+  keyword: {
+    pattern: /(esthetic\s)/
+  },
+  argument: {
+    pattern: /\<(.*?)\>/
+  },
+  punctuation: {
+    pattern: /[<>]|--?(?=[a-z])/
+  },
+  comment: {
+    pattern: /#.*?(?=\n)/
+  }
+}
+
 
 let store;
 let input;
@@ -245,7 +260,7 @@ function highlighter (md, raw, language) {
       languages([language]);
 
       code = Prism.highlight(raw, Prism.languages[language], language);
-      input = raw
+      input = md.utils.escapeHtml(raw);
 
     } catch (err) {
 
@@ -258,6 +273,7 @@ function highlighter (md, raw, language) {
 
   } else {
     code = md.utils.escapeHtml(raw);
+    input = md.utils.escapeHtml(raw);
   }
 
 
@@ -391,8 +407,7 @@ function getCodeBlocks (md, fence, ...args) {
 
   if(store === undefined) return raw
 
-  const { source, syntax } = getInputSource(md, raw)
-  const output = getCodeInput(syntax, language)
+  const output = getCodeInput(raw, language)
   const rules = md.utils.escapeHtml(JSON.stringify(store))
 
   store = undefined
@@ -402,8 +417,8 @@ function getCodeBlocks (md, fence, ...args) {
     <div
       data-controller="example"
       data-example-rules-value="${rules}"
-      data-example-input-value="${source.trim()}"
-      data-example-output-value="${source.trim()}">
+      data-example-input-value="${input.trim()}"
+      data-example-output-value="${input.trim()}">
       ${output.trim()}
     </div>`
 
