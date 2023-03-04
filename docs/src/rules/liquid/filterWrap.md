@@ -1,16 +1,21 @@
 ---
-title: 'Liquid - Force Filter Wrap'
+title: 'Liquid - Filter Wrap'
 layout: base
 permalink: '/rules/liquid/forceFilterWrap/index.html'
+describe:
+  - Filter Wrap
+  - Related Rules
+  - Rule Options
+  - Example
 ---
 
-# Force Filter Wrap
+# Filter Wrap
 
-The character width limit to use on tags containing Liquid filters `|` before forcing is applied. Tags and output tokens will force filter filter expressions onto newlines when the token width exceed the limit defined. By default, this rule uses a value of `0` which will result in Liquid filters being forced when the tag or output token containing them spans ¾ (or 75%) of defined global [`wrap`](/rules/global/wrap) limit.
+The character width limit to use on tags containing Liquid filters `|` before forcing is applied. Tags and output tokens will force filter expressions onto newlines when the token width exceeds the limit defined. By default, this rule uses a value of `0` which will result in Liquid filters being forced when the tag or output token containing them spans ¾ (or 75%) of defined global [`wrap`](/rules/global/wrap) limit.
 
 ::: note
 
-See [fractional wraps](/terminoligies#fractional-wraps) for more information regarding how fraction based limits are determined and calculated.
+See [fractional wrapping](/terminologies#fractional-wrapping) for more information regarding how fraction based thresholds are determined and calculated.
 
 :::
 

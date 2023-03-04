@@ -1,21 +1,76 @@
 <nav
-  class="mt-5 pt-5 mb-2 pl-4 bl"
+  class="anchors mt-5 pt-5 mb-2 pl-4 bl vh-100"
   data-controller="sticky"
   data-sticky-offset-value="20">
 
-  <h6>ANCHORS</h6>
+  {% for link in collections.all %}
+    {% if link.url == page.url %}
 
-  <ul class="list-dash mt-3">
-    {% for link in collections.all %}
-      {% if link.url == page.url %}
-        {% for anchor in link.data.anchors %}
-          <li>
-            <a href="#{{ anchor | slugify }}">
-              {{ anchor }}
-            </a>
-          </li>
-        {% endfor %}
+
+      {% if link.data.describe %}
+
+        <h6 class="mt-0 mb-4">
+          Describe
+        </h6>
+
+        <ul class="mt-3 mb-2">
+          {% for anchor in link.data.describe %}
+            <li>
+              <a
+                href="#{{ anchor | slugify }}"
+                data-scrollspy-target="anchor">
+                {{ anchor }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+
       {% endif %}
-    {% endfor %}
-  </ul>
+
+
+      {% if link.data.examples %}
+
+        <h6 class="mt-0 mb-4">
+          Examples
+        </h6>
+
+        <ul class="mt-3 mb-2">
+          {% for anchor in link.data.examples %}
+            <li>
+              <a
+                href="#{{ anchor | slugify }}"
+                data-scrollspy-target="anchor">
+                {{ anchor }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+
+      {% endif %}
+
+      {% if link.data.options %}
+
+        <h6 class="my-4">
+          Options
+        </h6>
+
+        <ul class="mt-3 mb-2">
+          {% for anchor in link.data.options %}
+            <li>
+              <a
+                href="#{{ anchor | slugify }}"
+                data-scrollspy-target="anchor">
+                {{ anchor }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+
+      {% endif %}
+
+      {% break %}
+
+    {% endif %}
+  {% endfor %}
+
 </nav>

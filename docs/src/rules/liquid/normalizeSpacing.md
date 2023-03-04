@@ -2,15 +2,21 @@
 title: 'Liquid - Normalize Spacing'
 layout: base
 permalink: '/rules/liquid/normalizeSpacing/index.html'
+describe:
+  - Normalize Spacing
+  - Rule Options
+options:
+  - true
+  - false
 ---
 
 #### Normalize Spacing
 
 Whether or not to normalize and correct the inner spacing of Liquid tokens. The `normalizeSpacing` rule will equally distribute whitespace sequences contained within Liquid tags and output type tokens.
 
-::: Note
+::: note
 
-Normalized spacing does not strip newline characters and does not process code encapsulated in quotation characters (ie: `"string"` or `'string'`). Below is an example of how this rule works if it's enabled, ie: `true` which is the default.
+Normalized spacing does not strip newline characters and does not process code encapsulated in quotation characters, such as `"string"` or `'string'` expressions. Æsthetic considers these preservation sequences.
 
 :::
 
@@ -26,7 +32,16 @@ This is a Liquid specific formatting rule which will **default** to `true` when 
 
 :::
 
-Take the following Liquid output and tag type tokens. Notice how the output (`object.prop`) token contains extraneous whitespace and `args` filter is not correctly spaced. In the `assign` tag token, the assignment operator (`=`), object dot notation `.` and `foo|bar` filter pipe separators are not using equally distributing whitespace.
+When the `normalizeSpacing` rule is set to `true` which is the **default** applied option the internal structure of Liquid tags and output tokens and formatted to have a equal whitespace distribution. Notice how the output (`object.prop`) token contains extraneous whitespace and `args` filter is not correctly spaced. In the `assign` tag token, the assignment operator (`=`), object dot notation `.` and `foo|bar` filter pipe separators are not using equally distributing whitespace. Settings
+
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "normalizeSpacing": true
+  }
+}
+```
 
 <!--prettier-ignore-->
 ```html
@@ -35,13 +50,20 @@ Take the following Liquid output and tag type tokens. Notice how the output (`ob
 {% assign  foo  =   'preserved  '   |  append : object . prop |foo|bar    %}
 ```
 
-::: rule 😳
+::: rule 👎
 
 #### false
 
 :::
 
-_Using the above **before** formatting example, both the output and tag tokens are corrected. All extraneous whitespace is stripped and injected where necessary. Notice how all string tokens are left intact, this is because the `normalizeSpacing` rule does not touch or process string structures._
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "normalizeSpacing": false
+  }
+}
+```
 
 <!--prettier-ignore-->
 ```html

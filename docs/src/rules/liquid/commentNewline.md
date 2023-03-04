@@ -2,6 +2,9 @@
 title: 'Liquid - Comment Newline'
 layout: base
 permalink: '/rules/liquid/commentNewline/index.html'
+describe:
+  - Comment Newline
+  - Rule Options
 ---
 
 # Comment Newline

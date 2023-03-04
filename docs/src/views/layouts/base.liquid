@@ -19,17 +19,24 @@
       assign in_rules = true
     endunless
   endif
-
 %}
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Æsthetic | {{ title }}</title>
+    <title>
+      Æsthetic | {{ title }}
+    </title>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{{'/style.css' | url }}" rel="stylesheet">
+    <meta
+      http-equiv="X-UA-Compatible"
+      content="IE=edge">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0">
+    <link
+      href="{{'/style.css' | url }}"
+      rel="stylesheet">
     <script src="{{'/bundle.min.js' | url }}"></script>
   </head>
   <body>
@@ -46,21 +53,24 @@
 
       {% include 'navbar' %}
 
-      <main id="main" class="container-fluid">
-        <div class="row">
+      <main
+        id="main"
+        class="container-fluid">
+        <div
+          class="row"
+          {% if in_rules %}
+          data-controller="scrollspy"
+          data-scrollspy-active-class="fc-pink"
+          {% endif %}>
 
           <div class="col-auto px-0">
             {% if in_rules %}
 
-              {%- include 'sidebar'
-                , links: rules
-                , type: 'rules' %}
+              {% include 'sidebar', links: rules, type: 'rules' %}
 
             {% else %}
 
-              {%- include 'sidebar'
-                , links: main
-                , type: 'main' %}
+              {%- include 'sidebar', links: main, type: 'main' %}
 
             {% endif %}
           </div>
@@ -71,20 +81,15 @@
               {% include 'breadcrumbs' %}
             </div>
 
-             <div class="px-5">
-
-                {{ content }}
-
-              </div>
-
-
+            <div class="px-5">
+              {{ content }}
+            </div>
           </div>
 
 
-          <div class="col-2">
+          <div class="col-auto px-4">
             {% include 'anchors' %}
           </div>
-
 
 
         </div>

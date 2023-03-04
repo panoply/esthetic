@@ -2,10 +2,11 @@
 title: 'Liquid - Line Break Separator'
 layout: base
 permalink: '/rules/liquid/lineBreakSeparator/index.html'
-anchors:
+describe:
   - Line Break Separator
   - Related Rules
   - Rule Options
+options:
   - After
   - Before
 ---
@@ -16,18 +17,17 @@ The `lineBreakSeparator` rule controls the placement of separator type character
 
 ::: note
 
-This rule only applied to Liquid separators. Filter pipes `|` characters are not augmented.
+Æsthetic does not treat filter pipe `|` occurrence's as `lineBreakSeparator` character. Filter pipes `|` will always output from the left side of the internal tokens.
 
 :::
 
-##### Related Rules
+# Related Rules
 
-The `lineBreakSeparator` rule is typically used together with the Liquid `forceArgumentWrap` rule defined the wrap strategy to use when Liquid output or tag type tokens contain **multiple** filters and/or arguments. By default, Æsthetic will applying forcing when structures exceed ¾ (or 75%) of the global [`wrap`](/rules/global/wrap) limit.
+The `lineBreakSeparator` rule is typically used together with the Liquid `argumentWrap` rule defined the wrap strategy to use when Liquid output or tag type tokens contain **multiple** filters and/or arguments. By default, Æsthetic will applying forcing when structures exceed ¾ (or 75%) of the global [`wrap`](/rules/global/wrap) limit.
 
-- [`forceFilterWrap`](/rules/liquid/forceFilterWrap/)
-- [`forceArgumentWrap`](/rules/liquid/forceFilterWrap/)
-
-#####
+- [`filterWrap`](/rules/liquid/filterWrap/)
+- [`argumentWrap`](/rules/liquid/argumentWrap/)
+- [`forceLeadArgument`](/rules/liquid/forceLeadArgument/)
 
 ---
 
@@ -41,14 +41,14 @@ This is a Liquid specific formatting rule which will **default** to `after` when
 
 :::
 
-_Below is an example of how this rule works if set to `before` which is recommended approach. This will ensure all operator separators begin at the start of arguments. Notice how **before** formatting the comma separators are placed at the end of each parameter argument but **after** formatting they are moved to the start._
+Below is an example of how this rule works if set to `before` which is recommended approach. This will ensure all operator separators begin at the start of arguments. Notice how **before** formatting the comma separators are placed at the end of each parameter argument but **after** formatting they are moved to the start.
 
 ```json:rules
 {
   "language": "liquid",
   "liquid": {
-    "delimiterPlacement": "after",
-    "forceFilters": 2
+    "lineBreakSeparator": "after",
+    "filterWrap": 40
   }
 }
 ```
@@ -92,8 +92,8 @@ Below is an example of how this rule works if set to `default` which is the **de
 {
   "language": "liquid",
   "liquid": {
-    "delimiterPlacement": "before",
-    "forceFilters": 2
+    "lineBreakSeparator": "before",
+    "filterWrap": 40
   }
 }
 ```
@@ -103,9 +103,9 @@ Below is an example of how this rule works if set to `default` which is the **de
 {% # All argument comma separators will be placed at before expression %}
 {% render 'snippet',
   param_1: true,
-  param_2: 1000
-  , param_3: 'string'
-  , param_4: nil %}
+  param_2: 1000,
+  param_3: 'string',
+  param_4: nil %}
 
 {% if condition == assertion %}
 
@@ -121,47 +121,6 @@ Below is an example of how this rule works if set to `default` which is the **de
     | param_4: 'xxxx' }}
 
 {% endif %}
-```
-
----
-
-::: rule 🤡
-
-#### preserve
-
-:::
-
-The `inferred` option will preserve the order of separator type characters. When using inferred, separators can be placed before and after arguments. Level (indentation) applied during the beautification cycle respects the structural intent.
-
-```json:rules
-{
-  "language": "liquid",
-  "liquid": {
-    "delimiterPlacement": "preserve",
-    "forceFilters": 2
-  }
-}
-```
-
-<!-- prettier-ignore -->
-```html
-{% # Inline open and close delimiters are preserved %}
-{{ object.prop | filter: 'value' }}
-
-{% # Forced open and close delimiters are preserved %}
-{{
-  object.prop | filter: 'value'
-}}
-
-{% # Forced open and inline close delimiters are preserved %}
-{{
-  object.prop | filter: 'value' }}
-
-{% # Inline open and forced close delimiters are preserved %}
-{{ object.prop
-  | filter: 'value'
-  | append: 'sample'
-}}
 ```
 
 ---

@@ -2,6 +2,15 @@
 title: 'Liquid - Delimiter Trims'
 layout: base
 permalink: '/rules/liquid/delimiterTrims/index.html'
+describe:
+  - Delimiter Trims
+  - Rule Options
+options:
+  - Preserve
+  - Tags
+  - Outputs
+  - Never
+  - Always
 ---
 
 # Delimiter Trims

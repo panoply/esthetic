@@ -2,10 +2,9 @@
 title: 'Liquid - Comment Indent'
 layout: base
 permalink: '/rules/liquid/commentIndent/index.html'
-anchors:
+describe:
   - Comment Indent
-  - Enabled
-  - Disable
+  - Rule Options
 ---
 
 # Comment Indent

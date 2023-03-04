@@ -2,11 +2,15 @@
 title: 'Liquid - Delimiter Placement'
 layout: base
 permalink: '/rules/liquid/delimiterPlacement/index.html'
-anchors:
+describe:
+  - Delimiter Placement
+  - Related Rules
+  - Rule Options
+options:
   - Preserve
   - Default
-  - Consistent
   - Inline
+  - Consistent
   - Force
 ---
 
