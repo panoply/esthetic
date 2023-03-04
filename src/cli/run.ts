@@ -4,7 +4,7 @@ import { join, basename } from 'node:path';
 import glob from 'fast-glob';
 import chokidar from 'chokidar';
 import * as log from './logs';
-import type { Rules } from 'types/export';
+import type { Rules } from 'types/index';
 // @ts-ignore
 import esthetic from './index.js';
 
