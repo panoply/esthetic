@@ -3,32 +3,42 @@ import { LanguageName } from '../shared';
 
 export interface GlobalRules {
   /**
-   * **Default** none
+   * **Default** `none`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `recommended`
    *
-   * A default ruleset style guide to use. This will assign rules according to a couple of presets.
+   * A preset ruleset style guide to use. This will assign rules according to a set of defaults
+   * to produce a certain beautification result.
    *
    * ---
    *
+   * 👎 &nbsp;&nbsp;**default**
+   *
+   * This is the default and the most unobtrusive. Formatting will use a preservational
+   * based technique with this preset mode.
+   *
    * 👍 &nbsp;&nbsp;**recommended**
    *
-   * This style guide is typically suited for most cases.
+   * This style guide is typically suited for most cases, it will apply a base set of
+   * rules aligned with the Æsthetic approach.
    *
    * 👍 &nbsp;&nbsp;**strict**
    *
-   * This is a strict ruleset for developers who think highly of themselves.
+   * This is a strict ruleset curated by the projects author [Panoply](https://github.com/panoply).
    *
-   * 👎 &nbsp;&nbsp;**none**
+   * 👍 &nbsp;&nbsp;**warrington**
    *
-   * This is the default and the most unobtrusive.
+   * This style guide preset is best suited for developers and specifically teams working with
+   * Shopify themes. The preset was curated by the talented [David Warrington](https://ellodave.dev/).
    *
-   * 🤡 &nbsp;&nbsp;**liquid-prettier**
    *
-   * You're a joke.
+   * 🤡 &nbsp;&nbsp;**prettier**
+   *
+   * Replicates the Prettier style of formatting. If you've used the Shopify Liquid Prettier Plugin and
+   * enjoy that beautification style using this preset will produce the same results.
    *
    */
-  defaults?: LiteralUnion<'none' | 'recommended' | 'strict' | 'liquid-prettier', string> ;
+  preset?: LiteralUnion<'default' | 'recommended' | 'strict' | 'warrington' | 'prettier', string> ;
   /**
    * **Default** `auto`
    *

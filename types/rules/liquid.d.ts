@@ -3,23 +3,6 @@ import { LiteralUnion } from 'type-fest';
 export interface LiquidRules {
 
   /**
-   * **Default** `true`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
-   *
-   * Automatically correct some sloppiness in code and allow Prettify to
-   * reason with the intended structures in order to reduce chaos in otherwise
-   * unreadble and terrible code.
-   *
-   * _The option enables Prettify to go about fixing code. It's not
-   * going to produce miracles and for the most part it will have little effect
-   * overall but can help in some situations._
-   *
-   * ---
-   */
-  correct?: boolean;
-
-  /**
    * **Default** `false`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
@@ -406,7 +389,7 @@ export interface LiquidRules {
    * the global `wrap` limit.
    *
    */
-  forceFilterWrap?: number;
+  filterWrap?: number;
 
   /**
    * **Default** `0`
@@ -416,7 +399,7 @@ export interface LiquidRules {
    * Forces arguments onto newlines when arguments exceed the defined wrap limit.
    * By default, filters will be forced according to the global `wrap` limit.
    */
-  forceArgumentWrap?: number;
+  argumentWrap?: number;
 
   /**
    * **Default** `false`
@@ -539,34 +522,6 @@ export interface LiquidRules {
    * will preserve the internal formations of output and tags.
    */
   preserveInternal?: boolean;
-
-  /**
-   * **Default** `[]`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is subjective
-   *
-   * A list of Liquid tags that should have their insides preserved but still
-   * respect left side identation. This rule is different from `ignoreTagList`
-   * in the sense that tags defined here will respect indentation levels whereas
-   * tags defined in `ignoreTagList` not dot adhere or respect levels or indentation.
-   *
-   */
-  preserveTagList?: Array<LiteralUnion<
-  | 'form'
-  | 'paginate'
-  | 'capture'
-  | 'case'
-  | 'for'
-  | 'if'
-  | 'raw'
-  | 'tablerow'
-  | 'liquid'
-  | 'unless'
-  | 'schema'
-  | 'style'
-  | 'script'
-  | 'stylesheet'
-  | 'javascript', string>>;
 
   /**
    * **Default** `[]`

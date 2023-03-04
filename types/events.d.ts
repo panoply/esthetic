@@ -1,4 +1,4 @@
-import { Data, IParseError, Rules, RulesChanges } from './export';
+import { Data, IParseError, Rules, RulesChanges } from '.';
 import { Stats } from './shared';
 
 export type EventNames = (
