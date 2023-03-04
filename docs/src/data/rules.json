@@ -2,10 +2,9 @@
   "groups": [
     "Global",
     "Liquid",
-    "HTML",
-    "XML",
-    "CSS",
-    "JSON",
+    "Markup",
+    "Style",
+    "Json",
     "Script"
   ],
   "urls": [
@@ -49,6 +48,12 @@
       "title": "wrap",
       "url": "/rules/global/wrap/"
     },
+
+    {
+      "group": "liquid",
+      "title": "argumentWrap",
+      "url": "/rules/liquid/forceArgumentWrap/"
+    },
     {
       "group": "liquid",
       "title": "correct",
@@ -66,6 +71,11 @@
     },
     {
       "group": "liquid",
+      "title": "dedentTagList",
+      "url": "/rules/liquid/dedentTagList/"
+    },
+    {
+      "group": "liquid",
       "title": "delimiterTrims",
       "url": "/rules/liquid/delimiterTrims/"
     },
@@ -73,6 +83,16 @@
       "group": "liquid",
       "title": "delimiterPlacement",
       "url": "/rules/liquid/delimiterPlacement/"
+    },
+    {
+      "group": "liquid",
+      "title": "forceLeadArgument",
+      "url": "/rules/liquid/forceLeadArgument/"
+    },
+    {
+      "group": "liquid",
+      "title": "filterWrap",
+      "url": "/rules/liquid/forceFilterWrap/"
     },
     {
       "group": "liquid",
@@ -101,226 +121,165 @@
     },
     {
       "group": "liquid",
+      "title": "preserveInternal",
+      "url": "/rules/liquid/preserveInternal/"
+    },
+    {
+      "group": "liquid",
       "title": "quoteConvert",
       "url": "/rules/liquid/quoteConvert/"
     },
 
     {
-      "group": "html",
+      "group": "markup",
       "title": "attributeCasing",
-      "url": "/rules/html/attributeCasing/"
+      "url": "/rules/markup/attributeCasing/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "attributeSort",
-      "url": "/rules/html/attributeSort/"
+      "url": "/rules/markup/attributeSort/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "attributeSortList",
-      "url": "/rules/html/attributeSortList/"
+      "url": "/rules/markup/attributeSortList/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "commentIndent",
-      "url": "/rules/html/commentIndent/"
+      "url": "/rules/markup/commentIndent/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "commentNewline",
-      "url": "/rules/html/commentNewline/"
+      "url": "/rules/markup/commentNewline/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "correct",
-      "url": "/rules/html/correct/"
+      "url": "/rules/markup/correct/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "delimiterForce",
-      "url": "/rules/html/delimiterForce/"
+      "url": "/rules/markup/delimiterForce/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "forceAttribute",
-      "url": "/rules/html/forceAttribute/"
+      "url": "/rules/markup/forceAttribute/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "forceLeadAttribute",
-      "url": "/rules/html/forceLeadAttribute/"
+      "url": "/rules/markup/forceLeadAttribute/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "forceIndent",
-      "url": "/rules/html/forceIndent/"
+      "url": "/rules/markup/forceIndent/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "ignoreCSS",
-      "url": "/rules/html/ignoreCSS/"
+      "url": "/rules/markup/ignoreCSS/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "ignoreJS",
-      "url": "/rules/html/ignoreJS/"
+      "url": "/rules/markup/ignoreJS/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "ignoreJSON",
-      "url": "/rules/html/ignoreJSON/"
+      "url": "/rules/markup/ignoreJSON/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "preserveAttributes",
-      "url": "/rules/html/preserveAttributes/"
+      "url": "/rules/markup/preserveAttributes/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "preserveComment",
-      "url": "/rules/html/preserveComment/"
+      "url": "/rules/markup/preserveComment/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "preserveText",
-      "url": "/rules/html/preserveText/"
+      "url": "/rules/markup/preserveText/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "selfCloseSpace",
-      "url": "/rules/html/selfCloseSpace/"
+      "url": "/rules/markup/selfCloseSpace/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "selfCloseSVG",
-      "url": "/rules/html/selfCloseSVG/"
+      "url": "/rules/markup/selfCloseSVG/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "stripAttributeLines",
-      "url": "/rules/html/stripAttributeLines/"
+      "url": "/rules/markup/stripAttributeLines/"
     },
     {
-      "group": "html",
+      "group": "markup",
       "title": "quoteConvert",
-      "url": "/rules/html/quoteConvert/"
+      "url": "/rules/markup/quoteConvert/"
     },
 
     {
-      "group": "xml",
-      "title": "attributeSort",
-      "url": "/rules/xml/attributeSort/"
-    },
-    {
-      "group": "xml",
-      "title": "attributeSortList",
-      "url": "/rules/xml/attributeSortList/"
-    },
-    {
-      "group": "xml",
-      "title": "commentIndent",
-      "url": "/rules/xml/commentIndent/"
-    },
-    {
-      "group": "xml",
-      "title": "commentNewline",
-      "url": "/rules/xml/commentNewline/"
-    },
-    {
-      "group": "xml",
-      "title": "correct",
-      "url": "/rules/xml/correct/"
-    },
-    {
-      "group": "xml",
-      "title": "forceAttribute",
-      "url": "/rules/xml/forceAttribute/"
-    },
-    {
-      "group": "xml",
-      "title": "forceIndent",
-      "url": "/rules/xml/forceIndent/"
-    },
-    {
-      "group": "xml",
-      "title": "namingConvention",
-      "url": "/rules/xml/attributeCasing/"
-    },
-    {
-      "group": "xml",
-      "title": "preserveAttributes",
-      "url": "/rules/xml/preserveAttributes/"
-    },
-    {
-      "group": "xml",
-      "title": "preserveComment",
-      "url": "/rules/xml/preserveComment/"
-    },
-    {
-      "group": "xml",
-      "title": "preserveText",
-      "url": "/rules/xml/preserveText/"
-    },
-    {
-      "group": "xml",
-      "title": "selfCloseSpace",
-      "url": "/rules/xml/selfCloseSpace/"
-    },
-    {
-      "group": "xml",
-      "title": "stripAttributeLines",
-      "url": "/rules/xml/stripAttributeLines/"
-    },
-
-    {
-      "group": "css",
+      "group": "style",
       "title": "atRuleSpace",
-      "url": "/rules/css/atRuleSpace/"
+      "url": "/rules/style/atRuleSpace/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "classPadding",
-      "url": "/rules/css/classPadding/"
+      "url": "/rules/style/classPadding/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "correct",
-      "url": "/rules/css/correct/"
+      "url": "/rules/style/correct/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "commentIndent",
-      "url": "/rules/css/commentIndent/"
+      "url": "/rules/style/commentIndent/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "commentNewline",
-      "url": "/rules/css/commentNewline/"
+      "url": "/rules/style/commentNewline/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "preserveComment",
-      "url": "/rules/css/preserveComment/"
+      "url": "/rules/style/preserveComment/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "noLeadZero",
-      "url": "/rules/css/noLeadZero/"
+      "url": "/rules/style/noLeadZero/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "sortProperties",
-      "url": "/rules/css/sortProperties/"
+      "url": "/rules/style/sortProperties/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "sortSelectors",
-      "url": "/rules/css/sortSelectors/"
+      "url": "/rules/style/sortSelectors/"
     },
     {
-      "group": "css",
+      "group": "style",
       "title": "quoteConvert",
-      "url": "/rules/css/quoteConvert/"
+      "url": "/rules/style/quoteConvert/"
     },
     {
       "group": "json",
