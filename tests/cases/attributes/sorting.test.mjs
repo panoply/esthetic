@@ -62,7 +62,7 @@ test('Sorting alphabetically', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
         forceAttribute: true,
@@ -157,7 +157,7 @@ test('Sorting with newline preservation', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'liquid',
       preserveLine: 3,
       markup: {
@@ -235,7 +235,7 @@ test('Sorting using sort list', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
         forceAttribute: true,
@@ -274,7 +274,7 @@ test('Sorting excluded when Liquid attributes', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
         forceAttribute: false,

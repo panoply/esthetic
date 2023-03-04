@@ -89,7 +89,7 @@ test('Sorting object properties alphabetically', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.json.sync(source, {
+    const actual = esthetic.json(source, {
       preserveLine: 0,
       json: {
         objectSort: true,

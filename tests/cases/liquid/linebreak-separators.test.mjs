@@ -49,7 +49,7 @@ test('Liquid Line Break Separator Structures', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
         delimiterTrims: 'outputs'

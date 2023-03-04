@@ -41,7 +41,7 @@ test.skip('Liquid structure variations', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, { language: 'liquid' });
+    const actual = esthetic.format(source, { language: 'liquid' });
 
     t.is(actual, expect);
 
@@ -221,7 +221,7 @@ test.skip('Liquid structure preservation', t => {
     }
   )(function (source, rules, label) {
 
-    const snapshot = esthetic.format.sync(source, rules);
+    const snapshot = esthetic.format(source, rules);
 
     t.snapshot(snapshot, label);
 

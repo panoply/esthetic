@@ -160,7 +160,7 @@ test('Ignore Region (Block Comment) - Newlines and indentation', async t => {
     }
   )(async function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
@@ -233,7 +233,7 @@ test('Ignore Region (Block Comment) - Edge cases', async t => {
     }
   )(async function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
@@ -395,7 +395,7 @@ test('Ignore Region (Block Comment) - Followed by markup', async t => {
     }
   )(async function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
@@ -506,7 +506,7 @@ test('Ignore Region (Block Comment) - Followed by liquid', async t => {
     }
   )(async function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 

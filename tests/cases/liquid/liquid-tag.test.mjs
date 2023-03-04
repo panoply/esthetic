@@ -68,7 +68,7 @@ test('Structure Test: Indentation depth levels encapsulated by markup', t => {
     }
   })(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 

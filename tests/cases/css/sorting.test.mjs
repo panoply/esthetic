@@ -117,7 +117,7 @@ test('Sorting selector names', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'css',
       style: {
         sortSelectors: true
@@ -197,7 +197,7 @@ test('Sorting class properties', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'css',
       style: {
         sortSelectors: false,
@@ -326,7 +326,7 @@ test('Sorting selector and properties', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'css',
       style: {
         sortSelectors: true,

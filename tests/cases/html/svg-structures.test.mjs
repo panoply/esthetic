@@ -87,7 +87,7 @@ test('Structure Test: singleton <path>', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -142,7 +142,7 @@ test('Structure Test: singleton <circle>', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -180,7 +180,7 @@ test('Structure Test: singleton <use>', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -226,7 +226,7 @@ test('Structure Test: singleton <polygon>', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -286,7 +286,7 @@ test('Structure Test: singleton <polyline>', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -342,7 +342,7 @@ test('Structure Test: singleton <rect>', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -398,7 +398,7 @@ test('Structure Test: singleton <ellipse>', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -444,7 +444,7 @@ test('Structure Test: singleton <stop>', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -482,7 +482,7 @@ test('Convert and correct singletons to self closing tokens', t => {
     ]
   ])(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
         forceAttribute: false,

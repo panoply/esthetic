@@ -201,7 +201,7 @@ test('Structure Test: Preserved delimiter placements', t => {
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 
@@ -294,7 +294,7 @@ test.skip('Structure Test: Various rules against samples', t => {
     ]
   )(function (sample, rule, label) {
 
-    const output = esthetic.format.sync(sample, rule);
+    const output = esthetic.format(sample, rule);
 
     // console.log(output);
     // t.snapshot(output, label);
@@ -378,7 +378,7 @@ test.skip('Structure Test: Nested delimiter structures', t => {
     ]
   )(function (sample, rule, label) {
 
-    const output = esthetic.format.sync(sample, rule);
+    const output = esthetic.format(sample, rule);
 
     t.pass();
     // t.log(output);

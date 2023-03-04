@@ -29,7 +29,7 @@ test('Structure Test:  Liquid infused selectors', t => {
     }
   )(function (source, rules) {
 
-    const output = esthetic.format.sync(source, rules);
+    const output = esthetic.format(source, rules);
 
     t.deepEqual(output, source);
 
@@ -88,7 +88,7 @@ test('Structure Test: Attribute selectors expressions', t => {
     ]
   ])(function (source, expect) {
 
-    const output = esthetic.format.sync(source, {
+    const output = esthetic.format(source, {
       language: 'css'
 
     });
@@ -169,7 +169,7 @@ test('Structure Test: Complex pseudo selectors', t => {
     }
   )(function (source, rules) {
 
-    const output = esthetic.format.sync(source, rules);
+    const output = esthetic.format(source, rules);
 
     t.deepEqual(output, source);
 
@@ -216,7 +216,7 @@ test('Structure Test: CSS variable expressions with Liquid infusion', async t =>
     }
   )(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 

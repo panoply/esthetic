@@ -1,6 +1,6 @@
 # Benchmarks
 
-This directory contains some basic benchmark comparisons for Prettify.
+This directory contains some basic benchmark comparisons for Æsthetic
 
 # Comparisons
 
@@ -13,15 +13,15 @@ Repeated runs. Fastest is JSBeautify. Prettier is the slowest.
 | Lines | Tool       | Result                                   |
 | ----- | ---------- | ---------------------------------------- |
 | 1k    | JSBeautify | x 348 ops/sec ±0.19% (95 runs sampled)   |
-| 1k    | Prettify   | x 111 ops/sec ±2.20% (82 runs sampled)   |
+| 1k    | Æsthetic   | x 111 ops/sec ±2.20% (82 runs sampled)   |
 | 1k    | PrettyDiff | x 93.11 ops/sec ±1.23% (81 runs sampled) |
 | 1k    | Prettier   | x 36.75 ops/sec ±9.77% (52 runs sampled) |
 
-Runtime parse + beautification. Prettify is the fastest. Prettier is the slowest.
+Runtime parse + beautification. Æsthetic is the fastest. Prettier is the slowest.
 
 | Lines | Tool       | Result     |
 | ----- | ---------- | ---------- |
-| 1k    | Prettify   | x 3.41ms   |
+| 1k    | Æsthetic   | x 3.41ms   |
 | 1k    | JSBeautify | x 9.48ms   |
 | 1k    | PrettyDiff | x 34.177ms |
 | 1k    | Prettier   | x 30.655ms |

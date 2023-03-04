@@ -1,5 +1,5 @@
 import Benchmark from 'benchmark';
-import Prettify from '@liquify/prettify';
+import Esthetic from 'esthetic';
 import PrettyDiff from 'prettydiff';
 import path from 'path';
 import fs from 'fs';
@@ -21,7 +21,7 @@ suite.add('PrettyDiff', function () {
   async: false
 });
 
-suite.add('Prettify', function () {
+suite.add('Æsthetic', function () {
 
   return Prettify.format(html, {
     language: 'html',
@@ -53,15 +53,15 @@ suite.on('complete', async function () {
 
   console.timeEnd('PrettyDiff');
 
-  console.time('Prettify');
+  console.time('Æsthetic');
 
-  await Prettify.format(html, {
+  Esthetic.format(html, {
     language: 'html',
     lexer: 'markup',
     wrap: 80
   });
 
-  console.timeEnd('Prettify');
+  console.timeEnd('Æsthetic');
 });
 
 suite.run();

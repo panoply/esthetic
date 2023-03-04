@@ -1,5 +1,5 @@
 import Benchmark from 'benchmark';
-import Prettify from '@liquify/prettify';
+import Esthetic from 'esthetic';
 import Prettier from 'prettier';
 import JSBeautify from 'js-beautify';
 import path from 'path';
@@ -29,9 +29,9 @@ suite.add('JSBeautify', function () {
   async: false
 });
 
-suite.add('Prettify', function () {
+suite.add('Æsthetic', function () {
 
-  return Prettify.formatSync(html, {
+  return Esthetic.format(html, {
     language: 'html',
     lexer: 'markup',
     wrap: 80
@@ -59,9 +59,9 @@ suite.on('complete', async function () {
   JSBeautify.html_beautify(html, { wrap_line_length: 80 });
   console.timeEnd('JSBeautify');
 
-  console.time('Prettify');
-  Prettify.formatSync(html, { language: 'html', lexer: 'markup', wrap: 80 });
-  console.timeEnd('Prettify');
+  console.time('Æsthetic');
+  Esthetic.format(html, { language: 'html', lexer: 'markup', wrap: 80 });
+  console.timeEnd('Æsthetic');
 
 });
 

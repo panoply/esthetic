@@ -77,7 +77,7 @@ test('Liquid delimiter handling', t => {
     }
   )(function (source, rules, label) {
 
-    const snapshot = esthetic.format.sync(source, rules);
+    const snapshot = esthetic.format(source, rules);
 
     //  console.log(snapshot);
     t.snapshot(snapshot, label);

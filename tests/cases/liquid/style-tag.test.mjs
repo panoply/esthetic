@@ -277,7 +277,7 @@ test('Structure Test: Newline Preservation and indentation levels', t => {
     }
   })(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 

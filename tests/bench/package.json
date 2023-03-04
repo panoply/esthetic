@@ -10,11 +10,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@liquify/prettify": "link:../..",
     "@shopify/prettier-plugin-liquid": "^0.4.0",
     "@types/benchmark": "^2.1.2",
     "@types/js-beautify": "^1.13.3",
     "benchmark": "^2.1.4",
+    "esthetic": "link:../..",
     "js-beautify": "^1.14.6",
     "prettier": "^2.7.1",
     "prettydiff": "^101.2.6"

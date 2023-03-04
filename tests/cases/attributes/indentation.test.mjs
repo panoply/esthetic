@@ -105,7 +105,7 @@ test.skip('Indenting attributes contained in Liquid block tags', t => {
     ]
   )(function (source, rules, label) {
 
-    const snapshot = esthetic.format.sync(source, rules);
+    const snapshot = esthetic.format(source, rules);
 
     // t.log(snapshot);
 

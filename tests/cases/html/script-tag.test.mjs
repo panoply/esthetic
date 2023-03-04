@@ -145,7 +145,7 @@ test('Structure Test: Empty <script> tags', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
         forceAttribute: 2,
@@ -300,7 +300,7 @@ test('Structure Test: Newline Preservation and indentation levels', t => {
     }
   })(function (source, rules) {
 
-    const actual = esthetic.format.sync(source, rules);
+    const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
 

@@ -152,7 +152,7 @@ test('HTML Ignore Comment Region - Newlines and indentation', async t => {
     }
   )(async function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
@@ -225,7 +225,7 @@ test('HTML Ignore Comment Region - Edge cases', async t => {
     }
   )(async function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
@@ -374,7 +374,7 @@ test('HTML Ignore Comment Region - Followed by markup', async t => {
     }
   )(async function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
@@ -477,7 +477,7 @@ test('HTML Ignore Comment Region - Followed by liquid', async t => {
     }
   )(async function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 

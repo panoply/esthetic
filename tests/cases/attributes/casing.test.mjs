@@ -30,7 +30,7 @@ test('Casing rule cases', t => {
     ]
   )(function (source, rules, label) {
 
-    const snapshot = esthetic.format.sync(source, rules);
+    const snapshot = esthetic.format(source, rules);
 
     t.snapshot(snapshot, label);
 
