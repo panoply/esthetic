@@ -3,7 +3,7 @@ import { cc } from 'lexical/codes';
 import { NIL } from 'chars';
 import { keys, is, ws } from 'utils';
 import { parse } from 'parse/parser';
-import { definitions } from 'parse/definitions';
+import { definitions } from 'rules/definitions';
 
 /**
  * Parses the inline comment settings. This has been adapted from
