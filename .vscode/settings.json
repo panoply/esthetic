@@ -1,10 +1,15 @@
 {
   "cSpell.words": [
     "Æsthetic",
+    "aestheticignore",
     "Amato",
+    "ANTLR",
     "endcustom",
+    "endfor",
     "endrandom",
+    "estheticignore",
     "estheticrc",
+    "linebreak",
     "stylelint",
     "toets"
   ],
@@ -80,7 +85,7 @@
     }
   },
   "[liquid]": {
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "editor.defaultFormatter": "sissel.shopify-liquid"
   }
 
