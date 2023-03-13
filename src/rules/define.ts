@@ -15,7 +15,8 @@ const GLOBS = [
   'indentChar',
   'indentSize',
   'preserveLine',
-  'wrap'
+  'wrap',
+  'wrapFraction'
 ];
 
 const LANGS: LanguageRuleNames[] = [
@@ -31,7 +32,7 @@ export function preset (options: Rules) {
   if (options.preset !== parse.rules.preset) {
     if (isValidChoice('global', 'preset', options.preset)) {
 
-      parse.rules = defaults;
+      parse.rules = assign({}, defaults);
       parse.rules.preset = options.preset;
 
       if (options.preset === 'default') return;
@@ -74,6 +75,11 @@ export function define (options: Rules, events: EventListeners) {
 
       if (change) change[rule] = { from: parse.rules[rule], to: options[rule] };
       if (rule === 'crlf') parse.crlf = options[rule] ? CNL : NWL;
+      if (rule === 'wrap' && options[rule] > 0) {
+        if (!('wrapFraction' in options) || ('wrapFraction' in options && options.wrapFraction <= 0)) {
+          parse.rules.wrapFraction = options[rule] - options[rule] / 4;
+        }
+      }
 
       parse.rules[rule] = options[rule];
 
