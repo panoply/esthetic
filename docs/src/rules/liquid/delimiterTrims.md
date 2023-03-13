@@ -22,15 +22,9 @@ Delimiter whitespace trim dashes `{%-`, `-%}`, `{{-` and `-}}` control. This rul
 
 ::: note
 
-This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ foo }}"` and/or `'{{ foo }}'`. Tags which exist in string values or those contained between quotation characters are left intact.
+This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ foo }}"`. Tags which exist in string values or those contained between quotation characters are left intact.
 
 :::
-
-# Rule Coupling
-
-The [linebreak](#linebreak) or [multiline](#multiline) choices will apply trims `-` to tokens that span multiple lines and when using these options with [delimiterPlacement](/rules/liquid/delimiterPlacement/) set to `force-multiline` will result in **rule coupling**. Coupled rules work in unison and are designed to enhance how the internal structure of applied code is generated.
-
-- [delimiterPlacement](/rules/liquid/delimiterPlacement/)
 
 <!--
 
@@ -216,6 +210,7 @@ When the `delimiterTrims` rule is set to `multiline` trims will be applied to ta
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 40,
   "liquid": {
     "delimiterTrims": "multiline"
   }
@@ -261,10 +256,10 @@ When the `delimiterTrims` rule is set to `linebreak` then a single trim will be 
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 40,
   "liquid": {
     "delimiterTrims": "linebreak",
     "delimiterPlacement": "force-multiline"
-
   }
 }
 ```

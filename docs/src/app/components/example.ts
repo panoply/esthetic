@@ -369,7 +369,7 @@ export class Example extends Controller {
   initialize(): void {
 
     this.modeValue = 'before'
-
+    this.rules = esthetic.rules()
   }
 
 
@@ -403,9 +403,7 @@ export class Example extends Controller {
       this.inputTarget.innerHTML = Prism.highlight(output, Prism.languages.html, 'html')
       this.outputValue = output
 
-
-
-
+      esthetic.rules(this.rules)
 
   }
 

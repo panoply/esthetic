@@ -7,7 +7,12 @@ import esthetic from 'esthetic';
 
 // });
 
-dev(async function (source) {
+// esthetic.on('rules', (change) => {
+
+//   console.log(change);
+// });
+
+dev(function (source) {
 
   // esthetic.grammar({
   //   html: {
@@ -117,16 +122,15 @@ dev(async function (source) {
   //   }
   // });
 
-  const output = esthetic.liquid(source, {
-    wrap: 120,
+  const output = esthetic.format(source, {
+    wrap: 0,
+    language: 'liquid',
     liquid: {
-      delimiterTrims: 'preserve',
-      delimiterPlacement: 'force',
-      lineBreakSeparator: 'before',
-      forceFilterWrap: 80,
-      forceLeadArgument: false,
-      indentAttributes: true,
-      quoteConvert: 'double'
+      delimiterTrims: 'linebreak',
+      delimiterPlacement: 'inline',
+      lineBreakSeparator: 'after',
+      forceFilter: 2,
+      forceArgument: 3
     }
   });
 

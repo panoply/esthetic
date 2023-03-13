@@ -1,19 +1,46 @@
-<div>
+<section>
 <ul>
 <li>
+{%
+render 'snippet'
+  , param_1: true
+  , param_2: 1000
+  , param_3: 'string'
+  , param_4: nil
+%}
 
-<div>
-<main>
-  <li class="foo">
-  <h2> foo </h2>
+{% render 'snippet',
+   param_1: true,
+   param_2: 1000,
+   param_3: 'string',
+   param_4: nil %}
 
-    some text
-</main>
+  {%
+   render 'snippet'
+          ,
+          param_1: true    , param_2: 1000
+          ,
+           param_3: 'string'
+          , param_4: nil, %}
 
+          {{ ob.jext  | image_url
+          | image_tag: class: 'header__heading-logo motion-reduce'
+            , widths: '50, 100, 150, 200, 250, 300, 400, 500'
+            , height: logo_height
+            , width: settings.logo_width
+            , alt: logo_alt
+          | replace: 'hh'
+          | font_family: 'bold', '300', 'exec'}}
 
-</div>
-
-</li>
-</ul>
-</div>
-
+{% assign x = settings.logo
+          | image_url
+          | image_tag: class: 'header__heading-logo motion-reduce'
+            , widths: '50, 100, 150, 200, 250, 300, 400, 500'
+            , height: logo_height
+            , width: settings.logo_width
+            , alt: logo_alt
+          | replace: 'hh'
+          | font_family: 'bold', '300', 'exec' %}
+          </li>
+          </ul>
+</section>

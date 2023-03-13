@@ -352,6 +352,7 @@ export function tokenize (
       liquid.pipes.length > forceFilter
     ) || (
       forceFilter === 0 &&
+      wrapFraction > 0 &&
       lexed.length > wrapFraction
     )
   )) {
@@ -389,6 +390,7 @@ export function tokenize (
           liquid.fargs[i].length > forceArgument
         ) || (
           forceArgument === 0 &&
+          wrapFraction > 0 &&
           lexed.slice(
             liquid.fargs[i][0],
             liquid.fargs[i][liquid.fargs[i].length - 1]
