@@ -2,7 +2,7 @@
 import { NIL, NWL, WSP } from 'chars';
 import { LanguageName, LexerName } from 'types/shared';
 import { Stats } from 'types/index';
-import { getLanguageName } from './maps';
+import { getLanguageName } from 'rules/language';
 import { parse } from 'parse/parser';
 import { cc } from 'lexical/codes';
 
@@ -158,13 +158,53 @@ export function is (string: string, code: number) {
 }
 
 /**
+ * First (equal)
+ *
+ * If first character code of the string is equal to the provided code.
+ */
+export function isOf (string: string | string[], ...codes: number[]) {
+
+  return string ? codes.some(code => string[0].charCodeAt(0) === code) : false;
+
+}
+
+/**
  * Last (equal)
  *
  * If last character code of the string is equal to the provided code.
+ * Accepts a spread list of codes to match. When more than 1 code is passed
+ * it will use `some` to determine match
  */
 export function isLast (string: string | string[], code: number) {
 
   return is(string[string.length - 1], code);
+
+};
+
+/**
+ * Last (equal)
+ *
+ * If last character code of the string is equal to the provided code.
+ * Accepts a spread list of codes to match. When more than 1 code is passed
+ * it will use `some` to determine match
+ */
+export function isLastOf (string: string | string[], ...codes: number[]) {
+
+  const s = string.length;
+
+  return codes.some(c => is(string[s - 1], c));
+
+};
+
+/**
+ * Last Of (equal)
+ *
+ * If character code of the string is equal to the `at` index code character.
+ * The `at` argument defaults to `2` resulting in `string.length - 2`
+ */
+export function isLastAt (string: string | string[], code: number, at: number = 2) {
+
+  return is(string[string.length - at], code);
 
 };
 
