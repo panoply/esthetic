@@ -126,6 +126,7 @@
     "@liquify/ava": "workspace:^0.0.6",
     "@liquify/eslint-config": "workspace:^1.1.0",
     "@liquify/prettier-config": "^1.2.1",
+    "@liquify/tsconfig": "^1.0.1",
     "@types/benchmark": "^2.1.2",
     "ava": "^5.2.0",
     "benchmark": "^2.1.4",
