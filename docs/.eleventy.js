@@ -160,6 +160,7 @@ Prism.languages.html = Prism.languages.extend('markup', {
  * This is passed to the @11ty/eleventy-plugin-syntaxhighlight
  * plugin and brings some sanity to grammers.
  */
+
 Prism.languages.insertBefore('js', 'keyword', {
   variable: {
     pattern: /\b(?:const|var|let)\b/
@@ -217,6 +218,7 @@ Prism.languages.insertBefore('js', 'keyword', {
     lookbehind: true
   }
 });
+
 
 Prism.languages.bash = {
   keyword: {

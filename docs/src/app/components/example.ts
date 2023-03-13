@@ -7,6 +7,66 @@ import Prism from 'prismjs'
 /* CLASS                                        */
 /* -------------------------------------------- */
 
+
+Prism.languages.insertBefore('js', 'keyword', {
+  variable: {
+    pattern: /\b(?:const|var|let)\b/
+  },
+  module: {
+    pattern: /\b(?:import|as|export|from|default)\b/
+  },
+  op: {
+    pattern: /\b(?:typeof|new|of|delete|void|readonly)\b/
+  },
+  'punctuation-chars': {
+    pattern: /[.,]/,
+    global: true
+  },
+  semi: {
+    pattern: /[;]/,
+    global: true
+  },
+  nil: {
+    pattern: /\b(?:null|undefined)\b/
+  },
+  'browser-objects': {
+    pattern: /\b(?:window|document|console)\b/
+  },
+  types: {
+    pattern: /\b(?:any|string|object|boolean|number|Promise)\b/,
+    global: true
+  },
+  'type-array': {
+    pattern: /\[\]/,
+    global: true
+  },
+  'type-object': {
+    pattern: /\{\}/,
+    global: true
+  },
+  'return-type': {
+    pattern: /(\)):(?=\s)/,
+    global: true,
+    lookbehind: true
+  },
+  'parameter-optional': {
+    pattern: /[a-z_$][\w$]+(?=\?:\s*)/i,
+    lookbehind: true
+  },
+  'parameter-type': {
+    pattern: /(\?:\s*)[a-z_$][\w$]+/i,
+    lookbehind: true
+  },
+  flow: {
+    pattern: /\b(?:return|await)\b/
+  },
+  method: {
+    pattern: /(\.\s*)[a-z_$][\w$]*(?=(\())/i,
+    lookbehind: true
+  }
+});
+
+
 const grammar = {
   pattern: /{[{%]-?[\s\S]+-?[%}]}/,
   inside: {
@@ -328,7 +388,7 @@ export class Example extends Controller {
     // })
 
 
-    this.rules = esthetic.rules()
+   // this.rules = esthetic.rules()
     this.button = this.element.querySelector('button[data-action="example#before"]')
     this.inputLines = this.inputLinesTarget.innerHTML
     this.outputLines = this.inputLines
@@ -338,23 +398,12 @@ export class Example extends Controller {
 
   doFormat (input: string) {
 
-    try {
-
-      console.log(input, this.rulesValue)
-
-      const output = esthetic.format(input.toString(), this.rulesValue)
-
-
-      this.outputValue = output
+      const output = esthetic.format(this.inputValue, this.rulesValue)
       this.outputLines = this.getLines(output)
-      this.inputTarget.innerHTML = Prism.highlight(this.outputValue, Prism.languages.html, 'html')
+      this.inputTarget.innerHTML = Prism.highlight(output, Prism.languages.html, 'html')
+      this.outputValue = output
 
 
-    } catch (error) {
-
-      console.log(error)
-
-    }
 
 
 

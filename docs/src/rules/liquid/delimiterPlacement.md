@@ -7,11 +7,12 @@ describe:
   - Related Rules
   - Rule Options
 options:
-  - Preserve
-  - Default
-  - Inline
-  - Consistent
-  - Force
+  - preserve
+  - default
+  - inline
+  - consistent
+  - force
+  - force-multiline
 ---
 
 # Delimiter Placement
@@ -22,14 +23,12 @@ Controls the placement of opening and closing Liquid delimiters `{%`, `{{`, `}}`
 This rule will only be applied to start, singleton and output tag types. Delimiters of end `{% end %}` type tags and those which encapsulate Liquid comments will always be formatted inline.
 :::
 
-##### Related Rules
+# Related Rules
 
 The `delimiterPlacement` can be used together with the Liquid `delimiterTrims` and `normalizeSpacing` rules, both of which pertain to Liquid contained character sequences within tags.
 
-- [`delimiterTrims`](/rules/liquid/delimiterTrims/)
-- [`normalizeSpacing`](/rules/liquid/normalizeSpacing/)
-
----
+- [delimiterTrims](/rules/liquid/delimiterTrims/)
+- [normalizeSpacing](/rules/liquid/normalizeSpacing/)
 
 # Rule Options
 
@@ -173,9 +172,9 @@ The `consistent` option will use the opening (`{%` or `{{`) delimiter placement 
 ```html
 {% # The tags ending delimiter will be inlined %}
 {{ object.prop
- | filter_1: 'ones'
- | filter_2: 'two'
- | filter_3: 'three'
+  | filter_1: 'ones'
+  | filter_2: 'two'
+  | filter_3: 'three'
 }}
 
 {% # The tags ending delimiter will be inlined %}
@@ -192,6 +191,46 @@ object.prop | filter: t: 'xxx' }}
 ::: rule 😳
 
 #### force
+
+:::
+
+The `forced` option will force delimiters onto newlines. You should avoid using this option as there a very few use cases where it would be applicable. All delimiters in the sample will be forced onto newlines when formatting.
+
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "delimiterPlacement": "force"
+  }
+}
+```
+
+<!-- prettier-ignore -->
+```html
+{%
+  if condition == assertion %}
+
+{% # All delimiters will be forced %}
+
+{{ object.prop | filter_1: 'one' }}
+{{ object.prop | filter_1: 'one' | filter_2: 'two' }}
+
+{% section 'xxx' %}
+
+{{
+object.prop
+| filter_1: 'ones'
+| filter_2: 'two'
+| filter_3: 'three' }}
+
+{% endif %}
+```
+
+---
+
+::: rule 🙌
+
+#### force-multiline
 
 :::
 

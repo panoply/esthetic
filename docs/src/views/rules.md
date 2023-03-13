@@ -2,90 +2,101 @@
 title: 'Rules'
 layout: base
 permalink: '/rules/index.html'
+anchors:
+  - Rules
+  - Global
+  - Liquid
+  - Markup
+  - Style
+  - JSON
+  - Script
 ---
 
 # Rules
 
-Æsthetic provides a granular set of beautification options (rules). The projects [Typings](https://github.com/panoply/esthetic/tree/pre-release/types/rules) explains in good detail the effect each available rule has on code. You can also checkout the [Playground](https://liquify.dev/Æsthetic) to get a better idea of how code will be beautified.
+Æsthetic provides a granular set of formatting rules. Rules are a guideline, they control how beautification is to be applied and allow you to structure your code in a uniform way. The default behavior of Æsthetic is to perform beautification in an unobtrusive manner and as such all rules have pre-defined to produce output which will reflect the provided input.
 
-## Global
+::: note
 
-Æsthetic global rules are formatting options which will be used within all supported languages.
+Æsthetic provides several starting-point [preset](/rules/global/preset) style guides. Presets allow you to change the operating defaults that Æsthetic uses.
 
-- [Crlf](#)
-- [End Newline](#)
-- [Indent Char](#)
-- [Indent Size](#)
-- [Language](#)
-- [Preserve Line](#)
-- [Preset](#)
-- [Wrap](#)
+:::
 
-## Liquid
+# Global
 
-Æsthetic provides formatting support for the [Liquid Template Language](https://shopify.github.io/liquid/). Liquid syntax contained within HTML, CSS, JavaScript and JSON languages are all supported. Æsthetic exposes **14** different Liquid specific beautification rules and has informative error diagnostics.
+Global rules will be used within all supported languages.
 
-- [Comment Indent](/rules/liquid/commentIndent)
-- [Comment Newline](/rules/liquid/commentNewline)
+- [Correct](/rules/global/correct)
+- [Crlf](/rules/global/crlf/)
+- [End Newline](/rules/global/endNewline)
+- [Indent Char](/rules/global/indentChar/)
+- [Indent Size](/rules/global/indentSize/)
+- [Indent Level](/rules/global/indentLevel/)
+- [Language](/rules/global/language)
+- [Preserve Line](/rules/global/preserveLine/)
+- [Preset](/rules/global/preset/)
+- [Wrap](/rules/global/wrap/)
+- [WrapFraction](/rules/global/wrapFraction/)
+
+# Liquid
+
+Formatting rules for the [Liquid Template Language](https://shopify.github.io/liquid/).
+
+- [Comments](/rules/liquid/comments)
+- [Dedent Tag List](/rules/liquid/dedentTagList)
 - [Delimiter Placement](/rules/liquid/delimiterPlacement)
 - [Delimiter Trims](/rules/liquid/delimiterTrims)
-- [Force Filter Wrap](/rules/liquid/forceFilterWrap)
-- [Force Lead Argument](/rules/liquid/forceLeadArgument)
+- [Force Argument](/rules/liquid/forceArgument)
+- [Force Filter](/rules/liquid/forceFilter)
 - [Ignore Tag List](/rules/liquid/ignoreTagList)
 - [Indent Attributes](/rules/liquid/indentAttributes)
 - [Line Break Separator](/rules/liquid/lineBreakSeparator)
+- [Line Break Style](/rules/liquid/lineBreakSeparator)
 - [Normalize Spacing](/rules/liquid/normalizeSpacing)
-- [Preserve Comment](/rules/liquid/preserveComment)
 - [Preserve Internal](/rules/liquid/preserveInternal)
 - [Quote Convert](/rules/liquid/quoteConvert)
 
-## HTML
+# Markup
 
-Æsthetic provides formatting support for the HTML markup language.
+Formatting rules for markup languages [HTML](https://en.wikipedia.org/wiki/HTML) and [XML](https://developer.mozilla.org/en-US/docs/Web/XML/XML_introduction).
 
-- [Attribute Casing](#)
-- [Attribute Sort](#)
-- [Attribute Sort List](#)
-- [Comment Indent](#)
-- [Comment Newline](#)
-- [Correct](#)
-- [Delimiter Force](#)
-- [Force Attribute](#)
-- [Force Indent](#)
-- [Force Lead Attribute](#)
-- [Ignore CSS](#)
-- [Ignore JS](#)
-- [Ignore JSON](#)
-- [Preserve Attribute](#)
-- [Preserve Comment](#)
-- [Preserve Text](#)
-- [Self Close Space](#)
-- [Self Close SVG](#)
-- [Strip Attribute Lines](#)
-- [Quote Convert](#)
+- [Attribute Casing](/rules/markup/attributCasing)
+- [Attribute Sort](/rules/markup/attributeSort)
+- [Comment Style](/rules/markup/commentStyle)
+- [Delimiter LineBreak](/rules/markup/delimiterLineBreak)
+- [Force Attribute](/rules/markup/forceAttribute)
+- [Force Attribute Value](/rules/markup/forceAttributeValue)
+- [Force Indent](/rules/markup/forceIndent)
+- [Ignore CSS](/rules/markup/ignoreCSS)
+- [Ignore JS](/rules/markup/ignoreJS)
+- [Ignore JSON](/rules/markup/ignoreJSON)
+- [Preserve Attribute](/rules/markup/preserveAttribute)
+- [Preserve Text](/rules/markup/preserveText)
+- [Quote Convert](/rules/markup/quoteConvert)
+- [Self Close Space](/rules/markup/selfCloseSpace)
+- [Self Close SVG](/rules/markup/selfCloseSVG)
+- [Strip Attribute Lines](/rules/markup/stripAttributeLines)
 
-## CSS
+# Style
 
-Æsthetic provides formatting support for the CSS language.
+Formatting rules for style languages [CSS](https://en.wikipedia.org/wiki/CSS) and [SCSS](https://sass-lang.com).
 
-- [At Rule Space](#)
-- [Comment Indent](#)
-- [Comment Newline](#)
-- [Correct](#)
-- [Class Padding](#)
-- [No Lead Zero](#)
-- [Preserve Comment](#)
-- [Sort Properties](#)
-- [Sort Selectors](#)
-- [Quote Convert](#)
+- [At Rule Space](/rules/style/atRuleSpace)
+- [Brace Padding](/rules/style/bracePadding)
+- [Comment Style](/rules/style/commentStyle)
+- [No Lead Zero](/rules/style/noLeadZero)
+- [Property Sort](/rules/style/propertySort)
+- [Quote Convert](/rules/style/quoteConvert)
+- [Selector Sort](/rules/style/selectorSort)
+- [Shorthand Values](/rules/style/shorthandValues)
 
-## JSON
+# JSON
 
-Æsthetic provides formatting support for the JSON language.
+Formatting rules for the [JSON Language](https://en.wikipedia.org/wiki/JSON)
 
-- [Allow Comments](#)
-- [Array Format](#)
-- [Brace Allman](#)
-- [Brace Padding](#)
-- [Object Indent](#)
-- [Object Sort](#)
+- [Array Format](/rules/json/arrayFormat)
+- [Brace Allman](/rules/json/braceAllman)
+- [Brace Padding](/rules/json/bracePadding)
+- [Comment Style](/rules/json/commentStyle)
+- [Object Indent](/rules/json/objectIndent)
+- [Object Sort](/rules/json/objectSort)

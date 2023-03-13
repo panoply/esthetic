@@ -4,22 +4,30 @@ layout: base
 permalink: '/rules/liquid/commentIndent/index.html'
 describe:
   - Comment Indent
+  - Rule Override
   - Rule Options
+options:
+  - false
+  - true
 ---
 
 # Comment Indent
 
-Applies single indentation to containing content of Liquid comments.
+The `commentIndent` rule applies single level indentation to the containing content of Liquid **block** type comments.
 
 ::: note
 Liquid line type comments are currently not supported by this rule. Only block type Liquid tokens will be handled.
 :::
 
----
+# Rule Override
+
+When the [`preserveComment`](/rules/liquid/preserveComment) (liquid) rule is enabled (i.e: `true`) it will take precedence and override `commentIndent` rule.
+
+- [`preserveComment`](/rules/liquid/preserveComment)
 
 # Rule Options
 
-This is a Liquid specific formatting rule which defaults to using `false` when no option has been specified.
+This is a Liquid specific formatting rule which defaults to using `false` when no option is defined.
 
 <!--
 

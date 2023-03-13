@@ -3,7 +3,7 @@ import { Accordion } from './components/accordion';
 import { Drawer } from './components/drawer';
 import { Sticky } from './components/sticky';
 import { Example } from './components/example';
-import { ScrollSpy } from './components/scrollspy';
+//import { ScrollSpy } from './components/scrollspy';
 //import { Playground  } from './playground/controller';
 
 import spx from 'spx';
@@ -21,7 +21,7 @@ spx.connect({
   stimulus.register('accordion', Accordion);
   stimulus.register('sticky', Sticky);
   stimulus.register('example', Example);
-  stimulus.register('scrollspy', ScrollSpy);
+ // stimulus.register('scrollspy', ScrollSpy);
 });
 
 spx.on('visit', event => {

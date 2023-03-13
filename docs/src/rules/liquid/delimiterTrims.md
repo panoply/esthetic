@@ -4,24 +4,33 @@ layout: base
 permalink: '/rules/liquid/delimiterTrims/index.html'
 describe:
   - Delimiter Trims
+  - Rule Coupling
   - Rule Options
 options:
-  - Preserve
-  - Tags
-  - Outputs
-  - Never
-  - Always
+  - preserve
+  - tags
+  - outputs
+  - never
+  - always
+  - multiline
+  - linebreak
 ---
 
 # Delimiter Trims
 
-Delimiter whitespace trim dashes `{%-`, `-%}`, `{{-` and `-}}` control. This rule can be used for handling trim `-` application of Liquid tags and output tokens.
+Delimiter whitespace trim dashes `{%-`, `-%}`, `{{-` and `-}}` control. This rule can be used for handling trim `-` application of delimiter expressions in Liquid tag and output type tokens.
 
 ::: note
 
 This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ foo }}"` and/or `'{{ foo }}'`. Tags which exist in string values or those contained between quotation characters are left intact.
 
 :::
+
+# Rule Coupling
+
+The [linebreak](#linebreak) or [multiline](#multiline) choices will apply trims `-` to tokens that span multiple lines and when using these options with [delimiterPlacement](/rules/liquid/delimiterPlacement/) set to `force-multiline` will result in **rule coupling**. Coupled rules work in unison and are designed to enhance how the internal structure of applied code is generated.
+
+- [delimiterPlacement](/rules/liquid/delimiterPlacement/)
 
 <!--
 
@@ -32,8 +41,6 @@ This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ fo
 😳 - Bad Choice
 
 -->
-
----
 
 # Rule Options
 
@@ -197,3 +204,94 @@ When the `delimiterTrims` rule is set to `always` then all Liquid delimiters wil
 
 {% endif %}
 ```
+
+::: rule 👎
+
+#### multiline
+
+:::
+
+When the `delimiterTrims` rule is set to `multiline` trims will be applied to tags and output type tokens when the internal structure spans multiple lines. This typically occurs on tokens which contain several filters, arguments or control conditions. Both the opening and closing delimiters will apply trims.
+
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "delimiterTrims": "multiline"
+  }
+}
+```
+
+<!-- prettier-ignore -->
+```html
+{%
+  if condition == assertion
+  or condition == expectation
+  or something == comparison
+%}
+
+  {{
+    object.prop
+    | param_1: true
+    | param_2: 1000
+    | param_3:
+      arg_1: 'value',
+      arg_2: 2000,
+      arg_3: false,
+      arg_4: true,
+      arg_5: 2000,
+      arg_6: nil
+    | param_4: true
+    | param_5: 1000
+  }}
+
+{% endif %}
+```
+
+---
+
+::: rule 🙌
+
+#### linebreak
+
+:::
+
+When the `delimiterTrims` rule is set to `linebreak` then a single trim will be applied to an **opening** delimiter (`{{`, `{%`) of multiline tokens. The choice uses the internal structure of tokens together with the [lineBreakSeparator](/rules/liquid/lineBreakSeparator) and [delimiterPlacement](/rules/liquid/delimiterPlacement) rules to determine when a trim `-` insertion is to be applied. Using this choice helps overall readability but comes with drawbacks. Trims will only ever be applied to multiline tokens and insertion differs based on the `lineBreakSeparator` value. The `delimiterPlacement` rule is also referenced during the determination cycle.
+
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "delimiterTrims": "linebreak",
+    "delimiterPlacement": "force-multiline"
+
+  }
+}
+```
+
+<!-- prettier-ignore -->
+```html
+{%
+  if condition == assertion
+  or condition == expectation
+  or something == comparison %}
+
+  {{-
+    object.prop
+    | param_1: true
+    | param_2: 1000
+    | param_3:
+      arg_1: 'value',
+      arg_2: 2000,
+      arg_3: false,
+      arg_4: true,
+      arg_5: 2000,
+      arg_6: nil
+    | param_4: true
+    | param_5: 1000
+  }}
+
+{% endif %}
+```
+
+---

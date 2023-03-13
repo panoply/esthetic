@@ -2,27 +2,29 @@
 title: 'Markup - Strip Attribute Lines'
 layout: base
 permalink: '/rules/markup/stripAttributeLines/index.html'
-anchors:
-  - Comment Indent
-  - Enabled
-  - Disable
+describe:
+  - Strip Attribute Lines
+  - Related Rules
+  - Rule Options
+options:
+  - false
+  - true
 ---
 
-#### Strip Attribute Lines
+# Strip Attribute Lines
 
-Whether or not newlines contained within tag attributes or preserved. This rule will be used along side the `forceAttribute` rule and when enabled (`true`) will strip newlines contained in HTML attributes. When disabled (`false`) then newlines will be preserved according to the **global** `preserveLine` limit defined.
+Whether or not newlines contained within tag attributes should be preserved. This rule is used along side the `forceAttribute` rule. When enabled (`true`) then Æsthetic will strip _empty_ newline occurrences within HTML tags attributes. When disabled (`false`) then newlines occurrences will be preserved in accordance with the **global** `preserveLine` limit defined.
 
-#### Related Rules
+# Related Rules
 
-This rule wil only take effect when `forceAttribute` is enabled (ie: `true`) or the `forceAttribute` limit has been exceeded as per the provided value. In addition to `forceAttribute`, the global `preserveLine` rule value is used to determine the amount of lines allowed.
+This rule wil only take effect when `forceAttribute` is enabled (ie: `true`) or a defined `forceAttribute` limit has been exceeded. The rule will also take effect if attribute forcing is being applied according to **global** `wrap` limits.
 
-#
+- [`forceAttribute`](/rules/markup/forceAttribute/)
+- [`preserveLine`](/rules/global/preserveLine/)
 
----
+# Rule Options
 
-#### Example Options
-
-_Below is an example of how this rule works using the following rule sets_
+Below is an example of how this rule works using the following rule sets
 
 ```js
 {
@@ -34,9 +36,13 @@ _Below is an example of how this rule works using the following rule sets_
 }
 ```
 
-#### Disabled `false`
+::: rule 👍
 
-_Below is the default, wherein the attributes preserve the newlines contained within, Notice how **before** formatting there is `4` lines present but **after** formatting only `2` are preserved as per the global `preserveLine` rule value._
+#### `false`
+
+:::
+
+Below is the default, wherein the attributes preserve the newlines contained within, Notice how **before** formatting there is `4` lines present but **after** formatting only `2` are preserved as per the global `preserveLine` rule value.
 
 <!-- prettier-ignore -->
 ```html
@@ -98,9 +104,13 @@ _Below is the default, wherein the attributes preserve the newlines contained wi
 
 ---
 
-#### Enabled `true`
+::: rule 👎
 
-_Below is an example of how this rule works if it's enabled, ie: `true`. This will strip out empty new lines contained in markup tag attributes._
+#### `true`
+
+:::
+
+Below is an example of how this rule works if it's enabled, ie: `true`. This will strip out empty new lines contained in markup tag attributes.
 
 <!-- prettier-ignore -->
 ```html

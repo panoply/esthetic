@@ -31,12 +31,14 @@ pre[class*='language-'] {
 }
 
 :not(pre) > code {
-  //background: $code-inline-bg; // #efefef;
-  //padding: 0.1rem 0.4rem;
-  //border-radius: 0.2rem;
-  color: #6eb2d3;
-  font-weight: 100;
-  font-weight: 200;
+  background: #1d242b; // $code-inline-bg; // #efefef;
+  padding: 0.1rem 0.5rem 0.15rem;
+  border-radius: 0.3rem;
+
+  color: $white; //#6eb2d3;
+
+  font-size: 0.775rem;
+  font-weight: 400;
   text-shadow: 0 0.04rem rgb(0 0 0);
   -webkit-font-smoothing: antialiased;
 }
@@ -166,6 +168,10 @@ pre[class*='language-'] {
   &.line-numbers-mode {
     padding-left: calc(1.5rem + 1.7em + 1.2rem);
   }
+}
+
+pre[class*='language-none'] {
+  padding: 1rem;
 }
 
 .hide-scroll {

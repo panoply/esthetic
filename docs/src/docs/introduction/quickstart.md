@@ -1,48 +1,22 @@
 ---
-title: 'Install'
+title: 'Getting Started'
 layout: base
-permalink: '/usage/install/index.html'
+permalink: '/introduction/quickstart/index.html'
+anchors:
+  - Getting Started
+  - CLI
+  - API
 ---
-
-# Installation
-
-Æsthetic can be consumed via the NPM registry and supports both ESM and CJS, in browser/node environments. It is recommended to avoid installing the project globally and instead install it as a dev-dependency.
-
-```
-pnpm add esthetic
-```
-
-### CDN
-
-Use the [unpkg](https://unpkg.com/estheitc) CDN for quick usage in web browser.
-
-```
-https://unpkg.com/esthetic
-```
-
-### Schema Store
-
-The module also provided JSON Schema Store reference for usage in JSON files via `$schema` properties or within text editors like [VSCode](https://code.visualstudio.com/) which support store digestion.
-
-```
-https://unpkg.com/esthetic/schema.json
-```
 
 # Getting Started
 
-Æsthetic uses a single default export from which all methods can be accessed. Below we will describe how to work with the Æsthetic CLI and the API. In most cases, developers may prefer to use the [VSCode Extension](#).
+Below we will describe how to work with the Æsthetic [CLI](/usage/cli/) and [API](/usage/api/). CLI usage requires a [config file](/usage/config-file/) or `esthetic` reference in your projects `package.json`. In most cases, developers may prefer to use the VSCode [extension](#) which provides auto-formatting capabilities.
 
 ### CLI
 
 After installing Æsthetic, you will need to define formatting [Rules](/usage/rules/). Æsthetic will assume rules are defined within your projects root `package.json` file on a `esthetic` property.
 
-::: note
-
-You may optionally choose to provide formatting rules within a `.esthetic.json` file instead of your projects `package.json` file.
-
-:::
-
-```json
+```js
 {
   "esthetic": {
     "wrap": 100,

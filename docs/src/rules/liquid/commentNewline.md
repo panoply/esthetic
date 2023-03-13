@@ -5,6 +5,9 @@ permalink: '/rules/liquid/commentNewline/index.html'
 describe:
   - Comment Newline
   - Rule Options
+options:
+  - false
+  - true
 ---
 
 # Comment Newline
@@ -16,8 +19,6 @@ Inserts a new line above comment tags. When enabled the rule will add a newline 
 Liquid line type comments are currently not supported by this rule. Only block type Liquid tokens will be handled.
 
 :::
-
----
 
 # Rule Options
 

@@ -4,38 +4,23 @@ layout: base
 permalink: '/parse/architecture/index.html'
 anchors:
   - 'Algorithm'
-  - 'Parse Table'
+  - 'Lexical Context'
   - 'Terminology'
 ---
 
 # Algorithm
 
-The lexing alogirthm and parse approach employed in Prettify is an original strategic concept created by [Austin Cheney](https://github.com/prettydiff) that was first introduced in [Sparser](https://sparser.io/) to provide a simple data format that can accurately describe any language. Parsers typically produce an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (abstract syntax tree) whereas Prettify and its implemention of Sparser will produces a uniformed table like structure.
+The lexing algorithm and parse approach used by Æsthetic is an original strategic concept created by [Austin Cheney](https://github.com/prettydiff) and was first introduced in his project [Sparser](https://sparser.io/). The parse table produced by Sparser provides a simple data format that can accurately describe any language. Before sparser's re-application into Æsthetic, it was used by the language aware diffing and beautification tool [PrettyDiff](https://prettydiff.com/).
 
-Many different algorithms can be made to work to acheive the same result as that which is produced by the Sparser table structure, but they all come with tradeoffs relative to the others. Most tools in this nexus seem to be using some variant of [ANTLR](https://en.wikipedia.org/wiki/ANTLR) or [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar). PEG has less ambiguity than LR parsers but may produce worse error messages for users and consume more memory. Hand-rolled recursive-descent parsers may be slower than the ones produced by parser generators, but are unambiguous. When the task involves making sense of combined language formations (ie: Liquid inside of JavaScript inside HTML) there is no "right way" or consensus on how it should be done nor does it seem to have been studied much in academia likely due the edge case in which it exists.
+While most parsers typically produce an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (abstract syntax tree) this is not the case with Æsthetic. Its implementation of Sparser will produce a uniformed table like structure and though many different algorithms can be made to achieve the same result they all come with tradeoffs relative to one another. Most parse tools in the nexus seem to be using some variant of [ANTLR](https://en.wikipedia.org/wiki/ANTLR), [PEG](https://en.wikipedia.org/wiki/Parsing_expression_grammar) or leverage the brilliant incremental [Tree Sitter](https://tree-sitter.github.io).
 
-The originalitly of the Sparser language parsing alogirthm allows for otherwise complex structures to be traversed and interpreted for handling without having to bend and augmented to address weaknesses. This table structure is produces allows for basic reasoning during the beautifical cycle and more controlled results. This lexical analyis and universal nature achieved by using the Sparser parse algorithm is made possible through three realizations:
-
-### Languages are composed of structures.
-
-A structure is a logical grouping that is typically defined by a language through syntax and sometimes by context. A simple scheme that identifies the atomic particles of a language by structure is sufficient to describe the language. That simple scheme is what allows the Prettify to describe different languages equally and universally.
-
-### Descriptions of language structures are universally extensible.
-
-Language structures are not flat. One structure may include other child structures. Those child structures may be of a different grammar, syntax, or language from the parent structure. A universal description of language structure allows complex documents, which are documents composed of more than one language, to be described as a single uniform piece of data.
-
-### Structure provides context.
-
-Understanding any arrangment of complex information takes into account context. Context is the meaning of a thing in relation to other things of close proximity. Sometimes the pieces of a language are partially or wholly defined by their context. A uniform and universal description of structure provides implicit definitions of a language fragment that becomes explicit when extended with additional descriptive data.
+Generators like ANTLR and Tree Sitter require grammars and leave users at the behest of steep learning curves whereas PEG parsers have less ambiguity than LR parsers but may produce worse error messages and consume more memory. When we look at hand-rolled recursive-descent parsers, these may be slower than the ones produced by generators but are unambiguous overall. Because the task of Æsthetic more often than not involves making sense of combined language formations the data structure (i.e: parse table) is flexible, easy to reason with and extensible.
 
 # Parse Table
 
-Object trees are painful to traverse and hard to analyze from single global perspective which is why the uniformed data structure that Prettify produces for its usage in the beautification cycle is a table like structure. The table can actually represent an AST shape by pointing to a code token's starting structuring with a reference location (array index) and thus can easily adapt and infer identification to other parsing considerations.
+Consider the following code sample. The HTML (markup) consists of Liquid, CSS, JavaScript and JSON. All languages in the sample are encapsulated within the appropriate regional based denominated tags but more importantly, Liquid token expressions exist within the CSS, JavaScript and HTML.
 
-### Example
-
-Take the following markup code sample which contained 4 different languages (HTML, Liquid, JavaScript and CSS). Notice how both the HTML and both the `<style>` and `<script>` embedded regions contain Liquid syntax.
-
+<!-- prettier-ignore -->
 ```html
 <style>
   .list {
@@ -45,24 +30,32 @@ Take the following markup code sample which contained 4 different languages (HTM
 
 <script>
   {% if condition %}
-    window.foo = {{ foo }};
-  {% else %}
-    window.foo = {{ bar }};
+    console.log('hello world!')
   {% endif %}
 </script>
 
 <main id="{{ object.prop }}">
   <ul class="list">
-    {% for i in arr %}
-    <li>{{ i.prop }}</li>
+    {% for item in arr %}
+      <li>{{ item }}</li>
     {% endfor %}
   </ul>
 </main>
+
+{% schema %}
+  {
+    "prop": []
+  }
+{% endschema %}
 ```
 
-### Table
+There is no "right way" or consensus on how a parser should make sense of this lexical anomaly and achieving lexical context and nor it seem to have been studied much in academia given the edge case realm it exists within The originality of the Sparser language parsing algorithm allows for these otherwise complex structures to be traversed and interpreted for handling without having to bend, augmented or reach for additional resourced to address weaknesses.
 
-Using the above code sample, below is table representation of the produced structure. Each column name in the table is representative on an object property key value in and each row is representative of an item within an array.
+# Parse Table
+
+Object trees are painful to traverse and hard to analyze from single global perspective which is why the uniformed data structure that Æsthetic is working with in the beautification cycle is a table like structure. The table can actually represent an AST shape and points code token starting structures using reference location entries (array index). The table can infer identification in other parsing considerations using this otherwise modest approach.
+
+Below is a table representation of above structure which Æsthetic generators during the parse cycle. Each column name in the table is representative on an object property key value in and each row is representative of an item within an array. The table is used in the beautification cycle.
 
 | index | begin | ender | lexer  | lines | stack       | types         | token                    |
 | ----- | ----- | ----- | ------ | ----- | ----------- | ------------- | ------------------------ |
@@ -103,5 +96,3 @@ Using the above code sample, below is table representation of the produced struc
 | 34    | 30    | 34    | markup | 0     | for         | liquid_end    | `{% endfor %}`           |
 | 35    | 28    | 35    | markup | 0     | ul          | end           | `</ul>`                  |
 | 36    | 26    | 36    | markup | 0     | main        | end           | `</main>`                |
-
-# Terminology

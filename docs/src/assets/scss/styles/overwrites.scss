@@ -58,6 +58,7 @@ blockquote {
   > p code {
     //background: #363f4e;
     color: #76fffc;
+    background-color: $code-bg;
     padding: 0.1rem;
 
     font-weight: 200;
@@ -95,7 +96,7 @@ ul {
 
 p {
   a {
-    color: #7c7c7c;
+    color: #6eb2d3;
     font-weight: 500;
 
     &:hover {

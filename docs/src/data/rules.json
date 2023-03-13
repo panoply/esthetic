@@ -51,11 +51,6 @@
 
     {
       "group": "liquid",
-      "title": "argumentWrap",
-      "url": "/rules/liquid/forceArgumentWrap/"
-    },
-    {
-      "group": "liquid",
       "title": "correct",
       "url": "/rules/liquid/correct/"
     },
@@ -86,13 +81,18 @@
     },
     {
       "group": "liquid",
+      "title": "forceArgument",
+      "url": "/rules/liquid/forceArgument/"
+    },
+    {
+      "group": "liquid",
       "title": "forceLeadArgument",
       "url": "/rules/liquid/forceLeadArgument/"
     },
     {
       "group": "liquid",
-      "title": "filterWrap",
-      "url": "/rules/liquid/forceFilterWrap/"
+      "title": "forceFilter",
+      "url": "/rules/liquid/forceFilter/"
     },
     {
       "group": "liquid",

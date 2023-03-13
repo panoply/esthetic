@@ -2,31 +2,58 @@
 title: 'Liquid - Ignore Tag List'
 layout: base
 permalink: '/rules/liquid/ignoreTagList/index.html'
+describe:
+  - Ignore Tag List
+  - Example Options
+  - Rule Options
+  - Examples
 ---
 
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `[]`
-
-#### Ignore Tag List
+# Ignore Tag List
 
 A list of Liquid tags that should excluded from formatting. Only tags which contain a start and end types are valid.
 
-#
+# Example Options
 
----
+Below is an example of how this rule works and you've set the following Liquid tags to be ignored.
 
-#### Example Options
+# Rule Options
 
-_Below is an example of how this rule works and you've set the following Liquid tags to be ignored._
+This is a Liquid specific formatting rule which defaults to using `0` when no option has been specified.
+
+##### Example
 
 ```js
 {
-  ignoreTagList: ['capture', 'unless'];
+  language: 'liquid',
+  liquid: {
+    ignoreTagList: [
+      'capture',
+      'unless'
+    ]
+  }
 }
 ```
 
-#### Example
+<!--
 
-_Using the above example configuration whenever Prettify encounters a `{% capture %}` or `{% unless %}` tag region it will be skipped from formatting. It is important to note that ignored tags will not apply indentation, so it is up to you to refine the ignore tag yourself._
+🙌 - Recommended Choice
+👍 - Good Choice
+👎 - Not Recommended
+🤡 - Clown Choice
+😳 - Bad Choice
+
+-->
+
+# Examples
+
+::: rule 👍
+
+#### `['capture', 'unless']`
+
+:::
+
+Using the above example configuration whenever Prettify encounters a `{% capture %}` or `{% unless %}` tag region it will be skipped from formatting. It is important to note that ignored tags will not apply indentation, so it is up to you to refine the ignore tag yourself.
 
 <!-- prettier-ignore -->
 ```html

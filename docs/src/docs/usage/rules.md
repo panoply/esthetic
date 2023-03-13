@@ -10,10 +10,10 @@ The `rules` methods will augment formatting options (rules). Formatting options 
 
 <!-- prettier-ignore -->
 ```js
-import { rules, format } from 'esthetic';
+import esthetic from 'esthetic';
 
 // Define rules to be used when formatting
-rules({
+esthetic.rules({
   language: 'html',
   indentSize: 4,
   markup: {
@@ -33,11 +33,9 @@ rules({
 });
 
 // When calling format, the rules will be used.
-format('<div id="x" class="x"> etc etc </div>').then(output => {
+const output = esthetic.format('<div id="x" class="x"> etc etc </div>')
 
-  console.log(output);
-
-});
+console.log(output)
 
 ```
 

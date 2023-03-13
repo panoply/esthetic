@@ -2,9 +2,16 @@
 title: 'Liquid - Indent Attributes'
 layout: base
 permalink: '/rules/liquid/indentAttributes/index.html'
+describe:
+  - Indent Attributes
+  - Mirrored Rule
+  - Rule Options
+options:
+  - false
+  - true
 ---
 
-#### Indent Attributes
+# Indent Attributes
 
 Whether indentation should be applied to HTML (markup) attributes that are encapsulated by Liquid identified tag blocks contained within HTML Tags. This rule emulates the Liquid Prettier Plugin style of attribute formatting and will use depth indentation (each nested Liquid expression will increase indent level by factor of **1**).
 
@@ -14,9 +21,11 @@ Liquid tags blocks contained within attribute values (e.g: `attr="{% if x %} xxx
 
 :::
 
-#### Rule Requirement
+# Mirrored Rule
 
-The `indentAttributes` rule will mirror disablement of the [`forceAttribute`](/rules/markup/forceAttribute) (markup) rule. When `forceAttribute` is set to `false` then `indentAttributes` will be disabled. The `forceAttribute` markup rule **must** be set to `true` or (alternatively) use a force limit value (e.g: `2`). If the `forceAttribute` markup rule is disabled (i.e: `false`) then indentation will not be applied to Liquid contained structures and the rule will have no effect.
+The `indentAttributes` rule will mirror disablement of the [`forceAttribute`](/rules/markup/forceAttribute) (markup) rule. When `forceAttribute` is set to `false` then this rule will be disabled. The `forceAttribute` markup rule **must** be set to `true` or (alternatively) use a force limit value (e.g: `2`). If the attribute forcing is disabled (i.e: `false`) then indentation will not be applied to Liquid contained structures and this rule will have no effect.
+
+##### Example
 
 ```js
 {
@@ -29,8 +38,6 @@ The `indentAttributes` rule will mirror disablement of the [`forceAttribute`](/r
   }
 }
 ```
-
----
 
 # Rule Options
 

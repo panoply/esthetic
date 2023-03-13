@@ -1,17 +1,22 @@
 ---
-title: 'Liquid - Filter Wrap'
+title: 'Liquid - Force Filter'
 layout: base
-permalink: '/rules/liquid/forceFilterWrap/index.html'
+permalink: '/rules/liquid/forceFilter/index.html'
 describe:
   - Filter Wrap
   - Related Rules
+  - Defaults
   - Rule Options
-  - Example
+options:
+  - 0
+  - 1
+  - 2
+  - 3
 ---
 
-# Filter Wrap
+# Force Filter
 
-The character width limit to use on tags containing Liquid filters `|` before forcing is applied. Tags and output tokens will force filter expressions onto newlines when the token width exceeds the limit defined. By default, this rule uses a value of `0` which will result in Liquid filters being forced when the tag or output token containing them spans ¾ (or 75%) of defined global [`wrap`](/rules/global/wrap) limit.
+Forces Liquid filter `|` expressions onto newlines when the number of filters contained on a tag exceeds the limit defined. By default, this rule uses a value of `0` which will result in Liquid filters being forced when the tag or output token containing them spans **¾** (or 75%) of defined global [`wrap`](/rules/global/wrap) limit.
 
 ::: note
 
@@ -19,11 +24,14 @@ See [fractional wrapping](/terminologies#fractional-wrapping) for more informati
 
 :::
 
-##### RELATED_RULES
+# Related Rules
 
-The `forceFilterWrap` rule will refer
+The `forceArgument`
 
----
+- [`wrap`](/rules/liquid/wrap/)
+- [`forceArgument`](/rules/liquid/forceArgument/)
+- [`lineBreakSeparator`](/rules/liquid/lineBreakSeparator/)
+- [`delimiterPlacement`](/rules/liquid/lineBreakSeparator/)
 
 # Rule Options
 
@@ -41,7 +49,7 @@ This is a Liquid specific formatting rule which defaults to using `0` when no op
 
 ::: rule 👍
 
-#### 0 (default)
+#### 0
 
 :::
 
@@ -73,8 +81,6 @@ By default, this rule uses a value of `0` which infers forcing to apply at a len
 :::
 
 This is an example of the `forceFilter` using a value of `3` which will result in forcing only if the tag contains `3` or more filters. A tag with less than this number of filters will not have forcing applied (unless `wrap` is exceeded).
-
-<!-- RULES ARE REQUIRED -->
 
 ```json:rules
 {

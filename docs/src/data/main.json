@@ -14,18 +14,13 @@
     },
     {
       "group": "introduction",
-      "title": "Motivation",
-      "url": "/introduction/motivation/"
+      "title": "Installation",
+      "url": "/introduction/installation/"
     },
     {
       "group": "introduction",
-      "title": "Language Support",
-      "url": "/introduction/language-support/"
-    },
-    {
-      "group": "usage",
-      "title": "Install",
-      "url": "/usage/install/"
+      "title": "Quickstart",
+      "url": "/introduction/quickstart/"
     },
     {
       "group": "usage",

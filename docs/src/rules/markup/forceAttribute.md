@@ -2,10 +2,16 @@
 title: 'Markup - Force Attribute'
 layout: base
 permalink: '/rules/markup/forceAttribute/index.html'
-anchors:
-  - Comment Indent
-  - Enabled
+describe:
+  - Force Attribute
+  - Related Rules
+  - Mirrored Rules
+options:
+  - Enable
   - Disable
+  - Limit
+examples:
+  - Wrap Forcing
 ---
 
 # Force Attribute
@@ -28,7 +34,7 @@ If you are using the global defined [`wrap`](/rules/global/wrap) then Æsthetic 
 
 ### Mirrored Rule
 
-The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule uses `forceAttribute` as disablement mirror. When `forceAttribute` is set to `false` then the Liquid `indentAttributes` rule will reflect the disablement. In order to leverage the Liquid `indentAttributes` rule, `forceAttribute` must be set to `true` or alternatively define an occurrence limit.
+The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule uses `forceAttribute` as disablement mirror. When attribute forcing is disabled then the Liquid `indentAttributes` rule reflects the disablement. In order to leverage the Liquid `indentAttributes` rule you will need to define an occurrence limit or enable this rule.
 
 - [`indentAttributes`](/rules/liquid/indentAttributes)
 

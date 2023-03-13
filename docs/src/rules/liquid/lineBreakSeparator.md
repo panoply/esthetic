@@ -7,8 +7,9 @@ describe:
   - Related Rules
   - Rule Options
 options:
-  - After
-  - Before
+  - preserve
+  - after
+  - before
 ---
 
 # Line Break Separator
@@ -17,23 +18,62 @@ The `lineBreakSeparator` rule controls the placement of separator type character
 
 ::: note
 
-Æsthetic does not treat filter pipe `|` occurrence's as `lineBreakSeparator` character. Filter pipes `|` will always output from the left side of the internal tokens.
+Æsthetic does not support `=` character inferred assertions. It expects nested arguments follow `:` parameter expressions.
 
 :::
 
 # Related Rules
 
-The `lineBreakSeparator` rule is typically used together with the Liquid `argumentWrap` rule defined the wrap strategy to use when Liquid output or tag type tokens contain **multiple** filters and/or arguments. By default, Æsthetic will applying forcing when structures exceed ¾ (or 75%) of the global [`wrap`](/rules/global/wrap) limit.
+The `lineBreakSeparator` rule is typically used together with the Liquid `argumentWrap` rule defined the wrap strategy to use when Liquid output or tag type tokens contain **multiple** filters and/or arguments. By default, Æsthetic will applying forcing when structures exceed `¾` (or 75%) of the global [wrap](/rules/global/wrap) limit.
 
-- [`filterWrap`](/rules/liquid/filterWrap/)
-- [`argumentWrap`](/rules/liquid/argumentWrap/)
-- [`forceLeadArgument`](/rules/liquid/forceLeadArgument/)
-
----
+- [filterWrap](/rules/liquid/filterWrap/)
+- [argumentWrap](/rules/liquid/argumentWrap/)
+- [wrapFraction](/rules/liquid/wrapFraction/)
 
 # Rule Options
 
 This is a Liquid specific formatting rule which will **default** to `after` when no option has been specified. The **recommended** option to use is `before`.
+
+::: rule 🤡
+
+#### preserve
+
+:::
+
+Below is an example of how this rule works if set to `before` which is recommended approach. This will ensure all operator separators begin at the start of arguments. Notice how **before** formatting the comma separators are placed at the end of each parameter argument but **after** formatting they are moved to the start.
+
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "lineBreakSeparator": "after",
+    "forceFilter": 2,
+    "forceArgument": 2
+  }
+}
+```
+
+<!-- prettier-ignore -->
+```html
+{% # All argument comma separators will be placed at the end %}
+{% render 'snippet'
+  , param_1: true
+  , param_2: 1000
+  , param_3: 'string'
+  , param_4: nil %}
+
+{% if condition == assertion %}
+
+  {{ object.prop
+    | param_1: true
+    | param_2: 1000
+    | param_3: arg_1: 'value', arg_2: 2000, arg_3: false, arg_4: nil
+    | param_4: 'xxxx' }}
+
+{% endif %}
+```
+
+---
 
 ::: rule 👎
 
@@ -48,7 +88,8 @@ Below is an example of how this rule works if set to `before` which is recommend
   "language": "liquid",
   "liquid": {
     "lineBreakSeparator": "after",
-    "filterWrap": 40
+    "forceFilter": 2,
+    "forceArgument": 2
   }
 }
 ```
@@ -56,23 +97,18 @@ Below is an example of how this rule works if set to `before` which is recommend
 <!-- prettier-ignore -->
 ```html
 {% # All argument comma separators will be placed at the end %}
-{% render 'snippet',
-  param_1: true,
-  param_2: 1000
+{% render 'snippet'
+  , param_1: true
+  , param_2: 1000
   , param_3: 'string'
   , param_4: nil %}
 
 {% if condition == assertion %}
 
-  {% # Filter argument using a comma separator will be placed at the end  %}
   {{ object.prop
-    | param_1: true,
+    | param_1: true
     | param_2: 1000
-    | param_3:
-    arg_1: 'value'
-    , arg_2: 2000
-    , arg_3: false
-    , arg_4: nil
+    | param_3: arg_1: 'value', arg_2: 2000, arg_3: false, arg_4: nil
     | param_4: 'xxxx' }}
 
 {% endif %}
@@ -91,9 +127,11 @@ Below is an example of how this rule works if set to `default` which is the **de
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 0,
   "liquid": {
     "lineBreakSeparator": "before",
-    "filterWrap": 40
+    "forceFilter": 2,
+    "forceArgument": 2
   }
 }
 ```
@@ -109,16 +147,17 @@ Below is an example of how this rule works if set to `default` which is the **de
 
 {% if condition == assertion %}
 
-  {% # Filter argument using a comma separator will be placed before expressions %}
-  {{ object.prop
+
+  {{
+    object.prop
     | param_1: true
     | param_2: 1000
-    | param_3:
-    arg_1: 'value',
-    arg_2: 2000,
-    arg_3: false,
-    arg_4: nil
-    | param_4: 'xxxx' }}
+    | param_3: arg_1
+    , arg_2: 2000
+    , arg_3: false
+    , arg_4: nil
+    | param_4: 'xxxx'
+    }}
 
 {% endif %}
 ```

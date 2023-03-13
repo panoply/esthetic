@@ -10,16 +10,21 @@
   <div class="col-auto">
     {{ links[1] | capitalize }}
   </div>
-  <div class="col-auto">
-    {% svg "chevron-right", 'icon icon-right' %}
-  </div>
-  <div class="col-auto">
-    {{ links[2] | capitalize }}
-  </div>
-  <div class="col-auto">
-    {% svg "chevron-right", 'icon icon-right' %}
-  </div>
-  <div class="col-auto fc-gray">
-    {{ links[3] | capitalize }}
-  </div>
+
+  {% if links[2] %}
+    <div class="col-auto">
+      {% svg "chevron-right", 'icon icon-right' %}
+    </div>
+    <div class="col-auto">
+      {{ links[2] | capitalize }}
+    </div>
+  {% endif %}
+  {% if links[3] %}
+    <div class="col-auto">
+      {% svg "chevron-right", 'icon icon-right' %}
+    </div>
+    <div class="col-auto fc-gray">
+      {{ links[3] | capitalize }}
+    </div>
+  {% endif %}
 </div>
