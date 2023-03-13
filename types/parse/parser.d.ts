@@ -230,6 +230,68 @@ export interface WrapComment {
   ender: string;
 }
 
+export interface LiquidInternal {
+  /**
+   * Pipes (Filters)
+   *
+   * A list of indexes which reference Liquid filter pipes:
+   *
+   * @example
+   *
+   * {{ object.prop | filter | filter }}
+   *
+   * // Indexes of the pipes will be stored
+   */
+  pipes: number[];
+  /**
+   * Filter Arguments
+   *
+   * A list of indexes which reference Liquid filter arguments. The
+   * store is an array or arrays. Each entry holds the the indexes
+   * of the `pipes[]` entry.
+   *
+   *
+   * @example
+   *
+   * {{ object.prop | filter: arg_1: 'x', arg_2: 'xx' | filter: arg_1: 'x'  }}
+   *
+   * // Indexes of the arguments after the filter: parameter. The structure
+   * // would describe it as follows:
+   * //
+   * // pipes[0]
+   * // fargs[0][0] fargs[0][1]
+   * //
+   * // pipes[1]
+   * // fargs[1][0]
+   * //
+   */
+  fargs: number[][];
+  /**
+   * Tag Arguments
+   *
+   * A list of indexes which reference Liquid tag argument expression starting points
+   *
+   * @example
+   *
+   * {% tag, arg_1: 'foo', arg_2: 'bar' %}
+   *
+   * // Indexes of the args will be stores
+   */
+  targs: number[];
+  /**
+   * Logicals (Operators)
+   *
+   * A list of indexes which reference operator starting points
+   *
+   * @example
+   *
+   * {% if foo == bar and xx != tt or baz %}
+   *
+   * // Indexes of the "and" and the "or" operators are stored
+   */
+  logic: number[];
+}
+
 /**
  * Parse Scopes
  */

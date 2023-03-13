@@ -3,23 +3,6 @@ export interface MarkupRules {
   /**
    * **Default** `false`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
-   *
-   * Automatically correct some sloppiness in code and allow Prettify to
-   * reason with the intended structures in order to reduce chaos in otherwise
-   * unreadble and terrible code.
-   *
-   * _The option enables Æsthetic to go about fixing code. It's not
-   * going to produce miracles and for the most part it will have little effect
-   * overall but can help in some situations._
-   *
-   * ---
-   */
-  correct?: boolean;
-
-  /**
-   * **Default** `false`
-   *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
    *
    * If a blank new line should be forced above comments.
@@ -539,7 +522,7 @@ export interface MarkupRules {
    *
    * ```
    */
-  preserveAttributes?: boolean;
+  preserveAttribute?: boolean;
 
   /**
    * **Default** `false`

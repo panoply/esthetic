@@ -2,6 +2,14 @@ import { LiteralUnion } from 'type-fest';
 import { LanguageName } from '../shared';
 
 export interface GlobalRules {
+
+  /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   */
+  correct?: boolean;
+
   /**
    * **Default** `none`
    *
@@ -69,6 +77,15 @@ export interface GlobalRules {
    * disables this option. A negative value concatenates script strings.
    */
   wrap?: number;
+
+  /**
+   * **Default** `0`
+   *
+   *
+   * Wrap fraction is used on internal structures as a secondary point of control.
+   * By default, it will use a 75% metric according to `wrap` defined values.
+   */
+  wrapFraction?: number;
 
   /**
    *  **Default** `false`

@@ -9,15 +9,6 @@ export interface StyleRules {
   /**
    * **Default** `false`
    *
-   * Automatically correct some sloppiness in code. This rules acts a very
-   * mild form of linting, wherein otherwise invalid code is automatically
-   * corrected.
-   */
-  correct?: boolean;
-
-  /**
-   * **Default** `false`
-   *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
    *
    * If a blank new line should be forced above comments.

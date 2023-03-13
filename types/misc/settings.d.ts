@@ -1,6 +1,21 @@
 import { LiteralUnion } from 'type-fest';
 
-export interface Settings {
+export enum LogLevel {
+  /**
+   * Disables logs, only parse errors will show.
+   */
+  Disable = 1,
+  /**
+   * Standard logs, this is the default. Operations, errors and warnings.
+   */
+  Standard,
+  /**
+   * Detailed logs, various information is printed throught the cycle.
+   */
+  Detailed
+}
+
+export interface ISettings {
   /**
    * **Editor Config File**
    *

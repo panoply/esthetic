@@ -1,15 +1,6 @@
 export interface ScriptRules {
 
   /**
-   * **Default** `false`
-   *
-   * Automatically correct some sloppiness in code. This rules acts a very
-   * mild form of linting, wherein otherwise invalid code is automatically
-   * corrected.
-   */
-  correct?: boolean;
-
-  /**
    * **Former Rule**
    *
    * `end_comma`

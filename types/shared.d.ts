@@ -34,6 +34,7 @@ export type LanguageRuleNames = (
  * Lexer Names string literal
  */
 export type LexerName = (
+  | 'ignore'
   | 'auto'
   | 'text'
   | 'markup'
