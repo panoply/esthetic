@@ -33,6 +33,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'indentSize':
       case 'preserveLine':
       case 'wrap':
+      case 'wrapFraction':
 
         return isValidNumber(language, rule, value);
 
@@ -45,16 +46,18 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
   } else if (language === 'liquid') {
 
     switch (rule) {
+      case 'correct':
       case 'commentNewline':
       case 'commentIndent':
-      case 'indentAttributes':
+      case 'indentAttribute':
       case 'normalizeSpacing':
       case 'preserveComment':
       case 'preserveInternal':
 
         return isValidBoolean(language, rule, value);
 
-      case 'forceFilterWrap':
+      case 'forceArgument':
+      case 'forceFilter':
 
         return isValidNumber(language, rule, value);
 
@@ -97,7 +100,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'ignoreJSON':
       case 'preserveComment':
       case 'preserveText':
-      case 'preserveAttributes':
+      case 'preserveAttribute':
       case 'selfCloseSpace':
       case 'selfCloseSVG':
       case 'stripAttributeLines':
@@ -315,31 +318,30 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'scss':
       case 'sass':
       case 'css': return true;
-
-      default: throw RuleError({
-        message: `Unsupported "${rule}" identifier provided`,
-        option: language === `${rule} (global)` ? rule : `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'text',
-          'auto',
-          'markup',
-          'html',
-          'liquid',
-          'xml',
-          'javascript',
-          'typescript',
-          'jsx',
-          'tsx',
-          'json',
-          'less',
-          'scss',
-          'sass',
-          'css'
-        ]
-      });
-
     }
+
+    throw RuleError({
+      message: `Unsupported "${rule}" identifier provided`,
+      option: language === `${rule} (global)` ? rule : `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'text',
+        'auto',
+        'markup',
+        'html',
+        'liquid',
+        'xml',
+        'javascript',
+        'typescript',
+        'jsx',
+        'tsx',
+        'json',
+        'less',
+        'scss',
+        'sass',
+        'css'
+      ]
+    });
 
   } else if (rule === 'preset') {
 
@@ -349,112 +351,112 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'recommended':
       case 'warrington':
       case 'prettier': return true;
-
-      default: throw RuleError({
-        message: `Unsupported "${rule}" provided`,
-        option: language === `${rule} (global)` ? rule : `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'default',
-          'strict',
-          'recommended',
-          'warrington',
-          'prettier'
-        ]
-      });
-
     }
+
+    throw RuleError({
+      message: `Unsupported "${rule}" provided`,
+      option: language === `${rule} (global)` ? rule : `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'default',
+        'strict',
+        'recommended',
+        'warrington',
+        'prettier'
+      ]
+    });
 
   } else if (rule === 'attributeCasing') {
 
     switch (value) {
-
       case 'preserve':
       case 'lowercase':
       case 'lowercase-name':
       case 'lowercase-value': return true;
-
-      default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'preserve',
-          'lowercase',
-          'lowercase-name',
-          'lowercase-value'
-        ]
-      });
-
     }
 
-  } else if (rule === 'delimiterForce') {
+    throw RuleError({
+      message: `Invalid "${rule}" option provided`,
+      option: `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'preserve',
+        'lowercase',
+        'lowercase-name',
+        'lowercase-value'
+      ]
+    });
+
+  } else if (rule === 'delimiterTrims') {
 
     switch (value) {
-
       case 'preserve':
       case 'never':
       case 'always':
       case 'tags':
-      case 'outputs': return true;
-
-      default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'preserve',
-          'never',
-          'always',
-          'tags',
-          'outputs'
-        ]
-      });
+      case 'outputs':
+      case 'multiline':
+      case 'linebreak': return true;
     }
+
+    throw RuleError({
+      message: `Invalid "${rule}" option provided`,
+      option: `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'preserve',
+        'never',
+        'always',
+        'tags',
+        'outputs',
+        'multiline',
+        'linebreak'
+      ]
+    });
 
   } else if (rule === 'delimiterPlacement') {
 
     switch (value) {
-
       case 'default':
       case 'inline':
       case 'preserve':
       case 'consistent':
-      case 'force': return true;
-
-      default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'default',
-          'inline',
-          'preserve',
-          'consistent',
-          'force'
-        ]
-      });
+      case 'force':
+      case 'force-multiline': return true;
     }
+
+    throw RuleError({
+      message: `Invalid "${rule}" option provided`,
+      option: `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'default',
+        'inline',
+        'preserve',
+        'consistent',
+        'force',
+        'force-multiline'
+      ]
+    });
 
   } else if (rule === 'lineBreakSeparator') {
 
     switch (value) {
-
       case 'preserve':
       case 'before':
       case 'after': return true;
-
-      default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'preserve',
-          'before',
-          'after'
-        ]
-      });
     }
+
+    throw RuleError({
+      message: `Invalid "${rule}" option provided`,
+      option: `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'preserve',
+        'before',
+        'after'
+      ]
+    });
 
   } else if (rule === 'quoteConvert') {
 
@@ -463,78 +465,75 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'none':
       case 'double':
       case 'single': return true;
-
-      default:throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'none',
-          'double',
-          'single'
-        ]
-      });
     }
+
+    throw RuleError({
+      message: `Invalid "${rule}" option provided`,
+      option: `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'none',
+        'double',
+        'single'
+      ]
+    });
 
   } else if (rule === 'objectIndent' || rule === 'arrayFormat') {
 
     switch (value) {
-
       case 'default':
       case 'indent':
       case 'inline': return true;
-
-      default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'default',
-          'indent',
-          'inline'
-        ]
-      });
     }
+
+    throw RuleError({
+      message: `Invalid "${rule}" option provided`,
+      option: `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'default',
+        'indent',
+        'inline'
+      ]
+    });
 
   } else if (rule === 'endComma') {
 
     switch (value) {
-
       case 'none':
       case 'always':
       case 'never': return true;
-
-      default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'none',
-          'always',
-          'never'
-        ]
-      });
     }
+
+    throw RuleError({
+      message: `Invalid "${rule}" option provided`,
+      option: `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'none',
+        'always',
+        'never'
+      ]
+    });
 
   } else if (rule === 'variableList') {
 
     switch (value) {
-
       case 'none':
       case 'each':
       case 'list': return true;
-
-      default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'none',
-          'each',
-          'list'
-        ]
-      });
     }
+
+    throw RuleError({
+      message: `Invalid "${rule}" option provided`,
+      option: `${language} → ${rule}`,
+      provided: value,
+      expected: [
+        'none',
+        'each',
+        'list'
+      ]
+    });
   }
 
 }
