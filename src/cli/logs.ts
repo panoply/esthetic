@@ -1,5 +1,5 @@
 import ansis from 'ansis';
-
+import highlight from '@liquify/highlight';
 export const { log } = console;
 export const {
   cyan,
@@ -142,6 +142,12 @@ export function error (...message: string[]) {
     ...message,
     '\n'
   ].join('\n');
+
+}
+
+export function code (output: string, language: string) {
+
+  log(highlight(output, { language }));
 
 }
 

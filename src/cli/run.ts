@@ -114,7 +114,7 @@ export async function run (options: CLI) {
           } else {
 
             console.log(log.gray('---------------------------\n'));
-            console.log(result as string);
+            log.code(result, rules.language);
             console.log(log.gray('\n---------------------------\n'));
             console.log('Formatted in ' + esthetic.stats.time);
           }
