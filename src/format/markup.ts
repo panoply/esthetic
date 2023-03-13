@@ -1772,7 +1772,13 @@ export function markup () {
 
     } else {
 
-      if (lines[0].length === 2 || lines[0].length === 3) indent += '  ';
+      if (lines[0].length === 2 || lines[0].length === 3) {
+        // indent += '  ';
+        indent += nl(levels[a - 1], false) + '  ';
+
+      } else {
+        indent += nl(levels[a - 1], false) + '  ';
+      }
 
     }
 
@@ -1812,7 +1818,7 @@ export function markup () {
 
     } while (i < length);
 
-    // console.log(lines);
+    // console.log(build);
 
   }
   /**
