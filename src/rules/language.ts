@@ -1,4 +1,4 @@
-import type { LanguageName, LanguageOfficialName } from 'types';
+import type { LanguageName, LanguageOfficialName, LexerName } from 'types';
 import { Lexers } from 'lexical/enum';
 
 /**
@@ -41,12 +41,12 @@ export function getLanguageName (language: LanguageName): LanguageOfficialName {
  *
  * > Unsupported languages return `Lexers.Ignore`
  */
-export function getLexerName (language: LanguageName): 'script' | 'style' | 'markup' | 'ignore' {
+export function getLexerName (language: LanguageName): LexerName {
 
   switch (language) {
 
-    case 'auto':
     case 'text': return 'ignore';
+    case 'auto': return 'auto';
 
     case 'markup':
     case 'html':
