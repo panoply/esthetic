@@ -27,11 +27,14 @@
     "emitDeclarationOnly": true,
     "baseUrl": ".",
     "paths": {
+      "types/*": [
+        "./types/*"
+      ],
       "./index.js": [
         "./index.js"
       ],
-      "types/*": [
-        "./types/*"
+      "cli/*": [
+        "./src/cli/*"
       ],
       "format": [
         "src/format/index.ts"
@@ -48,11 +51,14 @@
       "comments": [
         "./src/comments/index.ts"
       ],
-      "@utils": [
+      "utils": [
         "./src/utils/index.ts"
       ],
-      "@parse/*": [
+      "parse/*": [
         "src/parse/*"
+      ],
+      "rules/*": [
+        "src/rules/*"
       ],
       "@liquify/ava/esthetic": [
         "./node_modules/@liquify/ava/package/esthetic.d.ts"
