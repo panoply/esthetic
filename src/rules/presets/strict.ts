@@ -12,14 +12,13 @@ export const strict: Rules = {
   preserveLine: 1,
   wrap: 0,
   liquid: {
-    forceLeadArgument: true,
     ignoreTagList: [],
     commentNewline: true,
     delimiterTrims: 'never',
     lineBreakSeparator: 'before',
     quoteConvert: 'double',
-    filterWrap: 75,
-    argumentWrap: 75,
+    forceArgument: 3,
+    forceFilter: 4,
     delimiterPlacement: 'consistent'
   },
   markup: {

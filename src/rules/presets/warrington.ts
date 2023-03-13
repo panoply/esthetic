@@ -12,9 +12,8 @@ export const warrington: Rules = {
   preserveLine: 2,
   wrap: 0,
   liquid: {
-    forceLeadArgument: true,
     ignoreTagList: [ 'javascript' ],
-    indentAttributes: true,
+    indentAttribute: true,
     lineBreakSeparator: 'after',
     quoteConvert: 'double'
   },
