@@ -11,10 +11,10 @@ export const prettier: Rules = {
   language: 'auto',
   preserveLine: 1,
   wrap: 80,
+  wrapFraction: 60,
   liquid: {
-    forceLeadArgument: true,
     ignoreTagList: [ 'javascript' ],
-    indentAttributes: true,
+    indentAttribute: true,
     lineBreakSeparator: 'after',
     dedentTagList: [ 'schema' ],
     quoteConvert: 'double'

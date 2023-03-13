@@ -11,16 +11,14 @@ export const recommended: Rules = {
   language: 'auto',
   preserveLine: 2,
   wrap: 120,
+  wrapFraction: 90,
   liquid: {
-    forceLeadArgument: false,
     ignoreTagList: [ 'javascript' ],
-    indentAttributes: true,
+    indentAttribute: true,
     commentNewline: true,
     delimiterTrims: 'tags',
     lineBreakSeparator: 'after',
     quoteConvert: 'double',
-    filterWrap: 80,
-    argumentWrap: 80,
     delimiterPlacement: 'consistent'
   },
   markup: {
