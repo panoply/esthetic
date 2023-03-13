@@ -4,13 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "esthetic": "esthetic ./command/** -f -w --liquid",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "esthetic": {
+    "liquid": {
+      "forceArgument": 2,
+      "forceFilter": 3
+    },
     "markup": {
       "forceAttribute": true
     }
