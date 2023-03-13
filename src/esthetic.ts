@@ -1,11 +1,12 @@
 import type { Rules, LanguageName, LexerName, Stats, ParseHook, EventListeners } from 'types';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
-import { definitions } from 'parse/definitions';
+import { definitions } from 'rules/definitions';
 import { detect } from 'parse/detection';
 import { define } from 'rules/define';
 import { Modes } from 'lexical/enum';
-import { getLexerName, getLexerType, stats } from 'utils';
+import { stats } from 'utils';
+import { getLexerName, getLexerType } from 'rules/language';
 import { isValidChoice } from 'rules/validate';
 
 export const esthetic = new class Esthetic {
@@ -64,9 +65,9 @@ export const esthetic = new class Esthetic {
         }
       }
 
-      this.rules(options);
-
     }
+
+    this.rules(options);
 
     if (this.lexer === 'auto') {
       const detect = this.detect(parse.source);
@@ -174,40 +175,48 @@ export const esthetic = new class Esthetic {
 
   liquid (source: string | Buffer, options?: Rules) {
 
-    this.language = 'liquid';
-    this.lexer = getLexerName('liquid');
+    this.language = parse.language = parse.rules.language = 'liquid';
+    this.lexer = parse.lexer = getLexerName(parse.language);
 
     return this.format(source, options);
   }
 
   html (source: string | Buffer, options?: Rules) {
 
-    this.language = 'html';
-    this.lexer = getLexerName('html');
+    this.language = parse.language = parse.rules.language = 'html';
+    this.lexer = parse.lexer = getLexerName(parse.language);
 
     return this.format(source, options);
   }
 
   xml (source: string | Buffer, options?: Rules) {
 
-    this.language = 'xml';
-    this.lexer = getLexerName('xml');
+    this.language = parse.language = parse.rules.language = 'xml';
+    this.lexer = parse.lexer = getLexerName(parse.language);
 
     return this.format(source, options);
   }
 
   css (source: string | Buffer, options?: Rules) {
 
-    this.language = 'css';
-    this.lexer = getLexerName('css');
+    this.language = parse.language = parse.rules.language = 'css';
+    this.lexer = parse.lexer = getLexerName(parse.language);
 
     return this.format(source, options);
   }
 
   json (source: string | Buffer, options?: Rules) {
 
-    this.language = 'json';
-    this.lexer = getLexerName('json');
+    this.language = parse.language = parse.rules.language = 'json';
+    this.lexer = parse.lexer = getLexerName(parse.language);
+
+    return this.format(source, options);
+  }
+
+  js (source: string | Buffer, options?: Rules) {
+
+    this.language = parse.language = parse.rules.language = 'javascript';
+    this.lexer = parse.lexer = getLexerName(parse.language);
 
     return this.format(source, options);
   }
