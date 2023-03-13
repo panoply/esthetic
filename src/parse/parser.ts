@@ -4,10 +4,11 @@ import { format } from 'format';
 import { Languages, Lexers, Modes } from 'lexical/enum';
 import * as lx from 'lexical/lexing';
 import { NIL, NWL } from 'chars';
-import { getLexerName, getLexerType, assign, ws } from 'utils';
+import { getLexerName, getLexerType } from 'rules/language';
+import { defaults } from 'rules/presets/default';
+import { ws } from 'utils';
 import { MarkupError } from 'parse/errors';
 import { ParseError } from 'lexical/errors';
-import type { LiteralUnion } from 'type-fest';
 import type {
   LanguageName,
   Syntactic,
@@ -17,9 +18,8 @@ import type {
   Record,
   Spacer,
   Splice,
-  Rules,
-  JSONRules,
-  ScriptRules
+  LexerName,
+  Rules
 } from 'types';
 
 /**
@@ -120,7 +120,7 @@ class Parser {
   } = { parse: null, format: null };
 
   /**
-   * The current environment runing within.
+   * The current environment, ie: node or browser
    */
   public env = typeof process !== 'undefined' && process.versions != null ? 'node' : 'browser';
 
@@ -144,12 +144,12 @@ class Parser {
   public scopes: any = [];
 
   /**
-   * An extended array implementation for working with the
+   * An extended array implementation for working with the stack
    */
   public stack: Stack;
 
   /**
-   * Reference of attributes of new line values with containing Liquid block tokens.
+   * Reference of attributes of newline values with containing Liquid block tokens.
    * It maintains a store which is generated in the markup lexer and used within the beautify process.
    */
   public attributes: Map<number, boolean> = new Map();
@@ -297,132 +297,12 @@ class Parser {
   /**
    * The offset index of the last known newline
    */
-  public lexer: LiteralUnion<'script' | 'markup' | 'style', string>;
+  public lexer: LexerName;
 
   /**
    * The formatting and parse rules
    */
-  public rules: Rules = {
-    crlf: false,
-    preset: 'none',
-    language: 'auto',
-    endNewline: false,
-    indentChar: ' ',
-    indentLevel: 0,
-    indentSize: 2,
-    preserveLine: 2,
-    wrap: 0,
-    liquid: {
-      argumentWrap: 0,
-      commentNewline: false,
-      commentIndent: true,
-      delimiterTrims: 'preserve',
-      delimiterPlacement: 'preserve',
-      filterWrap: 0,
-      forceLeadArgument: false,
-      ignoreTagList: [],
-      indentAttributes: false,
-      lineBreakSeparator: 'before',
-      normalizeSpacing: true,
-      preserveComment: false,
-      preserveInternal: false,
-      dedentTagList: [],
-      quoteConvert: 'none'
-    },
-    markup: {
-      attributeCasing: 'preserve',
-      attributeSort: false,
-      attributeSortList: [],
-      correct: false,
-      commentNewline: false,
-      commentIndent: true,
-      delimiterForce: false,
-      forceAttribute: 3,
-      forceLeadAttribute: true,
-      forceIndent: false,
-      ignoreCSS: false,
-      ignoreJS: true,
-      ignoreJSON: false,
-      preserveComment: false,
-      preserveText: false,
-      preserveAttributes: false,
-      selfCloseSpace: true,
-      selfCloseSVG: true,
-      stripAttributeLines: false,
-      quoteConvert: 'none'
-    },
-    json: assign<JSONRules, ScriptRules, ScriptRules>({
-      arrayFormat: 'default',
-      braceAllman: false,
-      bracePadding: false,
-      objectIndent: 'default',
-      objectSort: false
-    }, {
-      braceStyle: 'none',
-      caseSpace: false,
-      commentIndent: false,
-      commentNewline: false,
-      correct: false,
-      elseNewline: false,
-      endComma: 'never',
-      functionNameSpace: false,
-      functionSpace: false,
-      methodChain: 4,
-      neverFlatten: false,
-      noCaseIndent: false,
-      noSemicolon: false,
-      preserveComment: false,
-      quoteConvert: 'none',
-      styleGuide: 'none',
-      ternaryLine: false,
-      variableList: 'none',
-      vertical: false
-    }, {
-      quoteConvert: 'double',
-      endComma: 'never',
-      noSemicolon: true,
-      vertical: false
-    }),
-    style: {
-      commentIndent: false,
-      commentNewline: false,
-      correct: false,
-      atRuleSpace: true,
-      classPadding: false,
-      noLeadZero: false,
-      preserveComment: false,
-      sortSelectors: false,
-      sortProperties: false,
-      quoteConvert: 'none'
-    },
-    script: {
-      arrayFormat: 'default',
-      braceNewline: false,
-      bracePadding: false,
-      braceStyle: 'none',
-      braceAllman: false,
-      caseSpace: false,
-      commentIndent: false,
-      commentNewline: false,
-      correct: false,
-      elseNewline: false,
-      endComma: 'never',
-      functionNameSpace: false,
-      functionSpace: false,
-      methodChain: 4,
-      neverFlatten: false,
-      noCaseIndent: false,
-      noSemicolon: false,
-      objectSort: false,
-      objectIndent: 'default',
-      preserveComment: false,
-      quoteConvert: 'none',
-      styleGuide: 'none',
-      ternaryLine: false,
-      variableList: 'none',
-      vertical: false
-    }
-  };
+  public rules: Rules = defaults;
 
   public data: Data = {
     begin: [],
