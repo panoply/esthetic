@@ -140,7 +140,7 @@ export class Playground extends Controller {
 
     try {
 
-      const output = esthetic.format.sync(input, { language: 'liquid' })
+      const output = esthetic.format(input, { language: 'liquid' })
 
       if(this.outputTarget.innerHTML !== output && output.length > 0) {
        // this.outputLinesTarget.innerHTML = this.getLines(output)

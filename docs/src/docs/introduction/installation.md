@@ -2,6 +2,12 @@
 title: 'Installation'
 layout: base
 permalink: '/introduction/installation/index.html'
+prev:
+  label: 'What is Æsthetic'
+  uri: '/introduction/what-is-esthetic'
+next:
+  label: 'CLI'
+  uri: '/usage/cli'
 anchors:
   - Installation
   - CDN

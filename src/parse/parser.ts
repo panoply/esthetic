@@ -542,7 +542,7 @@ class Parser {
       if (pair.type === Languages.Liquid) {
 
         if (pair.stack !== this.stack.token) {
-          this.error = MarkupError(ParseError.MissingLiquidEndTag, pair.token, pair.line);
+          return MarkupError(ParseError.MissingLiquidEndTag, pair.token, pair.line);
         } else {
           this.pairs.delete(this.scopes.index);
         }
@@ -550,7 +550,7 @@ class Parser {
       } else if (pair.type === Languages.HTML) {
 
         if (`</${pair.stack}>` !== record.token) {
-          this.error = MarkupError(ParseError.MissingHTMLEndTag, pair.token, pair.line);
+          return MarkupError(ParseError.MissingHTMLEndTag, pair.token, pair.line);
         } else {
           this.pairs.delete(this.scopes.index);
         }

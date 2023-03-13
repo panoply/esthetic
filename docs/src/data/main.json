@@ -17,11 +17,7 @@
       "title": "Installation",
       "url": "/introduction/installation/"
     },
-    {
-      "group": "introduction",
-      "title": "Quickstart",
-      "url": "/introduction/quickstart/"
-    },
+
     {
       "group": "usage",
       "title": "CLI",
@@ -69,18 +65,13 @@
     },
     {
       "group": "parse",
-      "title": "Architecture",
-      "url": "/parse/architecture/"
+      "title": "Algorithm",
+      "url": "/parse/algorithm/"
     },
     {
       "group": "parse",
       "title": "Tokens",
       "url": "/parse/tokens/"
-    },
-    {
-      "group": "parse",
-      "title": "Data Structure",
-      "url": "/parse/data-structure/"
     },
     {
       "group": "parse",
@@ -113,11 +104,6 @@
       "url": "/integrate/browser/"
     },
     {
-      "group": "integrate",
-      "title": "Node",
-      "url": "/integrate/node/"
-    },
-    {
       "group": "misc",
       "title": "Limitations",
       "url": "/misc/limitations/"
@@ -129,13 +115,8 @@
     },
     {
       "group": "misc",
-      "title": "Contributing",
-      "url": "/misc/contributing/"
-    },
-    {
-      "group": "misc",
       "title": "Acknowledgements",
-      "url": "/misc/acknowledgement/"
+      "url": "/misc/acknowledgements/"
     }
   ]
 }

@@ -8,6 +8,7 @@ import { Rules, ScriptRules } from 'types';
  */
 export const defaults: Rules = {
   crlf: false,
+  correct: false,
   preset: 'default',
   language: 'auto',
   endNewline: false,
@@ -20,7 +21,6 @@ export const defaults: Rules = {
   liquid: {
     commentNewline: false,
     commentIndent: true,
-    correct: true,
     delimiterTrims: 'preserve',
     delimiterPlacement: 'preserve',
     forceFilter: 0,
@@ -37,13 +37,11 @@ export const defaults: Rules = {
   markup: {
     attributeCasing: 'preserve',
     attributeSort: false,
-    attributeSortList: [],
-    correct: false,
     commentNewline: false,
     commentIndent: true,
-    delimiterForce: false,
+    delimiterLineBreak: false,
     forceAttribute: 3,
-    forceLeadAttribute: true,
+    forceAttributeValue: true,
     forceIndent: false,
     ignoreCSS: false,
     ignoreJS: true,
@@ -87,7 +85,6 @@ export const defaults: Rules = {
   style: {
     commentIndent: false,
     commentNewline: false,
-    correct: false,
     atRuleSpace: true,
     classPadding: false,
     noLeadZero: false,
@@ -105,7 +102,6 @@ export const defaults: Rules = {
     caseSpace: false,
     commentIndent: false,
     commentNewline: false,
-    correct: false,
     elseNewline: false,
     endComma: 'never',
     functionNameSpace: false,

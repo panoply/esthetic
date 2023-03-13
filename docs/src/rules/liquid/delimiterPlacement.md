@@ -239,8 +239,9 @@ The `forced` option will force delimiters onto newlines. You should avoid using 
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 50,
   "liquid": {
-    "delimiterPlacement": "force"
+    "delimiterPlacement": "force-multiline"
   }
 }
 ```

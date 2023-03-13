@@ -113,3 +113,34 @@ table {
     line-height: 2.2;
   }
 }
+
+.navigators {
+  padding-top: 50px;
+  .btn {
+    // border: $border-width solid $white;
+    text-transform: none;
+    color: $white;
+    font-size: $font-size-lg;
+
+    span {
+      color: $pink;
+    }
+
+    &.next {
+      color: $pink;
+
+      &:hover {
+        span {
+          color: $pink;
+        }
+      }
+      span {
+        color: $white;
+      }
+    }
+
+    &:hover {
+      color: $pink;
+    }
+  }
+}

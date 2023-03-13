@@ -55,7 +55,7 @@ export function markup (input?: string) {
   /**
    * Attribute sorting list length
    */
-  const asl = rules.markup.attributeSortList.length;
+  const asl = u.isArray(rules.markup.attributeSort) ? rules.markup.attributeSort.length : -1;
 
   /**
    * The document source as an array list
@@ -256,7 +256,7 @@ export function markup (input?: string) {
    */
   function selfclose (token: string) {
 
-    if (rules.markup.correct === false || u.is(token[token.length - 2], cc.FWS)) return token;
+    if (rules.correct === false || u.is(token[token.length - 2], cc.FWS)) return token;
 
     return /\/\s+>$/.test(token)
       ? `${token.slice(0, token.lastIndexOf('/'))}${rules.markup.selfCloseSpace ? '/>' : ' />'}`
@@ -942,161 +942,156 @@ export function markup (input?: string) {
          */
         const tags: string[] = [];
 
-        if (cheat === true) {
+        // if (cheat === true) ltype = 'singleton'; } else {
 
-          ltype = 'singleton';
+        preserve = true;
 
-        } else {
+        a = a + 1;
 
-          preserve = true;
+        if (a < c) {
 
-          a = a + 1;
+          if (
+            ltype !== 'json_preserve' &&
+            ltype !== 'script_preserve' &&
+            ltype !== 'style_preserve' &&
+            ltype !== 'liquid_json_preserve' &&
+            ltype !== 'liquid_script_preserve' &&
+            ltype !== 'liquid_style_preserve') {
 
-          if (a < c) {
+            ltype = 'ignore';
 
-            if (
-              ltype !== 'json_preserve' &&
-              ltype !== 'script_preserve' &&
-              ltype !== 'style_preserve' &&
-              ltype !== 'liquid_json_preserve' &&
-              ltype !== 'liquid_script_preserve' &&
-              ltype !== 'liquid_style_preserve') {
+          }
 
-              ltype = 'ignore';
+          /* -------------------------------------------- */
+          /* LOCAL SCOPES                                 */
+          /* -------------------------------------------- */
 
-            }
+          /**
+           * The delimiter match
+           */
+          let delim = NIL;
 
-            /* -------------------------------------------- */
-            /* LOCAL SCOPES                                 */
-            /* -------------------------------------------- */
+          /**
+           * The token name used to skip start tags when using ignore next
+           */
+          let tcount = 0;
 
-            /**
-             * The delimiter match
-             */
-            let delim = NIL;
+          /**
+           * The token name used to skip start tags when using ignore next
+           */
+          let next = -1;
 
-            /**
-             * The token name used to skip start tags when using ignore next
-             */
-            let tcount = 0;
+          /**
+           * The token name used to skip start tags when using ignore next
+           */
+          let name = NIL;
 
-            /**
-             * The token name used to skip start tags when using ignore next
-             */
-            let next = -1;
+          /**
+           * The delimiter length used to validate endtag match
+           */
+          let ee: number = 0;
 
-            /**
-             * The token name used to skip start tags when using ignore next
-             */
-            let name = NIL;
+          /**
+           * The iterator index for matching endtag
+           */
+          let ff: number = 0;
 
-            /**
-             * The delimiter length used to validate endtag match
-             */
-            let ee: number = 0;
+          /**
+           * Whether or not we've reached the endtag
+           */
+          let endtag: boolean = false;
 
-            /**
-             * The iterator index for matching endtag
-             */
-            let ff: number = 0;
+          /* -------------------------------------------- */
+          /* ITERATOR                                     */
+          /* -------------------------------------------- */
 
-            /**
-             * Whether or not we've reached the endtag
-             */
-            let endtag: boolean = false;
+          do {
 
-            /* -------------------------------------------- */
-            /* ITERATOR                                     */
-            /* -------------------------------------------- */
+            if (u.is(b[a], cc.NWL)) parse.lines(a);
 
-            do {
+            tags.push(b[a]);
 
-              if (u.is(b[a], cc.NWL)) parse.lines(a);
+            if (delim === NIL) {
 
-              tags.push(b[a]);
+              delim = u.is(b[a], cc.DQO) ? DQO : u.is(b[a], cc.SQO) ? SQO : NIL;
 
-              if (delim === NIL) {
+              if (u.is(b[a], cc.LCB) && (u.is(b[a + 1], cc.LCB) || u.is(b[a + 1], cc.PER))) {
 
-                delim = u.is(b[a], cc.DQO) ? DQO : u.is(b[a], cc.SQO) ? SQO : NIL;
+                next = u.is(b[a + 1], cc.PER) ? b.indexOf('}', a) + 1 : b.indexOf('}', a) + 2;
+                name = glue(u.is(b[a + 2], cc.DSH) ? a + 3 : a + 2, next);
 
-                if (u.is(b[a], cc.LCB) && (u.is(b[a + 1], cc.LCB) || u.is(b[a + 1], cc.PER))) {
+                if (name.startsWith(tname)) {
 
-                  next = u.is(b[a + 1], cc.PER) ? b.indexOf('}', a) + 1 : b.indexOf('}', a) + 2;
-                  name = glue(u.is(b[a + 2], cc.DSH) ? a + 3 : a + 2, next);
+                  tcount = tcount + 1;
 
-                  if (name.startsWith(tname)) {
+                } else if (name.startsWith(ender)) {
 
-                    tcount = tcount + 1;
+                  if (tcount > 0) {
 
-                  } else if (name.startsWith(ender)) {
-
-                    if (tcount > 0) {
-
-                      tcount = tcount - 1;
-
-                    } else {
-
-                      if (u.is(b[a + 1], cc.LCB)) next = next + 1;
-
-                      if (u.is(b[next - 2], cc.PER)) {
-                        tags.push(...b.slice(a + 1, next));
-                        ltype = 'liquid_ignore';
-                        a = next - 1;
-                        break;
-                      }
-                    }
-
-                  }
-
-                } else if (u.is(b[a], cc.LAN) && basic === true) {
-
-                  endtag = u.is(b[a + 1], cc.FWS);
-
-                } else if (b[a] === lchar && u.not(b[a - 1], cc.FWS)) {
-
-                  if (endtag === true) {
-
-                    icount = icount - 1;
-
-                    if (icount < 0) break;
+                    tcount = tcount - 1;
 
                   } else {
 
-                    icount = icount + 1;
+                    if (u.is(b[a + 1], cc.LCB)) next = next + 1;
 
+                    if (u.is(b[next - 2], cc.PER)) {
+                      tags.push(...b.slice(a + 1, next));
+                      ltype = 'liquid_ignore';
+                      a = next - 1;
+                      break;
+                    }
                   }
-                }
-
-              } else if (u.is(b[a], delim.charCodeAt(delim.length - 1))) {
-
-                ff = 0;
-                ee = delim.length - 1;
-
-                if (u.is(delim[ee], cc.RCB)) {
-
-                  if (glue(a + (u.is(b[a + 2], cc.DSH) ? 3 : 2), b.indexOf('%', a + 2)).startsWith(ender)) break;
-
-                } else if (ee > -1) {
-
-                  do {
-
-                    if (u.not(b[a - ff], delim.charCodeAt(ee))) break;
-
-                    ff = ff + 1;
-                    ee = ee - 1;
-
-                  } while (ee > -1);
 
                 }
 
-                if (ee < 0) delim = NIL;
+              } else if (u.is(b[a], cc.LAN) && basic === true) {
+
+                endtag = u.is(b[a + 1], cc.FWS);
+
+              } else if (b[a] === lchar && u.not(b[a - 1], cc.FWS)) {
+
+                if (endtag === true) {
+
+                  icount = icount - 1;
+
+                  if (icount < 0) break;
+
+                } else {
+
+                  icount = icount + 1;
+
+                }
               }
 
-              a = a + 1;
+            } else if (u.is(b[a], delim.charCodeAt(delim.length - 1))) {
 
-            } while (a < c);
+              ff = 0;
+              ee = delim.length - 1;
 
-          }
+              if (u.is(delim[ee], cc.RCB)) {
+
+                if (glue(a + (u.is(b[a + 2], cc.DSH) ? 3 : 2), b.indexOf('%', a + 2)).startsWith(ender)) break;
+
+              } else if (ee > -1) {
+
+                do {
+
+                  if (u.not(b[a - ff], delim.charCodeAt(ee))) break;
+
+                  ff = ff + 1;
+                  ee = ee - 1;
+
+                } while (ee > -1);
+
+              }
+
+              if (ee < 0) delim = NIL;
+            }
+
+            a = a + 1;
+
+          } while (a < c);
+
         }
 
         if (ltype === 'ignore') {
@@ -1559,12 +1554,11 @@ export function markup (input?: string) {
         if (!(!jsx && !jscomm && !nosort)) return;
 
         if (asl === 0) {
-
           attrs = sortSafe(attrs, NIL, false);
           return;
         }
 
-        // if making use of the 'options.attributeSortList` option
+        // if making use of the 'options.attributeSort` option
 
         const tstore = [];
 
@@ -1582,7 +1576,7 @@ export function markup (input?: string) {
 
             name = attrs[eq][0].split('=')[0];
 
-            if (rules.markup.attributeSortList[dq] === name) {
+            if (rules.markup.attributeSort[dq] === name) {
               tstore.push(attrs[eq]);
               attrs.splice(eq, 1);
               len = len - 1;
@@ -1725,7 +1719,7 @@ export function markup (input?: string) {
       }
 
       // Attribute Sorting
-      if (rules.markup.attributeSort) sorting();
+      if (asl > 0 || rules.markup.attributeSort === true) sorting();
 
       record.begin = begin;
       record.stack = stack;
@@ -1840,7 +1834,7 @@ export function markup (input?: string) {
               attrs[idx][0] = name + '=' + value;
             }
 
-            if (rules.markup.correct === true &&
+            if (rules.correct === true &&
               u.not(value, cc.LAN) &&
               u.not(value, cc.LCB) &&
               u.not(value, cc.EQS) &&
@@ -2254,7 +2248,7 @@ export function markup (input?: string) {
         }
       }
 
-      if (preserve !== true && rules.markup.preserveAttributes === true) {
+      if (preserve !== true && rules.markup.preserveAttribute === true) {
 
         // preserve attributes
         preserve = true;
@@ -2636,7 +2630,7 @@ export function markup (input?: string) {
         }
 
         store = [];
-        lines = u.is(b[a], cc.NWL) ? 2 : 1;
+        lines = u.is(b[a], cc.NWL) ? 1 : 0;
 
       };
 
@@ -2706,7 +2700,7 @@ export function markup (input?: string) {
             )
           ) {
 
-            if (rules.markup.correct) {
+            if (rules.correct) {
 
               lexed.pop();
               lexed.push('>');
@@ -2885,9 +2879,11 @@ export function markup (input?: string) {
 
               }
 
-              if (u.is(b[a], cc.NWL) && tname !== 'liquid' && lexed.length > 3) {
-
-                if (!(
+              if (
+                rules.liquid.preserveInternal === false &&
+                u.is(b[a], cc.NWL) &&
+                tname !== 'liquid' &&
+                lexed.length > 3 && !(
                   (
                     u.is(b[a + 1], cc.DSH) &&
                     u.is(b[a + 2], cc.PER) &&
@@ -2896,16 +2892,12 @@ export function markup (input?: string) {
                     u.is(b[a + 1], cc.PER) &&
                     u.is(b[a + 2], cc.RCB)
                   )
-                )) {
+                )
+              ) {
 
-                  lexed.pop();
-                  a = a + 1;
+                lexed.pop();
 
-                  continue;
-                }
-              }
-
-              if (rules.liquid.normalizeSpacing === true) {
+              } else if (rules.liquid.normalizeSpacing === true) {
 
                 if (u.isLastAt(lexed, cc.WSP) === false && u.isLast(lexed, cc.PIP)) {
 
@@ -3026,7 +3018,7 @@ export function markup (input?: string) {
 
                   }
 
-                  if (rules.markup.preserveAttributes === true) {
+                  if (rules.markup.preserveAttribute === true) {
 
                     lexed.push(b[a]);
 
@@ -3059,7 +3051,7 @@ export function markup (input?: string) {
                     jsx === false &&
                     qattr === false &&
                     isliq === true &&
-                    rules.markup.preserveAttributes === false
+                    rules.markup.preserveAttribute === false
                   ) {
 
                     while (a < c) {
@@ -3344,7 +3336,7 @@ export function markup (input?: string) {
                           quote = NIL;
                           token = store.join(NIL);
 
-                          if (rules.markup.preserveAttributes === false) {
+                          if (rules.markup.preserveAttribute === false) {
                             if (jsx) {
                               if (!/^\s*$/.test(token)) attrs.push([ token, lines ]);
                             } else {
@@ -3936,7 +3928,7 @@ export function markup (input?: string) {
                   push(record, {
                     lexer: 'script',
                     types: 'separator',
-                    token: rules.markup.correct === true ? ';' : 'x;'
+                    token: rules.correct === true ? ';' : 'x;'
                   });
 
                   record.lexer = 'markup';
@@ -4393,20 +4385,6 @@ export function markup (input?: string) {
     a = a + 1;
 
   } while (a < c);
-
-  // if (syntactic.count > 0) {
-
-  // for (const e in syntactic) {
-  //   console.log(syntactic);
-
-  //   parse.error = parseError({
-  //     message: `Parse Error (line ${syntactic[e].line})`,
-  //     lineNumber: syntactic[e].line
-  //   });
-
-  // }
-
-  // }
 
   return data;
 

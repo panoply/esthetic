@@ -2,60 +2,122 @@
 title: 'Liquid - Quote Convert'
 layout: base
 permalink: '/rules/liquid/quoteConvert/index.html'
+describe:
+  - Quote Convert
+  - Rule Options
+options:
+  - none
+  - double
+  - single
 ---
 
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `none`
-
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `double`
-
-#### Quote Convert
+# Quote Convert
 
 How quotation characters of markup attributes and Liquid tokens should be handled. Allows for conversion to single quotes or double quotes. Markup tag attributes should always use double quotations, it's the standard in languages like HTML.
 
-#### Tip
+::: note
 
 When working with Liquid, use `single` quotes for strings and always infer `double` in the markup.
 
-#
+:::
 
----
+# Rule Options
 
-#### 👍 &nbsp;&nbsp; `none`
+::: rule 🤡
 
-_Below is an example of how this rule works if set to `none` which is the **default** setting. No conversion of quotations is applied when using `none` as per the **before** and **after** examples_
+#### none
 
+:::
+
+Below is an example of how this rule works if set to `none` which is the **default** setting. No conversion of quotations is applied when using `none` as per the **before** and **after** examples
+
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "quoteConvert": "none"
+  },
+  "markup": {
+    "forceAttribute": true
+  }
+}
+```
+
+<!-- prettier-ignore -->
 ```html
-<!-- Before Formatting -->
-<div class="single" id="double"></div>
 
-<!-- After Formatting -->
-<div class="single" id="double"></div>
+{% if 'some-string' %}
+
+  {{ "string" | filter: 'string' }}
+
+  {% cycle 'one', 'two', "three", "four", 'five' %}
+
+{% endif %}
+
 ```
 
 ---
 
-#### 👍 👍 &nbsp;&nbsp; `double`
+::: rule 👎
 
-_Below is an example of how this rule works if set to `double` which will go about converting and ensuring all markup quotations and using doubles._
+#### double
 
+:::
+
+Below is an example of how this rule works if set to `double` which will go about converting and ensuring all markup quotations are using doubles.
+
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "quoteConvert": "double"
+  },
+  "markup": {
+    "forceAttribute":  true
+  }
+}
+```
+
+<!-- prettier-ignore -->
 ```html
-<!-- Before Formatting -->
-<div class="foo" id="bar"></div>
+{% if 'some-string' %}
 
-<!-- After Formatting -->
-<div class="foo" id="bar"></div>
+  {{ 'string' | filter: 'string' }}
+
+  {% cycle 'one', 'two', 'three', 'four', 'five' %}
+
+{% endif %}
 ```
 
 ---
 
-#### 👎 &nbsp;&nbsp; `single`
+::: rule 🙌
 
-_Below is an example of how this rule works if set to `single` which will go about converting and ensuring all markup quotations and using singles._
+#### single
 
+:::
+
+Below is an example of how this rule works if set to `single` which will go about converting and ensuring all markup quotations are using singles.
+
+```json:rules
+{
+  "language": "liquid",
+  "liquid": {
+    "quoteConvert": "single"
+  },
+  "markup": {
+    "forceAttribute": true
+  }
+}
+```
+
+<!-- prettier-ignore -->
 ```html
-<!-- Before Formatting -->
-<div class="foo" id="bar"></div>
+{% if "some-string" %}
 
-<!-- After Formatting -->
-<div class="foo" id="bar"></div>
+  {{ "string" | filter: "string" }}
+
+  {% cycle "one", "two", "three", "four", "five" %}
+
+{% endif %}
 ```

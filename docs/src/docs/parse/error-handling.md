@@ -1,14 +1,13 @@
 ---
 title: 'Parse Errors'
 layout: base
-permalink: '/parse/errors/index.html'
+permalink: '/parse/error-handling/index.html'
 anchors:
-  - 'Overview'
+  - 'Parse Errors'
   - 'Error Exception'
-  - 'Reporting'
 ---
 
-# Overview
+# Parse Errors
 
 Invalid syntax encountered during the parse cycle will result in an exception to be thrown. Æsthetic will determine code errors during traversal and attempt to correct issues before throwing but in cases where a resolution cannot be achieved execution will be halted, input returned and an exception thrown.
 

@@ -13,3 +13,6 @@ versions/
 docs/old
 docs/public
 packages/samples
+
+# Local Netlify folder
+.netlify

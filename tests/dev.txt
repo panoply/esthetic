@@ -1,46 +1,30 @@
-<section>
-<ul>
-<li>
-{%
-render 'snippet'
-  , param_1: true
-  , param_2: 1000
-  , param_3: 'string'
-  , param_4: nil
-%}
 
-{% render 'snippet',
-   param_1: true,
-   param_2: 1000,
-   param_3: 'string',
-   param_4: nil %}
 
-  {%
-   render 'snippet'
-          ,
-          param_1: true    , param_2: 1000
-          ,
-           param_3: 'string'
-          , param_4: nil, %}
+<div
+  data-z
+  data-a
+  id="x"
+  data-d
+  data-c
+  data-b
+  data-e
+  class="xx">
 
-          {{ ob.jext  | image_url
-          | image_tag: class: 'header__heading-logo motion-reduce'
-            , widths: '50, 100, 150, 200, 250, 300, 400, 500'
-            , height: logo_height
-            , width: settings.logo_width
-            , alt: logo_alt
-          | replace: 'hh'
-          | font_family: 'bold', '300', 'exec'}}
+  <div
+    data-z
+    data-a
+    id="x"
+    data-d
+    data-c
+    data-b
+    data-e
+    class="xx">
 
-{% assign x = settings.logo
-          | image_url
-          | image_tag: class: 'header__heading-logo motion-reduce'
-            , widths: '50, 100, 150, 200, 250, 300, 400, 500'
-            , height: logo_height
-            , width: settings.logo_width
-            , alt: logo_alt
-          | replace: 'hh'
-          | font_family: 'bold', '300', 'exec' %}
-          </li>
-          </ul>
-</section>
+{% if 'string' %}
+  {{ "string" | filter: 'string' }}
+{% endif %}
+
+    </div>
+
+</div>
+

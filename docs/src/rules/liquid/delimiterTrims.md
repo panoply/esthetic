@@ -4,7 +4,6 @@ layout: base
 permalink: '/rules/liquid/delimiterTrims/index.html'
 describe:
   - Delimiter Trims
-  - Rule Coupling
   - Rule Options
 options:
   - preserve
@@ -266,13 +265,9 @@ When the `delimiterTrims` rule is set to `linebreak` then a single trim will be 
 
 <!-- prettier-ignore -->
 ```html
-{%
-  if condition == assertion
-  or condition == expectation
-  or something == comparison %}
+{% if condition == assertion or condition == expectation or something == comparison %}
 
-  {{-
-    object.prop
+  {{- object.prop
     | param_1: true
     | param_2: 1000
     | param_3:

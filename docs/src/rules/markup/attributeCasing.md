@@ -1,78 +1,129 @@
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `preserve`
+---
+title: 'Markup - Attribute Casing'
+layout: base
+permalink: '/rules/markup/attributeCasing/index.html'
+describe:
+  - Attribute Casing
+  - Rule Options
+options:
+  - preserve
+  - lowercase
+  - lowercase-name
+  - lowercase-value
+---
 
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `preserve`
-
-#### Attribute Casing
+# Attribute Casing
 
 How markup attribute names and value casing should be processed. This defaults to `preserve` which will leave casing intact and _typically_ the best option to use.
 
-#
+# Rule Options
 
----
+::: rule 🙌
 
+#### preserve
 
-#### 👍 &nbsp;&nbsp; `preserve`
+:::
 
-_Below is an example of how this rule works when it is set to `preserve`. This is the default and the safest option to use._
+The `preserve` option is what Æsthetic will **default** to using. The option will allow both lowercase and uppercase attributes be provided within HTML (markup) tags.
 
+```json:rules
+{
+  "language": "html",
+  "markup": {
+    "attributeCasing": "preserve"
+  }
+}
+```
+
+<!--prettier-ignore-->
 ```html
+<div data-ATTR="FOO-bar-BAZ">
 
-<!-- Before Formatting -->
-<div data-attr="FOO-BAR"></div>
+  Attribute casing will be preserved
 
-<!-- After Formatting -->
-<div data-attr="FOO-BAR"></div>
-
-
+</div>
 ```
 
 ---
 
-#### 👎 &nbsp;&nbsp; `lowercase`
+::: rule 👎
 
-_Below is an example of how this rule work it it's set to `lowercase`. This might be problematic to use projects where casing needs to be respected as both attribute names and values will be converted to lowercase_
+#### lowercase
 
+:::
+
+Below is an example of how this rule work it it's set to `lowercase`. This might be problematic to use projects where casing needs to be respected as both attribute names and values will be converted to lowercase.
+
+```json:rules
+{
+  "language": "html",
+  "markup": {
+    "attributeCasing": "lowercase"
+  }
+}
+```
+
+<!--prettier-ignore-->
 ```html
+<div data-ATTR="FOO-bar-BAZ">
 
-<!-- Before Formatting -->
-<div DATA-ATTR="FOO-BAR"></div>
+  Attributes will convert to lowercase
 
-<!-- After Formatting -->
-<div data-attr="foo-bar"></div>
-
-
+</div>
 ```
 
 ---
 
-#### 👎 &nbsp;&nbsp; `lowercase-name`
+::: rule 👍
 
-_Below is an example of how this rule work it it's set to `lowercase-name`. This will leave attribute values intact but convert attribute names to lowercase_
+#### lowercase-name
 
+:::
+
+Below is an example of how this rule work it it's set to `lowercase-name`. This will leave attribute values intact but convert attribute names to lowercase.
+
+```json:rules
+{
+  "language": "html",
+  "markup": {
+    "attributeCasing": "lowercase-name"
+  }
+}
+```
+
+<!--prettier-ignore-->
 ```html
+<div DATA-ATTR="FOO-BAR">
 
-<!-- Before Formatting -->
-<div DATA-ATTR="FOO-BAR"></div>
+  Attributes names will be converted to lowercase
 
-<!-- After Formatting -->
-<div class="FOO-BAR"></div>
-
-
+</div>
 ```
 
 ---
 
-#### 👎 &nbsp;&nbsp; `lowercase-value`
+::: rule 👎
 
-_Below is an example of how this rule work it it's set to `lowercase-value`. This will leave attribute names intact but convert attribute values to lowercase_
+#### lowercase-value
 
+:::
+
+Below is an example of how this rule work it it's set to `lowercase-value`. This will leave attribute names intact but convert attribute values to lowercase.
+
+```json:rules
+{
+  "language": "html",
+  "markup": {
+    "attributeCasing": "lowercase-value"
+  }
+}
+```
+
+<!--prettier-ignore-->
 ```html
+<div DATA-ATTR="FOO-BAR">
 
-<!-- Before Formatting -->
-<div DATA-ATTR="FOO-BAR"></div>
+  Attributes values will be converted to lowercase
 
-<!-- After Formatting -->
-<div DATA-ATTR="foo-bar"></div>
-
-
+</div>
 ```

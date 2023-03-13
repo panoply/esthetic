@@ -42,7 +42,8 @@ Global rules will be used within all supported languages.
 
 Formatting rules for the [Liquid Template Language](https://shopify.github.io/liquid/).
 
-- [Comments](/rules/liquid/comments)
+- [CommentIndent](/rules/liquid/commentIndent)
+- [CommentNewline](/rules/liquid/commentNewline)
 - [Dedent Tag List](/rules/liquid/dedentTagList)
 - [Delimiter Placement](/rules/liquid/delimiterPlacement)
 - [Delimiter Trims](/rules/liquid/delimiterTrims)
@@ -53,6 +54,7 @@ Formatting rules for the [Liquid Template Language](https://shopify.github.io/li
 - [Line Break Separator](/rules/liquid/lineBreakSeparator)
 - [Line Break Style](/rules/liquid/lineBreakSeparator)
 - [Normalize Spacing](/rules/liquid/normalizeSpacing)
+- [Preserve Comment](/rules/liquid/preserveComment)
 - [Preserve Internal](/rules/liquid/preserveInternal)
 - [Quote Convert](/rules/liquid/quoteConvert)
 
@@ -72,6 +74,7 @@ Formatting rules for markup languages [HTML](https://en.wikipedia.org/wiki/HTML)
 - [Ignore JSON](/rules/markup/ignoreJSON)
 - [Preserve Attribute](/rules/markup/preserveAttribute)
 - [Preserve Text](/rules/markup/preserveText)
+- [Preserve Comment](/rules/markup/preserveComment)
 - [Quote Convert](/rules/markup/quoteConvert)
 - [Self Close Space](/rules/markup/selfCloseSpace)
 - [Self Close SVG](/rules/markup/selfCloseSVG)
@@ -83,7 +86,8 @@ Formatting rules for style languages [CSS](https://en.wikipedia.org/wiki/CSS) an
 
 - [At Rule Space](/rules/style/atRuleSpace)
 - [Brace Padding](/rules/style/bracePadding)
-- [Comment Style](/rules/style/commentStyle)
+- [CommentIndent](/rules/style/commentIndent)
+- [CommentNewline](/rules/style/commentNewline)
 - [No Lead Zero](/rules/style/noLeadZero)
 - [Property Sort](/rules/style/propertySort)
 - [Quote Convert](/rules/style/quoteConvert)
@@ -92,11 +96,13 @@ Formatting rules for style languages [CSS](https://en.wikipedia.org/wiki/CSS) an
 
 # JSON
 
-Formatting rules for the [JSON Language](https://en.wikipedia.org/wiki/JSON)
+[JSON Language](https://en.wikipedia.org/wiki/JSON) and JSONC
 
 - [Array Format](/rules/json/arrayFormat)
 - [Brace Allman](/rules/json/braceAllman)
 - [Brace Padding](/rules/json/bracePadding)
-- [Comment Style](/rules/json/commentStyle)
+- [CommentIndent](/rules/json/commentIndent)
+- [CommentNewline](/rules/json/commentNewline)
 - [Object Indent](/rules/json/objectIndent)
 - [Object Sort](/rules/json/objectSort)
+- [Preserve Comment](/rules/json/preserveComment)

@@ -488,7 +488,7 @@ export function script () {
 
     if (option.variableList === 'list') vstore.index[v] = parse.count;
 
-    ltoke = option.correct === true ? ';' : 'x;';
+    ltoke = rules.correct === true ? ';' : 'x;';
     ltype = 'separator';
 
     i = parse.lineOffset;
@@ -1583,7 +1583,7 @@ export function script () {
 
     } else {
 
-      if (option.correct === false || (
+      if (rules.correct === false || (
         tokea !== '++' &&
         tokea !== '--' &&
         tokeb !== '++' &&
@@ -2201,7 +2201,7 @@ export function script () {
       if (data.token[g - 2] === 'do' || (u.is(data.token[g - 2], cc.RPR) && 'ifforwhilecatch'.indexOf(name) > -1)) {
 
         tstore = parse.pop(data);
-        ltoke = option.correct === true ? '}' : 'x}';
+        ltoke = rules.correct === true ? '}' : 'x}';
         ltype = 'end';
         pstack = parse.stack.entry;
         push();
@@ -2212,7 +2212,7 @@ export function script () {
 
       // to prevent the semicolon from inserting between the braceAllman --> while (x) {};
       tstore = parse.pop(data);
-      ltoke = option.correct === true ? '}' : 'x}';
+      ltoke = rules.correct === true ? '}' : 'x}';
       ltype = 'end';
       pstack = parse.stack.entry;
 
@@ -2228,7 +2228,7 @@ export function script () {
       return;
     }
 
-    ltoke = option.correct === true ? '}' : 'x}';
+    ltoke = rules.correct === true ? '}' : 'x}';
     ltype = 'end';
 
     if (data.token[parse.count] === 'x}') return;
@@ -2368,7 +2368,7 @@ export function script () {
     }
 
     if (u.is(x, cc.RPR) || x === 'x)' || u.is(x, cc.RSB)) {
-      if (option.correct === true) parseLogical();
+      if (rules.correct === true) parseLogical();
       cleanSemicolon();
     }
 
@@ -2427,7 +2427,7 @@ export function script () {
 
     } else if (u.is(x, cc.RCB)) {
 
-      if (u.not(ltoke, cc.COM) && option.correct === true) {
+      if (u.not(ltoke, cc.COM) && rules.correct === true) {
         parseLogical();
       }
 
@@ -2458,7 +2458,7 @@ export function script () {
 
     if (
       u.is(x, cc.RPR) &&
-      option.correct === true &&
+      rules.correct === true &&
       count - parse.count < 2 && (
         u.is(data.token[parse.count], cc.LPR) ||
         data.types[parse.count] === 'number'
@@ -2548,7 +2548,7 @@ export function script () {
 
     if (insert === true) {
 
-      ltoke = option.correct === true ? '{' : 'x{';
+      ltoke = rules.correct === true ? '{' : 'x{';
       ltype = 'start';
 
       push(pword[0]);
@@ -2657,7 +2657,7 @@ export function script () {
 
           paren = -1;
 
-          if (option.correct === true) {
+          if (rules.correct === true) {
             end(')');
           } else {
             end('x)');
@@ -3310,7 +3310,7 @@ export function script () {
     }
 
     if (
-      option.correct === true && (output === 'Object' || output === 'Array') &&
+      rules.correct === true && (output === 'Object' || output === 'Array') &&
       u.is(c[a + 1], cc.LPR) &&
       u.is(c[a + 2], cc.RPR) &&
       u.is(data.token[parse.count - 1], cc.EQS) &&
@@ -3642,7 +3642,7 @@ export function script () {
 
       if (next !== '{') {
 
-        ltoke = (option.correct === true) ? '{' : 'x{';
+        ltoke = (rules.correct === true) ? '{' : 'x{';
         ltype = 'start';
 
         brace.push('x{');
@@ -3680,7 +3680,7 @@ export function script () {
                 lexer: 'script',
                 lines: 0,
                 stack: 'if',
-                token: (option.correct === true) ? '}' : 'x}',
+                token: (rules.correct === true) ? '}' : 'x}',
                 types: 'end'
               }
             });
@@ -3716,7 +3716,7 @@ export function script () {
       }
 
       if (next !== 'if' && u.not(next, cc.LCB)) {
-        ltoke = (option.correct === true) ? '{' : 'x{';
+        ltoke = (rules.correct === true) ? '{' : 'x{';
         ltype = 'start';
         brace.push('x{');
         push('else');
@@ -3734,7 +3734,7 @@ export function script () {
 
       if (next !== '(') {
         paren = parse.count;
-        if (option.correct === true) {
+        if (rules.correct === true) {
           start('(');
         } else {
           start('x(');
@@ -3928,7 +3928,7 @@ export function script () {
     } else if (u.is(c[a], cc.COL) && u.is(c[a + 1], cc.COL)) {
 
       if (wtest > -1) word();
-      if (option.correct === true) parseLogical();
+      if (rules.correct === true) parseLogical();
 
       cleanSemicolon();
 
@@ -3942,7 +3942,7 @@ export function script () {
 
       // comma
       if (wtest > -1) word();
-      if (option.correct === true) parseLogical();
+      if (rules.correct === true) parseLogical();
 
       if (
         tstype[tstype.length - 1] === true &&
@@ -4035,7 +4035,7 @@ export function script () {
         }
       }
 
-      if (option.correct === true) parseLogical();
+      if (rules.correct === true) parseLogical();
 
       ltoke = ';';
       ltype = 'separator';

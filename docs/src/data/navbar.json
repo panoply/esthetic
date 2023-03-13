@@ -22,10 +22,5 @@
       "json",
       "script"
     ]
-  },
-  {
-    "title": "Playground",
-    "url": "/playground/",
-    "group": ["format", "parser", "grammar", "language"]
   }
 ]

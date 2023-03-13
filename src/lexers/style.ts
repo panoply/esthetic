@@ -1778,7 +1778,7 @@ export function style () {
             )
           )) {
 
-            if (rules.style.correct === true) {
+            if (rules.correct === true) {
               ltoke = ';';
             } else {
               ltoke = 'x;';

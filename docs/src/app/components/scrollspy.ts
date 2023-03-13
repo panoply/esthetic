@@ -41,25 +41,26 @@ export class ScrollSpy extends Controller {
       rootMargin: this.rootMarginValue,
       threshold: this.thresholdValue
     }
-
-
-    for (const a of this.anchorTargets) {
-      const anchor = a.href.slice(a.href.lastIndexOf('#'))
-      this.anchors.push(this.element.querySelector(anchor))
-      a.onclick = (()=> {
-        setTimeout(()=> {
-          this.anchorTargets.forEach(j => j.classList.remove(this.activeClass))
-          a.classList.add(this.activeClass)
-        },300)
-      })
-    }
-
   }
 
   /**
    * Stimulus: Connect
    */
   connect () {
+
+    for (const a of this.anchorTargets) {
+      const anchor = a.href.slice(a.href.lastIndexOf('#'))
+      const element = this.element.querySelector(anchor) as HTMLHeadingElement
+      if(this.element.contains(element)) {
+        this.anchors.push(element)
+        a.onclick = (()=> {
+          setTimeout(()=> {
+            this.anchorTargets.forEach(j => j.classList.remove(this.activeClass))
+            a.classList.add(this.activeClass)
+          },300)
+        })
+      }
+    }
 
     if(window.scrollY < 10) {
       this.anchorTargets[0].classList.add(this.activeClass)
@@ -74,6 +75,8 @@ export class ScrollSpy extends Controller {
   onScroll = () => {
 
     this.anchors.forEach((v,i)=> {
+
+
 
       let next = v.getBoundingClientRect().y - 50
 

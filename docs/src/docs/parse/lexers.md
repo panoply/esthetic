@@ -3,7 +3,7 @@ title: 'Lexers'
 layout: base
 permalink: '/parse/lexers/index.html'
 order: 4
-sidebar:
+anchors:
   - 'Markup'
   - 'Style'
   - 'Script'

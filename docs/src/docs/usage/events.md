@@ -2,6 +2,12 @@
 title: 'Events'
 layout: base
 permalink: '/usage/events/index.html'
+anchors:
+  - Events
+  - Format
+  - Rules
+  - Parse
+  - Error
 ---
 
 # Events

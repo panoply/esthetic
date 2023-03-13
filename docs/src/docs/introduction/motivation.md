@@ -23,3 +23,11 @@ Minor refactors, turned into major refactors and several months later the projec
 ### Sparser and PrettyDiff
 
 TODO
+
+# Motivation
+
+Æsthetic was originally developed to handle chaotic and unpredictable Liquid + HTML markup structures. Before creating Æsthetic, there was no solution or tool available which supported Liquid infused syntax and developers working on projects using the template language were unable to leverage beautifiers. This became the accepted status-quo until [Austin Cheney](https://github.com/prettydiff) support for Liquid beautification in Sparser and PrettyDiff.
+
+Before their (unofficial) retirement in late 2019 both [Sparser](https://github.com/Unibeautify/sparser) and its sister tool [PrettyDiff](https://github.com/prettydiff/prettydiff) supported diffing, beautification and minification for over **40+** different languages. Having grown fond and accustomed to the generated output of PrettyDiff I began sifting through the codebase to fix a couple defects and quickly became fascinated with the overall architecture of these tools.
+
+The formatting style and overall approaches of these tools were different from others and by focusing attention to edge-cases pertaining to a template language like Liquid.

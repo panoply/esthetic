@@ -1063,7 +1063,7 @@ export function markup () {
 
       } else {
         if (rules.markup.forceAttribute === true || (rules.markup.forceAttribute as number) >= 1) {
-          if (rules.liquid.indentAttributes === true) {
+          if (rules.liquid.indentAttribute === true) {
             if (isType(a - 1, 'liquid_attribute_start')) level[a - 1] = levatt + levliq;
             level.push(levatt + levliq);
           } else {
@@ -1151,7 +1151,7 @@ export function markup () {
             }
           }
 
-        } else if (rules.liquid.indentAttributes === true) {
+        } else if (rules.liquid.indentAttribute === true) {
 
           if (isType(a, 'liquid_attribute_start')) {
 
@@ -1191,7 +1191,7 @@ export function markup () {
 
           length = length + data.token[a].length + 1;
 
-          if (rules.markup.preserveAttributes === true) {
+          if (rules.markup.preserveAttribute === true) {
 
             level.push(-10);
 
@@ -1224,7 +1224,7 @@ export function markup () {
 
         //  console.log(data.token[a], data.lines[a]);
 
-        if (rules.markup.preserveAttributes === true) {
+        if (rules.markup.preserveAttribute === true) {
 
           level.push(-10);
 
@@ -1301,7 +1301,7 @@ export function markup () {
       count = 0;
       level[parent] = levatt;
 
-      if (attcount >= 2 && rules.markup.delimiterForce === true) {
+      if (attcount >= 2 && rules.markup.delimiterLineBreak === true) {
         delim.set(parent, attcount);
       }
 
@@ -1325,7 +1325,7 @@ export function markup () {
 
         } while (fa > parent);
 
-        if (rules.markup.delimiterForce === true && attcount >= 2) {
+        if (rules.markup.delimiterLineBreak === true && attcount >= 2) {
           delim.set(parent, attcount);
         }
 
@@ -1343,7 +1343,7 @@ export function markup () {
     }
 
     if (
-      rules.markup.preserveAttributes === true ||
+      rules.markup.preserveAttribute === true ||
       isToken(parent, '<%xml%>') ||
       isToken(parent, '<?xml?>')) {
       count = 0;
@@ -1360,12 +1360,9 @@ export function markup () {
 
       if (length > rules.wrap && rules.wrap > 0 && rules.markup.forceAttribute === false) {
 
-        if (rules.markup.forceLeadAttribute === true) {
-          level[parent] = levatt;
-          w = w - 1;
-        }
-
+        level[parent] = levatt;
         count = data.token[a].length;
+        w = w - 1;
 
         do {
 
@@ -1905,7 +1902,7 @@ export function markup () {
 
           lastLevel = levels[a];
 
-          if (rules.markup.delimiterForce === true) onDelimiterForce();
+          if (rules.markup.delimiterLineBreak === true) onDelimiterForce();
 
           if (/\n/.test(data.token[a]) && isIndex(a, 'liquid') > -1 && !isType(a, 'liquid_end')) {
             onLiquidForce();
@@ -1978,7 +1975,7 @@ export function markup () {
 
     return rules.endNewline === true
       ? build.join(NIL).replace(/\s*$/, parse.crlf)
-      : build.join(NIL).replace(/\s+$/, NIL);
+      : build.join(NIL).trimEnd();
 
   };
 

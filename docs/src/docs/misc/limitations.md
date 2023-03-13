@@ -1,7 +1,7 @@
 ---
 title: 'Limitations'
 layout: base
-permalink: '/introduction/limitations/index.html'
+permalink: '/misc/limitations/index.html'
 ---
 
 # Limitations

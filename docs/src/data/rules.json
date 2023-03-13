@@ -10,6 +10,11 @@
   "urls": [
     {
       "group": "global",
+      "title": "correct",
+      "url": "/rules/global/correct/"
+    },
+    {
+      "group": "global",
       "title": "crlf",
       "url": "/rules/global/crlf/"
     },
@@ -27,6 +32,11 @@
       "group": "global",
       "title": "indentChar",
       "url": "/rules/global/indentChar/"
+    },
+    {
+      "group": "global",
+      "title": "indentLevel",
+      "url": "/rules/global/indentLevel/"
     },
     {
       "group": "global",
@@ -48,12 +58,12 @@
       "title": "wrap",
       "url": "/rules/global/wrap/"
     },
-
     {
-      "group": "liquid",
-      "title": "correct",
-      "url": "/rules/liquid/correct/"
+      "group": "global",
+      "title": "wrapFraction",
+      "url": "/rules/global/wrapFraction/"
     },
+
     {
       "group": "liquid",
       "title": "commentNewline",
@@ -83,11 +93,6 @@
       "group": "liquid",
       "title": "forceArgument",
       "url": "/rules/liquid/forceArgument/"
-    },
-    {
-      "group": "liquid",
-      "title": "forceLeadArgument",
-      "url": "/rules/liquid/forceLeadArgument/"
     },
     {
       "group": "liquid",
@@ -142,11 +147,6 @@
     },
     {
       "group": "markup",
-      "title": "attributeSortList",
-      "url": "/rules/markup/attributeSortList/"
-    },
-    {
-      "group": "markup",
       "title": "commentIndent",
       "url": "/rules/markup/commentIndent/"
     },
@@ -157,13 +157,8 @@
     },
     {
       "group": "markup",
-      "title": "correct",
-      "url": "/rules/markup/correct/"
-    },
-    {
-      "group": "markup",
-      "title": "delimiterForce",
-      "url": "/rules/markup/delimiterForce/"
+      "title": "delimiterLineBreak",
+      "url": "/rules/markup/delimiterLineBreak/"
     },
     {
       "group": "markup",
@@ -198,7 +193,7 @@
     {
       "group": "markup",
       "title": "preserveAttributes",
-      "url": "/rules/markup/preserveAttributes/"
+      "url": "/rules/markup/preserveAttribute/"
     },
     {
       "group": "markup",

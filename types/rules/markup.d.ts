@@ -144,16 +144,16 @@ export interface MarkupRules {
    * </div>
    * ```
    */
-  delimiterForce?: boolean;
+  delimiterLineBreak?: boolean;
 
   /**
-   * **Default** `false`
+   * **Default** `[]`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `[]`
    *
-   * HTML Attribute sorting. When enabled it will sort attributes
-   * alphabetically. Attribute sorting is ignored on tags that contain
-   * template attributes.
+   * A comma separated list of attribute names. Attributes will be sorted according to
+   * this list and then alphanumerically. This option requires `attributeSort` have
+   * to be enabled, ie: have a value of `true`.
    *
    * ---
    *
@@ -185,19 +185,6 @@ export interface MarkupRules {
    *
    * </div>
    * ```
-   */
-  attributeSort?: boolean;
-
-  /**
-   * **Default** `[]`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `[]`
-   *
-   * A comma separated list of attribute names. Attributes will be sorted according to
-   * this list and then alphanumerically. This option requires `attributeSort` have
-   * to be enabled, ie: have a value of `true`.
-   *
-   * ---
    *
    * #### Example
    *
@@ -206,8 +193,7 @@ export interface MarkupRules {
    *
    * ```js
    * {
-   *   attributeSort: true, // Must be true when using this rule
-   *   attributeSortList: ['id', 'class', 'data-b']
+   *   attributeSort: ['id', 'class', 'data-b']
    * }
    * ```
    *
@@ -239,7 +225,7 @@ export interface MarkupRules {
    * </div>
    * ```
    */
-  attributeSortList?: string[];
+  attributeSort?: boolean | string[];
 
   /**
    * **Default** `false`
@@ -379,62 +365,9 @@ export interface MarkupRules {
   forceAttribute?: boolean | number;
 
   /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
-   *
-   * Whether the leading attribute should be forced onto a newline when
-   * word `wrap` limit is exceeded or if it should be preserved. By default,
-   * Prettify preserves the leading attribute when applying wrap indentation.
-   * Enabling this option will force indent all attributes if wrap is exceeded.
-   *
-   * This rule requires a `wrap` level to be defined. If you have `forceAttribute`
-   * enabled or using a force attribute limit value it will override this option.
-   * If you desire wrap based attribute indentation, set `forceAttribute` to `false`
-   * and ensure a `wrap` level is defined.
-   *
-   * ---
-   *
-   * #### Disabled (default)
-   *
-   * *Below is an example of how this rule works if it's disabled (ie: `false`) and
-   * attributes have exceeded a defined wrap limit. Notice how leading attributes
-   * are preserved that have not exceeded wrap, but proceeding attributes are indented
-   * onto their own lines, this is the default behaviour Prettify uses.*
-   *
-   * ```html
-   *
-   * <!-- Leading attribute is preserved -->
-   * <div class="x"
-   *   id="{{ foo }}"
-   *   data-attribute-example="100"
-   *   data-x="xx">
-   *
-   * </div>
-   *
-   * ```
-   *
-   * #### Enabled
-   *
-   * *Below is an example of how this rule works if it's enabled (ie: `true`) and
-   * attributes have exceeded the defined wrap limit. Notice how all attributes
-   * and indented onto their own line, including the leading attribute.*
-   *
-   *
-   * ```html
-   *
-   * <!-- All attributes are forced including the leading attribute  -->
-   * <div
-   *   class="x"
-   *   id="{{ foo }}"
-   *   data-attribute-example="100"
-   *   data-x="xx">
-   *
-   * </div>
-   *
-   * ```
+   * Force Attribute Values
    */
-  forceLeadAttribute?: boolean | number;
+  forceAttributeValue?: boolean;
 
   /**
    * **Default** `false`

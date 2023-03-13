@@ -123,14 +123,16 @@ dev(function (source) {
   // });
 
   const output = esthetic.format(source, {
-    wrap: 0,
+    wrap: 70,
     language: 'liquid',
     liquid: {
       delimiterTrims: 'linebreak',
-      delimiterPlacement: 'inline',
+      delimiterPlacement: 'force-multiline',
       lineBreakSeparator: 'after',
       forceFilter: 2,
-      forceArgument: 3
+      forceArgument: 3,
+      preserveInternal: false,
+      quoteConvert: 'single'
     }
   });
 
@@ -142,7 +144,8 @@ dev(function (source) {
     colors: false,
     finish: () => {
       console.log(esthetic.stats);
-      // console.log(esthetic.data);
+    //  console.log(esthetic.data);
+      // console.log(esthetic.rules());
     }
   };
 

@@ -41,6 +41,7 @@
   </head>
   <body>
 
+
     {%- if page.url == '/' -%}
 
       {% include 'landing' %}
@@ -82,9 +83,37 @@
             <div class="px-5">
               {{ content }}
             </div>
+
+
+            {% for link in collections.all %}
+              {% if link.url == page.url %}
+
+                {% if link.data.prev and link.data.next %}
+                  <div class="row jc-between mt-5 px-5 navigators">
+                    <div class="col-auto">
+                      <a
+                        class="btn"
+                        href="{{ link.data.prev.uri }}">
+                        {% # esthetic-ignore-next %}
+                        <span>←</span>
+                        {{ link.data.prev.label }}
+                      </a>
+                    </div>
+                    <div class="col-auto">
+                      <a
+                        class="btn"
+                        href="{{ link.data.next.uri }}">
+                        {{ link.data.next.label }}
+                        {% # esthetic-ignore-next %}
+                        <span>→</span>
+                      </a>
+                    </div>
+                  </div>
+                {%- endif -%}
+              {%- endif -%}
+            {% endfor %}
+
           </div>
-
-
           <div class="col-auto px-4">
             {% include 'anchors' %}
           </div>

@@ -5,7 +5,6 @@ import { cc } from 'lexical/codes';
 import { LT } from 'lexical/enum';
 import { COM, NIL, NWL, WSP } from 'lexical/chars';
 import { LiquidInternal, LiquidRules, Rules } from 'types/index';
-import { WhitespaceGlob } from 'lexical/regex';
 
 /**
  * Opening Delimiters
@@ -114,23 +113,6 @@ export function closeDelims (input: string, rules: LiquidRules) {
 
   return token.trim() + close;
 
-}
-
-/**
- * Equalize Spacing
- *
- * A series of replacements applied to tokens which strip and
- * apply equal whitespacing to the internal structures of liquid tokens.
- */
-export function equalSpacing (char: string) {
-
-  return char
-    .replace(WhitespaceGlob, WSP)
-    .replace(/([!=]=|[<>]=?)/g, ' $1 ')
-    .replace(/\s+(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
-    .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
-    .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
-    .replace(WhitespaceGlob, WSP);
 }
 
 /**
@@ -246,19 +228,18 @@ export function tokenize (
   lexed: string[],
   tname: string,
   liquid: LiquidInternal,
-  rules: Rules
-) {
-
-  const {
+  {
     wrapFraction,
     liquid: {
       forceFilter,
       forceArgument,
       lineBreakSeparator,
       delimiterTrims,
-      delimiterPlacement
+      delimiterPlacement,
+      preserveInternal
     }
-  } = rules;
+  }: Rules
+) {
 
   const [ o, c ] = delims(lexed);
 
@@ -312,6 +293,8 @@ export function tokenize (
     open += WSP;
     close = WSP + close;
 
+    return open + lexed.slice(o, c).join(NIL).trim() + close;
+
   } else {
 
     if (delimiterPlacement === 'preserve') {
@@ -342,11 +325,50 @@ export function tokenize (
 
       }
 
-    }
+    } else {
 
+      open += WSP;
+      close = WSP + close;
+
+    }
   }
 
-  if (liquid.pipes.length > 0 && (
+  if (preserveInternal === true) return open + lexed.slice(o, c).join(NIL).trim() + close;
+
+  if (wrapFraction > 0 && lexed.length >= wrapFraction && liquid.logic.length > 0 && (
+    tname === 'if' ||
+    tname === 'elsif' ||
+    tname === 'unless'
+  )) {
+
+    if (delimiterTrims === 'multiline') {
+
+      open = `{${lexed[1]}-` + open[open.length - 1];
+      close = close[0] + `-${lexed[lexed.length - 2]}}`;
+
+    } else if (delimiterTrims === 'linebreak') {
+
+      open = `{${lexed[1]}-`;
+
+      if (delimiterPlacement === 'force-multiline' || delimiterPlacement === 'force') {
+        open += NWL;
+        if (delimiterPlacement === 'force-multiline') close = NWL + close;
+      } else if (delimiterPlacement === 'preserve') {
+        open += (is(lexed[o], cc.NWL) ? NWL : WSP);
+      } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
+        open += WSP;
+      } else if (delimiterPlacement === 'consistent') {
+        open += is(lexed[o], cc.NWL) ? NWL : WSP;
+      }
+    }
+
+    for (let x = 0; x < liquid.logic.length; x++) {
+
+      lexed[liquid.logic[x]] = NWL + lexed[liquid.logic[x]];
+
+    }
+
+  } else if (liquid.pipes.length > 0 && (
     (
       forceFilter > 0 &&
       liquid.pipes.length > forceFilter
@@ -492,29 +514,6 @@ export function tokenize (
         }
 
       }
-
-    }
-  } else if (lexed.length >= wrapFraction && liquid.logic.length > 0 && (
-    tname === 'if' ||
-    tname === 'elsif' ||
-    tname === 'unless'
-  )) {
-
-    if (delimiterTrims === 'multiline') {
-      open = `{${lexed[1]}-`;
-      close = `-${lexed[lexed.length - 2]}}`;
-    } else if (delimiterTrims === 'linebreak') {
-      open = `{${lexed[1]}-`;
-    }
-
-    if (delimiterPlacement === 'force-multiline') {
-      open += NWL;
-      close = NWL + close;
-    }
-
-    for (let x = 0; x < liquid.logic.length; x++) {
-
-      lexed[liquid.logic[x]] = NWL + lexed[liquid.logic[x]];
 
     }
   }

@@ -1,4 +1,4 @@
-import type { LanguageRuleNames } from 'types';
+import type { GlobalRules, LanguageRuleNames, LiquidRules, MarkupRules } from 'types';
 import { isArray } from 'utils';
 import { RuleError } from 'parse/errors';
 
@@ -14,7 +14,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 
   if (language === 'global') {
 
-    switch (rule) {
+    switch (rule as keyof GlobalRules) {
       case 'indentChar':
 
         return isValidString(language, rule, value);
@@ -25,6 +25,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
         return isValidChoice(language, rule, value);
 
       case 'crlf':
+      case 'correct':
       case 'endNewline':
 
         return isValidBoolean(language, rule, value);
@@ -45,10 +46,10 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 
   } else if (language === 'liquid') {
 
-    switch (rule) {
-      case 'correct':
+    switch (rule as keyof LiquidRules) {
       case 'commentNewline':
       case 'commentIndent':
+      case 'dedentTagList':
       case 'indentAttribute':
       case 'normalizeSpacing':
       case 'preserveComment':
@@ -76,7 +77,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 
   } else if (language === 'markup') {
 
-    switch (rule) {
+    switch (rule as keyof MarkupRules) {
 
       case 'forceAttribute':
 
@@ -89,12 +90,16 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
         ]);
 
       case 'attributeSort':
-      case 'correct':
+
+        if (typeof value === 'boolean' || typeof value === 'number') return isValidBoolean(language, rule, value);
+
+        return isValidArray(language, rule, value);
+
       case 'commentNewline':
       case 'commentIndent':
-      case 'delimiterForce':
-      case 'forceLeadAttribute':
+      case 'delimiterLineBreak':
       case 'forceIndent':
+      case 'forceAttributeValue':
       case 'ignoreCSS':
       case 'ignoreJS':
       case 'ignoreJSON':
@@ -111,10 +116,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'quoteConvert':
 
         return isValidChoice(language, rule, value);
-
-      case 'attributeSortList':
-
-        return isValidArray(language, rule, value);
 
     }
 

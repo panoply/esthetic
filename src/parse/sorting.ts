@@ -411,7 +411,10 @@ export function sortSafe (
   array: [ token: string, lines: number, chain?: boolean][],
   operation: string,
   recursive: boolean
-): [ token: string, lines: number, chain?: boolean][] {
+): [
+  token: string,
+  lines: number,
+  chain?: boolean][] {
 
   if (isArray(array) === false) return array;
 
@@ -528,7 +531,7 @@ function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]
   /**
    * Added for line preservation of attributes
    *
-   * > This might cause issues is the style/script lexer, will need to investigate
+   * > This might cause issues in the style/script lexer, will need to investigate
    */
   const lines = storeb.map((x) => x[1]);
 
