@@ -1,12 +1,18 @@
 /* eslint-disable prefer-const */
 import { grammar } from 'parse/grammar';
-import { is, not } from 'utils';
+import { is } from 'utils';
 import { cc } from 'lexical/codes';
 import { LT } from 'lexical/enum';
-import { NIL, NWL, WSP } from 'lexical/chars';
-import { LiquidRules } from 'types/index';
-import { LiquidComment, LiquidTag, WhitespaceGlob } from 'lexical/regex';
+import { COM, NIL, NWL, WSP } from 'lexical/chars';
+import { LiquidInternal, LiquidRules, Rules } from 'types/index';
+import { WhitespaceGlob } from 'lexical/regex';
 
+/**
+ * Opening Delimiters
+ *
+ * Applies `delimiterTrims` applied formatting to the opening
+ * delimiter sequences of Liquid tokens.
+ */
 export function openDelims (input: string, rules: LiquidRules) {
 
   const o = is(input[2], cc.DSH) ? 3 : 2;
@@ -34,8 +40,13 @@ export function openDelims (input: string, rules: LiquidRules) {
     open += /^\s*\n/.test(token) ? NWL : WSP;
   } else if (rules.delimiterPlacement === 'force') {
     open += NWL;
-  } else if (rules.delimiterPlacement === 'inline' || rules.delimiterPlacement === 'default') {
+  } else if (
+    rules.delimiterPlacement === 'inline' ||
+    rules.delimiterPlacement === 'default' ||
+    rules.delimiterPlacement === 'force-multiline') {
+
     open += WSP;
+
   } else if (rules.delimiterPlacement === 'consistent') {
     if (/^\s*\n/.test(token)) {
       open += NWL;
@@ -48,6 +59,12 @@ export function openDelims (input: string, rules: LiquidRules) {
 
 }
 
+/**
+ * Closing Delimiters
+ *
+ * Applies `delimiterTrims` applied formatting to the closing
+ * delimiter sequences of Liquid tokens.
+ */
 export function closeDelims (input: string, rules: LiquidRules) {
 
   const c = is(input[input.length - 3], cc.DSH) ? input.length - 3 : input.length - 2;
@@ -81,7 +98,11 @@ export function closeDelims (input: string, rules: LiquidRules) {
     close = (/\s*\n\s*$/.test(token) ? NWL : WSP) + close;
   } else if (rules.delimiterPlacement === 'force') {
     close = NWL + close;
-  } else if (rules.delimiterPlacement === 'inline' || rules.delimiterPlacement === 'default') {
+  } else if (
+    rules.delimiterPlacement === 'inline' ||
+    rules.delimiterPlacement === 'default' ||
+    rules.delimiterPlacement === 'force-multiline'
+  ) {
     close = WSP + close;
   } else if (rules.delimiterPlacement === 'consistent') {
     if (/^\s*\n/.test(token)) {
@@ -94,6 +115,24 @@ export function closeDelims (input: string, rules: LiquidRules) {
   return token.trim() + close;
 
 }
+
+/**
+ * Equalize Spacing
+ *
+ * A series of replacements applied to tokens which strip and
+ * apply equal whitespacing to the internal structures of liquid tokens.
+ */
+export function equalSpacing (char: string) {
+
+  return char
+    .replace(WhitespaceGlob, WSP)
+    .replace(/([!=]=|[<>]=?)/g, ' $1 ')
+    .replace(/\s+(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
+    .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
+    .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
+    .replace(WhitespaceGlob, WSP);
+}
+
 /**
  * Inner
  *
@@ -173,7 +212,10 @@ export function normalize (input: string, tname: string, rules: LiquidRules) {
       open += NWL;
       close = NWL + close;
 
-    } else if (rules.delimiterPlacement === 'inline' || rules.delimiterPlacement === 'default') {
+    } else if (
+      rules.delimiterPlacement === 'inline' ||
+      rules.delimiterPlacement === 'default' ||
+      rules.delimiterPlacement === 'force-multiline') {
 
       open += WSP;
       close = WSP + close;
@@ -196,65 +238,288 @@ export function normalize (input: string, tname: string, rules: LiquidRules) {
   token = token.trim();
 
   // ensure normalize spacing is enabld
-  if (rules.normalizeSpacing === false) return open + token + close;
+  return open + token + close;
 
-  // skip line comments or liquid tag
-  if (LiquidComment.test(input) || LiquidTag.test(input)) return open + token + close;
+};
+
+export function tokenize (
+  lexed: string[],
+  tname: string,
+  liquid: LiquidInternal,
+  rules: Rules
+) {
+
+  const {
+    wrapFraction,
+    liquid: {
+      forceFilter,
+      forceArgument,
+      lineBreakSeparator,
+      delimiterTrims,
+      delimiterPlacement
+    }
+  } = rules;
+
+  const [ o, c ] = delims(lexed);
 
   /**
-   * The starting quotation code character
+   * Opening Delimiter
    */
-  let t: cc.DQO | cc.SQO;
+  let open: string;
 
   /**
-   * Quotation Reference
-   *
-   * Tracks string quotes allowing them to be skipped.
-   *
-   * - `0` token is not a string
-   * - `1` We have encountered a string, eg: {{ '^
-   * - `2` We have closed the last known string, eg: {{ 'foo'^
+   * Closing Delimiter
    */
-  let q: 0 | 1 | 2 = 0;
+  let close: string;
 
-  const clean = (char: string) => char
-    .replace(WhitespaceGlob, WSP)
-    .replace(/([!=]=|[<>]=?)/g, ' $1 ')
-    .replace(/\s+(?=[|[\],:.])|(?<=[[.]) +/g, NIL)
-    .replace(/(\||(?<=[^=!<>])(?:(?<=assign[^=]+)=(?=[^=!<>])|=$))/g, ' $1 ')
-    .replace(/([:,]$|[:,](?=\S))/g, '$1 ')
-    .replace(WhitespaceGlob, WSP);
+  if (delimiterTrims === 'never') {
 
-  const x = token.split(/(["'])/).map((char, idx, arr) => {
+    open = `{${lexed[1]}`;
+    close = `${lexed[lexed.length - 2]}}`;
 
-    const quotation = is(char[0], cc.DQO) || is(char[0], cc.SQO);
+  } else if ((
+    delimiterTrims === 'always'
+  ) || (
+    delimiterTrims === 'outputs' &&
+    is(lexed[1], cc.LCB)
+  ) || (
+    delimiterTrims === 'tags' &&
+    is(lexed[1], cc.PER)
+  )) {
 
-    if (q > 0 || (quotation && q === 0 && not(arr[arr[idx - 1].length - 1], cc.BWS)) || quotation) {
+    open = `{${lexed[1]}-`;
+    close = `-${lexed[lexed.length - 2]}}`;
 
-      if (q === 0) t = char.charCodeAt(0);
+  } else if (delimiterTrims === 'preserve') {
 
-      // Move forward for nested quote type, eg: DQO or SQO
-      if (q === 1 && not(arr[arr[idx - 1].length - 1], cc.BWS)) {
-        if (t === char.charCodeAt(0)) q = 0;
+    open = lexed.slice(0, o).join(NIL);
+    close = lexed.slice(c).join(NIL);
 
-        return char;
+  } else {
 
-      } else if (q !== 2) {
-        q = q === 0 ? 1 : q === 1 ? is(arr[arr[idx - 1].length - 1], cc.BWS) ? 1 : 2 : 0;
-        return char;
+    open = `{${lexed[1]}`;
+    close = `${lexed[lexed.length - 2]}}`;
+
+  }
+
+  if (
+    tname === 'else' ||
+    tname === 'break' ||
+    tname === 'continue' ||
+    tname === 'increment' ||
+    tname === 'decrement' || tname.startsWith('end')) {
+
+    open += WSP;
+    close = WSP + close;
+
+  } else {
+
+    if (delimiterPlacement === 'preserve') {
+
+      open += (is(lexed[o], cc.NWL) ? NWL : WSP);
+      close = (is(lexed[c - 1], cc.NWL) ? NWL : WSP) + close;
+
+    } else if (delimiterPlacement === 'force') {
+
+      open += NWL;
+      close = NWL + close;
+
+    } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
+
+      open += WSP;
+      close = WSP + close;
+
+    } else if (delimiterPlacement === 'consistent') {
+
+      if (is(lexed[o], cc.NWL)) {
+        open += NWL;
+        close = NWL + close;
+
+      } else {
+
+        open += WSP;
+        close = WSP + close;
+
       }
-
-      q = 0;
 
     }
 
-    return clean(char);
+  }
 
-  });
+  if (liquid.pipes.length > 0 && (
+    (
+      forceFilter > 0 &&
+      liquid.pipes.length > forceFilter
+    ) || (
+      forceFilter === 0 &&
+      lexed.length > wrapFraction
+    )
+  )) {
 
-  return open + x.join(NIL) + close;
+    if (delimiterTrims === 'multiline') {
 
-};
+      open = `{${lexed[1]}-` + open[open.length - 1];
+      close = close[0] + `-${lexed[lexed.length - 2]}}`;
+
+    } else if (delimiterTrims === 'linebreak') {
+
+      open = `{${lexed[1]}-`;
+
+      if (delimiterPlacement === 'force-multiline' || delimiterPlacement === 'force') {
+        open += NWL;
+        if (delimiterPlacement === 'force-multiline') close = NWL + close;
+      } else if (delimiterPlacement === 'preserve') {
+        open += (is(lexed[o], cc.NWL) ? NWL : WSP);
+      } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
+        open += WSP;
+      } else if (delimiterPlacement === 'consistent') {
+        open += is(lexed[o], cc.NWL) ? NWL : WSP;
+      }
+    }
+
+    for (let i: number = 0; i < liquid.pipes.length; i++) {
+
+      const pipe = liquid.pipes[i];
+
+      lexed[pipe] = NWL + lexed[pipe];
+
+      if (liquid.fargs[i] && (
+        (
+          forceArgument > 0 &&
+          liquid.fargs[i].length > forceArgument
+        ) || (
+          forceArgument === 0 &&
+          lexed.slice(
+            liquid.fargs[i][0],
+            liquid.fargs[i][liquid.fargs[i].length - 1]
+          ).length > wrapFraction
+        )
+      )) {
+
+        for (let n: number = 0; n < liquid.fargs[i].length; n++) {
+
+          const arg = liquid.fargs[i][n];
+
+          if (lineBreakSeparator === 'after') {
+
+            lexed[is(lexed[arg - 1], cc.COM) ? arg - 1 : arg] = n === 0
+              ? NWL + '  '
+              : COM + NWL + ' ';
+
+          } else if (lineBreakSeparator === 'before') {
+
+            if (is(lexed[arg - 1], cc.COM)) {
+
+              lexed[arg - 1] = n === 0
+                ? '  ' + NWL
+                : NWL + '  ' + COM;
+
+            } else {
+
+              lexed[arg] = n === 0
+                ? NWL + '  '
+                : NWL + '  ' + COM;
+            }
+
+          } else {
+
+            lexed[arg] = NWL + '  ' + lexed[arg];
+
+          }
+        }
+
+      }
+    }
+
+    //
+
+  } else if (liquid.targs.length >= forceArgument) {
+
+    if (delimiterTrims === 'multiline') {
+
+      open = `{${lexed[1]}-` + open[open.length - 1];
+      close = close[0] + `-${lexed[lexed.length - 2]}}`;
+
+    } else if (delimiterTrims === 'linebreak') {
+
+      if (lineBreakSeparator === 'after') {
+        open = `{${lexed[1]}`;
+      } else {
+        open = `{${lexed[1]}-`;
+      }
+
+      if (delimiterPlacement === 'force-multiline' || delimiterPlacement === 'force') {
+        open += NWL;
+        if (delimiterPlacement === 'force-multiline') close = NWL + close;
+      } else if (delimiterPlacement === 'preserve') {
+        open += (is(lexed[o], cc.NWL) ? NWL : WSP);
+      } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
+        open += WSP;
+      } else if (delimiterPlacement === 'consistent') {
+        open += is(lexed[o], cc.NWL) ? NWL : WSP;
+      }
+    }
+
+    //
+    for (let x = 0; x < liquid.targs.length; x++) {
+
+      const arg = liquid.targs[x];
+
+      if (lineBreakSeparator === 'after') {
+
+        if (is(lexed[arg + 1], cc.WSP)) lexed[arg + 1] = NIL;
+        if (is(lexed[arg - 1], cc.WSP)) lexed[arg - 1] = NIL;
+
+        lexed[arg] = is(lexed[arg], cc.COM)
+          ? COM + NWL
+          : NWL;
+
+      } else if (lineBreakSeparator === 'before') {
+
+        if (is(lexed[arg - 1], cc.COM)) {
+
+          lexed[arg - 1] = x === 0
+            ? NWL + COM
+            : NWL + COM;
+
+        } else {
+
+          lexed[arg] = x === 0
+            ? NWL + COM
+            : NWL + COM;
+        }
+
+      }
+
+    }
+  } else if (lexed.length >= wrapFraction && liquid.logic.length > 0 && (
+    tname === 'if' ||
+    tname === 'elsif' ||
+    tname === 'unless'
+  )) {
+
+    if (delimiterTrims === 'multiline') {
+      open = `{${lexed[1]}-`;
+      close = `-${lexed[lexed.length - 2]}}`;
+    } else if (delimiterTrims === 'linebreak') {
+      open = `{${lexed[1]}-`;
+    }
+
+    if (delimiterPlacement === 'force-multiline') {
+      open += NWL;
+      close = NWL + close;
+    }
+
+    for (let x = 0; x < liquid.logic.length; x++) {
+
+      lexed[liquid.logic[x]] = NWL + lexed[liquid.logic[x]];
+
+    }
+  }
+
+  return open + lexed.slice(o, c).join(NIL).trim() + close;
+
+}
 
 /**
  * Delimiters
@@ -262,7 +527,7 @@ export function normalize (input: string, tname: string, rules: LiquidRules) {
  * Determines the indexes of Liquid tag delimiters from provided input.
  * Returns an array where `[0]` is opening index and `[1]` is closing
  */
-export function delims (input: string): [ open: number, close: number ] {
+export function delims (input: string | string[]): [ open: number, close: number ] {
 
   return [
     is(input[2], cc.DSH) ? 3 : 2,
