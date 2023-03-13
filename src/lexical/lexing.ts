@@ -11,11 +11,11 @@ import { cc } from 'lexical/codes';
  * Optionally provide a slice offset index to slice the tag name. Helpful in situations
  * when we need to exclude `end` from `endtag`
  */
-export function getTagName (tag: string, slice: number = NaN) {
+export function getTagName (tag: string, slice: number = NaN, fallback?: string) {
 
   if (typeof tag !== 'string') return NIL;
 
-  if (not(tag, cc.LAN) && not(tag, cc.LCB)) return tag;
+  if (not(tag, cc.LAN) && not(tag, cc.LCB)) return fallback || tag;
 
   if (is(tag, cc.LAN)) {
 
@@ -34,7 +34,7 @@ export function getTagName (tag: string, slice: number = NaN) {
     ? tag.slice(3).trimStart()
     : tag.slice(2).trimStart();
 
-  const tname = name.slice(0, name.search(/[\s=|!<>,.[]|-?[%}]}/));
+  const tname = name.slice(0, name.search(/[\s=|!<>,[]|-?[%}]}/));
 
   return isNaN(slice) ? tname : tname.slice(slice);
 
@@ -53,5 +53,17 @@ export function getTagName (tag: string, slice: number = NaN) {
 export function qc (to: string) {
 
   return (m: string, i: number, input: string) => not(input[i - 1], cc.BWS) ? to : m;
+
+}
+
+/**
+ * Count Occurances
+ *
+ * Counts the number of occurances of a character in the provided
+ * string and returns the number.
+ */
+export function countChars (string: string, char: string) {
+
+  return string.split(char).length - 1;
 
 }
