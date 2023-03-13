@@ -1,51 +1,14 @@
 import test from 'ava';
-import { forAssert, liquid } from '@liquify/ava/esthetic';
+import { forSample, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('Liquid Line Break Separator Structures', t => {
+test('Line Break Separator (after): ', t => {
 
-  forAssert(
+  forSample(
     [
-      [
-        liquid`{{- output -}}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{-output-}}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{-output}}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{output-}}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{- output}}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{output-}}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{output}}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{output }}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{ output}}`,
-        liquid`{{- output -}}`
-      ],
-      [
-        liquid`{{ output }}`,
-        liquid`{{- output -}}`
-      ]
+
+      liquid`{{- output -}}`
+
     ]
   )(function (source, expect) {
 

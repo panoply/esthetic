@@ -1,6 +1,59 @@
 import test from 'ava';
-import { liquid, forSample } from '@liquify/ava/esthetic';
+import { liquid, forAssert, forSample } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
+
+test('Liquid Tag: Normalising spacing of Liquid Tag internal expressions', t => {
+
+  forAssert(
+    [
+      [
+        liquid`{% # Extraneous spacing between characters within a Liquid Tag %}
+
+
+
+          {% liquid
+            if x==foo .   property [   0   ]  .   xxx  and bar   !=   baz  or 5000<   2000
+              unless   y ==x
+            assign   var    =   xxx |filter : ' preserve-string '|filter:100|filter   :true
+            echo 'foo' | filter | filter: 'bar'  ,  300 | append: 'from'  , 'to'  , something  , 1000
+            echo 'foo' |filter|filter:'bar',300 | append:'from' ,'to',something  ,   1000
+              endunless
+            endif
+          %}
+
+          {% if x==foo and bar   !=   baz  or 5000<   2000 %}
+          {% endif %}
+
+        `,
+        liquid`{% # Extraneous spacing between characters within a Liquid Tag %}
+
+          {% liquid
+
+            if x == foo and bar != baz or 5000 < 2000
+              unless y == x
+                assign var = xxx | filter: ' preserve-string ' | filter: 100 | filter: true
+              endunless
+            endif
+          %}
+
+        `
+      ]
+    ]
+  )(function (source, expected) {
+
+    const actual = esthetic.format(source, {
+      language: 'liquid',
+      markup: {
+        forceAttribute: 2,
+        normalizeSpacing: true
+      }
+    });
+
+    console.log(actual);
+    //  t.deepEqual(actual, expected);
+
+  });
+});
 
 test('Structure Test: Indentation depth levels encapsulated by markup', t => {
 
@@ -59,14 +112,14 @@ test('Structure Test: Indentation depth levels encapsulated by markup', t => {
 
       `
     ]
-  )({
-    language: 'liquid',
-    markup: {
-      forceAttribute: 2,
-      ignoreJS: false,
-      ignoreJSON: false
+  )(
+    {
+      language: 'liquid',
+      markup: {
+        forceAttribute: 2
+      }
     }
-  })(function (source, rules) {
+  )(function (source, rules) {
 
     const actual = esthetic.format(source, rules);
 
