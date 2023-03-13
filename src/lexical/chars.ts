@@ -14,6 +14,11 @@ export const NIL = '';
 export const DQO = '"';
 
 /**
+ * `,` –  Comma Character
+ */
+export const COM = ',';
+
+/**
  * `'` –  Single quotation character
  */
 export const SQO = "'";
