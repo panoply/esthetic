@@ -1,5 +1,5 @@
 import type { Types, ScriptRules } from 'types/index';
-import { repeatChar, is, not } from 'utils';
+import { repeatChar, is, not, isUndefined } from 'utils/helpers';
 import { NIL, NWL, WSP } from 'chars';
 import { cc as ch } from 'lexical/codes';
 import { parse } from 'parse/parser';
@@ -149,7 +149,7 @@ export function script () {
     const wordlist = [];
     const count = [];
 
-    function comment () {
+    function onComment () {
 
       destructfix(false, false);
 
@@ -169,7 +169,7 @@ export function script () {
           aa = aa - 1;
           glist[aa] = glist[aa].replace(/\s+/g, NIL);
 
-          if (glist[aa] !== NIL) parse.scopes.push([ glist[aa], -1 ]);
+          if (glist[aa] !== NIL) parse.stack.push([ glist[aa], -1 ]);
 
         } while (aa > 0);
       }
@@ -189,7 +189,7 @@ export function script () {
 
         if (a < b - 1 && data.stack[aa] !== 'block' && (is(data.token[aa], ch.LCB) || data.token[aa] === 'x{')) {
 
-          let bb = parse.scopes.length;
+          let bb = parse.stack.length;
 
           data.begin.splice(a, 0, data.begin[aa]);
           data.ender.splice(a, 0, data.ender[aa]);
@@ -202,9 +202,9 @@ export function script () {
           if (bb > 0) {
             do {
               bb = bb - 1;
-              if (parse.scopes[bb][1] === aa) {
-                parse.scopes[bb][1] = a;
-              } else if (parse.scopes[bb][1] < a) {
+              if (parse.stack[bb][1] === aa) {
+                parse.stack[bb][1] = a;
+              } else if (parse.stack[bb][1] < a) {
                 break;
               }
             } while (bb > 0);
@@ -446,20 +446,17 @@ export function script () {
 
     };
 
-    function end () {
+    function onEnd () {
 
       /**
        * Extra Indentations
        */
-      const ei = extraindent[extraindent.length - 1] === undefined
-        ? []
-        : extraindent[extraindent.length - 1];
+      const ei = isUndefined(extraindent[extraindent.length - 1]) ? [] : extraindent[extraindent.length - 1];
 
-      const markuplist = () => {
+      function markuplist () {
 
         let aa = a;
         let markup = false;
-
         const begin = data.begin[aa];
 
         do {
@@ -500,8 +497,7 @@ export function script () {
         is(ctoke, ch.RPR) &&
         is(data.token[a + 1], ch.DOT) &&
         not(data.token[ei[0]], ch.COL) &&
-        ei[ei.length - 1] > -1
-      ) {
+        ei[ei.length - 1] > -1) {
 
         let c = data.begin[a];
         let d = false;
@@ -692,7 +688,6 @@ export function script () {
               }
 
             } else {
-
               c = data.begin[c];
             }
 
@@ -704,7 +699,7 @@ export function script () {
         vindex.pop();
       }
 
-      if (option.bracePadding === false && ctoke !== '}' && ltype !== 'markup') {
+      if (option.bracePadding === false && ctoke !== '}' && ltype !== 'markup' && ltype !== 'liquid') {
         level[a - 1] = -20;
       }
 
@@ -741,15 +736,12 @@ export function script () {
         level[a - 1] = indent;
         level.push(-20);
 
-      } else if (
-        (
-          data.stack[a] === 'object' || (
-            data.begin[a] === 0 &&
-            is(ctoke, ch.RCB)
-          )
-        ) &&
-        ei.length > 0
-      ) {
+      } else if (ei.length > 0 && (
+        data.stack[a] === 'object' || (
+          data.begin[a] === 0 &&
+          is(ctoke, ch.RCB)
+        )
+      )) {
 
         endExtraInd();
 
@@ -779,8 +771,8 @@ export function script () {
 
         if (
           countx > 0 && (
-            rules.language !== 'jsx' || (
-              rules.language === 'jsx' &&
+            parse.language !== 'jsx' || (
+              parse.language === 'jsx' &&
               data.token[data.begin[a] - 1] !== 'render'
             )
           )
@@ -908,14 +900,8 @@ export function script () {
                   aa = open;
 
                   do {
-
                     aa = aa + 1;
-
-                    if (is(data.token[aa], ch.SEM) && data.begin[
-                      aa] === open) {
-                      level[aa] = ind;
-                    }
-
+                    if (is(data.token[aa], ch.SEM) && data.begin[aa] === open) level[aa] = ind;
                   } while (aa < a);
                 }
               }
@@ -935,8 +921,7 @@ export function script () {
 
             } else if (data.begin[aa] === open) {
 
-              if (data.token[aa] === '?') {
-
+              if (is(data.token[aa], ch.QWS)) {
                 tern = true;
               } else if (is(data.token[aa], ch.COM) && comma === false) {
                 comma = true;
@@ -947,7 +932,7 @@ export function script () {
                 mark = true;
               }
 
-              if (level[aa] > -9 && data.token[aa] !== ',' && data.types[aa] !== 'markup') {
+              if (level[aa] > -9 && not(data.token[aa], ch.COM) && data.types[aa] !== 'markup') {
 
                 len = 0;
 
@@ -980,7 +965,7 @@ export function script () {
 
           if (
             comma === false &&
-            data.token[data.begin[a] + 1].charAt(0) === '`'
+            is(data.token[data.begin[a] + 1], ch.TQO)
           ) {
             level[data.begin[a]] = -20;
             level[a - 1] = -20;
@@ -999,22 +984,16 @@ export function script () {
 
               ind = level[open];
 
-              if (data.token[open - 1] === '[') {
+              if (is(data.token[open - 1], ch.LSB)) {
 
                 aa = a;
 
                 do {
                   aa = aa + 1;
-                  if (
-                    data.types[aa] === 'end' ||
-                    is(data.token[aa], ch.COM) ||
-                    is(data.token[aa], ch.SEM)
-                  ) {
-                    break;
-                  }
+                  if (data.types[aa] === 'end' || is(data.token[aa], ch.COM) || is(data.token[aa], ch.SEM)) break;
                 } while (aa < b);
 
-                if (data.token[aa] === ']') {
+                if (is(data.token[aa], ch.RSB)) {
                   ind = ind - 1;
                   array = true;
                 }
@@ -1091,7 +1070,7 @@ export function script () {
             level[data.begin[a] - 1] = -10;
           }
 
-        } else if (rules.language === 'jsx') {
+        } else if (parse.language === 'jsx' || parse.language === 'tsx') {
           markuplist();
         } else {
           level[a - 1] = -20;
@@ -1102,7 +1081,7 @@ export function script () {
       } else if (destruct[destruct.length - 1] === true) {
 
         if (
-          ctoke === ']' &&
+          is(ctoke, ch.RSB) &&
           data.begin[a] - 1 > 0 &&
           data.token[data.begin[data.begin[a] - 1]] === '['
         ) {
@@ -1111,9 +1090,9 @@ export function script () {
 
         if (data.begin[a] < level.length) level[data.begin[a]] = -20;
 
-        if (rules.language === 'jsx') {
+        if (parse.language === 'jsx' || parse.language === 'tsx') {
           markuplist();
-        } else if (ctoke === ']' && level[data.begin[a]] > -1) {
+        } else if (is(ctoke, ch.RSB) && level[data.begin[a]] > -1) {
           level[a - 1] = level[data.begin[a]] - 1;
         } else {
           level[a - 1] = -20;
@@ -1132,13 +1111,14 @@ export function script () {
         level.push(-20);
 
       } else if (
+        ltype.indexOf('liquid') < 0 && // PATCH SO LIQUID TOKENS DONT END WITH: }}} (3 LCB)
         data.types[a - 1] !== 'comment' && (
           (
             is(ltoke, ch.LCB) &&
             is(ctoke, ch.RCB)
           ) || (
             is(ltoke, ch.LSB) &&
-            ctoke === ']'
+            is(ctoke, ch.RSB)
           )
         )
       ) {
@@ -1146,7 +1126,7 @@ export function script () {
         level[a - 1] = -20;
         level.push(-20);
 
-      } else if (ctoke === ']') {
+      } else if (is(ctoke, ch.RSB)) {
 
         if (
           (
@@ -1154,7 +1134,8 @@ export function script () {
             destruct[destruct.length - 1] === false &&
             option.arrayFormat !== 'inline'
           ) || (
-            is(ltoke, ch.RSB) && level[a - 2] === indent + 1
+            is(ltoke, ch.RSB) &&
+            level[a - 2] === indent + 1
           )
         ) {
 
@@ -1162,6 +1143,7 @@ export function script () {
           level[data.begin[a]] = indent + 1;
 
         } else if (level[a - 1] === -10) {
+
           level[a - 1] = -20;
         }
 
@@ -1178,8 +1160,8 @@ export function script () {
 
           do {
 
-            if (data.token[c] === ']') d = d + 1;
-            if (data.token[c] === '[') {
+            if (is(data.token[c], ch.RSB)) d = d + 1;
+            if (is(data.token[c], ch.LSB)) {
 
               d = d - 1;
 
@@ -1187,9 +1169,9 @@ export function script () {
 
                 if (
                   c > 0 && (
-                    data.token[c + 1] === '{' ||
-                    data.token[c + 1] === 'x{' ||
-                    data.token[c + 1] === '['
+                    is(data.token[c + 1], ch.LCB) ||
+                    is(data.token[c + 1], ch.LSB) ||
+                    data.token[c + 1] === 'x{'
                   )
                 ) {
 
@@ -1197,7 +1179,7 @@ export function script () {
                   break;
                 }
 
-                if (data.token[c + 1] !== '[' || lastlist === false) {
+                if (not(data.token[c + 1], ch.LSB) || lastlist === false) {
                   level[c] = -20;
                   break;
                 }
@@ -1214,7 +1196,7 @@ export function script () {
 
           } while (c > -1);
 
-        } else if (rules.language === 'jsx') {
+        } else if (parse.language === 'jsx' || parse.language === 'tsx') {
           markuplist();
         }
 
@@ -1224,10 +1206,8 @@ export function script () {
           const begin = data.begin[a];
 
           do {
-
             c = c - 1;
             if (data.types[c] === 'end') break;
-
           } while (c > begin);
 
           if (c > begin) {
@@ -1269,6 +1249,7 @@ export function script () {
         level[a - 1] = indent;
 
       } else {
+
         level.push(-20);
       }
 
@@ -1302,27 +1283,26 @@ export function script () {
         ei[c] < 0 && (
           is(ctoke, ch.SEM) ||
           ctoke === 'x;' ||
-          ctoke === ')' ||
+          is(ctoke, ch.RPR) ||
           ctoke === 'x)' ||
           is(ctoke, ch.RCB) ||
           ctoke === 'x}'
         )
       ) {
+
         ei.pop();
         return;
       }
 
       if (c < 0 || ei[c] < 0) return;
 
-      if (ctoke === ':') {
-
-        if (data.token[ei[c]] !== '?') {
-
+      if (is(ctoke, ch.COL)) {
+        if (not(data.token[ei[c]], ch.QWS)) {
           do {
             ei.pop();
             c = c - 1;
             indent = indent - 1;
-          } while (c > -1 && ei[c] > -1 && data.token[ei[c]] !== '?');
+          } while (c > -1 && ei[c] > -1 && not(data.token[ei[c]], ch.QWS));
         }
 
         ei[c] = a;
@@ -1336,7 +1316,7 @@ export function script () {
         } while (c > -1 && ei[c] > -1);
       }
 
-      if ((data.stack[a] === 'array' || ctoke === ',') && ei.length < 1) ei.push(-1);
+      if ((data.stack[a] === 'array' || is(ctoke, ch.COM)) && ei.length < 1) ei.push(-1);
 
     };
 
@@ -1399,7 +1379,7 @@ export function script () {
       } while (bb > 0 && bb > cc);
     };
 
-    function markup () {
+    function onMarkup () {
 
       if (
         (
@@ -1430,11 +1410,9 @@ export function script () {
 
     };
 
-    function operator () {
+    function onOperator () {
 
-      const ei = (extraindent[extraindent.length - 1] === undefined)
-        ? []
-        : extraindent[extraindent.length - 1];
+      const ei = isUndefined(extraindent[extraindent.length - 1]) ? [] : extraindent[extraindent.length - 1];
 
       function opWrap () {
 
@@ -2164,7 +2142,7 @@ export function script () {
 
     };
 
-    function reference () {
+    function onReference () {
 
       // beautify_script_level_reference_hoist
       const hoist = () => {
@@ -2172,7 +2150,7 @@ export function script () {
         let func = data.begin[a];
 
         if (func < 0) {
-          parse.scopes.push([ data.token[a], -1 ]);
+          parse.stack.push([ data.token[a], -1 ]);
         } else {
 
           if (data.stack[func + 1] !== 'function') {
@@ -2181,7 +2159,7 @@ export function script () {
             } while (func > -1 && data.stack[func + 1] !== 'function');
           }
 
-          parse.scopes.push([ data.token[a], func ]);
+          parse.stack.push([ data.token[a], func ]);
         }
       };
 
@@ -2220,16 +2198,16 @@ export function script () {
 
       } else if (ltoke === 'function') {
 
-        parse.scopes.push([ data.token[a], a ]);
+        parse.stack.push([ data.token[a], a ]);
 
       } else if (ltoke === 'let' || ltoke === 'const') {
 
         // not hoisted references following declaration keyword
-        parse.scopes.push([ data.token[a], a ]);
+        parse.stack.push([ data.token[a], a ]);
 
       } else if (data.stack[a] === 'arguments') {
 
-        parse.scopes.push([ data.token[a], a ]);
+        parse.stack.push([ data.token[a], a ]);
       } else if (is(ltoke, ch.COM)) {
 
         // references following a comma, must be tested to see if a declaration list
@@ -2247,7 +2225,7 @@ export function script () {
         if (data.token[index] === 'var') {
           hoist();
         } else if (data.token[index] === 'let' || data.token[index] === 'const') {
-          parse.scopes.push([ data.token[a], a ]);
+          parse.stack.push([ data.token[a], a ]);
         }
       }
 
@@ -2257,9 +2235,7 @@ export function script () {
 
     function separator () {
 
-      const ei = (extraindent[extraindent.length - 1] === undefined)
-        ? []
-        : extraindent[extraindent.length - 1];
+      const ei = isUndefined(extraindent[extraindent.length - 1]) ? [] : extraindent[extraindent.length - 1];
 
       const propertybreak = () => {
 
@@ -2472,7 +2448,7 @@ export function script () {
             is(data.token[data.begin[a]], ch.LPR) ||
             data.token[data.begin[a]] === 'x('
           ) &&
-          rules.language !== 'jsx' &&
+          parse.language !== 'jsx' &&
           data.stack[a] !== 'global' && (
             (
               data.types[a - 1] !== 'string' &&
@@ -2698,7 +2674,7 @@ export function script () {
       level.push(-20);
     };
 
-    function start () {
+    function onStart () {
 
       const deep = data.stack[a + 1];
       const deeper = (a === 0) ? data.stack[a] : data.stack[a - 1];
@@ -3067,7 +3043,7 @@ export function script () {
       }
     };
 
-    function string () {
+    function onString () {
 
       if (ctoke.length === 1) {
 
@@ -3101,14 +3077,14 @@ export function script () {
 
     };
 
-    function template () {
+    function onLiquid () {
 
       // HOT PATCH
       //
       // Let's preserve occurances of Liquid tokens contained within
       // JSON strings. This prevents extra spaces being applied.
       //
-      if (rules.language !== 'json' && data.types[a - 1] !== 'string') {
+      if (ltype !== 'string') {
 
         if (ctype === 'liquid_else') {
           level[a - 1] = indent - 1;
@@ -3120,8 +3096,7 @@ export function script () {
 
           if (data.lines[a - 1] < 1) level[a - 1] = -20;
 
-          // eslint-disable-next-line no-mixed-operators
-          if (data.lines[a] > 0 || ltoke.length === 1 && ltype === 'string') {
+          if (data.lines[a] > 0 || (ltoke.length === 1 && ltype === 'string')) {
             level.push(indent);
           } else {
             level.push(-20);
@@ -3145,8 +3120,12 @@ export function script () {
 
         } else if (ctype === 'liquid') {
 
+          if (is(ltoke, ch.COL) && level[a - 2] === -10) level[a - 2] = -20;
+
           if (data.lines[a] > 0) {
+
             level.push(indent);
+
           } else {
             level.push(-20);
           }
@@ -3155,7 +3134,7 @@ export function script () {
 
     };
 
-    function templateString () {
+    function onTemplate () {
 
       if (ctype === 'template_string_start') {
         indent = indent + 1;
@@ -3189,7 +3168,7 @@ export function script () {
       }
     };
 
-    function types () {
+    function onTypes () {
 
       if (
         is(data.token[a - 1], ch.COM) || (
@@ -3212,7 +3191,7 @@ export function script () {
 
     };
 
-    function word () {
+    function onWord () {
 
       if ((
         is(ltoke, ch.RPR) ||
@@ -3394,7 +3373,22 @@ export function script () {
       /* INLINE RETURNS LOGIC                         */
       /* -------------------------------------------- */
 
-      level.push(-10);
+      if (
+        rules.script.inlineReturn === true &&
+        ctoke === 'return' &&
+        ltype === 'start' &&
+        data.stack[a] === 'if' &&
+        ltoke === 'x{'
+      ) {
+
+        level[a - 1] = -20;
+        level.push(-20);
+        console.log(ltoke, ltype, ctoke, ctype, level[a], indent);
+
+      } else {
+
+        level.push(-10);
+      }
     };
 
     do {
@@ -3405,31 +3399,31 @@ export function script () {
         ctoke = data.token[a];
 
         if (ctype === 'comment') {
-          comment();
+          onComment();
         } else if (ctype === 'regex') {
           level.push(-20);
         } else if (ctype === 'string') {
-          string();
+          onString();
         } else if (ctype.indexOf('template_string') === 0) {
-          templateString();
+          onTemplate();
         } else if (ctype === 'separator') {
           separator();
         } else if (ctype === 'start') {
-          start();
+          onStart();
         } else if (ctype === 'end') {
-          end();
+          onEnd();
         } else if (ctype === 'type' || ctype === 'type_start' || ctype === 'type_end') {
-          types();
+          onTypes();
         } else if (ctype === 'operator') {
-          operator();
+          onOperator();
         } else if (ctype === 'word') {
-          word();
+          onWord();
         } else if (ctype === 'reference') {
-          reference();
+          onReference();
         } else if (ctype === 'markup') {
-          markup();
+          onMarkup();
         } else if (ctype.indexOf('liquid') === 0) {
-          template();
+          onLiquid();
         } else if (ctype === 'generic') {
 
           if (
