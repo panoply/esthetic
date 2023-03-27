@@ -2433,6 +2433,11 @@ export function markup (input?: string) {
       let isliq: boolean = false;
 
       /**
+       * Whether or not newline preservation in Liquid tokens is applied
+       */
+      let ntest: boolean = false;
+
+      /**
        * Whether or not we should invoke a whitespace test
        */
       let stest: boolean = false;
@@ -2713,6 +2718,52 @@ export function markup (input?: string) {
               return MarkupError(ParseError.MissingLiquidCloseDelimiter, lexed.join(NIL));
 
             }
+
+          } else if (
+            isliq === true &&
+            u.is(b[a], cc.NWL) &&
+            rules.liquid.preserveInternal === false && (
+              rules.liquid.delimiterPlacement === 'preserve' ||
+              rules.liquid.delimiterPlacement === 'consistent'
+            )
+          ) {
+
+            // Preserve newlines at starting delimiter, eg: {{\n or {%\n etc
+            //
+            if ((
+              u.is(b[a - 1], cc.DSH) &&
+              u.is(b[a - 3], cc.LCB) && (
+                u.is(b[a - 2], cc.LCB) ||
+                u.is(b[a - 2], cc.PER)
+              )
+            ) || (
+              u.is(b[a - 2], cc.LCB) && (
+                u.is(b[a - 1], cc.LCB) ||
+                u.is(b[a - 1], cc.PER)
+              )
+            )) {
+
+              ntest = true;
+
+            } else if (/^\s*-?[%}]}/.test(glue(a)) === true) {
+
+              // Preserve newlines at ending delimiters, eg: \n}} or %} etc
+              // We will also move ahead in the traversal, skipping additional
+              // whitespace or newline occurances, as per the the do/while loop
+              //
+              while (u.ws(b[a]) === true) {
+                a = a + 1;
+                if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
+              }
+
+              lexed.push(b[a]);
+
+              console.log(b[a]);
+
+              ntest = true;
+
+            }
+
           }
 
           // HTML Eng Tags, eg: </tag>
@@ -2908,8 +2959,9 @@ export function markup (input?: string) {
 
               if (
                 rules.liquid.preserveInternal === false &&
-                u.is(b[a], cc.NWL) &&
                 tname !== 'liquid' &&
+                ntest === false &&
+                u.is(b[a], cc.NWL) &&
                 lexed.length > 3 && !(
                   (
                     u.is(b[a + 1], cc.DSH) &&
@@ -3014,6 +3066,8 @@ export function markup (input?: string) {
 
                 }
               }
+
+              ntest = false;
 
             }
 
@@ -3679,6 +3733,8 @@ export function markup (input?: string) {
 
       if (ignore === false) {
         if (ltype === 'liquid') {
+
+          console.log(lexed);
           token = lq.tokenize(lexed, tname, liquid, rules);
           if (tname === 'liquid') return parseLiquidTag();
         } else {
