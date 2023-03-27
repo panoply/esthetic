@@ -15,9 +15,9 @@ export enum LogLevel {
   Detailed
 }
 
-export interface ISettings {
+export interface IConfig {
   /**
-   * **Editor Config File**
+   * **Use `.editorconfig` File**
    *
    * Whether or not Æsthetic should inherit and use options defined in `.editorconfig` files.
    * When an `.editorconfig` file is detected in your projects root directory, Æsthetic will
@@ -26,6 +26,15 @@ export interface ISettings {
    * @default false
    */
   editorConfig?: boolean;
+  /**
+   * **Report Statistics**
+   *
+   * Whether or not Æsthetic should track stats. When disabled, Æsthetic will
+   * skip reporting on formatting execution timing of beautification / parse operations.
+   *
+   * @default true
+   */
+  reportStats?: boolean;
   /**
    * **Throw Errors**
    *
@@ -79,4 +88,40 @@ export interface ISettings {
    * @default 'package.json'
    */
   resolveConfig?: LiteralUnion<'package.json' | '.esthetic' | '.esthetic.json', string>
+}
+
+export interface IConfigInternal extends IConfig {
+  /**
+   * **Environment**
+   *
+   * Informs up the current execution environment Æsthetic is running.
+   *
+   * @default 'node'
+   */
+  env?: 'node' | 'browser';
+  /**
+   * **CWD**
+   *
+   * Reference to the current working directory path location. This will
+   * be `null` when executing in `browser` environments.
+   *
+   * @default 'node'
+   */
+  cwd?: string;
+  /**
+   * **Version**
+   *
+   * The Æsthetic version
+   *
+   * @default 'node'
+   */
+  version?: string;
+  /**
+   * **Last Update**
+   *
+   * The last known update applied to Æsthetic. Relates to the version
+   *
+   * @default 'node'
+   */
+  lastUpdate?: string;
 }

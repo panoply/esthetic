@@ -19,12 +19,12 @@ export const warrington: Rules = {
   },
   markup: {
     commentNewline: true,
-    delimiterForce: false,
+    delimiterTerminus: 'adapt',
     forceAttribute: 1,
-    forceLeadAttribute: true,
     forceIndent: true,
     ignoreCSS: true,
     ignoreJSON: false,
+    lineBreakValue: 'indent',
     selfCloseSpace: true,
     selfCloseSVG: true,
     stripAttributeLines: true,
@@ -36,7 +36,6 @@ export const warrington: Rules = {
   },
   style: {
     commentIndent: false,
-    correct: true,
     quoteConvert: 'double'
   }
 };

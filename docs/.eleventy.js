@@ -578,6 +578,10 @@ module.exports = eleventy(function (config) {
     }
   });
 
+  config.addPassthroughCopy({
+    'node_modules/moloko/dist': 'moloko'
+  })
+
 
 
   // config.addPlugin(htmlmin, {

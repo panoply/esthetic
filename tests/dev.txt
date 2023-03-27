@@ -1,30 +1,33 @@
+<ul>
+<li>
+  <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }}
+  product--{{ section.settings.gallery_layout }}     product--mobile-{{ section.settings.mobile_thumbnails }}
+  grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}
+  "
+     {%- if settings.predictive_search_enabled -%}
+                        role="combobox"
+                        aria-expanded="false"
+                        aria-owns="predictive-search-results-list"
+                        aria-controls="predictive-search-results-list"
+                        aria-haspopup="listbox"
+                        aria-autocomplete="list"
+                        autocorrect="off"
+                        autocomplete="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                      {%- endif -%}>
 
+  <input class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }}
+  product--{{ section.settings.gallery_layout }}     product--mobile-{{ section.settings.mobile_thumbnails }}
+  grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}
+  "
+  id="foo"/>
 
-<div
-  data-z
-  data-a
-  id="x"
-  data-d
-  data-c
-  data-b
-  data-e
-  class="xx">
-
-  <div
-    data-z
-    data-a
-    id="x"
-    data-d
-    data-c
-    data-b
-    data-e
-    class="xx">
-
-{% if 'string' %}
-  {{ "string" | filter: 'string' }}
-{% endif %}
-
-    </div>
-
-</div>
-
+    <section class="
+    grid__item product__media-wrapper
+    {% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %}">
+      {% render 'product-media-gallery', variant_images: variant_images %}
+    </section>
+  </div>
+  </li>
+</ul>

@@ -11,6 +11,7 @@ export const strict: Rules = {
   language: 'auto',
   preserveLine: 1,
   wrap: 0,
+  wrapFraction: 80,
   liquid: {
     ignoreTagList: [],
     commentNewline: true,
@@ -22,8 +23,7 @@ export const strict: Rules = {
     delimiterPlacement: 'consistent'
   },
   markup: {
-    attributeSort: true,
-    attributeSortList: [
+    attributeSort: [
       'id',
       'class',
       'type',
@@ -34,13 +34,13 @@ export const strict: Rules = {
     ],
     attributeCasing: 'lowercase-name',
     commentNewline: true,
-    delimiterForce: true,
+    delimiterTerminus: 'adapt',
     forceAttribute: 1,
-    forceLeadAttribute: true,
     forceIndent: true,
     ignoreCSS: false,
     ignoreJSON: false,
     ignoreJS: false,
+    lineBreakValue: 'force-indent',
     selfCloseSpace: true,
     selfCloseSVG: true,
     stripAttributeLines: true,
@@ -54,7 +54,6 @@ export const strict: Rules = {
   style: {
     commentNewline: true,
     commentIndent: true,
-    correct: true,
     quoteConvert: 'double',
     noLeadZero: true,
     sortProperties: true,

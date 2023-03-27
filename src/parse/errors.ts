@@ -1,35 +1,55 @@
+import type { IParseError, Syntactic } from 'types';
 import { parse } from 'parse/parser';
 import { NWL } from 'lexical/chars';
-import { join } from 'utils';
+import { isUndefined, join } from 'utils/helpers';
 import { getLanguageName } from 'rules/language';
 import { ParseError } from 'lexical/errors';
-import { IParseError } from 'types/index';
+import { getTagName } from 'lexical/lexing';
+import { config } from 'config';
 
 /**
  * Markup Errors
  *
  * Generates the error string to throw in markup lexing
  */
-export function MarkupError (error: ParseError, token: string, name?: string, start?: string) {
+export function MarkupError (errorCode: ParseError, token: string, tname?: string) {
 
-  const info = message(error, token, name || parse.stack.entry[0]);
-  const err: IParseError = {};
+  if (!tname) tname = getTagName(token);
 
-  err.code = error;
-  err.language = getLanguageName(parse.language);
-  err.details = info.details;
-  err.message = info.message;
+  const error: IParseError = message(errorCode, tname, parse.lineNumber);
+  error.language = getLanguageName(parse.language);
 
   parse.error = join(
-    `Syntax Error (line ${parse.lineNumber}): ${info.message}`
+    error.message
     , NWL
-    , snippet()
+    , getSampleSnippet()
     , NWL
-    , info.details
+    , error.details
     , NWL
     , `Language: ${getLanguageName(parse.language)} `
-    , `Location: ${start}:${parse.lineColumn}  ⟷  ${parse.lineNumber}:${parse.lineColumn}`
+    , `Location: ${parse.lineNumber}:${parse.lineColumn}`
     , `Æsthetic: Parse Failed (Code: ${error})`
+  );
+
+}
+
+export function SyntacticError (errorCode: ParseError, context: Syntactic, tname?: string) {
+
+  if (!tname) tname = getTagName(context.token);
+
+  const error: IParseError = message(errorCode, tname, context.line);
+  error.language = getLanguageName(parse.language);
+
+  parse.error = join(
+    error.message
+    , NWL
+    , getSampleToken(context)
+    , NWL
+    , error.details
+    , NWL
+    , ansi(`Language: ${getLanguageName(parse.language)}`)
+    , ansi(`Location: ${context.line}`)
+    , ansi(`Æsthetic: Parse Failed (Code: ${errorCode})`)
   );
 
 }
@@ -46,7 +66,7 @@ export function CustomError (error: ParseError, context: {
   line: number;
 }) {
 
-  const info = message(error, context.token, context.name);
+  const info = message(error, context.name);
   const err: IParseError = {};
 
   err.code = error;
@@ -82,12 +102,9 @@ export function RuleError (error: {
   return join(
     `Rule Error: ${error.message}`
     , NWL
-    , 'Definition:'
-    , `  ${error.option}`
-    , 'Provided:'
-    , `  ${error.provided} `
-    , 'Expected:'
-    , `  ${error.expected.join('  \n')} `
+    , `Definition: ${error.option}`
+    , `Provided: ${error.provided} `
+    , `Expected: ${error.expected.join(', ')} `
   );
 
 }
@@ -96,18 +113,113 @@ export function RuleError (error: {
 /* PRIVATES                                     */
 /* -------------------------------------------- */
 
+const point = (size: number) => `\x1b[93m${'^'.repeat(size)}\x1b[39m`;
+
+/**
+ * Get Sample Token
+ *
+ * This function will generate sample snippet when the token is determined
+ * to contain newlines. Such cases occur when we are dealing with a HTML tag,
+ * with multiple attributes.
+ */
+function getSampleToken (context: Syntactic) {
+
+  /**
+   * Line Number
+   */
+  let n: number = context.line - parse.get(context.index).lines;
+
+  /**
+   * Iteree index
+   */
+  let i: number = 0;
+
+  /**
+   * Token capture
+   */
+  let token: string = '';
+
+  /**
+   * The source split reference
+   */
+  const source: string[] = parse.source.split(NWL).slice(n, context.line);
+
+  /**
+   * The line number offset, eg: if line `9 |` we get size of `10 |`
+   * to ensure the sample line numbers are always aligned.
+   */
+  const offset: number = `${context.line + 1}`.length;
+
+  /**
+   * The output store for which all items will be populated
+   */
+  const output: string[] = [];
+
+  /**
+   * Deconstruct various rules
+   */
+  const { indentSize, indentChar } = parse.rules;
+
+  do {
+
+    /**
+     * Line number to write
+     */
+    const l = `${n + 1}`;
+
+    /**
+     * Line number prependiture, notice the starting space if true
+     */
+    const p = offset - l.length > 0 ? ` \x1b[90m${l} |` : `\x1b[90m${l} |`;
+
+    /* -------------------------------------------- */
+    /* BEGIN                                        */
+    /* -------------------------------------------- */
+
+    token = source[i];
+
+    if (i === 0) {
+
+      if (isUndefined(source[i])) {
+        output.push(`${p} \x1b[31m${context.token}\x1b[39m`);
+        break;
+      }
+
+      token = source[i].trimStart();
+      output.push(`${p} \x1b[31m${token}\x1b[39m`);
+
+    } else {
+
+      const match = token.match(/^\s*/);
+
+      if (match !== null && match[0].length > indentSize) {
+        token = indentChar.repeat(indentSize) + token.trimStart();
+        output.push(`${p} \x1b[31m${token}\x1b[39m`);
+      } else {
+        output.push(`${p} \x1b[31m${token}\x1b[39m`);
+      }
+    }
+
+    i = i + 1;
+    n = n + 1;
+
+  } while (i < source.length);
+
+  return output.join(NWL);
+
+}
+
 /**
  * Error Snippet
  *
  * Generates an error snippet code preview for parse errors that occur.
  */
-function snippet () {
+function getSampleSnippet (line = parse.lineNumber) {
 
   const output: string[] = [];
   const input: string[] = parse.source.split(NWL);
-  const ender: number = parse.lineNumber - 1;
+  const ender: number = line;
   const chars = `${ender + 1}`.length;
-  const point = (size: number) => `\x1b[31m${'^'.repeat(size)}\x1b[39m`;
 
   let no: number = ender - 1;
   let prev: string = '';
@@ -124,6 +236,7 @@ function snippet () {
     if (no > ender) break;
 
     if (!token) {
+      output.push(`${prepend} \x1b[90m${token || '␤'}`);
       no = no + 1;
       continue;
     }
@@ -133,7 +246,7 @@ function snippet () {
       if (token.length === 0) {
         output.push(`${' '.repeat(chars + 2)} ${point(prev.length)}`);
       } else {
-        output.push(`${prepend} \x1b[90m${token}`);
+        output.push(`${prepend} \x1b[31m${token}\x1b[39m`);
         output.push(`${' '.repeat(chars + 2)} ${point(token.length)}`);
       }
 
@@ -153,11 +266,28 @@ function snippet () {
 }
 
 /**
+ * Join (newline)
+ *
+ * String concatenation helper that accepts a spread string list.
+ * Items are joined with newline character
+ */
+function ansi (...message: string[]) {
+
+  if (config.logColors) {
+
+    return `${message.join(NWL)}`.replace(/"(.*?)"/g, '\x1b[31m$1\x1b[39m');
+  }
+
+  return message.join(NWL);
+
+}
+
+/**
  * Error Messages
  *
  * Returns a relating error message based on the provided enum
  */
-function message (code: ParseError, token: string, name: string): {
+function message (code: ParseError, token: string, lineNo: number = parse.lineNumber): {
   code: ParseError,
   message: string;
   details: string;
@@ -166,84 +296,90 @@ function message (code: ParseError, token: string, name: string): {
   return {
     [ParseError.MissingHTMLEndTag]: ({
       code,
-      message: `Missing HTML \`${name}\` end tag`,
-      details: join(
-        `The \`<${name}>\` tag type has an incomplete HTML syntactic structure resulting in a parse error.`,
-        `To resolve the issue check that you have a closing \`</${name}>\` tag. For more information`,
+      message: ansi(`Syntax Error (line ${lineNo}): Missing HTML "${token}" end tag`),
+      details: ansi(
+        `The "<${token}>" tag type has an incomplete HTML syntactic structure resulting in a parse error.`,
+        `To resolve the issue check that you have a closing "</${token}>" tag. For more information`,
         'see: https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags'
       )
     }),
     [ParseError.MissingLiquidEndTag]: ({
       code,
-      message: `Missing Liquid \`end${name}\` tag`,
-      details: join(
-        `The Liquid \`{% ${name} %}\` is a tag block type which requires an end tag be provided.`,
-        `To resolve the issue check that you have an ending \`{% end${name} %}\` tag. For more information`,
-        'see: https://shopify.dev/api/liquid/tags'
+      message: ansi(`Syntax Error (line ${lineNo}): Missing Liquid "end${token}" tag`),
+      details: ansi(
+        `The Liquid "${token}" is a tag block type which requires an end tag be provided.`,
+        'For more information, see: https://shopify.dev/api/liquid/tags'
       )
     }),
     [ParseError.MissingHTMLStartTag]: ({
       code,
-      message: `Missing HTML start \`${token}\` tag`,
-      details: join(
-        `The \`${token}\` tag has incorrect placement or an incomplete structure resulting in a parse error.`,
-        `To resolve the issue, you may need to provide a start \`<${name}>\` tag type or correct the placement. `
+      message: ansi(`Syntax Error (line ${lineNo}): Missing HTML start "${token}" tag`),
+      details: ansi(
+        'There is an incorrect placement or an incomplete structure resulting in a parse error.',
+        `To resolve the issue, you may need to provide a start \`<${token}>\` tag type or correct the placement. `
       )
     }),
     [ParseError.MissingLiquidStartTag]: ({
       code,
-      message: `Missing Liquid start \`{% ${name} %}"\` tag`,
-      details: join(
-        `The \`${token}\` tag has incorrect placement or an incomplete structure resulting in a parse error.`,
-        `To resolve the issue, you may need to provide a start \`{% ${name} %}\` tag type or correct the placement. `
+      message: ansi(`Syntax Error (line ${lineNo}): Missing Liquid start "${token}" tag`),
+      details: ansi(
+        'The Liquid tag has incorrect placement or an incomplete structure resulting in a parse error.',
+        'To resolve the issue, you may need to provide a start tag type or correct the placement. '
+      )
+    }),
+    [ParseError.MissingLiquidCloseDelimiter]: ({
+      code,
+      message: ansi(`Syntax Error (line ${lineNo}): Missing Close Delimiter "%}" or "}}" on liquid tag`),
+      details: ansi(
+        'The Liquid tag is missing its closing delimiter resulting in malformed syntax.'
       )
     }),
     [ParseError.MissingHTMLEndingDelimiter]: ({
       code,
-      message: 'Missing HTML > delimiter on end tag',
-      details: join(
-        `The \`${token}\` tag is missing its closing delimiter resulting in malformed syntax.`,
+      message: ansi(`Syntax Error (line ${lineNo}): Missing HTML ">" delimiter on end tag`),
+      details: ansi(
+        'The HTML tag is missing its closing delimiter resulting in malformed syntax.',
         'You can have Esthetic autofix syntax errors like this by setting the markup rule "correct" to true.'
       )
     }),
     [ParseError.InvalidHTMLCommentAttribute]: ({
       code,
-      message: 'Invalid HTML Comment Attribute',
-      details: join(
+      message: ansi(`Illegal Syntax (line ${lineNo}): Invalid HTML Comment Attribute`),
+      details: ansi(
         'HTML comments are not allowed inside tags, start or end, at all.',
-        `To resolve the issue, remove the comment \`${token}\` or place it above the tag.`,
+        'To resolve the issue, remove the comment or place it above the tag.',
         'For more information see: https://html.spec.whatwg.org/multipage/syntax.html#start-tags'
       )
     }),
     [ParseError.InvalidQuotation]: ({
       code,
-      message: `Invalid quotation \`${token}\` character`,
-      details: join(
-        `Bad quotation character (\u201c, &#x201c) provided on the \`${token}\` tag. Only single (') or double (")`,
+      message: ansi(`Syntax Error (line ${lineNo}): Invalid quotation character`),
+      details: ansi(
+        'Bad quotation character (\u201c, &#x201c) provided. Only single \' or double "',
         'quotations characters are valid in HTML (markup) languages. For more information see:',
         'https://html.spec.whatwg.org/multipage/parsing.html#attribute-value-(double-quoted)-state'
       )
     }),
     [ParseError.InvalidCDATATermination]: ({
       code,
-      message: 'Invalid CDATA Termination Sequence',
-      details: join(
-        `The CDATA \`${token}\` bracket state sequence provided is invalid resulting in a parse error.`,
+      message: ansi(`Syntax Error (line ${lineNo}): Invalid CDATA Termination Sequence`),
+      details: ansi(
+        'The CDATA bracket state sequence provided is invalid resulting in a parse error.',
         'For more information see: https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-bracket-state'
       )
     }),
     [ParseError.InvalidLiquidCharacterSequence]: ({
       code,
-      message: `Invalid character sequence in \`${name}\` token`,
-      details: join(
+      message: ansi(`Syntax Error (line ${lineNo}): Invalid character sequence in "${token}" token`),
+      details: ansi(
         'An invalid sequence of characters defined'
       )
     }),
     [ParseError.UnterminateString]: ({
       code,
-      message: 'Unterminated string',
-      details: join(
-        'There is an unterminated string sequence.'
+      message: ansi(`Syntax Error (line ${lineNo}): Unterminated String`),
+      details: ansi(
+        'There is an unterminated string sequence resulting in a parse error.'
       )
     })
   }[code];

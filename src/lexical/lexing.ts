@@ -1,4 +1,4 @@
-import { is, not, isLast } from 'utils';
+import { is, not, isLast, isString } from 'utils/helpers';
 import { NIL } from 'lexical/chars';
 import { cc } from 'lexical/codes';
 
@@ -13,7 +13,7 @@ import { cc } from 'lexical/codes';
  */
 export function getTagName (tag: string, slice: number = NaN, fallback?: string) {
 
-  if (typeof tag !== 'string') return NIL;
+  if (isString(tag) === false) return NIL;
 
   if (not(tag, cc.LAN) && not(tag, cc.LCB)) return fallback || tag;
 
@@ -30,11 +30,8 @@ export function getTagName (tag: string, slice: number = NaN, fallback?: string)
   }
 
   // Returns the Liquid tag or output token name
-  const name = is(tag[2], cc.DSH)
-    ? tag.slice(3).trimStart()
-    : tag.slice(2).trimStart();
-
-  const tname = name.slice(0, name.search(/[\s=|!<>,[]|-?[%}]}/));
+  const name = is(tag[2], cc.DSH) ? tag.slice(3).trimStart() : tag.slice(2).trimStart();
+  const tname = name.split(/\s|-?[%}]}/).shift();
 
   return isNaN(slice) ? tname : tname.slice(slice);
 

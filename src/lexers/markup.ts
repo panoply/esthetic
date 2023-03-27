@@ -2,7 +2,7 @@ import type { Record, Types, LanguageName, LiquidInternal } from 'types/index';
 import { parse } from 'parse/parser';
 import { sortSafe } from 'parse/sorting';
 import { grammar } from 'parse/grammar';
-import { MarkupError } from 'parse/errors';
+import { MarkupError, SyntacticError } from 'parse/errors';
 import { commentBlock } from 'comments';
 import { DQO, NIL, NWL, SQO, WSP } from 'chars';
 import * as external from 'parse/external';
@@ -11,7 +11,9 @@ import { cc } from 'lexical/codes';
 import * as rx from 'lexical/regex';
 import * as lx from 'lexical/lexing';
 import * as lq from 'lexical/liquid';
-import * as u from 'utils';
+import * as u from 'utils/helpers';
+import { assign } from 'utils/native';
+import { Languages } from 'lexical/enum';
 
 /**
  * Markup Lexer
@@ -126,21 +128,21 @@ export function markup (input?: string) {
 
       parse.push(data, record, NIL);
 
-    } else if (typeof structure === 'object' && !(structure as T[]).length) {
+    } else if (u.isObject(structure)) {
 
-      u.assign(record, structure);
+      assign(record, structure);
       parse.push(data, record, NIL);
 
     } else if (u.isArray(structure)) {
 
       for (const entry of structure as T[]) {
-        u.assign(record, entry);
+        assign(record, entry);
         parse.push(data, record, NIL);
       }
 
     } else if (param) {
 
-      u.assign(record, param);
+      assign(record, param);
       parse.push(data, record, structure as Types);
 
     } else {
@@ -162,7 +164,7 @@ export function markup (input?: string) {
    * - `}}` or `-}}`
    * - `%}`or `-%}`
    */
-  function inner (input: string, tname: string) {
+  function inner (input: string, tname: string = null) {
 
     if (parse.language !== 'html' && parse.language !== 'liquid' && jsx === false) return input;
     if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
@@ -1407,7 +1409,7 @@ export function markup (input?: string) {
       /**
        * Single quotation `'` index in the token
        */
-      let sq = 0;
+      // let sq = 0;
 
       /**
        * The attribute name
@@ -1764,7 +1766,7 @@ export function markup (input?: string) {
 
           eq = attrs[idx][0].indexOf('=');
           dq = attrs[idx][0].indexOf(DQO);
-          sq = attrs[idx][0].indexOf(SQO);
+          // sq = attrs[idx][0].indexOf(SQO);
 
           if (eq < 0) {
 
@@ -1820,7 +1822,26 @@ export function markup (input?: string) {
             // dealing with and handling Liquid attributes specifically
             //
             name = attrs[idx][0].slice(0, eq);
-            value = attrs[idx][0].slice(eq + 1);
+
+            if (
+              /\n/.test(attrs[idx][0]) && (
+                rules.markup.lineBreakValue === 'force-preserve' ||
+                rules.markup.lineBreakValue === 'force-indent' ||
+                rules.markup.lineBreakValue === 'force-align'
+              )
+            ) {
+
+              value = attrs[idx][0][eq + 1]
+              + NWL
+              + attrs[idx][0].slice(eq + 2, -1).trim()
+              + NWL
+              + attrs[idx][0][attrs[idx][0].length - 1];
+
+            } else {
+
+              value = attrs[idx][0].slice(eq + 1);
+
+            }
 
             if (rules.markup.attributeCasing === 'lowercase-name') {
               name = name.toLowerCase();
@@ -1831,6 +1852,8 @@ export function markup (input?: string) {
             } else if (rules.markup.attributeCasing === 'lowercase') {
               name = name.toLowerCase();
               value = value.toLowerCase();
+              attrs[idx][0] = name + '=' + value;
+            } else {
               attrs[idx][0] = name + '=' + value;
             }
 
@@ -2006,7 +2029,7 @@ export function markup (input?: string) {
           const begin = token.indexOf('%}', 2) + 2;
           const last = token.lastIndexOf('{%');
 
-          token = inner(token.slice(0, begin)) + token.slice(begin, last) + inner(token.slice(last));
+          token = inner(token.slice(0, begin), tname) + token.slice(begin, last) + inner(token.slice(last), tname);
 
         }
 
@@ -2679,13 +2702,17 @@ export function markup (input?: string) {
 
             isliq = true;
 
-          } else if (isliq === true && u.is(b[a], cc.RCB) && (
-            u.is(b[a - 1], cc.RCB) ||
-            u.is(b[a - 1], cc.PER)
-          )) {
+          } else if (isliq === true && u.is(b[a], cc.RCB)) {
 
-            isliq = false;
+            if (u.is(b[a - 1], cc.RCB) || u.is(b[a - 1], cc.PER)) {
 
+              isliq = false;
+
+            } else if ((u.is(b[a - 2], cc.RCB) || u.is(b[a - 2], cc.PER)) && u.ws(b[a - 1])) {
+
+              return MarkupError(ParseError.MissingLiquidCloseDelimiter, lexed.join(NIL));
+
+            }
           }
 
           // HTML Eng Tags, eg: </tag>
@@ -4383,6 +4410,22 @@ export function markup (input?: string) {
     }
 
     a = a + 1;
+
+    if (a === c) {
+      if (parse.pairs.size > 0 && parse.pairs.has(parse.stack.index)) {
+
+        console.log(parse.pairs);
+
+        const pair = parse.pairs.get(parse.stack.index);
+
+        if (pair.type === Languages.HTML) {
+
+          SyntacticError(ParseError.MissingHTMLEndTag, pair);
+
+        }
+
+      }
+    }
 
   } while (a < c);
 

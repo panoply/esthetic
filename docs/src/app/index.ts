@@ -4,7 +4,7 @@ import { Drawer } from './components/drawer';
 import { Sticky } from './components/sticky';
 import { Example } from './components/example';
 import { ScrollSpy } from './components/scrollspy';
-//import { Playground  } from './playground/controller';
+import { Playground  } from './components/playground'
 
 import spx from 'spx';
 
@@ -22,6 +22,7 @@ spx.connect({
   stimulus.register('sticky', Sticky);
   stimulus.register('example', Example);
   stimulus.register('scrollspy', ScrollSpy);
+  stimulus.register('playground', Playground);
 });
 
 spx.on('visit', event => {

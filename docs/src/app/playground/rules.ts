@@ -1,7 +1,8 @@
-import type { Definition, Definitions } from 'esthetic';
+import type { Definition, LexerName, Rules } from 'esthetic';
 import m from 'mithril';
 import esthetic from 'esthetic'
 import relapse from 'relapse';
+import moloko from 'moloko-monaco';
 
 /* -------------------------------------------- */
 /* TYPINGS                                      */
@@ -12,132 +13,25 @@ import relapse from 'relapse';
  */
 type Rule = Definition & { rule: string; }
 
-/**
- * Generated dataset
- */
-interface Generate {
-  /**
-   * Global formatting rules
-   */
-  global: Rule[];
-  /**
-   * Liquid specific rules
-   */
-  liquid: Rule[],
-  /**
-   * Markup specific rules
-   */
-  markup: Rule[],
-  /**
-   * Style specific rules
-   */
-  style: Rule[],
-  /**
-   * Script specific rules
-   */
-  script: Rule[],
-  /**
-   * JSON specific rules
-   */
-  json: Rule[]
-}
-
-/* -------------------------------------------- */
-/* UTILITIES                                    */
-/* -------------------------------------------- */
-
-/**
- * Generate Rules
- *
- * This a reducer function which constructs an options mapping
- * categorization of formatting rule definitions.
- */
-
-function generate (acc: Generate, [ rule, options ]) {
-
-  if ((
-    rule === 'language' ||
-    rule === 'lexer' ||
-    rule === 'mode' ||
-    rule === 'languageDefault'
-  )) return acc;
-
-  if (options.lexer === 'all') {
-    if (rule === 'quoteConvert') {
-
-      acc.liquid.push({ ...options, rule, lexer: 'markup', language: 'liquid' });
-      acc.markup.push({ ...options, rule, lexer: 'markup' });
-      acc.script.push({ ...options, rule, lexer: 'style' });
-      acc.style.push({ ...options, rule, lexer: 'script' });
-
-    } else if (rule === 'correct') {
-      acc.markup.push({ ...options, rule, lexer: 'markup' });
-      acc.script.push({ ...options, rule, lexer: 'style' });
-      acc.style.push({ ...options, rule, lexer: 'script' });
-      acc.json.push({ ...options, rule, lexer: 'script', language: 'json' });
-    } else {
-      acc.global.push({ ...options, rule, lexer: 'global' });
-    }
-  } else if (options.lexer === 'markup') {
-
-    if (
-      rule === 'commentIndent' ||
-      rule === 'commentNewline' ||
-      rule === 'correct' ||
-      rule === 'preserveComment'
-    ) {
-
-      acc.liquid.push({ ...options, rule, lexer: 'markup' });
-      acc.markup.push({ ...options, rule, lexer: 'markup' });
-
-    } else if (
-      rule === 'delimiterTrims' ||
-      rule === 'ignoreTagList' ||
-      rule === 'lineBreakSeparator' ||
-      rule === 'normalizeSpacing' ||
-      rule === 'valueForce'
-    ) {
-
-      acc.liquid.push({ ...options, rule, lexer: 'markup' });
-
-    } else {
-
-      acc.markup.push({ ...options, rule, lexer: 'markup' });
-    }
-
-  } else if (options.lexer === 'style') {
-
-    acc.style.push({ ...options, rule, lexer: 'style' });
-
-  } else if (options.lexer === 'script') {
-
-    acc.script.push({ ...options, rule, lexer: 'script' });
-
-    if (
-      rule === 'bracePadding' ||
-      rule === 'objectSort' ||
-      rule === 'objectIndent' ||
-      rule === 'arrayFormat') {
-      acc.json.push({ ...options, rule, lexer: 'script', language: 'json' });
-    }
-  }
-
-  return acc;
-
-}
 
 /* -------------------------------------------- */
 /* COMPONENT                                    */
 /* -------------------------------------------- */
 
-/**
+ /**
  * Rules Sidebar
  *
  * Formatting rules component. This will render the format
  * rulesets to the side of the playground. State is maintained
  * using a meiosis.js variation pattern.
  */
-export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
+export const rules: m.ClosureComponent<{ rules: Rules }> = ({ attrs: { rules } }) => {
+
+  console.log(rules)
+
+  rules.language = 'liquid'
+
+ const isGlobal = (name: string) => name in esthetic.definitions.global
 
   /* -------------------------------------------- */
   /* DATASET                                      */
@@ -148,20 +42,15 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
    * passed to the reducer generator. We live in a society,
    * we are not animals and as such we don't use the prototype.
    */
-  const data: Definitions = {
-    global: [],
-    liquid: [],
-    markup: [],
-    script: [],
-    style: [],
-    json: []
+  const data = {
+    global: Object.entries(esthetic.definitions.global),
+    liquid: Object.entries(esthetic.definitions.liquid),
+    markup: Object.entries(esthetic.definitions.markup),
+    script: Object.entries(esthetic.definitions.script),
+    style: Object.entries(esthetic.definitions.style),
+    json: Object.entries(esthetic.definitions.json)
   };
 
-  /**
-   * Composes a workable data list of formatting rules
-   * from the `definitions` named export or Prettify.
-   */
-  const defs = entries(prettify.definitions).reduce(generate, data);
 
   /* -------------------------------------------- */
   /* BEGIN                                        */
@@ -178,38 +67,47 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
    * The function returns virtual nodes for type `boolean` rule
    * defintions. State is updated `onclick`
    */
-  function boolean (lexer: LexerNames, option: Rule) {
+  function boolean (lexer: LexerName, name: string, option: Rule) {
 
-    const rule: boolean = s.rules[lexer][option.rule];
+    let rule: boolean = isGlobal(name) ? rules[name] : rules[lexer][name];
 
-    return [
-      m(
-        'button.boolean.btn.d-flex.jc-start.w-100'
+    return m('.d-block.py-4.px-5',[
+       m(
+        '.fs-name.uncase.mb-3'
+        , name
+      ),
+       m(
+        'button.boolean.btn.d-flex.jc-start.w-100.uncase'
         , {
           class: rule ? 'enabled' : ''
           , onclick: () => {
-            s.rules[lexer][option.rule] = !rule;
-            return a.format(s.rules);
+
+            rule = !rule
+
+            if(isGlobal(name)) {
+              rules[name] = rule
+            } else {
+              rules[lexer][name] = rule
+            }
+
+            moloko.format(rules);
+
           }
         }
         , m(
           'svg.icon'
           , m(`use[xlink:href="#svg-${rule ? 'checked' : 'unchecked'}"]`)
-        ),
-        m(
-          'code.fc-white.fs-sm.ml-3'
-          , option.rule
         )
         , m(
-          'code.code-badge.ml-auto'
+          'code.code-badge.ml-3'
           , JSON.stringify(rule)
         )
-      ),
-      m(
-        'p.fs-xs.px-3.fc-gray.mt-0'
+      )
+      , m(
+        'p.fs-sm.fc-gray.fw-300.mt-0'
         , option.description
       )
-    ];
+    ]);
 
   };
 
@@ -219,12 +117,16 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
    * The function returns virtual nodes for type `string` rule
    * defintions. State is updated `oninput`
    */
-  function string (lexer: LexerNames, option: Definition & { rule: string }) {
+  function string (lexer: LexerName, name: string, option: Definition) {
 
-    const value: string = s.rules[lexer][option.rule];
+    let value: string = isGlobal(name) ? rules[name] : rules[lexer][name];
 
-    return [
-      m(
+    return m('.d-block.py-4.px-5',[
+       m(
+        '.fs-name.uncase.mb-3'
+        , name
+      )
+      ,m(
         '.string.d-flex.jc-start.w-100'
         , m(
           'input.input'
@@ -237,25 +139,28 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
                 target: HTMLInputElement
               }
             ) => {
-              s.rules[lexer][option.rule] = target.value;
-              a.format(s.rules);
+
+              value = target.value
+              if(isGlobal(name)) {
+                rules[name] = value
+              } else {
+                rules[lexer][name] = value
+              }
+
+              moloko.format(rules);
             }
           }
-        )
-        , m(
-          'code.fc-white.fs-sm.ml-3'
-          , option.rule
         )
         , m(
           'code.code-badge.ml-auto'
           , JSON.stringify(value)
         )
       ),
-      m(
-        'p.fs-xs.px-3.fc-gray.mt-0'
+      , m(
+        'p.fs-sm.fc-gray.fw-300.mt-0'
         , option.description
       )
-    ];
+    ]);
 
   };
 
@@ -266,11 +171,12 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
    * defintions. These rules accept a string list of customer
    * defined options. State is updated `onclick`
    */
-  function array (lexer: LexerNames, option: Rule) {
+  function array (lexer: LexerName, name: string, option: Rule) {
 
-    const list: string[] = s.rules[lexer][option.rule];
+    const list: string[] = isGlobal(name) ? rules[name] : rules[lexer][name];
 
-    return m('.array', [
+    return  m('.d-block.py-4.px-5',[
+       m('.array', [
       m(
         '.d-flex.jc-start.w-100.mb-3'
         , m(
@@ -278,8 +184,8 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
           , m('use[xlink:href="#svg-corner-left"]')
         )
         , m(
-          'code.fc-white.fs-sm.ml-3'
-          , option.rule
+          'fc-white.fs-sm.ml-3'
+          , name
         )
         , m(
           'code.code-badge.ml-auto'
@@ -301,8 +207,8 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
           {
             onclick: () => {
               list.splice(count, 1);
-              s.rules[lexer][option.rule] = list;
-              return a.format(s.rules);
+              rules[lexer][name] = list;
+              moloko.format(rules);
             }
           }
           , m('svg.icon', m('use[xlink:href="#svg-cross"]'))
@@ -312,7 +218,7 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
         '.d-block.btn-add'
         , m(
           '.ml-2.d-inline.next-no.fs-sm.ff-code'
-          , `${s.rules[lexer][option.rule].length}`
+          , `${rules[lexer][name].length}`
         )
         , m(
           'input.input'
@@ -328,8 +234,8 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
               } else if (keyCode === 13 && !list.includes(input) && input.length > 0) {
                 list.push(input);
                 input = '';
-                s.rules[lexer][option.rule] = list;
-                return a.format(s.rules);
+                rules[lexer][name] = list;
+                moloko.format(rules);
               }
             }
           }
@@ -343,8 +249,8 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
               if (input && input.length > 0 && !list.includes(input)) {
                 list.push(input);
                 input = '';
-                s.rules[lexer][option.rule] = list;
-                return a.format(s.rules);
+                rules[lexer][name] = list;
+                moloko.format(rules);
               }
             }
           }
@@ -352,9 +258,10 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
         )
       )
       , m(
-        'p.fs-xs.fc-gray.mt-3'
+        'p.fs-sm.fc-gray.mt-3'
         , option.description
       )
+      ])
     ]);
 
   };
@@ -367,31 +274,32 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
    * The definitions expose the accepted values as an array and
    * each option is rendered as a radio-list.
    */
-  function select (lexer: LexerNames, option: Rule) {
+  function choice (lexer: LexerName, name: string, option: Rule) {
 
+    if(name === 'preset' || name === 'language') return []
     /**
      * Maintains a reference to the selected rule
      */
-    const selected: string = s.rules[lexer][option.rule];
+    const selected: string = isGlobal(name) ? rules[name] : rules[lexer][name];
 
-    return [
+    return m('.d-block.py-4.px-5',[
       m(
-        '.select.d-flex.jc-start.w-100'
-        , m(
-          'svg.icon.ml-1'
-          , m('use[xlink:href="#svg-corner-left"]')
-        )
-        , m(
-          'code.fc-white.fs-sm.ml-3'
-          , option.rule
-        )
-        , m(
-          'code.code-badge.ml-auto'
-          , JSON.stringify(selected)
-        )
-      )
+        '.fs-name.uncase.mb-3'
+        , name
+      ),
+      // m(
+      //   '.select.d-flex.jc-start.w-100'
+      //   , m(
+      //     'svg.icon.ml-1'
+      //     , m('use[xlink:href="#svg-corner-left"]')
+      //   )
+      //   // , m(
+      //   //   'code.code-badge.ml-auto'
+      //   //   , JSON.stringify(selected)
+      //   // )
+      // )
       , m(
-        'p.fs-xs.px-3.fc-gray.mt-2'
+        'p.fs-sm.fc-gray.mb-3'
         , option.description
       )
       , option.values.map(value => {
@@ -404,28 +312,27 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
             , {
               class: enabled ? 'enabled' : ''
               , onclick: () => {
-                s.rules[lexer][option.rule] = value.rule;
-                return a.format(s.rules);
+                rules[lexer][name] = value.rule;
+                moloko.format(rules);
               }
-
             }
             , m(
               'svg.icon'
               , m(`use[xlink:href="#svg-${enabled ? 'checked' : 'unchecked'}"]`)
             )
             , m(
-              'code.fc-white.fs-sm.mx-3'
+              '.ff-code.fs-sm.mx-3.uncase'
               , value.rule
             )
           )
           , m(
-            'p.fs-xs.fc-gray.d.block.mx-3'
-            , value.description
+            'p.fs-xs.fc-gray.mt-3'
+            , option.description
           )
         ];
       })
 
-    ];
+    ]);
 
   };
 
@@ -435,11 +342,15 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
    * The function returns virtual nodes for type `number` rule
    * defintions. State is updated `oninput`
    */
-  function number (lexer: LexerNames, option: Rule) {
+  function number (lexer: LexerName, name: string, option: Rule) {
 
-    const value: number = s.rules[lexer][option.rule];
+    const value: number = isGlobal(name) ? rules[name] : rules[lexer][name];
 
-    return [
+    return m('.d-block.py-4.px-5',[
+      , m(
+        '.fs-name.uncase.mb-3'
+        , name
+      ),
       m(
         '.number.d-flex.jc-start.w-100'
         , m(
@@ -453,25 +364,21 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
             }: {
               target: HTMLInputElement
             }) => {
-              s.rules[lexer][option.rule] = Number(target.value);
-              return a.format(s.rules);
+              rules[lexer][name] = +target.value;
+              moloko.format(rules);
             }
           }
         )
-        , m(
-          'code.fc-white.fs-sm.ml-3'
-          , option.rule
-        )
-        , m(
-          'code.code-badge.ml-auto'
-          , JSON.stringify(value)
-        )
-      )
+        // , m(
+        //   'code.code-badge.ml-3'
+        //   , JSON.stringify(value)
+        // )
+      ),
       , m(
-        'p.fs-xs.px-3.fc-gray.mt-0'
+        'p.fs-sm.fc-gray.fw-300.mt-0'
         , option.description
       )
-    ];
+    ]);
 
   };
 
@@ -482,12 +389,12 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
    * option definition, like (for example) `forceAttribute`
    * which accepts either a _boolean_ or _number_.
    */
-  function multitype (lexer: LexerNames, option: Rule) {
+  function multitype (lexer: LexerName, name: string, option: Rule) {
 
     /**
      * Maintains a reference to the selected rule
      */
-    let selected: number | boolean = s.rules[lexer][option.rule];
+    let selected: number | boolean = isGlobal(name) ? rules[name] : rules[lexer][name];
 
     return [
       m(
@@ -497,8 +404,8 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
           , m('use[xlink:href="#svg-corner-left"]')
         )
         , m(
-          'code.fc-white.fs-sm.ml-3'
-          , option.rule
+          'fc-white.fs-sm.ml-3'
+          , name
         )
         , m(
           'code.code-badge.ml-auto'
@@ -511,7 +418,7 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
       )
       , Array.isArray(option.type) ? option.type.map((value, i) => {
 
-        const rule = option.multi[value];
+        const rule = option.values[value];
         const or = i > 0 ? m('span.stripe', 'OR') : null;
 
         if (value === 'number') {
@@ -532,14 +439,13 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
                   }) => {
 
                     selected = Number(target.value);
-                    s.rules[lexer][option.rule] = selected;
-
-                    return a.format(s.rules);
+                    rules[lexer][name] = selected;
+                    moloko.format(rules);
                   }
                 }
               )
               , m(
-                'code.fc-white.fs-sm.ml-3'
+                'fc-white.fs-sm.ml-3'
                 , value
               )
             )
@@ -563,9 +469,8 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
                   : ''
                 , onclick: () => {
 
-                  s.rules[lexer][option.rule] = !selected;
-
-                  return a.format(s.rules);
+                  rules[lexer][name] = !selected
+                  moloko.format(rules);
                 }
 
               }
@@ -578,7 +483,7 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
                   : 'unchecked'}"]`)
               )
               , m(
-                'code.fc-white.fs-sm.mx-3'
+                'fc-white.fs-sm.mx-3'
                 , value
               )
             )
@@ -603,33 +508,24 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
    * This function determines the option type are will pass
    * the defintion onto the appropriate vnode function.
    */
-  function types (lexer: LexerNames, option: Rule) {
+  function types (lexer: LexerName, name: string, option: Rule) {
 
-    if (
-      option.rule === 'delimiterTrims' ||
-      option.rule === 'ignoreTagList' ||
-      option.rule === 'lineBreakSeparator' ||
-      option.rule === 'normalizeSpacing' ||
-      option.rule === 'valueForce') {
+    if (typeof option.type === 'object') {
 
-      lexer = 'liquid';
+      //return multitype(lexer, name, option);
 
-    }
-
-    if (Array.isArray(option.type)) {
-      return multitype(lexer, option);
     } else {
       switch (option.type) {
         case 'boolean':
-          return boolean(lexer, option);
+          return boolean(lexer, name, option);
         case 'string':
-          return string(lexer, option);
+          return string(lexer, name, option);
         case 'number':
-          return number(lexer, option);
-        case 'select':
-          return select(lexer, option);
+          return number(lexer, name, option);
+        case 'choice':
+          return choice(lexer, name, option);
         case 'array':
-          return array(lexer, option);
+          return array(lexer, name, option);
       }
     }
   };
@@ -637,65 +533,55 @@ export const Rules: m.ClosureComponent<Attrs> = ({ attrs: { s, a } }) => {
   /* -------------------------------------------- */
   /* VDOM                                         */
   /* -------------------------------------------- */
-  const view = () => m(
-    'aside'
-    , [
-      m(
-        '.row.jc-center.bd.bd-white.rad.my-3.mb-2.w-75.m-auto'
-        , [
-          'split',
-          'editor',
-          'preview'
-        ].map((pane, i) => m(
-          '.btn.btn-sm.col.bd.bd-left.bd-white'
-          , {
-            class: pane === moloko.state().pane
-              ? 'bg-white fc-black ' + (i === 0 ? 'rad-left' : i === 2 ? 'rad-right' : '')
-              : '',
-            onclick: () => moloko.pane(pane as any)
-          }
-          , pane.toUpperCase()
-        ))
+
+  let active: any = 'global'
+
+  const view = () => {
+
+    return m(
+      '.row.g-0'
+      , m(
+        '.col.pl-0.br.rule-options.bg-glass'
+        ,[
+          //m('h2.upcase.mt-4.mb.3', `${active} Rules`)
+          // , m('p', 'Lorem ipsum')
+           data[active].map(([ name, rule ]: [
+              string,
+              Rule
+            ]) => types(active, name, rule)
+          )
+        ]
       )
       , m(
-        'p.fs-xs.px-3.fc-gray.mt-0.tc'
-        , 'Toggle the editor panes for optimal visualization'
-      )
-      , m(
-        '.accordion'
+        '.col-auto.bg-glass'
         , {
-          id: 'languages',
-          oncreate: ({ dom }) => relapse(dom, {
-            persist: false,
-            multiple: false
-          })
+          style: {
+            width:'230px'
+          }
         }
-        , Object.keys(data).map((mode: LexerNames) => [
-          m(
-            'button.relapse-btn.d-flex.jc-between',
-            {
-              id: mode
-            }
-            , m(
-              'span.uppercase'
-              , mode
-            )
-            , m(
-              'svg.icon.icon-close'
-              , m('use[xlink:href="#svg-chevron-right"]')
-            )
-            , m(
-              'svg.icon.icon-open', m('use[xlink:href="#svg-chevron-down"]')
-            )
-          )
-          , m(
-            'section.relapse-fold'
-            , defs[mode].map((rule: Rule) => m('.rule-block.d-block.py-3.px-1', types(mode, rule)))
-          )
+        , m('ul.list-lined[data-controller="sticky"][data-sticky-offset-value="0"]', [
+          , Object.keys(data).map((lexer: LexerName) => [
+              m(`li.px-3[aria-label="${data[lexer].length} Rules"]`
+              , {
+                class: active === lexer ? 'active' : ''
+              }
+              , m(
+              'button.btn.upcase.d-block'
+              , {
+                  class: active === lexer ? 'fc-pink' : '',
+                  onclick: () => {
+                    active = lexer
+                    m.redraw()
+                  }
+                }
+              , lexer
+            ))
+          ])
         ])
       )
-    ]
-  );
+
+    );
+  }
 
   return { view };
 };

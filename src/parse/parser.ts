@@ -6,9 +6,10 @@ import * as lx from 'lexical/lexing';
 import { NIL, NWL } from 'chars';
 import { getLexerName, getLexerType } from 'rules/language';
 import { defaults } from 'rules/presets/default';
-import { ws } from 'utils';
-import { MarkupError } from 'parse/errors';
+import { ws } from 'utils/helpers';
+import { SyntacticError } from 'parse/errors';
 import { ParseError } from 'lexical/errors';
+import { config } from 'config';
 import type {
   LanguageName,
   Syntactic,
@@ -19,7 +20,8 @@ import type {
   Spacer,
   Splice,
   LexerName,
-  Rules
+  Rules,
+  Hooks
 } from 'types';
 
 /**
@@ -74,7 +76,9 @@ export class Stack extends Array<StackItem> implements ParseStack {
 /**
  * Parse Store
  *
- * Class instance which holds reference to all data structures.
+ * Class instance which holds reference to the parse table. This acts
+ * as a mediator from which the lexers and formatters will communicate
+ * with during the parse traversals and beautification cycles.
  */
 class Parser {
 
@@ -97,51 +101,24 @@ class Parser {
    * formatting cycle. This is a future feature to allow consumers
    * to augment and adjust tokens.
    */
-  public hooks: {
-    /**
-     * Parse hooks
-     */
-    parse?: ((this: {
-      readonly line: number;
-      readonly stack: StackItem;
-      readonly language: LanguageName;
-    }, node: Record, index?: number) => void | Record)[];
-
-    /**
-     * Format hooks
-     */
-    format?: ((this: {
-      readonly record: Record;
-      readonly language: LanguageName;
-      readonly levels: number[];
-      readonly structure: string[]
-    }, token: string, level?: number) => void | { token?: string; level?: number })[];
-
-  } = { parse: null, format: null };
+  public hooks: Hooks = { parse: null, format: null };
 
   /**
-   * The current environment, ie: node or browser
-   */
-  public env = typeof process !== 'undefined' && process.versions != null ? 'node' : 'browser';
-
-  /**
-   * Reference to a starting index within the data structure. This is typically
+   * Reference to a starting index within the data structure. This is
    * used for external regions, but can also provide incremental support.
    */
   public start = 0;
 
   /**
-   * Reference to a ender index within the data structure. This is typically
+   * Reference to a ender index within the data structure. This is
    * used for external regions, but can also provide incremental support.
    */
   public ender = 0;
 
   /**
-   * Reference to a
+   * Reference to `a`
    */
   public iterator = 0;
-
-  public scopes: any = [];
 
   /**
    * An extended array implementation for working with the stack
@@ -150,19 +127,20 @@ class Parser {
 
   /**
    * Reference of attributes of newline values with containing Liquid block tokens.
-   * It maintains a store which is generated in the markup lexer and used within the beautify process.
+   * It maintains a store which is generated in the markup lexer and used within
+   * the beautification cycle
    */
   public attributes: Map<number, boolean> = new Map();
 
   /**
-   * External language regions, typically embedded tokens which use a different lexer. This
-   * map maintains stores during the lexing process for switching.
+   * External language regions, typically embedded tokens which use a different
+   * lexer. This map maintains stores during the lexing process for switching.
    */
   public regions: Map<number, { id: LanguageName, lexer: Lexers }> = new Map();
 
   /**
-   * Holds a store reference to markup start/end pairs. This is used for potential parse errors and
-   * keeps track of paired sequences for syntactic reporting.
+   * Holds a store reference to markup start/end pairs. This is used for potential
+   * parse errors and keeps track of paired sequences for syntactic reporting.
    */
   public pairs: Map<number, Syntactic> = new Map();
 
@@ -304,6 +282,9 @@ class Parser {
    */
   public rules: Rules = defaults;
 
+  /**
+   * The parse table data structure
+   */
   public data: Data = {
     begin: [],
     ender: [],
@@ -314,19 +295,28 @@ class Parser {
     types: []
   };
 
+  /**
+   * The document source `input` reference
+   */
   get source (): string {
 
     if (this.mode === Modes.Embed) return Parser.region as string;
 
-    return this.env === 'node' && Buffer.isBuffer(Parser.input)
+    return config.env === 'node' && Buffer.isBuffer(Parser.input)
       ? Parser.input.toString()
       : Parser.input as string;
   }
 
+  /**
+   * Set the source `input` reference
+   */
   set source (source: string | Buffer) {
 
-    Parser.input = this.env !== 'node' ? source
-      : Buffer.isBuffer(source) ? source : Buffer.from(source);
+    Parser.input = config.env !== 'node'
+      ? source
+      : Buffer.isBuffer(source)
+        ? source
+        : Buffer.from(source);
 
   }
 
@@ -359,7 +349,6 @@ class Parser {
     this.lineDepth = 2;
     this.lineIndex = 0;
     this.lineOffset = 0;
-    this.mode = Modes.Parse;
     this.data.begin = [];
     this.data.ender = [];
     this.data.lexer = [];
@@ -368,8 +357,8 @@ class Parser {
     this.data.token = [];
     this.data.types = [];
     this.references = [ [] ];
-    this.scopes = [];
     this.stack = new Stack([ 'global', -1 ]);
+    this.mode = Modes.Parse;
 
     if (this.pairs.size > 0) this.pairs.clear();
     if (this.attributes.size > 0) this.attributes.clear();
@@ -521,11 +510,12 @@ class Parser {
    * This is a store The `parse.data.begin` index. This will typically
    * reference the `parse.count` value, incremented by `1`
    */
-  private synctactic (record: Record, stack: string) {
+  private syntactic (record: Record, stack: string) {
 
     if (record.types === 'liquid_start' || record.types === 'start') {
 
       this.pairs.set(this.count, {
+        index: this.count,
         line: this.lineNumber,
         token: record.token,
         type: record.types === 'start' ? Languages.HTML : Languages.Liquid,
@@ -541,18 +531,18 @@ class Parser {
 
       if (pair.type === Languages.Liquid) {
 
-        if (pair.stack !== this.stack.token) {
-          return MarkupError(ParseError.MissingLiquidEndTag, pair.token, pair.line);
+        if (record.token.indexOf(`end${pair.stack}`) > -1) {
+          this.pairs.delete(this.stack.index);
         } else {
-          this.pairs.delete(this.scopes.index);
+          SyntacticError(ParseError.MissingLiquidEndTag, pair);
         }
 
       } else if (pair.type === Languages.HTML) {
 
-        if (`</${pair.stack}>` !== record.token) {
-          return MarkupError(ParseError.MissingHTMLEndTag, pair.token, pair.line);
+        if (`</${pair.stack}>` === record.token) {
+          this.pairs.delete(this.stack.index);
         } else {
-          this.pairs.delete(this.scopes.index);
+          // SyntacticError(ParseError.MissingHTMLEndTag, pair);
         }
 
       }
@@ -563,7 +553,7 @@ class Parser {
   /**
    * Push Structure
    *
-   * An extension of `Array.prototype.push` to work across the data structure
+   * An extension of `Array.prototype.push` to work across the parse table data structure
    */
   public push (data: Data, record: Record, token: string = NIL) {
 
@@ -580,14 +570,12 @@ class Parser {
     this.count = this.count + 1;
 
     if (record.lexer !== 'style' && token.replace(/[{}<>%]/g, NIL) === NIL) {
-      if (record.types === 'else') {
-        token = 'else';
-      } else {
-        token = lx.getTagName(record.token);
-      }
+      token = record.types === 'else'
+        ? 'else'
+        : lx.getTagName(record.token);
     }
 
-    if (record.lexer === 'markup') this.synctactic(record, token);
+    // if (record.lexer === 'markup' && token !== 'liquid') this.syntactic(record, token);
 
     this.lineOffset = 0;
 
@@ -599,8 +587,7 @@ class Parser {
     } else if (record.types === 'end' || record.types.indexOf('_end') > 0) {
 
       // This big condition fixes language specific else blocks that
-      // are children of start/end blocks not associated with
-      // the if/else chain
+      // are children of start/end blocks not associated with the if/else chain
 
       /**
        * Holds reference to the data structures `ender` index
@@ -718,13 +705,8 @@ class Parser {
     const begin = this.data.begin[this.count];
     const token = this.data.token[this.count];
 
-    // * data    - The data object to alter
-    // * howmany - How many indexes to remove
-    // * index   - The index where to start
-    // * record  - A new record to insert
     if (splice.record !== undefined && splice.record.token !== NIL) {
 
-      // parse_splice_datanames
       splice.data.begin.splice(splice.index, splice.howmany, splice.record.begin);
       splice.data.ender.splice(splice.index, splice.howmany, splice.record.ender);
       splice.data.token.splice(splice.index, splice.howmany, splice.record.token);
@@ -762,7 +744,7 @@ class Parser {
    * Is Checksum
    *
    * Checks a record value on the last know entry in the
-   * data strcuture
+   * parse table data strcuture
    */
   public is<T extends keyof Record> (prop: T, value: Record[T]) {
 
@@ -788,9 +770,6 @@ class Parser {
 
   public spacer (args: Spacer): number {
 
-    // * array - the characters to scan
-    // * index - the index to start scanning from
-    // * end   - the length of the array, to break the loop
     this.lineOffset = 1;
 
     do {

@@ -1,5 +1,5 @@
 import type { Types } from 'types/index';
-import { is, isLast, not } from 'utils';
+import { is, isLast, not } from 'utils/helpers';
 import { NIL, WSP } from 'chars';
 import { cc } from 'lexical/codes';
 import { grammar } from 'parse/grammar';

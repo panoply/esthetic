@@ -86,7 +86,7 @@ export declare interface EventListeners {
 
 }
 
-export declare interface Events {
+export declare interface Events<T> {
   /**
    * Format Event
    *
@@ -95,7 +95,7 @@ export declare interface Events {
    *
    * > _Returning `false` will cancel formatting and the provided input source will be returned_
    */
-  (name: 'format', callback: (this: FormatEventScope, param?: FormatEventParams) => false | void);
+  (name: 'format', callback: (this: FormatEventScope, param?: FormatEventParams) => false | void): T;
   /**
    * Error Event
    *
@@ -103,13 +103,13 @@ export declare interface Events {
    * exception reference and error information.
    *
    */
-  (name: 'error', callback: (error?: IParseError) => void);
+  (name: 'error', callback: (error?: IParseError) => void): T;
   /**
    * Parse Event
    *
    * Invoked on Parse operations
    */
-  (name: 'parse', callback: (param?: ParseEventParams) => void);
+  (name: 'parse', callback: (param?: ParseEventParams) => void): T;
   /**
    * Rules Event
    *
@@ -125,5 +125,5 @@ export declare interface Events {
      */
     rules?: Rules
 
-  ) => void);
+  ) => void): T;
 }

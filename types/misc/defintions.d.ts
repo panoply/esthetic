@@ -1,9 +1,9 @@
-import { GlobalRules, LiquidRules, MarkupRules, ScriptRules, StyleRules } from '..';
+import { GlobalRules, JSONRules, LiquidRules, MarkupRules, ScriptRules, StyleRules } from '..';
 
 /**
  * Option defintion type string Literal
  */
-export type DefinitionTypes = 'boolean' | 'array' | 'number' | 'string' | 'select'
+export type DefinitionTypes = 'boolean' | 'array' | 'number' | 'string' | 'choice'
 
 /**
  * Option defintion lexer types
@@ -15,40 +15,31 @@ export type DefinitionLexerTypes = 'auto' | 'markup' | 'script' | 'style'
  */
 export interface Definition {
   /**
-   * The default setting
-   */
-  default: boolean | string[] | string | number;
-  /**
    * Rules description
    */
   description: string;
   /**
-   * Type
+   * The default setting
    */
-  type: DefinitionTypes | DefinitionTypes[];
+  default: boolean | string[] | string | number;
   /**
-   * The lexer the rule pertains - Accepts an array of lexers when rule is used
-   * in different language specific lexers.
+   * Preset default
    */
-  lexer: 'all' | 'liquid' | DefinitionLexerTypes | DefinitionLexerTypes[];
+  preset?: {
+    [K in GlobalRules['preset']]: boolean | string[] | string | number
+  }
   /**
+   * Types
+   *
    * When multiple types are accepted this will contain the references of each type.
    * The property should match the type name
    */
-  multi?: {
+  type: DefinitionTypes | DefinitionTypes[] | {
     /**
      * The rule value
      */
-    [K in DefinitionTypes]?: {
-      /**
-       * The default setting
-       */
-      default: boolean | string[] | string | number;
-      /**
-       * Rule value description
-       */
-      description: string;
-    }
+    [K in DefinitionTypes]?: string;
+
   };
   /**
    * An optional list of pre-selected rule values.
@@ -66,17 +57,6 @@ export interface Definition {
 }
 
 /**
- * Omitted option/rules defintions that are
- * either internal facing or automatically applied.
- */
-export type InternalDefinitions = (
-  'indentLevel' |
-  'languageName' |
-  'mode' |
-  'styleGuide'
-)
-
-/**
  * Option Definitions
  */
 export interface Definitions {
@@ -91,6 +71,9 @@ export interface Definitions {
   };
   style: {
     [K in keyof StyleRules]: Definition
+  };
+  json: {
+    [K in keyof JSONRules]: Definition
   };
   script: {
     [K in keyof ScriptRules]: Definition

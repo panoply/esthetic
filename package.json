@@ -50,7 +50,7 @@
   },
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup --minify && gzip-size dist/index.mjs --include-original",
+    "build": "tsup --minify --env.NODE_ENV production && gzip-size dist/index.mjs --include-original",
     "pack": "cd versions; pnpm pack ../ && cd ..",
     "release": "pnpm -w release --pkg $npm_package_name",
     "test": "ava --serial",

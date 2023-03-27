@@ -1,7 +1,8 @@
 import * as rx from 'lexical/regex';
 import { cc } from 'lexical/codes';
 import { NIL } from 'chars';
-import { keys, is, ws } from 'utils';
+import { is, ws } from 'utils/helpers';
+import { keys } from 'utils/native';
 import { parse } from 'parse/parser';
 import { definitions } from 'rules/definitions';
 
@@ -21,13 +22,13 @@ import { definitions } from 'rules/definitions';
  * - `// @esthetic width: 80 preserveLine: 4`
  * - `<!-- @esthetic width: 80 preserveLine: 4 -->`
  * - `{% # @esthetic width: 80 preserveLine: 4 %}`
- * - `{% comment %} @prettify width: 40 preserveLine: 2 {% endcomment %}`
+ * - `{% comment %} @esthetic width: 40 preserveLine: 2 {% endcomment %}`
  * - `# @esthetic width: 80 preserveLine: 4`
  *
  * Parsing Considerations:
  *
  * 1. There may be any amount of space at the start or end of the comment
- * 2. `@prettify` must exist at the start of the comment
+ * 2. `@esthetic` must exist at the start of the comment
  * 3. Comment must exist prior to non-comment tokens (near top of code)
  * 4. Parameters are name value pairs separated by white space
  * 5. The delimiter separating name and value must be a colon character, eg: `:`

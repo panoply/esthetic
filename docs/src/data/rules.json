@@ -157,18 +157,13 @@
     },
     {
       "group": "markup",
-      "title": "delimiterLineBreak",
-      "url": "/rules/markup/delimiterLineBreak/"
+      "title": "delimiterTerminus",
+      "url": "/rules/markup/delimiterTerminus/"
     },
     {
       "group": "markup",
       "title": "forceAttribute",
       "url": "/rules/markup/forceAttribute/"
-    },
-    {
-      "group": "markup",
-      "title": "forceLeadAttribute",
-      "url": "/rules/markup/forceLeadAttribute/"
     },
     {
       "group": "markup",
@@ -204,6 +199,11 @@
       "group": "markup",
       "title": "preserveText",
       "url": "/rules/markup/preserveText/"
+    },
+    {
+      "group": "markup",
+      "title": "preserveText",
+      "url": "/rules/markup/lineBreakValue/"
     },
     {
       "group": "markup",

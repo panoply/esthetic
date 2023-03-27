@@ -4,7 +4,7 @@ import { commentBlock, commentLine } from 'comments';
 import { parse } from 'parse/parser';
 import { grammar } from 'parse/grammar';
 import { sortCorrect, sortObject } from 'parse/sorting';
-import { digit, is, not, ws } from 'utils';
+import { digit, is, not, ws } from 'utils/helpers';
 import { DQO, NIL, NWL, SQO, WSP } from 'chars';
 import * as rx from 'lexical/regex';
 import * as lq from 'lexical/liquid';

@@ -250,6 +250,13 @@ export interface ScriptRules {
   caseSpace?: boolean,
 
   /**
+   * Allow inline returns without braces
+   *
+   * @default true
+   */
+  inlineReturn?: boolean,
+
+  /**
    * **Description**
    *
    * If else_line is true then the keyword 'else' is

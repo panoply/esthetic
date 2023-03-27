@@ -1,6 +1,8 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable object-curly-newline */
 
 import { Events } from './types/events';
+import { Hooks } from './types/hooks';
 
 import {
   LiquidFormat,
@@ -17,8 +19,10 @@ import {
   Grammars,
   Stats,
   IParseError,
-  Settings
-} from './types/export';
+  IConfig,
+  ConfigInternal,
+  Data
+} from './types/index';
 
 export {
   Definition,
@@ -33,49 +37,63 @@ export {
   Language,
   LanguageName,
   LanguageOfficialName,
-  LexerName
-} from './types/export';
+  LexerName,
+  Record,
+  Data as ParseTable
+} from './types/index';
 
 declare const esthetic: {
   /**
-   * **Liquid Æsthetic**
+   * **Æsthetic Liquid**
    *
    * Formatting for the Liquid Template Language.
    */
   liquid: LiquidFormat;
   /**
-   * **HTML Æsthetic**
+   * **Æsthetic HTML**
    *
    * Formatting for the HTML Language.
    */
   html: HTMLFormat;
   /**
-   * **XML Æsthetic**
+   * **Æsthetic XML**
    *
    * Formatting for the XML Language.
    */
   xml: XMLFormat;
   /**
-   * **CSS Æsthetic**
+   * **Æsthetic CSS**
    *
    * Formatting for the CSS Language.
    */
   css: CSSFormat
   /**
-   * **JSON Æsthetic**
+   * **Æsthetic JSON**
    *
    * Formatting for the JSON Language.
    */
   json: JSONFormat;
   /**
-   * **Defintions**
+   * **Æsthetic JavaScript (BETA)**
+   *
+   * Formatting for the JavaScript Language.
+   */
+  js: LiquidFormat;
+  /**
+   * **Æsthetic TypeScript (BETA)**
+   *
+   * Formatting for the TypeScript Language.
+   */
+  ts: LiquidFormat;
+  /**
+   * **Æsthetic ~ Rule Defintions**
    *
    * Rule defintions which describe the different formatting options
    * esthetic offers.
    */
   get definitions(): Definitions;
   /**
-   * **Stats**
+   * **Æsthetic ~ Statistics**
    *
    * Maintains a reference of statistic information about the
    * operation, also available in events like `esthetic.on('format')` and
@@ -83,81 +101,116 @@ declare const esthetic: {
    */
   get stats(): Stats;
   /**
-   * **Error**
+   * **Æsthetic ~ Parse Table**
+   *
+   * Returns the current Parse Table data~structure. You can only call this
+   * in a post beautification or parse cycle.
+   */
+  get table(): Data;
+  /**
+   * **Æsthetic ~ Parse Error**
    *
    * Returns the the Parse Error or `null` if no error
    */
   get error(): IParseError;
 
   /**
-   * **ÆSTHETIC Format**
+   * **Æsthetic ~ Format**
    *
-   * The new generation beautification tool for Liquid. Sync
-   * export which throws if error.
+   * Formatting Support:
    *
    * - Liquid
    * - HTML
    * - XML
    * - CSS
    * - SCSS
-   * - SASS
-   * - LESS
-   * - JavaScript
-   * - TypeScript
+   * - JSON
+   * - JavaScript ~ _use with caution_
+   * - TypeScript ~ _use with caution_
    * - JSX
    * - TSX
-   * - JSON
    */
-  format: (source: string, rules?: Rules) => string;
+  format: (source: string | Buffer, rules?: Rules) => string;
 
   /**
-   * **ÆSTHETIC Parse**
+   * **Æsthetic Parse**
    *
-   * Returns the Sparser data~structure parse table.
+   * Executes a parse operation and returns the generate data structure.
+   * When calling this method, beautification will not be applied, the
+   * parse table is returned.
+   *
+   * The `esthetic.format()` method will execute a parse, so only use this
+   * method when you are working with the parse table itself, otherwise use
+   * `format` or one of the language specifics.
+   *
+   * ---
+   *
+   * **NOTE**
+   *
+   * You cannot pass rules, use the `esthetic.rules({})` method instead.
    */
-  parse: (source: string) => string;
+  parse: (source: string | Buffer) => Data
 
   /**
-   * **Change Listener**
+   * **Æsthetic ~ Events**
    *
-   * Hook listener wich will be invoked when beautification
-   * options change or are augmented.
+   * Event Listener which invokes on different operations.
    */
-  on: Events;
+  on: Events<Pick<typeof esthetic, 'on' | 'parse' | 'format'>>;
 
   /**
-   * **Settings**
+   * **Æsthetic ~ Hooks**
    *
-   * Set format rules to be applied to syntax. To return the
-   * current beautification rules, then do not provide a parameter.
-   *
-   * **NOTE YET AVAILABLE**
+   * Hook into the parse and beatification operations. Hooks allow you to
+   * refine output and control different logic during execution cycles.
    */
-  settings:(options: Settings) => Settings;
+  hook: Hooks<Pick<typeof esthetic, 'on' | 'parse' | 'format'>>;
 
   /**
-   * **Rules**
+   * **Æsthetic ~ Configuration**
    *
-   * Set format rules to be applied to syntax. To return the
-   * current beautification rules, then do not provide a parameter.
+   * Control the execution behaviour of Æsthetic. Options exposed in this method
+   * allow you to refine operations.
+   *
+   * To return the configuration settings currently applied along with addition
+   * reference applied internally, then do no provide a parameter.
    */
-  rules: (rules?: Rules) => Rules;
+  config: {
+    (options: IConfig): Pick<typeof esthetic, 'on' | 'grammar' | 'rules' | 'hook' | 'parse' | 'format'>
+    (): ConfigInternal;
+  }
 
   /**
-   * **Grammar**
+   * **Æsthetic ~ Rules**
    *
-   * Extend built-in grammar references.
-   * By default, Æsthetics supports all current specification standards.
+   * Set format rules to be applied to syntax. Use this method if you are executing
+   * repeated runs and do not require Æsthetic to validate rules for every cycle.
    *
-   * This is helpful when you need to provide additional
-   * context and handling in Liquid but you can also extend the core languages.
-   *
-   * > To return the current grammar presets, then do not provide a parameter.
+   * To return the current beautification rules, then do not provide a parameter.
    */
-  grammar: (grammar?: Grammars) => Grammars;
+  rules: {
+    (rules: Rules): Pick<typeof esthetic, 'on'| 'parse'| 'format'>
+    (): Rules
+  }
 
   /**
-   * **Language**
+   * **Æsthetic ~ Grammar**
+   *
+   * Extend built-in grammar references. By default, Æsthetics supports all current
+   * specification standards.
+   *
+   * This is helpful when you need to provide additional context and handling
+   * in languages like Liquid, but you can also extend the core languages like CSS.
+   *
+   * To return the current grammar presets, then do not provide a parameter.
+   */
+  grammar: {
+    (grammar: Grammars): Pick<typeof esthetic, 'on' | 'hook' | 'rules' | 'parse' | 'format'>
+    (): Grammars;
+  }
+
+  /**
+   * **Æsthetic ~ Language Detection**
    *
    * Automatic language detection based on the string input.
    * Returns lexer, language and official name.

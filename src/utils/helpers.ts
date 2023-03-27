@@ -304,3 +304,104 @@ export function sanitizeComment (input: string) {
   return `\\${input}`;
 
 }
+
+/**
+ * Native prototype `toString` for type checks
+ */
+const { toString } = Object.prototype;
+
+/**
+ * Check if the object contains the property
+ */
+export function hasProp (object: object): (prop: string) => boolean {
+
+  return (prop: string) => prop in object;
+
+}
+
+/**
+ * Check is param is an array type
+ */
+export function isArray <T extends any[]> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'Array';
+
+}
+
+/**
+ * Check is param is an object type
+ */
+export function isObject <T extends object> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'Object';
+
+}
+
+/**
+ * Check is param is a string type
+ */
+export function isString <T extends string> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'String';
+
+}
+
+/**
+ * Check is param is a date type
+ */
+export function isDate <T extends Date> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'Date';
+
+}
+
+/**
+ * Check is param is an regular expression type
+ */
+export function isRegex <T extends RegExp> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'RegExp';
+
+}
+
+/**
+ * Check is param is a function type
+ */
+export function isFunction <T extends Function> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'Function';
+
+}
+
+/**
+ * Check is param is a boolean type
+ */
+export function isBoolean <T extends Function> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'Boolean';
+
+/**
+ * Check is param is a number type
+ */ }
+export function isNumber <T extends number> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'Number';
+
+}
+
+/**
+ * Check is param is null type
+ */
+export function isNull <T extends null> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'Null';
+
+}
+
+/**
+ * Check is param is a undefined type
+ */
+export function isUndefined <T extends undefined> (param: any): param is T {
+
+  return toString.call(param).slice(8, -1) === 'Undefined';
+}

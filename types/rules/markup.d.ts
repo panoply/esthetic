@@ -144,7 +144,9 @@ export interface MarkupRules {
    * </div>
    * ```
    */
-  delimiterLineBreak?: boolean;
+  delimiterTerminus?: 'inline' | 'force' | 'adapt';
+
+  lineBreakValue?: 'preserve' | 'align' | 'indent' | 'force-preserve' | 'force-align' | 'force-indent'
 
   /**
    * **Default** `[]`

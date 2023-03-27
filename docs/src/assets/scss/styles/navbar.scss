@@ -1,7 +1,7 @@
 header {
   position: fixed;
   //background-color: $white;
-  z-index: 100;
+  z-index: 300;
   display: flex;
   background-color: $body-bg;
 
@@ -29,6 +29,7 @@ header {
   .off {
     color: $white;
   }
+
   a {
     font-weight: 400;
     color: $pink;

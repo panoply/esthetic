@@ -102,22 +102,6 @@ export interface Counter {
 }
 
 /**
- * Syntactical Tracking
- *
- * Maintains a reference of start and end type tokens
- * to be tracked ensuring opening and ending counts
- * match correctly. The data stored in this model is
- * used by the Parse Error logic.
- */
-export interface Syntactic {
-  line?: number;
-  expect?: string;
-  token?: string;
-  stack?: string;
-  type?: Languages
-}
-
-/**
  * Parsed Data
  */
 export interface Data {
@@ -143,6 +127,29 @@ export interface Data {
    * Values of `2` and greater indicate the number of new lines plus `1`.
    * For example, an empty line preceding the current token would mean a
    * value of `3`, because the white space would contain two new line characters.
+   *
+   * The record `lines` value count before the next token, for example:
+   *
+   * ```
+   *
+   * 1 | foo  // line offset is: 0
+   * 2 | bar  // line offset is: 2
+   * 3
+   * 4 | baz  // line offset is: 3
+   * 5
+   * 6
+   * 7 | qux  // line offset is: 4
+   * 8 | xxx  // line offset is: 2
+   *
+   *
+   * ```
+   *
+   * Where `foo` is `0` as it exists on line `1` but `bar` is `2` because
+   * it counts line `1` as a single line and given it exists on line `2`
+   * another line offset increment is applies. The word `baz` is similar to
+   * `bar` but has a count of `3` given a newline exists above it and this
+   * pattern follows as we progress to `qux` which has 2 newlines, equating
+   * to a value line offset of `4` whereas `xxx` only has `2` so on and so forth.
    */
   lines: number[];
   /**
@@ -202,22 +209,129 @@ export interface Record {
   types: Types
 }
 
-type ParseHook = (this: {
-  readonly line: number;
-  readonly stack: StackItem;
-  readonly language: LanguageName;
-}, node: Record, index?: number) => void | Record
+/**
+ * Syntactical Tracking
+ *
+ * Maintains a reference of start and end type tokens
+ * to be tracked ensuring opening and ending counts
+ * match correctly. The data stored in this model is
+ * used by the Parse Error logic.
+ */
+export interface Syntactic {
+  line?: number;
+  index?: number;
+  expect?: string;
+  token?: string;
+  stack?: string;
+  type?: Languages
+}
+
+type ParseHook = (
+  this: {
+    /**
+     * The current line number
+     */
+    readonly lineNumber: number;
+    /**
+     * The current stack item reference
+     */
+    readonly stack: StackItem;
+    /**
+     * The current language
+     */
+    readonly language: LanguageName;
+  },
+  /**
+   * The parse table record to be inserted
+   */
+  record: Record,
+  /**
+   * The parse table index
+   */
+  index?: number
+) => void | Record
+
+type FormatHook = ((
+  this: {
+    /**
+     * Parse table Record
+     */
+    readonly record: Record;
+    /**
+     * The language name
+     */
+    readonly language: LanguageName;
+    /**
+     * Indentation levels
+     */
+    readonly levels: number[];
+    /**
+     * The current structure reference
+     */
+    readonly structure: string[]
+  },
+  /**
+   * The we are working with
+   */
+  token: string,
+  /**
+   * The level at which the token will be indentd
+   */
+  level?: number
+) => void | {
+  /**
+   * New token write
+   */
+  token?: string;
+  /**
+   * New level to indent
+   */
+  level?: number
+})
+
+export interface Hooks {
+  /**
+   * Parse hooks
+   */
+  parse?: ParseHook[];
+
+  /**
+   * Format hooks
+   */
+  format?: FormatHook[];
+}
 
 export interface Spacer {
+  /**
+   * The characters to scan. This is the `split` source string
+   */
   array: string[];
+  /**
+   * The length of the array used to break the loop
+   */
   end : number;
+  /**
+   * The index to start scanning from
+   */
   index: number;
 }
 
 export interface Splice {
+  /**
+   * The parse table data structure object to alter
+   */
   data: Data;
+  /**
+   * How many indexes to remove
+   */
   howmany: number;
+  /**
+   * The index where to start
+   */
   index: number;
+  /**
+   * A new parse table record to insert
+   */
   record?: Record;
 }
 
@@ -305,58 +419,3 @@ interface Scopes extends Array<[ string, number]>{
 /* -------------------------------------------- */
 /* PARSE HELPERS                                */
 /* -------------------------------------------- */
-
-export namespace Helper {
-
-  /**
-   * Utilities Helper for validating data structure types
-   * in beautify parsing.
-   */
-  export interface Type {
-    /**
-     * Check whether the token type at specific index
-     * equals the provided name. Returns a truthy.
-     *
-     * > Use `type.not()` for false comparisons.
-     */
-    is(index: number, name: Types): boolean;
-
-    /**
-     * Check whether the token type at specific index
-     * does not equal the provided name. Returns a truthy.
-     *
-     * > Use `type.is()` for true comparisons.
-     */
-    not(index: number, name: Types): boolean;
-
-    /**
-     * Returns the `indexOf` a `data.types` name. This
-     * is used rather frequently to determine the token
-     * type we are dealing with.
-     */
-    idx(index: number, name: Types): number
-  }
-
-  /**
-   * Utilities Helper for validating data structure tokens
-   * in beautify parsing.
-   */
-  export interface Token {
-    /**
-     * Check whether the token equals the provided tag.
-     * Returns a truthy.
-     *
-     * > Use `token.not()` for false comparisons.
-     */
-    is(index: number, tag: string): boolean;
-
-    /**
-     * Check whether the token does not equals the
-     * provided tag. Returns a truthy.
-     *
-     * > Use `token.is()` for false comparisons.
-     */
-    not(index: number, tag: string): boolean;
-  }
-
-}

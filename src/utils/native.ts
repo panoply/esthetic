@@ -29,11 +29,6 @@ export const defineProperty = Object.defineProperty;
 export const defineProperties = Object.defineProperties;
 
 /**
- * Native Array isArray
- */
-export const isArray = Array.isArray;
-
-/**
  * Native Console Warn
  */
 export const warn = console.warn;

@@ -53,6 +53,14 @@ strong {
 .hero {
   // background: rgb(14 14 14); /* fallback for old browsers */
 
+  &-logo {
+    color: $salmon;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
   &-github {
     a {
       position: absolute;
@@ -75,7 +83,7 @@ strong {
     font-weight: 900;
 
     &:hover {
-      text-decoration: underline;
+      text-decoration: none;
     }
   }
 

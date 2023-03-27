@@ -30,6 +30,9 @@
       "types/*": [
         "./types/*"
       ],
+      "config": [
+        "./src/config.ts"
+      ],
       "./index.js": [
         "./index.js"
       ],
@@ -51,8 +54,8 @@
       "comments": [
         "./src/comments/index.ts"
       ],
-      "utils": [
-        "./src/utils/index.ts"
+      "utils/*": [
+        "./src/utils/*"
       ],
       "parse/*": [
         "src/parse/*"

@@ -1,16 +1,26 @@
-import type { Rules, LanguageName, LexerName, Stats, ParseHook, EventListeners } from 'types';
+import type { Rules, LanguageName, LexerName, Stats, ParseHook, EventListeners, IConfig, Grammars } from 'types';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
 import { definitions } from 'rules/definitions';
 import { detect } from 'parse/detection';
-import { define } from 'rules/define';
+import { setRules } from 'rules/define';
 import { Modes } from 'lexical/enum';
-import { stats } from 'utils';
+import { isObject, isUndefined, stats } from 'utils/helpers';
 import { getLexerName, getLexerType } from 'rules/language';
 import { isValidChoice } from 'rules/validate';
+import { config } from 'config';
 
 export const esthetic = new class Esthetic {
 
+  constructor () {
+
+    if (config.env === 'node') config.cwd = process.cwd();
+
+  }
+
+  public language: LanguageName = 'auto';
+  public lexer: LexerName = 'auto';
+  public stats: Stats = null;
   public events: EventListeners = {
     format: [],
     error: [],
@@ -18,31 +28,34 @@ export const esthetic = new class Esthetic {
     parse: []
   };
 
-  public language: LanguageName = 'auto';
-  public lexer: LexerName = 'auto';
-  public stats: Stats;
+  get table () { return parse.data; }
+  get definitions () { return definitions; }
+  get detect () { return detect; }
 
-  get data () {
-    return parse.data;
+  grammar (grammars?: Grammars) {
+
+    if (!grammars) return grammar.extend();
+
+    grammar.extend(grammars);
+
+    return this;
+
   }
 
-  get grammar () {
-    return grammar.extend;
-  }
+  config (options?: IConfig) {
 
-  get definitions () {
-    return definitions;
-  }
+    if (!options) return config;
 
-  get detect () {
-    return detect;
-  }
+    for (const o in options) if (o in config) config[o] = options[o];
 
-  // settings (settings: Settings) {}
+    return this;
+  }
 
   on (name: 'error' | 'format' | 'rules' | 'parse' | 'language', callback: any) {
 
     this.events[name].push(callback);
+
+    return this;
 
   }
 
@@ -56,15 +69,13 @@ export const esthetic = new class Esthetic {
 
     parse.source = source;
 
-    if (typeof options === 'object') {
-
+    if (isObject(options)) {
       if ('language' in options && this.language !== options.language) {
         if (isValidChoice('global', 'language', options.language)) {
           this.language = parse.language = parse.rules.language = options.language;
           this.lexer = parse.lexer = getLexerName(parse.language);
         }
       }
-
     }
 
     this.rules(options);
@@ -76,20 +87,23 @@ export const esthetic = new class Esthetic {
     }
 
     const lexer = getLexerType(this.language);
-    const action = stats(this.language, this.lexer);
+    const action = config.reportStats ? stats(this.language, this.lexer) : null;
     const output = parse.document(lexer) as string;
 
     if (parse.error !== null) {
       if (this.events.error.length > 0) {
         // @ts-ignore
         for (const cb of this.events.error) cb(parse.error);
-        return output;
+        return source;
       } else {
-        throw parse.error;
+        if (config.throwErrors) throw parse.error;
+        return source;
       }
     }
 
-    const timing = this.stats = action(output.length);
+    const timing = action === null
+      ? this.stats
+      : this.stats = action(output.length);
 
     if (this.events.format.length > 0) {
       for (const cb of this.events.format) {
@@ -113,7 +127,7 @@ export const esthetic = new class Esthetic {
 
     parse.source = source;
 
-    if (typeof options === 'object') {
+    if (isObject(options)) {
 
       if ('language' in options && this.language !== options.language) {
         if (isValidChoice('global', 'language', options.language)) {
@@ -167,9 +181,14 @@ export const esthetic = new class Esthetic {
 
   rules (options?: Rules) {
 
-    if (typeof options === 'undefined') return parse.rules;
+    if (isUndefined(options)) return parse.rules;
 
-    return define(options, this.events);
+    const { language } = setRules(options, this.events);
+
+    this.language = language;
+    this.lexer = parse.lexer = getLexerName(language);
+
+    return this;
 
   }
 
@@ -216,6 +235,14 @@ export const esthetic = new class Esthetic {
   js (source: string | Buffer, options?: Rules) {
 
     this.language = parse.language = parse.rules.language = 'javascript';
+    this.lexer = parse.lexer = getLexerName(parse.language);
+
+    return this.format(source, options);
+  }
+
+  ts (source: string | Buffer, options?: Rules) {
+
+    this.language = parse.language = parse.rules.language = 'typescript';
     this.lexer = parse.lexer = getLexerName(parse.language);
 
     return this.format(source, options);

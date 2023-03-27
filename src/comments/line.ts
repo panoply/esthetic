@@ -3,7 +3,7 @@ import { parse } from 'parse/parser';
 import * as rx from 'lexical/regex';
 import { cc as ch } from 'lexical/codes';
 import { NWL, NIL, WSP } from 'chars';
-import { ws, is, not } from 'utils';
+import { ws, is, not } from 'utils/helpers';
 
 /**
  * Wrap Comment Lines

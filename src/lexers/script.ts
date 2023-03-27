@@ -8,7 +8,7 @@ import { sortCorrect, sortObject } from 'parse/sorting';
 import { DQO, NIL, NWL, SQO } from 'chars';
 import * as rx from 'lexical/regex';
 import { cc } from 'lexical/codes';
-import * as u from 'utils';
+import * as u from 'utils/helpers';
 
 // prettify.lexers.script =
 

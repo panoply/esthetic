@@ -1,8 +1,6 @@
 /* eslint-disable no-use-before-define */
 
-import { LiteralUnion } from 'type-fest';
-import { LanguageName, LanguageOfficialName, LexerName, Stats } from './shared';
-import { Data, IParseError } from './parse/parser';
+import { LanguageName, LanguageOfficialName, LexerName } from './shared';
 import { GlobalRules } from './rules/global';
 import { LiquidRules } from './rules/liquid';
 import { MarkupRules } from './rules/markup';
@@ -10,7 +8,6 @@ import { StyleRules } from './rules/style';
 import { ScriptRules } from './rules/script';
 import { JSONRules } from './rules/json';
 import { Grammars } from './misc/grammar';
-import { EventListeners } from './events';
 
 /* -------------------------------------------- */
 /* RE-EXPORT                                    */
@@ -69,11 +66,11 @@ export type GlobalRuleChanges = {
     /**
      * The old rule value that was changed.
      */
-    from: GlobalRules[K];
+    old: GlobalRules[K];
     /**
      * The new rule value now being used.
      */
-    to: GlobalRules[K];
+    now: GlobalRules[K];
   };
 };
 
@@ -82,11 +79,11 @@ export type LiquidRuleChanges = {
     /**
      * The old `liquid` rule value that was changed.
      */
-    from: LiquidRules[K];
+    old: LiquidRules[K];
     /**
      * The new `liquid` rule value now being used.
      */
-    to: LiquidRules[K];
+    now: LiquidRules[K];
   };
 }
 
@@ -95,11 +92,11 @@ export type MarkupRuleChanges = {
     /**
      * The old `markup` rule value that was changed.
      */
-    from: MarkupRules[K];
+    old: MarkupRules[K];
     /**
      * The new `markup` rule value now being used.
      */
-    to: MarkupRules[K];
+    now: MarkupRules[K];
   };
 }
 
@@ -108,11 +105,11 @@ export type StyleRuleChanges = {
     /**
      * The old `style` rule value that was changed.
      */
-    from: StyleRules[K];
+    old: StyleRules[K];
     /**
      * The new `style` rule value now being used.
      */
-    to: StyleRules[K];
+    now: StyleRules[K];
   };
 }
 
@@ -121,11 +118,11 @@ export type ScriptRuleChanges = {
     /**
      * The old `script` rule value that was changed.
      */
-    from: ScriptRules[K];
+    old: ScriptRules[K];
     /**
      * The new `script` rule value now being used.
      */
-    to: ScriptRules[K];
+    now: ScriptRules[K];
   };
 }
 
@@ -274,102 +271,6 @@ export interface Grammar {
    * defined options with pre-defined ones.
    */
   embed(options: Grammars): void
-}
-
-/**
- * Esthetic (Internal)
- *
- * The internal Factory for Prettify. The `index.d.ts` located
- * in the root of the project is an exposed factory, this interface
- * is internal facing and at its core maintains a reference of the
- * user defined options together with operations to be applied.
- */
-export interface Esthetic {
-  /**
-   * Returns Input Source
-   */
-  get source(): string;
-  /**
-   * Set/Update Input Source
-   */
-  set source(input: string | Buffer);
-  /**
-   * Return the Parse Table
-   */
-  get data(): Data;
-  /**
-   * Set/Reset the parse table
-   */
-  set data(data: Data);
-  /**
-   * Returns current rules
-   */
-  get rules(): Rules;
-  /**
-   * Stats reference of operation
-   */
-  get stats(): Stats;
-  /**
-   * Set/Reset Stats reference
-   */
-  set stats(stats: Stats);
-  /**
-   * Informative reference to parse errors
-   */
-  error: IParseError;
-  /**
-   * The current environment Prettify was invoked
-   */
-  env: LiteralUnion<'node' | 'browser', string>;
-  start: number;
-  end: number;
-  iterator: number;
-  /**
-   * The current mode
-   */
-  mode: LiteralUnion<'beautify' | 'parse', string>;
-  /**
-   * The current lexer to use
-   */
-  lexer: LexerName;
-  /**
-   * Reference to operation events
-   */
-  events?: EventListeners
-  /**
-   * The supporting lexers
-   */
-  lexers: {
-    /**
-     * The style lexer
-     */
-    style(input: string): Data;
-    /**
-     * The markup lexer
-     */
-    markup(input: string | string[]): Data;
-    /**
-     * The script lexer
-     */
-    script(input: string | string[]): Data;
-  };
-  /**
-   * The supporting beautifiers
-   */
-  beautify: {
-    /**
-     * The style beautifier
-     */
-    style(rules: Rules): string;
-    /**
-     * The markup beautifer
-     */
-    markup(rules: Rules): string;
-    /**
-     * The script beautifier
-     */
-    script(rules: Rules): string;
-  };
 }
 
 export interface Format<T extends string, O extends Rules> {

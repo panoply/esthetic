@@ -13,6 +13,11 @@ export const enum ErrorTypes {
   GrammarError
 }
 
+export const enum ParseWarn {
+
+  LiquidHangingComma = 201
+}
+
 export const enum ParseError {
 
   /* -------------------------------------------- */
@@ -85,6 +90,17 @@ export const enum ParseError {
   InvalidCDATATermination,
 
   /* -------------------------------------------- */
+  /* CSS / SCSS                                   */
+  /* -------------------------------------------- */
+
+  /**
+   * Brace Mismatch
+   *
+   * @example
+   */
+  BraceMismatchCSS,
+
+  /* -------------------------------------------- */
   /* LIQUID                                       */
   /* -------------------------------------------- */
 
@@ -104,7 +120,7 @@ export const enum ParseError {
    * {% for xx  // Missing  %} delimiter
    * {{ object  // Missing  }} delimiter
    */
-  MissingLiquidEndingDelimiter,
+  MissingLiquidCloseDelimiter,
   /**
    * Missing HTML End Tag
    *

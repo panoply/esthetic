@@ -24,12 +24,12 @@ export const recommended: Rules = {
   markup: {
     attributeCasing: 'lowercase-name',
     commentNewline: true,
-    delimiterForce: true,
-    forceAttribute: 1,
-    forceLeadAttribute: true,
+    delimiterTerminus: 'adapt',
+    forceAttribute: 2,
     forceIndent: true,
     ignoreCSS: false,
     ignoreJSON: false,
+    lineBreakValue: 'indent',
     selfCloseSpace: true,
     selfCloseSVG: true,
     quoteConvert: 'double'
@@ -41,7 +41,6 @@ export const recommended: Rules = {
   style: {
     commentNewline: true,
     commentIndent: true,
-    correct: true,
     quoteConvert: 'double',
     noLeadZero: true,
     sortProperties: true

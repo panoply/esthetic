@@ -21,12 +21,13 @@ export const prettier: Rules = {
   },
   markup: {
     commentNewline: true,
-    delimiterForce: true,
+    delimiterTerminus: 'force',
     forceAttribute: 1,
-    forceLeadAttribute: true,
     forceIndent: true,
+    ignoreJS: true,
     ignoreCSS: true,
     ignoreJSON: false,
+    lineBreakValue: 'force-indent',
     selfCloseSpace: true,
     selfCloseSVG: true,
     stripAttributeLines: true,
@@ -38,7 +39,6 @@ export const prettier: Rules = {
   },
   style: {
     commentIndent: false,
-    correct: true,
     quoteConvert: 'double'
   }
 };

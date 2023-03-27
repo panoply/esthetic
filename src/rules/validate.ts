@@ -1,5 +1,5 @@
-import type { GlobalRules, LanguageRuleNames, LiquidRules, MarkupRules } from 'types';
-import { isArray } from 'utils';
+import type { GlobalRules, LanguageRuleNames, LiquidRules, MarkupRules, LanguageName } from 'types';
+import { isArray, isBoolean, isNumber, isString } from 'utils/helpers';
 import { RuleError } from 'parse/errors';
 
 /**
@@ -49,7 +49,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
     switch (rule as keyof LiquidRules) {
       case 'commentNewline':
       case 'commentIndent':
-      case 'dedentTagList':
       case 'indentAttribute':
       case 'normalizeSpacing':
       case 'preserveComment':
@@ -63,6 +62,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
         return isValidNumber(language, rule, value);
 
       case 'ignoreTagList':
+      case 'dedentTagList':
 
         return isValidArray(language, rule, value);
 
@@ -81,23 +81,36 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 
       case 'forceAttribute':
 
-        if (typeof value === 'number') return isValidNumber(language, rule, value);
-        if (typeof value === 'boolean') return isValidBoolean(language, rule, value);
+        if (isNumber(value)) return isValidNumber(language, rule, value);
+        if (isBoolean(value)) return isValidBoolean(language, rule, value);
 
-        return isValidTypes(language, rule, value, [
-          'number',
-          'boolean'
-        ]);
+        throw RuleError({
+          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
+          option: `${language} → ${rule}`,
+          provided: value,
+          expected: [
+            'boolean',
+            'number'
+          ]
+        });
 
       case 'attributeSort':
 
-        if (typeof value === 'boolean' || typeof value === 'number') return isValidBoolean(language, rule, value);
+        if (isBoolean(value)) return isValidBoolean(language, rule, value);
+        if (isArray(value)) return isValidArray(language, rule, value);
 
-        return isValidArray(language, rule, value);
+        throw RuleError({
+          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
+          option: `${language} → ${rule}`,
+          provided: value,
+          expected: [
+            'boolean',
+            'number'
+          ]
+        });
 
       case 'commentNewline':
       case 'commentIndent':
-      case 'delimiterLineBreak':
       case 'forceIndent':
       case 'forceAttributeValue':
       case 'ignoreCSS':
@@ -113,6 +126,8 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
         return isValidBoolean(language, rule, value);
 
       case 'attributeCasing':
+      case 'delimiterTerminus':
+      case 'lineBreakValue':
       case 'quoteConvert':
 
         return isValidChoice(language, rule, value);
@@ -130,7 +145,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'sortSelectors':
       case 'sortProperties':
 
-        return typeof value === 'boolean';
+        return isBoolean(value);
 
       case 'quoteConvert':
 
@@ -158,36 +173,19 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 }
 
 /**
- * IS VALID TYPE
- *
- * Fallback helper which throws with correct `expected` types.
- */
-export function isValidTypes (language: LanguageRuleNames, rule: string, value: number, expected: string[]) {
-
-  throw RuleError({
-    message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-    option: `${language} → ${rule}`,
-    provided: value,
-    expected
-  });
-
-}
-
-/**
  * IS VALID ARRAY
  *
  * Validates an array type and checks each entry is of a `string` type.
  */
-export function isValidArray (language: LanguageRuleNames, rule: string, value: number) {
-
-  let index: number = 0;
+export function isValidArray (language: LanguageRuleNames, rule: string, value: string[]) {
 
   if (isArray(value)) {
 
     if (value.length === 0) return true;
 
-    for (; index < value.length; index++) {
-      if (!(typeof value[index] === 'string')) {
+    for (let index: number = 0; index < value.length; index++) {
+
+      if (isString(value[index]) === false) {
         throw RuleError({
           message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
           option: `${language} → ${rule} (index: ${index})`,
@@ -196,7 +194,6 @@ export function isValidArray (language: LanguageRuleNames, rule: string, value: 
             'string'
           ]
         });
-
       }
     }
 
@@ -242,7 +239,7 @@ export function isValidString (language: LanguageRuleNames, rule: string, value:
  */
 export function isValidNumber (language: LanguageRuleNames, rule: string, value: number) {
 
-  if (typeof value === 'number' && isNaN(value) === false) return true;
+  if (isNumber(value) && isNaN(value) === false) return true;
 
   throw RuleError({
     message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
@@ -262,19 +259,15 @@ export function isValidNumber (language: LanguageRuleNames, rule: string, value:
  */
 export function isValidBoolean (language: LanguageRuleNames, rule: string, value: number | boolean) {
 
-  const type = typeof value;
-
-  if (type === 'number') return value !== 0;
-  if (type === 'boolean') return true;
+  if (isNumber(value)) return value !== 0;
+  if (isBoolean(value)) return true;
 
   throw RuleError({
-    message: `Invalid ${language} rule (${rule}) type "${type}" provided`,
+    message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
     option: language === 'global' ? rule : `${language} → ${rule}`,
     provided: value,
     expected: [
-      'boolean',
-      '0',
-      '1'
+      'boolean'
     ]
   });
 
@@ -288,7 +281,7 @@ export function isValidBoolean (language: LanguageRuleNames, rule: string, value
  */
 export function isValidChoice (language: LanguageRuleNames, rule: string, value: string) {
 
-  if (typeof value !== 'string') {
+  if (isString(value) === false) {
 
     throw RuleError({
       message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
@@ -303,9 +296,8 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   if (rule === 'language') {
 
-    switch (value) {
+    switch (value as LanguageName) {
       case 'text':
-      case 'auto':
       case 'markup':
       case 'html':
       case 'liquid':
@@ -346,7 +338,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'preset') {
 
-    switch (value) {
+    switch (value as GlobalRules['preset']) {
       case 'default':
       case 'strict':
       case 'recommended':
@@ -369,28 +361,27 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'attributeCasing') {
 
-    switch (value) {
+    switch (value as MarkupRules['attributeCasing']) {
       case 'preserve':
       case 'lowercase':
       case 'lowercase-name':
       case 'lowercase-value': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'preserve',
+          'lowercase',
+          'lowercase-name',
+          'lowercase-value'
+        ]
+      });
     }
-
-    throw RuleError({
-      message: `Invalid "${rule}" option provided`,
-      option: `${language} → ${rule}`,
-      provided: value,
-      expected: [
-        'preserve',
-        'lowercase',
-        'lowercase-name',
-        'lowercase-value'
-      ]
-    });
 
   } else if (rule === 'delimiterTrims') {
 
-    switch (value) {
+    switch (value as LiquidRules['delimiterTrims']) {
       case 'preserve':
       case 'never':
       case 'always':
@@ -398,66 +389,106 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'outputs':
       case 'multiline':
       case 'linebreak': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'preserve',
+          'never',
+          'always',
+          'tags',
+          'outputs',
+          'multiline',
+          'linebreak'
+        ]
+      });
     }
-
-    throw RuleError({
-      message: `Invalid "${rule}" option provided`,
-      option: `${language} → ${rule}`,
-      provided: value,
-      expected: [
-        'preserve',
-        'never',
-        'always',
-        'tags',
-        'outputs',
-        'multiline',
-        'linebreak'
-      ]
-    });
 
   } else if (rule === 'delimiterPlacement') {
 
-    switch (value) {
+    switch (value as LiquidRules['delimiterPlacement']) {
       case 'default':
       case 'inline':
       case 'preserve':
       case 'consistent':
       case 'force':
       case 'force-multiline': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'default',
+          'inline',
+          'preserve',
+          'consistent',
+          'force',
+          'force-multiline'
+        ]
+      });
     }
-
-    throw RuleError({
-      message: `Invalid "${rule}" option provided`,
-      option: `${language} → ${rule}`,
-      provided: value,
-      expected: [
-        'default',
-        'inline',
-        'preserve',
-        'consistent',
-        'force',
-        'force-multiline'
-      ]
-    });
 
   } else if (rule === 'lineBreakSeparator') {
 
-    switch (value) {
+    switch (value as LiquidRules['lineBreakSeparator']) {
       case 'preserve':
       case 'before':
       case 'after': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'preserve',
+          'before',
+          'after'
+        ]
+      });
     }
 
-    throw RuleError({
-      message: `Invalid "${rule}" option provided`,
-      option: `${language} → ${rule}`,
-      provided: value,
-      expected: [
-        'preserve',
-        'before',
-        'after'
-      ]
-    });
+  } else if (rule === 'delimiterTerminus') {
+
+    switch (value as MarkupRules['delimiterTerminus']) {
+      case 'force':
+      case 'inline':
+      case 'adapt': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'force',
+          'inline',
+          'adapt'
+        ]
+      });
+    }
+
+  } else if (rule === 'lineBreakValue') {
+
+    switch (value as MarkupRules['lineBreakValue']) {
+      case 'preserve':
+      case 'align':
+      case 'indent':
+      case 'force-preserve':
+      case 'force-align':
+      case 'force-indent':
+        return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'preserve',
+          'align',
+          'indent',
+          'force-preserve',
+          'force-align',
+          'force-indent'
+        ]
+      });
+    }
 
   } else if (rule === 'quoteConvert') {
 
@@ -466,18 +497,17 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'none':
       case 'double':
       case 'single': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'none',
+          'double',
+          'single'
+        ]
+      });
     }
-
-    throw RuleError({
-      message: `Invalid "${rule}" option provided`,
-      option: `${language} → ${rule}`,
-      provided: value,
-      expected: [
-        'none',
-        'double',
-        'single'
-      ]
-    });
 
   } else if (rule === 'objectIndent' || rule === 'arrayFormat') {
 
@@ -485,18 +515,17 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'default':
       case 'indent':
       case 'inline': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'default',
+          'indent',
+          'inline'
+        ]
+      });
     }
-
-    throw RuleError({
-      message: `Invalid "${rule}" option provided`,
-      option: `${language} → ${rule}`,
-      provided: value,
-      expected: [
-        'default',
-        'indent',
-        'inline'
-      ]
-    });
 
   } else if (rule === 'endComma') {
 
@@ -504,18 +533,17 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'none':
       case 'always':
       case 'never': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'none',
+          'always',
+          'never'
+        ]
+      });
     }
-
-    throw RuleError({
-      message: `Invalid "${rule}" option provided`,
-      option: `${language} → ${rule}`,
-      provided: value,
-      expected: [
-        'none',
-        'always',
-        'never'
-      ]
-    });
 
   } else if (rule === 'variableList') {
 
@@ -523,18 +551,18 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'none':
       case 'each':
       case 'list': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'none',
+          'each',
+          'list'
+        ]
+      });
     }
 
-    throw RuleError({
-      message: `Invalid "${rule}" option provided`,
-      option: `${language} → ${rule}`,
-      provided: value,
-      expected: [
-        'none',
-        'each',
-        'list'
-      ]
-    });
   }
 
 }

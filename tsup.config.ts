@@ -1,5 +1,5 @@
 import { defineConfig } from 'tsup';
-
+import * as pkg from './package.json';
 export default defineConfig([
   {
     entry: [
@@ -7,9 +7,12 @@ export default defineConfig([
     ],
     clean: false,
     treeshake: true,
-    minify: 'terser',
+    minify: process.env.production ? 'terser' : false,
     globalName: 'esthetic',
     splitting: false,
+    define: {
+      VERSION: `"${pkg.version}"`
+    },
     esbuildOptions: options => {
       options.treeShaking = true;
     },
@@ -30,7 +33,7 @@ export default defineConfig([
       './index.js'
     ],
     clean: false,
-    minify: 'terser',
+    minify: process.env.production ? 'terser' : false,
     treeshake: true,
     shims: true,
     bundle: true,

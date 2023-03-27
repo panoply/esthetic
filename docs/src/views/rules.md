@@ -40,7 +40,7 @@ Global rules will be used within all supported languages.
 
 # Liquid
 
-Formatting rules for the [Liquid Template Language](https://shopify.github.io/liquid/).
+[Liquid Template Language](https://shopify.github.io/liquid/).
 
 - [CommentIndent](/rules/liquid/commentIndent)
 - [CommentNewline](/rules/liquid/commentNewline)
@@ -60,18 +60,19 @@ Formatting rules for the [Liquid Template Language](https://shopify.github.io/li
 
 # Markup
 
-Formatting rules for markup languages [HTML](https://en.wikipedia.org/wiki/HTML) and [XML](https://developer.mozilla.org/en-US/docs/Web/XML/XML_introduction).
+[HTML](https://en.wikipedia.org/wiki/HTML) and [XML](https://developer.mozilla.org/en-US/docs/Web/XML/XML_introduction).
 
 - [Attribute Casing](/rules/markup/attributCasing)
 - [Attribute Sort](/rules/markup/attributeSort)
-- [Comment Style](/rules/markup/commentStyle)
-- [Delimiter LineBreak](/rules/markup/delimiterLineBreak)
+- [CommentIndent](/rules/markup/commentIndent)
+- [CommentNewline](/rules/markup/commentNewline)
+- [Delimiter Terminus](/rules/markup/delimiterTerminus)
 - [Force Attribute](/rules/markup/forceAttribute)
-- [Force Attribute Value](/rules/markup/forceAttributeValue)
 - [Force Indent](/rules/markup/forceIndent)
 - [Ignore CSS](/rules/markup/ignoreCSS)
 - [Ignore JS](/rules/markup/ignoreJS)
 - [Ignore JSON](/rules/markup/ignoreJSON)
+- [Line Break Value](/rules/markup/lineBreakValue)
 - [Preserve Attribute](/rules/markup/preserveAttribute)
 - [Preserve Text](/rules/markup/preserveText)
 - [Preserve Comment](/rules/markup/preserveComment)
@@ -82,7 +83,7 @@ Formatting rules for markup languages [HTML](https://en.wikipedia.org/wiki/HTML)
 
 # Style
 
-Formatting rules for style languages [CSS](https://en.wikipedia.org/wiki/CSS) and [SCSS](https://sass-lang.com).
+[CSS](https://en.wikipedia.org/wiki/CSS) and [SCSS](https://sass-lang.com).
 
 - [At Rule Space](/rules/style/atRuleSpace)
 - [Brace Padding](/rules/style/bracePadding)
@@ -96,7 +97,7 @@ Formatting rules for style languages [CSS](https://en.wikipedia.org/wiki/CSS) an
 
 # JSON
 
-[JSON Language](https://en.wikipedia.org/wiki/JSON) and JSONC
+[JSON Language](https://en.wikipedia.org/wiki/JSON).
 
 - [Array Format](/rules/json/arrayFormat)
 - [Brace Allman](/rules/json/braceAllman)

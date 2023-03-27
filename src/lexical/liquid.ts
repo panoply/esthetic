@@ -1,10 +1,10 @@
 /* eslint-disable prefer-const */
+import type { LiquidInternal, LiquidRules, Rules } from 'types';
 import { grammar } from 'parse/grammar';
-import { is } from 'utils';
+import { is } from 'utils/helpers';
 import { cc } from 'lexical/codes';
 import { LT } from 'lexical/enum';
 import { COM, NIL, NWL, WSP } from 'lexical/chars';
-import { LiquidInternal, LiquidRules, Rules } from 'types/index';
 
 /**
  * Opening Delimiters
@@ -352,7 +352,7 @@ export function tokenize (
 
       if (delimiterPlacement === 'force-multiline' || delimiterPlacement === 'force') {
         open += NWL;
-        if (delimiterPlacement === 'force-multiline') close = NWL + close;
+        if (delimiterPlacement === 'force-multiline') close = NWL + close.trimStart();
       } else if (delimiterPlacement === 'preserve') {
         open += (is(lexed[o], cc.NWL) ? NWL : WSP);
       } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
@@ -390,7 +390,7 @@ export function tokenize (
 
       if (delimiterPlacement === 'force-multiline' || delimiterPlacement === 'force') {
         open += NWL;
-        if (delimiterPlacement === 'force-multiline') close = NWL + close;
+        if (delimiterPlacement === 'force-multiline') close = NWL + close.trimStart();
       } else if (delimiterPlacement === 'preserve') {
         open += (is(lexed[o], cc.NWL) ? NWL : WSP);
       } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
@@ -474,7 +474,7 @@ export function tokenize (
 
       if (delimiterPlacement === 'force-multiline' || delimiterPlacement === 'force') {
         open += NWL;
-        if (delimiterPlacement === 'force-multiline') close = NWL + close;
+        if (delimiterPlacement === 'force-multiline') close = NWL + close.trimStart();
       } else if (delimiterPlacement === 'preserve') {
         open += (is(lexed[o], cc.NWL) ? NWL : WSP);
       } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
