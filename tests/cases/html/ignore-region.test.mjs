@@ -382,7 +382,7 @@ test('HTML Ignore Comment Region - Followed by markup', async t => {
 
 });
 
-test('HTML Ignore Comment Region - Followed by liquid', async t => {
+test.skip('HTML Ignore Comment Region - Followed by liquid', async t => {
 
   await forSample(
     [

@@ -1527,11 +1527,13 @@ export function markup () {
             //   // level[a - 1] = indent;
             // }
 
+            // REMOVED DUE TO CONTENT AND LIQUID END DEFECT
+            //
             if (indent > -1) indent = indent - 1;
 
             if (
               isType(next, 'liquid_end') &&
-              isType(data.begin[next] + 1, 'liquid_else')
+              isType(a, 'liquid_else')
             ) {
 
               if (indent > -1) indent = indent - 1;
@@ -1625,6 +1627,22 @@ export function markup () {
             //
             indent = indent + 1;
 
+            // Liquid switch/case, we need to indent by 1 for these tags
+            //
+            // {% case %}
+            //   {% when %}
+            // ^here
+            // {% endcase %}
+            //
+            if (
+              isType(next, 'liquid_else') &&
+              data.stack[next] === 'case' &&
+              rules.liquid.dedentTagList.includes('case') === false
+            ) {
+
+              indent = indent + 1;
+            }
+
             if (jsx === true && isToken(a + 1, '{')) {
 
               // HOT PATCH
@@ -1673,13 +1691,17 @@ export function markup () {
               // We will not apply this logic to {% liquid %} type tokens
               //
               if (data.stack[a] === 'liquid') {
+
                 level.push(indent);
+
               } else if (isIndex(next - 1, 'comment') > -1) {
 
                 level.push(indent);
 
               } else {
+
                 level.push(-20);
+
               }
 
             } else if ((isType(a, 'start') && isType(next, 'script_start'))) {
@@ -1724,11 +1746,7 @@ export function markup () {
 
             level[a - 1] = indent - 1;
 
-            if (isType(next, 'liquid_end')) {
-
-              level[a - 1] = indent - 1;
-
-            }
+            if (isType(next, 'liquid_end')) level[a - 1] = indent - 1;
 
             level.push(indent);
 
@@ -1789,6 +1807,14 @@ export function markup () {
 
             indent = indent - 1;
             level.push(indent);
+
+          } else if (
+            isType(next, 'liquid_end') &&
+            data.stack[next] === 'case' &&
+            rules.liquid.dedentTagList.includes('case') === false
+          ) {
+
+            level[level.length - 1] = level[level.length - 1] - 1;
 
           } else {
 
@@ -2026,6 +2052,13 @@ export function markup () {
 
         parse.start = a;
         parse.ender = extidx[a];
+
+        // Liquid External Code Region - Dedent indentation
+        //
+        if (lastLevel > 0 && rules.liquid.dedentTagList.includes(data.stack[a])) {
+          build.splice(build.length - 1, 1, nl(levels[a] - 1));
+          lastLevel = lastLevel - 1;
+        }
 
         const external = parse.external(lastLevel);
 

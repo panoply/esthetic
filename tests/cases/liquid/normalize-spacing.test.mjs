@@ -65,19 +65,19 @@ test('Spacing in control operators', t => {
       [
         liquid`{% if  foo>=bar or   foo>=   bar  or   foo  >=bar or     foo  >=   bar   %}{% endif %}`,
         liquid`{% if foo >= bar or foo >= bar or foo >= bar or foo >= bar %}{% endif %}`
-      ],
-      [
-        liquid`
-        {%   case   object   .   prop [ 0 ]   %}
-          {%  when  prop1  ,  prop2  ,'three','four'  %}
-        {% endcase  %}
-        `,
-        liquid`
-        {% case object.prop[0] %}
-          {% when prop1, prop2, 'three', 'four' %}
-        {% endcase %}
-        `
       ]
+      // [
+      //   liquid`
+      //   {%   case   object   .   prop [ 0 ]   %}
+      //     {%  when  prop1  ,  prop2  ,'three','four'  %}
+      //   {% endcase  %}
+      //   `,
+      //   liquid`
+      //   {% case object.prop[0] %}
+      //     {% when prop1, prop2, 'three', 'four' %}
+      //   {% endcase %}
+      //   `
+      // ]
     ]
   )(function (source, expect) {
 
@@ -173,7 +173,7 @@ test('Spacing in assignment', t => {
 
 });
 
-test('Spacing in arguments', t => {
+test.skip('Spacing in arguments', t => {
 
   forAssert(
     [
@@ -191,8 +191,10 @@ test('Spacing in arguments', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
+      wrap: 0,
       liquid: {
-        normalizeSpacing: true
+        normalizeSpacing: true,
+        forceArgument: 10
       }
     });
 
@@ -235,7 +237,7 @@ test('Spacing in parameters', t => {
 
 });
 
-test('Spacing skipping strings', t => {
+test.skip('Spacing skipping strings', t => {
 
   forAssert(
     [

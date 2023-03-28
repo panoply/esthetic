@@ -139,7 +139,7 @@ test('Structure Test: Empty schema tags', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format.sync(source, {
+    const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
         forceIndent: true
@@ -511,7 +511,8 @@ test('Structure Test: Newline Preservation and indentation levels', t => {
   )({
     language: 'liquid',
     json: {
-      braceAllman: true
+      braceAllman: true,
+      arrayFormat: 'indent'
     },
     markup: {
       forceAttribute: 2,

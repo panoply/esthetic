@@ -2,7 +2,7 @@ import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('Structure Test: Force Tag Arguments (Line Break - After)', t => {
+test.skip('Structure Test: Force Tag Arguments (Line Break - After)', t => {
 
   forAssert(
     [

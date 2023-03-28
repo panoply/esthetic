@@ -2393,6 +2393,11 @@ export function markup (input?: string) {
       let f: number = 0;
 
       /**
+       * A slice reference string to match sequences
+       */
+      let string: string = NIL;
+
+      /**
        * Angle bracket count, ie: `<` and `>`
        */
       let acount: number = 0;
@@ -2719,14 +2724,11 @@ export function markup (input?: string) {
 
             }
 
-          } else if (
-            isliq === true &&
-            u.is(b[a], cc.NWL) &&
+          } else if (isliq === true && u.is(b[a], cc.NWL) &&
             rules.liquid.preserveInternal === false && (
-              rules.liquid.delimiterPlacement === 'preserve' ||
-              rules.liquid.delimiterPlacement === 'consistent'
-            )
-          ) {
+            rules.liquid.delimiterPlacement === 'preserve' ||
+            rules.liquid.delimiterPlacement === 'consistent'
+          )) {
 
             // Preserve newlines at starting delimiter, eg: {{\n or {%\n etc
             //
@@ -2745,7 +2747,7 @@ export function markup (input?: string) {
 
               ntest = true;
 
-            } else if (/^\s*-?[%}]}/.test(glue(a)) === true) {
+            } else if (/^\s*-?[%}]}/.test(source.slice(a)) === true) {
 
               // Preserve newlines at ending delimiters, eg: \n}} or %} etc
               // We will also move ahead in the traversal, skipping additional
@@ -2757,9 +2759,6 @@ export function markup (input?: string) {
               }
 
               lexed.push(b[a]);
-
-              console.log(b[a]);
-
               ntest = true;
 
             }
@@ -2927,9 +2926,13 @@ export function markup (input?: string) {
 
               if (u.isLast(lexed, cc.COM)) {
 
+                // Liquid "{% when %}" expressions can be separated by commas
+                //
+                if (tname === 'when') liquid.logic.push(lexed.length - 1);
+
                 // Correct for hanging commas
                 //
-                if (/^,\s*-?[%}]}/.test(glue(a))) {
+                if (/^,\s*-?[%}]}/.test(source.slice(a))) {
                   lexed.pop();
                   a = a + 1;
                   continue;
@@ -2957,6 +2960,14 @@ export function markup (input?: string) {
 
               }
 
+              // Liquid Newlines
+              //
+              // We will remove the last newline character inserted into the lexed
+              // stack as we compose a new internal structure and extraneous newlines
+              // are not something we want to include. The "ntest" variable holds a
+              // reference to delimiter newline expression structures and we also make
+              // an additional check to ensure we are not popping delimiters.
+              //
               if (
                 rules.liquid.preserveInternal === false &&
                 tname !== 'liquid' &&
@@ -2980,14 +2991,30 @@ export function markup (input?: string) {
 
                 if (u.isLastAt(lexed, cc.WSP) === false && u.isLast(lexed, cc.PIP)) {
 
-                  lexed.pop();
-                  lexed.push(WSP, b[a], WSP);
+                  lexed.splice(lexed.length - 1, 1, WSP, b[a], WSP);
+
+                  // lexed.pop()
+                  // lexed.push(WSP, b[a], WSP);
+
+                } else if (tname === 'assign' && ((
+                  u.not(b[a], cc.WSP) &&
+                  u.is(b[a + 1], cc.EQS)
+                ) || (
+                  u.is(b[a], cc.EQS) &&
+                  u.not(b[a + 1], cc.WSP)
+                ))) {
+
+                  lexed.push(WSP);
 
                 } else if (u.isLast(lexed, cc.COM) && u.not(b[a + 1], cc.WSP)) {
 
                   lexed.push(WSP);
 
                 } else if (u.isLast(lexed, cc.WSP) && u.is(b[a + 1], cc.COM)) {
+
+                  lexed.pop();
+
+                } else if (u.is(b[a + 1], cc.WSP) && u.is(b[a + 2], cc.COM)) {
 
                   lexed.pop();
 
@@ -3004,12 +3031,17 @@ export function markup (input?: string) {
 
                 } else if (u.notLast(lexed, cc.WSP)) {
 
+                  // Liquid Conditional Operators,
+                  //
+                  // Correct the spacing for operator character sequences
+                  // such as: "==", "!=", ">", "<", "<=", ">="
+                  //
                   if ((
                     u.is(b[a + 2], cc.EQS) &&
                     u.isOf(b[a + 1], cc.EQS, cc.BNG, cc.LAN, cc.RAN)
                   ) || (
                     u.isLastAt(lexed, cc.EQS) &&
-                    u.isLastOf(lexed, cc.EQS, cc.BNG, cc.LAN, cc.RAN)
+                    u.isLastOf(lexed, cc.EQS, cc.LAN, cc.RAN)
                   ) || (
                     u.isLast(lexed, cc.PIP) ||
                     u.is(b[a + 1], cc.PIP) ||
@@ -3022,14 +3054,32 @@ export function markup (input?: string) {
 
                     lexed.push(WSP);
 
+                  } else if ((tname === 'if' || tname === 'elsif' || tname === 'unless') && ((
+                    u.isLastOf(lexed, cc.EQS, cc.LAN, cc.RAN) && (
+                      u.not(b[a + 1], cc.WSP) &&
+                      u.not(b[a + 1], cc.EQS)
+                    )
+                  ) || (
+                    u.isLastAt(lexed, cc.BNG) &&
+                    u.isLast(lexed, cc.EQS) &&
+                    u.not(b[a + 1], cc.WSP)
+                  ) || (
+                    u.notLast(b[a], cc.WSP) &&
+                    u.is(b[a + 1], cc.EQS) &&
+                    u.is(b[a + 2], cc.EQS)
+                  ))) {
+
+                    lexed.push(WSP);
+
                   } else if (
                     u.isLastAt(lexed, cc.WSP) &&
                     u.isLastOf(lexed, cc.DOT, cc.LSB, cc.RSB, cc.COL, cc.COM)
                   ) {
 
-                    lexed.pop();
-                    lexed.pop();
-                    lexed.push(b[a]);
+                    lexed.splice(lexed.length - 2, 2, b[a]);
+                    // lexed.pop();
+                    // lexed.pop();
+                    // lexed.push(b[a]);
 
                     if (u.isLast(lexed, cc.COL)) lexed.push(WSP);
 
@@ -3038,18 +3088,59 @@ export function markup (input?: string) {
                 }
               }
 
-              if ((
-                tname === 'if' ||
-                tname === 'elsif' ||
-                tname === 'unless'
-              ) && (
-                b.slice(a, a + 2).join(NIL).toLowerCase() === 'or' ||
-                b.slice(a, a + 3).join(NIL).toLowerCase() === 'and' ||
-                b.slice(a, a + 9).join(NIL).toLowerCase() === 'contains'
-              )) {
+              // Liquid Logical Expressions
+              //
+              // Used in conditional tags. We will store the starting points for
+              // each named operator expression. We also skip ahead if determined to be detected.
+              //
+              if (u.ws(b[a - 1])) {
 
-                liquid.logic.push(lexed.length - 1);
+                string = source.slice(a);
 
+                if ((
+                  tname === 'if' ||
+                  tname === 'elsif' ||
+                  tname === 'unless'
+                )) {
+
+                  if (u.ws(b[a + 2]) && string.startsWith('or')) {
+
+                    liquid.logic.push(lexed.length - 1);
+
+                    lexed.pop();
+                    lexed.push(string.slice(0, 2));
+
+                    a = a + 2;
+                    continue;
+
+                  } else if (u.ws(b[a + 3]) && string.startsWith('and')) {
+
+                    liquid.logic.push(lexed.length - 1);
+                    lexed.push(string.slice(1, 4));
+
+                    a = a + 4;
+
+                  } else if (u.ws(b[a + 8]) && string.startsWith('contains')) {
+
+                    liquid.logic.push(lexed.length - 1);
+                    lexed.push(string.slice(1, 9));
+
+                    a = a + 9;
+
+                  }
+
+                } else if (tname === 'when') {
+
+                  if (u.ws(b[a + 2]) && string.startsWith('or')) {
+
+                    liquid.logic.push(lexed.length - 1);
+                    lexed.push(string.slice(1, 3));
+
+                    a = a + 3;
+                    continue;
+
+                  }
+                }
               }
 
               // Detect Invalid Characters
@@ -3733,8 +3824,6 @@ export function markup (input?: string) {
 
       if (ignore === false) {
         if (ltype === 'liquid') {
-
-          console.log(lexed);
           token = lq.tokenize(lexed, tname, liquid, rules);
           if (tname === 'liquid') return parseLiquidTag();
         } else {

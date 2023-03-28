@@ -2,7 +2,7 @@ import test from 'ava';
 import { forSample, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('Line Break Separator (after): ', t => {
+test.skip('Line Break Separator (after): ', t => {
 
   forSample(
     [

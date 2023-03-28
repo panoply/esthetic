@@ -146,6 +146,11 @@ export interface MarkupRules {
    */
   delimiterTerminus?: 'inline' | 'force' | 'adapt';
 
+  /**
+   * Line Break Value
+   *
+   * Forces attribute values onto newlines
+   */
   lineBreakValue?: 'preserve' | 'align' | 'indent' | 'force-preserve' | 'force-align' | 'force-indent'
 
   /**

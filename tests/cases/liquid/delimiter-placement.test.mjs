@@ -1,8 +1,8 @@
 import test from 'ava';
-import { forSample, forRule, liquid } from '@liquify/ava/esthetic';
+import { forSample, forRule, liquid, forAssert } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('Structure Test: Preserved delimiter placements', t => {
+test('Preserve: Delimiters are preserved according to input', t => {
 
   forSample(
     [
@@ -196,6 +196,7 @@ test('Structure Test: Preserved delimiter placements', t => {
     {
       language: 'liquid',
       liquid: {
+        delimiterTrims: 'preserve',
         delimiterPlacement: 'preserve'
       }
     }
@@ -204,6 +205,406 @@ test('Structure Test: Preserved delimiter placements', t => {
     const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
+
+  });
+
+});
+
+test('Inline: Delimiters are inlined', t => {
+
+  forAssert(
+    [
+      [
+        liquid`
+        {{
+          inline_test
+        }}
+        `
+        ,
+        liquid`
+        {{ inline_test }}
+        `
+      ],
+      [
+        liquid`
+        {%
+          singleton
+        %}
+        `
+        ,
+        liquid`
+        {% singleton %}
+        `
+      ],
+      [
+        liquid`
+        {%
+          if xxx
+        %}
+          {{
+            inner_if
+          }}
+        {% endif %}
+        `
+        ,
+        liquid`
+        {% if xxx %}
+          {{ inner_if }}
+        {% endif %}
+        `
+      ],
+      [
+        liquid`
+        {%
+          block
+        %}
+          {{
+            inner_block
+          }}
+        {% endblock %}
+        `
+        ,
+        liquid`
+        {% block %}
+          {{ inner_block }}
+        {% endblock %}
+        `
+      ],
+      [
+        liquid`
+        {%
+          for i in array
+        %}
+          {{
+            i.prop
+          }}
+          {%
+            if i.condition == i.assertion
+          %}
+            {{
+              i.something
+            }}
+            {%-
+              unless i.condition == xxx
+            %}
+              {{-
+                i.is.nested
+              -}}
+            {% endunless %}
+          {% endif %}
+        {% endif %}
+        `
+        ,
+        liquid`
+        {% for i in array %}
+          {{ i.prop }}
+          {% if i.condition == i.assertion %}
+            {{ i.something }}
+            {%- unless i.condition == xxx %}
+              {{- i.is.nested -}}
+            {% endunless %}
+          {% endif %}
+        {% endif %}
+        `
+      ]
+    ]
+  )(function (source, expect) {
+
+    const actual = esthetic.format(source, {
+      language: 'liquid',
+      liquid: {
+        delimiterPlacement: 'inline'
+      }
+    });
+
+    t.is(actual, expect);
+
+  });
+
+});
+
+test('Consistent: Consistent placement based on opening delimiter', t => {
+
+  forAssert(
+    [
+      [
+        liquid`
+        {{
+          will_force }}
+
+        {%-
+        will_force_singleton %}
+
+        {%
+        if will_force != condition %}
+
+        {{
+        inner_force_consistent }}
+
+        {% endif %}
+        `
+        ,
+        liquid`
+        {{
+          will_force
+        }}
+
+        {%-
+          will_force_singleton
+        %}
+
+        {%
+          if will_force != condition
+        %}
+
+          {{
+            inner_force_consistent
+          }}
+
+        {% endif %}
+        `
+      ],
+      [
+        liquid`
+        {% for i in will_inline.consistent
+        %}
+          {{i.will_inline
+          -}}
+
+          {%-if i.will_inline
+          %}
+            {{
+              i.will_force}}
+            {%-
+            unless i.will_preserve_as_forced
+            %}
+              {{-i.will_inline
+              -}}
+            {% endunless %}
+        {% endif %}
+        {% endif %}
+        `
+        ,
+        liquid`
+        {% for i in will_inline.consistent %}
+          {{ i.will_inline -}}
+
+          {%- if i.will_inline %}
+            {{
+              i.will_force
+            }}
+            {%-
+              unless i.will_preserve_as_forced
+            %}
+              {{- i.will_inline -}}
+            {% endunless %}
+          {% endif %}
+        {% endif %}
+        `
+      ]
+    ]
+  )(function (source, expect) {
+
+    const actual = esthetic.format(source, {
+      language: 'liquid',
+      liquid: {
+        delimiterPlacement: 'consistent'
+      }
+    });
+
+    t.is(actual, expect);
+
+  });
+
+});
+
+test('Force: Delimiter are forced onto newlines', t => {
+
+  forAssert(
+    [
+      [
+        liquid`
+        {{ output_1 }}
+        `
+        ,
+        liquid`
+        {{
+          output_1
+        }}
+        `
+      ],
+      [
+        liquid`
+        {% singleton %}
+        `
+        ,
+        liquid`
+        {%
+          singleton
+        %}
+        `
+      ],
+      [
+        liquid`
+        {% if xxx %}
+          {{ inner_if }}
+        {% endif %}
+        `
+        ,
+        liquid`
+        {%
+          if xxx
+        %}
+          {{
+            inner_if
+          }}
+        {% endif %}
+        `
+      ],
+      [
+        liquid`
+        {% block %}
+          {{ inner_block }}
+        {% endblock %}
+        `
+        ,
+        liquid`
+        {%
+          block
+        %}
+          {{
+            inner_block
+          }}
+        {% endblock %}
+        `
+      ],
+      [
+        liquid`
+        {% for i in array %}
+          {{ i.prop }}
+          {% if i.condition == i.assertion %}
+            {{ i.something }}
+            {%- unless i.condition == xxx %}
+              {{- i.is.nested -}}
+            {% endunless %}
+          {% endif %}
+        {% endif %}
+        `
+        ,
+        liquid`
+        {%
+          for i in array
+        %}
+          {{
+            i.prop
+          }}
+          {%
+            if i.condition == i.assertion
+          %}
+            {{
+              i.something
+            }}
+            {%-
+              unless i.condition == xxx
+            %}
+              {{-
+                i.is.nested
+              -}}
+            {% endunless %}
+          {% endif %}
+        {% endif %}
+        `
+      ]
+    ]
+  )(function (source, expect) {
+
+    const actual = esthetic.format(source, {
+      language: 'liquid',
+      liquid: {
+        delimiterPlacement: 'force'
+      }
+    });
+
+    t.is(actual, expect);
+
+  });
+
+});
+
+test.skip('Force Multiline: Force delimiters when token spans newlines', t => {
+
+  forAssert(
+    [
+      [
+        liquid`
+        {{ will_force
+           | append: 'xxx' | filter: 'using wrap fraction' | prepend: 'set to 30' | x: 'for test' }}
+        `
+        ,
+        liquid`
+        {{
+          will_force
+          | append: 'xxx'
+          | filter: 'using wrap fraction'
+          | prepend: 'set to 30'
+          | x: 'for test'
+        }}
+        `
+      ],
+      [
+        liquid`
+        {{ will_force | arguments:one: 'foo', two: 'bar', three: 'baz', four: 1| filter: 'using wrap fraction' }}
+        `
+        ,
+        liquid`
+        {{
+          will_force
+          | arguments:
+            one: 'foo',
+            two: 'bar',
+            three: 'baz',
+            four: 1
+          | filter: 'using wrap fraction'
+        }}
+        `
+      ],
+      [
+        liquid`
+        {% if condition_1 == assertion_1 and logical_forcing and forced%}
+
+        {{
+          will_inline
+          | x: 'xxx'
+        }}
+
+        {% endif %}
+        `
+        ,
+        liquid`
+        {%
+          if condition_1 == assertion_1
+          and logical_forcing
+          and forced
+        %}
+
+          {{ will_inline | x: 'xxx' }}
+
+        {% endif %}
+        `
+      ]
+    ]
+  )(function (source, expect) {
+
+    const actual = esthetic.format(source, {
+      language: 'liquid',
+      wrapFraction: 30,
+      liquid: {
+        lineBreakSeparator: 'after',
+        delimiterPlacement: 'force-multiline'
+      }
+    });
+
+    t.is(actual, expect);
 
   });
 

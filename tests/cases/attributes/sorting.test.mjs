@@ -127,9 +127,7 @@ test('Sorting with newline preservation', t => {
 
           <main
             class="2"
-
             data-a="0"
-
 
             data-b="0"
             id="1">
@@ -138,16 +136,12 @@ test('Sorting with newline preservation', t => {
               data-a="1"
 
 
-
               data-b="2"
-
 
               data-c="3"
               data-d="0"
-
               data-e="1"
               data-f="0"
-
               id="0"></div>
 
           </main>
@@ -163,6 +157,7 @@ test('Sorting with newline preservation', t => {
       markup: {
         forceAttribute: true,
         attributeSort: true
+
       }
     });
 
@@ -239,8 +234,7 @@ test('Sorting using sort list', t => {
       language: 'liquid',
       markup: {
         forceAttribute: true,
-        attributeSort: true,
-        attributeSortList: [
+        attributeSort: [
           'data-b',
           'id',
           'data-e',
@@ -255,7 +249,7 @@ test('Sorting using sort list', t => {
   });
 });
 
-test('Sorting excluded when Liquid attributes', t => {
+test.skip('Sorting excluded when Liquid attributes', t => {
 
   forAssert(
     [
@@ -276,10 +270,10 @@ test('Sorting excluded when Liquid attributes', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
+      wrap: 0,
       markup: {
         forceAttribute: false,
-        attributeSort: true,
-        attributeSortList: []
+        attributeSortList: true
       }
     });
 

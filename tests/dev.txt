@@ -1,33 +1,57 @@
-<ul>
-<li>
-  <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }}
-  product--{{ section.settings.gallery_layout }}     product--mobile-{{ section.settings.mobile_thumbnails }}
-  grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}
-  "
-     {%- if settings.predictive_search_enabled -%}
-                        role="combobox"
-                        aria-expanded="false"
-                        aria-owns="predictive-search-results-list"
-                        aria-controls="predictive-search-results-list"
-                        aria-haspopup="listbox"
-                        aria-autocomplete="list"
-                        autocorrect="off"
-                        autocomplete="off"
-                        autocapitalize="off"
-                        spellcheck="false"
-                      {%- endif -%}>
+{% if condition_1 == assertion_1 and logical_forcing and forced%}
 
-  <input class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }}
-  product--{{ section.settings.gallery_layout }}     product--mobile-{{ section.settings.mobile_thumbnails }}
-  grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}
-  "
-  id="foo"/>
+{% elsif 'yy' %}
 
-    <section class="
-    grid__item product__media-wrapper
-    {% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %}">
-      {% render 'product-media-gallery', variant_images: variant_images %}
-    </section>
-  </div>
-  </li>
-</ul>
+{% if condition_1 == assertion_1%}
+
+{% unless condition_1 == assertion_1%}
+
+{% case variable %}
+  {% when first_value or second_value or third_value %}
+    first_expression
+  {% when fourth_value, fifth_value, sixth_value %}
+    second_expression
+  {% else %}
+    third_expression
+{% endcase %}
+
+{% endunless %}
+{% endif %}
+
+{% elsif 'xx' %}
+  {{
+    will_inline
+    | append: 'xxx'
+  }}
+
+{% else %}
+
+bar
+
+{% endif %}
+
+{% case variable %}
+  {% when first_value or second_value or third_value %}
+    first_expression
+  {% when fourth_value, fifth_value, sixth_value %}
+    second_expression
+  {% else %}
+    third_expression
+{% endcase %}
+
+{% case variable %}
+  {% when first_value %}
+    first_expression
+  {% when fourth_value %}
+    second_expression
+{% endcase %}
+
+{% schema %}
+{
+  "foo": "bar",
+  "arr": [
+    "one",
+    100
+  ]
+}
+{% endschema %}

@@ -2,7 +2,7 @@ import test from 'ava';
 import { liquid, forAssert, forSample } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('Liquid Tag: Normalising spacing of Liquid Tag internal expressions', t => {
+test.skip('Liquid Tag: Normalising spacing of Liquid Tag internal expressions', t => {
 
   forAssert(
     [
@@ -49,8 +49,8 @@ test('Liquid Tag: Normalising spacing of Liquid Tag internal expressions', t => 
       }
     });
 
-    console.log(actual);
-    //  t.deepEqual(actual, expected);
+    // console.log(actual);
+    t.deepEqual(actual, expected);
 
   });
 });

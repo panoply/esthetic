@@ -571,20 +571,20 @@ function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]
     let ind = [];
     let key = storeb[c];
 
-    const tkey = typeof key;
+    // const tkey = typeof key;
 
     if (a < len) {
 
       do {
 
-        // The typeof comparison was originally:
+        // The comparison was originally:
         //
-        // typeof storeb[a] < tkey
+        // if (storeb[a] < key || typeof storeb[a] < tkey)
         //
         // If error occur, change it back
         //
         // eslint-disable-next-line valid-typeof
-        if (storeb[a] < key || typeof storeb[a] === tkey) {
+        if (storeb[a] < key) {
           key = storeb[a];
           ind = [ a ];
         } else if (storeb[a] === key) {

@@ -61,7 +61,8 @@ function LiquidGrammar (grammar: Grammars['liquid'] = {
   ],
   else: [
     'else',
-    'elsif'
+    'elsif',
+    'when'
   ],
   singletons: [
     'include',
@@ -75,8 +76,8 @@ function LiquidGrammar (grammar: Grammars['liquid'] = {
     'decrement',
     'echo',
     'increment',
-    'render',
-    'when'
+    'render'
+
   ]
 }) {
 
