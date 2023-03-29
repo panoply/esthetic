@@ -1,22 +1,30 @@
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `false`
-
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `false`
+---
+title: 'Markup - Ignore CSS'
+layout: base
+permalink: '/rules/markup/ignoreCSS/index.html'
+describe:
+  - Ignore CSS
+  - Rule Options
+examples:
+  - false
+  - true
+---
 
 #### Ignore CSS
 
-Whether or not to format regions of code that are identified to be CSS. Tags such as `<style>` and `{% style %}` can contain CSS and by default beautification is applied using the `style` rules. When ignored (ie: `true`) Prettify will not apply formatting to these regions.
+Whether or not to format regions of code that are identified to be CSS. The HTML `<style>` tag can contain CSS and by default beautification is applied using the `style` rules. When ignored (ie: `true`) Æsthetic will not apply formatting to these regions.
 
-#### Note
+::: note
 
-When enabled (ie: `true`) the entire `<style>` and `{% style %}` regions will be excluded including indentation levels.
+This rule only applied to HTML `<style>` tags. Use the Liquid [ignoreTagList](/rules/liquid/ignoreTagList/) rule to exclude beautification on Liquid tokens such as the `{% style %}` or `{% stylesheet %}` tags.
 
-#
+:::
 
 ---
 
 #### Before Formatting
 
-*Below is an example of how some input **might** look and the rule is enabled, ie: `true`. The only changes that will be applied in **after** formatting example will be applied to the `<title>` tags.*
+_Below is an example of how some input **might** look and the rule is enabled, ie: `true`. The only changes that will be applied in **after** formatting example will be applied to the `<title>` tags._
 
 ```liquid
 
@@ -36,7 +44,7 @@ When enabled (ie: `true`) the entire `<style>` and `{% style %}` regions will be
 
 #### After Formatting
 
-*After formatting the above sample notice how the `<style></style>` region has been completely skipped from formatting. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist, so it is up to you to apply beautification in your preferred manner. Only the surrounding tokens have beautification applied, the `<style></style>` tag remains in the same position and state as it was **before** formatting.*
+_After formatting the above sample notice how the `<style></style>` region has been completely skipped from formatting. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist, so it is up to you to apply beautification in your preferred manner. Only the surrounding tokens have beautification applied, the `<style></style>` tag remains in the same position and state as it was **before** formatting._
 
 ```liquid
 
