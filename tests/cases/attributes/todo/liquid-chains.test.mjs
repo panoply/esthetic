@@ -1,8 +1,8 @@
 import test from 'ava';
-import { forRule, liquid } from '@liquify/ava/esthetic';
+import { forAssert, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test.skip('Liquid structure variations', t => {
+test.skip('Chaining Liquid Attributes: Liquid structure variations', t => {
 
   forAssert(
     [

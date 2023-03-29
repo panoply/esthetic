@@ -1,5 +1,5 @@
 import test from 'ava';
-import { forSample, forRule, liquid, forAssert } from '@liquify/ava/esthetic';
+import { forSample, liquid, forAssert } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Preserve: Delimiters are preserved according to input', t => {
@@ -120,18 +120,18 @@ test('Preserve: Delimiters are preserved according to input', t => {
         {% endif %}
       `,
       liquid`
-      {%
-        if x == 'empty-tag-force-left-and-right'
-      %}{% endif %}
-      {%-
-        if x == 'empty-tag-force-left-and-right trim-left'
-      %}{% endif %}
-      {%-
-        if x == 'empty-tag-force-left-and-right trims'
-      -%}{% endif %}
-      {%
-        if x == 'empty-tag-force-left-and-right trim-right'
-      -%}{% endif %}
+        {%
+          if x == 'empty-tag-force-left-and-right'
+        %}{% endif %}
+        {%-
+          if x == 'empty-tag-force-left-and-right trim-left'
+        %}{% endif %}
+        {%-
+          if x == 'empty-tag-force-left-and-right trims'
+        -%}{% endif %}
+        {%
+          if x == 'empty-tag-force-left-and-right trim-right'
+        -%}{% endif %}
       `,
       liquid`
         {%
@@ -164,10 +164,10 @@ test('Preserve: Delimiters are preserved according to input', t => {
         {% endif %}
       `,
       liquid`
-      {% if x == 'no-content-no-force' %}{% endif %}
-      {%- if x == 'no-content-no-force trim-left' %}{% endif %}
-      {%- if x == 'no-content-no-force trims' -%}{% endif %}
-      {% if x == 'no-content-no-force trim-right' -%}{% endif %}
+        {% if x == 'no-content-no-force' %}{% endif %}
+        {%- if x == 'no-content-no-force trim-left' %}{% endif %}
+        {%- if x == 'no-content-no-force trims' -%}{% endif %}
+        {% if x == 'no-content-no-force trim-right' -%}{% endif %}
       `,
       liquid`
         {% if x == 'content-no-force' %}
@@ -190,6 +190,58 @@ test('Preserve: Delimiters are preserved according to input', t => {
           {% # preserved delimiter structure %}
 
         {% endif %}
+      `,
+      liquid`
+        <main
+          id="some-id">
+          <ul
+            class="class-name"
+            data-attr-1="one"
+            data-attr-2="two"
+            data-attr-3="three">
+            <li
+              data-attr-1="one"
+              data-attr-2="two"
+              data-attr-3="three">
+              <div
+                data-attr-1="one"
+                data-attr-2="two"
+                data-attr-3="three"
+                data-attr-4="four">
+
+                {{
+                  object.prop
+                }}
+
+                {%
+                  if x == 'condition'
+                %}
+
+                  {{ object.prop }}
+                  {{-
+                    will_force
+                    | arguments:
+                       one: 'foo',
+                       two: 'bar',
+                       three: 'baz',
+                       four: 1
+                    | filter: 'using wrap fraction'
+                  }}
+
+                  {%
+                    for i in arr
+                  %}
+
+                    {{ i.prop }}
+
+                  {% endif %}
+
+                {% endif %}
+
+              </div>
+            </li>
+          </ul>
+        </main>
       `
     ]
   )(
@@ -197,7 +249,13 @@ test('Preserve: Delimiters are preserved according to input', t => {
       language: 'liquid',
       liquid: {
         delimiterTrims: 'preserve',
-        delimiterPlacement: 'preserve'
+        delimiterPlacement: 'preserve',
+        forceFilter: 1,
+        forceArgument: 3,
+        lineBreakSeparator: 'after'
+      },
+      markup: {
+        forceAttribute: true
       }
     }
   )(function (source, rules) {
@@ -205,6 +263,118 @@ test('Preserve: Delimiters are preserved according to input', t => {
     const actual = esthetic.format(source, rules);
 
     t.deepEqual(actual, source);
+
+  });
+
+});
+
+test('Preserve Structure Cases: Various samples with normalize spacing enabled', t => {
+
+  forAssert(
+    [
+      [
+        liquid`
+        {{no_space}}
+        {{
+          left_forced }}
+        {{
+          left_force_right_no_space}}
+        {{left_no_force_right_space }}
+        {{left_no_force_right_space
+        }}
+        {{-
+        left_force_trims_right_no_space-}}
+        {{-
+          left_force_space_trims -}}
+        {{-no_space_trims-}}
+        {{-
+          force_trims
+        -}}
+        {{-
+          left_force_left_trim_right_nospace}}
+        {{
+          left_force_right_trim_right_nospace-}}
+      `,
+        liquid`
+        {{ no_space }}
+        {{
+          left_forced }}
+        {{
+          left_force_right_no_space }}
+        {{ left_no_force_right_space }}
+        {{ left_no_force_right_space
+        }}
+        {{-
+          left_force_trims_right_no_space -}}
+        {{-
+          left_force_space_trims -}}
+        {{- no_space_trims -}}
+        {{-
+          force_trims
+        -}}
+        {{-
+          left_force_left_trim_right_nospace }}
+        {{
+          left_force_right_trim_right_nospace -}}
+        `
+      ]
+    ],
+    [
+      [
+        liquid`
+        {%
+          if x == 'empty-tag-left-force' %}{% endif %}
+        {%
+        if x == 'empty-tag-left-force'%}{% endif %}
+        {%if x == 'empty-tag-right-force'
+        %}{% endif %}
+        {%if x == 'empty-tag-left-force'%}{% endif %}
+        {%-if x == 'empty-tag-left-force trim-left'
+        %}{% endif %}
+        {%-
+          if x == 'empty-tag-left-force trims'-%}{% endif %}
+        {%-
+          if x == 'empty-tag-left-force trims'
+        -%}{% endif %}
+        {%
+          if x == 'empty-tag-left-force trims-right'
+        %}{% endif %}
+        {%
+          if x == 'empty-tag-left-force trims-right'-%}{% endif %}
+        `,
+        liquid`
+        {%
+          if x == 'empty-tag-left-force' %}{% endif %}
+        {%
+          if x == 'empty-tag-left-force' %}{% endif %}
+        {% if x == 'empty-tag-right-force'
+        %}{% endif %}
+        {% if x == 'empty-tag-left-force' %}{% endif %}
+        {%- if x == 'empty-tag-left-force trim-left'
+        %}{% endif %}
+        {%-
+          if x == 'empty-tag-left-force trims' -%}{% endif %}
+        {%-
+          if x == 'empty-tag-left-force trims'
+        -%}{% endif %}
+        {%
+          if x == 'empty-tag-left-force trims-right'
+        %}{% endif %}
+        {%
+          if x == 'empty-tag-left-force trims-right' -%}{% endif %}
+        `
+      ]
+    ]
+  )(function (source, expect) {
+
+    const output = esthetic.format(source, {
+      language: 'liquid',
+      liquid: {
+        delimiterPlacement: 'preserve'
+      }
+    });
+
+    t.deepEqual(output, expect);
 
   });
 
@@ -531,7 +701,7 @@ test('Force: Delimiter are forced onto newlines', t => {
 
 });
 
-test.skip('Force Multiline: Force delimiters when token spans newlines', t => {
+test('Force Multiline: Force delimiters when token spans newlines', t => {
 
   forAssert(
     [
@@ -605,184 +775,6 @@ test.skip('Force Multiline: Force delimiters when token spans newlines', t => {
     });
 
     t.is(actual, expect);
-
-  });
-
-});
-
-test.skip('Structure Test: Various rules against samples', t => {
-
-  forRule(
-    [
-      liquid`
-        {{no_space}}
-        {{
-          left_forced }}
-        {{
-          left_force_right_no_space}}
-        {{left_no_force_right_space }}
-        {{-
-        left_force_trims_right_no_space-}}
-        {{-
-          left_force_space_trims -}}
-        {{-no_space_trims-}}
-        {{-
-          force_trims
-        -}}
-        {{-
-          left_force_left_trim_right_nospace}}
-        {{
-          left_force_right_trim_right_nospace-}}
-      `,
-      liquid`
-        {%
-          if x == 'empty-tag-left-force' %}{% endif %}
-        {%
-        if x == 'empty-tag-left-force'%}{% endif %}
-        {%if x == 'empty-tag-left-force'%}{% endif %}
-        {%-if x == 'empty-tag-left-force trim-left'
-        %}{% endif %}
-        {%-
-          if x == 'empty-tag-left-force trims'-%}{% endif %}
-        {%-
-          if x == 'empty-tag-left-force trims'
-        -%}{% endif %}
-        {%
-          if x == 'empty-tag-left-force trims-right'
-        %}{% endif %}
-        {%
-          if x == 'empty-tag-left-force trims-right'-%}{% endif %}
-       `
-    ]
-  )(
-    [
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'preserve'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'inline'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'force-inline'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'consistent'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'default'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'force-multiline'
-        }
-      }
-    ]
-  )(function (sample, rule, label) {
-
-    const output = esthetic.format(sample, rule);
-
-    // console.log(output);
-    // t.snapshot(output, label);
-    t.pass();
-    // t.deepEqual(actual, source);
-
-  });
-
-});
-
-test.skip('Structure Test: Nested delimiter structures', t => {
-
-  forRule(
-    [
-      liquid`
-        <main id="some-id">
-          <ul class="class-name" data-attr-1="one" data-attr-2="two" data-attr-3="three">
-            <li data-attr-1="one" data-attr-2="two" data-attr-3="three">
-              <div data-attr-1="one" data-attr-2="two" data-attr-3="three" data-attr-4="four">
-
-                {{ object.prop }}
-
-                {% if x == 'condition' %}
-
-                  {{ object.prop }}
-
-                  {%
-                    for i in arr
-                  %}
-
-                    {{ i.prop }}
-
-                  {% endif %}
-
-                {% endif %}
-
-              </div>
-            </li>
-          </ul>
-        </main>
-      `
-    ]
-  )(
-    [
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'default'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'consistent'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'inline'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'preserve'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'force-inline'
-        }
-      },
-      {
-        language: 'liquid',
-        liquid: {
-          delimiterPlacement: 'force-multiline'
-        }
-      }
-    ]
-  )(function (sample, rule, label) {
-
-    const output = esthetic.format(sample, rule);
-
-    t.pass();
-    // t.log(output);
 
   });
 

@@ -173,7 +173,7 @@ test('Spacing in assignment', t => {
 
 });
 
-test.skip('Spacing in arguments', t => {
+test('Spacing in arguments', t => {
 
   forAssert(
     [
@@ -237,7 +237,7 @@ test('Spacing in parameters', t => {
 
 });
 
-test.skip('Spacing skipping strings', t => {
+test('Spacing skipping strings', t => {
 
   forAssert(
     [

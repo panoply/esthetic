@@ -156,7 +156,8 @@ test('Sorting with newline preservation', t => {
       preserveLine: 3,
       markup: {
         forceAttribute: true,
-        attributeSort: true
+        attributeSort: true,
+        stripAttributeLines: false
 
       }
     });
@@ -249,7 +250,7 @@ test('Sorting using sort list', t => {
   });
 });
 
-test.skip('Sorting excluded when Liquid attributes', t => {
+test('Sorting excluded when Liquid attributes', t => {
 
   forAssert(
     [
@@ -273,7 +274,7 @@ test.skip('Sorting excluded when Liquid attributes', t => {
       wrap: 0,
       markup: {
         forceAttribute: false,
-        attributeSortList: true
+        attributeSort: true
       }
     });
 

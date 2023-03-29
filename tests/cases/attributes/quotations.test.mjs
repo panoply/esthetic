@@ -2,7 +2,7 @@ import test from 'ava';
 import { forRule, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test.skip('Quote conversion within values', t => {
+test('Quote conversion within values', t => {
 
   forRule(
     [
