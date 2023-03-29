@@ -19,12 +19,12 @@ Whether or not newlines contained within tag attributes should be preserved. Thi
 
 This rule wil only take effect when `forceAttribute` is enabled (ie: `true`) or a defined `forceAttribute` limit has been exceeded. The rule will also take effect if attribute forcing is being applied according to **global** `wrap` limits.
 
-- [`forceAttribute`](/rules/markup/forceAttribute/)
-- [`preserveLine`](/rules/global/preserveLine/)
+- [forceAttribute](/rules/markup/forceAttribute/)
+- [preserveLine](/rules/global/preserveLine/)
 
 # Rule Options
 
-Below is an example of how this rule works using the following rule sets
+Below is an example of how this rule works using the following rule sets:
 
 ```js
 {
