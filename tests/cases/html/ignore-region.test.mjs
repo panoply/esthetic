@@ -2,9 +2,9 @@ import test from 'ava';
 import { forSample, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('HTML Ignore Comment Region - Newlines and indentation', async t => {
+test('HTML Ignore Comment Region - Newlines and indentation', t => {
 
-  await forSample(
+  forSample(
     [
       liquid`{% # 1 newline following comment is respected %}
 
@@ -150,7 +150,7 @@ test('HTML Ignore Comment Region - Newlines and indentation', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
 
@@ -162,7 +162,7 @@ test('HTML Ignore Comment Region - Newlines and indentation', async t => {
 
 test('HTML Ignore Comment Region - Edge cases', async t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # Extraneous spacing and newlines following the ignore comment %}
@@ -223,7 +223,7 @@ test('HTML Ignore Comment Region - Edge cases', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
 
@@ -233,9 +233,9 @@ test('HTML Ignore Comment Region - Edge cases', async t => {
 
 });
 
-test('HTML Ignore Comment Region - Followed by markup', async t => {
+test('HTML Ignore Comment Region - Followed by markup', t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # HTML structure within before and after content %}
@@ -372,7 +372,7 @@ test('HTML Ignore Comment Region - Followed by markup', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
 
@@ -382,9 +382,9 @@ test('HTML Ignore Comment Region - Followed by markup', async t => {
 
 });
 
-test.skip('HTML Ignore Comment Region - Followed by liquid', async t => {
+test('HTML Ignore Comment Region - Followed by liquid', t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # HTML structure within before and after content %}
@@ -420,7 +420,7 @@ test.skip('HTML Ignore Comment Region - Followed by liquid', async t => {
       `,
       liquid`{% # HTML with nested tags matching first tag name %}
 
-        <!-- esthetic-ignore-end -->
+        <!-- esthetic-ignore-start -->
         {% for one in array %}
         <div id="xxx">
         {%
@@ -475,7 +475,7 @@ test.skip('HTML Ignore Comment Region - Followed by liquid', async t => {
       language: 'liquid',
       preserveLine: 3
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
 

@@ -16,18 +16,29 @@ options:
 The `commentIndent` rule applies single level indentation to the containing content of Liquid **block** type comments.
 
 ::: note
-Liquid line type comments are currently not supported by this rule. Only block type Liquid tokens will be handled.
+Liquid line type comments `{% # example %}` are currently not supported by this rule. Only block type Liquid tokens will be handled.
 :::
 
 # Rule Override
 
 When the [`preserveComment`](/rules/liquid/preserveComment) (liquid) rule is enabled (i.e: `true`) it will take precedence and override `commentIndent` rule.
 
-- [`preserveComment`](/rules/liquid/preserveComment)
+- [preserveComment](/rules/liquid/preserveComment)
 
 # Rule Options
 
-This is a Liquid specific formatting rule which defaults to using `false` when no option is defined.
+This is a Liquid specific formatting rule which defaults to using `false` when no option is defined. The **Recommended** setting to use is `true`.
+
+##### Example
+
+```js
+{
+  "language": "liquid",
+  "liquid": {
+    "commentIndent": false // Recommended setting to use is true
+  }
+}
+```
 
 <!--
 

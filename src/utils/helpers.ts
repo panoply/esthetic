@@ -197,6 +197,22 @@ export function isLastOf (string: string | string[], ...codes: number[]) {
 };
 
 /**
+ * Last Sequence
+ *
+ * Checks the last sequence of character codes
+ */
+export function isLastSeq (string: string | string[], ...codes: number[]) {
+
+  let n: number = string.length - 1;
+  let c: number = codes.length;
+
+  while (c--) if (is(string[n--], codes[c]) === false) return false;
+
+  return true;
+
+};
+
+/**
  * Last Of (equal)
  *
  * If character code of the string is equal to the `at` index code character.

@@ -94,7 +94,7 @@ test('Structure Test: singleton <path>', t => {
   });
 });
 
-test.skip('Structure Test: singleton <circle>', t => {
+test('Structure Test: singleton <circle>', t => {
 
   forSample(
     [
@@ -293,7 +293,7 @@ test('Structure Test: singleton <polyline>', t => {
   });
 });
 
-test.skip('Structure Test: singleton <rect>', t => {
+test('Structure Test: singleton <rect>', t => {
 
   forSample(
     [
@@ -349,7 +349,7 @@ test.skip('Structure Test: singleton <rect>', t => {
   });
 });
 
-test.skip('Structure Test: singleton <ellipse>', t => {
+test('Structure Test: singleton <ellipse>', t => {
 
   forSample(
     [
@@ -405,7 +405,7 @@ test.skip('Structure Test: singleton <ellipse>', t => {
   });
 });
 
-test.skip('Structure Test: singleton <stop>', t => {
+test('Structure Test: singleton <stop>', t => {
 
   forSample(
     [
@@ -451,7 +451,7 @@ test.skip('Structure Test: singleton <stop>', t => {
   });
 });
 
-test.skip('Convert and correct singletons to self closing tokens', t => {
+test('Convert and correct singletons to self closing tokens', t => {
 
   forAssert([
     [

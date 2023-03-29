@@ -417,6 +417,7 @@ function getCodeBlocks (md, fence, ...args) {
   return [
     /* html */`
     <div
+      class="rule-example"
       data-controller="example"
       data-example-rules-value="${rules}"
       data-example-input-value="${input.trim()}"
@@ -465,34 +466,49 @@ function rule (md, tokens, idx) {
 
       let tooltip = ''
 
-      if('🤡' === m[1]) {
-        tooltip = "The choice of a clown."
-      } else if ('🙌' === m[1]) {
-        tooltip = "Authors choice"
-      } else if ('👍' === m[1]) {
-        tooltip = "Good choice."
-      } else if ('👎' === m[1]) {
-        tooltip = "Not recommended"
-      } else if ('😳' === m[1]) {
-        tooltip = "We live in a society, we're not animals"
-      }  else {
-        tooltip = m[1]
+      if(m !== null) {
+
+        if('🤡' === m[1]) {
+          tooltip = "The choice of a clown."
+        } else if ('🙌' === m[1]) {
+          tooltip = "Authors choice"
+        } else if ('👍' === m[1]) {
+          tooltip = "Good choice."
+        } else if ('👎' === m[1]) {
+          tooltip = "Not recommended"
+        } else if ('😳' === m[1]) {
+          tooltip = "We live in a society, we're not animals"
+        } else if ('💡' === m[1]) {
+          tooltip = 'Showing an example of the rule'
+        } else if ('🧐' === m[1]) {
+          tooltip = 'You gotta do, what you gotta do'
+        }
+
+        // opening tag
+        return [
+
+          /* html */`
+          <div class="rule-title d-flex ai-center">
+          <div
+            class="h5 mr-3"
+            aria-label="${tooltip}"
+            data-tooltip="top">
+          ${md.utils.escapeHtml(m[1])}
+          </div>
+          `
+        ].join('')
+
+      } else  {
+
+        // opening tag
+        return [
+
+          /* html */`
+          <div class="rule-title d-flex ai-center">
+          `
+        ].join('')
+
       }
-
-
-      // opening tag
-      return [
-
-        /* html */`
-        <div class="rule-title d-flex ai-center">
-        <div
-          class="h5 mr-3"
-          aria-label="${tooltip}"
-          data-tooltip="top">
-        ${md.utils.escapeHtml(m[1])}
-        </div>
-        `
-      ].join('')
     }
 
 

@@ -639,30 +639,6 @@ export enum LiquidTypes {
    */
   liquid_bad_end = 'liquid_bad_end',
   /**
-   * Liquid opening delimiter
-   *
-   * ---
-   * @example
-   *
-   * {%
-   * {%-
-   * {{
-   * {{-
-   */
-  liquid_open = 'liquid_open',
-  /**
-   * Liquid closing delimiter
-   *
-   * ---
-   * @example
-   *
-   * %}
-   * -%}
-   * }}
-   * }}
-   */
-  liquid_close = 'liquid_close',
-  /**
    * A template tag that contains content or other tags not associated with
    * the template language and expects a closing tag. This is representative of
    * Liquid tags.
@@ -675,6 +651,18 @@ export enum LiquidTypes {
    * {% if %}
    */
   liquid_start = 'liquid_start',
+  /**
+   * A singleton Liquid tag which is used within the `{% case %}` block tag
+   * expression.
+   *
+   * ---
+   * @example
+   *
+   * {% when %}
+   * {% when arg, arg %}
+   * {% when arg or arg %}
+   */
+  liquid_when = 'liquid_when',
   /**
    * A template tag acting as the else block of a condition. This is representative of
    * Liquid tags.
@@ -698,50 +686,6 @@ export enum LiquidTypes {
    * {% endif %}
    */
   liquid_end = 'liquid_end',
-  /**
-   * A Liquid tag condition contained within a Liquid token
-   *
-   * ---
-   * @example
-   *
-   * foo == bar
-   * foo != bar
-   * foo or bar
-   * foo and bar
-   */
-  liquid_condition = 'liquid_condition',
-  /**
-   * A Liquid tag argument, typically takes the shape of
-   * of an object `property: value` structure
-   *
-   * ---
-   * @example
-   *
-   * foo: 'bar',
-   * bar: 1000
-   */
-  liquid_argument = 'liquid_argument',
-  /**
-   * A Liquid tag argument, typically takes the shape of
-   * of an object `property: value` structure
-   *
-   * ---
-   * @example
-   *
-   * foo: 'bar',
-   * bar: 1000
-   */
-  liquid_parameter = 'liquid_parameter',
-  /**
-   * A Liquid tag or filter argument, typically takes the shape of
-   * of an objects property > value structure
-   *
-   * ---
-   * @example
-   *
-   * | filter: 'value'
-   */
-  liquid_filter = 'liquid_filter',
 }
 
 /**
