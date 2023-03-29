@@ -3084,25 +3084,66 @@ export function script () {
       // Let's preserve occurances of Liquid tokens contained within
       // JSON strings. This prevents extra spaces being applied.
       //
-      if (ltype !== 'string') {
 
-        if (ctype === 'liquid_else') {
-          level[a - 1] = indent - 1;
-          level.push(indent);
+      if (ctype === 'liquid_else') {
 
-        } else if (ctype === 'liquid_start') {
+        if (ltype === 'string') {
 
-          indent = indent + 1;
+          if (data.lines[a - 1] <= 1) level[a - 1] = -20;
 
-          if (data.lines[a - 1] < 1) level[a - 1] = -20;
-
-          if (data.lines[a] > 0 || (ltoke.length === 1 && ltype === 'string')) {
+          if (data.lines[a] > 0) {
+            indent = indent - 1;
             level.push(indent);
           } else {
             level.push(-20);
           }
 
-        } else if (ctype === 'liquid_end') {
+        } else {
+
+          level[a - 1] = indent - 1;
+          level.push(indent);
+
+        }
+
+      } else if (ctype === 'liquid_start') {
+
+        if (ltype === 'string') {
+
+          if (data.lines[a - 1] <= 1) level[a - 1] = -20;
+
+          if (data.lines[a] > 0) {
+            indent = indent + 1;
+            level.push(indent);
+          } else {
+            level.push(-20);
+          }
+
+        } else {
+
+          indent = indent + 1;
+
+          if (data.lines[a - 1] < 1) level[a - 1] = -20;
+
+          if (data.lines[a] > 0) {
+            level.push(indent);
+          } else {
+            level.push(-20);
+          }
+
+        }
+
+      } else if (ctype === 'liquid_end') {
+
+        if (ltype === 'string') {
+
+          if (data.lines[a - 1] <= 1) level[a - 1] = -20;
+
+          if (data.lines[a] > 1) {
+            level[a - 1] = indent - 1;
+            level.push(indent);
+          }
+
+        } else {
 
           indent = indent - 1;
 
@@ -3117,18 +3158,18 @@ export function script () {
           } else {
             level.push(-20);
           }
+        }
 
-        } else if (ctype === 'liquid') {
+      } else if (ctype === 'liquid') {
 
-          if (is(ltoke, ch.COL) && level[a - 2] === -10) level[a - 2] = -20;
+        if (is(ltoke, ch.COL) && level[a - 2] === -10) level[a - 2] = -20;
 
-          if (data.lines[a] > 0) {
+        if (data.lines[a] > 0) {
 
-            level.push(indent);
+          level.push(indent);
 
-          } else {
-            level.push(-20);
-          }
+        } else {
+          level.push(-20);
         }
       }
 
