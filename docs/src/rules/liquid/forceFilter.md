@@ -44,6 +44,7 @@ This is a Liquid specific formatting rule which defaults to using `0` when no op
 👎 - Not Recommended
 🤡 - Clown Choice
 😳 - Bad Choice
+🧐 - You gotta do, what you gotta do
 
 -->
 
