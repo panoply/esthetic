@@ -2,10 +2,12 @@
 title: 'Markup - Comment Indent'
 layout: base
 permalink: '/rules/markup/commentIndent/index.html'
-anchors:
+describe:
   - Comment Indent
-  - Enabled
-  - Disable
+  - Rule Options
+options:
+  - false
+  - true
 ---
 
 # Comment Indent
