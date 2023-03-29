@@ -372,7 +372,7 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
 
       open += (is(lexed[o], cc.NWL) ? NWL : WSP);
 
-    } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
+    } else if (delimiterPlacement === 'inline') {
 
       open += WSP;
 
@@ -405,6 +405,8 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
 
   if (pipes > 0) {
 
+    // console.log(lexed.join(NIL), lexed.length, wrapFraction);
+
     if ((
       (
         forceFilter > 0 &&
@@ -421,22 +423,12 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
         open = `{${lexed[1]}-` + open[open.length - 1];
         close = close[0] + `-${lexed[lexed.length - 2]}}`;
 
-      } else if (delimiterPlacement === 'force-multiline') {
+      }
+
+      if (delimiterPlacement === 'force-multiline') {
 
         open = open.trimEnd() + NWL;
         close = NWL + close.trimStart();
-
-      } else if (delimiterPlacement === 'preserve') {
-
-        open += is(lexed[o], cc.NWL) ? NWL : WSP;
-
-      } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
-
-        open += WSP;
-
-      } else if (delimiterPlacement === 'consistent') {
-
-        open += is(lexed[o], cc.NWL) ? NWL : WSP;
 
       }
 
@@ -444,27 +436,39 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
 
         const pipe = liquid.pipes[i];
 
+        if (is(lexed[pipe - 1], cc.WSP)) lexed[pipe - 1] = NIL;
+
         lexed[pipe] = NWL + lexed[pipe];
 
-        if (is(lexed[pipe - 1], cc.WSP)) lexed[pipe - 1] = NIL;
+        // First sequence pipe exclude extraneous whitespace
+        if (i === 0) {
+
+          let p: number = pipe - 1;
+
+          if (is(lexed[p - 1], cc.WSP)) {
+            do lexed[p--] = NIL;
+            while (is(lexed[p], cc.WSP));
+          }
+
+        }
 
         if (liquid.fargs[i] && (
           (
             forceArgument > 0 &&
-          liquid.fargs[i].length > forceArgument
+            liquid.fargs[i].length > forceArgument
           ) || (
             forceArgument === 0 &&
-          wrapFraction > 0 &&
-          lexed.slice(
-            liquid.fargs[i][0],
-            liquid.fargs[i][liquid.fargs[i].length - 1]
-          ).length > wrapFraction
+            wrapFraction > 0 &&
+            lexed.slice(
+              liquid.fargs[i][0],
+              liquid.fargs[i][liquid.fargs[i].length - 1]
+            ).length > wrapFraction
           )
         )) {
 
-          const flen: number = liquid.fargs[i].length;
+          const args: number = liquid.fargs[i].length;
 
-          for (let n: number = 0; n < flen; n++) {
+          for (let n: number = 0; n < args; n++) {
 
             const arg = liquid.fargs[i][n];
 
