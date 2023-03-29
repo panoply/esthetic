@@ -707,8 +707,8 @@ export function commentBlock (config: WrapComment): [string, number] {
 
         // LIQUID COMMENTS ARE AUGMENTED HERE
         second.push(lines[b]);
-
         emptyLine = true;
+
       } else {
 
         second.push(lines[b]);
@@ -727,12 +727,22 @@ export function commentBlock (config: WrapComment): [string, number] {
   if (second.length > 0) {
 
     if (second[second.length - 1].length > rules.wrap - (config.ender.length + 1)) {
+
       second.push(config.ender);
+
     } else {
+
+      if (lines.length - 1 > second.length) {
+        lines.slice(second.length + 1).forEach(nl => {
+          if (nl === NIL) second.push(nl);
+        });
+      }
 
       second.push(config.ender);
       // second[second.length - 1] = `${second[second.length - 1]} ${config.ender}`;
     }
+
+    console.log(second);
 
     output = second.join(parse.crlf);
 
@@ -741,8 +751,6 @@ export function commentBlock (config: WrapComment): [string, number] {
     lines[lines.length - 1] = lines[lines.length - 1] + config.ender;
     output = lines.join(parse.crlf);
   }
-
-  // console.log(output);
 
   /* -------------------------------------------- */
   /* RETURN COMMENT                               */

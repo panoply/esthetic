@@ -1914,12 +1914,12 @@ export function markup (input?: string) {
 
       tag = tag.trimStart().split(/\s/)[0];
 
-      // Lets look for liquid tokens keyword sbefore proceeding,
+      // Lets look for liquid tokens keywords before proceeding,
       // We are skipping ahead from the normal parse here.
       //
       if (tag === 'comment' || ignored.has(tag)) {
 
-        const idx1 = source.indexOf('{%', from);
+        let idx1 = source.indexOf('{%', from);
 
         //  Lets reference this index
         let idx2 = idx1;
@@ -1945,9 +1945,13 @@ export function markup (input?: string) {
               start = source.slice(a, from + 1);
               end = source.slice(idx1, idx2 + 1);
             } else {
+
               ltype = 'comment';
               start = source.slice(a, from + 1);
+
+              idx1 = source.lastIndexOf('{%', idx2);
               end = source.slice(idx1, idx2 + 1);
+
             }
 
           }
