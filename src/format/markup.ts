@@ -1123,7 +1123,7 @@ export function markup () {
 
     function doAttributeForce (attcount: number) {
 
-      if (rules.markup.forceAttribute === false && data.lines[a] === 1) {
+      if (rules.markup.forceAttribute === false) {
 
         level.push(-10);
 
@@ -1635,8 +1635,7 @@ export function markup () {
             // {% endcase %}
             //
             if (
-              isType(next, 'liquid_else') &&
-              data.stack[next] === 'case' &&
+              isType(next, 'liquid_when') &&
               rules.liquid.dedentTagList.includes('case') === false
             ) {
 
@@ -1742,7 +1741,7 @@ export function markup () {
 
             level.push(-20);
 
-          } else if (isType(a, 'liquid_else')) {
+          } else if (isType(a, 'liquid_else') || isType(a, 'liquid_when')) {
 
             level[a - 1] = indent - 1;
 
@@ -1809,12 +1808,12 @@ export function markup () {
             level.push(indent);
 
           } else if (
-            isType(next, 'liquid_end') &&
-            data.stack[next] === 'case' &&
+            isToken(a, '{% endcase %}') &&
             rules.liquid.dedentTagList.includes('case') === false
           ) {
 
-            level[level.length - 1] = level[level.length - 1] - 1;
+            level[a - 1]--;
+            indent = indent - 1;
 
           } else {
 
