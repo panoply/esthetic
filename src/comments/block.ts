@@ -742,8 +742,6 @@ export function commentBlock (config: WrapComment): [string, number] {
       // second[second.length - 1] = `${second[second.length - 1]} ${config.ender}`;
     }
 
-    console.log(second);
-
     output = second.join(parse.crlf);
 
   } else {

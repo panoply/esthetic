@@ -363,22 +363,10 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
       close = close[0] + `-${lexed[lexed.length - 2]}}`;
     }
 
-    if (delimiterPlacement === 'force-multiline' || delimiterPlacement === 'force') {
+    if (delimiterPlacement === 'force-multiline') {
 
       open = open.trimEnd() + NWL;
       close = NWL + close.trimStart();
-
-    } else if (delimiterPlacement === 'preserve') {
-
-      open += (is(lexed[o], cc.NWL) ? NWL : WSP);
-
-    } else if (delimiterPlacement === 'inline') {
-
-      open += WSP;
-
-    } else if (delimiterPlacement === 'consistent') {
-
-      open += is(lexed[o], cc.NWL) ? NWL : WSP;
 
     }
 
