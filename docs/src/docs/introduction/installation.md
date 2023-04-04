@@ -19,7 +19,7 @@ anchors:
 
 # Installation
 
-Æsthetic can be consumed via the NPM registry and supports both ESM and CJS, in browser/node environments. It is recommended to avoid installing the project globally and instead install it as a dev-dependency.
+Æsthetic can be consumed via the NPM registry and supports both ESM and CJS environments. It is recommended to avoid installing the project globally and instead install it as a dev-dependency.
 
 ##### PNPM
 
@@ -31,7 +31,7 @@ $ pnpm add esthetic
 
 ##### CDN
 
-Use the [unpkg](https://unpkg.com/estheitc) CDN for quick usage in web browser.
+Use the [unpkg](https://unpkg.com/estheitc) CDN for quick usage in the web browser.
 
 ```
 https://unpkg.com/esthetic

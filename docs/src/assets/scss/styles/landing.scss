@@ -54,10 +54,9 @@ strong {
   // background: rgb(14 14 14); /* fallback for old browsers */
 
   &-logo {
-    color: $salmon;
-
     &:hover {
       text-decoration: none;
+      color: $salmon;
     }
   }
 

@@ -8,6 +8,7 @@ const mdcontainer = require('markdown-it-container')
 const anchor = require('markdown-it-anchor');
 const Prism = require('prismjs');
 const languages = require("prismjs/components/");
+const esthetic = require('esthetic')
 
 // Prism.languages.style = Prism.languages.extend('css', css(base));
 // Prism.languages.script = Prism.languages.extend('javascript', js(base));
@@ -15,152 +16,6 @@ const languages = require("prismjs/components/");
 /* -------------------------------------------- */
 /* INSERT BEFORE                                */
 /* -------------------------------------------- */
-
-const grammar = {
- pattern: /{[{%]-?[\s\S]*-?[%}]}/,
-  inside: {
-    'liquid-comment': {
-      lookbehind: true,
-      global: true,
-      pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
-    },
-    'liquid-tag': {
-      lookbehind: true,
-      pattern: /({%-?)\s*\b([a-z]+)\b(?=[\s-%])/i
-    },
-    'liquid-tagged': {
-      greedy: true,
-      multiline: true,
-      pattern: /\n\s+\b((?:end)?[a-z]+|echo)\b/
-    },
-    'liquid-object': {
-      lookbehind: true,
-      pattern: /[a-z_$][\w$]+(?=\.\s*)/i
-    },
-    'liquid-property': {
-      lookbehind: true,
-      pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
-    },
-    'liquid-filter': {
-      lookbehind: true,
-      pattern: /(\|)\s*(\w+)(?=[:]?)/
-    },
-    'liquid-string': {
-      lookbehind: true,
-      pattern: /['"].*?['"]/
-    },
-    'liquid-punctuation': {
-      global: true,
-      pattern: /[.,|:?]/
-    },
-    'liquid-operator': {
-      pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:and|contains(?=\s)|or)\b/
-    },
-    'liquid-boolean': {
-      pattern: /\b(?:true|false|nil)\b/
-    },
-    'liquid-number': {
-      pattern: /\b(?:\d+)\b/
-    },
-    'liquid-parameter': {
-      lookbehind: true,
-      global: true,
-      greedy: true,
-      pattern: /(,)\s*(\w+)(?=:)/i
-    },
-    'liquid-style': {
-      inside: Prism.languages.style,
-      lookbehind: true,
-      pattern: /(\{%-?\s*style(?:sheet)?\s*-?%\})([\s\S]+?)(?=\{%-?\s*endstyle(?:sheet)?\s*-?%\})/
-    },
-    'liquid-javascript': {
-      inside: Prism.languages.script,
-      lookbehind: true,
-      pattern: /(\{%-?\s*javascript\s*-?%\})([\s\S]*?)(?=\{%-?\s*endjavascript\s*-?%\})/
-    },
-    'liquid-schema': {
-      inside: Prism.languages.json,
-      lookbehind: true,
-      pattern: /(\{%-?\s*schema\s*-?%\})([\s\S]+?)(?=\{%-?\s*endschema\s*-?%\})/
-    }
-  }
-}
-
-const html = (
-  /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/
-)
-
-Prism.languages.html = Prism.languages.extend('markup', {
-  'tag': {
-    pattern: html,
-    greedy: true,
-    inside: {
-      'tag': {
-        pattern: /^<\/?[^\s>\/]+/,
-        inside: {
-          'punctuation': /^<\/?/,
-          'namespace': /^[^\s>\/:]+:/
-        }
-      },
-      'special-attr': [],
-      'attr-value': {
-        pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/,
-        inside: {
-          'tag-name': grammar,
-          string: {
-            greedy: true,
-            pattern: /"[^"]*"|'[^']*'/,
-            inside: {
-              punctuation: /{[{%]-?|-?[%}]}/,
-              'attr-object': {
-                lookbehind: true,
-                pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
-              },
-              'attr-property': {
-                lookbehind: true,
-                pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
-              }
-            }
-          },
-          'attr-object': {
-            lookbehind: true,
-            pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
-          },
-          'attr-property': {
-            lookbehind: true,
-            pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
-          },
-          'punctuation-chars': {
-            global: true,
-            pattern: /[.,|:?]/
-          }
-        }
-      },
-      'punctuation': /\/?>/,
-      'attr-name': {
-        pattern: /[^\s>\/]+/,
-        inside: {
-          'namespace': /^[^\s>\/:]+:/
-        }
-      }
-    }
-  },
-  'delimiters': grammar
-});
-
-
-
-//Prism.languages.extend('html', Prism.languages.html);
-//Prism.languages.extend('liquid', liquid)
-
-/**
- * Prism Theme
- *
- * Custom token highlights for different languages.
- * This is passed to the @11ty/eleventy-plugin-syntaxhighlight
- * plugin and brings some sanity to grammers.
- */
-
 Prism.languages.insertBefore('js', 'keyword', {
   variable: {
     pattern: /\b(?:const|var|let)\b/
@@ -220,6 +75,195 @@ Prism.languages.insertBefore('js', 'keyword', {
 });
 
 
+const grammar = {
+  pattern: /{[{%]-?[\s\S]+-?[%}]}/,
+  inside: {
+    'liquid-comment': {
+      lookbehind: true,
+      global: true,
+      pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
+    },
+    'liquid-tag': {
+      lookbehind: true,
+      pattern: /({%-?\s*)\b([a-z]+)\b(?=[\s-%])/i
+    },
+    'liquid-tagged': {
+      pattern: /\s+\b((?:end)[a-z]+|echo|if|unless|for|case|when)\s+/
+    },
+    'liquid-object': {
+      lookbehind: true,
+      pattern: /({[{%]-?\s*)\b[a-z_$][\w$]+(?=\.\s*)/i
+    },
+    'liquid-property': {
+      lookbehind: true,
+      pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
+    },
+    'liquid-filter': {
+      lookbehind: true,
+      pattern: /(\|)\s*(\w+)(?=[:]?)/
+    },
+    'liquid-string': {
+      lookbehind: true,
+      pattern: /['"].*?['"]/
+    },
+    'liquid-punctuation': {
+      global: true,
+      pattern: /[.,|:?]/
+    },
+    'liquid-operator': {
+      pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:and|contains(?=\s)|or)\b/
+    },
+    'liquid-boolean': {
+      pattern: /\b(?:true|false|nil)\b/
+    },
+    'liquid-number': {
+      pattern: /\b(?:\d+)\b/
+    },
+    'liquid-parameter': {
+      lookbehind: true,
+      global: true,
+      greedy: true,
+      pattern: /(,)\s*(\w+)(?=:)/i
+    },
+    'liquid-style': {
+      inside: Prism.languages.style,
+      lookbehind: true,
+      pattern: /(\{%-?\s*style(?:sheet)?\s*-?%\})([\s\S]+?)(?=\{%-?\s*endstyle(?:sheet)?\s*-?%\})/
+    },
+    'liquid-javascript': {
+      inside: Prism.languages.script,
+      lookbehind: true,
+      pattern: /(\{%-?\s*javascript\s*-?%\})([\s\S]*?)(?=\{%-?\s*endjavascript\s*-?%\})/
+    },
+    'liquid-schema': {
+      inside: Prism.languages.json,
+      lookbehind: true,
+      pattern: /(\{%-?\s*schema\s*-?%\})([\s\S]+?)(?=\{%-?\s*endschema\s*-?%\})/
+    }
+  }
+}
+
+Prism.languages.html = Prism.languages.extend('markup', {
+  'tag': {
+    pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
+    greedy: true,
+    inside: {
+      'tag': {
+        pattern: /^<\/?[^\s>\/]+/,
+        inside: {
+          'punctuation': /^<\/?/,
+          'namespace': /^[^\s>\/:]+:/
+        }
+      },
+      'special-attr': [],
+      'attr-value': {
+        pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/,
+        inside: {
+          'punctuation': [
+            {
+              pattern: /^=/,
+              alias: 'attr-equals'
+            },
+            {
+              pattern: /^(\s*)["']|["']$/,
+              lookbehind: true
+            }
+          ]
+        }
+      },
+      grammar: grammar,
+      'punctuation': /\/?>/,
+      'attr-name': {
+        pattern: /[^\s>\/]+/,
+        inside: {
+          'namespace': /^[^\s>\/:]+:/,
+          punctuation: /{[{%]-?|-?[%}]}/,
+          'attr-object': {
+            lookbehind: true,
+            pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
+          },
+          'attr-property': {
+            lookbehind: true,
+            pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
+          },
+          'punctuation-chars': {
+            global: true,
+            pattern: /[.,|:?]/
+          },
+          'attr-eq': /=/
+        }
+      }
+    }
+  },
+  'delimiters': {
+    pattern: /{[{%]-?[\s\S]+-?[%}]}/,
+    inside: {
+      'liquid-comment': {
+        lookbehind: true,
+        global: true,
+        pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
+      },
+      'liquid-tag': {
+        lookbehind: true,
+        pattern: /({%-?\s*)\b([a-z]+)\b(?=[\s-%])/i
+      },
+      'liquid-tagged': {
+        pattern: /\s+\b((?:end)[a-z]+|echo|if|unless|for|case|when)\s+/
+      },
+      'liquid-object': {
+        lookbehind: true,
+        pattern: /({[{%]-?\s*)\b[a-z_$][\w$]+(?=\.\s*)/i
+      },
+      'liquid-property': {
+        lookbehind: true,
+        pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
+      },
+      'liquid-filter': {
+        lookbehind: true,
+        pattern: /(\|)\s*(\w+)(?=[:]?)/
+      },
+      'liquid-string': {
+        lookbehind: true,
+        pattern: /['"].*?['"]/
+      },
+      'liquid-punctuation': {
+        global: true,
+        pattern: /[.,|:?]/
+      },
+      'liquid-operator': {
+        pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:and|contains(?=\s)|or)\b/
+      },
+      'liquid-boolean': {
+        pattern: /\b(?:true|false|nil)\b/
+      },
+      'liquid-number': {
+        pattern: /\b(?:\d+)\b/
+      },
+      'liquid-parameter': {
+        lookbehind: true,
+        global: true,
+        greedy: true,
+        pattern: /(,)\s*(\w+)(?=:)/i
+      },
+      'liquid-style': {
+        inside: Prism.languages.style,
+        lookbehind: true,
+        pattern: /(\{%-?\s*style(?:sheet)?\s*-?%\})([\s\S]+?)(?=\{%-?\s*endstyle(?:sheet)?\s*-?%\})/
+      },
+      'liquid-javascript': {
+        inside: Prism.languages.script,
+        lookbehind: true,
+        pattern: /(\{%-?\s*javascript\s*-?%\})([\s\S]*?)(?=\{%-?\s*endjavascript\s*-?%\})/
+      },
+      'liquid-schema': {
+        inside: Prism.languages.json,
+        lookbehind: true,
+        pattern: /(\{%-?\s*schema\s*-?%\})([\s\S]+?)(?=\{%-?\s*endschema\s*-?%\})/
+      }
+    }
+  }
+});
+
 Prism.languages.bash = {
   keyword: {
     pattern: /(esthetic\s)/
@@ -238,6 +282,7 @@ Prism.languages.bash = {
 
 let store;
 let input;
+let opts;
 
 /**
  * Highlights code blocks contained within markdown files. Some contained
@@ -247,19 +292,19 @@ let input;
  *
  * @param {markdownit} md markdown-it
  * @param {string} str code input
- * @param {string} lang code language
+ * @param {string} language code language
  */
 function highlighter (md, raw, language) {
 
   let code = '';
 
+
   if (language) {
 
-    if(language === 'json:rules') return raw
+    if(language === 'json:rules') return raw;
 
     try {
 
-      languages([language]);
 
       code = Prism.highlight(raw, Prism.languages[language], language);
       input = md.utils.escapeHtml(raw);
@@ -286,10 +331,9 @@ function highlighter (md, raw, language) {
 /**
  * Generates editor lines for rule sample code blocks
  *
- * @param {'input' | 'output'} target the name of the stimulus target
  * @param {string} raw The code input source
  */
-function getEditorLines (target, raw) {
+function getEditorLines (raw) {
 
   const count = raw.trim().split("\n").length -1
   const lines = [ ...Array(count > 0 ? count : 1) ]
@@ -298,7 +342,7 @@ function getEditorLines (target, raw) {
   return [
     /* html */`
     <div
-      data-example-target="${target}Lines"
+      data-example-target="lines"
       class="line-numbers-wrapper"
       aria-hidden="true">
       ${numbers}
@@ -308,10 +352,10 @@ function getEditorLines (target, raw) {
 
 }
 
-function getCodeInput (raw, language) {
+function beforeAfter (raw,language) {
 
-  const lines = getEditorLines('input', raw)
 
+  const lines = getEditorLines(raw)
   const output = raw
   .replace(/<\/pre>\n/, `${lines}</pre>`)
   .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode"')
@@ -323,7 +367,8 @@ function getCodeInput (raw, language) {
       <div class="col-auto pl-0 pr-1">
         <button
           class="selected"
-          data-action="example#before"
+          data-example-target="before"
+          data-action="example#onBefore"
           aria-label="Before Formatting"
           data-tooltip="top">
           Before
@@ -331,11 +376,30 @@ function getCodeInput (raw, language) {
       </div>
       <div class="col-auto pr-0">
         <button
-          data-action="example#after"
+          data-example-target="after"
+          data-action="example#onAfter"
           aria-label="After Formatting"
           data-tooltip="top">
          After
         </button>
+      </div>
+      <div class="col-auto pr-0">
+        <button
+          data-example-target="rules"
+          data-action="example#onRules"
+          aria-label="Rule Definitions"
+          data-tooltip="top">
+         Rules
+        </button>
+      </div>
+      <!-- EDIT BUTTON -->
+      <div class="editor-edit">
+        <button
+          type="button"
+          data-example-target="editor"
+          data-action="example#onEdit"
+          aria-label="Click to enable editing"
+          data-tooltip="right"></button>
       </div>
     </div>
 
@@ -346,50 +410,182 @@ function getCodeInput (raw, language) {
 }
 
 /**
+ * Highlights code blocks contained within markdown files. Some contained
+ * code blocks may use a language identifier separated by colon `:` character.
+ * In such cases, this typically infers some higher order logic will be applied
+ * in the next known code block. Typically this is found in the rules.
+ *
+ * @param {markdownit} md markdown-it
+ * @param {string} raw code input
+ * @param {string} lines code input
+ * @param {string} language code language
+ */
+function exampleRule (md, raw, language) {
+
+  let code = ''
+
+  if(opts.$.rule === 'wrap' || opts.$.rule === 'wrapFraction') {
+
+    try {
+
+      const format = esthetic.format(md.utils.unescapeAll(input), opts.rules)
+      const lines = getEditorLines(format)
+      const highlight = Prism.highlight(format, Prism.languages[language], language);
+
+      code = [
+        /* html */`<pre class="line-numbers-mode language-${language}">`
+        ,
+        /* html */`
+        <div class="editor-word-wrap">
+         <span
+          class="editor-wrap-line"
+          data-example-target="wrap"
+          data-action="mousedown->example#onResize"
+          style="width: ${opts.$.value}%"></span>
+        </div>
+        `
+        ,
+        /* html */`<code data-example-target="input" class="language-${language}">`
+        ,
+        /* html */`${highlight}`
+        ,
+        /* html */`</code>`
+        ,
+        /* html */`${lines}`
+        ,
+        /* html */`</pre>`
+      ].join('')
+
+    } catch (err) {
+
+      const lines = getEditorLines(raw)
+      code = raw
+      .replace(/<\/pre>\n/, `${lines}</pre>`)
+      .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode"')
+      .replace(/<code>/, `${wrap}<code data-example-target="input" class="language-${language}">`)
+
+      console.error(
+        'HIGHLIGHTER ERROR\n',
+        'LANGUAGE: ' + language + '\n\n', err);
+    }
+
+  }
+
+  const render = getFormRuleControl()
+
+  return [
+    /* html */`
+    <div class="row editor-tabs">
+      <div class="col-auto pl-0 pr-1">
+        <button
+          class="selected"
+          data-example-target="demo"
+          data-action="example#onDemo"
+          aria-label="Formatting Example"
+          data-tooltip="top">
+          Example
+        </button>
+      </div>
+      <div class="col-auto pr-0">
+        <button
+          data-example-target="rules"
+          data-action="example#onRules"
+          aria-label="Rule Definitions"
+          data-tooltip="top">
+         Rules
+        </button>
+      </div>
+
+      ${render}
+
+      <!-- EDIT BUTTON -->
+      <div class="editor-edit">
+        <button
+          type="button"
+          data-example-target="editor"
+          data-action="example#onEdit"
+          aria-label="Click to enable editing"
+          data-tooltip="right"></button>
+      </div>
+    </div>
+
+    ${code}`
+
+  ].join()
+
+
+  /**
+   *
+   * @param {range} type
+   * @param {string} name
+   * @returns
+   */
+  function getFormRuleControl () {
+
+
+    if(opts.$.form === 'range') {
+
+      return [
+        /* html */`
+          <div class="col-auto ml-auto">
+            <input
+              type="range"
+              class="fm-range"
+              name="${opts.$.rule}"
+              minlength="0"
+              min="0"
+              max="100"
+              maxlength="100"
+              value="${opts.$.value}"
+              data-example-target="range"
+              data-action="example#onForm"
+              data-tooltip="top">
+          </div>
+          <div class="col-auto fs-sm mr-4 pr-2" data-example-target="wrapSize">
+            ${opts.$.value}
+          </div>
+        `
+      ].join('')
+    }
+
+    return ''
+  }
+
+
+}
+function getTabTemplate (md, raw, language) {
+
+  if(opts) {
+
+    if(opts.$.mode === 'example') {
+      return exampleRule(md, raw, language)
+    } else {
+      return beforeAfter(raw, language)
+    }
+
+  }
+
+  return beforeAfter(raw, language)
+
+}
+
+/**
  * Extracts code input source from `<pre></pre>` code regions.
  * When the raw input ends with a `|` character
  *
  * @param {markdownit} md markdown-it
  * @param {string} raw The character to join
  */
-function getInputSource (md, raw) {
+function getInputSource (raw) {
 
-  if(raw.indexOf('</pre>') > -1) {
+  const start = raw.indexOf('<code>')
 
-    const index = raw.indexOf('</pre>')
-
-    return  {
-      source: md.utils.escapeHtml(raw.slice(5, index)),
-      syntax: `\n${raw.slice(0, index  + 6)}\n`
-    }
-
+  if(start > -1) {
+    const close = raw.lastIndexOf('</code>') - 8
+    return raw.slice(start + 6, close)
   }
 
-  return {
-    source: null,
-    syntax: raw
-  }
-
-}
-
-function getRuleExample (raw, language) {
-
-  const code = raw.slice(raw.indexOf("<code>"), raw.indexOf("</code>"));
-  const [ lines, count ] = getEditorLines('output', code)
-
-  return [
-    /* html */`<pre class="hide-scroll line-numbers-mode language-${language}">`
-    ,
-    /* html */`<code data-example-target="output" class="language-${language}">`
-    ,
-    /* html */`${'\n'.repeat(count)}`
-    ,
-    /* html */`</code>`
-    ,
-    /* html */`${lines}`
-    ,
-    /* html */`</pre>`
-  ].join('')
+  return raw
 
 }
 
@@ -409,20 +605,32 @@ function getCodeBlocks (md, fence, ...args) {
 
   if(store === undefined) return raw
 
-  const output = getCodeInput(raw, language)
+  let mode = ''
+
+  if('$' in store) {
+    opts = store
+    store = opts.rules
+    mode = opts.$.mode
+  } else {
+    mode = 'before'
+  }
+
+  const template = getTabTemplate(md, raw, language)
   const rules = md.utils.escapeHtml(JSON.stringify(store))
 
   store = undefined
+  opts = null
 
   return [
     /* html */`
     <div
       class="rule-example"
       data-controller="example"
+      data-example-mode-value="${mode}"
+      data-example-editor-value="false"
       data-example-rules-value="${rules}"
-      data-example-input-value="${input.trim()}"
-      data-example-output-value="${input.trim()}">
-      ${output.trim()}
+      data-example-input-value="${input.trim()}">
+      ${template.trim()}
     </div>`
 
   ].join('')
@@ -492,9 +700,7 @@ function rule (md, tokens, idx) {
           <div
             class="h5 mr-3"
             aria-label="${tooltip}"
-            data-tooltip="top">
-          ${md.utils.escapeHtml(m[1])}
-          </div>
+            data-tooltip="top">${md.utils.escapeHtml(m[1])}</div>
           `
         ].join('')
 
@@ -595,7 +801,8 @@ module.exports = eleventy(function (config) {
   });
 
   config.addPassthroughCopy({
-    'node_modules/moloko/dist': 'moloko'
+    'node_modules/moloko/dist': 'assets/moloko',
+    'node_modules/esthetic/dist/iife/index.js': 'assets/esthetic.min.js'
   })
 
 

@@ -9,11 +9,12 @@ import { Playground  } from './components/playground'
 import spx from 'spx';
 
 spx.connect({
+  targets: ["#navbar","#main"],
+  progress: false,
   hover: {
     trigger: 'href'
   },
-  progress: false
-})((state) => {
+})(function() {
 
   const stimulus = Application.start();
 
@@ -23,9 +24,14 @@ spx.connect({
   stimulus.register('example', Example);
   stimulus.register('scrollspy', ScrollSpy);
   stimulus.register('playground', Playground);
+
 });
 
-spx.on('visit', event => {
+console.log(spx)
+spx.on('fetch', ({ key}) => {
 
-  return false
+ if(key === '/playground') {
+  import(window.location.host + '/assets/moloko.js')
+ }
+
 })

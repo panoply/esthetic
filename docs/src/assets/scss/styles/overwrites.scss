@@ -115,15 +115,23 @@ table {
 }
 
 .navigators {
-  padding-top: 50px;
+  padding-top: 10px;
+
   .btn {
-    // border: $border-width solid $white;
     text-transform: none;
     color: $white;
-    font-size: $font-size-lg;
+    font-size: $font-size-md;
+    display: inline-flex;
+    align-items: center;
 
     span {
       color: $pink;
+
+      > .icon {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+      }
     }
 
     &.next {
@@ -147,4 +155,10 @@ table {
 
 .rule-example {
   margin-top: 35px;
+}
+
+.e-1,
+.e-2 {
+  fill: transparent;
+  transition: fill 0.5s linear;
 }

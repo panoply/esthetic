@@ -1,6 +1,24 @@
 <main id="main">
-
   <div
     class="playground"
-    data-controller="playground"></div>
+    data-controller="playground"
+    data-playground-loaded-value="false"
+    data-playground-esthetic-value="{{'/assets/esthetic.min.js' | url }}"
+    data-playground-module-value="{{'/assets/moloko/moloko.js' | url }}">
+
+
+    <div
+      class="abs-flex ai-center jc-center flex-col d-none"
+      data-playground-target="splash">
+      <div class="py-2">
+        {% svg 'moloko', 'icon icon-moloko' %}
+      </div>
+      <div class="mt-5">
+        <span class="spinner"></span>
+      </div>
+    </div>
+
+    <div data-playground-target="mount"></div>
+
+  </div>
 </main>

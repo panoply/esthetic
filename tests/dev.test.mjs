@@ -124,11 +124,15 @@ dev(function (source) {
 
   const output = esthetic.format(source, {
     language: 'liquid',
-    wrapFraction: 30,
+    wrap: 0,
+    wrapFraction: 40,
     liquid: {
-      delimiterTrims: 'preserve',
-      delimiterPlacement: 'force-multiline',
-      dedentTagList: [ 'case', 'schema' ]
+      lineBreakSeparator: 'after',
+      delimiterTrims: 'multiline'
+
+    },
+    markup: {
+      forceAttribute: false
     }
   });
 
@@ -139,8 +143,9 @@ dev(function (source) {
     logger: false,
     colors: false,
     finish: () => {
+      // console.log(JSON.stringify(output));
       console.log(esthetic.stats);
-    //  console.log(esthetic.table);
+      // console.log(esthetic.table);
       // console.log(esthetic.rules());
     }
   };

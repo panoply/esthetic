@@ -2,11 +2,10 @@
 title: 'Global Rules - Indent Size'
 layout: base
 permalink: '/rules/global/indentSize/index.html'
+describe:
+  - Indent Size
+  - Rule Options
 ---
-
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `2`
-
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `2`
 
 #### Indent Size
 

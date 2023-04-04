@@ -27,6 +27,10 @@ pnpm tests            # Run specific tests
 
 pnpm test:dev
 
+# E2E MODE
+
+pnpm test:e2e
+
 # LANGUAGES
 
 pnpm test:liquid      # Run liquid tests
@@ -41,4 +45,4 @@ pnpm <cmd>  --watch   # Run in watch mode
 
 ```
 
- `dev.test.mjs` file contained in the root of this directory
+`dev.test.mjs` file contained in the root of this directory

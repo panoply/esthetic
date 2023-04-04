@@ -5,8 +5,9 @@ export default defineConfig([
     entry: [
       './src/index.ts'
     ],
-    clean: false,
+    clean: true,
     treeshake: true,
+    name: 'Æsthetic',
     minify: process.env.production ? 'terser' : false,
     globalName: 'esthetic',
     splitting: false,
@@ -16,9 +17,12 @@ export default defineConfig([
     esbuildOptions: options => {
       options.treeShaking = true;
     },
+
+    legacyOutput: true,
     format: [
       'cjs',
-      'esm'
+      'esm',
+      'iife'
     ]
   },
   {
@@ -32,12 +36,14 @@ export default defineConfig([
       'minimist',
       './index.js'
     ],
+    name: 'Æsthetic',
     clean: false,
     minify: process.env.production ? 'terser' : false,
     treeshake: true,
     shims: true,
     bundle: true,
     splitting: false,
+    legacyOutput: true,
     esbuildOptions: options => {
       options.treeShaking = true;
     },

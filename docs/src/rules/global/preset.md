@@ -2,6 +2,15 @@
 title: 'Global Rules - Default'
 permalink: '/rules/global/preset/index.html'
 layout: base
+describe:
+  - Preset
+  - Rule Options
+options:
+  - default
+  - recommended
+  - strict
+  - warrington
+  - prettier
 ---
 
 # Preset

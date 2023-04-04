@@ -1,6 +1,15 @@
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `none`
-
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `double`
+---
+title: 'Markup - Quote Convert'
+layout: base
+permalink: '/rules/markup/quoteConvert/index.html'
+describe:
+  - Quote Convert
+  - Rule Options
+options:
+  - none
+  - double
+  - single
+---
 
 #### Quote Convert
 
@@ -19,13 +28,11 @@ When working with Liquid, use `single` quotes for strings and always infer `doub
 _Below is an example of how this rule works if set to `none` which is the **default** setting. No conversion of quotations is applied when using `none` as per the **before** and **after** examples_
 
 ```html
-
 <!-- Before Formatting -->
-<div class='single' id="double"></div>
+<div class="single" id="double"></div>
 
 <!-- After Formatting -->
-<div class='single' id="double"></div>
-
+<div class="single" id="double"></div>
 ```
 
 ---
@@ -34,32 +41,24 @@ _Below is an example of how this rule works if set to `none` which is the **defa
 
 _Below is an example of how this rule works if set to `double` which will go about converting and ensuring all markup quotations and using doubles._
 
-
 ```html
-
 <!-- Before Formatting -->
-<div class='foo' id='bar'></div>
+<div class="foo" id="bar"></div>
 
 <!-- After Formatting -->
 <div class="foo" id="bar"></div>
-
 ```
 
 ---
 
 #### 👎 &nbsp;&nbsp; `single`
 
-
 _Below is an example of how this rule works if set to `single` which will go about converting and ensuring all markup quotations and using singles._
 
 ```html
-
 <!-- Before Formatting -->
 <div class="foo" id="bar"></div>
 
 <!-- After Formatting -->
-<div class='foo' id='bar'></div>
-
-
+<div class="foo" id="bar"></div>
 ```
-

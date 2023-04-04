@@ -1,54 +1,98 @@
-import moloko from 'moloko';
-import esthetic from 'esthetic';
-import m, { Vnode } from 'mithril'
+import type Moloko from 'moloko';
 import { Controller } from '@hotwired/stimulus';
-import { rules } from '../playground/rules';
-
+import spx from 'spx'
 
 export class Playground extends Controller {
+
+  static loaded: boolean = false
+  static moloko: typeof Moloko
 
   /**
    * Stimulus: Targets
    */
   static targets = [
-    'editor',
-    'rules',
-    'actions'
-  ];
+    'mount',
+    'splash'
+  ]
+  /**
+   * Stimulus: Values
+   */
+  static values = {
+    module: String,
+    loaded: Boolean
+  };
+
+  moloko: typeof Moloko
+  esthetic: typeof import('esthetic').default
+  svg: Element
+  timer: NodeJS.Timer
 
 
+ async connect() {
 
-  connect(): void {
+    if (Playground.loaded) return this.mount()
 
-    moloko.mount(this.element, {
-      resolve: {
-        path: 'moloko'
-      },
+    this.splashTarget.classList.remove('d-none')
+
+    this.loading()
+    this.module()
+
+  }
+
+  async module () {
+
+    const moloko = await import(this.moduleValue)
+
+
+    Playground.moloko = moloko.default
+    Playground.loaded = true
+
+
+  }
+
+
+  mount () {
+
+    Playground.moloko.mount(this.mountTarget, {
       offset: 52,
+      resolve: {
+        path: 'assets/moloko',
+      }
     });
 
-
   }
 
+  loading () {
+
+    if(!Playground.loaded) {
+
+     this.timer = setInterval(() => {
+
+      this.loading()
+
+      }, 1200)
+
+    } else {
 
 
-  rules () {
+      this.splashTarget.classList.add('d-none')
 
 
+      clearInterval(this.timer)
+      this.mount()
+
+    }
 
   }
-
-
 
 
 
    /**
-   * The code input target provided on initial render
+   * Import URL to the moloko module
    */
-   editorTarget: HTMLElement
-  /**
-   * Rules Target
-   */
-   rulesTarget: HTMLElement
-   actionsTarget: HTMLElement
+   mountTarget: HTMLElement
+   splashTarget: HTMLElement
+   moduleValue: string
+   estheticValue: string
+   loadedValue: boolean
 }

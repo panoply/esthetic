@@ -226,7 +226,7 @@ export interface Syntactic {
   type?: Languages
 }
 
-type ParseHook = (
+export type ParseHook = (
   this: {
     /**
      * The current line number
@@ -251,7 +251,7 @@ type ParseHook = (
   index?: number
 ) => void | Record
 
-type FormatHook = ((
+export type FormatHook = ((
   this: {
     /**
      * Parse table Record

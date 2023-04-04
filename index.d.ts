@@ -20,7 +20,7 @@ import {
   Stats,
   IParseError,
   IConfig,
-  ConfigInternal,
+  IConfigInternal,
   Data
 } from './types/index';
 
@@ -39,10 +39,11 @@ export {
   LanguageOfficialName,
   LexerName,
   Record,
+  ParseHook,
   Data as ParseTable
 } from './types/index';
 
-declare const esthetic: {
+export declare const esthetic: {
   /**
    * **Æsthetic Liquid**
    *
@@ -177,7 +178,7 @@ declare const esthetic: {
    */
   config: {
     (options: IConfig): Pick<typeof esthetic, 'on' | 'grammar' | 'rules' | 'hook' | 'parse' | 'format'>
-    (): ConfigInternal;
+    (): IConfigInternal;
   }
 
   /**

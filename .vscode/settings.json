@@ -2,17 +2,47 @@
   "cSpell.words": [
     "Æsthetic",
     "aestheticignore",
+    "aliqua",
+    "aliquip",
     "Amato",
     "ANTLR",
+    "aute",
+    "cillum",
+    "commodo",
+    "consequat",
+    "cupidatat",
+    "deserunt",
+    "Duis",
     "endcase",
     "endcustom",
     "endfor",
     "endrandom",
+    "enim",
     "estheticignore",
     "estheticrc",
+    "Excepteur",
+    "fugiat",
+    "irure",
+    "laboris",
+    "laborum",
     "linebreak",
+    "mollit",
+    "nostrud",
+    "nulla",
+    "occaecat",
+    "officia",
+    "pariatur",
+    "proident",
+    "quis",
+    "reprehenderit",
+    "sint",
     "stylelint",
-    "toets"
+    "sunt",
+    "toets",
+    "ullamco",
+    "velit",
+    "veniam",
+    "voluptate"
   ],
   "json.schemas": [
     {
@@ -20,6 +50,13 @@
         "package.json"
       ],
       "url": "./schema.json"
+    },
+    {
+      "url": "https://unpkg.com/tsup/schema.json",
+      "fileMatch": [
+        "package.json",
+        "tsup.config.json"
+      ]
     }
   ],
   "files.exclude": {
@@ -44,6 +81,35 @@
         }
       ]
     },
+    "(```)(json)(\\:)(rules)(\\@)?(range)?(\\:)?(\\w+)?": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#FAFAFA",
+        },
+        {
+          "color": "#FAFAFA",
+        },
+        {
+          "color": "#9EE34F",
+        },
+        {
+          "color": "#F48FB1",
+        },
+        {
+          "color": "#9EE34F",
+        },
+        {
+          "color": "#F48FB1",
+        },
+        {
+          "color": "#9EE34F",
+        },
+        {
+          "color": "#F48FB1",
+        }
+      ]
+    },
     "^(-{3})([\\s\\S]*)(-{3})": {
       "regexFlags": "g",
       "filterFileRegex": "tests/.*\\.(html|liquid|css|scss|js|ts|xml)",
@@ -61,8 +127,12 @@
       ]
     }
   },
+  "liquid.engine": "11ty",
   "liquid.format.ignore": [
     "tests/samples/**"
+  ],
+  "liquid.files.snippets": [
+    "./docs/src/views/include/*"
   ],
   "liquid.format.rules": {
     "liquid": {

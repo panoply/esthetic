@@ -8,7 +8,7 @@ describe:
 options:
   - false
   - true
-  - '[]'
+  - 'string[]'
 ---
 
 # Attribute Sort
@@ -78,7 +78,7 @@ Take the following tag with several attributes defined in no specific order. Whe
 
 ::: rule 🙌
 
-#### []
+#### string[]
 
 :::
 

@@ -14,7 +14,16 @@ export const esthetic = new class Esthetic {
 
   constructor () {
 
-    if (config.env === 'node') config.cwd = process.cwd();
+    if (config.env === 'node') {
+      config.cwd = process.cwd();
+    }
+
+    if (config.env === 'browser') {
+
+      // @ts-expect-error
+      window.esthetic = esthetic;
+
+    }
 
   }
 

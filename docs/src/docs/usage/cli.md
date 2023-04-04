@@ -19,7 +19,7 @@ anchors:
 
 # CLI
 
-Æsthetic provides CLI support via the `esthetic` command and assumes configuration has defined within a `package.json` file via the `esthetic` property. CLI usage requires a path/pattern match be provided and will resolve files from the path location passed. Æsthetic will print formatted code to `stdout` and requires an `-f` or `--format` flag to be passed for file overwrites.
+Æsthetic provides basic CLI support via the `esthetic` command and assumes configuration is defined within a projects `package.json` file via an `esthetic` key property. CLI usage requires a path/pattern match be passed and will resolve files for from the location provided. Æsthetic will print formatted code to `stdout` and requires an `-f` or `--format` flag for file overwrites.
 
 ::: note
 

@@ -1,282 +1,9 @@
-import { Controller } from '@hotwired/stimulus';
-import esthetic, { Rules } from 'esthetic'
-import Prism from 'prismjs'
+import { Controller, Context } from '@hotwired/stimulus';
+import type { Rules } from 'esthetic'
+import esthetic from 'esthetic';
+import { CodeJar } from 'codejar'
+import { Prism } from '../utilities/prism';
 
-
-/* -------------------------------------------- */
-/* CLASS                                        */
-/* -------------------------------------------- */
-
-
-Prism.languages.insertBefore('js', 'keyword', {
-  variable: {
-    pattern: /\b(?:const|var|let)\b/
-  },
-  module: {
-    pattern: /\b(?:import|as|export|from|default)\b/
-  },
-  op: {
-    pattern: /\b(?:typeof|new|of|delete|void|readonly)\b/
-  },
-  'punctuation-chars': {
-    pattern: /[.,]/,
-    global: true
-  },
-  semi: {
-    pattern: /[;]/,
-    global: true
-  },
-  nil: {
-    pattern: /\b(?:null|undefined)\b/
-  },
-  'browser-objects': {
-    pattern: /\b(?:window|document|console)\b/
-  },
-  types: {
-    pattern: /\b(?:any|string|object|boolean|number|Promise)\b/,
-    global: true
-  },
-  'type-array': {
-    pattern: /\[\]/,
-    global: true
-  },
-  'type-object': {
-    pattern: /\{\}/,
-    global: true
-  },
-  'return-type': {
-    pattern: /(\)):(?=\s)/,
-    global: true,
-    lookbehind: true
-  },
-  'parameter-optional': {
-    pattern: /[a-z_$][\w$]+(?=\?:\s*)/i,
-    lookbehind: true
-  },
-  'parameter-type': {
-    pattern: /(\?:\s*)[a-z_$][\w$]+/i,
-    lookbehind: true
-  },
-  flow: {
-    pattern: /\b(?:return|await)\b/
-  },
-  method: {
-    pattern: /(\.\s*)[a-z_$][\w$]*(?=(\())/i,
-    lookbehind: true
-  }
-});
-
-
-const grammar = {
-  pattern: /{[{%]-?[\s\S]+-?[%}]}/,
-  inside: {
-  'liquid-comment': {
-    lookbehind: true,
-    global: true,
-    pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
-  },
-  'liquid-tag': {
-    lookbehind: true,
-    pattern: /({%-?\s*)\b([a-z]+)\b(?=[\s-%])/i
-  },
-  'liquid-tagged': {
-    pattern: /\s+\b((?:end)[a-z]+|echo|if|unless|for|case|when)\s+/
-  },
-  'liquid-object': {
-    lookbehind: true,
-    pattern: /({[{%]-?\s*)\b[a-z_$][\w$]+(?=\.\s*)/i
-  },
-  'liquid-property': {
-    lookbehind: true,
-    pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
-  },
-  'liquid-filter': {
-    lookbehind: true,
-    pattern: /(\|)\s*(\w+)(?=[:]?)/
-  },
-  'liquid-string': {
-    lookbehind: true,
-    pattern: /['"].*?['"]/
-  },
-  'liquid-punctuation': {
-    global: true,
-    pattern: /[.,|:?]/
-  },
-  'liquid-operator': {
-    pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:and|contains(?=\s)|or)\b/
-  },
-  'liquid-boolean': {
-    pattern: /\b(?:true|false|nil)\b/
-  },
-  'liquid-number': {
-    pattern: /\b(?:\d+)\b/
-  },
-  'liquid-parameter': {
-    lookbehind: true,
-    global: true,
-    greedy: true,
-    pattern: /(,)\s*(\w+)(?=:)/i
-  },
-  'liquid-style': {
-    inside: Prism.languages.style,
-    lookbehind: true,
-    pattern: /(\{%-?\s*style(?:sheet)?\s*-?%\})([\s\S]+?)(?=\{%-?\s*endstyle(?:sheet)?\s*-?%\})/
-  },
-  'liquid-javascript': {
-    inside: Prism.languages.script,
-    lookbehind: true,
-    pattern: /(\{%-?\s*javascript\s*-?%\})([\s\S]*?)(?=\{%-?\s*endjavascript\s*-?%\})/
-  },
-  'liquid-schema': {
-    inside: Prism.languages.json,
-    lookbehind: true,
-    pattern: /(\{%-?\s*schema\s*-?%\})([\s\S]+?)(?=\{%-?\s*endschema\s*-?%\})/
-  }
-}
-}
-
-Prism.languages.html = Prism.languages.extend('markup', {
-  'tag': {
-    pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
-    greedy: true,
-    inside: {
-      'tag': {
-        pattern: /^<\/?[^\s>\/]+/,
-        inside: {
-          'punctuation': /^<\/?/,
-          'namespace': /^[^\s>\/:]+:/
-        }
-      },
-      'special-attr': [],
-      'attr-value': {
-        pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/,
-        inside: {
-          'punctuation': [
-            {
-              pattern: /^=/,
-              alias: 'attr-equals'
-            },
-            {
-              pattern: /^(\s*)["']|["']$/,
-              lookbehind: true
-            }
-          ]
-        }
-      },
-      grammar: grammar,
-      'punctuation': /\/?>/,
-      'attr-name': {
-        pattern: /[^\s>\/]+/,
-        inside: {
-          'namespace': /^[^\s>\/:]+:/,
-            punctuation: /{[{%]-?|-?[%}]}/,
-            'attr-object': {
-              lookbehind: true,
-              pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
-            },
-            'attr-property': {
-              lookbehind: true,
-              pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
-            },
-            'punctuation-chars': {
-              global: true,
-              pattern: /[.,|:?]/
-            },
-            'attr-eq': /=/
-          }
-
-      }
-
-    }
-  },
-  'delimiters': {
-    pattern: /{[{%]-?[\s\S]+-?[%}]}/,
-    inside: {
-    'liquid-comment': {
-      lookbehind: true,
-      global: true,
-      pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
-    },
-    'liquid-tag': {
-      lookbehind: true,
-      pattern: /({%-?\s*)\b([a-z]+)\b(?=[\s-%])/i
-    },
-    'liquid-tagged': {
-      pattern: /\s+\b((?:end)[a-z]+|echo|if|unless|for|case|when)\s+/
-    },
-    'liquid-object': {
-      lookbehind: true,
-      pattern: /({[{%]-?\s*)\b[a-z_$][\w$]+(?=\.\s*)/i
-    },
-    'liquid-property': {
-      lookbehind: true,
-      pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
-    },
-    'liquid-filter': {
-      lookbehind: true,
-      pattern: /(\|)\s*(\w+)(?=[:]?)/
-    },
-    'liquid-string': {
-      lookbehind: true,
-      pattern: /['"].*?['"]/
-    },
-    'liquid-punctuation': {
-      global: true,
-      pattern: /[.,|:?]/
-    },
-    'liquid-operator': {
-      pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:and|contains(?=\s)|or)\b/
-    },
-    'liquid-boolean': {
-      pattern: /\b(?:true|false|nil)\b/
-    },
-    'liquid-number': {
-      pattern: /\b(?:\d+)\b/
-    },
-    'liquid-parameter': {
-      lookbehind: true,
-      global: true,
-      greedy: true,
-      pattern: /(,)\s*(\w+)(?=:)/i
-    },
-    'liquid-style': {
-      inside: Prism.languages.style,
-      lookbehind: true,
-      pattern: /(\{%-?\s*style(?:sheet)?\s*-?%\})([\s\S]+?)(?=\{%-?\s*endstyle(?:sheet)?\s*-?%\})/
-    },
-    'liquid-javascript': {
-      inside: Prism.languages.script,
-      lookbehind: true,
-      pattern: /(\{%-?\s*javascript\s*-?%\})([\s\S]*?)(?=\{%-?\s*endjavascript\s*-?%\})/
-    },
-    'liquid-schema': {
-      inside: Prism.languages.json,
-      lookbehind: true,
-      pattern: /(\{%-?\s*schema\s*-?%\})([\s\S]+?)(?=\{%-?\s*endschema\s*-?%\})/
-    }
-  }
-}
-});
-
-Prism.languages.bash = {
-  keyword: {
-    pattern: /(esthetic\s)/
-  },
-  argument: {
-    pattern: /\<(.*?)\>/
-  },
-  punctuation: {
-    pattern: /[<>]|--?(?=[a-z])/
-  },
-  comment: {
-    pattern: /#.*?(?=\n)/
-  }
-}
-
-
-/* -------------------------------------------- */
-/* CLASS                                        */
-/* -------------------------------------------- */
 
 export class Example extends Controller {
 
@@ -284,52 +11,27 @@ export class Example extends Controller {
    * Stimulus: Targets
    */
   static targets = [
-    'input',
-    'inputLines',
-    'output',
-    'outputLines',
-    'format',
+    'editor',
+    'wrap',
+    'wrapSize',
     'rules',
-    'parsed'
-  ];
+    'demo',
+    'before',
+    'after',
+    'range',
+    'input',
+    'lines',
+  ]
 
+  /**
+   * Stimulus: Values
+   */
   static values = {
+    mode: String,
     rules: Object,
     input: String,
-    output: String,
-    mode: String
+    editor: Boolean
   };
-
-  /**
-   * The code input target provided on initial render
-   */
-  inputTarget: HTMLElement
-  /**
-   * The code input lines target provided on initial render
-   */
-  inputLinesTarget: HTMLDivElement
-  /**
-   * The input value escaped string
-   */
-  inputValue: string;
-  /**
-   * The input lines value escaped
-   */
-  inputLines: string;
-
-  outputLines: string
-  outputTarget: HTMLElement
-  outputLinesTarget: HTMLDivElement
-  outputValue: string;
-
-  rulesValue: Rules
-  modeValue: 'initial' | 'before' | 'after'
-
-
-  rules: Rules;
-  timer: NodeJS.Timeout
-  button: HTMLButtonElement
-
 
 
   getLines (input: string) {
@@ -346,98 +48,367 @@ export class Example extends Controller {
 
   getEditorRect () {
 
-
-
     const { height, width } = this.inputTarget.parentElement.getBoundingClientRect()
 
     const input = this.inputTarget.parentElement
-    const output = this.outputTarget.parentElement
+
 
     input.style.minHeight = height + 'px'
     input.style.maxHeight = height + 'px'
     input.style.maxWidth = width + 'px'
     input.style.minWidth = width + 'px'
 
-    output.style.minHeight = height + 'px'
-    output.style.maxHeight = height + 'px'
-    output.style.maxWidth = width + 'px'
-    output.style.minWidth = width + 'px'
+
 
   }
 
 
-  initialize(): void {
+  initialize (): void {
 
-    this.modeValue = 'before'
+    if(!this.hasModeValue) this.modeValue = 'before'
+
     this.rules = esthetic.rules()
+
   }
 
 
   connect(): void {
 
+    this.input = this.inputTarget.innerHTML
+    this.lines = this.linesTarget.innerHTML
 
-    // this.editor = CodeJar(this.inputTarget, (editor) => {
-    //  // editor.style.whiteSpace = 'pre'
-    //   editor.innerHTML = Prism.highlight(editor.innerText, Prism.languages.html, 'html')
-    // })
-
-    // this.editor.onUpdate(code => {
-    //   this.inputLinesTarget.innerHTML = this.getLines(code)
-    //   this.inputValue = code
-    //   this.doFormat(code)
-    // })
-
-
-   // this.rules = esthetic.rules()
-    this.button = this.element.querySelector('button[data-action="example#before"]')
-    this.inputLines = this.inputLinesTarget.innerHTML
-    this.outputLines = this.inputLines
-
+    if(this.hasWrapTarget) {
+      this.rangeTarget.value = `${this.rulesValue.wrap}`
+      this.wrapTarget.style.width = `${this.rulesValue.wrap}%`
+    }
 
   }
 
-  doFormat (input: string) {
+  doRestore () {
 
-      const output = esthetic.format(this.inputValue, this.rulesValue)
-      this.outputLines = this.getLines(output)
+    this.inputTarget.innerHTML = this.input
+    this.linesTarget.innerHTML = this.lines
+
+    if(this.editorValue) this.onEdit()
+
+  }
+
+  doRules () {
+
+    const output = JSON.stringify(this.rulesValue, null, 2)
+
+    this.inputTarget.innerHTML = this.getLines(output)
+    this.inputTarget.innerHTML = Prism.highlight(output, Prism.languages.js, 'js')
+
+    console.log(output)
+
+  }
+
+  doFormat () {
+
+    const output = esthetic.format(this.inputValue, this.rulesValue)
+
+    this.linesTarget.innerHTML = this.getLines(output)
+    this.inputTarget.innerHTML = Prism.highlight(output, Prism.languages.html, 'html')
+
+    esthetic.rules(this.rules)
+
+  }
+
+
+  doWrap (value: number, [ lexer, rule = null ]: string[]) {
+
+    if(rule === null) {
+
+      setTimeout(() => {
+
+        this.rulesValue = Object.assign(this.rulesValue, { [lexer]: value });
+
+        const output = esthetic.format(this.inputValue, this.rulesValue);
+
+        this.wrapSizeTarget.innerHTML = `${this.rulesValue.wrap}`
+        this.wrapTarget.style.width = `${this.rulesValue.wrap}%`
+        this.linesTarget.innerHTML = this.getLines(output)
+        this.inputTarget.innerHTML = Prism.highlight(output, Prism.languages.html, 'html')
+
+      }, 50)
+    }
+
+  }
+
+  onResize () {
+
+
+
+    this.inputTarget.style.userSelect = 'none'
+    this.wrapTarget.style.borderColor = '#e45589'
+
+
+    const offset = this.wrapTarget.parentElement.offsetWidth
+
+
+    //on mouseup remove windows functions mousemove & mouseup
+
+    const moveResize = (e: MouseEvent) => {
+
+      const wrap = Math.round(Math.abs(((offset - (offset + e.offsetX)) / offset) * 100))
+
+      if(wrap >= 100 || wrap <= 0) return
+
+      this.wrapSizeTarget.innerHTML = `${wrap}`
+      this.rangeTarget.value = `${wrap}`
+      this.rulesValue = Object.assign(this.rulesValue, { wrap });
+
+      const output = esthetic.format(this.inputValue, this.rulesValue);
+
+
+      this.wrapTarget.style.width = `${wrap - 0.5}%`
+      this.linesTarget.innerHTML = this.getLines(output)
       this.inputTarget.innerHTML = Prism.highlight(output, Prism.languages.html, 'html')
-      this.outputValue = output
-
-      esthetic.rules(this.rules)
-
-  }
-
-
-  before ({ target }: { target: HTMLButtonElement}) {
-
-    if(this.modeValue === 'after') {
-
-      this.element.classList.toggle('after')
-      this.button.classList.remove('selected')
-      target.classList.add('selected')
-
-      this.inputTarget.innerHTML = Prism.highlight(this.inputValue, Prism.languages.html, 'html')
-      this.inputLinesTarget.innerHTML = this.inputLines
-      this.modeValue = 'before'
-      this.button = target
-    }
-
-  }
-
-  after ({ target }: { target: HTMLButtonElement}) {
-
-    if(this.modeValue === 'before') {
-
-      this.element.classList.toggle('after')
-      this.button.classList.remove('selected')
-      target.classList.add('selected')
-
-      this.doFormat(this.inputValue)
-      this.inputLinesTarget.innerHTML = this.outputLines
-      this.modeValue = 'after'
-      this.button = target
 
     }
 
+    const stopResize = () => {
+      this.inputTarget.style.userSelect = ''
+      removeEventListener('mousemove', moveResize, false);
+      removeEventListener('mouseup', stopResize, false);
+    }
+
+
+    addEventListener('mouseup', stopResize, false);
+    addEventListener('mousemove', moveResize, false);
+
   }
+
+  onForm({ target}: { target: HTMLInputElement, type: string; name: string; value: number }) {
+
+    if(target.type === 'range') return this.doWrap(target.valueAsNumber, target.name.split('.'))
+
+  }
+
+  /**
+   * Clicked `edit` button in the example
+   */
+  onEdit () {
+
+    if(this.editorTarget.classList.contains('enabled')) {
+      this.editorTarget.classList.remove('enabled')
+      this.editorTarget.setAttribute('aria-label', 'Click to enable editing')
+      this.editorValue = false
+    } else {
+      this.editorTarget.classList.add('enabled')
+      this.editorTarget.setAttribute('aria-label', 'Click to disable editing')
+      this.editorValue = true
+    }
+
+    if(this.editorValue) {
+
+      this.codejar = CodeJar(this.inputTarget, (editor) => {
+        const output = Prism.highlight(editor.innerText, Prism.languages.html, 'html')
+        editor.innerHTML = this.input = output
+      })
+
+      this.codejar.onUpdate(code => {
+        this.linesTarget.innerHTML = this.lines = this.getLines(code)
+        this.inputValue = code
+      })
+
+    } else {
+
+      this.codejar.destroy()
+
+      if(this.modeValue === 'before') this.doRestore()
+
+    }
+
+
+  }
+
+  onDemo () {
+
+    if (this.modeValue === 'demo') return
+
+    if(this.editorValue && this.editorTarget.classList.contains('d-none')) {
+      this.editorTarget.classList.remove('d-none')
+    }
+
+    if(this.hasWrapTarget && this.wrapTarget.classList.contains('d-none')) {
+      this.wrapTarget.classList.remove('d-none')
+    }
+
+    if(this.rulesTarget.classList.contains('selected')) {
+      this.rulesTarget.classList.remove('selected')
+    }
+
+
+    if(!this.demoTarget.classList.contains('selected')) {
+      this.demoTarget.classList.add('selected')
+    }
+
+    this.doFormat()
+    this.modeValue = 'demo'
+
+
+  }
+
+
+  /**
+   * Clicked `rules` button in the example
+   */
+  onRules () {
+
+    if (this.modeValue === 'rules') return
+
+    if(this.hasAfterTarget && this.afterTarget.classList.contains('selected')) {
+      this.afterTarget.classList.remove('selected')
+    }
+
+    if(this.hasBeforeTarget && this.beforeTarget.classList.contains('selected')) {
+      this.beforeTarget.classList.remove('selected')
+    }
+
+
+    if(this.hasDemoTarget && this.demoTarget.classList.contains('selected')) {
+      this.demoTarget.classList.remove('selected')
+
+      if(this.hasWrapTarget && !this.wrapTarget.classList.contains('d-none')) {
+        this.wrapTarget.classList.add('d-none')
+      }
+    }
+
+    if(!this.editorTarget.classList.contains('d-none')) {
+      this.editorTarget.classList.add('d-none')
+    }
+
+
+    if(!this.rulesTarget.classList.contains('selected')) {
+      this.rulesTarget.classList.add('selected')
+    }
+
+    if(this.editorValue) this.codejar.destroy()
+
+    this.doRules()
+    this.modeValue = 'rules'
+
+  }
+
+  /**
+   * Clicked `before` tab in the example
+   */
+  onBefore () {
+
+
+    if (this.modeValue === 'before') return
+
+    if(this.afterTarget.classList.contains('selected')) {
+      this.afterTarget.classList.remove('selected')
+    }
+
+    if(this.rulesTarget.classList.contains('selected')) {
+      this.rulesTarget.classList.remove('selected')
+    }
+
+    if(this.editorValue && this.editorTarget.classList.contains('d-none')) {
+      this.editorTarget.classList.remove('d-none')
+    }
+
+    if(this.beforeTarget.classList.contains('selected')) {
+      this.beforeTarget.classList.add('selected')
+    }
+
+    this.doRestore()
+    this.modeValue = 'before'
+
+
+  }
+
+
+  /**
+   * Clicked `after` tab in the example
+   */
+  onAfter () {
+
+    if (this.modeValue === 'after') return
+
+    if(this.beforeTarget.classList.contains('selected')) {
+      this.beforeTarget.classList.remove('selected')
+    }
+
+    if(this.rulesTarget.classList.contains('selected')) {
+      this.rulesTarget.classList.remove('selected')
+    }
+
+    if(!this.editorTarget.classList.contains('d-none')) {
+      this.editorTarget.classList.add('d-none')
+    }
+
+    if(!this.afterTarget.classList.contains('selected')) {
+      this.afterTarget.classList.add('selected')
+    }
+
+    if(this.editorValue) this.codejar.destroy()
+
+    this.doFormat()
+    this.modeValue = 'after'
+
+
+  }
+
+  /* -------------------------------------------- */
+  /* TYPES                                        */
+  /* -------------------------------------------- */
+
+
+  resize: boolean;
+  /** The current code of the example */
+  modeValue: 'before' | 'after' | 'rules' | 'demo';
+  /** Whether or not a mode value was provided */
+  hasModeValue: boolean
+  /** The rules to use when formatting code with Æsthetic */
+  rulesValue: Rules;
+  /** Whether or not rules value was provided */
+  hasRulesValue: boolean;
+  /** Rules cache */
+  rules: Rules;
+  /** The input code target provided on initial render  */
+  inputTarget: HTMLElement;
+  /** The input value escaped string */
+  inputValue: string;
+  /** Input cache */
+  input: string
+  /** The input code lines target provided on initial render */
+  linesTarget: HTMLDivElement
+  /** Lines cache */
+  lines: string;
+  /** The wrap line overlay target */
+  wrapSizeTarget: HTMLDivElement;
+  /** The wrap line overlay target */
+  wrapTarget: HTMLElement;
+  /** Whether or not rules value was provided */
+  hasWrapTarget: boolean;
+  /** The range slider form input element (use for wrap examples) */
+  rangeTarget: HTMLInputElement;
+  /** The `before` tab button */
+  beforeTarget:  HTMLButtonElement;
+  /** Whether or not the `before` tab exists */
+  hasBeforeTarget: boolean;
+  /** The `after` tab button */
+  afterTarget: HTMLButtonElement;
+  /** Whether or not the `after` tab exists */
+  hasAfterTarget: boolean;
+  /** The `rules` tab button */
+  rulesTarget: HTMLButtonElement;
+  /** Whether or not the `rules` tab exists */
+  hasRulesTarget: boolean;
+  /** The `demo` tab button */
+  demoTarget: HTMLButtonElement;
+  /** Whether or not the `demo` tab exists */
+  hasDemoTarget: boolean;
+  /** The edit button target to activate CodeJar */
+  editorTarget: HTMLButtonElement;
+  /** The edit mode status to signal whether or not editing is enabled */
+  editorValue: boolean;
+  /** CodeJar Editor instance when editing was enabled. */
+  codejar: CodeJar
+
 }

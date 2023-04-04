@@ -16,7 +16,7 @@ anchors:
 
 # What is Æsthetic?
 
-Æsthetic is a lightweight, fast and extensible code beautification tool that provides formatting support for front-end orientated (client side) languages, existing as an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/). Æsthetic implements a variation of the universal [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and has been adapted from the distributed source of [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
+Æsthetic is a lightweight, fast and extensible code beautification tool that provides formatting support for front-end orientated (client side) languages and exists as an alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/). Æsthetic implements a variation of the universal [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and has been adapted from the distributed source of [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
 
 Æsthetic supports parse, format and language detection capabilities for the following languages:
 
@@ -39,4 +39,10 @@ Adhering to intent is at the core of Æsthetic. The uniformed data structure (pa
 
 # Æsthetic vs. Prettier
 
-Æsthetic does not want to replace tools like Prettier. Prettier is a fantastic tool and even the Æsthetic project leverages it to format markdown files. The usage proposition for choosing Æsthetic over Prettier is a matter of code expression. When working with languages comprised of complex patterns the opinionated conventions of Prettier tend to impede upon structural intent and this can become problematic in programming languages where flexibility is a necessity.
+Æsthetic does not want to replace tools like Prettier. Prettier is a fantastic tool and even the Æsthetic project leverages it to format markdown files. The usage proposition for choosing Æsthetic over Prettier is a matter of code expression. When working with languages comprised of complex patterns the opinionated conventions of Prettier tend to impede upon structural intent and this can become problematic in programming languages where flexibility is a matter of necessity.
+
+Æsthetic can replicate the same results as Prettier but the overall architecture and approaches employed differ.
+
+# Æsthetic vs. JSBeautify
+
+TODO

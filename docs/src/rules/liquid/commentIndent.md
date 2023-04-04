@@ -2,6 +2,12 @@
 title: 'Liquid - Comment Indent'
 layout: base
 permalink: '/rules/liquid/commentIndent/index.html'
+prev:
+  label: 'Wrap Fraction'
+  uri: '/rules/global/wrapFraction/'
+next:
+  label: 'Comment Newline'
+  uri: '/rules/liquid/commentNewline/'
 describe:
   - Comment Indent
   - Rule Override

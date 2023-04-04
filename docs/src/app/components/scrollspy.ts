@@ -92,7 +92,6 @@ export class ScrollSpy extends Controller {
    */
   disconnect (): void {
     this.anchors = []
-    this.observer.disconnect()
   }
 
   /* -------------------------------------------- */

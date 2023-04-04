@@ -2,19 +2,21 @@
   "exclude": ["node_modules/**", "public"],
   "include": ["src/app/**/*.ts"],
   "compilerOptions": {
+    "incremental": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "removeComments": true,
     "target": "ES6",
     "lib": ["es2020", "dom", "dom.iterable"],
     "typeRoots": ["node_modules/@types"],
-    "module": "ES6",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
+    "module": "ESNext",
     "moduleResolution": "node",
-    "noEmitOnError": true,
-    "noUnusedLocals": true,
-    "pretty": true,
+    "emitDeclarationOnly": true,
+    "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
+      "moloko": ["."],
       "types": ["./scripts/eleventy.d.ts"]
     }
   }

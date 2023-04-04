@@ -12,7 +12,6 @@ options:
   - never
   - always
   - multiline
-  - linebreak
 ---
 
 # Delimiter Trims
@@ -226,48 +225,6 @@ When the `delimiterTrims` rule is set to `multiline` trims will be applied to ta
 
   {{
     object.prop
-    | param_1: true
-    | param_2: 1000
-    | param_3:
-      arg_1: 'value',
-      arg_2: 2000,
-      arg_3: false,
-      arg_4: true,
-      arg_5: 2000,
-      arg_6: nil
-    | param_4: true
-    | param_5: 1000
-  }}
-
-{% endif %}
-```
-
----
-
-::: rule 🙌
-
-#### linebreak
-
-:::
-
-When the `delimiterTrims` rule is set to `linebreak` then a single trim will be applied to an **opening** delimiter (`{{`, `{%`) of multiline tokens. The choice uses the internal structure of tokens together with the [lineBreakSeparator](/rules/liquid/lineBreakSeparator) and [delimiterPlacement](/rules/liquid/delimiterPlacement) rules to determine when a trim `-` insertion is to be applied. Using this choice helps overall readability but comes with drawbacks. Trims will only ever be applied to multiline tokens and insertion differs based on the `lineBreakSeparator` value. The `delimiterPlacement` rule is also referenced during the determination cycle.
-
-```json:rules
-{
-  "language": "liquid",
-  "wrap": 40,
-  "liquid": {
-    "delimiterTrims": "linebreak",
-    "delimiterPlacement": "force-multiline"
-  }
-}
-```
-
-<!-- prettier-ignore -->
-```html
-{% if condition == assertion or condition == expectation or something == comparison %}
-
-  {{- object.prop
     | param_1: true
     | param_2: 1000
     | param_3:
