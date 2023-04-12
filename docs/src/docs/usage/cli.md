@@ -34,7 +34,7 @@ When using the CLI you can define configuration using an external file. By defau
 - `.esthetic`
 - `.esthetic.json`
 
-Refer to [Config File](/usage/config-file/) for more information
+Refer to [Config Files](/usage/config-files/) for more information
 
 # Commands
 
