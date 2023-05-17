@@ -651,9 +651,9 @@ export function markup (input?: string) {
       }
 
       if (rules.liquid.quoteConvert === 'double') {
-        record.token = token = record.token.replace(/'/g, lx.qc(DQO));
+        record.token = token = record.token.replace(/"[^']*?"/g, lx.qc(DQO));
       } else if (rules.liquid.quoteConvert === 'single') {
-        record.token = token = record.token.replace(/"/g, lx.qc(SQO));
+        record.token = token = record.token.replace(/'[^"]*?'/g, lx.qc(SQO));
       }
 
       return cdata();
@@ -1576,13 +1576,17 @@ export function markup (input?: string) {
 
           do {
 
-            name = attrs[eq][0].split('=')[0];
+            if (attrs.length > 0) {
 
-            if (rules.markup.attributeSort[dq] === name) {
-              tstore.push(attrs[eq]);
-              attrs.splice(eq, 1);
-              len = len - 1;
-              break;
+              name = attrs[eq][0].split('=')[0];
+
+              if (rules.markup.attributeSort[dq] === name) {
+                tstore.push(attrs[eq]);
+                attrs.splice(eq, 1);
+                len = len - 1;
+                break;
+              }
+
             }
 
             eq = eq + 1;
