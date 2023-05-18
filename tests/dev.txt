@@ -1,4 +1,130 @@
-{%
-  if condition == assertion
-  or condition == expectation
-  or something == comparison%}
+<aside
+  class="d-none"
+  data-controller="gdrp"
+  data-gdrp-consent-value="true"
+  data-gdrp-tracking-value="{{ 'gdrp.tracking.allow' | t }}"
+  data-gdrp-no-tracking-value="{{ 'gdrp.tracking.disallow' | t }}"
+  data-gdrp-show-class="d-none"
+  data-gdrp-overlay-class="{{ overlay }}">
+
+  <section
+    id="gdrp"
+    aria-hidden="true"
+    class="drawer-panel p-2 py-3 p-sm-4"
+    data-controller="drawer"
+    data-drawer-direction-value="bottom"
+    data-drawer-overlay-class="drawer-overlay">
+
+    <div class="container-fluid gdrp-settings">
+
+      <div class="row ai-center jc-center">
+        <div class="col-12 col-lg-10 col-xl-9 tl">
+
+
+          <h4 class="mb-3">
+            {{ "gdrp.consent.title" | t }}
+          </h4>
+          <p class="fs-sm mb-5">
+            {{ "gdrp.consent.notice_html" | t }}
+          </p>
+
+          {% # GDRP Essential Cookies %}
+          <div class="row ai-between pb-4">
+            <div class="col-12 col-md-8 col-lg-9 fs-sm">
+              <h5 class="mb-2">
+                {{ "gdrp.essential.title" | t }}
+              </h5>
+              {{ "gdrp.essential.notice" | t }}
+            </div>
+            <div class="col-12 col-md-4 col-lg-3 as-end pt-3 pt-sm-0">
+              <div class="fm-switch d-flex ai-center">
+                <input
+                  class="fm-check-input"
+                  id="accepts_marketing"
+                  name="accepts_marketing"
+                  type="checkbox"
+                  checked="checked"
+                  class="switch"
+                  disabled
+                  data-action="gdrp#onInput">
+                <label class="fm-check-label fs-sm upper pl-3" for="accepts_marketing">
+                  {{ "gdrp.essential.option" | t }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {% # GDRP Additional Tracking %}
+          <div class="row ai-between bt bc-gray pb-3">
+            <div class="col-12 col-md-8 col-lg-9 fs-sm">
+              <h5 class="mt-4 my-b">
+                {{ "gdrp.tracking.title" | t }}
+              </h5>
+              {{ "gdrp.tracking.notice_html" | t }}
+            </div>
+
+            <div class="col-12 col-md-4 col-lg-3 as-end pt-3 pt-sm-0">
+
+              <div class="fm-switch d-flex ai-center">
+                <input
+                  class="fm-check-input"
+                  id="cookie_consent"
+                  name="cookie_consent"
+                  type="checkbox"
+                  class="switch"
+                  checked="checked"
+                  data-action="gdrp#onInput"
+                  type="checkbox">
+
+                <label
+                  class="fm-check-label fs-sm upper pl-3"
+                  for="cookie_consent"
+                  data-gdrp-target="consent">
+                  {{ "gdrp.tracking.allow" | t }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row bt bc-gray jc-center jc-sm-end py-4">
+            <div class="col-10 col-sm-6 col-md-4 col-lg-3">
+              <button
+                class="btn btn-black fw-light px-4"
+                data-action="gdrp#onConfirm"
+                data-drawer="gdrp">
+                {{ "gdrp.consent.confirm" | t }}
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="row ai-center gdrp-banner jc-center">
+    <div class="col-11 col-sm-10 col-lg-11 col-xl-7 py-4 inner">
+      <div class="row ai-center jc-center jc-sm-between">
+        <div class="col-12 col-sm pr-sm-3 tl fs-sm">
+          {{ "gdrp.notice_html" | t }}
+        </div>
+        <div class="col col-sm-3 text-center tr">
+          <div class="row ai-center pt-3 pb-1 pt-sm-0">
+            <button
+              type="button"
+              class="col-9 col-sm-auto btn btn-black fs-xs fw-light m-auto mb-3 mb-sm-0 mr-sm-2"
+              data-drawer="gdrp">
+              {{ "words.settings" | t }}
+            </button>
+            <button
+              type="button"
+              class="col-9 col-sm-auto btn bg-black fw-light m-auto"
+              data-action="gdrp#onAccept">
+              {{ "words.accept" | t }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>

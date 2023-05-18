@@ -124,15 +124,48 @@ dev(function (source) {
 
   const output = esthetic.format(source, {
     language: 'liquid',
-    wrap: 0,
-    wrapFraction: 40,
+    wrap: 125,
+    crlf: false,
+    indentSize: 2,
+    preserveLine: 1,
+    endNewline: false,
+    wrapFraction: 90,
     liquid: {
-      lineBreakSeparator: 'after',
-      delimiterTrims: 'multiline'
-
+      commentIndent: true,
+      commentNewline: true,
+      dedentTagList: [
+        'schema'
+      ],
+      delimiterPlacement: 'consistent',
+      delimiterTrims: 'never',
+      lineBreakSeparator: 'before',
+      indentAttribute: true,
+      normalizeSpacing: true,
+      preserveComment: false,
+      quoteConvert: 'single',
+      forceFilter: 0,
+      forceArgument: 3
     },
     markup: {
-      forceAttribute: false
+      quoteConvert: 'double',
+      lineBreakValue: 'preserve',
+      commentNewline: true,
+      attributeSort: [
+        'method',
+        'accept-charset',
+        'type',
+        'for',
+        'name',
+        'id',
+        'class',
+        'aria-label',
+        'aria-hidden',
+        'data-controller'
+      ],
+      forceIndent: true,
+      ignoreJS: false,
+      forceAttribute: 3,
+      preserveText: true
     }
   });
 
