@@ -345,7 +345,11 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
   /* PRESERVE INTERNAL                            */
   /* -------------------------------------------- */
 
-  if (preserveInternal === true) return open + lexed.slice(o, c).join(NIL).trim() + close;
+  // Exclude processing of {% liquid %} multiline tags
+  //
+  if (tname === 'liquid' || preserveInternal === true) {
+    return open + lexed.slice(o, c).join(NIL).trim() + close;
+  }
 
   /* -------------------------------------------- */
   /* FORCE WRAP CONDITIONALS                      */
