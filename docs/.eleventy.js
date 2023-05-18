@@ -324,7 +324,7 @@ function highlighter (md, raw, language) {
   }
 
 
-  return `<pre class="language-${language}"><code>${code}</code></pre>`;
+  return `<pre class="papyrus line-numbers"><code class="language-${language}">${code}</code></pre>`;
 
 };
 
