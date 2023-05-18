@@ -508,7 +508,7 @@ export function markup () {
 
     let y = a + 1;
     let isjsx = false;
-    let space = rules.markup.selfCloseSpace === true && end !== null && end[0] === '/>' ? WSP : NIL;
+    let space = rules.markup.selfCloseSpace === true && end[0] === '/>' ? WSP : NIL;
 
     data.token[a] = parent.replace(regend, NIL);
 
@@ -547,15 +547,22 @@ export function markup () {
     // Connects the ending delimiter of HTML tags, eg: >
     data.token[y - 1] = `${data.token[y - 1]}${space}${end[0]}`;
 
-    // HOT PATCH
+    // TODO
     //
     // Fixes attributes being forced when proceeded by a comment
+    // unsure the issue which occuring here but it is effecting
+    // some logic somewhere.
     //
-    // if (isType(y, 'comment') && data.lines[a + 1] < 2) {
+    // I had commented this out at some point during esthetic update
+    // and only after testing in brixtol webshop did I notice that without
+    // this conditional were comments following or tags with attributes
+    // was content being forced onto newlines.
+    //
+    if (isType(y, 'comment') && data.lines[a + 1] < 2) {
 
-    //  levels[a] = -10;
+      levels[a] = -10;
 
-    // }
+    }
 
   };
 
@@ -718,9 +725,17 @@ export function markup () {
         isType(x, 'liquid_attribute') ||
         isType(x, 'jsx_attribute_start')
       ) {
+        console.log(data.token[x], ind);
         level[data.begin[x]] = ind;
-      } else {
+
+        // This will ensure comments are indented
+        // folowing a tag with attributes
         level[x] = ind;
+
+      } else {
+
+        // level[x] = ind;
+
       }
 
     } else {
