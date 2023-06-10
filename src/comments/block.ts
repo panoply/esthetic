@@ -530,16 +530,22 @@ export function commentBlock (config: WrapComment): [string, number] {
   ) || (
     parse.lexer === 'script' &&
     rules.style.preserveComment
-  )) ||
-    rules.wrap < 1 ||
-    a === config.end || (
-    output.length <= rules.wrap &&
-      output.indexOf(NWL) < 0
+  )) || (
+    (
+      (
+        rules.wrap < 1 &&
+        /comment\s*%}\n/.test(output) === false
+      ) ||
+      a === config.end || (
+        output.length <= rules.wrap &&
+        output.indexOf(NWL) < 0
+      )
+    )
   ) || (
     config.begin === '/*' &&
     output.indexOf(NWL) > 0 &&
     output.replace(NWL, NIL).indexOf(NWL) > 0 &&
-    /\n(?!(\s*\*))/.test(output) === false
+    /\n(?!\s*\*)/.test(output) === false
   )) {
 
     return [ output, a ];
@@ -596,6 +602,7 @@ export function commentBlock (config: WrapComment): [string, number] {
       parseEmptyLines();
 
     } else if (
+      rules.wrap > 0 &&
       lines[b].replace(rx.WhitespaceLead, NIL).length > rules.wrap &&
       lines[b].replace(rx.WhitespaceLead, NIL).indexOf(WSP) > rules.wrap
     ) {
@@ -612,9 +619,7 @@ export function commentBlock (config: WrapComment): [string, number] {
 
     } else {
 
-      twrap = b < 1
-        ? rules.wrap - config.begin.length + 1
-        : rules.wrap;
+      twrap = b < 1 ? rules.wrap - config.begin.length + 1 : rules.wrap;
 
       lines[b] = (config.begin === '/*' && lines[b].indexOf('/*') !== 0 ? '   ' : NIL) + lines[b]
         .replace(rx.WhitespaceLead, NIL)
@@ -638,7 +643,8 @@ export function commentBlock (config: WrapComment): [string, number] {
 
         if (
           /^\s*\d+\.\s/.test(lines[b]) === true &&
-          /^\s*\d+\.\s/.test(lines[b + 1]) === false) {
+          /^\s*\d+\.\s/.test(lines[b + 1]) === false
+        ) {
 
           lines.splice(b + 1, 0, '1. ');
 
@@ -696,7 +702,13 @@ export function commentBlock (config: WrapComment): [string, number] {
 
         second.push(lines[b]);
 
-        b = b + 1;
+        // PATCH 10/06/2023
+        //
+        // When wrap was set to `0` Liquid comments were not formatting correctly
+        // which essentially led comment indentation being ignored. This ensures
+        // that even when wrap is 0 that the comment content will still be passed.
+        //
+        if (rules.wrap !== 0) b = b + 1;
 
       } else if (
         lines[b + 1] !== undefined &&

@@ -558,9 +558,9 @@ export function markup () {
     // this conditional were comments following or tags with attributes
     // was content being forced onto newlines.
     //
-    if (isType(y, 'comment') && data.lines[a + 1] < 2) {
+    if (isType(y, 'comment')) {
 
-      levels[a] = -10;
+      // levels[a] = -10;
 
     }
 
@@ -701,40 +701,79 @@ export function markup () {
 
       }
 
-      const ind = (isType(next, 'end') || isType(next, 'liquid_end'))
-        ? indent + 1
-        : indent;
+      // Patch fix 10/06/2023 - See the level[a] = indent variable below
+      // as it related
+      //
+      // const ind = (isType(next, 'end') || isType(next, 'liquid_end')) ? indent + 1 : indent;
 
       do {
 
-        level.push(ind);
+        level.push(indent);
         x = x - 1;
 
       } while (x > comstart);
 
       // Indent correction so that a following end tag
-      // is not indented 1 too much
+      // is not indented 1 too much, level `a` is the end token, eg: </div>
       //
-      if (ind === indent + 1) level[a] = indent;
-
-      // Indentation must be applied to the tag
-      // preceeding the comment
+      // Patched logic applied here on the 10/06/2023 which fixed comment
+      // indentation logic. The above `ind` variable was also excluded in the patch
       //
-      if (
-        isType(x, 'attribute') ||
-        isType(x, 'liquid_attribute') ||
-        isType(x, 'jsx_attribute_start')
-      ) {
-        console.log(data.token[x], ind);
-        level[data.begin[x]] = ind;
+      // if (ind === indent + 1)
+      //
+      level[a] = indent;
 
-        // This will ensure comments are indented
-        // folowing a tag with attributes
-        level[x] = ind;
+      // Indentation must be applied to the tag following the comment
+      // this logic is important as comment indentation can break the
+      // intended structures.
+      //
+      if ((
+        (
+          isType(x, 'attribute') ||
+          isType(x, 'liquid_attribute') ||
+          isType(x, 'jsx_attribute_start') ||
+          isType(x, 'start')
+        ) && (
+          isType(a + 1, 'comment') === false &&
+          isType(a + 1, 'start') === false &&
+          data.types[a + 1].startsWith('liquid') === false
+        )
+      ) || (
+        isType(a + 1, 'liquid_end')
+      )) {
 
-      } else {
+        // Removed in the 10/06/23 patch
+        //
+        // level[data.begin[x]] = ind;
 
-        // level[x] = ind;
+        // This will ensure comments are indented folowing a tag with attributes
+        //
+        level[x] = indent + 1;
+
+      } else if (isType(a + 1, 'liquid_else')) {
+
+        // Here we are countering comment indentation for {% else %} or {% elsif %}
+        // tokens. Wherein comments will align directly above, for example
+        //
+        // Example
+        //
+        // {% if condition %}
+        //
+        //   <!-- This comment is indented -->
+        //   <div>
+        //   </div>
+        //
+        // {% comment %}
+        //   This comment is followed by an else tag so will align
+        //   to the starting point of the opening delimiter
+        // {% endcomment %}
+        // {% else %}
+        //
+        // {% endif %}
+        //
+        // Comment this out to have the comment indent
+        //
+        level[x] = indent - 1;
 
       }
 
@@ -1598,11 +1637,16 @@ export function markup () {
 
               level.push(-10);
 
-            } else if (rules.wrap > 0 && isType(a, 'singleton') === false && (isIndex(a, 'liquid') < 0 || (
-              next < c &&
-              isIndex(a, 'liquid') > -1 &&
-              isIndex(next, 'liquid') < 0)
-            )) {
+            } else if (
+              rules.wrap > 0 &&
+              isType(a, 'singleton') === false && (
+                isIndex(a, 'liquid') < 0 || (
+                  next < c &&
+                  isIndex(a, 'liquid') > -1 &&
+                  isIndex(next, 'liquid') < 0
+                )
+              )
+            ) {
 
               onContent();
 
@@ -1714,6 +1758,7 @@ export function markup () {
 
               } else {
 
+                // PATCH LATEST on 10th JULY 2023
                 level.push(-20);
 
               }
@@ -1988,14 +2033,12 @@ export function markup () {
 
           ml();
 
-        } else if (isType(a, 'comment') && (
+        } else if (isType(a, 'comment') && rules.markup.preserveComment === false && (
           (
             is(data.token[a][1], cc.PER) &&
-            rules.liquid.preserveComment === false &&
             rules.liquid.commentNewline === true
           ) || (
             is(data.token[a][1], cc.PER) === false &&
-            rules.markup.preserveComment === false &&
             rules.markup.commentNewline === true
           )
         ) && (
@@ -2005,10 +2048,17 @@ export function markup () {
           )
         )) {
 
+          build.push(
+            nl(levels[a]),
+            build.pop(),
+            data.token[a],
+            nl(levels[a])
+          );
+
           // When preserve line is zero, we will insert
           // the new line above the comment.
           //
-          build.push(nl(levels[a]), data.token[a], nl(levels[a]));
+          // build.push(nl(levels[a]), data.token[a], nl(levels[a]));
 
         } else if (isIndex(a, '_preserve') > -1) {
 
