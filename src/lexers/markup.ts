@@ -2608,6 +2608,7 @@ export function markup (input?: string) {
 
           } else if (
             u.isLastAt(lexed, cc.RSB) &&
+            u.isLast(lexed, cc.WSP) &&
             u.not(b[a], cc.WSP) &&
             u.not(b[a], cc.COM) &&
             u.not(b[a], cc.DOT)
@@ -3883,8 +3884,29 @@ export function markup (input?: string) {
 
       if (ignore === false) {
         if (ltype === 'liquid') {
+
           token = lq.tokenize(lexed, tname, liquid, rules);
+
+          // Normalize Patches
+          //
+          // A second pass-through to ensure no incorrect normalizations
+          // have been applied to the token. Normalization is not always
+          // perfect at the traverse level, this condition will quickly
+          // check the token and fix any potential issues
+          //
+          if (rules.liquid.normalizeSpacing) {
+
+            token = token
+              .replace(/\] \[/g, '][') // Fixes object braces
+              .replace(/(\])(\w+:)/, '$1 $2'); // Fixes argument spacing
+
+            // Fixes "as" spacing on rendeer tag
+            if (tname === 'render' && token.indexOf(']as') > -1) token = token.replace(/\]as(?=\s+)/, '] as');
+
+          }
+
           if (tname === 'liquid') return parseLiquidTag();
+
         } else {
           token = lexed.join(NIL);
         }

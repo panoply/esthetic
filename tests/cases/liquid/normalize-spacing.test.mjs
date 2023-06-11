@@ -19,6 +19,14 @@ test('Spacing in object expressions', t => {
       [
         liquid`{{   object.  property[  foo]   }}`,
         liquid`{{ object.property[foo] }}`
+      ],
+      [
+        liquid`{{   object.  property[  foo][ 0][ 100 ].prop[ object . prop [0 ] ]   }}`,
+        liquid`{{ object.property[foo][0][100].prop[object.prop[0]] }}`
+      ],
+      [
+        liquid`{% assign x = object . xxx['prop'][ 0 ][[item[0] ] [item[1] ]]. prop . foo [0] [ 1] %}`,
+        liquid`{% assign x = object.xxx['prop'][0][[item[0]][item[1]]].prop.foo[0][1] %}`
       ]
 
     ]
