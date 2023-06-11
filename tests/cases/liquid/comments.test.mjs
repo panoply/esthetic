@@ -194,6 +194,56 @@ test('Liquid comment else tag alignment', t => {
           </span>
         {% endif %}
       `
+      ],
+      [
+        liquid`{% # Testing deeply nested structures %}
+
+          <main>
+          <section>
+          {% if condition %}
+          <div>
+            <ul><li>
+            {% comment %}
+                Lorem ipsum dolor sit amet {% endcomment %}
+            <h1>COMMENT WILL INDENT</h1>
+              </li>
+            </ul>
+            </div>
+
+          {% # comment will align the else opening delimiter %}
+          {% else %}
+            <span>
+            <!-- comment -->
+            </span>
+          {% endif %}
+          </section>
+          </main>
+        `,
+        liquid`{% # Testing deeply nested structures %}
+
+        <main>
+          <section>
+            {% if condition %}
+              <div>
+                <ul>
+                  <li>
+                    {% comment %}
+                      Lorem ipsum dolor sit amet
+                    {% endcomment %}
+                    <h1>COMMENT WILL INDENT</h1>
+                  </li>
+                </ul>
+              </div>
+
+            {% # comment will align the else opening delimiter %}
+            {% else %}
+              <span>
+                <!-- comment -->
+              </span>
+            {% endif %}
+          </section>
+        </main>
+      `
       ]
 
     ]

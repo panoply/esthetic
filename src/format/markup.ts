@@ -47,6 +47,11 @@ export function markup () {
   let comstart = -1;
 
   /**
+   * Prev token reference index
+   */
+  let prev = 0;
+
+  /**
    * Next token reference index
    */
   let next = 0;
@@ -456,6 +461,8 @@ export function markup () {
    * Advances the structure to the next index in the uniform.
    */
   function forward () {
+
+    if (next > 0) prev = next - 1;
 
     let x = a + 1;
     let y = 0;
@@ -1568,7 +1575,7 @@ export function markup () {
 
           next = forward();
 
-          if (isType(next, 'end') || isType(next, 'liquid_end')) {
+          if (isType(next, 'end') || (isType(next, 'liquid_end') && isType(a, 'liquid_else') === false)) {
 
             // Handle force Value for void tags
             //
@@ -1585,14 +1592,11 @@ export function markup () {
             //
             if (indent > -1) indent = indent - 1;
 
-            if (
-              isType(next, 'liquid_end') &&
-              isType(a, 'liquid_else')
-            ) {
+            // if (isType(next, 'liquid_end') && isType(a, 'liquid_else')) {
 
-              if (indent > -1) indent = indent - 1;
+            //   if (indent > -1) indent = indent - 1;
 
-            }
+            // }
 
             if (
               isToken(a, '</ol>') ||
@@ -1620,12 +1624,10 @@ export function markup () {
               level.push(-10);
             }
 
-          } else if ((
-            rules.markup.forceIndent === false || (
-              rules.markup.forceIndent === true &&
-              isType(next, 'script_start')
-            )
-          ) && (
+          } else if ((rules.markup.forceIndent === false || (
+            rules.markup.forceIndent === true &&
+            isType(next, 'script_start')
+          )) && (
             isType(a, 'content') ||
             isType(a, 'singleton') ||
             isType(a, 'liquid')
@@ -1657,8 +1659,6 @@ export function markup () {
               data.lines[next] > 0 ||
               isIndex(a, 'liquid_') > -1
             )) {
-
-              // console.log('levels', data.token[a], data.lines[next]);
 
               level.push(indent);
 
@@ -1693,12 +1693,8 @@ export function markup () {
             // ^here
             // {% endcase %}
             //
-            if (
-              isType(next, 'liquid_when') &&
-              rules.liquid.dedentTagList.includes('case') === false
-            ) {
-
-              indent = indent + 1;
+            if (isType(next, 'liquid_when')) {
+              if (rules.liquid.dedentTagList.includes('case') === false) indent = indent + 1;
             }
 
             if (jsx === true && isToken(a + 1, '{')) {
@@ -1716,13 +1712,7 @@ export function markup () {
                 level.push(-10);
               }
 
-            } else if ((
-              isType(a, 'start') &&
-              isType(next, 'end')
-            ) || (
-              isType(a, 'liquid_start') &&
-              isType(next, 'liquid_end')
-            )) {
+            } else if (isType(a, 'start') && isType(next, 'end')) {
 
               // EMPTY TOKENS
               //
@@ -1787,13 +1777,10 @@ export function markup () {
 
             }
 
-          } else if (
-            rules.markup.forceIndent === false &&
-            data.lines[next] === 0 && (
-              isType(next, 'content') ||
-              isType(next, 'singleton')
-            )
-          ) {
+          } else if (rules.markup.forceIndent === false && data.lines[next] === 0 && (
+            isType(next, 'content') ||
+            isType(next, 'singleton')
+          )) {
 
             level.push(-20);
 
@@ -1801,11 +1788,56 @@ export function markup () {
 
             level.push(-20);
 
-          } else if (isType(a, 'liquid_else') || isType(a, 'liquid_when')) {
+          } else if (isType(a, 'liquid_when')) {
 
             level[a - 1] = indent - 1;
 
-            if (isType(next, 'liquid_end')) level[a - 1] = indent - 1;
+            level.push(indent);
+
+          } else if (isType(a, 'liquid_else') && isType(next, 'liquid_end')) {
+
+            // LAST EMPTY LIQUID CONDITIONAL
+            //
+            // Handles empty conditionals, the structure looks like this
+            //
+            // {% if x %}
+            //
+            // {% else %}
+            //             < EMPTY
+            // {% endif %}
+            //
+            indent = indent - 1;
+            level[a - 1] = indent;
+
+            level.push(indent);
+
+          } else if (isType(a, 'liquid_else') && isType(next, 'liquid_else')) {
+
+            // ELSE EMPTY LIQUID CONDITIONAL
+            //
+            // Handles repated empty conditionals, the structure looks like this
+            //
+            // {% if x %}
+            //
+            // {% elsif x %}
+            //               < EMPTY
+            // {% elsif y %}
+            //               < EMPTY
+            // {% else %}
+            //              < EMPTY
+            // {% endif %}
+            //
+            // We do not want to reset `indent` variable. If we were to reset the
+            // indent variable then it will cause other indentations to defect.
+            //
+
+            level[a - 1] = indent - 1;
+
+            level.push(indent - 1);
+
+          } else if (isType(a, 'liquid_else') && (isType(next, 'content') || isType(next, 'liquid'))) {
+
+            level[a - 1] = indent - 1;
 
             level.push(indent);
 
@@ -1849,6 +1881,7 @@ export function markup () {
             // The same logic will follow when Liquid tags are like {% if %}, {% for %} etc
             // are the parent of the text or template (output object) token.
             //
+
             if (data.lines[next] < 1) {
               level.push(-20);
             } else if (data.lines[next] > 1) {
@@ -1874,6 +1907,20 @@ export function markup () {
 
             level[a - 1]--;
             indent = indent - 1;
+
+          } else if (isType(next, 'liquid_else') && level[a - 1] === indent) {
+
+            level.push(indent - 1);
+
+          } else if (isType(a, 'liquid_else') && level[a - 1] === indent && rules.markup.forceIndent === false) {
+
+            level[a - 1] = indent - 1;
+
+            level.push(indent);
+
+          } else if (isType(prev, 'liquid_start') && isType(next, 'liquid_end') && data.lines[next] === 0) {
+
+            level[a - 1] = -20;
 
           } else {
 

@@ -16,7 +16,9 @@ test('Structure Test: Empty style tags', t => {
         `,
         liquid`{% # Empty Style tag %}
 
-          {% style %}{% endstyle %}
+          {% style %}
+
+          {% endstyle %}
 
         `
       ],
@@ -29,7 +31,9 @@ test('Structure Test: Empty style tags', t => {
         `,
         liquid`{% # Empty Style tag with trims %}
 
-          {%- style -%}{%- endstyle -%}
+          {%- style -%}
+
+          {%- endstyle -%}
 
         `
       ],
@@ -54,14 +58,21 @@ test('Structure Test: Empty style tags', t => {
         `,
         liquid`{% # Multiple empty style tag sequences %}
 
-          {% style %}{% endstyle %}
+          {% style %}
+          {% endstyle %}
 
-          {% style %}{% endstyle -%}
+          {% style %}
 
-          {%- style %}{% endstyle -%}
+          {% endstyle -%}
+
+          {%- style %}
 
 
-          {%- style %}{% endstyle %}
+          {% endstyle -%}
+
+
+          {%- style %}
+          {% endstyle %}
 
         `
       ],
@@ -114,22 +125,37 @@ test('Structure Test: Empty style tags', t => {
 
           <main>
 
-            {% style %}{% endstyle %}
+            {% style %}
+
+
+            {% endstyle %}
 
           </main>
           <div>
             <ul>
               <li>
-                {% style %}{% endstyle %}
+                {% style %}
+
+
+                {% endstyle %}
               </li>
               <li>
-                {% style %}{% endstyle %}
+                {% style %}
+
+
+                {% endstyle %}
               </li>
               <li>
-                {% style %}{% endstyle %}
+                {% style %}
+
+
+                {% endstyle %}
               </li>
               <li>
-                {% style %}{% endstyle %}
+                {% style %}
+
+
+                {% endstyle %}
               </li>
             </ul>
           </div>

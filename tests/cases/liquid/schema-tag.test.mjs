@@ -16,7 +16,9 @@ test('Structure Test: Empty schema tags', t => {
         `,
         liquid`{% # Empty Style tag %}
 
-          {% schema %}{% endschema %}
+          {% schema %}
+
+          {% endschema %}
 
         `
       ],
@@ -29,7 +31,9 @@ test('Structure Test: Empty schema tags', t => {
         `,
         liquid`{% # Empty Style tag with trims %}
 
-          {%- schema -%}{%- endschema -%}
+          {%- schema -%}
+
+          {%- endschema -%}
 
         `
       ],
@@ -54,14 +58,21 @@ test('Structure Test: Empty schema tags', t => {
         `,
         liquid`{% # Multiple empty schema tag sequences %}
 
-          {% schema %}{% endschema %}
+          {% schema %}
+          {% endschema %}
 
-          {% schema %}{% endschema -%}
+          {% schema %}
 
-          {%- schema %}{% endschema -%}
+          {% endschema -%}
+
+          {%- schema %}
 
 
-          {%- schema %}{% endschema %}
+          {% endschema -%}
+
+
+          {%- schema %}
+          {% endschema %}
 
         `
       ],
@@ -114,22 +125,37 @@ test('Structure Test: Empty schema tags', t => {
 
           <main>
 
-            {% schema %}{% endschema %}
+            {% schema %}
+
+
+            {% endschema %}
 
           </main>
           <div>
             <ul>
               <li>
-                {% schema %}{% endschema %}
+                {% schema %}
+
+
+                {% endschema %}
               </li>
               <li>
-                {% schema %}{% endschema %}
+                {% schema %}
+
+
+                {% endschema %}
               </li>
               <li>
-                {% schema %}{% endschema %}
+                {% schema %}
+
+
+                {% endschema %}
               </li>
               <li>
-                {% schema %}{% endschema %}
+                {% schema %}
+
+
+                {% endschema %}
               </li>
             </ul>
           </div>

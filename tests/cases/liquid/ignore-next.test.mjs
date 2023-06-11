@@ -150,9 +150,9 @@ test('Ignore Next (Block Comment) - Newlines and indentation', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
@@ -221,9 +221,9 @@ test('Ignore Next (Block Comment) - Edge cases', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
     t.snapshot(input, label);
 
@@ -466,7 +466,7 @@ test('Ignore Next (Block Comment) - Followed by liquid', async t => {
       language: 'liquid',
       preserveLine: 3
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
 

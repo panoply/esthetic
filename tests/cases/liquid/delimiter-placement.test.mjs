@@ -48,13 +48,17 @@ test('Preserve: Delimiters are preserved according to input', t => {
       `,
       liquid`
         {%
-          if x == 'empty-tag-left-force' %}{% endif %}
+          if x == 'empty-tag-left-force' %}
+        {% endif %}
         {%-
-          if x == 'empty-tag-left-force trim-left' %}{% endif %}
+          if x == 'empty-tag-left-force trim-left' %}
+        {% endif %}
         {%-
-          if x == 'empty-tag-left-force trims' -%}{% endif %}
+          if x == 'empty-tag-left-force trims' -%}
+        {% endif %}
         {%
-          if x == 'empty-tag-left-force trims-right' -%}{% endif %}
+          if x == 'empty-tag-left-force trims-right' -%}
+        {% endif %}
        `,
       liquid`
         {%
@@ -83,14 +87,18 @@ test('Preserve: Delimiters are preserved according to input', t => {
         {% endif %}
       `,
       liquid`
-         {% if x == 'empty-tag-right-force'
-         %}{% endif %}
-         {%- if x == 'empty-tag-right-force trim-left'
-         %}{% endif %}
-         {%- if x == 'empty-tag-right-force trim'
-         -%}{% endif %}
-         {% if x == 'empty-tag-right-force trim-right'
-         -%}{% endif %}
+      {% if x == 'empty-tag-right-force'
+      %}
+      {% endif %}
+      {%- if x == 'empty-tag-right-force trim-left'
+      %}
+      {% endif %}
+      {%- if x == 'empty-tag-right-force trim'
+      -%}
+      {% endif %}
+      {% if x == 'empty-tag-right-force trim-right'
+      -%}
+      {% endif %}
        `,
 
       liquid`
@@ -120,18 +128,22 @@ test('Preserve: Delimiters are preserved according to input', t => {
         {% endif %}
       `,
       liquid`
-        {%
-          if x == 'empty-tag-force-left-and-right'
-        %}{% endif %}
-        {%-
-          if x == 'empty-tag-force-left-and-right trim-left'
-        %}{% endif %}
-        {%-
-          if x == 'empty-tag-force-left-and-right trims'
-        -%}{% endif %}
-        {%
-          if x == 'empty-tag-force-left-and-right trim-right'
-        -%}{% endif %}
+      {%
+        if x == 'empty-tag-force-left-and-right'
+      %}
+      {% endif %}
+      {%-
+        if x == 'empty-tag-force-left-and-right trim-left'
+      %}
+      {% endif %}
+      {%-
+        if x == 'empty-tag-force-left-and-right trims'
+      -%}
+      {% endif %}
+      {%
+        if x == 'empty-tag-force-left-and-right trim-right'
+      -%}
+      {% endif %}
       `,
       liquid`
         {%
@@ -164,10 +176,14 @@ test('Preserve: Delimiters are preserved according to input', t => {
         {% endif %}
       `,
       liquid`
-        {% if x == 'no-content-no-force' %}{% endif %}
-        {%- if x == 'no-content-no-force trim-left' %}{% endif %}
-        {%- if x == 'no-content-no-force trims' -%}{% endif %}
-        {% if x == 'no-content-no-force trim-right' -%}{% endif %}
+      {% if x == 'no-content-no-force' %}
+      {% endif %}
+      {%- if x == 'no-content-no-force trim-left' %}
+      {% endif %}
+      {%- if x == 'no-content-no-force trims' -%}
+      {% endif %}
+      {% if x == 'no-content-no-force trim-right' -%}
+      {% endif %}
       `,
       liquid`
         {% if x == 'content-no-force' %}
