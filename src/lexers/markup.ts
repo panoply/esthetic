@@ -795,11 +795,26 @@ export function markup (input?: string) {
 
       } while (i < nl.length);
 
-      push(record, {
-        token: delim,
-        types: 'liquid_end',
-        lines: 2
-      });
+      if ((
+        rules.liquid.delimiterPlacement === 'default' ||
+        rules.liquid.delimiterPlacement === 'force-multiline'
+      ) || (
+        rules.liquid.delimiterPlacement === 'preserve' && /\n-?%}$/.test(token)
+      ) || (
+        rules.liquid.delimiterPlacement === 'consistent' && /^{%-?\n/.test(token)
+      )) {
+
+        push(record, {
+          token: delim,
+          types: 'liquid_end',
+          lines: 2
+        });
+
+      } else {
+        parse.replace({
+          token: lq.closeDelims(parse.current.token + delim, rules.liquid)
+        });
+      }
 
     }
 
@@ -1828,7 +1843,7 @@ export function markup (input?: string) {
             name = attrs[idx][0].slice(0, eq);
 
             if (
-              /\n/.test(attrs[idx][0]) && (
+              (
                 rules.markup.lineBreakValue === 'force-preserve' ||
                 rules.markup.lineBreakValue === 'force-indent' ||
                 rules.markup.lineBreakValue === 'force-align'
