@@ -12,17 +12,6 @@ import {
   JSONFormat,
   XMLFormat
 } from './types/misc/specifics';
-import {
-  Rules,
-  Definitions,
-  Grammars,
-  Language,
-  Stats,
-  IParseError,
-  IConfig,
-  IConfigInternal,
-  Data
-} from './types/index';
 
 declare namespace Æsthetic {
 
@@ -33,7 +22,7 @@ declare namespace Æsthetic {
      * Rule defintions which describe the different formatting options
      * esthetic offers.
      */
-    get definitions(): Definitions;
+    get definitions(): Æ.Definitions;
     /**
      * **Æsthetic ~ Statistics**
      *
@@ -41,20 +30,20 @@ declare namespace Æsthetic {
      * operation, also available in events like `esthetic.on('format')` and
      * `esthetic.on('parse')` arguments.
      */
-    get stats(): Stats;
+    get stats(): Æ.Stats;
     /**
      * **Æsthetic ~ Parse Table**
      *
      * Returns the current Parse Table data~structure. You can only call this
      * in a post beautification or parse cycle.
      */
-    get table(): Data;
+    get table(): Æ.Data;
     /**
      * **Æsthetic ~ Parse Error**
      *
      * Returns the the Parse Error or `null` if no error
      */
-    get error(): IParseError;
+    get error(): Æ.IParseError;
     /**
      * **Æsthetic Liquid**
      *
@@ -135,7 +124,7 @@ declare namespace Æsthetic {
     * console.log(output);
     *
     */
-    format: (source: string | Buffer, rules?: Rules) => string;
+    format: (source: string | Buffer, rules?: Æ.Rules) => string;
 
     /**
      * **Æsthetic Parse**
@@ -171,7 +160,7 @@ declare namespace Æsthetic {
      * // data.types
      *
      */
-    parse: (source: string | Buffer) => Data;
+    parse: (source: string | Buffer) => Æ.Data;
 
     /**
      * **Æsthetic ~ Events**
@@ -198,8 +187,8 @@ declare namespace Æsthetic {
      * reference applied internally, then do no provide a parameter.
      */
     config: {
-      (): IConfigInternal;
-      (options: IConfig): Pick<Static, 'on' | 'grammar' | 'rules' | 'hook' | 'parse' | 'format'>;
+      (): Æ.IConfigInternal;
+      (options: Æ.IConfig): Pick<Static, 'on' | 'grammar' | 'rules' | 'hook' | 'parse' | 'format'>;
     };
 
     /**
@@ -214,7 +203,7 @@ declare namespace Æsthetic {
       /**
        * Returns the current rulesets Æsthetic is using.
        */
-      (): Rules;
+      (): Æ.Rules;
       /**
        * Update the current rules.
        */
@@ -236,11 +225,11 @@ declare namespace Æsthetic {
       /**
        * Returns the current grammar references
        */
-      (): Grammars;
+      (): Æ.Grammars;
       /**
        * Extend the current grammar references
        */
-      (grammar: Grammars): Pick<Static, 'on' | 'hook' | 'rules' | 'parse' | 'format'>
+      (grammar: Æ.Grammars): Pick<Static, 'on' | 'hook' | 'rules' | 'parse' | 'format'>
     };
 
     /**
@@ -249,8 +238,28 @@ declare namespace Æsthetic {
      * Automatic language detection based on the string input.
      * Returns lexer, language and official name.
      */
-    detect: (sample: string) => Language;
+    detect: (sample: string) => Æ.Language;
   }
+
+  /**
+   * **Æsthetic Stats ~ (Type)**
+   *
+   * Type export of Statistics return value which is available via
+   * the `esthetic.stats` getter method.
+   */
+  type Stats = Æ.Stats;
+
+  /**
+   * **Æsthetic Global Rules ~ (Type)**
+   *
+   * Type export of Global Formatting Rules. These rules are used
+   * for every supported language.
+   *
+   * ---
+   *
+   * [Æsthetic Docs](https://æsthetic.dev/rules#global)
+   */
+  type Rules = Æ.GlobalRules;
 
   /**
    * **Æsthetic Global Rules ~ (Type)**
