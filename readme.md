@@ -1,5 +1,5 @@
 <br>
-<p>
+<p align="center">
 <img src="https://raw.githubusercontent.com/panoply/esthetic/next/docs/src/assets/svg/esthetic.svg" width="220px">
 </p>
 
