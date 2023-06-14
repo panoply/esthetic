@@ -22,9 +22,9 @@ Documentation lives on **[æsthetic.dev](https://æsthetic.dev)**
 - Uniformed data structures with incremental traversal.
 - Simple and painless integration within existing projects.
 
-# Installation
+## Installation
 
-Æsthetic is supports both CJS and ESM environments and also provide CLI support.
+Æsthetic is supports both CJS/ESM environments and also provides basic CLI support.
 
 ###### PNPM
 
@@ -50,7 +50,7 @@ npm install esthetic --save
 https://unpkg.com/esthetic
 ```
 
-# Usage
+## Usage
 
 Consult the [documentation](https://æsthetic.dev) for a better understanding.
 
@@ -80,7 +80,7 @@ esthetic.format('...', { /* rules */ })
 
 ```
 
-# Contributing
+## Contributing
 
 Looking to contribute? Æsthetic is leverages [pnpm](https://pnpm.js.org/), so ensure you're using it as your package manager. Development is intended to be conducted within the [vscode](https://code.visualstudio.com/) text editor. Fork or clone the project and install dependencies.
 
@@ -117,7 +117,7 @@ pnpm tests       Cherry pick test cases to run
 
 > Consult the [tests](/tests/) readme for more information on `test` prefixed commands
 
-# Acknowledgements
+## Acknowledgements
 
 Æsthetic owes its existence to Sparser and PrettyDiff. This project has been adapted from these 2 brilliant tools and while largely refactored + overhauled the original parse architecture remains intact.
 
@@ -128,6 +128,6 @@ pnpm tests       Cherry pick test cases to run
 Both PrettyDiff and Sparser were retired in 2019 after a nearly a decade of production. Austin has since created [Shared File Systems](https://github.com/prettydiff/share-file-systems) which is a privacy first point-to-point communication tool. Please check it out and also have a read of
 [wisdom](https://github.com/prettydiff/wisdom) which personally helped me become a better developer.
 
-# Author 🥛 [Νίκος Σαβίδης](mailto:nicos@gmx.com)
+## Author 🥛 [Νίκος Σαβίδης](mailto:nicos@gmx.com)
 
 Follow me on [Twitter](https://twitter.com/niksavvidis) or shoot me an [Email](mailto:n.savvidis@gmx.com).
