@@ -242,6 +242,14 @@ declare namespace Æsthetic {
   }
 
   /**
+   * **Æsthetic Configuration ~ (Type)**
+   *
+   * Type export of the execution configuration options which is available
+   * via the `esthetic.config(configuration)` method.
+   */
+  type Configuration = Æ.IConfig;
+
+  /**
    * **Æsthetic Stats ~ (Type)**
    *
    * Type export of Statistics return value which is available via
