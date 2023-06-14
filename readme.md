@@ -84,7 +84,7 @@ esthetic.format('...', { /* rules */ })
 
 ## Contributing
 
-Looking to contribute? Æsthetic is leverages [pnpm](https://pnpm.js.org/), so ensure you're using it as your package manager. Development is intended to be conducted within the [vscode](https://code.visualstudio.com/) text editor. Fork or clone the project and install dependencies.
+Looking to contribute? Æsthetic leverages [pnpm](https://pnpm.js.org/) so ensure you're using it as your package manager. Development is intended to be conducted within the [vscode](https://code.visualstudio.com/) text editor. Fork or clone the project and install dependencies.
 
 <details>
 <summary>
