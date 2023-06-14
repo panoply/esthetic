@@ -914,8 +914,8 @@ export function markup (input?: string) {
      * Parse Ignores
      *
      * Additional logic required to find the end of a tag when it contains
-     * a `data-prettify-ignore` attribute annotation. The function also
-     * handles `@prettify-ignore-next` ignore comments placed above tag regions.
+     * a `data-esthetic-ignore` attribute annotation. The function also
+     * handles `@esthetic-ignore-next` ignore comments placed above tag regions.
      *
      */
     function parseIgnore (): ReturnType<typeof parseSingleton | typeof parseScript> {
@@ -1959,10 +1959,12 @@ export function markup (input?: string) {
           if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
 
             if (tag !== 'comment') {
+
               ltype = 'ignore';
               ignore = true;
               start = source.slice(a, from + 1);
               end = source.slice(idx1, idx2 + 1);
+
             } else {
 
               ltype = 'comment';
@@ -2274,6 +2276,7 @@ export function markup (input?: string) {
               ltype = 'comment';
               end = '%}';
               lchar = end.charAt(end.length - 1);
+
               return parseComments(true);
 
             }
@@ -2305,10 +2308,7 @@ export function markup (input?: string) {
 
       lchar = end.charAt(end.length - 1);
 
-      if (ltype === 'comment' && (u.is(b[a], cc.LAN) || (
-        u.is(b[a], cc.LCB) &&
-        u.is(b[a + 1], cc.PER))
-      )) {
+      if (ltype === 'comment' && (u.is(b[a], cc.LAN) || (u.is(b[a], cc.LCB) && u.is(b[a + 1], cc.PER)))) {
 
         return parseComments();
 
