@@ -1,11 +1,12 @@
 import { defineConfig } from 'tsup';
 import * as pkg from './package.json';
+
 export default defineConfig([
   {
-    entry: [
-      './src/index.ts'
-    ],
-    clean: true,
+    entry: {
+      esthetic: './src/index.ts'
+    },
+    clean: false,
     treeshake: true,
     name: 'Æsthetic',
     minify: process.env.production ? 'terser' : false,
@@ -17,8 +18,23 @@ export default defineConfig([
     esbuildOptions: options => {
       options.treeShaking = true;
     },
+    outExtension ({ format }) {
 
-    legacyOutput: true,
+      if (format === 'cjs') {
+        return {
+          js: '.cjs'
+        };
+      } else if (format === 'esm') {
+        return {
+          js: '.mjs'
+        };
+
+      } else {
+        return {
+          js: '.js'
+        };
+      }
+    },
     format: [
       'cjs',
       'esm',
@@ -26,9 +42,9 @@ export default defineConfig([
     ]
   },
   {
-    entry: [
-      './src/cli.ts'
-    ],
+    entry: {
+      index: './src/cli.ts'
+    },
     external: [
       'ansis',
       'chokidar',
@@ -36,6 +52,7 @@ export default defineConfig([
       'minimist',
       './index.js'
     ],
+    outDir: 'dist/cli',
     name: 'Æsthetic',
     clean: false,
     minify: process.env.production ? 'terser' : false,
@@ -43,7 +60,6 @@ export default defineConfig([
     shims: true,
     bundle: true,
     splitting: false,
-    legacyOutput: true,
     esbuildOptions: options => {
       options.treeShaking = true;
     },

@@ -2,6 +2,7 @@
   "name": "esthetic",
   "version": "0.5.6-beta.1",
   "license": "MIT",
+  "homepage": "https://æsthetic.dev",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <n.savvidis@gmx.com>",
   "description": "Æsthetic ~ Language beautification support leveraging the Sparser lexing algorithm.",
   "keywords": [
@@ -37,16 +38,24 @@
     "url": "https://github.com/panoply/esthetic/issues"
   },
   "bin": {
-    "esthetic": "./dist/cli.js"
+    "esthetic": "./dist/cli/index.js"
   },
+  "files": [
+    "dist",
+    "types",
+    "index.d.ts",
+    "schema.json",
+    "ThirdPartyNotices.txt",
+    "LICENSE"
+  ],
   "types": "./index.d.ts",
-  "main": "./dist/index.mjs",
-  "module": "./dist/esm/index.js",
+  "main": "./dist/esthetic.js",
+  "module": "./dist/esthetic.mjs",
   "exports": {
     "types": "./index.d.ts",
-    "require": "./dist/index.js",
-    "import": "./dist/esm/index.js",
-    "default": "./dist/iife/index.js"
+    "require": "./dist/esthetic.cjs",
+    "import": "./dist/esthetic.mjs",
+    "default": "./dist/esthetic.js"
   },
   "scripts": {
     "dev": "tsup --watch",
@@ -128,11 +137,11 @@
     "@liquify/prettier-config": "^1.2.1",
     "@liquify/tsconfig": "^1.0.1",
     "@types/benchmark": "^2.1.2",
-    "ava": "^5.2.0",
+    "ava": "^5.3.0",
     "benchmark": "^2.1.4",
-    "terser": "^5.16.8",
+    "terser": "^5.17.7",
     "tsup": "^6.7.0",
-    "type-fest": "^3.7.2"
+    "type-fest": "^3.11.1"
   },
   "dependencies": {
     "@liquify/highlight": "^0.1.0",
