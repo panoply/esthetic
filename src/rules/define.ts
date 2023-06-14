@@ -9,6 +9,8 @@ import { prettier } from 'rules/presets/prettier';
 import { assign } from 'utils/native';
 import { CNL, NWL } from 'lexical/chars';
 import { hasProp } from 'utils/helpers';
+import { config } from 'config';
+import merge from 'mergerino';
 
 const GLOB = [
   'correct',
@@ -81,6 +83,8 @@ export function setPreset (options: Rules) {
  * handles rule assignments
  */
 export function setRules (options: Rules, events: EventListeners) {
+
+  if (config.persistRules === false) options = assign(options, merge(defaults, options));
 
   /**
    * Properties Existence
