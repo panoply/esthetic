@@ -102,7 +102,7 @@ Looking to contribute? Æsthetic leverages [pnpm](https://pnpm.js.org/) so ensur
 
 ### Testing / Development
 
-Æsthetic uses the powerful [AVA](https://github.com/avajs/ava) test runner together with a small helper utility that helps alleviate some of the complexities involved with testing tools of its criteria. It's recommended that you develop in a two pane terminal. The [tests/dev.test.mjs](/tests/dev.test.mjs) and [tests/dev.txt](/tests/dev.txt) files are core to testing and working on the module, they will be called when running `pnpm play`
+Æsthetic uses the powerful [AVA](https://github.com/avajs/ava) test runner together with a small helper utility that helps alleviate some of the complexities involved with testing tools of its criteria. It's recommended that you develop in a two pane terminal. The [dev.test.mjs](/tests/dev.test.mjs) and [dev.txt](/tests/dev.txt) files are core to testing and working on the module, they will be called when running `pnpm play`
 
 ### Commands
 
