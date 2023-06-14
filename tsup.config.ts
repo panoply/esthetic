@@ -12,6 +12,7 @@ export default defineConfig([
     minify: process.env.production ? 'terser' : false,
     globalName: 'esthetic',
     splitting: false,
+    platform: 'neutral',
     define: {
       VERSION: `"${pkg.version}"`
     },
