@@ -24,6 +24,8 @@ Documentation lives on **[æsthetic.dev](https://æsthetic.dev)**
 
 # Installation
 
+Æsthetic is supports both CJS and ESM environments and also provide CLI support.
+
 ###### PNPM
 
 ```bash
@@ -48,6 +50,73 @@ npm install esthetic --save
 https://unpkg.com/esthetic
 ```
 
+# Usage
+
+Consult the [documentation](https://æsthetic.dev) for a better understanding.
+
+###### CLI
+
+```bash
+$ esthetic <file> --flag
+```
+
+###### ESM
+
+<!--prettier-ignore-->
+```js
+import esthetic from 'esthetic';
+
+esthetic.format('...', { /* rules */ })
+
+```
+
+###### CJS
+
+<!--prettier-ignore-->
+```js
+const esthetic = require('esthetic');
+
+esthetic.format('...', { /* rules */ })
+
+```
+
+# Contributing
+
+Looking to contribute? Æsthetic is leverages [pnpm](https://pnpm.js.org/), so ensure you're using it as your package manager. Development is intended to be conducted within the [vscode](https://code.visualstudio.com/) text editor. Fork or clone the project and install dependencies.
+
+<details>
+<summary>
+  Pre-requisites
+</summary>
+<p>
+
+- [Git](https://git-scm.com/)
+- [Node v16^](https://nodejs.org/)
+- [Pnpm v7^](https://pnpm.js.org/)
+- [VSCode](https://code.visualstudio.com/)
+
+</p>
+</details>
+
+### Testing / Development
+
+Æsthetic uses the powerful [AVA](https://github.com/avajs/ava) test runner together with a small helper utility that helps alleviate some of the complexities involved with testing tools of its criteria. It's recommended that you develop in a two pane terminal. The [tests/dev.test.mjs](/tests/dev.test.mjs) and [tests/dev.txt](/tests/dev.txt) files are core to testing and working on the module, they will be called when running `pnpm play`
+
+### Commands
+
+The following commands are available as executable scripts.
+
+```
+pnpm dev         Bundles module with ESBuild (via tsup) in watch mode
+pnpm play        Starts up AVA in development mode and runs the dev.txt
+pnpm build       Generates the distribution bundles
+pnpm pack        Packages the module up for distribution on NPM registry
+pnpm test        Runs all the tests
+pnpm tests       Cherry pick test cases to run
+```
+
+> Consult the [tests](/tests/) readme for more information on `test` prefixed commands
+
 # Acknowledgements
 
 Æsthetic owes its existence to Sparser and PrettyDiff. This project has been adapted from these 2 brilliant tools and while largely refactored + overhauled the original parse architecture remains intact.
@@ -59,11 +128,6 @@ https://unpkg.com/esthetic
 Both PrettyDiff and Sparser were retired in 2019 after a nearly a decade of production. Austin has since created [Shared File Systems](https://github.com/prettydiff/share-file-systems) which is a privacy first point-to-point communication tool. Please check it out and also have a read of
 [wisdom](https://github.com/prettydiff/wisdom) which personally helped me become a better developer.
 
-## Author 🥛 [Νίκος Σαβίδης](mailto:nicos@gmx.com)
+# Author 🥛 [Νίκος Σαβίδης](mailto:nicos@gmx.com)
 
-<a href="https://twitter.com/niksavvidis">
-<img
-  align="right"
-  src="https://img.shields.io/badge/-@niksavidis-1DA1F2?logo=twitter&logoColor=fff"
-/>
-</a>
+Follow me on [Twitter](https://twitter.com/niksavvidis) or shoot me an [Email](mailto:n.savvidis@gmx.com).
