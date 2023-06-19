@@ -27,7 +27,7 @@ When working with Liquid, use `single` quotes for strings and always infer `doub
 
 _Below is an example of how this rule works if set to `none` which is the **default** setting. No conversion of quotations is applied when using `none` as per the **before** and **after** examples_
 
-```html
+```liquid
 <!-- Before Formatting -->
 <div class="single" id="double"></div>
 
@@ -41,7 +41,7 @@ _Below is an example of how this rule works if set to `none` which is the **defa
 
 _Below is an example of how this rule works if set to `double` which will go about converting and ensuring all markup quotations and using doubles._
 
-```html
+```liquid
 <!-- Before Formatting -->
 <div class="foo" id="bar"></div>
 
@@ -55,7 +55,7 @@ _Below is an example of how this rule works if set to `double` which will go abo
 
 _Below is an example of how this rule works if set to `single` which will go about converting and ensuring all markup quotations and using singles._
 
-```html
+```liquid
 <!-- Before Formatting -->
 <div class="foo" id="bar"></div>
 

@@ -15,13 +15,13 @@ options:
   - force-multiline
 ---
 
+::: grid col-9 p-100
+
 # Delimiter Placement
 
-Controls the placement of opening and closing Liquid delimiters `{%`, `{{`, `}}` and `%}`. The rule will take effect in accordance with the internal structure of output and tag tokens.
+Controls the placement of opening and closing Liquid delimiters `{%`, `{{`, `}}` and `%}`. The rule will take effect in accordance with the internal structure of output and tag tokens. This is a Liquid specific formatting rule which defaults to using `preserve` when no option has been specified. The **recommended** option to use is `consistent` or `force-multiline`.
 
-::: note
-This rule will only be applied to start, singleton and output tag types. Delimiters of end `{% end %}` type tags and those which encapsulate Liquid comments will always be formatted inline.
-:::
+> This rule will only be applied to start, singleton and output tag types. Delimiters of end `{% end %}` type tags and those which encapsulate Liquid comments will always be formatted inline.
 
 # Related Rules
 
@@ -30,9 +30,9 @@ The `delimiterPlacement` can be used together with the Liquid `delimiterTrims` a
 - [delimiterTrims](/rules/liquid/delimiterTrims/)
 - [normalizeSpacing](/rules/liquid/normalizeSpacing/)
 
-# Rule Options
+:::
 
-This is a Liquid specific formatting rule which defaults to using `preserve` when no option has been specified. The **recommended** option to use is `consistent` or `force-multiline`.
+---
 
 ::: rule 👍
 
@@ -47,13 +47,13 @@ The `preserve` option is what Æsthetic will **default** to using. The option wi
   "language": "liquid",
   "liquid": {
     "delimiterPlacement": "preserve",
-    "forceFilters": 2
+    "forceFilter": 2
   }
 }
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% # Inline open and close delimiters are preserved %}
 {{ object.prop | filter: 'value' }}
 
@@ -93,7 +93,7 @@ The `default` option uses the standard style approach as per Liquid and Shopify 
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {{ object.prop | filter: 'value' }}
 
 {{
@@ -124,7 +124,7 @@ The `inline` option will ensure that delimiters always start and end on the same
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% # Delimiters will be inlined %}
 {%
   liquid
@@ -151,6 +151,8 @@ The `inline` option will ensure that delimiters always start and end on the same
 {% endif %}
 ```
 
+---
+
 ::: rule 🙌
 
 #### consistent
@@ -163,13 +165,15 @@ The `consistent` option will use the opening (`{%` or `{{`) delimiter placement 
 {
   "language": "liquid",
   "liquid": {
-    "delimiterPlacement": "consistent"
+    "delimiterPlacement": "consistent",
+    "forceFilter": 2,
+    "lineBreakSeparator": "after"
   }
 }
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% # The tags ending delimiter will be inlined %}
 {{ object.prop
   | filter_1: 'ones'
@@ -187,6 +191,8 @@ The `consistent` option will use the opening (`{%` or `{{`) delimiter placement 
 {{
 object.prop | filter: t: 'xxx' }}
 ```
+
+---
 
 ::: rule 😳
 
@@ -206,7 +212,7 @@ The `forced` option will force delimiters onto newlines. You should avoid using 
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {%
   if condition == assertion %}
 
@@ -218,10 +224,10 @@ The `forced` option will force delimiters onto newlines. You should avoid using 
 {% section 'xxx' %}
 
 {{
-object.prop
-| filter_1: 'ones'
-| filter_2: 'two'
-| filter_3: 'three' }}
+  object.prop
+  | filter_1: 'ones'
+  | filter_2: 'two'
+  | filter_3: 'three' }}
 
 {% endif %}
 ```
@@ -247,7 +253,7 @@ The `forced` option will force delimiters onto newlines. You should avoid using 
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {%
   if condition == assertion %}
 
@@ -259,10 +265,10 @@ The `forced` option will force delimiters onto newlines. You should avoid using 
 {% section 'xxx' %}
 
 {{
-object.prop
-| filter_1: 'ones'
-| filter_2: 'two'
-| filter_3: 'three' }}
+  object.prop
+  | filter_1: 'ones'
+  | filter_2: 'two'
+  | filter_3: 'three' }}
 
 {% endif %}
 ```

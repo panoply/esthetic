@@ -1,3 +1,9 @@
+p + h1,
+ul + h1,
+pre + h1 {
+  margin-top: 40px !important;
+}
+
 h1,
 h2,
 h3,
@@ -5,7 +11,7 @@ h4,
 h5,
 h6 {
   text-transform: none;
-  margin-top: 40px;
+  margin-top: 20px;
   margin-bottom: 20px;
 
   + p {
@@ -29,31 +35,40 @@ h6 {
 }
 
 .rule-title {
+  h4 {
+    font-family: $font-family-other;
+    font-size: $h5-font-size;
+    text-transform: lowercase;
+    // background-color: $code-inline-bg;
+    padding: 5px 8px;
+    width: fit-content;
+    // border-radius: 5px;
+    font-weight: 600;
+    margin-top: 0px;
+  }
+  h5 {
+    margin-top: 0;
+  }
 }
-
-h4 {
-  font-family: $font-family-code;
-  font-size: $h5-font-size;
-  text-transform: lowercase;
-  background-color: $code-inline-bg;
-  padding: 5px 8px;
-  width: fit-content;
-  border-radius: 5px;
-  font-weight: 400;
+hr {
+  margin: 40px 0 !important;
+  padding: 0 20px;
 }
 
 blockquote {
   margin-top: 40px;
   margin-bottom: 40px;
-  margin-right: 15px;
-
-  padding: 20px;
-  padding-left: 65px;
-  background-color: $code-inline-bg;
+  padding: 10px;
+  padding-left: 65px !important;
+  background-image: url(icon-info($gray-600));
+  background-repeat: no-repeat no-repeat;
+  background-position: 25px center;
+  background-size: 2.5%;
+  background-color: $code-bg;
   border: $border-width $border-color solid;
   border-radius: 0.5rem;
   position: relative;
-  width: fit-content;
+  width: 60% !important;
 
   > p code {
     //background: #363f4e;
@@ -71,16 +86,35 @@ blockquote {
     background-repeat: no-repeat no-repeat;
     background-position: 25px center;
     background-size: 2.5%;
+    padding: 15px;
+    padding-right: 20px;
+    padding-left: 65px;
+
+    > p {
+      margin-left: 65px;
+      width: 100% !important;
+    }
   }
 
   > p {
     margin: 0;
+    width: 100% !important;
     color: $body-color;
-    font-size: $font-size-sm;
+    font-size: $font-size-md;
     font-family: $font-family-base;
     font-weight: 200;
     -webkit-font-smoothing: subpixel-antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.p-100 {
+  p {
+    width: 100% !important;
+  }
+
+  blockquote {
+    width: 100% !important;
   }
 }
 
@@ -94,16 +128,27 @@ ul {
   margin-bottom: 20px;
 }
 
-p {
-  a {
-    color: #6eb2d3;
-    font-weight: 500;
+.content-rules {
+  p {
+    width: 50%;
 
-    &:hover {
-      color: $white;
+    a {
+      color: #6eb2d3;
+      font-weight: 500;
+
+      &:hover {
+        color: $white;
+      }
+    }
+  }
+
+  p {
+    blockquote {
+      width: 100%;
     }
   }
 }
+
 table {
   width: 100%;
   margin: 30px 0;
@@ -161,4 +206,28 @@ table {
 .e-2 {
   fill: transparent;
   transition: fill 0.5s linear;
+}
+
+.papyrus > pre > code {
+  padding: 1em;
+}
+
+.rule-description {
+  p {
+    width: 100% !important;
+  }
+
+  blockquote {
+    width: 100% !important;
+  }
+}
+
+.rule-sidebar {
+  p {
+    width: 100% !important;
+  }
+
+  blockquote {
+    width: 100% !important;
+  }
 }

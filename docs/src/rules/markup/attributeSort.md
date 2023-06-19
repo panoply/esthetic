@@ -11,9 +11,13 @@ options:
   - 'string[]'
 ---
 
+::: grid col-9 p-100
+
 # Attribute Sort
 
-Provides sorting of HTML and XML Attributes. When **enabled** (`true`) it will sort attributes in an alpha-numeric order. Sorting is ignored on tags which contain Liquid output and tag type tokens as attributes. The rule also accepts a list of attribute names and wehn provided will be sorted according to order passed.
+Provides sorting of HTML and XML Attributes. When **enabled** (`true`) it will sort attributes in an alpha-numeric order. Sorting is ignored on tags which contain Liquid output and tag type tokens as attributes. The rule also accepts a list of attribute names and when provided will be sorted according to order passed.
+
+:::
 
 ---
 
@@ -98,7 +102,12 @@ Using the above example options, let's consider the following attributes contain
 {
   "language": "html",
   "markup": {
-    "attributeSort": ["id", "class", "data-b", "data-z"],
+    "attributeSort": [
+      "id",
+      "class",
+      "data-b",
+      "data-z"
+    ],
     "forceAttribute": true
   }
 }

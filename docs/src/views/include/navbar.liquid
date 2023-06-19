@@ -7,18 +7,12 @@
       class="col-auto italic fc-white fs-lg pl-4 pr-0"
       style="font-weight: 800;">
       ÆSTHETIC
-
     </a>
-    <small class="col-auto pl-0">
-      <strong class="col-auto fs-sm mr-5">
-        <span class="fs-xs fw-light">
-          v&nbsp;
-        </span>
-        0.1.0
-      </strong>
-    </small>
+    <small class="col-auto fs-xs pl-4 pr-5">
+      V
+      {% version %}
 
-    {% #  %}
+    </small>
 
     {%
       liquid
@@ -36,14 +30,11 @@
       endif
     %}
 
-
     {% for link in navbar %}
-
-
       <a
         href="{{ link.url }}"
         title="{{ link.title }}"
-        class="col-auto fw-bolder {% unless forloop.index == active %}off{% endunless %}">
+        class="col-auto fw-bolder nav-link {% unless forloop.index == active %}off{% endunless %}">
         {{ link.title }}
       </a>
     {% endfor %}
@@ -51,7 +42,7 @@
     <a
       href="https://github.com/panoply/esthetic"
       class="col-auto ml-auto pr-0">
-      {% svg 'github', 'icon icon-github' %}
+      {% svg 'github-2', 'icon icon-github' %}
     </a>
   </div>
 </header>

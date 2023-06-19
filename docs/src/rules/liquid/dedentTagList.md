@@ -10,40 +10,15 @@ examples:
   - schema
 ---
 
+::: grid col-8 p-100
+
 # Dedent Tag List
 
-Omit applied indentation within Liquid tag blocks. By default, Æsthetic will indent content encapsulated within Liquid tags blocks. Tag blocks are Liquid tokens which require ender type be passed.
+Omit applied indentation within Liquid tag blocks. By default, Æsthetic will indent content encapsulated within Liquid tags blocks. Tag blocks are Liquid tokens which require ender type be passed. This is a Liquid specific formatting rule which defaults to using `[]` when no option has been specified. You should avoid applying de-dentation to common used Liquid tags. The **recommended** entry to provide the rule is the `case` tag name.
 
-::: note
-The rules behavior will differ depending on the tag structure. Passing in singleton type tag names such as `"assign"` or `"render"` will have no effect on output.
+> The rules behavior will differ depending on the tag structure. Passing in singleton type tag names such as `"assign"` or `"render"` will have no effect on output.
+
 :::
-
-<!--
-
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-💡 - 'Showing an example of the rule'
--->
-
-# Rule Options
-
-This is a Liquid specific formatting rule which defaults to using `[]` when no option has been specified. You should avoid applying de-dentation to common used Liquid tags. The **recommended** entry to provide the rule is the `case` tag name.
-
-##### Example
-
-In the below sample rule options we have set de-dentation rules on the `{% case %}` and `{% schema %}` tag blocks. The encapsulate contents of these tokens will exclude indentation.
-
-```js
-{
-  "language": "liquid",
-  "liquid": {
-    "dedentTagList": ["case", "schema"] // {% case %} and {% schema %}
-  }
-}
-```
 
 ---
 
@@ -67,7 +42,7 @@ The below sample will result in the `{% when %}` tokens of the expression to ded
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% case 'dedent-example' -%}
   {% when foo %}
     {{ object.prop }}
@@ -100,7 +75,7 @@ The below sample will result in the `{% when %}` tokens of the expression to ded
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% schema %}
   {
     "name": "Section",
@@ -110,7 +85,7 @@ The below sample will result in the `{% when %}` tokens of the expression to ded
       {
         "type": "header",
         "content": "Example",
-        "info": "The braces {} will align to the starting point of the tag."
+        "info": "The braces {} will dedent"
       }
     ]
   }

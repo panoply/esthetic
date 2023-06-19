@@ -1,7 +1,7 @@
 ---
-title: 'Liquid - Indent Attributes'
+title: 'Liquid - Indent Attribute'
 layout: base
-permalink: '/rules/liquid/indentAttributes/index.html'
+permalink: '/rules/liquid/indentAttribute/index.html'
 describe:
   - Indent Attributes
   - Mirrored Rule
@@ -11,37 +11,23 @@ options:
   - true
 ---
 
-# Indent Attributes
+::: grid col-9 p-100
+
+# Indent Attribute
 
 Whether indentation should be applied to HTML (markup) attributes that are encapsulated by Liquid identified tag blocks contained within HTML Tags. This rule emulates the Liquid Prettier Plugin style of attribute formatting and will use depth indentation (each nested Liquid expression will increase indent level by factor of **1**).
 
-::: note
+> Liquid tags blocks contained within attribute values (e.g: `attr="{% if x %} xxx {% endif %}"`) will be excluded and remain untouched during the beautification cycle.
 
-Liquid tags blocks contained within attribute values (e.g: `attr="{% if x %} xxx {% endif %}"`) will be excluded and remain untouched during the beautification cycle.
-
-:::
+This is a Liquid specific formatting rule which will **default** to `false` when no option has been specified. The **recommended** option to use is `false`.
 
 # Mirrored Rule
 
 The `indentAttributes` rule will mirror disablement of the [`forceAttribute`](/rules/markup/forceAttribute) (markup) rule. When `forceAttribute` is set to `false` then this rule will be disabled. The `forceAttribute` markup rule **must** be set to `true` or (alternatively) use a force limit value (e.g: `2`). If the attribute forcing is disabled (i.e: `false`) then indentation will not be applied to Liquid contained structures and this rule will have no effect.
 
-##### Example
+:::
 
-```js
-{
-  language: 'liquid',
-  liquid: {
-    indentAttributes: true
-  },
-  markup: {
-    forceAttribute: 2 // Required (can also be set to: true)
-  }
-}
-```
-
-# Rule Options
-
-This is a Liquid specific formatting rule which will **default** to `false` when no option has been specified. The **recommended** option to use is `false`.
+---
 
 ::: rule 👍
 
@@ -55,7 +41,7 @@ When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attribu
 {
   "language": "liquid",
   "liquid": {
-    "indentAttributes": false
+    "indentAttribute": false
   },
   "markup": {
     "forceAttribute": true
@@ -64,7 +50,7 @@ When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attribu
 ```
 
 <!--prettier-ignore-->
-```html
+```liquid
 <div
   class="foo"
   {% if condition %}
@@ -101,7 +87,7 @@ When the `indentAttributes` rule is **enabled** (i.e: `true`) all HTML attribute
 {
   "language": "liquid",
   "liquid": {
-    "indentAttributes": true
+    "indentAttribute": true
   },
   "markup": {
     "forceAttribute": true
@@ -110,7 +96,7 @@ When the `indentAttributes` rule is **enabled** (i.e: `true`) all HTML attribute
 ```
 
 <!--prettier-ignore-->
-```html
+```liquid
 <div
   class="foo"
   {% if condition %}

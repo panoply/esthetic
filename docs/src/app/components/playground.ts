@@ -1,11 +1,10 @@
 import type Moloko from 'moloko';
 import { Controller } from '@hotwired/stimulus';
-import spx from 'spx'
 
 export class Playground extends Controller {
 
-  static loaded: boolean = false
-  static moloko: typeof Moloko
+  static loaded: boolean = false;
+  static moloko: typeof Moloko;
 
   /**
    * Stimulus: Targets
@@ -13,7 +12,8 @@ export class Playground extends Controller {
   static targets = [
     'mount',
     'splash'
-  ]
+  ];
+
   /**
    * Stimulus: Values
    */
@@ -22,34 +22,29 @@ export class Playground extends Controller {
     loaded: Boolean
   };
 
-  moloko: typeof Moloko
-  esthetic: typeof import('esthetic').default
-  svg: Element
-  timer: NodeJS.Timer
+  moloko: typeof Moloko;
+  svg: Element;
+  timer: NodeJS.Timer;
 
+  async connect () {
 
- async connect() {
+    if (Playground.loaded) return this.mount();
 
-    if (Playground.loaded) return this.mount()
+    this.splashTarget.classList.remove('d-none');
 
-    this.splashTarget.classList.remove('d-none')
-
-    this.loading()
-    this.module()
+    this.loading();
+    this.module();
 
   }
 
   async module () {
 
-    const moloko = await import(this.moduleValue)
+    const moloko = await import(this.moduleValue);
 
-
-    Playground.moloko = moloko.default
-    Playground.loaded = true
-
+    Playground.moloko = moloko.default;
+    Playground.loaded = true;
 
   }
-
 
   mount () {
 
@@ -57,6 +52,7 @@ export class Playground extends Controller {
       offset: 52,
       resolve: {
         path: 'assets/moloko',
+        esthetic: false
       }
     });
 
@@ -64,35 +60,32 @@ export class Playground extends Controller {
 
   loading () {
 
-    if(!Playground.loaded) {
+    if (!Playground.loaded) {
 
-     this.timer = setInterval(() => {
+      this.timer = setInterval(() => {
 
-      this.loading()
+        this.loading();
 
-      }, 1200)
+      }, 1200);
 
     } else {
 
+      this.splashTarget.classList.add('d-none');
 
-      this.splashTarget.classList.add('d-none')
-
-
-      clearInterval(this.timer)
-      this.mount()
+      clearInterval(this.timer);
+      this.mount();
 
     }
 
   }
 
-
-
-   /**
+  /**
    * Import URL to the moloko module
    */
-   mountTarget: HTMLElement
-   splashTarget: HTMLElement
-   moduleValue: string
-   estheticValue: string
-   loadedValue: boolean
+  mountTarget: HTMLElement;
+  splashTarget: HTMLElement;
+  moduleValue: string;
+  estheticValue: string;
+  loadedValue: boolean;
+
 }

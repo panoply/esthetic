@@ -1,16 +1,16 @@
 # Æsthetic Documentation
 
-Æsthetic documentation website built using [11ty](https://www.11ty.dev/docs/) and served via [Netlify](https://netlify.com/).
+The Æsthetic documentation website is built using [11ty](https://www.11ty.dev/docs/) and served via [Netlify](https://netlify.com/).
 
 Visit the docs: [æsthetic.dev](https://æsthetic.dev)
 
 # Development
 
-All dependencies are included within the `package.json` file. ESLint, Prettier and Stylelint is assumed to be installed globally but available as optional dependencies. Documentation is written in markdown and views are composed in Liquid. Frontmatter and JSON data files are used to the order of navigation and various other reference specific information.
+All dependencies are included within the `package.json` file. ESLint, Prettier and Stylelint is assumed to be installed globally but available as optional dependencies. Documentation is written in markdown and views are composed in Liquid. Frontmatter and JSON data files are used for the order of navigation and various other reference specific information.
 
 ### Commands
 
-After installing, run `pnpm dev` to start development in mode. Documentation will build and be deployed via Github actions.
+After installing, run `pnpm dev` to start in development mode. Documentation will build and be deployed via Github actions.
 
 ```cli
 pnpm dev                 Starts development in watch mode
@@ -63,6 +63,8 @@ Rule documentation files, specifically rule example titles are wrapped within a 
 | 👎    | Not Recommended                         |
 | 😳    | We live in a society, we're not animals |
 | 🤡    | The choice of a clown                   |
+| 💡    | Showing an example of the rule          |
+| 🧐    | You gotta do, what you gotta do         |
 
 > The [src/rules/strap.md](#) markdown file can be used as a strap.
 
@@ -84,11 +86,19 @@ for example:
 }
 ```
 
-```html
+```liquid
 
 <!-- Code Sample -!>
 
 ```
 
 ```
+
+
+
+
+
+
+
+
 

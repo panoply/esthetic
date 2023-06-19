@@ -1,288 +1,245 @@
 const eleventy = require('@panoply/11ty');
-const highlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const svgsprite = require('eleventy-plugin-svg-sprite');
 const navigation = require('@11ty/eleventy-navigation');
 const htmlmin = require('@sardine/eleventy-plugin-tinyhtml');
 const markdownit = require('markdown-it');
 const mdcontainer = require('markdown-it-container')
 const anchor = require('markdown-it-anchor');
-const Prism = require('prismjs');
-const languages = require("prismjs/components/");
-const esthetic = require('esthetic')
-
-// Prism.languages.style = Prism.languages.extend('css', css(base));
-// Prism.languages.script = Prism.languages.extend('javascript', js(base));
+const papyrus = require('papyrus');
+const merge = require('mergerino');
+const yaml = require('js-yaml');
+const esthetic = require('esthetic');
 
 /* -------------------------------------------- */
-/* INSERT BEFORE                                */
+/* CONSTANTS                                    */
 /* -------------------------------------------- */
-Prism.languages.insertBefore('js', 'keyword', {
-  variable: {
-    pattern: /\b(?:const|var|let)\b/
-  },
-  module: {
-    pattern: /\b(?:import|as|export|from|default)\b/
-  },
-  op: {
-    pattern: /\b(?:typeof|new|of|delete|void|readonly)\b/
-  },
-  'punctuation-chars': {
-    pattern: /[.,]/,
-    global: true
-  },
-  semi: {
-    pattern: /[;]/,
-    global: true
-  },
-  nil: {
-    pattern: /\b(?:null|undefined)\b/
-  },
-  'browser-objects': {
-    pattern: /\b(?:window|document|console)\b/
-  },
-  types: {
-    pattern: /\b(?:any|string|object|boolean|number|Promise)\b/,
-    global: true
-  },
-  'type-array': {
-    pattern: /\[\]/,
-    global: true
-  },
-  'type-object': {
-    pattern: /\{\}/,
-    global: true
-  },
-  'return-type': {
-    pattern: /(\)):(?=\s)/,
-    global: true,
-    lookbehind: true
-  },
-  'parameter-optional': {
-    pattern: /[a-z_$][\w$]+(?=\?:\s*)/i,
-    lookbehind: true
-  },
-  'parameter-type': {
-    pattern: /(\?:\s*)[a-z_$][\w$]+/i,
-    lookbehind: true
-  },
-  flow: {
-    pattern: /\b(?:return|await)\b/
-  },
-  method: {
-    pattern: /(\.\s*)[a-z_$][\w$]*(?=(\())/i,
-    lookbehind: true
-  }
-});
 
+/** Examples input (code) tab */
+const INPUT = 'Input';
 
-const grammar = {
-  pattern: /{[{%]-?[\s\S]+-?[%}]}/,
-  inside: {
-    'liquid-comment': {
-      lookbehind: true,
-      global: true,
-      pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
-    },
-    'liquid-tag': {
-      lookbehind: true,
-      pattern: /({%-?\s*)\b([a-z]+)\b(?=[\s-%])/i
-    },
-    'liquid-tagged': {
-      pattern: /\s+\b((?:end)[a-z]+|echo|if|unless|for|case|when)\s+/
-    },
-    'liquid-object': {
-      lookbehind: true,
-      pattern: /({[{%]-?\s*)\b[a-z_$][\w$]+(?=\.\s*)/i
-    },
-    'liquid-property': {
-      lookbehind: true,
-      pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
-    },
-    'liquid-filter': {
-      lookbehind: true,
-      pattern: /(\|)\s*(\w+)(?=[:]?)/
-    },
-    'liquid-string': {
-      lookbehind: true,
-      pattern: /['"].*?['"]/
-    },
-    'liquid-punctuation': {
-      global: true,
-      pattern: /[.,|:?]/
-    },
-    'liquid-operator': {
-      pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:and|contains(?=\s)|or)\b/
-    },
-    'liquid-boolean': {
-      pattern: /\b(?:true|false|nil)\b/
-    },
-    'liquid-number': {
-      pattern: /\b(?:\d+)\b/
-    },
-    'liquid-parameter': {
-      lookbehind: true,
-      global: true,
-      greedy: true,
-      pattern: /(,)\s*(\w+)(?=:)/i
-    },
-    'liquid-style': {
-      inside: Prism.languages.style,
-      lookbehind: true,
-      pattern: /(\{%-?\s*style(?:sheet)?\s*-?%\})([\s\S]+?)(?=\{%-?\s*endstyle(?:sheet)?\s*-?%\})/
-    },
-    'liquid-javascript': {
-      inside: Prism.languages.script,
-      lookbehind: true,
-      pattern: /(\{%-?\s*javascript\s*-?%\})([\s\S]*?)(?=\{%-?\s*endjavascript\s*-?%\})/
-    },
-    'liquid-schema': {
-      inside: Prism.languages.json,
-      lookbehind: true,
-      pattern: /(\{%-?\s*schema\s*-?%\})([\s\S]+?)(?=\{%-?\s*endschema\s*-?%\})/
-    }
-  }
-}
+/** Examples input code rules tag */
+const RULES = 'Rules';
 
-Prism.languages.html = Prism.languages.extend('markup', {
-  'tag': {
-    pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
-    greedy: true,
-    inside: {
-      'tag': {
-        pattern: /^<\/?[^\s>\/]+/,
-        inside: {
-          'punctuation': /^<\/?/,
-          'namespace': /^[^\s>\/:]+:/
-        }
-      },
-      'special-attr': [],
-      'attr-value': {
-        pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/,
-        inside: {
-          'punctuation': [
-            {
-              pattern: /^=/,
-              alias: 'attr-equals'
-            },
-            {
-              pattern: /^(\s*)["']|["']$/,
-              lookbehind: true
-            }
-          ]
-        }
-      },
-      grammar: grammar,
-      'punctuation': /\/?>/,
-      'attr-name': {
-        pattern: /[^\s>\/]+/,
-        inside: {
-          'namespace': /^[^\s>\/:]+:/,
-          punctuation: /{[{%]-?|-?[%}]}/,
-          'attr-object': {
-            lookbehind: true,
-            pattern: /([a-z]*?)\s*[[\]0-9_\w$]+(?=\.)/i
-          },
-          'attr-property': {
-            lookbehind: true,
-            pattern: /(\.)\s*?[[\]\w0-9_$]+(?=[.\s?])/i
-          },
-          'punctuation-chars': {
-            global: true,
-            pattern: /[.,|:?]/
-          },
-          'attr-eq': /=/
-        }
-      }
-    }
-  },
-  'delimiters': {
-    pattern: /{[{%]-?[\s\S]+-?[%}]}/,
-    inside: {
-      'liquid-comment': {
-        lookbehind: true,
-        global: true,
-        pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
-      },
-      'liquid-tag': {
-        lookbehind: true,
-        pattern: /({%-?\s*)\b([a-z]+)\b(?=[\s-%])/i
-      },
-      'liquid-tagged': {
-        pattern: /\s+\b((?:end)[a-z]+|echo|if|unless|for|case|when)\s+/
-      },
-      'liquid-object': {
-        lookbehind: true,
-        pattern: /({[{%]-?\s*)\b[a-z_$][\w$]+(?=\.\s*)/i
-      },
-      'liquid-property': {
-        lookbehind: true,
-        pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
-      },
-      'liquid-filter': {
-        lookbehind: true,
-        pattern: /(\|)\s*(\w+)(?=[:]?)/
-      },
-      'liquid-string': {
-        lookbehind: true,
-        pattern: /['"].*?['"]/
-      },
-      'liquid-punctuation': {
-        global: true,
-        pattern: /[.,|:?]/
-      },
-      'liquid-operator': {
-        pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:and|contains(?=\s)|or)\b/
-      },
-      'liquid-boolean': {
-        pattern: /\b(?:true|false|nil)\b/
-      },
-      'liquid-number': {
-        pattern: /\b(?:\d+)\b/
-      },
-      'liquid-parameter': {
-        lookbehind: true,
-        global: true,
-        greedy: true,
-        pattern: /(,)\s*(\w+)(?=:)/i
-      },
-      'liquid-style': {
-        inside: Prism.languages.style,
-        lookbehind: true,
-        pattern: /(\{%-?\s*style(?:sheet)?\s*-?%\})([\s\S]+?)(?=\{%-?\s*endstyle(?:sheet)?\s*-?%\})/
-      },
-      'liquid-javascript': {
-        inside: Prism.languages.script,
-        lookbehind: true,
-        pattern: /(\{%-?\s*javascript\s*-?%\})([\s\S]*?)(?=\{%-?\s*endjavascript\s*-?%\})/
-      },
-      'liquid-schema': {
-        inside: Prism.languages.json,
-        lookbehind: true,
-        pattern: /(\{%-?\s*schema\s*-?%\})([\s\S]+?)(?=\{%-?\s*endschema\s*-?%\})/
-      }
-    }
-  }
-});
+/** Examples code output panel title */
+const OUTPUT = 'Formatted Output';
 
-Prism.languages.bash = {
-  keyword: {
-    pattern: /(esthetic\s)/
-  },
-  argument: {
-    pattern: /\<(.*?)\>/
-  },
-  punctuation: {
-    pattern: /[<>]|--?(?=[a-z])/
-  },
-  comment: {
-    pattern: /#.*?(?=\n)/
-  }
+/** Examples code output tab in mobile title */
+const MOBILE_OUTPUT = 'Output';
+
+/** Tooltips aria labels for tooltip blocks */
+const TOOLTIPS = {
+  '🤡': 'The choice of a clown.',
+  '🙌': 'Authors choice',
+  '👍': 'Good choice.',
+  '👎': 'Not recommended',
+  '😳': 'We live in a society, we\'re not animals',
+  '💡': 'Showing an example of the rule',
+  '🧐': 'You gotta do, what you gotta do'
+};
+
+const SVG_GEARS = `
+<svg xmlns="http://www.w3.org/2000/svg" class="gears" preserveAspectRatio="none" viewBox="0 0 100 100"><g class="gear-1"><animateTransform fill="freeze" data-demo-target="gear" attributeName="none" dur="4.68s" from="360 78.5 37" repeatCount="indefinite" to="0 78.5 37" type="rotate"/><path d="M93.942 35.007 100 32c-.379-1.686-.954-3.326-1.715-4.878l-6.61 1.435c-.921-1.467-2.095-2.794-3.493-3.901l2.16-6.407c-.722-.457-1.474-.886-2.261-1.265-.791-.379-1.592-.699-2.401-.977l-3.66 5.685c-1.738-.398-3.506-.489-5.228-.29l-3.006-6.058c-1.687.375-3.326.95-4.878 1.708l1.434 6.607c-1.47.918-2.803 2.091-3.917 3.492-2.255-.761-4.474-1.506-6.407-2.159-.461.725-.893 1.479-1.271 2.277-.379.78-.695 1.574-.974 2.378 1.716 1.102 3.689 2.373 5.688 3.656-.408 1.748-.496 3.522-.297 5.254-2.131 1.056-4.231 2.098-6.062 3.007.376 1.683.948 3.319 1.706 4.871 1.996-.435 4.283-.931 6.606-1.435.925 1.48 2.104 2.816 3.516 3.935l-2.163 6.403c.723.458 1.471.883 2.265 1.262.784.379 1.584.699 2.389.98 1.104-1.716 2.368-3.689 3.659-5.692 1.751.409 3.532.494 5.267.294l3 6.055c1.686-.379 3.322-.95 4.875-1.712-.435-1.993-.932-4.283-1.435-6.61 1.47-.921 2.803-2.101 3.917-3.509l6.408 2.156c.454-.715.875-1.46 1.251-2.244.379-.794.706-1.602.983-2.411l-5.688-3.663c.399-1.741.488-3.515.284-5.237zm-8.89 4.91c-1.729 3.588-6.034 5.098-9.619 3.372-3.588-1.725-5.097-6.031-3.372-9.619 1.723-3.588 6.032-5.097 9.619-3.372 3.585 1.723 5.093 6.032 3.372 9.619z"/></g><g class="gear-2"><animateTransform data-demo-target="gear" fill="freeze" attributeName="none" dur="7s" from="0 31 53" repeatCount="indefinite" to="360 31 53" type="rotate"/><path d="m56.452 54.774 6.297-1.147c.017-1.813-.124-3.616-.415-5.388l-6.397-.192c-.444-2.078-1.15-4.098-2.102-6.003l4.879-4.143c-.879-1.571-1.896-3.064-3.042-4.47l-5.637 3.035c-1.401-1.559-3.016-2.957-4.829-4.149l2.15-6.025c-.769-.457-1.562-.889-2.386-1.284-.82-.395-1.646-.741-2.479-1.059l-3.365 5.447c-2.062-.673-4.163-1.065-6.258-1.189l-1.149-6.296c-1.813-.02-3.614.12-5.385.411l-.193 6.397c-2.081.444-4.101 1.15-6.008 2.104l-4.146-4.878c-1.565.882-3.059 1.898-4.46 3.042l3.032 5.633c-1.559 1.401-2.961 3.022-4.153 4.836-2.186-.78-4.248-1.516-6.026-2.152-.454.774-.885 1.562-1.28 2.382s-.742 1.649-1.062 2.486c1.607.993 3.466 2.144 5.443 3.365-.67 2.062-1.062 4.166-1.187 6.261L.001 52.947c-.02 1.811.121 3.61.412 5.385l6.397.189c.447 2.085 1.156 4.107 2.107 6.009L4.04 68.674c.883 1.568 1.896 3.062 3.046 4.466l5.63-3.035c1.408 1.559 3.025 2.957 4.835 4.149l-2.146 6.025c.765.451 1.556.882 2.376 1.274.823.398 1.653.748 2.492 1.062l3.366-5.44c2.058.67 4.159 1.062 6.25 1.184l1.15 6.296c1.813.02 3.613-.124 5.388-.412l.196-6.4c2.078-.444 4.094-1.15 5.999-2.104l4.143 4.875c1.568-.875 3.062-1.892 4.467-3.035l-3.032-5.64c1.556-1.401 2.95-3.016 4.143-4.829l6.025 2.153c.454-.771.889-1.565 1.284-2.385.392-.817.738-1.65 1.059-2.487l-5.443-3.365c.669-2.06 1.06-4.158 1.184-6.252zm-13.638 4.009c-3.039 6.319-10.622 8.979-16.941 5.937-6.319-3.035-8.979-10.619-5.937-16.938 3.038-6.319 10.622-8.979 16.938-5.94 6.319 3.039 8.98 10.622 5.94 16.941z"/></g></svg>
+`
+
+/* -------------------------------------------- */
+/* CONFIGS                                      */
+/* -------------------------------------------- */
+
+/**
+ * Passed to papyrus highlighting render function
+ *
+ * @param {papyrus.CreateOptions} options
+ * @returns {papyrus.CreateOptions}
+ */
+function papyrusOptions (options) {
+
+  return merge({
+    trimStart: true,
+    trimEnd: true,
+    lineNumbers: true,
+    lineIndent: true,
+    showTab:false,
+    spellcheck: false,
+    showSpace: false,
+    tabIndent: false,
+    indentSize: 2,
+    editor: true,
+    lineHighlight: true,
+    indentChar: ' '
+  }, options);
+
 }
 
 
-let store;
+const estheticRules = (ruleOptions) => merge({
+  crlf: false,
+  correct: false,
+  preset: 'default',
+  language: 'auto',
+  endNewline: false,
+  indentChar: ' ',
+  indentLevel: 0,
+  indentSize: 2,
+  preserveLine: 2,
+  wrap: 0,
+  wrapFraction: 0,
+  liquid: {
+    commentNewline: false,
+    commentIndent: true,
+    delimiterTrims: 'preserve',
+    delimiterPlacement: 'preserve',
+    forceFilter: 0,
+    forceArgument: 0,
+    ignoreTagList: [],
+    indentAttribute: false,
+    lineBreakSeparator: 'before',
+    normalizeSpacing: true,
+    preserveComment: false,
+    preserveInternal: false,
+    dedentTagList: [],
+    quoteConvert: 'none'
+  },
+  markup: {
+    attributeCasing: 'preserve',
+    attributeSort: false,
+    commentNewline: false,
+    commentIndent: true,
+    delimiterTerminus: 'inline',
+    forceAttribute: 3,
+    forceAttributeValue: true,
+    forceIndent: false,
+    ignoreCSS: false,
+    ignoreJS: true,
+    ignoreJSON: false,
+    lineBreakValue: 'preserve',
+    preserveComment: false,
+    preserveText: false,
+    preserveAttribute: false,
+    selfCloseSpace: true,
+    selfCloseSVG: true,
+    stripAttributeLines: false,
+    quoteConvert: 'none'
+  },
+  json: {
+    arrayFormat: 'default',
+    braceAllman: false,
+    bracePadding: false,
+    objectIndent: 'default',
+    objectSort: false,
+
+    braceStyle: 'none',
+    caseSpace: false,
+    commentIndent: false,
+    commentNewline: false,
+    correct: false,
+    elseNewline: false,
+    functionNameSpace: false,
+    functionSpace: false,
+    methodChain: 4,
+    neverFlatten: false,
+    noCaseIndent: false,
+    preserveComment: false,
+    styleGuide: 'none',
+    ternaryLine: false,
+    variableList: 'none',
+
+    quoteConvert: 'double',
+    endComma: 'never',
+    noSemicolon: true,
+    vertical: false
+  },
+  style: {
+    commentIndent: false,
+    commentNewline: false,
+    atRuleSpace: true,
+    classPadding: false,
+    noLeadZero: false,
+    preserveComment: false,
+    sortSelectors: false,
+    sortProperties: false,
+    quoteConvert: 'none'
+  },
+  script: {
+    arrayFormat: 'default',
+    braceNewline: false,
+    bracePadding: false,
+    braceStyle: 'none',
+    braceAllman: false,
+    caseSpace: false,
+    commentIndent: false,
+    commentNewline: false,
+    elseNewline: false,
+    endComma: 'never',
+    functionNameSpace: false,
+    functionSpace: false,
+    inlineReturn: true,
+    methodChain: 4,
+    neverFlatten: false,
+    noCaseIndent: false,
+    noSemicolon: false,
+    objectSort: false,
+    objectIndent: 'default',
+    preserveComment: false,
+    quoteConvert: 'none',
+    styleGuide: 'none',
+    ternaryLine: false,
+    variableList: 'none',
+    vertical: false
+  }
+}, ruleOptions);
+
+/* -------------------------------------------- */
+/* STATES                                       */
+/* -------------------------------------------- */
+
+/**
+ * Code Block Input
+ *
+ * Holds an escaped string reference to the contents of code blocks. This is assigned
+ * in the `highlighter` function and is the raw code input.
+ *
+ * @type {string}
+ */
 let input;
+
+/**
+ * Æsthetic Format Rules
+ *
+ * Holds a reference to the formatting rules custom code block applied in markdown
+ * files which uses this annotation:
+ *
+ * ```md
+ * json:rules
+ * ```
+ *
+ * @type {esthetic.Rules}
+ */
+let rules;
+
+
 let opts;
+
+
+/* -------------------------------------------- */
+/* UTILITIES                                    */
+/* -------------------------------------------- */
+
+/**
+ * Extracts the raw string from a `<code></code>` element.
+ *
+ * @param {string} raw
+ * @returns {string}
+ */
+function getCodeBlockInput (raw) {
+
+  return raw.slice(raw.indexOf('>', raw.indexOf('<code') + 1) + 1, raw.indexOf('</code'))
+
+}
+
+/* -------------------------------------------- */
+/* MARKDOWN-IT PLUGINS                          */
+/* -------------------------------------------- */
+
 
 /**
  * Highlights code blocks contained within markdown files. Some contained
@@ -293,20 +250,58 @@ let opts;
  * @param {markdownit} md markdown-it
  * @param {string} str code input
  * @param {string} language code language
+ * @param {string} isRules whether or not page is rules
  */
-function highlighter (md, raw, language) {
+function highlighter(md, raw, language, isRules) {
 
   let code = '';
 
-
   if (language) {
 
-    if(language === 'json:rules') return raw;
+    if (language === 'json:rules') return raw;
 
     try {
 
+      if (isRules === false) {
 
-      code = Prism.highlight(raw, Prism.languages[language], language);
+        code = papyrus.create(raw, {
+          language,
+          editor: false,
+          showSpace: false,
+          addClass: {
+            pre: ['mx-2']
+          }
+        })
+
+        return code
+
+      }
+
+      if(language === 'bash') {
+
+        code = papyrus.create(raw, {
+          language,
+          editor: false,
+          showSpace: false,
+          addClass: {
+            pre: ['rd-2', 'my-3', 'mx-2']
+          }
+        })
+
+      } else {
+
+        code = papyrus.create(raw, {
+          language,
+          editor: true,
+          lineHighlight: true,
+          lineNumbers: true,
+          addAttrs: {
+            pre: ['data-demo-target="input"']
+          }
+        })
+
+      }
+
       input = md.utils.escapeHtml(raw);
 
     } catch (err) {
@@ -324,145 +319,224 @@ function highlighter (md, raw, language) {
   }
 
 
-  return `<pre class="papyrus line-numbers"><code class="language-${language}">${code}</code></pre>`;
+  return code;
 
 };
 
-/**
- * Generates editor lines for rule sample code blocks
- *
- * @param {string} raw The code input source
- */
-function getEditorLines (raw) {
 
-  const count = raw.trim().split("\n").length -1
-  const lines = [ ...Array(count > 0 ? count : 1) ]
-  const numbers = lines.map((_, i) => (`<span class="line-number">${i + 1}</span><br>`)).join('');
+
+/* -------------------------------------------- */
+/* FUNCTIONS                                    */
+/* -------------------------------------------- */
+
+/**
+ * Builds side-by-side comparisons for rules based on the Markdown files structure
+ *
+ * @param {markdownit} md markdown-it
+ * @param {string} raw code input
+ * @param {string} language code language
+ * @param {esthetic.Rules} rules esthetic rules
+ */
+function sideBySide(md, demoInput, language) {
+
+  const papyrusDefaults = {
+    language,
+    editor: false,
+    lineHighlight: false,
+    lineNumbers: true,
+    showSpace: true,
+    addAttrs: {
+      pre: [
+        'data-demo-target="output"'
+      ]
+    }
+  }
+
+  const papyrusOutputOptions = 'papyrus' in rules
+    ? merge(papyrusDefaults, rules.papyrus)
+    : papyrusDefaults;
+
+  let exampleInput = ''
+  let demoOutput = '';
+
+  try {
+
+    const eRules = 'esthetic' in rules
+      ? estheticRules(rules.esthetic)
+      : estheticRules(rules)
+
+    const format = esthetic.format(md.utils.unescapeAll(input), eRules)
+
+    demoOutput = [
+      /* html */`
+      <div class="col-12 col-lg-6">
+        <div class="demo-output">
+          ${papyrus.create(format, papyrusOutputOptions)}
+        </div>
+      </div>
+      `
+    ].join('')
+
+  } catch (e) {
+
+    demoOutput = [
+      /* html */`
+      <div class="col-12 col-lg-6">
+        <div class="demo-output">
+          ${papyrus.create(input, papyrusOutputOptions)}
+        </div>
+      </div>
+      `
+    ].join('')
+
+  }
+
+  if('example' in rules) {
+    if (rules.example.rule === 'wrap' || rules.example.rule === 'wrapFraction') {
+      exampleInput = getFormRuleControl()
+      const format = esthetic.format(md.utils.unescapeAll(input), estheticRules(rules.esthetic))
+      demoOutput = ''
+      demoInput = [
+        /* html */`
+        <div class="col-12 rel">
+        <div style="width: ${rules.example.value}%" class="wrap-line" data-demo-target="wrap"></div>
+          <div class="demo-input">
+            ${papyrus.create(format, {
+              language,
+              editor: false,
+              lineHighlight: false,
+              lineNumbers: true,
+              showSpace: true,
+              addAttrs: {
+                pre: ['data-demo-target="input"']
+              }
+            })}
+          </div>
+        </div>
+        `
+      ].join('')
+    }
+  } else {
+    demoInput = [
+      /* html */`
+      <div class="col-12 col-lg-6">
+        <div class="demo-input">
+          ${demoInput}
+        </div>
+      </div>
+      `
+    ].join('')
+  }
 
   return [
     /* html */`
-    <div
-      data-example-target="lines"
-      class="line-numbers-wrapper"
-      aria-hidden="true">
-      ${numbers}
+    <div class="row gx-0">
+      <div class="col-6">
+        <div class="demo-tabs">
+          <button
+            type="button"
+            class="tab is-active"
+            data-demo-target="editor"
+            data-action="demo#onInput"
+            aria-label="Before Formatting"
+            data-tooltip="top">
+            ${INPUT}
+          </button>
+          <button
+            type="button"
+            class="tab"
+            data-demo-target="rules"
+            data-action="demo#onRules"
+            aria-label="Rule Definitions"
+            data-tooltip="top">
+            ${RULES}
+          </button>
+          <button
+            type="button"
+            class="tab is-undo ml-auto"
+            data-action="demo#onReset"
+            aria-label="Reset Input"
+            data-tooltip="top">
+          </button>
+        </div>
+      </div>
+      <div class="col-6">
+        ${exampleInput}
+      </div>
+      ${demoInput}
+      ${demoOutput}
     </div>
-   `
-  ].join('')
+  `
+  ].join()
 
 }
 
-function beforeAfter (raw,language) {
+
+/**
+ *
+ * @param {range} type
+ * @param {string} name
+ * @returns
+ */
+function getFormRuleControl() {
 
 
-  const lines = getEditorLines(raw)
-  const output = raw
-  .replace(/<\/pre>\n/, `${lines}</pre>`)
-  .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode"')
-  .replace(/<code>/, `<code data-example-target="input" class="language-${language}">`)
+  if (rules.example.form === 'range') {
 
-  return [
-    /* html */`
-    <div class="row editor-tabs">
-      <div class="col-auto pl-0 pr-1">
-        <button
-          class="selected"
-          data-example-target="before"
-          data-action="example#onBefore"
-          aria-label="Before Formatting"
-          data-tooltip="top">
-          Before
-        </button>
-      </div>
-      <div class="col-auto pr-0">
-        <button
-          data-example-target="after"
-          data-action="example#onAfter"
-          aria-label="After Formatting"
-          data-tooltip="top">
-         After
-        </button>
-      </div>
-      <div class="col-auto pr-0">
-        <button
-          data-example-target="rules"
-          data-action="example#onRules"
-          aria-label="Rule Definitions"
-          data-tooltip="top">
-         Rules
-        </button>
-      </div>
-      <!-- EDIT BUTTON -->
-      <div class="editor-edit">
-        <button
-          type="button"
-          data-example-target="editor"
-          data-action="example#onEdit"
-          aria-label="Click to enable editing"
-          data-tooltip="right"></button>
-      </div>
-    </div>
+    return [
+      /* html */`
+        <div class="row jc-center ai-center px-4 pt-1">
+          <input
+            type="range"
+            class="col fm-range"
+            name="${rules.example.rule}"
+            minlength="10"
+            min="0"
+            max="100"
+            maxlength="100"
+            value="${rules.example.value}"
+            data-demo-target="range"
+            data-action="demo#onForm"
+            data-tooltip="top">
+          <div class="col-auto fs-sm ml-4 pl-1" data-demo-target="count">
+            ${rules.example.value}
+          </div>
+        </div>
+      `
+    ].join('')
+  }
 
-    ${output}`
-
-  ].join()
-
+  return ''
 }
 
 /**
  * Highlights code blocks contained within markdown files. Some contained
  * code blocks may use a language identifier separated by colon `:` character.
  * In such cases, this typically infers some higher order logic will be applied
- * in the next known code block. Typically this is found in the rules.
+ * in the next known code block.
  *
  * @param {markdownit} md markdown-it
  * @param {string} raw code input
  * @param {string} lines code input
  * @param {string} language code language
  */
-function exampleRule (md, raw, language) {
+function exampleRule(md, raw, language) {
 
   let code = ''
 
-  if(opts.$.rule === 'wrap' || opts.$.rule === 'wrapFraction') {
+  if (rules.example.rule === 'wrap' || rules.example.rule === 'wrapFraction') {
 
     try {
 
-      const format = esthetic.format(md.utils.unescapeAll(input), opts.rules)
-      const lines = getEditorLines(format)
-      const highlight = Prism.highlight(format, Prism.languages[language], language);
+      const format = esthetic.format(md.utils.unescapeAll(input), estheticRules(rules.esthetic))
+      code = papyrus.render(format, papyrusOptions({
+        language,
+        editor: false
+      }));
 
-      code = [
-        /* html */`<pre class="line-numbers-mode language-${language}">`
-        ,
-        /* html */`
-        <div class="editor-word-wrap">
-         <span
-          class="editor-wrap-line"
-          data-example-target="wrap"
-          data-action="mousedown->example#onResize"
-          style="width: ${opts.$.value}%"></span>
-        </div>
-        `
-        ,
-        /* html */`<code data-example-target="input" class="language-${language}">`
-        ,
-        /* html */`${highlight}`
-        ,
-        /* html */`</code>`
-        ,
-        /* html */`${lines}`
-        ,
-        /* html */`</pre>`
-      ].join('')
 
     } catch (err) {
 
-      const lines = getEditorLines(raw)
-      code = raw
-      .replace(/<\/pre>\n/, `${lines}</pre>`)
-      .replace(/"(language-\S*?)"/, '"$1 line-numbers-mode"')
-      .replace(/<code>/, `${wrap}<code data-example-target="input" class="language-${language}">`)
 
       console.error(
         'HIGHLIGHTER ERROR\n',
@@ -475,180 +549,147 @@ function exampleRule (md, raw, language) {
 
   return [
     /* html */`
-    <div class="row editor-tabs">
-      <div class="col-auto pl-0 pr-1">
-        <button
-          class="selected"
-          data-example-target="demo"
-          data-action="example#onDemo"
-          aria-label="Formatting Example"
-          data-tooltip="top">
-          Example
-        </button>
+    <div class="row gx-0">
+      <div class="col-6">
+        <div class="demo-tabs">
+          <button
+            type="button"
+            class="tab is-active"
+            data-demo-target="editor"
+            data-action="demo#onInput"
+            aria-label="Before Formatting"
+            data-tooltip="top">
+            ${INPUT}
+          </button>
+          <button
+            type="button"
+            class="tab"
+            data-demo-target="rules"
+            data-action="demo#onRules"
+            aria-label="Rule Definitions"
+            data-tooltip="top">
+            ${RULES}
+          </button>
+          <button
+            type="button"
+            class="tab is-undo ml-auto"
+            data-action="demo#onReset"
+            aria-label="Reset Input"
+            data-tooltip="top">
+          </button>
+        </div>
       </div>
-      <div class="col-auto pr-0">
-        <button
-          data-example-target="rules"
-          data-action="example#onRules"
-          aria-label="Rule Definitions"
-          data-tooltip="top">
-         Rules
-        </button>
+      <div class="col-6">
+        ${render}
       </div>
-
-      ${render}
-
-      <!-- EDIT BUTTON -->
-      <div class="editor-edit">
-        <button
-          type="button"
-          data-example-target="editor"
-          data-action="example#onEdit"
-          aria-label="Click to enable editing"
-          data-tooltip="right"></button>
+      <div class="col-12 col-lg-6">
+        <div class="demo-input">
+          ${demoInput}
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="demo-cover d-none" data-demo-target="cover">
+          <div class="row jc-center ai-center">
+            <div class="col-12">
+              <button
+                type="button"
+                class="show"
+                aria-label="Show beautified result"
+                data-tooltip="top"
+                data-action="demo#onShow mouseover->demo#onCover mouseout->demo#onCover">
+                CLICK FOR OUTPUT
+              </button>
+            </div>
+            <div class="col-12">
+              <div class="gear-animation">
+              ${SVG_GEARS}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-output">
+          ${demoOutput}
+        </div>
       </div>
     </div>
-
-    ${code}`
-
+  `
   ].join()
 
 
-  /**
-   *
-   * @param {range} type
-   * @param {string} name
-   * @returns
-   */
-  function getFormRuleControl () {
-
-
-    if(opts.$.form === 'range') {
-
-      return [
-        /* html */`
-          <div class="col-auto ml-auto">
-            <input
-              type="range"
-              class="fm-range"
-              name="${opts.$.rule}"
-              minlength="0"
-              min="0"
-              max="100"
-              maxlength="100"
-              value="${opts.$.value}"
-              data-example-target="range"
-              data-action="example#onForm"
-              data-tooltip="top">
-          </div>
-          <div class="col-auto fs-sm mr-4 pr-2" data-example-target="wrapSize">
-            ${opts.$.value}
-          </div>
-        `
-      ].join('')
-    }
-
-    return ''
-  }
-
 
 }
-function getTabTemplate (md, raw, language) {
+function getRulesExample(md, raw, language) {
 
-  if(opts) {
 
-    if(opts.$.mode === 'example') {
-      return exampleRule(md, raw, language)
-    } else {
-      return beforeAfter(raw, language)
-    }
-
-  }
-
-  return beforeAfter(raw, language)
+  return sideBySide(md, raw, language)
 
 }
 
 /**
- * Extracts code input source from `<pre></pre>` code regions.
- * When the raw input ends with a `|` character
- *
- * @param {markdownit} md markdown-it
- * @param {string} raw The character to join
- */
-function getInputSource (raw) {
-
-  const start = raw.indexOf('<code>')
-
-  if(start > -1) {
-    const close = raw.lastIndexOf('</code>') - 8
-    return raw.slice(start + 6, close)
-  }
-
-  return raw
-
-}
-
-
-function getCodeBlocks (md, fence, ...args) {
-
-
-  const [ tokens, index ] = args;
-  const language = tokens[index].info.trim();
-  const raw = fence(...args);
-
-  if(language === 'json:rules') {
-    const json = raw.slice(raw.indexOf('>', raw.indexOf('<code') + 1) + 1, raw.indexOf('</code'))
-    store = JSON.parse(json.trim())
-    return ''
-  }
-
-  if(store === undefined) return raw
-
-  let mode = ''
-
-  if('$' in store) {
-    opts = store
-    store = opts.rules
-    mode = opts.$.mode
-  } else {
-    mode = 'before'
-  }
-
-  const template = getTabTemplate(md, raw, language)
-  const rules = md.utils.escapeHtml(JSON.stringify(store))
-
-  store = undefined
-  opts = null
-
-  return [
-    /* html */`
-    <div
-      class="rule-example"
-      data-controller="example"
-      data-example-mode-value="${mode}"
-      data-example-editor-value="false"
-      data-example-rules-value="${rules}"
-      data-example-input-value="${input.trim()}">
-      ${template.trim()}
-    </div>`
-
-  ].join('')
-
-}
-
-/**
- * Line Numbers
- *
  * @param {markdownit} md
  */
-function codeblocks (md)  {
+function codeblocks(md) {
 
-  const { fence } = md.renderer.rules;
+  const { fence } =  md.renderer.rules
 
-  md.renderer.rules.fence = (...args) =>  getCodeBlocks(md, fence, ...args)
+  md.renderer.rules.fence = function(...args) {
 
-};
+    const [ tokens, index ] = args;
+    const language = tokens[index].info.trim();
+    const raw = fence(...args);
+
+    if (language === 'json:rules') {
+
+      const json = getCodeBlockInput(raw)
+
+      try {
+
+        rules = JSON.parse(json.trim());
+        return ''
+
+      } catch (e) {
+
+        throw new Error('Invalid JSON in in the json:rules code block')
+
+      }
+
+    }
+
+    if (rules === undefined) return raw
+
+    let mode = 'editor'
+
+    const templateValue = getRulesExample(md, raw, language)
+    const rulesValue = md.utils.escapeHtml(JSON.stringify('esthetic' in rules ? rules.esthetic : rules));
+    const papyrusValue = 'papyrus' in rules
+      ? `data-demo-papyrus-value="${md.utils.escapeHtml(JSON.stringify(rules.papyrus))}"`
+      : ''
+
+
+    if('example' in rules)  mode = 'example'
+
+
+    rules = undefined
+
+    return [
+      /* html */`
+      <div
+        class="rule-example"
+        data-controller="demo"
+        data-demo-mode-value="${mode}"
+        data-demo-rules-value="${rulesValue}"
+        data-demo-language-value="${language}"
+        data-demo-input-value="${input.trim()}"
+        data-demo-original-value="${input.trim()}"
+        ${papyrusValue.trim()}>
+        ${templateValue.trim()}
+      </div>`
+
+    ].join('')
+
+  }
+
+}
 
 /**
  * Generates HTML markup for various blocks
@@ -658,13 +699,13 @@ function codeblocks (md)  {
  * @param {number} index The index of the current token in the tokens array.
  * @returns {string} The markup for the alert.
  */
-function notes (tokens, index) {
+function notes(tokens, index) {
 
   return tokens[index].nesting === 1 ? `<blockquote class="note">` : '</blockquote>'
 
 }
 
-function rule (md, tokens, idx) {
+function rule(md, tokens, idx) {
 
   if (tokens[idx].nesting === 1) {
 
@@ -672,25 +713,8 @@ function rule (md, tokens, idx) {
 
     if (tokens[idx].nesting === 1) {
 
-      let tooltip = ''
+      if (m !== null && m[1] in TOOLTIPS) {
 
-      if(m !== null) {
-
-        if('🤡' === m[1]) {
-          tooltip = "The choice of a clown."
-        } else if ('🙌' === m[1]) {
-          tooltip = "Authors choice"
-        } else if ('👍' === m[1]) {
-          tooltip = "Good choice."
-        } else if ('👎' === m[1]) {
-          tooltip = "Not recommended"
-        } else if ('😳' === m[1]) {
-          tooltip = "We live in a society, we're not animals"
-        } else if ('💡' === m[1]) {
-          tooltip = 'Showing an example of the rule'
-        } else if ('🧐' === m[1]) {
-          tooltip = 'You gotta do, what you gotta do'
-        }
 
         // opening tag
         return [
@@ -698,26 +722,26 @@ function rule (md, tokens, idx) {
           /* html */`
           <div class="rule-title d-flex ai-center">
           <div
-            class="h5 mr-3"
-            aria-label="${tooltip}"
-            data-tooltip="top">${md.utils.escapeHtml(m[1])}</div>
+            class="h5 mr-2"
+            aria-label="${TOOLTIPS[m[1]]}"
+            data-tooltip="top">
+            ${md.utils.escapeHtml(m[1])}
+          </div>
           `
         ].join('')
 
-      } else  {
+      } else {
 
         // opening tag
-        return [
 
+        return [
           /* html */`
-          <div class="rule-title d-flex ai-center">
+            <div class="rule-title d-flex ai-center">
           `
         ].join('')
 
       }
     }
-
-
   }
 
   return '</div>'
@@ -733,7 +757,7 @@ function rule (md, tokens, idx) {
  * @param {number} idx The index of the current token in the tokens array.
  * @returns {string} The markup for the alert.
  */
-function options (tokens, idx) {
+function options(tokens, idx) {
 
   if (tokens[idx].nesting === 1) {
 
@@ -743,6 +767,7 @@ function options (tokens, idx) {
         data-controller="accordion"
         data-accordion-multiple-value="true"
         class="accordion accordion-markdown">
+
     `].join('')
 
   }
@@ -751,9 +776,44 @@ function options (tokens, idx) {
 
 }
 
+
+/**
+ * Generates HTML markup for various blocks
+ *
+ * @param {"note"|"tip"|"important"} type The type of alert to create.
+ * @param {Array<markdownit>} tokens Array of MarkdownIt tokens to use.
+ * @param {number} index The index of the current token in the tokens array.
+ * @returns {string} The markup for the alert.
+ */
+function grid(md, tokens, idx) {
+
+ if(tokens[idx].nesting === 1) {
+
+  var col = tokens[idx].info.trim().match(/^grid\s+(.*)$/);
+
+  if (col !== null) {
+
+    console.log(col)
+
+    // opening tag
+    return [
+
+      /* html */`
+      <div class="${md.utils.escapeHtml(col[1])}">
+      `
+    ].join('')
+  }
+
+
+ }
+
+  return '</div>'
+
+}
+
+
 module.exports = eleventy(function (config) {
 
-  config.addPlugin(navigation);
 
   const md = markdownit({
     html: true,
@@ -762,20 +822,24 @@ module.exports = eleventy(function (config) {
     breaks: false,
     highlight: (str, lang) => highlighter(md, str, lang)
   })
-  .use(anchor)
-  .use(codeblocks)
-  .use(mdcontainer, 'note', {
-    render: (tokens, idx) => notes(tokens, idx)
-  })
-  .use(mdcontainer, 'rule', {
-    render: (tokens, idx) => rule(md, tokens, idx)
-  })
-  .use(mdcontainer, 'options', {
-    render: (tokens, idx) => options(tokens, idx)
-  })
-  .disable("code");
+    .use(anchor)
+    .use(codeblocks)
+    .use(mdcontainer, 'grid', {
+      render: (tokens, idx) => grid(md, tokens, idx)
+    })
+    .use(mdcontainer, 'note', {
+      render: (tokens, idx) => notes(tokens, idx)
+    })
+    .use(mdcontainer, 'rule', {
+      render: (tokens, idx) => rule(md, tokens, idx)
+    })
+    .use(mdcontainer, 'options', {
+      render: (tokens, idx) => options(tokens, idx)
+    })
+    .disable("code");
 
   config.setBrowserSyncConfig();
+  config.addLiquidShortcode('version', () =>require('../package.json').version)
   config.setLibrary('md', md);
   config.addPlugin(svgsprite, {
     path: 'src/assets/svg',
@@ -788,7 +852,7 @@ module.exports = eleventy(function (config) {
         }
       },
       shape: {
-        transform: [ 'svgo' ],
+        transform: ['svgo'],
         id: {
           generator: 'svg-%s'
         }
@@ -802,22 +866,21 @@ module.exports = eleventy(function (config) {
 
   config.addPassthroughCopy({
     'node_modules/moloko/dist': 'assets/moloko',
-    'node_modules/esthetic/dist/iife/index.js': 'assets/esthetic.min.js'
+    'node_modules/esthetic/dist/esthetic.js': 'assets/esthetic.min.js'
   })
 
 
-
-  // config.addPlugin(htmlmin, {
-  //   collapseBooleanAttributes: false,
-  //   collapseWhitespace: true,
-  //   decodeEntities: true,
-  //   html5: true,
-  //   removeAttributeQuotes: true,
-  //   removeComments: true,
-  //   removeOptionalTags: true,
-  //   sortAttributes: true,
-  //   sortClassName: true
-  // });
+//   config.addPlugin(htmlmin, {
+//     collapseBooleanAttributes: false,
+//     collapseWhitespace: true,
+//     decodeEntities: true,
+//     html5: true,
+//     removeAttributeQuotes: true,
+//     removeComments: true,
+//     removeOptionalTags: true,
+//     sortAttributes: true,
+//     sortClassName: true
+//  });
 
   return {
     htmlTemplateEngine: 'liquid',
@@ -835,7 +898,7 @@ module.exports = eleventy(function (config) {
       includes: 'views/include',
       layouts: 'views/layouts',
       data: 'data'
-    }
+    },
   };
 
 });

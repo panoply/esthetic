@@ -12,15 +12,15 @@ options:
   - before
 ---
 
+::: grid col-9 p-100
+
 # Line Break Separator
 
 The `lineBreakSeparator` rule controls the placement of separator type characters used within tag arguments which span multiple lines. Liquid tags which contain newlines with arguments separated using an operator inferred character (typically a comma `,`) are deemed a multiline expression by Æsthetic and will apply forcing in accordance with wrap rules. This option will allow you to control the placement of separators used in multiline expression structures.
 
-::: note
+> Æsthetic does not support `=` character inferred assertions. It expects nested arguments follow `:` parameter expressions.
 
-Æsthetic does not support `=` character inferred assertions. It expects nested arguments follow `:` parameter expressions.
-
-:::
+This is a Liquid specific formatting rule which will **default** to `after` when no option has been specified. The **recommended** option to use is `before`.
 
 # Related Rules
 
@@ -30,48 +30,7 @@ The `lineBreakSeparator` rule is typically used together with the Liquid `argume
 - [argumentWrap](/rules/liquid/argumentWrap/)
 - [wrapFraction](/rules/liquid/wrapFraction/)
 
-# Rule Options
-
-This is a Liquid specific formatting rule which will **default** to `after` when no option has been specified. The **recommended** option to use is `before`.
-
-::: rule 🤡
-
-#### preserve
-
 :::
-
-Below is an example of how this rule works if set to `before` which is recommended approach. This will ensure all operator separators begin at the start of arguments. Notice how **before** formatting the comma separators are placed at the end of each parameter argument but **after** formatting they are moved to the start.
-
-```json:rules
-{
-  "language": "liquid",
-  "liquid": {
-    "lineBreakSeparator": "after",
-    "forceFilter": 2,
-    "forceArgument": 2
-  }
-}
-```
-
-<!-- prettier-ignore -->
-```html
-{% # All argument comma separators will be placed at the end %}
-{% render 'snippet'
-  , param_1: true
-  , param_2: 1000
-  , param_3: 'string'
-  , param_4: nil %}
-
-{% if condition == assertion %}
-
-  {{ object.prop
-    | param_1: true
-    | param_2: 1000
-    | param_3: arg_1: 'value', arg_2: 2000, arg_3: false, arg_4: nil
-    | param_4: 'xxxx' }}
-
-{% endif %}
-```
 
 ---
 
@@ -95,7 +54,7 @@ Below is an example of how this rule works if set to `before` which is recommend
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% # All argument comma separators will be placed at the end %}
 {% render 'snippet'
   , param_1: true
@@ -137,7 +96,7 @@ Below is an example of how this rule works if set to `default` which is the **de
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% # All argument comma separators will be placed at before expression %}
 {% render 'snippet',
   param_1: true,
@@ -161,5 +120,3 @@ Below is an example of how this rule works if set to `default` which is the **de
 
 {% endif %}
 ```
-
----

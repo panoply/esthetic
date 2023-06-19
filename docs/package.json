@@ -6,8 +6,8 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "dev": "rm -rf public && concurrently \"pnpm run tsup:watch\" \"pnpm run sass:watch\" \"pnpm run 11ty:watch\"",
-    "build": "rm -rf public && pnpm run tsup:build && pnpm run sass:build && pnpm run 11ty:build && pnpm run postcss",
+    "dev": "rm -rf public && concurrently \"pnpm run tsup:watch\" \"pnpm run 11ty:watch\" \"pnpm run scss:watch\"",
+    "build": "rm -rf public && pnpm run tsup:build && pnpm run scss:build && pnpm run 11ty:build && pnpm run postcss",
     "postcss": "postcss public/assets/style.css -r --no-map && rm -rf public/assets/style.css.map",
     "netlify:deploy": "netlify deploy",
     "netlify:serve": "netlify dev -c \"eleventy --watch --serve --watch\" --targetPort 8080",
@@ -15,8 +15,8 @@
     "11ty:build": "eleventy",
     "tsup:watch": "tsup --watch",
     "tsup:build": "tsup --minify",
-    "sass:watch": "sass --load-path=node_modules/ src/assets/scss/stylesheet.scss public/assets/style.css --watch",
-    "sass:build": "sass --load-path=node_modules/ src/assets/scss/stylesheet.scss public/assets/style.css --no-source-map",
+    "scss:build": "sass ./src/sass/stylesheet.scss public/style.css --no-source-map",
+    "scss:watch": "sass --poll --watch src/sass/stylesheet.scss public/style.css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "eslintConfig": {
@@ -33,32 +33,21 @@
       "multiline-ternary": "off"
     }
   },
-  "pnpm": {
-    "peerDependencyRules": {
-      "ignoreMissing": [
-        "@brixtol/bootstrap"
-      ]
-    }
-  },
   "dependencies": {
-    "@brixtol/bootstrap": "^1.4.3",
+    "@brixtol/bootstrap": "^1.5.0",
     "@hotwired/stimulus": "^3.2.1",
     "@panoply/viewports": "^0.0.3",
-    "codejar": "^3.7.0",
     "esthetic": "link:..",
-    "lazy-line-painter": "^1.9.6",
     "mergerino": "^0.4.0",
     "mithril": "^2.2.2",
     "moloko": "workspace:0.1.0-beta.1",
-    "prismjs": "^1.29.0",
+    "papyrus": "workspace:^",
     "relapse": "^0.5.0",
-    "spx": "0.0.9-beta.1",
+    "spx": "0.1.0-beta.1",
     "stickybits": "^3.7.11"
   },
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
-    "@11ty/eleventy-navigation": "^0.3.5",
-    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0",
     "@brixtol/browserslist-config": "^1.1.0",
     "@fullhuman/postcss-purgecss": "^5.0.0",
     "@liquify/eslint-config": "^1.2.0",
@@ -70,21 +59,22 @@
     "@types/markdown-it": "^12.2.3",
     "@types/prismjs": "^1.26.0",
     "autoprefixer": "^10.4.14",
-    "concurrently": "^8.0.1",
+    "concurrently": "^8.2.0",
     "cssnano": "^6.0.1",
     "eleventy-plugin-svg-sprite": "^2.4.0",
-    "esbuild": "^0.17.18",
-    "eslint": "^8.40.0",
+    "esbuild": "^0.18.4",
+    "eslint": "^8.43.0",
+    "js-yaml": "^4.1.0",
     "language-literals": "^0.0.2",
     "markdown-it": "^13.0.1",
     "markdown-it-anchor": "^8.6.7",
     "markdown-it-container": "^3.0.0",
-    "netlify-cli": "^15.0.2",
-    "postcss": "^8.4.23",
+    "netlify-cli": "^15.6.0",
+    "postcss": "^8.4.24",
     "postcss-cli": "^10.1.0",
     "prettier": "^2.8.8",
-    "sass": "^1.62.1",
-    "tsup": "^6.7.0",
-    "typescript": "^5.0.4"
+    "sass": "^1.63.4",
+    "tsup": "^7.0.0",
+    "typescript": "^5.1.3"
   }
 }

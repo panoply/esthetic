@@ -59,7 +59,7 @@
     opacity: 0;
     max-height: 0;
     will-change: opacity, max-height;
-    background-color: $code-inline-bg;
+    background-color: $code-bg;
     @include transition(
       opacity $accordion-transition-opacity linear,
       max-height $accordion-transition-height

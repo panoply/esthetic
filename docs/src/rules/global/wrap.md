@@ -13,15 +13,13 @@ describe:
   - Example
 ---
 
+::: grid col-6 p-100 px-2
+
 # Wrap
 
-Character width limit before applying word wrap. A value of `0` will disable wrapping.
+Character width limit before applying word wrap. A value of `0` will disable wrapping and is the default setting.
 
-::: note
-
-When this rule is undefined in a `.liquidrc` file the Text Editors settings will be used, in vscode that is `*.endWithNewline` where `*` is a language name.
-
-:::
+> When this rule is undefined in a `.liquidrc` file the Text Editors settings will be used, in vscode that is `*.endWithNewline` where `*` is a language name.
 
 <!--
 🙌 - Recommended Choice
@@ -33,22 +31,30 @@ When this rule is undefined in a `.liquidrc` file the Text Editors settings will
 💡 - Showing an example of the rule
 -->
 
+:::
+
+::: grid col-11 p-100 px-2
+
 # Example
 
-The global `endNewline` rule is disabled (i.e: `false`) by default. This will result in newline occurrences at the end of documents/files to be stripped. In the below sample, the newline is removed after formatting.
+Adjust the range to input to see how Æsthetic handles word wrap.
 
 ```json:rules
 {
-  "$": {
+  "example": {
     "form": "range",
     "rule": "wrap",
-    "value": 80,
+    "value": 90,
     "mode": "example"
   },
-  "rules": {
-    "language": "liquid",
-    "wrap": 80,
-    "endNewline": false
+  "esthetic": {
+    "language": "html",
+    "wrap": 90,
+    "endNewline": false,
+    "markup": {
+      "forceIndent": true,
+      "preserveText": false
+    }
   }
 }
 ```
@@ -57,8 +63,18 @@ The global `endNewline` rule is disabled (i.e: `false`) by default. This will re
 ```html
 <header>
 <h1>Hello World</h1>
+<div id="foo" class="bar">
+
+<h1>Hello World</h1>
+
+  </div>
 <p>
-  The newline at the end of this sample will be stripped.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 </p>
+<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat
+
 </header>
 ```
+
+:::

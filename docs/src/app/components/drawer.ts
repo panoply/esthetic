@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import * as spx from 'spx';
+import spx from 'spx';
 
 /* -------------------------------------------- */
 /* CLASS                                        */

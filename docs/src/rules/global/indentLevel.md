@@ -1,36 +1,101 @@
 ---
-title: 'Global Rules - Indent Character'
+title: 'Global Rules - Indent Level'
 layout: base
 permalink: '/rules/global/indentLevel/index.html'
 describe:
   - Indent Level
 ---
 
+::: grid col-9 p-100
+
 # Indent Level
 
-The string characters to comprise a single indentation. Any string combination is accepted. Generally speaking, you should leave this alone unless you know what you are doing.
+The `indentLevel` rule is typically used internally and will control the padding indentation to be applied.
 
-#### Related Rule
+:::
 
-The `indentSize` rule will use this character. For example, if you were to set `indentSize` to `4` then this character will be repeated 4 times, ie: `    ` - by default the `indentSize` is set to `2`.
+---
 
-#### Example
+<!--
 
-_Below is we have set `.` to be used as the indentation character. You should never do this, it is for example sake._
+# Rule Options
+
+This is a global rule definition and will be used for all languages.
+
+::: options
+
+### `false`
+
+> Strip additional newlines from the end of input.
+
+### `true`
+
+> Insert a newline at the end of input
+
+:::
+
+🙌 - Recommended Choice
+👍 - Good Choice
+👎 - Not Recommended
+🤡 - Clown Choice
+😳 - Bad Choice
+🧐 - You gotta do, what you gotta do
+💡 - Showing an example of the rule
+-->
+
+::: rule 💡
+
+#### `0`
+
+:::
+
+The default `indentLevel` is set to `0`
+
+```json:rules
+{
+  "language": "html",
+  "indentLevel": 0
+}
+```
 
 <!-- prettier-ignore -->
 ```html
-<!-- Before Formatting -->
+<header>
+<nav>
 <ul class="foo">
-  <li>bar</li>
-  <li>baz</li>
+<li>bar</li>
+<li>baz</li>
 </ul>
+</nav>
+</header>
+```
 
-<!-- After Formatting -->
+---
+
+::: rule 💡
+
+#### `2`
+
+:::
+
+Below we are using an `indentLevel` value of `2`
+
+```json:rules
+{
+  "language": "html",
+  "indentLevel": 2
+}
+```
+
+<!-- prettier-ignore -->
+```html
+<!-- Notice the left side padding applied -->
+<header>
+<nav>
 <ul class="foo">
-  ..
-  <li>....bar ..</li>
-  ..
-  <li>....baz ..</li>
+<li>bar</li>
+<li>baz</li>
 </ul>
+</nav>
+</header>
 ```

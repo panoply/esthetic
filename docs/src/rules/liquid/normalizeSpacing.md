@@ -10,21 +10,19 @@ options:
   - false
 ---
 
-#### Normalize Spacing
+::: grid col-9 p-100
+
+# Normalize Spacing
 
 Whether or not to normalize and correct the inner spacing of Liquid tokens. The `normalizeSpacing` rule will equally distribute whitespace sequences contained within Liquid tags and output type tokens.
 
-::: note
+> Normalized spacing does not strip newline characters and does not process code encapsulated in quotation characters, such as `"string"` or `'string'` expressions. Æsthetic considers these preservation sequences.
 
-Normalized spacing does not strip newline characters and does not process code encapsulated in quotation characters, such as `"string"` or `'string'` expressions. Æsthetic considers these preservation sequences.
+This is a Liquid specific formatting rule which will **default** to `true` when no option has been specified. The **recommended** option to use is `true`.
 
 :::
 
 ---
-
-# Rule Options
-
-This is a Liquid specific formatting rule which will **default** to `true` when no option has been specified. The **recommended** option to use is `true`.
 
 ::: rule 🙌
 
@@ -38,17 +36,34 @@ When the `normalizeSpacing` rule is set to `true` which is the **default** appli
 {
   "language": "liquid",
   "liquid": {
-    "normalizeSpacing": true
+    "normalizeSpacing": true,
+    "forceFilter": 2
   }
 }
 ```
 
 <!--prettier-ignore-->
-```html
-{{  object.prop   |args:'x'  , 'xx'|    filter   :   ' preserve   string '   }}
+```liquid
+{{  object.prop
+ |args:'x'  , 'xx'
+ | filter  :  ' preserve string ' }}
 
-{% assign  foo  =   'preserved  '   |  append : object . prop |foo|bar    %}
+{% assign  foo=   ' preserved ' |  append : object . prop |foo|bar%}
+
+{%  for    x   in   (10 . . 200)
+ parameter  :  2000 param  limit :1  %}
+
+{{
+   object   .property  [  "string"  ]   .foo
+ |  append : object . prop  |args:'x'  , 'xx'
+ }}
+
+{%   endfor  %}
+
+
 ```
+
+---
 
 ::: rule 👎
 
@@ -60,16 +75,22 @@ When the `normalizeSpacing` rule is set to `true` which is the **default** appli
 {
   "language": "liquid",
   "liquid": {
-    "normalizeSpacing": false
+    "normalizeSpacing": false,
+    "forceFilter": 2
   }
 }
 ```
 
 <!--prettier-ignore-->
-```html
-<!-- After formatting -->
+```liquid
+{{  object.prop
+ |args:'x'  , 'xx'
+ | filter  :  ' preserve string ' }}
 
-{{ object.prop | filter: 'x', 'xx' | filter: ' preserve   string ' }}
+{% assign  foo=   ' preserved ' |  append : object . prop |foo|bar%}
 
-{% assign foo = 'preserved  ' | append: object.prop %}
+
+{%  for    x   in   (10 . . 200) parameter  :  2000 param  limit :1  %}
+{{ object.property[foo][0][100].prop[object.prop[0]] }}
+{%   endfor  %}
 ```

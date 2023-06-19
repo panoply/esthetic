@@ -59,7 +59,7 @@ The `text` option refers to a **Plain Text** document, wherein the content will 
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 Lorem ipsum dolor sit amet, consectetur adipiscing elit,
 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -97,7 +97,7 @@ The `liquid` option refers to the **[Liquid Template Language](https://shopify.g
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {%if condition %}
 <div class="xxx" id="some-id">
 <ul>
@@ -144,7 +144,7 @@ The `html` option refers to the **[Hyper Text Markup Language](https://en.wikipe
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 <!DOCTYPE html>
 <html lang="en">
 <head><meta
@@ -181,7 +181,7 @@ The `xml` options refers to the **[Extensible Markup Language](https://developer
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 <?xml version="1.0" encoding="UTF-8"?>
 <table summary="Product Sales Summary" border="1">
   <!--list products-->

@@ -14,15 +14,13 @@ examples:
   - Wrap Forcing
 ---
 
+::: grid col-9 p-100
+
 # Force Attribute
 
 Whether or not markup attributes should be forced indented onto newlines. This rule accepts a `boolean` or `integer` type, both of which allow you to refine how attributes are to be formatted independent of Æsthetic's default behavior of using the global [`wrap`](/rules/global/wrap) limit. When you provide `forceAttribute` an integer value of **`1` or more** Æsthetic will apply forcing when the number of attributes contained within a tag exceeds the supplied value limit.
 
-::: note
-
-Attribute forcing is disabled by default as the global [`wrap`](/rules/global/wrap) limit is set to `0`. If you want wrap based forcing, you will need to set a word wrap character width.
-
-:::
+> Attribute forcing is disabled by default as the global [`wrap`](/rules/global/wrap) limit is set to `0`. If you want wrap based forcing, you will need to set a word wrap character width.
 
 ### Related Rules
 
@@ -37,6 +35,8 @@ If you are using the global defined [`wrap`](/rules/global/wrap) then Æsthetic 
 The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule uses `forceAttribute` as disablement mirror. When attribute forcing is disabled then the Liquid `indentAttributes` rule reflects the disablement. In order to leverage the Liquid `indentAttributes` rule you will need to define an occurrence limit or enable this rule.
 
 - [`indentAttributes`](/rules/liquid/indentAttributes)
+
+:::
 
 ---
 

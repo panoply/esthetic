@@ -26,7 +26,7 @@ If you're working with SVG tags then this rule is highly recommended.
 
 _Below is an example of how this rule works if it's enabled, ie: `true`. Typically it is best to enable this option_
 
-```html
+```liquid
 <!-- Before formatting -->
 <picture>
   <path srcset="." />

@@ -4,37 +4,39 @@
   <div class="row vh-100 d-flex ai-center jc-center px-5">
     <div class="hero d-grid ai-center col-6 m-auto">
       <div class="hero-github">
-        <a href="https://github.com/panoply/esthetic">
-          {% svg 'github', 'icon icon-github' %}
+        <a
+          href="https://github.com/panoply/esthetic"
+          target="_blank">
+          {% svg 'github-2', 'icon icon-github' %}
         </a>
       </div>
 
       <div class="d-flex flex-column as-center jc-center">
         <a
-          data-spx-target="['body']"
           href="/introduction/what-is-esthetic/"
-          class="hero-logo d-block">
+          class="hero-logo d-block"
+          aria-label="Documentation"
+          data-tooltip="right"
+          spx-target="['body']">
           ÆSTHETIC
         </a>
       </div>
 
-
       <div class="d-flex flex-column m-auto tc fw-lighter">
-        <h5 class="d-block italic fw-normal light uncase mt-2">
-          {{ content }}
+        <h5 class="d-block italic fw-normal ff-base light uncase mt-2 tc  px-4">
+          {{ content | remove: '<p>' | remove: '</p>' }}
         </h5>
       </div>
 
       <div class="d-flex flex-column m-auto cli mt-3">
-        <pre class="language-bash py-3"><code class="language-bash">pnpm add esthetic</code></pre>
+        <code class="px-4 py-2 fs-md">
+          pnpm add esthetic
+        </code>
       </div>
 
     </div>
-    <div class="version">
-      <small class="fs-xs">
-        V
-      </small>
-      0.1.0
+    <div class="version fs-xs">
+      {% version %}
     </div>
   </div>
 </main>

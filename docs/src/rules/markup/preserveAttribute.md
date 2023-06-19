@@ -10,17 +10,17 @@ options:
   - true
 ---
 
+::: grid col-9 p-100
+
 # Preserve Attribute
 
 Whether or not markup tags should have their insides preserved, (i.e: attributes). This option is only available to markup and does not support child tokens that require a different lexer. When enabled, this rule will run precedence and override all attribute related rules such as `attributeCase`, `attributeSort` and `forceAttribute`.
 
 If you're working with a JavaScript framework that implements a data-attribute development based architecture (like Alpine or Angular) which requires a build-step then this rule _might_ help prevent Æsthetic from augmenting code or failing when it encounters otherwise invalid structures not supported or recognized by official markup based language specifications.
 
-::: note
+> When preserving attributes indentation will not be applied during the beautification cycle. The rule effects the entire inner structure contained within tags.
 
-When preserving attributes indentation will not be applied during the beautification cycle. The rule effects the entire inner structure contained within tags.
-
-:::
+This is **Markup** specific rule which will take effect on languages like HTML, XML, JSX/TSK and will also override Liquid beautification operations. The **recommended** option to use is `false`,
 
 <!--
 🙌 - Recommended Choice
@@ -32,9 +32,9 @@ When preserving attributes indentation will not be applied during the beautifica
 💡 - Showing an example of the rule
 -->
 
-# Rule Options
+:::
 
-This is **Markup** specific rule which will take effect on languages like HTML, XML, JSX/TSK and will also override Liquid beautification operations. The **recommended** option to use is `false`,
+---
 
 ::: rule 🙌
 
@@ -48,10 +48,6 @@ The `preserveAttribute` is disabled (i.e: `false`) by default. The inner content
 {
   "language": "html",
   "markup": {
-    "forceAttribute": true,
-    "stripAttributeLines": true,
-    "forceIndent": true,
-    "lineBreakValue": "force-indent",
     "preserveAttribute": false
   }
 }
@@ -68,8 +64,7 @@ The `preserveAttribute` is disabled (i.e: `false`) by default. The inner content
 
               class="xxx"
 
-   data-example="[{ prop: 'hello world!' }],
-   [1,2,3,4,5]">
+   data-example="[{ prop: 'hello world!' }]">
 
 <p>
   The attributes above will be formatted
@@ -95,8 +90,6 @@ When `preserveAttribute` is enabled (i.e: `true`) then the insides of markup tag
 {
   "language": "html",
   "markup": {
-    "forceAttribute": true,
-    "forceIndent": true,
     "preserveAttribute": true
   }
 }
@@ -113,8 +106,7 @@ When `preserveAttribute` is enabled (i.e: `true`) then the insides of markup tag
 
               class="xxx"
 
-   data-example="[{ prop: 'hello world!' }],
-   [1,2,3,4,5]">
+   data-example="[{ prop: 'hello world!' }]">
 
 <p>
   The attributes above will be formatted.

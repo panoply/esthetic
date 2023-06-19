@@ -10,21 +10,35 @@ options:
   - true
 ---
 
+::: grid col-8 p-100
+
 # Ignore JSON
 
 Whether or not to format regions of code that are identified to be JSON. Such tags are typically identified using attribute annotations like `<script type="application/json">`. By default, beautification is applied using the `json` rules. When ignored (ie: `true`) Prettify will not apply formatting to these regions.
 
-#
+:::
 
 ---
 
-#### Before Formatting
+::: rule 🧐
 
-_Below is an example of how some input **might** look and the rule is enabled, ie: `true`. The only changes that will be applied in **after** formatting example will be applied to the `<title>` tags._
+#### true
 
-```liquid
+:::
 
-<!-- Before formatting -->
+Below is an example of how some input **might** look and the rule is enabled, ie: `true`. The only changes that will be applied in **after** formatting example will be applied to the `<title>` tags.
+
+```json:rules
+{
+  "language": "html",
+  "markup": {
+    "ignoreJSON": true
+  }
+}
+```
+
+<!-- prettier-ignore-->
+```html
 <head>
 
       <title>
@@ -39,22 +53,34 @@ _Below is an example of how some input **might** look and the rule is enabled, i
 </script>
 
 </head>
-
-
 ```
 
-#### After Formatting
+---
 
-_After formatting the above sample notice how the `<script type="application/ld+json"></script>` region has been completely skipped from formatting. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied._
+::: rule 🧐
 
-```liquid
+#### false
 
-<!-- After formatting -->
+:::
+
+After formatting the above sample notice how the `<script type="application/ld+json"></script>` region has been completely skipped from formatting. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied.
+
+```json:rules
+{
+  "language": "html",
+  "markup": {
+    "ignoreJSON": false
+  }
+}
+```
+
+<!-- prettier-ignore-->
+```html
 <head>
 
-  <title>
-    Example
-  </title>
+      <title>
+  Example
+      </title>
 
 <script type="application/ld+json">
 {
@@ -64,6 +90,4 @@ _After formatting the above sample notice how the `<script type="application/ld+
 </script>
 
 </head>
-
-
 ```

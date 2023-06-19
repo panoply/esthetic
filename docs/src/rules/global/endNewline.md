@@ -10,19 +10,15 @@ options:
   - true
 ---
 
+::: grid col-9 p-100
+
 # End Newline
 
-Whether or not files should end with an empty newline.
-
-::: note
-
-If you are using Æsthetic within a text editor and this rule is undefined or omitted then your text editor settings will be used, in vscode that is `*.endWithNewline` where `*` is a language name. If an `.editorconfig` file is found present in root, those rules will be applied in **precedence** over your text editor settings.
+Whether or not files should end with an empty newline. This is a global rule definition and will be used for all languages. The **Recommended** option to use is `true` which will insert a newline at the end of documents.
 
 :::
 
-# Rule Options
-
-This is a global rule definition and will be used for all languages. The **Recommended** option to use is `true` which will insert a newline at the end of documents.
+---
 
 <!--
 
@@ -61,7 +57,7 @@ The global `endNewline` rule is disabled (i.e: `false`) by default. This will re
 
 ```json:rules
 {
-  "language": "liquid",
+  "language": "html",
   "endNewline": false
 }
 ```
@@ -89,8 +85,14 @@ When the global `endNewline` rule is enabled (i.e: `true`) then documents/files 
 
 ```json:rules
 {
-  "language": "liquid",
-  "endNewline": true
+ "esthetic": {
+    "language": "html",
+    "endNewline": true
+  },
+  "papyrus": {
+    "trimEnd": false,
+    "showLF": true
+  }
 }
 ```
 

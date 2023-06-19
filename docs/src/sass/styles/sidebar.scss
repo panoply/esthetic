@@ -1,6 +1,6 @@
 .sidebar {
   // background-color: #fff;
-  // position: fixed;
+  position: fixed;
   margin-top: 52px;
   width: 280px;
 
@@ -18,11 +18,15 @@
   }
 }
 
+.content {
+  margin-left: 280px;
+}
+
 .anchors {
   // background-color: #fff;
-  // position: fixed;
+
   margin-top: 52px;
-  width: 280px;
+  width: 320px;
 
   //left: 0;
 }

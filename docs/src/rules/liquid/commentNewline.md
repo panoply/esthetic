@@ -10,19 +10,17 @@ options:
   - true
 ---
 
+::: grid col-8 p-100
+
 # Comment Newline
 
-Inserts a new line above comment tags. When enabled the rule will add a newline even if `preserveLine` is set to `0`. The rule will not inject new lines when the previous expression is determined to already contain a new line.
+Inserts a new line above comment tags. When enabled the rule will add a newline even if `preserveLine` is set to `0`. The rule will not inject new lines when the previous expression is determined to already contain a new line. The `commentNewline` rule is disabled (`false`) by default. Newline insertion will not be applied to comments blocks in the sample.
 
-::: note
-
-Liquid line type comments are currently not supported by this rule. Only block type Liquid tokens will be handled.
+> Liquid line type comments are currently not supported by this rule. Only block type Liquid tokens will be handled.
 
 :::
 
-# Rule Options
-
-The `commentNewline` rule is disabled (`false`) by default. Newline insertion will not be applied to comments blocks in the sample.
+---
 
 ::: rule 👍
 
@@ -36,14 +34,13 @@ If the rule is `undefined` or set to `false` (which is the default). In the samp
 {
   "language": "liquid",
   "liquid": {
-    "commentNewline": false,
-    "commentIndent": true
+    "commentNewline": false
   }
 }
 ```
 
 <!--prettier-ignore-->
-```html
+```liquid
 <main>
   {% comment %}
     No newline will be inserted above this comment
@@ -71,14 +68,13 @@ When the `commentNewline` rule is enabled (`true`) then a newline will inserted 
 {
   "language": "liquid",
   "liquid": {
-    "commentNewline": true,
-    "commentIndent": true
+    "commentNewline": true
   }
 }
 ```
 
 <!--prettier-ignore-->
-```html
+```liquid
 <ul>
   <li>Hello</li>
   {% comment %}
@@ -90,5 +86,3 @@ When the `commentNewline` rule is enabled (`true`) then a newline will inserted 
   {% endcomment %}
 </ul>
 ```
-
----

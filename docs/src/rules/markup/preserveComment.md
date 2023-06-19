@@ -54,7 +54,7 @@ This `preserveComment` rule is set to `false` by default. In the example below, 
 ```
 
 <!--prettier-ignore-->
-```html
+```liquid
 <main>
   <!--
 
@@ -102,7 +102,7 @@ When the `preserveComment` rule is enabled (`true`) then the contents of block c
 ```
 
 <!--prettier-ignore-->
-```html
+```liquid
 <ul>
   <li>Hello</li>
 

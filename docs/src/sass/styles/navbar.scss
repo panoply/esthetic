@@ -21,19 +21,33 @@ header {
   // margin-right:  33.3%;
 
   .icon-github {
-    width: 25px;
-    height: 25px;
-    fill: $white;
+    width: 20px;
+    height: 20px;
+    color: $white;
+  }
+
+  .icon-npm {
+    width: 44px;
+    height: 44px;
+    color: $gray-400;
   }
 
   .off {
-    color: $white;
+    color: $gray-300;
   }
 
   a {
     font-weight: 400;
     color: $pink;
     margin-right: 15px;
+
+    &.nav-link {
+      font-family: $font-family-other;
+      text-transform: uppercase;
+      font-weight: 100;
+      font-size: 0.9rem;
+      letter-spacing: 0.03rem;
+    }
 
     &.mr {
       margin-right: 0;

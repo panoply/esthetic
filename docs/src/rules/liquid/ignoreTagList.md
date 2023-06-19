@@ -9,31 +9,13 @@ describe:
   - Examples
 ---
 
+::: grid col-9 p-100
+
 # Ignore Tag List
 
-A list of Liquid tags that should excluded from formatting. Only tags which contain a start and end types are valid.
+A list of Liquid tags that should excluded from formatting. Only tags which contain a start and end types are valid. This is a Liquid specific formatting rule which defaults to using `0` when no option has been specified.
 
-# Example Options
-
-Below is an example of how this rule works and you've set the following Liquid tags to be ignored.
-
-# Rule Options
-
-This is a Liquid specific formatting rule which defaults to using `0` when no option has been specified.
-
-##### Example
-
-```js
-{
-  language: 'liquid',
-  liquid: {
-    ignoreTagList: [
-      'capture',
-      'unless'
-    ]
-  }
-}
-```
+:::
 
 <!--
 
@@ -45,18 +27,28 @@ This is a Liquid specific formatting rule which defaults to using `0` when no op
 
 -->
 
-# Examples
+---
 
-::: rule 👍
+# Example
 
-#### `['capture', 'unless']`
+```json:rules
+{
+  "language": "liquid",
+  "wrap": 0,
+  "preserveLine": 0,
+  "liquid": {
+    "ignoreTagList": [
+      "capture",
+      "unless"
+    ]
+  }
+}
+```
 
-:::
-
-Using the above example configuration whenever Prettify encounters a `{% capture %}` or `{% unless %}` tag region it will be skipped from formatting. It is important to note that ignored tags will not apply indentation, so it is up to you to refine the ignore tag yourself.
+Below we are ignoring `{% capture %}` and `{% unless %}` tag regions. Æsthetic will be skipped formatting these tag blocks. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied.
 
 <!-- prettier-ignore -->
-```html
+```liquid
 <div>
 {% if x %}
 
@@ -64,45 +56,22 @@ Using the above example configuration whenever Prettify encounters a `{% capture
 
 {% if xx %}
 <ul>
+
+
+{% unless bar %}
+
+<li>
+{% # This region will be skipped completely %}
+</li>
+
+{% endunless %}
+
 <li>
 Hello World
 </li>
 
-{% unless bar %}
-
-<li> I
-     will not be formatter  </li>
-
-{% endunless %}
-
 </ul>
 {% endif %}
 {% endif %}
-</div>
-```
-
-#### After Formatting
-
-_After formatting the above sample notice how the `{% capture %}` and `{% unless %}` tags region has been completely skipped from formatting. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied._
-
-<!-- prettier-ignore -->
-```html
-<div>
-  {% if x %}
-
-{% capture foo %}   I will not be formatted   {% endcapture %}
-
-    {% if xx %}
-
-      <ul>
-        <li>
-          Hello World
-        </li>
-
-{% unless bar %} <li> I will not be formatted </li> {% endunless %}
-
-      </ul>
-    {% endif %}
-  {% endif %}
 </div>
 ```

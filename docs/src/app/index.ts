@@ -2,36 +2,38 @@ import { Application } from '@hotwired/stimulus';
 import { Accordion } from './components/accordion';
 import { Drawer } from './components/drawer';
 import { Sticky } from './components/sticky';
-import { Example } from './components/example';
+import { Demo } from './components/demo';
 import { ScrollSpy } from './components/scrollspy';
-import { Playground  } from './components/playground'
-
+import { Playground } from './components/playground';
 import spx from 'spx';
 
+window.Prism = {} || window.Prism;
+window.Prism.manual = true;
 spx.connect({
-  targets: ["#navbar","#main"],
+  targets: [ '#navbar', '#main' ],
   progress: false,
   hover: {
     trigger: 'href'
-  },
-})(function() {
+  }
+})(function () {
 
   const stimulus = Application.start();
 
   stimulus.register('drawer', Drawer);
   stimulus.register('accordion', Accordion);
   stimulus.register('sticky', Sticky);
-  stimulus.register('example', Example);
+  stimulus.register('demo', Demo);
   stimulus.register('scrollspy', ScrollSpy);
   stimulus.register('playground', Playground);
 
 });
 
-console.log(spx)
-spx.on('fetch', ({ key}) => {
+spx.on('fetch', ({ key }) => {
 
- if(key === '/playground') {
-  import(window.location.host + '/assets/moloko.js')
- }
+  if (key === '/playground') {
 
-})
+    import(window.location.host + '/assets/moloko.js');
+
+  }
+
+});

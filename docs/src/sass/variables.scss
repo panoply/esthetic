@@ -1,3 +1,12 @@
+:root {
+  --papyrus-font-size: 0.85em;
+  --papyrus-code-padding-y: 0.9em;
+  --papyrus-code-padding-x: 0.8em;
+  --papyrus-code-border-radius: none;
+  --papyrus-line-fence-width: 0;
+  --papyrus-line-fence-color: transparent;
+}
+
 /* -------------------------------------------- */
 /* VARIABLE PREFIX                              */
 /* -------------------------------------------- */
@@ -50,6 +59,7 @@ $gray-900: #282a36;
 $background-colors: (
   'ivory': $gray-300,
   'black': $black,
+  'light': #12161d,
   'gray': $gray-100,
   'cyan': $cyan,
   'ebony': $gray-800
@@ -124,11 +134,11 @@ $container-max-widths: (
 $body-bg: #0f1215; // $black; //#282a36; // $gray-100;
 $body-color: $white; //$gray-900;
 $code-bg: #181b20; //$black; // #282a36;
-$code-inline-bg: $code-bg; // #efefef;
+$code-inline-bg: #23262d; // #efefef;
 $link-color: $white;
 
-$letter-spacing-base: inherit;
-$letter-spacing-heading: inherit;
+$letter-spacing-base: 0.09rem;
+$letter-spacing-heading: 0.04rem;
 
 $font-weight-normal: 200;
 $font-weight-lighter: 200;
@@ -156,6 +166,8 @@ $font-family-base: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
   'Segoe UI Symbol';
 
 $font-family-heading: $font-family-base;
+
+$font-family-other: 'JetBrains Mono', monospace;
 $font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
   monospace;
 
@@ -176,7 +188,7 @@ $font-size-lg: $font-size-base * 1.25; // 1.375rem
 /* FONT HEADINGS                                */
 /* -------------------------------------------- */
 
-$line-height-base: 1.4;
+$line-height-base: 1.5;
 $line-height-sm: 1.25;
 $line-height-lg: 2;
 $line-height-xl: 2.4;
@@ -201,7 +213,7 @@ $h6-font-size: $font-size-base;
 /* PARAGRAPH                                    */
 /* -------------------------------------------- */
 
-$input-bg: rgb(18, 20, 23);
+$input-bg: rgb(18, 20, 24);
 $input-disabled-bg: $gray-100;
 $input-disabled-border-color: $gray-200;
 $input-color: $body-color;
@@ -239,3 +251,61 @@ $form-range-thumb-border-radius: 0;
 $form-range-thumb-focus-box-shadow-width: $input-focus-width;
 $form-range-thumb-active-bg: $salmon;
 $form-range-thumb-disabled-bg: $gray-500;
+
+/* stylelint-disable scss/dollar-variable-colon-space-after */
+
+/* -------------------------------------------- */
+/* BASE STYLES                                  */
+/* -------------------------------------------- */
+
+// FONT FAMILY
+$papyrus-font-family: consolas, monaco, 'Andale Mono', 'Ubuntu Mono',
+  monospace;
+$papyrus-font-size-root: 14px;
+$papyrus-font-size: 1em;
+$papyrus-line-height: 1.7;
+
+// EDITOR SIZING
+$papyrus-height: 100%;
+$papyrus-width: 100%;
+
+// SELECTION
+$papyrus-selection-bg: 255, 255, 255;
+$papyrus-selection-alpha: 0.3;
+
+// CODE REGION
+$papyrus-code-padding-y: 0.8em;
+$papyrus-code-padding-x: 0.5em;
+$papyrus-code-border-radius: 0.5em;
+
+$papyrus-code-color: #fafafa;
+$papyrus-code-bg: #181b20;
+$papyrus-code-inline-bg: #eeebeb;
+$papyrus-code-caret-color: #ffffff;
+
+// SCROLLBAR
+$papyrus-scrollbar-width: 2px;
+$papyrus-scrollbar-track: #181b20;
+$papyrus-scrollbar-bg: #384355;
+$papyrus-scrollbar-thumb: #384355;
+
+// INVISIBLE CHARACTERS
+$papyrus-invisible-space-color: #42454d;
+$papyrus-invisible-tab-color: #808080;
+$papyrus-invisible-lf-color: #808080;
+$papyrus-invisible-cr-color: #808080;
+$papyrus-invisible-crlf-color: #808080;
+
+// LINE NUMBERS
+$papyrus-line-number-width: 3.3em;
+$papyrus-line-number-color: #363d49;
+
+// LINE NUMBER FENCE
+$papyrus-line-fence-width: 0.01em;
+$papyrus-line-scroll-left: 0;
+$papyrus-line-fence-color: #363d49;
+
+// LINE HIGHLIGHT
+$papyrus-line-highlight-alpha: 0.05;
+$papyrus-line-highlight-bg: 171, 190, 206;
+$papyrus-line-highlight-number: #fafafa;

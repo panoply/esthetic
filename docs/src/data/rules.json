@@ -102,8 +102,8 @@
     },
     {
       "group": "liquid",
-      "title": "indentAttributes",
-      "url": "/rules/liquid/indentAttributes/"
+      "title": "indentAttribute",
+      "url": "/rules/liquid/indentAttribute/"
     },
     {
       "group": "liquid",

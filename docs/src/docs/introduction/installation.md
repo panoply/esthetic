@@ -25,7 +25,7 @@ anchors:
 
 Æsthetic recommends developers choose [pnpm](https://pnpm.js.org/en/cli/install) as their package manager.
 
-```
+```bash
 $ pnpm add esthetic
 ```
 
@@ -47,16 +47,12 @@ https://unpkg.com/esthetic/schema.json
 
 You can provide the schema store reference a couple of different ways. For developers who use the **VSCode** text editor can either install the [Æsthetic Extension](#) or alternatively you can provide the schema store to your workspace settings:
 
-```js
+```json
 {
   "json.schemas": [
     {
       "url": "https://unpkg.com/esthetic/schema.json",
-      "fileMatch": [
-        "package.json",
-        ".esthetic.json",
-        ".esthetic"
-      ]
+      "fileMatch": ["package.json", ".esthetic.json", ".esthetic"]
     }
   ]
 }
@@ -64,7 +60,7 @@ You can provide the schema store reference a couple of different ways. For devel
 
 You may optionally choose to provide the schema store directly within JSON configuration files.
 
-```js
+```json
 {
   "$schema": "https://unpkg.com/esthetic/schema.json"
 }

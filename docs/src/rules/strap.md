@@ -51,7 +51,7 @@ Lorem Ipsum
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 
 ```
 
