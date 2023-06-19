@@ -402,7 +402,7 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
     if ((
       (
         forceFilter > 0 &&
-        pipes > forceFilter
+        pipes >= forceFilter
       ) || (
         forceFilter === 0 &&
         wrapFraction > 0 &&
@@ -447,7 +447,7 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
         if (liquid.fargs[i] && (
           (
             forceArgument > 0 &&
-            liquid.fargs[i].length > forceArgument
+            liquid.fargs[i].length >= forceArgument
           ) || (
             forceArgument === 0 &&
             wrapFraction > 0 &&
