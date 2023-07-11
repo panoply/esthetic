@@ -1,6 +1,11 @@
 {
-  "exclude": ["node_modules/**", "public"],
-  "include": ["src/app/**/*.ts"],
+  "exclude": [
+    "node_modules/**",
+    "public"
+  ],
+  "include": [
+    "src/app/**/*.ts"
+  ],
   "compilerOptions": {
     "incremental": false,
     "allowSyntheticDefaultImports": true,
@@ -8,16 +13,23 @@
     "declaration": true,
     "removeComments": true,
     "target": "ES6",
-    "lib": ["es2020", "dom", "dom.iterable"],
-    "typeRoots": ["node_modules/@types"],
+    "lib": [
+      "es2020",
+      "dom",
+      "dom.iterable"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
     "module": "ESNext",
     "moduleResolution": "node",
     "emitDeclarationOnly": true,
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "moloko": ["."],
-      "types": ["./scripts/eleventy.d.ts"]
+      "moloko": [
+        "."
+      ]
     }
   }
 }

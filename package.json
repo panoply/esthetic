@@ -59,13 +59,13 @@
   },
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup --minify --env.NODE_ENV production && gzip-size dist/index.js --include-original",
+    "play": "ava tests/dev.test.mjs --watch",
+    "build": "tsup --minify --env.NODE_ENV production && gzip-size dist/esthetic.js --include-original",
     "pack": "cd versions; pnpm pack ../ && cd ..",
     "release": "pnpm -w release --pkg $npm_package_name",
     "test": "ava --serial",
     "tests": "tests -t cases,rules,units",
     "test:cli": "cd tests; pnpm esthetic ./cli/*.liquid -w --liquid; cd ..;",
-    "test:dev": "ava tests/dev.test.mjs --watch",
     "test:attributes": "ava tests/cases/attributes/*.test.mjs ---",
     "test:html": "ava tests/cases/html/*.test.mjs ---",
     "test:liquid": "ava tests/cases/liquid/*.test.mjs ---",
@@ -77,11 +77,11 @@
   },
   "ava": {
     "files": [
-      "tests/cases/attributes/*.test.mjs",
       "tests/cases/liquid/*.test.mjs",
       "tests/cases/html/*.test.mjs",
       "tests/cases/json/*.test.mjs",
-      "tests/cases/css/*.test.mjs"
+      "tests/cases/css/*.test.mjs",
+      "tests/cases/attributes/*.test.mjs"
     ],
     "extensions": [
       "mjs"
@@ -93,9 +93,7 @@
   "eslintConfig": {
     "root": true,
     "ignorePatterns": [
-      "index.js",
-      "index.mjs",
-      "cli.js",
+      "**/dist/*",
       "**/node_modules/*"
     ],
     "extends": [
@@ -132,8 +130,8 @@
     }
   },
   "devDependencies": {
-    "@liquify/ava": "workspace:^0.0.6",
-    "@liquify/eslint-config": "workspace:^1.1.0",
+    "@liquify/ava": "workspace:^",
+    "@liquify/eslint-config": "^1.2.0",
     "@liquify/prettier-config": "^1.2.1",
     "@liquify/tsconfig": "^1.0.1",
     "@types/benchmark": "^2.1.2",
@@ -148,6 +146,7 @@
     "ansis": "^1.5.5",
     "chokidar": "^3.5.3",
     "fast-glob": "^3.2.12",
+    "mergerino": "^0.4.0",
     "minimist": "^1.2.8"
   }
 }

@@ -11,6 +11,7 @@
 
 @import '../../node_modules/papyrus/theme/root';
 @import '../../node_modules/papyrus/theme/base';
+@import '../../node_modules/papyrus/theme/languages/bash';
 @import '../../node_modules/papyrus/theme/languages/html';
 @import '../../node_modules/papyrus/theme/languages/liquid';
 @import '../../node_modules/papyrus/theme/languages/javascript';
@@ -19,6 +20,7 @@
 @import '../../node_modules/papyrus/theme/languages/css';
 @import '../../node_modules/papyrus/theme/languages/scss';
 @import '../../node_modules/papyrus/theme/languages/json';
+@import '../../node_modules/papyrus/theme/languages/treeview';
 
 /* GRID ---------------------------------------- */
 
@@ -47,7 +49,7 @@
 
 /* COMPONENTS -------------------------------- */
 
-// @import '../../node_modules/@brixtol/bootstrap/sass/components/dropdown';
+@import '../../node_modules/@brixtol/bootstrap/sass/components/dropdown';
 // @import '../../node_modules/@brixtol/bootstrap/sass/components/accordion';
 // @import '../../node_modules/@brixtol/bootstrap/sass/components/modal';
 
@@ -55,7 +57,7 @@
 
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/labels';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/text';
-// @import '../../node_modules/@brixtol/bootstrap/sass/forms/input';
+@import '../../node_modules/@brixtol/bootstrap/sass/forms/input';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/dropdown';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/check';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/color';
@@ -64,7 +66,7 @@
 @import '../../node_modules/@brixtol/bootstrap/sass/forms/range';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/float';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/group';
-// @import '../../node_modules/@brixtol/bootstrap/sass/forms/number';
+@import '../../node_modules/@brixtol/bootstrap/sass/forms/number';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/feedback';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/validation';
 

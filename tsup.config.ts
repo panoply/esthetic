@@ -9,10 +9,17 @@ export default defineConfig([
     clean: false,
     treeshake: true,
     name: 'Æsthetic',
-    minify: process.env.production ? 'terser' : false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        passes: 10
+      }
+    },
     globalName: 'esthetic',
     splitting: false,
     platform: 'neutral',
+    minifyIdentifiers: true,
+    minifySyntax: true,
     define: {
       VERSION: `"${pkg.version}"`
     },

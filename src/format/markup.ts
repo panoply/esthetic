@@ -349,11 +349,20 @@ export function markup () {
 
           } else if (lineBreakValue === 'indent' || lineBreakValue === 'force-indent') {
 
-            if (aa + 1 === len) {
-              build.push(lines[aa].trim(), nl(levels[a]));
-            } else {
-              build.push(lines[aa].trim(), nl(lev));
-            }
+            // if (aa + 1 === len) {
+            // build.push(lines[aa].trimEnd(), nl(levels[a]));
+            // } else {
+
+            // if (aa === 0) {
+
+            // build.push(lines[aa].replace(/(["'])\s+/, '$1' + nl(lev)).trim(), nl(lev));
+
+            // } else {
+
+            build.push(lines[aa].trim(), nl(lev));
+            // }
+
+            // }
 
           } else {
 
@@ -404,8 +413,25 @@ export function markup () {
 
     } else {
 
+      // if (lineBreakValue === 'force-indent') {
+
+      //   if (rules.markup.delimiterTerminus === 'adapt') {
+
+      //     build.push(lines[len].replace(/\s*(["'])\s*>/, nl(levels[a - 1]) + '$1').trim());
+
+      //     if (isLast(lines[len], cc.RAN)) {
+      //       build.push(nl(levels[a - 1] - 1) + '>');
+      //     }
+
+      //   } else {
+      //     build.push(lines[len].replace(/\s*(["'])/, nl(levels[a - 1]) + '$1').trim());
+      //   }
+
+      // } else {
+
       build.push(lines[len]);
 
+      // }
     }
 
     data.lines[a + 1] = line;

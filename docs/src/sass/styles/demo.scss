@@ -19,7 +19,8 @@ $demo-output-font-color: #65696f;
   }
 }
 
-.demo-input {
+.demo-input,
+.demo-input > pre.papyrus {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -58,10 +59,18 @@ $demo-output-font-color: #65696f;
   }
 }
 
+.wrap-fraction-line,
 .wrap-line {
   height: 100%;
-  border-right: 1px solid $salmon;
   position: absolute;
+}
+
+.wrap-line {
+  border-right: 1px solid $salmon;
+}
+
+.wrap-fraction-line {
+  border-right: 1px solid #4cb3e6;
 }
 
 .demo-cover {
@@ -129,6 +138,34 @@ $demo-output-font-color: #65696f;
   background-size: 17px;
   background-position: 12px center;
   background-repeat: no-repeat;
+
+  > .dropdown {
+    width: auto;
+    display: flex;
+
+    > .tab {
+      background-color: transparent;
+      color: $demo-output-font-color;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding-right: 20px;
+      padding-left: 0;
+      margin: 0;
+      border: 0.01em solid transparent;
+      background-color: transparent;
+      background-repeat: no-repeat;
+      background-position: right 0 center;
+      background-size: $input-height-inner-half
+        $input-height-inner-half;
+      background-image: url(icon-arrow($demo-output-font-color, 2));
+
+      &:hover {
+        opacity: 1;
+        color: $white;
+        background-image: url(icon-arrow($white, 2));
+      }
+    }
+  }
 
   > .tab {
     background-color: transparent;

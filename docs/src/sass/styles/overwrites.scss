@@ -63,21 +63,19 @@ blockquote {
   background-image: url(icon-info($gray-600));
   background-repeat: no-repeat no-repeat;
   background-position: 25px center;
-  background-size: 2.5%;
+  background-size: 2%;
   background-color: $code-bg;
   border: $border-width $border-color solid;
   border-radius: 0.5rem;
   position: relative;
-  width: 60% !important;
 
   > p code {
     //background: #363f4e;
-    color: #76fffc;
-    background-color: $code-bg;
-    padding: 0.1rem;
+    // color: #a176ff;
+    //background-color: $code-bg;
 
     font-weight: 200;
-    text-shadow: 0 0.04rem rgb(0 0 0);
+
     -webkit-font-smoothing: antialiased;
   }
 
@@ -100,7 +98,8 @@ blockquote {
     margin: 0;
     width: 100% !important;
     color: $body-color;
-    font-size: $font-size-md;
+    font-size: $font-size-base;
+    letter-spacing: 0.03rem;
     font-family: $font-family-base;
     font-weight: 200;
     -webkit-font-smoothing: subpixel-antialiased;
@@ -229,5 +228,17 @@ table {
 
   blockquote {
     width: 100% !important;
+  }
+}
+
+/* -------------------------------------------- */
+/* RANGES                                       */
+/* -------------------------------------------- */
+
+.fm-range {
+  &.wrap-fraction {
+    &::-webkit-slider-thumb {
+      background-color: #4cb3e6;
+    }
   }
 }

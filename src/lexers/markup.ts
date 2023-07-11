@@ -651,9 +651,9 @@ export function markup (input?: string) {
       }
 
       if (rules.liquid.quoteConvert === 'double') {
-        record.token = token = record.token.replace(/"[^']*?"/g, lx.qc(DQO));
+        record.token = token = record.token.replace(/'[^"]*?'/g, lx.qc(DQO));
       } else if (rules.liquid.quoteConvert === 'single') {
-        record.token = token = record.token.replace(/'[^"]*?'/g, lx.qc(SQO));
+        record.token = token = record.token.replace(/"[^']*?"/g, lx.qc(SQO));
       }
 
       return cdata();

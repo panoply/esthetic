@@ -27,34 +27,77 @@ pnpm ts:watch            Start ESBuild in watch mode
 
 Markdown files will are processed using [markdown-it](https://github.com/markdown-it/markdown-it) and a couple of custom plugins. Frontmatter and JSON data files are used to the order of navigation and various other reference specific information.
 
-### Note Container
+- [Grid Container](#grid-container)
+- [Rule Heading](#rule-heading)
+- [Rule Showcase](#rule-showcase)
 
-Notes will render within a padded border block. Note containers can be used in all `.md` files.
+## Grid Container
+
+Grid access is made possible using fenced containers in the markdown. The `grid` keyword along with triple `:::` markers will result in encapsulate content being wrapped. The [Brixtol Bootstrap](https://brixtol.github.io/bootstrap/) variation grid system and CSS framework class utilities are available.
+
+### INPUT
 
 ```md
-::: note
+:::: grid row jc-center ai-center
 
+::: grid col-sm-6 col-md-4
 Lorem ipsum dolor sit...
-
 :::
+
+::: grid col-6 col-md-8
+Lorem ipsum dolor sit...
+:::
+
+::::
 ```
 
-### Rule Choice Header
+### OUTPUT
+
+<!--prettier-ignore-->
+```html
+<div class="row jc-center ai-center">
+
+  <div class="col-sm-6 col-md-4">
+    Lorem ipsum dolor sit...
+  </div>
+  <div class="col-6 col-md-8">
+    Lorem ipsum dolor sit...
+  </div>
+</div>
+```
+
+## Rule Heading
 
 Rule documentation files, specifically rule example titles are wrapped within a custom container with annotation emoji. These containers will render tooltips and are required when describing rule behaviors. Different emoji types will result in different tooltip hovers.
 
-**Example**
+### INPUT
 
 <!--prettier-ignore-->
 ```md
 
 ::: rule 🙌
 
-#### Choice
+#### choice
 
 :::
 
 ```
+
+### OUTPUT
+
+<!--prettier-ignore-->
+```html
+<div class="rule-title d-flex ai-center">
+  <span
+    class="h5 mr-2"
+    aria-label="You gotta do, what you gotta do"
+    data-tooltip="top"
+  > 🙌 </span>
+  <h4 id="choice" tabindex="-1">choice</h4>
+</div>
+```
+
+### TOOLTIPS
 
 | Emoji | Tooltip                                 |
 | ----- | --------------------------------------- |
@@ -66,16 +109,22 @@ Rule documentation files, specifically rule example titles are wrapped within a 
 | 💡    | Showing an example of the rule          |
 | 🧐    | You gotta do, what you gotta do         |
 
-> The [src/rules/strap.md](#) markdown file can be used as a strap.
+> The [src/rules/strap.md](/docs//src/rules/strap.md) markdown file can be used as a strap.
 
-### Rule Codeblocks
+# Rule Showcasing
 
-Rule documentation files generate **before** and **after** tabs to showcase how code will be formatted. These tabs are applied during the build process and will only render when language code blocks follow JSON code blocks using an identifier value of `json:rules`. Rule codeblocks are omitted and the JSON is extracted.
+Rule documentation files generate interactive demos/examples to showcase how code will be formatted. There are 2 different showcase types (`demo` and `example`) for describing formatting rules. The markdown files for formatting rules use a common structure to achieve this.
 
-for example:
+Whenever a JSON codeblock uses an annotation identifier of `json:rules` then a standard codeblock show immediately follow. The contents of the `json:rules` is parsed during the 11ty build process (via markdown-it) and used as a reference point. The `json:rules` contents inform upon how and what the showcase should generate.
+
+## Demo Showcase
+
+The below structure is used for generating a rule demo type showcase. Æsthetic formatting rules are provided and the resulting output will be a split pane editor. The left pane is the `input` and the right is `output`. An additional tab is also made available which will inject the rules provided.
+
+The below is a basic example of how a demo showcase is generated and expressed:
 
 <!--prettier-ignore-->
-````md
+```md
 
 ```json:rules
 {
@@ -94,11 +143,52 @@ for example:
 
 ```
 
+```
 
+## Example Showcase
 
+The below structure is used for generating a rule `example` type showcase. Instead of providing Æsthetic rules within `json:rules` codeblock, we pass an object with a `example` and `esthetic` property. The `example` property is used to describe the example form helpers and the `esthetic` property is intended to hold the formatting rules.
 
+<!--prettier-ignore-->
+```md
 
+```json:rules
+{
+  "example": {}, // example config
+  "esthetic": {} // formatting rules
+}
+```
 
+```liquid
 
+<!-- Code Sample -!>
 
+```
 
+```
+
+```
+
+## Papyrus Options
+
+In addition to the `example` and `esthetic` properties, `json:rules` may also accept a `papyrus` property. When provided the option will be passed to the `papyrus.create` method. The `papyrus` option can be used in either `demo` or `example` rule showcases.
+
+<!--prettier-ignore-->
+```md
+
+```json:rules
+{
+  "papyrus": {}, // papyrus config
+  "esthetic": {} // formatting rules
+}
+```
+
+```liquid
+
+<!-- Code Sample -!>
+
+```
+
+```
+
+```

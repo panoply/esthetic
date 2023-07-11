@@ -1,12 +1,15 @@
 {% assign links = page.url | split: '/' %}
 
 <div class="row gx-2 breadcrumb mt-4 pl-4 mb-5">
+
   <div class="col-auto">
     {% svg 'home', 'icon icon-home' %}
   </div>
+
   <div class="col-auto">
     {% svg 'chevron-right', 'icon icon-right' %}
   </div>
+
   <div class="col-auto">
     {{ links[1] | capitalize }}
   </div>
@@ -19,6 +22,7 @@
       {{ links[2] | capitalize }}
     </div>
   {% endif %}
+
   {% if links[3] %}
     <div class="col-auto">
       {% svg 'chevron-right', 'icon icon-right' %}
@@ -27,4 +31,5 @@
       {{ links[3] }}
     </div>
   {% endif %}
+
 </div>

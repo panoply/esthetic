@@ -15,6 +15,7 @@ export const config: IConfigInternal = {
   reportStats: true,
   editorConfig: false,
   throwErrors: true,
+  globalThis: true,
   persistRules: true,
   logLevel: LogLevel.Standard,
   logColors: true,

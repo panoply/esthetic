@@ -1,3 +1,4 @@
+import merge from 'mergerino';
 import { Rules } from 'types';
 
 /**
@@ -6,7 +7,7 @@ import { Rules } from 'types';
  * Rules which replicates the Prettier formatting style.
  * These also reflect the prettier-liquid plugin.
  */
-export const prettier: Rules = {
+export const prettier: Rules = merge({
   preset: 'prettier',
   language: 'auto',
   preserveLine: 1,
@@ -41,4 +42,4 @@ export const prettier: Rules = {
     commentIndent: false,
     quoteConvert: 'double'
   }
-};
+});

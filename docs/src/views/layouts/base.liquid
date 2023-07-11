@@ -70,8 +70,10 @@
 
           <div
             class="row"
-            data-controller="scrollspy"
-            data-scrollspy-active-class="fc-pink">
+            {% unless in_rules %}
+              data-controller="scrollspy"
+              data-scrollspy-active-class="fc-pink"
+            {% endunless %}>
 
             <div class="col-auto px-0">
               {% if in_rules %}
@@ -82,13 +84,15 @@
             </div>
 
             <div class="col p-5 content">
+
               <div class="d-block">
                 {% include 'breadcrumbs' %}
               </div>
-              <div class="row px-4">
-                {{ content }}
-              </div>
+
+              {{ content }}
+
               {% include 'navigators' %}
+
             </div>
 
             {% unless in_rules %}

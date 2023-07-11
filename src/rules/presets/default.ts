@@ -1,3 +1,4 @@
+import merge from 'mergerino';
 import { Rules, ScriptRules } from 'types';
 
 /**
@@ -6,7 +7,7 @@ import { Rules, ScriptRules } from 'types';
  * The default rules of Æsthetic from which all **presets** and
  * custom rules will be merged.
  */
-export const defaults: Rules = {
+export const defaults: Rules = merge({
   crlf: false,
   correct: false,
   preset: 'default',
@@ -121,4 +122,4 @@ export const defaults: Rules = {
     variableList: 'none',
     vertical: false
   }
-};
+});

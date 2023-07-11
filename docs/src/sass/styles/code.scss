@@ -20,6 +20,7 @@ $code-font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
 
   .error-message {
     white-space: normal;
+    color: #888;
   }
 }
 
@@ -37,6 +38,11 @@ a {
       color: $gray-500;
     }
   }
+}
+
+.language-bash,
+.language-treeview {
+  padding: 20px !important;
 }
 
 pre:not(.papyrus) {
@@ -89,14 +95,14 @@ pre:not(.papyrus) {
 }
 
 :not(pre) > code {
-  width: 100%;
-  padding: 0.2em 0.6em 0.3em 0.6em;
-  font-size: 0.75rem;
-  font-family: $font-family-heading;
-  background: $code-inline-bg;
-  border-radius: 0.3em;
-  color: $gray-300; // #6eb2d3;
-  letter-spacing: 0.04em;
+  padding: 0.2em 0.6em 0.3em;
+  font-size: 0.7rem;
+  font-weight: 300;
+  font-family: $papyrus-font-family;
+  color: #e7e5e5;
+  border-radius: 0.2rem;
+  background-color: #22272d;
+  letter-spacing: 0.05em;
 }
 .editor-output {
   background-color: $code-bg;

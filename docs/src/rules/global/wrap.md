@@ -13,7 +13,9 @@ describe:
   - Example
 ---
 
-::: grid col-6 p-100 px-2
+:::: grid row pr-5
+
+::: grid col-6 p-100 pl-5
 
 # Wrap
 
@@ -21,19 +23,9 @@ Character width limit before applying word wrap. A value of `0` will disable wra
 
 > When this rule is undefined in a `.liquidrc` file the Text Editors settings will be used, in vscode that is `*.endWithNewline` where `*` is a language name.
 
-<!--
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-🧐 - You gotta do, what you gotta do
-💡 - Showing an example of the rule
--->
-
 :::
 
-::: grid col-11 p-100 px-2
+::: grid col-12 p-100 pl-5
 
 # Example
 
@@ -41,15 +33,19 @@ Adjust the range to input to see how Æsthetic handles word wrap.
 
 ```json:rules
 {
+  "papyrus": {
+    "editor": false
+  },
   "example": {
-    "form": "range",
     "rule": "wrap",
-    "value": 90,
-    "mode": "example"
+    "min": 20,
+    "max": 100,
+    "value": 80,
+    "step": 1
   },
   "esthetic": {
     "language": "html",
-    "wrap": 90,
+    "wrap": 80,
     "endNewline": false,
     "markup": {
       "forceIndent": true,
@@ -78,3 +74,5 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 ```
 
 :::
+
+::::

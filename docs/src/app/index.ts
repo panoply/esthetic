@@ -3,12 +3,11 @@ import { Accordion } from './components/accordion';
 import { Drawer } from './components/drawer';
 import { Sticky } from './components/sticky';
 import { Demo } from './components/demo';
+import { Dropdown } from './components/dropdown';
 import { ScrollSpy } from './components/scrollspy';
 import { Playground } from './components/playground';
 import spx from 'spx';
 
-window.Prism = {} || window.Prism;
-window.Prism.manual = true;
 spx.connect({
   targets: [ '#navbar', '#main' ],
   progress: false,
@@ -21,6 +20,7 @@ spx.connect({
 
   stimulus.register('drawer', Drawer);
   stimulus.register('accordion', Accordion);
+  stimulus.register('dropdown', Dropdown);
   stimulus.register('sticky', Sticky);
   stimulus.register('demo', Demo);
   stimulus.register('scrollspy', ScrollSpy);

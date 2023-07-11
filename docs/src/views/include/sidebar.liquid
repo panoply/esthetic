@@ -24,8 +24,8 @@
 
       <form class="p-4 d-none">
         <input
-          class="fm-input fm-sm bd bd-1 rd-2"
           type="search"
+          class="fm-input fm-sm bd bd-1 rd-2"
           placeholder="Search...">
       </form>
 
@@ -34,7 +34,7 @@
         data-controller="accordion">
         {% for group in links.groups %}
 
-          {%-
+          {%
             liquid
 
             assign name = group | downcase
@@ -60,22 +60,22 @@
             endif
           %}
 
-
           <button class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}">
             {{ group }}
           </button>
 
           <div class="accordion-fold {% if open %}expanded{%- endif -%}">
             <ul
-              class="py-4 px-2 ml-0"
-              id="{{ link.title | slugify }}">
+              id="{{ link.title | slugify }}"
+              class="py-4 px-2 ml-0">
               {% for item in links.urls %}
                 {% if item.group == name %}
                   <li class="pt-1 pl-3">
                     <a
                       href="{{ item.url }}"
+                      data-spx-position="y:0"
                       {% if page.url == item.url %}
-                      class="fc-pink"
+                        class="fc-pink"
                       {% endif %}>
                       {{ item.title }}
                     </a>

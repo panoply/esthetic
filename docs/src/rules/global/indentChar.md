@@ -82,7 +82,7 @@ The default `indentChar` is a single whitespace value.
 
 :::
 
-Below we are using tab character indentation.
+Below we are using tab `\t` character for indentation.
 
 ```json:rules
 {

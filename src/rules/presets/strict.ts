@@ -1,3 +1,4 @@
+import merge from 'mergerino';
 import { Rules } from 'types';
 
 /**
@@ -6,7 +7,7 @@ import { Rules } from 'types';
  * The `recommended` rule presets which produce the most common
  * and expect formatted results.
  */
-export const strict: Rules = {
+export const strict: Rules = merge({
   preset: 'strict',
   language: 'auto',
   preserveLine: 1,
@@ -59,4 +60,4 @@ export const strict: Rules = {
     sortProperties: true,
     sortSelectors: true
   }
-};
+});

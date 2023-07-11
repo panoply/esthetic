@@ -1,3 +1,4 @@
+import merge from 'mergerino';
 import { Rules } from 'types';
 
 /**
@@ -6,7 +7,7 @@ import { Rules } from 'types';
  * The `warrington` rule presets which are geared towards
  * Shopify projects.
  */
-export const warrington: Rules = {
+export const warrington: Rules = merge({
   preset: 'warrington',
   language: 'auto',
   preserveLine: 2,
@@ -38,4 +39,4 @@ export const warrington: Rules = {
     commentIndent: false,
     quoteConvert: 'double'
   }
-};
+});

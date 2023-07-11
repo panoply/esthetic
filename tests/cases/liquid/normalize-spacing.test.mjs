@@ -217,16 +217,16 @@ test('Spacing in parameters', t => {
   forAssert(
     [
       [
-        liquid`{%  for    x   in   object . prop [ 'array'  ] parameter  :  2000  %}{%   endif  %}`,
-        liquid`{% for x in object.prop['array'] parameter: 2000 %}{% endif %}`
+        liquid`{%  for    x   in   object . prop [ 'array'  ] parameter  :  2000  %}{%   endfor  %}`,
+        liquid`{% for x in object.prop['array'] parameter: 2000 %}{% endfor %}`
       ],
       [
-        liquid`{%  for    x   in   (foo .. bar) parameter  :  2000  %}{%   endif  %}`,
-        liquid`{% for x in (foo..bar) parameter: 2000 %}{% endif %}`
+        liquid`{%  for    x   in   (foo .. bar) parameter  :  2000  %}{%   endfor  %}`,
+        liquid`{% for x in (foo..bar) parameter: 2000 %}{% endfor %}`
       ],
       [
-        liquid`{%  for    x   in   (10 . . 200) parameter  :  2000 param  limit :1  %}{%   endif  %}`,
-        liquid`{% for x in (10..200) parameter: 2000 param limit: 1 %}{% endif %}`
+        liquid`{%  for    x   in   (10 . . 200) parameter  :  2000 param  limit :1  %}{%   endfor  %}`,
+        liquid`{% for x in (10..200) parameter: 2000 param limit: 1 %}{% endfor %}`
       ]
 
     ]

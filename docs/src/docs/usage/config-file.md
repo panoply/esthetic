@@ -15,11 +15,7 @@ anchors:
 
 Æsthetic supports configuration files for defining formatting rules, settings and other options. By default, Æsthetic assumes that configuration is provided within a `package.json` file.
 
-::: note
-
-Despite the package name shipping under the U.S spelt variation the naming convention of files supports both U.S or U.K variations.
-
-:::
+> Despite the package name shipping under the U.S spelt variation the naming convention of files supports both U.S or U.K variations.
 
 # Supported Files
 
@@ -28,11 +24,7 @@ You may prefer to keep formatting rules in an external file opposed using the de
 - `.esthetic`
 - `.esthetic.json`
 
-::: note
-
-You can also use the CLI `-c` or `--config` flag to provide a custom config file and/or path location reference.
-
-:::
+> You can also use the CLI `-c` or `--config` flag to provide a custom config file and/or path location reference.
 
 # Ignoring Files
 
@@ -44,9 +36,13 @@ Ignoring files/directories from formatting is made possible using the `exclude[]
 
 The CLI will check for existence of supported files before assuming `package.json` definitions to determine its point of control. Developers who are using **JSON** file configurations should consider providing the [`$schema`](#) store reference to files.
 
+:::: grid row
+
+::: grid col-6
+
 ##### package.json
 
-```js
+```json
 {
   "esthetic": {
     "include": [],
@@ -69,10 +65,16 @@ The CLI will check for existence of supported files before assuming `package.jso
 }
 ```
 
+:::
+
+::: grid col-6
+
 ##### .esthetic.json
 
-```js
+<!--prettier-ignore-->
+```json
 {
+
   "include": [],
   "exclude": [],
   "settings": {},
@@ -89,5 +91,12 @@ The CLI will check for existence of supported files before assuming `package.jso
     "tsx": {},
     "typescript": {}
   }
+
 }
+
+
 ```
+
+:::
+
+::::

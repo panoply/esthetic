@@ -82,9 +82,9 @@ export function setPreset (options: Rules) {
  * Sets the `parse.rules` reference, sets the `preset` and
  * handles rule assignments
  */
-export function setRules (options: Rules, events: EventListeners) {
+export function setRules (opts: Rules, events: EventListeners) {
 
-  if (config.persistRules === false) options = assign(options, merge(defaults, options));
+  const options: Rules = opts;
 
   /**
    * Properties Existence
@@ -113,7 +113,7 @@ export function setRules (options: Rules, events: EventListeners) {
       if (rule === 'crlf') parse.crlf = options[rule] ? CNL : NWL;
       if (rule === 'wrap' && options[rule] > 0) {
         if (has('wrapFraction') === false || (has('wrapFraction') && options.wrapFraction <= 0)) {
-          parse.rules.wrapFraction = options[rule] - options[rule] / 4;
+          options.wrapFraction = options[rule] - (options[rule] / 4);
         }
       }
 

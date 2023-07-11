@@ -17,14 +17,27 @@ declare namespace Æsthetic {
 
   interface Static {
     /**
-     * **Æsthetic ~ Rule Defintions**
+     * #### _ÆSTHETIC_
+     *
+     * Rule Defintions
+     *
+     * Rule defintions which describe the different formatting options
+     * esthetic offers.
+     */
+    get presets(): { defaults: Rules };
+    /**
+     * #### _ÆSTHETIC_
+     *
+     * Rule Defintions
      *
      * Rule defintions which describe the different formatting options
      * esthetic offers.
      */
     get definitions(): Æ.Definitions;
     /**
-     * **Æsthetic ~ Statistics**
+     * #### _ÆSTHETIC_
+     *
+     * Statistics
      *
      * Maintains a reference of statistic information about the
      * operation, also available in events like `esthetic.on('format')` and
@@ -32,62 +45,72 @@ declare namespace Æsthetic {
      */
     get stats(): Æ.Stats;
     /**
-     * **Æsthetic ~ Parse Table**
+     * #### _ÆSTHETIC_
+     *
+     * Parse Table
      *
      * Returns the current Parse Table data~structure. You can only call this
      * in a post beautification or parse cycle.
      */
     get table(): Æ.Data;
     /**
-     * **Æsthetic ~ Parse Error**
+     * #### _ÆSTHETIC_
+     *
+     * Parse Error
      *
      * Returns the the Parse Error or `null` if no error
      */
     get error(): Æ.IParseError;
     /**
-     * **Æsthetic Liquid**
+     * #### _Æsthetic Liquid_
      *
      * Formatting for the Liquid Template Language.
      */
     liquid: LiquidFormat;
     /**
-     * **Æsthetic HTML**
+     * #### _Æsthetic HTML_
      *
      * Formatting for the HTML Language.
      */
     html: HTMLFormat;
     /**
-     * **Æsthetic XML**
+     * #### _Æsthetic XML_
      *
      * Formatting for the XML Language.
      */
     xml: XMLFormat;
     /**
-     * **Æsthetic CSS**
+     * #### _Æsthetic CSS_
      *
      * Formatting for the CSS Language.
      */
     css: CSSFormat
     /**
-     * **Æsthetic JSON**
+     * #### _Æsthetic JSON_
      *
      * Formatting for the JSON Language.
      */
     json: JSONFormat;
     /**
-     * **Æsthetic JavaScript (BETA)**
+     * #### _Æsthetic JavaScript_
+     *
+     * **⚠️ EXPERIMENTAL ⚠️**
      *
      * Formatting for the JavaScript Language.
      */
     js: LiquidFormat;
     /**
-     * **Æsthetic TypeScript (BETA)**
+     * #### _Æsthetic TypeScript_
+     *
+     * **⚠️ EXPERIMENTAL ⚠️**
      *
      * Formatting for the TypeScript Language.
      */
     ts: LiquidFormat;
     /**
-     * **Æsthetic ~ Format**
+     * #### _ÆSTHETIC_
+     *
+     * Format
      *
      * Æsthetic supports multiple languages but one should use
      * the experimental languages with caution until they are
@@ -127,7 +150,9 @@ declare namespace Æsthetic {
     format: (source: string | Buffer, rules?: Æ.Rules) => string;
 
     /**
-     * **Æsthetic Parse**
+     * #### _ÆSTHETIC_
+     *
+     * Parse
      *
      * Executes a parse operation and returns the generate data structure.
      * When calling this method, beautification will not be applied, the
@@ -163,14 +188,18 @@ declare namespace Æsthetic {
     parse: (source: string | Buffer) => Æ.Data;
 
     /**
-     * **Æsthetic ~ Events**
+     * #### _ÆSTHETIC_
+     *
+     * Events
      *
      * Event Listener which invokes on different operations.
      */
     on: Events<Pick<Static, 'on' | 'parse' | 'format'>>;
 
     /**
-     * **Æsthetic ~ Hooks**
+     * #### _ÆSTHETIC_
+     *
+     * Hooks
      *
      * Hook into the parse and beatification operations. Hooks allow you to
      * refine output and control different logic during execution cycles.
@@ -178,7 +207,9 @@ declare namespace Æsthetic {
     hook: Hooks<Pick<Static, 'on' | 'parse' | 'format'>>;
 
     /**
-     * **Æsthetic ~ Configuration**
+     * #### _ÆSTHETIC_
+     *
+     * Configuration
      *
      * Control the execution behaviour of Æsthetic. Options exposed in this method
      * allow you to refine operations.
@@ -187,12 +218,37 @@ declare namespace Æsthetic {
      * reference applied internally, then do no provide a parameter.
      */
     config: {
+      /**
+       * Returns the current configuration options with additional internal references
+       */
       (): Æ.IConfigInternal;
+      /**
+       * Customise the execution behaviour. Please ensure that you pass this method
+       * before using `esthetic.format` or `esthetic.parse`, for example:
+       *
+       * ```js
+       * import esthetic from 'esthetic';
+       *
+       * esthetic.config({
+       *   persistRules: false,
+       *   reportStats: false
+       *   // etc etc
+       * })
+       *
+       * esthetic.format('...')
+       *
+       * // Alternatively, you can chain:
+       *
+       * esthetic.config({}).format('')
+       * ```
+       */
       (options: Æ.IConfig): Pick<Static, 'on' | 'grammar' | 'rules' | 'hook' | 'parse' | 'format'>;
     };
 
     /**
-     * **Æsthetic ~ Rules**
+     * #### _ÆSTHETIC_
+     *
+     * Rules**
      *
      * Set format rules to be applied to syntax. Use this method if you are executing
      * repeated runs and do not require Æsthetic to validate rules for every cycle.
@@ -211,7 +267,9 @@ declare namespace Æsthetic {
     };
 
     /**
-     * **Æsthetic ~ Grammar**
+     * #### _ÆSTHETIC_
+     *
+     * Grammar**
      *
      * Extend built-in grammar references. By default, Æsthetics supports all current
      * specification standards.
@@ -233,7 +291,9 @@ declare namespace Æsthetic {
     };
 
     /**
-     * **Æsthetic ~ Language Detection**
+     * #### _ÆSTHETIC_
+     *
+     * Language Detection**
      *
      * Automatic language detection based on the string input.
      * Returns lexer, language and official name.
@@ -242,7 +302,9 @@ declare namespace Æsthetic {
   }
 
   /**
-   * **Æsthetic Configuration ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   *  Configuration (Type)
    *
    * Type export of the execution configuration options which is available
    * via the `esthetic.config(configuration)` method.
@@ -250,7 +312,9 @@ declare namespace Æsthetic {
   type Configuration = Æ.IConfig;
 
   /**
-   * **Æsthetic Stats ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   *  Stats (Type)
    *
    * Type export of Statistics return value which is available via
    * the `esthetic.stats` getter method.
@@ -258,7 +322,9 @@ declare namespace Æsthetic {
   type Stats = Æ.Stats;
 
   /**
-   * **Æsthetic Global Rules ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   *  Global Rules (Type)
    *
    * Type export of Global Formatting Rules. These rules are used
    * for every supported language.
@@ -270,7 +336,9 @@ declare namespace Æsthetic {
   type Rules = Æ.GlobalRules;
 
   /**
-   * **Æsthetic Global Rules ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   *  Global Rules (Type)
    *
    * Type export of Global Formatting Rules. These rules are used
    * for every supported language.
@@ -281,7 +349,9 @@ declare namespace Æsthetic {
    */
   type GlobalRules = Æ.GlobalRules;
   /**
-   * **Æsthetic Liquid Rules ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   *  Liquid Rules (Type)
    *
    * Type export of Liquid Formatting Rules. These rules are specific
    * to the Liquid Language.
@@ -292,7 +362,9 @@ declare namespace Æsthetic {
    */
   type LiquidRules = Æ.LiquidRules;
   /**
-   * **Æsthetic Markup Rules ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Markup Rules (Type)
    *
    * Type export of Markup Formatting Rules. These rules are specific
    * to the HTML, XML, Liquid and other Languages which use Markup.
@@ -303,7 +375,9 @@ declare namespace Æsthetic {
    */
   type MarkupRules = Æ.MarkupRules;
   /**
-   * **Æsthetic Script Rules ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Script Rules (Type)
    *
    * Type export of Script Formatting Rules. These rules are specific
    * to the JavaScript, TypeScript, JSX, TSX and other Languages which use Scripts.
@@ -314,7 +388,9 @@ declare namespace Æsthetic {
    */
   type ScriptRules = Æ.ScriptRules;
   /**
-   * **Æsthetic Style Rules ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Style Rules (Type)
    *
    * Type export of Style Formatting Rules. These rules are specific
    * to the CSS, SCSS  and other Languages which use Styles.
@@ -325,7 +401,9 @@ declare namespace Æsthetic {
    */
   type StyleRules = Æ.StyleRules;
   /**
-   * **Æsthetic JSON Rules ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * JSON Rules (Type)
    *
    * Type export of JSON Formatting Rules. These rules are specific
    * to the JSON language.
@@ -336,7 +414,9 @@ declare namespace Æsthetic {
    */
   type JSONRules = Æ.JSONRules;
   /**
-   * **Æsthetic Language Name ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Language Name (Type)
    *
    * Type export of lowercase Language names used for determining
    * the language Æsthetic is handling. This is the Type used via
@@ -346,7 +426,9 @@ declare namespace Æsthetic {
    */
   type LanguageName = Æ.LanguageName;
   /**
-   * **Æsthetic Official Language Names ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Official Language Names (Type)
    *
    * Type export of the official Language names, for example, if the
    * the Language name is `liquid` then the official is `Liquid` (with)
@@ -360,7 +442,9 @@ declare namespace Æsthetic {
    */
   type LanguageOfficialName = Æ.LanguageOfficialName;
   /**
-   * **Æsthetic Lexer Names ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Lexer Names (Type)
    *
    * Type export of the lexer names. This is mostly an internal option but has
    * been exposed here for API usage. The **Lexer** name is any one of these 6:
@@ -394,34 +478,44 @@ declare namespace Æsthetic {
    */
   type LexerName = Æ.LexerName;
   /**
-   * **Æsthetic Parse Table Record ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Parse Hook (Type)
    *
    * Type export of Parse hooks function events.
    *
    */
   type ParseHook = Æ.ParseHook;
   /**
-   * **Æsthetic Parse Table Record ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Parse Table Record (Type)
    *
    * Type export of the data structure (parse table) records.
    *
    */
   type Record = Æ.Record;
   /**
-   * **Æsthetic Parse Table Record ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Parse Table (Type)
    *
    * Type export of the data structure Parse Table.
    *
    */
   type ParseTable = Æ.Data;
   /**
-   * **Æsthetic Grammar ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Æsthetic Grammar (Type)
    *
    * Type export of Grammars method parameter.
    */
   type Grammar = Æ.Grammars;
   /**
-   * **Æsthetic Parse Error ~ (Type)**
+   * #### _ÆSTHETIC_
+   *
+   * Parse Error (Type)
    *
    * Type export of the Parse Error Model which is provided and returned
    * by the `esthetic.error` getter.
@@ -429,6 +523,31 @@ declare namespace Æsthetic {
   type ParseError = Æ.IParseError;
 }
 
+declare global {
+
+  interface Window {
+    /**
+     * #### _ÆSTHETIC_
+     *
+     * Syntactical code beautification leveraging the Sparser algorithm.
+     */
+    get esthetic(): Æsthetic.Static
+  }
+
+  /**
+   * #### _ÆSTHETIC_
+   *
+   * Syntactical code beautification leveraging the Sparser algorithm.
+   */
+  export const esthetic: Æsthetic.Static;
+
+}
+
+/**
+ * #### _ÆSTHETIC_
+ *
+ * Syntactical code beautification leveraging the Sparser algorithm.
+ */
 declare const Æsthetic: Æsthetic.Static;
 
 export = Æsthetic

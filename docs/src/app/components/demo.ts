@@ -1,9 +1,11 @@
 import { Controller } from '@hotwired/stimulus';
+import { parseJSON } from '../utilities/common';
 import { Rules } from 'esthetic';
-import papyrus, { Model, Languages, MountOptions } from 'papyrus';
+import papyrus, { Languages } from 'papyrus';
 import merge from 'mergerino';
+import JSONCompletions from '../completions/rules';
 
-const rules = (ruleOptions: Rules) => merge({
+const rules = (ruleOptions: Rules) => merge<Rules>({
   crlf: false,
   correct: false,
   preset: 'default',
@@ -122,29 +124,29 @@ const rules = (ruleOptions: Rules) => merge({
 
 export class Demo extends Controller {
 
-  input: Model;
-  output: Model;
-
   /**
    * Stimulus: Targets
    */
   static targets = [
-    'editor',
-    'rules',
-    'cover',
-    'gear',
-    'demo',
-    'wrap',
-    'count',
-    'before',
-    'after',
-    'range',
-    'input',
-    'output'
-  ];
 
-  min: number;
-  max: number;
+    /* EDITOR RELATED ----------------------------- */
+
+    'rules',
+    'rulesTab',
+    'input',
+    'inputTab',
+    'output',
+
+    /* RULE REALTED ------------------------------- */
+
+    'wrapLine',
+    'wrapCount',
+    'wrapFractionRange',
+    'wrapFractionCount',
+    'wrapFractionLine',
+    'wrapRange'
+
+  ];
 
   /**
    * Stimulus: Values
@@ -152,220 +154,178 @@ export class Demo extends Controller {
   static values = {
     mode: String,
     rules: Object,
-    original: String,
+    rulesOriginal: Object,
     input: String,
+    inputOriginal: String,
     language: String,
-    papyrus: Object
+    papyrus: Object,
+    tab: Number
   };
 
-  getEditorRect () {
+  get rulesInput () {
 
-    const ih = this.inputTarget.getBoundingClientRect().height;
-    const oh = this.outputTarget.getBoundingClientRect().height;
-    const sh = this.output.code.scrollHeight;
-
-    let height = ih;
-
-    if (oh > ih) {
-      height = oh;
-    } else if (ih > oh) {
-      height = ih;
-    }
-
-    if (height < sh) height = sh + 5;
-
-    const max = height;
-
-    this.input.pre.style.minHeight = max + 'px';
-    this.input.pre.style.maxHeight = max + 'px';
-
-    this.output.pre.style.maxHeight = max + 0 + 'px';
-    this.output.pre.style.minHeight = max + 0 + 'px';
+    return JSON.stringify(this.rulesValue, null, 2);
 
   }
 
-  initialize () {
+  /**
+   * Set max-height and min-height based on output bounding height
+   */
+  getEditorRect () {
 
-    if (!this.hasModeValue) this.modeValue = 'editor';
+    const ih = this.inputTarget.getBoundingClientRect().height;
+
+    let height = ih;
+
+    if (this.hasOutputTarget) {
+
+      const oh = this.outputTarget.getBoundingClientRect().height;
+      const sh = this.output.code.scrollHeight;
+
+      if (oh > ih) height = oh;
+      if (height < sh) height = sh + 5;
+
+      this.input.pre.style.minHeight = height + 'px';
+      this.input.pre.style.maxHeight = height + 'px';
+      this.output.pre.style.maxHeight = height + 'px';
+      this.output.pre.style.minHeight = height + 'px';
+
+    } else {
+
+      const sh = this.input.code.scrollHeight;
+
+      if (height < sh) height = sh + 5;
+
+      this.input.pre.style.minHeight = height + 'px';
+      this.input.pre.style.maxHeight = height + 'px';
+
+    }
 
   }
 
   connect () {
 
-    if (this.modeValue === 'example') {
-
-      this.exampleRule();
-
-    } else {
-
-      this.sideBySide();
-    }
-
-  }
-
-  exampleRule () {
-
-    this.input = papyrus.mount(this.inputTarget, {
-      editor: false,
+    this.input = papyrus.mount(this.inputTarget, merge<papyrus.Options>({
       showSpace: true,
-      language: this.languageValue
-    });
-
-    this.originalValue = this.inputValue;
-
-  }
-
-  sideBySide () {
-
-    if (this.hasPapyrusValue) {
-      this.papyrusValue = merge<MountOptions>({
-        editor: false,
-        lineHighlight: false,
-        showSpace: true,
-        language: this.languageValue
-      }, this.papyrusValue);
-    } else {
-      this.papyrusValue = {
-        editor: false,
-        lineHighlight: false,
-        showSpace: true,
-        language: this.languageValue
-      };
-    }
-
-    this.input = papyrus.mount(this.inputTarget, {
-      editor: true,
-      showSpace: false,
-      language: this.languageValue
-    });
-
-    this.languageValue = this.input.language;
-    this.input.onUpdate(this.onEdit, this);
-    this.output = papyrus.mount(this.outputTarget, this.papyrusValue);
-
-    this.getEditorRect();
-
-  }
-
-  onShow () {
-
-    const output = esthetic.format(this.inputValue, rules(this.rulesValue));
-
-    this.output.update(output);
-    this.coverTarget.classList.add('d-none');
-    this.coverTarget.nextElementSibling.classList.remove('d-none');
-
-    this.getEditorRect();
-
-  }
-
-  onCover (event: MouseEvent) {
-
-    this.gearTargets.forEach(target => {
-      if (event.type === 'mouseout') {
-        target.setAttribute('attributeName', 'none');
-      } else {
-        if (target.getAttribute('attributeName') !== 'transform') {
-          target.setAttribute('attributeName', 'transform');
+      showTab: false,
+      editor: {
+        completions: {
+          json: JSONCompletions
         }
       }
-    });
+    }, this.papyrusValue));
+
+    this.input.onupdate(this.onInputEdit, this);
+    this.input.onsave(this.onInputSave, this);
+
+    if (this.hasOutputTarget) {
+
+      this.output = papyrus.mount(this.outputTarget, merge<papyrus.Options>({
+        editor: false,
+        showSpace: true,
+        showTab: true
+      }, this.papyrusValue));
+
+    }
+
+    this.getEditorRect();
 
   }
 
-  onTable () {
+  disconnect (): void {
 
-    const data = JSON.stringify(esthetic.parse(this.inputValue), null, 2);
-
-    this.output.update(data, 'json');
+    if (this.input.complete) this.input.complete.destroy(true);
 
   }
 
-  onEdit (value: string) {
+  formatCode (input?: string) {
+
+    try {
+      const output = esthetic.format(input || this.inputValue, rules(this.rulesValue));
+      if (input) {
+        this.output.update(output);
+      } else {
+        this.formatCode(output);
+      }
+    } catch (e) {
+      this.output.showError(e, { heading: 'Error thrown by Æsthetic' });
+    }
+
+  }
+
+  timer: number = NaN;
+
+  onInputSave (value: string) {
+
+    if (!isNaN(this.timer)) {
+      window.clearTimeout(this.timer);
+      this.timer = NaN;
+    }
+
+    try {
+
+      const output = esthetic.format(value, this.modeValue === 'rules' ? {
+        language: 'json',
+        json: {
+          arrayFormat: 'indent',
+          objectIndent: 'indent',
+          braceAllman: true,
+          bracePadding: false,
+          objectSort: false
+        }
+      } : rules(this.rulesValue));
+
+      return output;
+
+    } catch (e) {
+
+    }
+
+  }
+
+  onInputEdit (value: string) {
 
     if (this.modeValue === 'rules') {
 
-      this.onShow();
+      this.formatCode();
+      this.getEditorRect();
 
-      try {
+      if (!isNaN(this.timer)) {
+        window.clearTimeout(this.timer);
+        this.timer = NaN;
+      }
 
-        this.rulesValue = JSON.parse(value);
+      this.timer = window.setTimeout(() => {
 
         try {
 
-          const output = esthetic.format(this.inputValue, this.rulesValue);
-
-          this.output.update(output);
+          this.rulesValue = parseJSON(value);
+          this.formatCode();
+          this.timer = NaN;
 
           return value;
 
-        } catch (e) {
+        } catch (error) {
 
-          this.output.showError(e, {
-            heading: 'Error thrown by Æsthetic'
+          this.output.showError(error.message, {
+            title: 'JSON ERROR',
+            heading: 'Invalid JSON Syntax',
+            stack: error.stack
           });
+
+          this.timer = NaN;
 
         }
 
-      } catch (e) {
-
-        this.output.showError(e.message, {
-          heading: 'Invalid JSON Syntax'
-        });
-
-      }
+      }, 1500);
 
     } else {
 
-      this.onShow();
+      this.inputValue = value;
+      this.formatCode();
+      this.getEditorRect();
 
-      try {
-
-        this.inputValue = value;
-
-        const output = esthetic.format(value, this.rulesValue);
-
-        this.output.update(output);
-
-      } catch (e) {
-
-        this.output.showError(e, {
-          heading: 'Error thrown by Æsthetic'
-        });
-      }
     }
-
-  }
-
-  doRestore () {
-
-    if (this.output) {
-      this.input.update(this.inputValue, this.languageValue);
-      this.output.hideError();
-    } else {
-      const output = esthetic.format(this.inputValue, rules(this.rulesValue));
-      this.input.update(output, this.languageValue);
-    }
-  }
-
-  doRules () {
-
-    const output = JSON.stringify(this.rulesValue, null, 2);
-    this.input.update(output, 'json');
-
-  }
-
-  doFormat () {
-
-    // if (this.modeValue === 'rules') {
-    //   const output = esthetic.format(this.inputValue, this.rulesValue);
-    //   this.code.update(output, this.languageValue);
-    // } else {
-    //   const output = esthetic.format(this.code.raw, this.rulesValue);
-    //   this.output.update(output);
-    // }
-
-    esthetic.rules(this.rules);
 
   }
 
@@ -373,70 +333,128 @@ export class Demo extends Controller {
 
     if (rule === null) {
 
-      const output = esthetic.format(this.inputValue, rules(Object.assign(this.rulesValue, { [lexer]: value })));
-      this.countTarget.innerHTML = `${value}`;
-      this.wrapTarget.style.width = `${value}%`;
-      this.input.update(output);
+      this.rulesValue.wrap = value;
+
+      const input = esthetic.format(this.input.raw, rules({ ...this.rulesValue, wrap: value }));
+
+      this.wrapCountTarget.innerHTML = `${value}`;
+      this.wrapLineTarget.style.width = `${value}%`;
+      this.wrapLineTarget.style.transition = 'width 50ms ease-in-out';
+      this.wrapLineTarget.style.willChange = 'auto';
+
+      this.input.update(input);
 
     }
 
   }
 
-  onForm ({ target }: { target: HTMLInputElement, type: string; name: string; value: number }) {
+  onWrapFraction ({ target }: { target: HTMLInputElement }) {
+
+    const wrap = target.valueAsNumber + 15;
+
+    this.wrapCountTarget.innerHTML = `${target.valueAsNumber}`;
+    this.wrapLineTarget.style.width = `${target.valueAsNumber}%`;
+    this.wrapLineTarget.style.transition = 'width 50ms ease-in-out';
+    this.wrapLineTarget.style.willChange = 'auto';
+
+    this.wrapFractionCountTarget.innerHTML = `${target.valueAsNumber - Math.round(wrap / 6)}`;
+    this.wrapFractionLineTarget.style.width = `${target.valueAsNumber - Math.round(wrap / 6)}%`;
+    this.wrapFractionLineTarget.style.transition = 'width 50ms ease-in-out';
+    this.wrapFractionLineTarget.style.willChange = 'auto';
+    this.wrapFractionRangeTarget.value = `${target.valueAsNumber - Math.round(wrap / 6)}`;
+
+    const input = esthetic.format(this.input.raw, rules({
+      ...this.rulesValue,
+      wrap,
+      wrapFraction: wrap - Math.round((wrap / 6))
+    }));
+
+    this.input.update(input);
+
+  }
+
+  onForm ({ target, name }: { target: HTMLInputElement, type: string; name: string; value: number }) {
 
     if (target.type === 'range') {
-      return this.doWrap(target.valueAsNumber, target.name.split('.'));
+
+      if (target.name === 'wrap') {
+
+        this.doWrap(target.valueAsNumber, target.name.split('.'));
+
+      }
+
     }
 
   }
 
-  onReset () {
+  /* -------------------------------------------- */
+  /* TABS                                         */
+  /* -------------------------------------------- */
 
-    this.inputValue = this.originalValue;
-    this.input.update(this.inputValue);
+  /**
+   * Clicked `reset` button in the example
+   */
+  onClickResetButton () {
+
+    if (this.modeValue === 'editor') {
+
+      this.inputValue = this.inputOriginalValue;
+      this.input.update(this.inputValue, this.languageValue);
+      this.formatCode();
+
+    } else if (this.modeValue === 'rules') {
+
+      this.rulesValue = this.rulesOriginalValue;
+      this.input.update(this.rulesInput, 'json');
+      this.formatCode();
+    }
 
   }
 
   /**
-   * Clicked `rules` button in the example
+   * Clicked `rules` button tab in the example
    */
-  onRules () {
+  onClickRulesTab () {
 
     if (this.modeValue === 'rules') return;
 
-    if (this.editorTarget.classList.contains('is-active')) {
-      this.editorTarget.classList.remove('is-active');
+    if (this.inputTabTarget.classList.contains('is-active')) {
+      this.inputTabTarget.classList.remove('is-active');
     }
 
-    if (!this.rulesTarget.classList.contains('is-active')) {
-      this.rulesTarget.classList.add('is-active');
+    if (!this.rulesTabTarget.classList.contains('is-active')) {
+      this.rulesTabTarget.classList.add('is-active');
     }
-
-    // if (this.editorValue) this.code.disable();
 
     this.modeValue = 'rules';
-    this.doRules();
+    this.input.update(this.rulesInput, 'json', true);
 
   }
 
   /**
-   * Clicked `before` tab in the example
+   * Clicked `input` button tab in the example
    */
-  onInput () {
+  onClickInputTab () {
 
     if (this.modeValue === 'editor') return;
 
     if (this.output) this.output.hideError();
 
-    if (this.rulesTarget.classList.contains('is-active')) {
-      this.rulesTarget.classList.remove('is-active');
+    if (this.rulesTabTarget.classList.contains('is-active')) {
+      this.rulesTabTarget.classList.remove('is-active');
     }
 
-    if (!this.editorTarget.classList.contains('is-active')) {
-      this.editorTarget.classList.add('is-active');
+    if (!this.inputTabTarget.classList.contains('is-active')) {
+      this.inputTabTarget.classList.add('is-active');
     }
 
-    this.doRestore();
+    if (this.hasOutputTarget) {
+      this.input.update(this.inputValue, this.languageValue, true);
+      this.output.hideError();
+    } else {
+      this.formatCode();
+    }
+
     this.modeValue = 'editor';
 
   }
@@ -445,55 +463,140 @@ export class Demo extends Controller {
   /* TYPES                                        */
   /* -------------------------------------------- */
 
-  /** The count element used in example range */
-  countTarget: HTMLElement;
-  /** The Papyrus options  */
-  papyrusValue: MountOptions;
-  /** Whether or not custom papyrus configuration was provided */
-  hasPapyrusValue: boolean;
-  /** The current code of the example */
+  /**
+   * Papyrus Input
+   */
+  input: papyrus.Model;
+  /**
+   * Papyrus Output
+   */
+  output: papyrus.Model;
+
+  /* MODE --------------------------------------- */
+
+  /**
+   * The current mode
+   */
   modeValue: 'editor' | 'rules' | 'demo' | 'example';
-  /** Whether or not a mode value was provided */
+  /**
+   * Whether or not a mode value was provided
+   */
   hasModeValue: boolean;
-  /** The rules to use when formatting code with Æsthetic */
-  rulesValue: Rules;
-  /** The language name */
+
+  /* LANGUAGE ----------------------------------- */
+
+  /**
+   * The language name
+   */
   languageValue: Languages;
-  /** Whether or not rules value was provided */
+
+  /* PAPYRUS ------------------------------------ */
+
+  /**
+   * The Papyrus options
+   */
+  papyrusValue: papyrus.Options;
+  /**
+   * Whether or not custom papyrus configuration was provided
+   */
+  hasPapyrusValue: boolean;
+
+  /* RULES -------------------------------------- */
+
+  /**
+   * The rules to use when formatting code with Æsthetic
+   */
+  rulesValue: Rules;
+  /**
+   * The original value before edits, used to reset
+   */
+  rulesOriginalValue: Rules;
+  /**
+   * Whether or not rules value was provided
+   */
   hasRulesValue: boolean;
-  /** Rules cache */
-  rules: Rules;
-  /** The input tab target provided on initial render  */
-  editorTarget: HTMLPreElement;
-  /** The input code target provided on initial render  */
+
+  /* TABS --------------------------------------- */
+
+  /**
+   * The input tab element button
+   */
+  inputTabTarget: HTMLButtonElement;
+  /**
+   * Whether or not an input tab target exists
+   */
+  hasInputTabTarget: boolean;
+  /**
+   * The rules tab element button
+   */
+  rulesTabTarget: HTMLButtonElement;
+  /**
+   * Whether or not an rules tab target exists
+   */
+  hasRulesTabTarget: boolean;
+
+  /* INPUT DEMO --------------------------------- */
+
+  /**
+   * The input code target provided on initial render
+   */
   inputTarget: HTMLPreElement;
-  /** The input value escaped string */
+  /**
+   * The input value escaped string
+   */
   inputValue: string;
-  /** The input code target provided on initial render  */
-  gearTargets: HTMLElement[];
-  /** The input code target provided on initial render  */
-  coverTarget: HTMLPreElement;
-  /** The input value before edits */
-  originalValue: string;
-  /** The output code target provided on initial render  */
+  /**
+   * The input value before edits
+   */
+  inputOriginalValue: string;
+
+  /* OUTPUT DEMO -------------------------------- */
+
+  /**
+   * The output code target provided on initial render
+   */
   outputTarget: HTMLPreElement;
-  /** The output value escaped string */
+  /**
+   * The output value escaped string
+   */
   outputValue: string;
-  /** The wrap line overlay target */
-  wrapTarget: HTMLElement;
-  /** Whether or not rules value was provided */
-  hasWrapTarget: boolean;
-  /** The range slider form input element (use for wrap examples) */
-  rangeTarget: HTMLInputElement;
-  /** The `before` tab button */
-  beforeTarget: HTMLButtonElement;
-  /** Whether or not the `before` tab exists */
-  hasBeforeTarget: boolean;
-  /** The `rules` tab button */
-  rulesTarget: HTMLButtonElement;
-  /** Whether or not the `rules` tab exists */
-  hasRulesTarget: boolean;
-  /** The edit mode status to signal whether or not editing is enabled */
-  editorValue: boolean;
+  /**
+   * Whether or not an output target exists
+   */
+  hasOutputTarget: boolean;
+
+  /* WRAP RULE ---------------------------------- */
+
+  /**
+   * The count element used in example range
+   */
+  wrapCountTarget: HTMLElement;
+  /**
+   * The wrap line overlay target
+   */
+  wrapLineTarget: HTMLElement;
+  /**
+   * The `wrap` form range input element
+   */
+  wrapRangeTarget: HTMLInputElement;
+  /**
+   * Whether or not `wrap` rule line target exists
+   */
+  hasWrapLineTarget: boolean;
+
+  /* WRAP FRACTION RULE --------------------------- */
+
+  /**
+   * The count element used in example range
+   */
+  wrapFractionCountTarget: HTMLElement;
+  /**
+   * The wrapFraction line overlay target
+   */
+  wrapFractionLineTarget: HTMLElement;
+  /**
+   * The `wrapFraction` form range input element
+   */
+  wrapFractionRangeTarget: HTMLInputElement;
 
 }

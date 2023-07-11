@@ -14,14 +14,9 @@ export default defineConfig(
       js: '.js'
     }),
     clean: false,
-    treeshake: true,
-    minify: process.env.production ? 'terser' : false,
+    treeshake: false,
     splitting: false,
-    esbuildOptions: options => {
-      options.treeShaking = true;
-    },
     platform: 'browser',
-    target: 'es6',
     format: [
       'iife'
     ]

@@ -1,17 +1,6 @@
 import { dev } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-// esthetic.on('format', ({ stats }) => {
-
-//   console.log(stats);
-
-// });
-
-// esthetic.on('rules', (change) => {
-
-//   console.log(change);
-// });
-
 dev(function (source) {
 
   // esthetic.grammar({
@@ -124,49 +113,12 @@ dev(function (source) {
 
   const output = esthetic.format(source, {
     language: 'liquid',
-    wrap: 125,
-    crlf: false,
-    indentSize: 2,
-    preserveLine: 1,
-    endNewline: false,
-    wrapFraction: 90,
+    wrap: 50,
     liquid: {
-      commentIndent: true,
-      commentNewline: true,
-      dedentTagList: [
-        'schema'
-      ],
-      delimiterPlacement: 'consistent',
-      delimiterTrims: 'never',
-      lineBreakSeparator: 'before',
-      indentAttribute: true,
-      normalizeSpacing: true,
-      preserveComment: false,
-      quoteConvert: 'single',
-      forceFilter: 0,
-      forceArgument: 3
-    },
-    markup: {
-      quoteConvert: 'double',
-      lineBreakValue: 'preserve',
-      commentNewline: true,
-      attributeSort: [
-        'method',
-        'accept-charset',
-        'type',
-        'for',
-        'name',
-        'id',
-        'class',
-        'aria-label',
-        'aria-hidden',
-        'data-controller'
-      ],
-      forceIndent: true,
-      ignoreJS: false,
-      forceAttribute: 3,
-      preserveText: true
+      delimiterPlacement: 'preserve',
+      forceFilter: 2
     }
+
   });
 
   return {

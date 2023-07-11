@@ -66,8 +66,8 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
-    "**/LICENSE":true,
-   //"**/node_modules": true
+    "**/LICENSE": true,
+    //"**/node_modules": true
   },
   "workbench.colorCustomizations": {
     "window.inactiveBorder": "#00aeff",
@@ -78,6 +78,31 @@
       "decorations": [
         {
           "color": "#81D4FA",
+        }
+      ]
+    },
+    "(:{3,4})": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#E91E63"
+        }
+      ]
+    },
+    "(?<=:{3,4}\\s)(grid|rule|note)": {
+      "decorations": [
+        {
+          "color": "#81D4FA",
+          "fontWeight": "900"
+        }
+      ]
+    },
+    "(?<=:{3,4}[a-z ]+)([colsxmd0-9-]+)": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#91EBC2",
+          "isWholeLine": true
         }
       ]
     },
@@ -128,13 +153,13 @@
     }
   },
   "liquid.engine": "11ty",
+  "liquid.config.method": "workspace",
   "liquid.format.ignore": [
     "tests/samples/**"
   ],
-  "liquid.files.snippets": [
-    "./docs/src/views/include/*"
-  ],
   "liquid.format.rules": {
+    "wrap": 120,
+    "wrapFraction": 80,
     "liquid": {
       "commentIndent": true,
       "commentNewline": true,
@@ -144,14 +169,14 @@
       "normalizeSpacing": true,
       "preserveComment": false,
       "quoteConvert": "single",
-      "valueForce": "intent"
+      "forceFilter": 3,
+      "forceArgument": 4
     },
     "markup": {
       "quoteConvert": "double",
       "commentNewline": true,
       "forceIndent": true,
       "ignoreJS": false,
-      "attributeSortList": [],
       "forceAttribute": 2
     }
   },
@@ -159,5 +184,4 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "sissel.shopify-liquid"
   }
-
 }
