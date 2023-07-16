@@ -45,7 +45,7 @@ Below is an example of how this rule works using the following rule sets:
 Below is the default, wherein the attributes preserve the newlines contained within, Notice how **before** formatting there is `4` lines present but **after** formatting only `2` are preserved as per the global `preserveLine` rule value.
 
 <!-- prettier-ignore -->
-```html
+```liquid
 
 
 <!-- Before Formatting -->
@@ -113,7 +113,7 @@ Below is the default, wherein the attributes preserve the newlines contained wit
 Below is an example of how this rule works if it's enabled, ie: `true`. This will strip out empty new lines contained in markup tag attributes.
 
 <!-- prettier-ignore -->
-```html
+```liquid
 
 <!-- Before Formatting -->
 <div

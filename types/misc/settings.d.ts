@@ -27,6 +27,15 @@ export interface IConfig {
    */
   editorConfig?: boolean;
   /**
+   * **GlobalThis**
+   *
+   * Whether of not Æsthetic should be made available to global scope when used in Browser
+   * environments. This defaults to `true` resulting in Æsthetic being accessible via `window`.
+   *
+   * @default true
+   */
+  globalThis?: boolean;
+  /**
    * **Report Statistics**
    *
    * Whether or not Æsthetic should track stats. When disabled, Æsthetic will

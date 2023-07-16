@@ -1,17 +1,6 @@
 import { dev } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-// esthetic.on('format', ({ stats }) => {
-
-//   console.log(stats);
-
-// });
-
-// esthetic.on('rules', (change) => {
-
-//   console.log(change);
-// });
-
 dev(function (source) {
 
   // esthetic.grammar({
@@ -124,12 +113,12 @@ dev(function (source) {
 
   const output = esthetic.format(source, {
     language: 'liquid',
-    wrapFraction: 30,
+    wrap: 50,
     liquid: {
-      delimiterTrims: 'preserve',
-      delimiterPlacement: 'force-multiline',
-      dedentTagList: [ 'case', 'schema' ]
+      delimiterPlacement: 'preserve',
+      forceFilter: 2
     }
+
   });
 
   return {
@@ -139,8 +128,9 @@ dev(function (source) {
     logger: false,
     colors: false,
     finish: () => {
+      // console.log(JSON.stringify(output));
       console.log(esthetic.stats);
-    //  console.log(esthetic.table);
+      // console.log(esthetic.table);
       // console.log(esthetic.rules());
     }
   };

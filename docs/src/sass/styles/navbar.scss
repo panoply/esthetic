@@ -1,0 +1,61 @@
+header {
+  position: fixed;
+  //background-color: $white;
+  z-index: 300;
+  display: flex;
+  background-color: $body-bg;
+
+  right: 0;
+  height: 52px;
+  font-size: 1.075rem;
+  //letter-spacing: 00.06rem;
+  //box-shadow: $box-shadow;
+
+  //background-color: rgb(15 15 15 / 56.2%);
+
+  // backdrop-filter: blur(15px);
+}
+
+.navbar {
+  width: 100%;
+  // margin-right:  33.3%;
+
+  .icon-github {
+    width: 20px;
+    height: 20px;
+    color: $white;
+  }
+
+  .icon-npm {
+    width: 44px;
+    height: 44px;
+    color: $gray-400;
+  }
+
+  .off {
+    color: $gray-300;
+  }
+
+  a {
+    font-weight: 400;
+    color: $pink;
+    margin-right: 15px;
+
+    &.nav-link {
+      font-family: $font-family-other;
+      text-transform: uppercase;
+      font-weight: 100;
+      font-size: 0.9rem;
+      letter-spacing: 0.03rem;
+    }
+
+    &.mr {
+      margin-right: 0;
+    }
+
+    .icon-logo {
+      width: 40px;
+      height: 40px;
+    }
+  }
+}

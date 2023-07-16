@@ -66,14 +66,15 @@
 
     {
       "group": "liquid",
-      "title": "commentNewline",
-      "url": "/rules/liquid/commentNewline/"
-    },
-    {
-      "group": "liquid",
       "title": "commentIndent",
       "url": "/rules/liquid/commentIndent/"
     },
+    {
+      "group": "liquid",
+      "title": "commentNewline",
+      "url": "/rules/liquid/commentNewline/"
+    },
+
     {
       "group": "liquid",
       "title": "dedentTagList",
@@ -101,8 +102,8 @@
     },
     {
       "group": "liquid",
-      "title": "indentAttributes",
-      "url": "/rules/liquid/indentAttributes/"
+      "title": "indentAttribute",
+      "url": "/rules/liquid/indentAttribute/"
     },
     {
       "group": "liquid",
@@ -192,7 +193,7 @@
     },
     {
       "group": "markup",
-      "title": "preserveAttributes",
+      "title": "preserveAttribute",
       "url": "/rules/markup/preserveAttribute/"
     },
     {

@@ -49,8 +49,17 @@ export function getTagName (tag: string, slice: number = NaN, fallback?: string)
  */
 export function qc (to: string) {
 
-  return (m: string, i: number, input: string) => not(input[i - 1], cc.BWS) ? to : m;
+  return (m: string, i: number, input: string) => {
 
+    let o = to;
+    let c = to;
+
+    if (is(input[i - 1], cc.BWS)) o = m[0];
+    if (is(m[m.length - 2], cc.BWS)) c = m[m.length - 1];
+
+    return o + m.slice(1, -1) + c;
+
+  };
 }
 
 /**

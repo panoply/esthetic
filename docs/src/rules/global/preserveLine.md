@@ -4,47 +4,86 @@ layout: base
 permalink: '/rules/global/preserveLine/index.html'
 ---
 
+::: grid col-8 p-100
+
 # Preserve Line
 
 The maximum number of consecutive empty lines to retain (ie: preserve). By default, `3` newlines are preserved.
 
-#### Note
+> This is a global option and it will be used for markup, json, styles and scripts languages.
 
-This is a global option and it will be used for markup, json, styles and scripts languages.
+:::
 
-# Example
+---
 
-Below is we instructed to Prettify to preserve only `1` empty line. Notice how before formatting the code has several empty newlines but after formatting only a single line is retained.
+<!--
 
-###### BEFORE FORMATTING
+# Rule Options
 
-<!-- prettier-ignore -->
-```html
-<ul>
+This is a global rule definition and will be used for all languages.
 
-  <li>Hello</li>
+::: options
 
-  <li>World</li>
-</ul>
+### `false`
 
+> Strip additional newlines from the end of input.
 
-<div id="example">
+### `true`
 
-  Lines
+> Insert a newline at the end of input
 
+:::
 
-</div>
+🙌 - Recommended Choice
+👍 - Good Choice
+👎 - Not Recommended
+🤡 - Clown Choice
+😳 - Bad Choice
+🧐 - You gotta do, what you gotta do
+💡 - Showing an example of the rule
+-->
+
+::: rule 💡
+
+#### `0`
+
+:::
+
+Below is we instructed to Æsthetic to preserve `0` empty lines. Notice how before formatting the code has several empty newlines but after formatting all lines are stripped.
+
+```json:rules
+{
+  "esthetic": {
+    "language": "html",
+    "preserveLine": 0
+  },
+  "papyrus": {
+    "showLF": true
+  }
+}
 ```
 
-###### AFTER FORMATTING
-
 <!-- prettier-ignore -->
 ```html
 <ul>
+
+
+
   <li>Hello</li>
+
   <li>World</li>
+
+
+
 </ul>
+
+
 <div id="example">
+
   Lines
+
+
+
+
 </div>
 ```

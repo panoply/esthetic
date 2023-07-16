@@ -54,7 +54,7 @@ Lorem Ipsum
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 
 {% # All argument comma separators will be placed at the end %}
 {% render 'snippet',

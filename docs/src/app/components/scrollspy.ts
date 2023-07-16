@@ -2,7 +2,6 @@ import { Controller } from '@hotwired/stimulus';
 
 export class ScrollSpy extends Controller {
 
-
   /**
    * Stimulus: Targets
    */
@@ -20,7 +19,7 @@ export class ScrollSpy extends Controller {
     },
     threshold: {
       type: Number,
-      default: 0,
+      default: 0
     }
 
   };
@@ -36,11 +35,11 @@ export class ScrollSpy extends Controller {
    * Stimulus: Initialize
    */
   initialize () {
-    this.anchors = []
+    this.anchors = [];
     this.options = {
       rootMargin: this.rootMarginValue,
       threshold: this.thresholdValue
-    }
+    };
   }
 
   /**
@@ -49,50 +48,46 @@ export class ScrollSpy extends Controller {
   connect () {
 
     for (const a of this.anchorTargets) {
-      const anchor = a.href.slice(a.href.lastIndexOf('#'))
-      const element = this.element.querySelector(anchor) as HTMLHeadingElement
-      if(this.element.contains(element)) {
-        this.anchors.push(element)
-        a.onclick = (()=> {
-          setTimeout(()=> {
-            this.anchorTargets.forEach(j => j.classList.remove(this.activeClass))
-            a.classList.add(this.activeClass)
-          },300)
-        })
+      const anchor = a.href.slice(a.href.lastIndexOf('#'));
+      const element = this.element.querySelector(anchor) as HTMLHeadingElement;
+      if (this.element.contains(element)) {
+        this.anchors.push(element);
+        a.onclick = () => {
+          setTimeout(() => {
+            this.anchorTargets.forEach(j => j.classList.remove(this.activeClass));
+            a.classList.add(this.activeClass);
+          }, 300);
+        };
       }
     }
 
-    if(window.scrollY < 10) {
-      this.anchorTargets[0].classList.add(this.activeClass)
+    if (window.scrollY < 10) {
+      this.anchorTargets[0].classList.add(this.activeClass);
     } else {
-      this.onScroll()
+      this.onScroll();
     }
 
-    window.onscroll = this.onScroll
+    window.onscroll = this.onScroll;
   }
-
 
   onScroll = () => {
 
-    this.anchors.forEach((v,i)=> {
+    this.anchors.forEach((v, i) => {
 
+      const next = v.getBoundingClientRect().y - 50;
 
-
-      let next = v.getBoundingClientRect().y - 50
-
-      if(next < window.screenY){
-        this.anchorTargets.forEach(j => j.classList.remove(this.activeClass))
-        this.anchorTargets[i].classList.add(this.activeClass)
+      if (next < window.screenY) {
+        this.anchorTargets.forEach(j => j.classList.remove(this.activeClass));
+        this.anchorTargets[i].classList.add(this.activeClass);
       }
-    })
-  }
+    });
+  };
 
   /**
    * Stimulus: Disconnect
    */
   disconnect (): void {
-    this.anchors = []
-    this.observer.disconnect()
+    this.anchors = [];
   }
 
   /* -------------------------------------------- */
@@ -108,7 +103,7 @@ export class ScrollSpy extends Controller {
   /**
    * Itersection Observer Options
    */
-  options: IntersectionObserverInit
+  options: IntersectionObserverInit;
   /**
    * Stimulus: The Intersection Observer root margin value
    */
@@ -129,7 +124,7 @@ export class ScrollSpy extends Controller {
   /**
    * Stimulus: All viewport targets
    */
-  anchorTargets: HTMLLinkElement[]
+  anchorTargets: HTMLLinkElement[];
 
   /* -------------------------------------------- */
   /* TYPE CLASSES                                 */

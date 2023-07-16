@@ -1,30 +1,61 @@
 import { defineConfig } from 'tsup';
 import * as pkg from './package.json';
+
 export default defineConfig([
   {
-    entry: [
-      './src/index.ts'
-    ],
+    entry: {
+      esthetic: './src/index.ts'
+    },
     clean: false,
     treeshake: true,
-    minify: process.env.production ? 'terser' : false,
+    name: 'Æsthetic',
+    minify: 'terser',
+    noExternal: [
+      'mergerino'
+    ],
+    terserOptions: {
+      compress: {
+        passes: 10
+      }
+    },
     globalName: 'esthetic',
     splitting: false,
+    platform: 'neutral',
+    minifyIdentifiers: true,
+    minifySyntax: true,
     define: {
       VERSION: `"${pkg.version}"`
     },
     esbuildOptions: options => {
       options.treeShaking = true;
     },
+    outExtension ({ format }) {
+
+      if (format === 'cjs') {
+        return {
+          js: '.cjs'
+        };
+      } else if (format === 'esm') {
+        return {
+          js: '.mjs'
+        };
+
+      } else {
+        return {
+          js: '.js'
+        };
+      }
+    },
     format: [
       'cjs',
-      'esm'
+      'esm',
+      'iife'
     ]
   },
   {
-    entry: [
-      './src/cli.ts'
-    ],
+    entry: {
+      index: './src/cli.ts'
+    },
     external: [
       'ansis',
       'chokidar',
@@ -32,6 +63,8 @@ export default defineConfig([
       'minimist',
       './index.js'
     ],
+    outDir: 'dist/cli',
+    name: 'Æsthetic',
     clean: false,
     minify: process.env.production ? 'terser' : false,
     treeshake: true,

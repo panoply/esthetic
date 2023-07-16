@@ -328,7 +328,7 @@ export interface Grammars {
      * #### Example
      *
      * ```js
-     * prettify.grammar({
+     * esthetic.grammar({
      *   html: {
      *     embedded: {
      *       script: [

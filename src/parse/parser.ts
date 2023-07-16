@@ -551,6 +551,18 @@ class Parser {
   }
 
   /**
+   * Replace Record
+   *
+   * Replaces a single record at the provided index. If no index is
+   * passed it will use the last known record reference.
+   */
+  public replace (record: Partial<Record>, index = this.count) {
+
+    for (const entry in record) this.data[entry][index] = record[entry];
+
+  }
+
+  /**
    * Push Structure
    *
    * An extension of `Array.prototype.push` to work across the parse table data structure

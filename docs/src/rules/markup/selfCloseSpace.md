@@ -1,10 +1,18 @@
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `false`
-
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `true`
+---
+title: 'Markup - Self Close Space'
+layout: base
+permalink: '/rules/markup/selfCloseSpace/index.html'
+describe:
+  - Self Close Space
+  - Rule Options
+options:
+  - true
+  - false
+---
 
 #### Self Close Space
 
-Whether markup self-closing (void) tags should apply a single space to ending portion of the delimiter which  results in the tag output to produce `' />'` instead of `'/>'`.
+Whether markup self-closing (void) tags should apply a single space to ending portion of the delimiter which results in the tag output to produce `' />'` instead of `'/>'`.
 
 #### Tip
 
@@ -18,12 +26,11 @@ If you're working with SVG tags then this rule is highly recommended.
 
 _Below is an example of how this rule works if it's enabled, ie: `true`. Typically it is best to enable this option_
 
-```html
-
+```liquid
 <!-- Before formatting -->
 <picture>
-  <path srcset="."/>
-  <path srcset="."/>
+  <path srcset="." />
+  <path srcset="." />
 </picture>
 
 <!-- After Formatting - Notice the the space insertion applied -->
@@ -31,6 +38,4 @@ _Below is an example of how this rule works if it's enabled, ie: `true`. Typical
   <path srcset="." />
   <path srcset="." />
 </picture>
-
-
 ```

@@ -47,6 +47,11 @@ export function markup () {
   let comstart = -1;
 
   /**
+   * Prev token reference index
+   */
+  let prev = 0;
+
+  /**
    * Next token reference index
    */
   let next = 0;
@@ -344,11 +349,20 @@ export function markup () {
 
           } else if (lineBreakValue === 'indent' || lineBreakValue === 'force-indent') {
 
-            if (aa + 1 === len) {
-              build.push(lines[aa].trim(), nl(levels[a]));
-            } else {
-              build.push(lines[aa].trim(), nl(lev));
-            }
+            // if (aa + 1 === len) {
+            // build.push(lines[aa].trimEnd(), nl(levels[a]));
+            // } else {
+
+            // if (aa === 0) {
+
+            // build.push(lines[aa].replace(/(["'])\s+/, '$1' + nl(lev)).trim(), nl(lev));
+
+            // } else {
+
+            build.push(lines[aa].trim(), nl(lev));
+            // }
+
+            // }
 
           } else {
 
@@ -399,8 +413,25 @@ export function markup () {
 
     } else {
 
+      // if (lineBreakValue === 'force-indent') {
+
+      //   if (rules.markup.delimiterTerminus === 'adapt') {
+
+      //     build.push(lines[len].replace(/\s*(["'])\s*>/, nl(levels[a - 1]) + '$1').trim());
+
+      //     if (isLast(lines[len], cc.RAN)) {
+      //       build.push(nl(levels[a - 1] - 1) + '>');
+      //     }
+
+      //   } else {
+      //     build.push(lines[len].replace(/\s*(["'])/, nl(levels[a - 1]) + '$1').trim());
+      //   }
+
+      // } else {
+
       build.push(lines[len]);
 
+      // }
     }
 
     data.lines[a + 1] = line;
@@ -457,6 +488,8 @@ export function markup () {
    */
   function forward () {
 
+    if (next > 0) prev = next - 1;
+
     let x = a + 1;
     let y = 0;
 
@@ -508,7 +541,7 @@ export function markup () {
 
     let y = a + 1;
     let isjsx = false;
-    let space = rules.markup.selfCloseSpace === true && end !== null && end[0] === '/>' ? WSP : NIL;
+    let space = rules.markup.selfCloseSpace === true && end[0] === '/>' ? WSP : NIL;
 
     data.token[a] = parent.replace(regend, NIL);
 
@@ -547,15 +580,22 @@ export function markup () {
     // Connects the ending delimiter of HTML tags, eg: >
     data.token[y - 1] = `${data.token[y - 1]}${space}${end[0]}`;
 
-    // HOT PATCH
+    // TODO
     //
     // Fixes attributes being forced when proceeded by a comment
+    // unsure the issue which occuring here but it is effecting
+    // some logic somewhere.
     //
-    // if (isType(y, 'comment') && data.lines[a + 1] < 2) {
+    // I had commented this out at some point during esthetic update
+    // and only after testing in brixtol webshop did I notice that without
+    // this conditional were comments following or tags with attributes
+    // was content being forced onto newlines.
+    //
+    if (isType(y, 'comment')) {
 
-    //  levels[a] = -10;
+      // levels[a] = -10;
 
-    // }
+    }
 
   };
 
@@ -694,33 +734,80 @@ export function markup () {
 
       }
 
-      const ind = (isType(next, 'end') || isType(next, 'liquid_end'))
-        ? indent + 1
-        : indent;
+      // Patch fix 10/06/2023 - See the level[a] = indent variable below
+      // as it related
+      //
+      // const ind = (isType(next, 'end') || isType(next, 'liquid_end')) ? indent + 1 : indent;
 
       do {
 
-        level.push(ind);
+        level.push(indent);
         x = x - 1;
 
       } while (x > comstart);
 
       // Indent correction so that a following end tag
-      // is not indented 1 too much
+      // is not indented 1 too much, level `a` is the end token, eg: </div>
       //
-      if (ind === indent + 1) level[a] = indent;
+      // Patched logic applied here on the 10/06/2023 which fixed comment
+      // indentation logic. The above `ind` variable was also excluded in the patch
+      //
+      // if (ind === indent + 1)
+      //
+      level[a] = indent;
 
-      // Indentation must be applied to the tag
-      // preceeding the comment
+      // Indentation must be applied to the tag following the comment
+      // this logic is important as comment indentation can break the
+      // intended structures.
       //
-      if (
-        isType(x, 'attribute') ||
-        isType(x, 'liquid_attribute') ||
-        isType(x, 'jsx_attribute_start')
-      ) {
-        level[data.begin[x]] = ind;
-      } else {
-        level[x] = ind;
+      if ((
+        (
+          isType(x, 'attribute') ||
+          isType(x, 'liquid_attribute') ||
+          isType(x, 'jsx_attribute_start') ||
+          isType(x, 'start')
+        ) && (
+          isType(a + 1, 'comment') === false &&
+          isType(a + 1, 'start') === false &&
+          data.types[a + 1].startsWith('liquid') === false
+        )
+      ) || (
+        isType(a + 1, 'liquid_end')
+      )) {
+
+        // Removed in the 10/06/23 patch
+        //
+        // level[data.begin[x]] = ind;
+
+        // This will ensure comments are indented folowing a tag with attributes
+        //
+        level[x] = indent + 1;
+
+      } else if (isType(a + 1, 'liquid_else')) {
+
+        // Here we are countering comment indentation for {% else %} or {% elsif %}
+        // tokens. Wherein comments will align directly above, for example
+        //
+        // Example
+        //
+        // {% if condition %}
+        //
+        //   <!-- This comment is indented -->
+        //   <div>
+        //   </div>
+        //
+        // {% comment %}
+        //   This comment is followed by an else tag so will align
+        //   to the starting point of the opening delimiter
+        // {% endcomment %}
+        // {% else %}
+        //
+        // {% endif %}
+        //
+        // Comment this out to have the comment indent
+        //
+        level[x] = indent - 1;
+
       }
 
     } else {
@@ -1514,7 +1601,7 @@ export function markup () {
 
           next = forward();
 
-          if (isType(next, 'end') || isType(next, 'liquid_end')) {
+          if (isType(next, 'end') || (isType(next, 'liquid_end') && isType(a, 'liquid_else') === false)) {
 
             // Handle force Value for void tags
             //
@@ -1531,14 +1618,11 @@ export function markup () {
             //
             if (indent > -1) indent = indent - 1;
 
-            if (
-              isType(next, 'liquid_end') &&
-              isType(a, 'liquid_else')
-            ) {
+            // if (isType(next, 'liquid_end') && isType(a, 'liquid_else')) {
 
-              if (indent > -1) indent = indent - 1;
+            //   if (indent > -1) indent = indent - 1;
 
-            }
+            // }
 
             if (
               isToken(a, '</ol>') ||
@@ -1566,12 +1650,10 @@ export function markup () {
               level.push(-10);
             }
 
-          } else if ((
-            rules.markup.forceIndent === false || (
-              rules.markup.forceIndent === true &&
-              isType(next, 'script_start')
-            )
-          ) && (
+          } else if ((rules.markup.forceIndent === false || (
+            rules.markup.forceIndent === true &&
+            isType(next, 'script_start')
+          )) && (
             isType(a, 'content') ||
             isType(a, 'singleton') ||
             isType(a, 'liquid')
@@ -1583,11 +1665,16 @@ export function markup () {
 
               level.push(-10);
 
-            } else if (rules.wrap > 0 && isType(a, 'singleton') === false && (isIndex(a, 'liquid') < 0 || (
-              next < c &&
-              isIndex(a, 'liquid') > -1 &&
-              isIndex(next, 'liquid') < 0)
-            )) {
+            } else if (
+              rules.wrap > 0 &&
+              isType(a, 'singleton') === false && (
+                isIndex(a, 'liquid') < 0 || (
+                  next < c &&
+                  isIndex(a, 'liquid') > -1 &&
+                  isIndex(next, 'liquid') < 0
+                )
+              )
+            ) {
 
               onContent();
 
@@ -1598,8 +1685,6 @@ export function markup () {
               data.lines[next] > 0 ||
               isIndex(a, 'liquid_') > -1
             )) {
-
-              // console.log('levels', data.token[a], data.lines[next]);
 
               level.push(indent);
 
@@ -1634,12 +1719,8 @@ export function markup () {
             // ^here
             // {% endcase %}
             //
-            if (
-              isType(next, 'liquid_when') &&
-              rules.liquid.dedentTagList.includes('case') === false
-            ) {
-
-              indent = indent + 1;
+            if (isType(next, 'liquid_when')) {
+              if (rules.liquid.dedentTagList.includes('case') === false) indent = indent + 1;
             }
 
             if (jsx === true && isToken(a + 1, '{')) {
@@ -1657,13 +1738,7 @@ export function markup () {
                 level.push(-10);
               }
 
-            } else if ((
-              isType(a, 'start') &&
-              isType(next, 'end')
-            ) || (
-              isType(a, 'liquid_start') &&
-              isType(next, 'liquid_end')
-            )) {
+            } else if (isType(a, 'start') && isType(next, 'end')) {
 
               // EMPTY TOKENS
               //
@@ -1699,6 +1774,7 @@ export function markup () {
 
               } else {
 
+                // PATCH LATEST on 10th JULY 2023
                 level.push(-20);
 
               }
@@ -1727,13 +1803,10 @@ export function markup () {
 
             }
 
-          } else if (
-            rules.markup.forceIndent === false &&
-            data.lines[next] === 0 && (
-              isType(next, 'content') ||
-              isType(next, 'singleton')
-            )
-          ) {
+          } else if (rules.markup.forceIndent === false && data.lines[next] === 0 && (
+            isType(next, 'content') ||
+            isType(next, 'singleton')
+          )) {
 
             level.push(-20);
 
@@ -1741,11 +1814,56 @@ export function markup () {
 
             level.push(-20);
 
-          } else if (isType(a, 'liquid_else') || isType(a, 'liquid_when')) {
+          } else if (isType(a, 'liquid_when')) {
 
             level[a - 1] = indent - 1;
 
-            if (isType(next, 'liquid_end')) level[a - 1] = indent - 1;
+            level.push(indent);
+
+          } else if (isType(a, 'liquid_else') && isType(next, 'liquid_end')) {
+
+            // LAST EMPTY LIQUID CONDITIONAL
+            //
+            // Handles empty conditionals, the structure looks like this
+            //
+            // {% if x %}
+            //
+            // {% else %}
+            //             < EMPTY
+            // {% endif %}
+            //
+            indent = indent - 1;
+            level[a - 1] = indent;
+
+            level.push(indent);
+
+          } else if (isType(a, 'liquid_else') && isType(next, 'liquid_else')) {
+
+            // ELSE EMPTY LIQUID CONDITIONAL
+            //
+            // Handles repated empty conditionals, the structure looks like this
+            //
+            // {% if x %}
+            //
+            // {% elsif x %}
+            //               < EMPTY
+            // {% elsif y %}
+            //               < EMPTY
+            // {% else %}
+            //              < EMPTY
+            // {% endif %}
+            //
+            // We do not want to reset `indent` variable. If we were to reset the
+            // indent variable then it will cause other indentations to defect.
+            //
+
+            level[a - 1] = indent - 1;
+
+            level.push(indent - 1);
+
+          } else if (isType(a, 'liquid_else') && (isType(next, 'content') || isType(next, 'liquid'))) {
+
+            level[a - 1] = indent - 1;
 
             level.push(indent);
 
@@ -1789,6 +1907,7 @@ export function markup () {
             // The same logic will follow when Liquid tags are like {% if %}, {% for %} etc
             // are the parent of the text or template (output object) token.
             //
+
             if (data.lines[next] < 1) {
               level.push(-20);
             } else if (data.lines[next] > 1) {
@@ -1814,6 +1933,20 @@ export function markup () {
 
             level[a - 1]--;
             indent = indent - 1;
+
+          } else if (isType(next, 'liquid_else') && level[a - 1] === indent) {
+
+            level.push(indent - 1);
+
+          } else if (isType(a, 'liquid_else') && level[a - 1] === indent && rules.markup.forceIndent === false) {
+
+            level[a - 1] = indent - 1;
+
+            level.push(indent);
+
+          } else if (isType(prev, 'liquid_start') && isType(next, 'liquid_end') && data.lines[next] === 0) {
+
+            level[a - 1] = -20;
 
           } else {
 
@@ -1973,14 +2106,12 @@ export function markup () {
 
           ml();
 
-        } else if (isType(a, 'comment') && (
+        } else if (isType(a, 'comment') && rules.markup.preserveComment === false && (
           (
             is(data.token[a][1], cc.PER) &&
-            rules.liquid.preserveComment === false &&
             rules.liquid.commentNewline === true
           ) || (
             is(data.token[a][1], cc.PER) === false &&
-            rules.markup.preserveComment === false &&
             rules.markup.commentNewline === true
           )
         ) && (
@@ -1990,10 +2121,17 @@ export function markup () {
           )
         )) {
 
+          build.push(
+            nl(levels[a]),
+            build.pop(),
+            data.token[a],
+            nl(levels[a])
+          );
+
           // When preserve line is zero, we will insert
           // the new line above the comment.
           //
-          build.push(nl(levels[a]), data.token[a], nl(levels[a]));
+          // build.push(nl(levels[a]), data.token[a], nl(levels[a]));
 
         } else if (isIndex(a, '_preserve') > -1) {
 

@@ -11,17 +11,17 @@ options:
   - single
 ---
 
+::: grid col-9 p-100
+
 # Quote Convert
 
 How quotation characters of markup attributes and Liquid tokens should be handled. Allows for conversion to single quotes or double quotes. Markup tag attributes should always use double quotations, it's the standard in languages like HTML.
 
-::: note
-
-When working with Liquid, use `single` quotes for strings and always infer `double` in the markup.
+> When working with Liquid, use `single` quotes for strings and always infer `double` in the markup.
 
 :::
 
-# Rule Options
+---
 
 ::: rule 🤡
 
@@ -34,8 +34,11 @@ Below is an example of how this rule works if set to `none` which is the **defau
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 0,
+  "wrapFraction": 0,
   "liquid": {
-    "quoteConvert": "none"
+    "quoteConvert": "none",
+    "forceArgument": 5
   },
   "markup": {
     "forceAttribute": true
@@ -44,7 +47,7 @@ Below is an example of how this rule works if set to `none` which is the **defau
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 
 {% if 'some-string' %}
 
@@ -69,17 +72,20 @@ Below is an example of how this rule works if set to `double` which will go abou
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 0,
+  "wrapFraction": 0,
   "liquid": {
-    "quoteConvert": "double"
+    "quoteConvert": "double",
+    "forceArgument": 5
   },
   "markup": {
-    "forceAttribute":  true
+    "forceAttribute": true
   }
 }
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% if 'some-string' %}
 
   {{ 'string' | filter: 'string' }}
@@ -102,8 +108,11 @@ Below is an example of how this rule works if set to `single` which will go abou
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 0,
+  "wrapFraction": 0,
   "liquid": {
-    "quoteConvert": "single"
+    "quoteConvert": "single",
+    "forceArgument": 5
   },
   "markup": {
     "forceAttribute": true
@@ -112,7 +121,7 @@ Below is an example of how this rule works if set to `single` which will go abou
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% if "some-string" %}
 
   {{ "string" | filter: "string" }}

@@ -1,11 +1,10 @@
 <nav
-  class="anchors mt-5 pt-5 mb-2 pl-4 bl vh-100"
+  class="anchors mt-5 pt-5 mb-2 pl-4 bl pb-3"
   data-controller="sticky"
   data-sticky-offset-value="20">
 
   {% for link in collections.all %}
     {% if link.url == page.url %}
-
 
       {% if link.data.describe %}
 
@@ -26,7 +25,6 @@
         </ul>
 
       {% endif %}
-
 
       {% if link.data.examples %}
 
@@ -68,9 +66,7 @@
 
       {% endif %}
 
-
       {% if link.data.anchors %}
-
 
         <ul class="mt-3 mb-2">
           {% for anchor in link.data.anchors %}
@@ -88,11 +84,9 @@
 
       {% if link.data.files %}
 
-
         <h6 class="my-4">
           Files
         </h6>
-
 
         <ul class="mt-3 mb-2">
           {% for anchor in link.data.files %}

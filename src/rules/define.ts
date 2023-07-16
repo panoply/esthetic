@@ -9,6 +9,8 @@ import { prettier } from 'rules/presets/prettier';
 import { assign } from 'utils/native';
 import { CNL, NWL } from 'lexical/chars';
 import { hasProp } from 'utils/helpers';
+import { config } from 'config';
+import merge from 'mergerino';
 
 const GLOB = [
   'correct',
@@ -80,7 +82,9 @@ export function setPreset (options: Rules) {
  * Sets the `parse.rules` reference, sets the `preset` and
  * handles rule assignments
  */
-export function setRules (options: Rules, events: EventListeners) {
+export function setRules (opts: Rules, events: EventListeners) {
+
+  const options: Rules = opts;
 
   /**
    * Properties Existence
@@ -109,7 +113,7 @@ export function setRules (options: Rules, events: EventListeners) {
       if (rule === 'crlf') parse.crlf = options[rule] ? CNL : NWL;
       if (rule === 'wrap' && options[rule] > 0) {
         if (has('wrapFraction') === false || (has('wrapFraction') && options.wrapFraction <= 0)) {
-          parse.rules.wrapFraction = options[rule] - options[rule] / 4;
+          options.wrapFraction = options[rule] - (options[rule] / 4);
         }
       }
 

@@ -651,9 +651,9 @@ export function markup (input?: string) {
       }
 
       if (rules.liquid.quoteConvert === 'double') {
-        record.token = token = record.token.replace(/'/g, lx.qc(DQO));
+        record.token = token = record.token.replace(/'[^"]*?'/g, lx.qc(DQO));
       } else if (rules.liquid.quoteConvert === 'single') {
-        record.token = token = record.token.replace(/"/g, lx.qc(SQO));
+        record.token = token = record.token.replace(/"[^']*?"/g, lx.qc(SQO));
       }
 
       return cdata();
@@ -795,11 +795,26 @@ export function markup (input?: string) {
 
       } while (i < nl.length);
 
-      push(record, {
-        token: delim,
-        types: 'liquid_end',
-        lines: 2
-      });
+      if ((
+        rules.liquid.delimiterPlacement === 'default' ||
+        rules.liquid.delimiterPlacement === 'force-multiline'
+      ) || (
+        rules.liquid.delimiterPlacement === 'preserve' && /\n-?%}$/.test(token)
+      ) || (
+        rules.liquid.delimiterPlacement === 'consistent' && /^{%-?\n/.test(token)
+      )) {
+
+        push(record, {
+          token: delim,
+          types: 'liquid_end',
+          lines: 2
+        });
+
+      } else {
+        parse.replace({
+          token: lq.closeDelims(parse.current.token + delim, rules.liquid)
+        });
+      }
 
     }
 
@@ -899,8 +914,8 @@ export function markup (input?: string) {
      * Parse Ignores
      *
      * Additional logic required to find the end of a tag when it contains
-     * a `data-prettify-ignore` attribute annotation. The function also
-     * handles `@prettify-ignore-next` ignore comments placed above tag regions.
+     * a `data-esthetic-ignore` attribute annotation. The function also
+     * handles `@esthetic-ignore-next` ignore comments placed above tag regions.
      *
      */
     function parseIgnore (): ReturnType<typeof parseSingleton | typeof parseScript> {
@@ -1576,13 +1591,17 @@ export function markup (input?: string) {
 
           do {
 
-            name = attrs[eq][0].split('=')[0];
+            if (attrs.length > 0) {
 
-            if (rules.markup.attributeSort[dq] === name) {
-              tstore.push(attrs[eq]);
-              attrs.splice(eq, 1);
-              len = len - 1;
-              break;
+              name = attrs[eq][0].split('=')[0];
+
+              if (rules.markup.attributeSort[dq] === name) {
+                tstore.push(attrs[eq]);
+                attrs.splice(eq, 1);
+                len = len - 1;
+                break;
+              }
+
             }
 
             eq = eq + 1;
@@ -1824,7 +1843,7 @@ export function markup (input?: string) {
             name = attrs[idx][0].slice(0, eq);
 
             if (
-              /\n/.test(attrs[idx][0]) && (
+              (
                 rules.markup.lineBreakValue === 'force-preserve' ||
                 rules.markup.lineBreakValue === 'force-indent' ||
                 rules.markup.lineBreakValue === 'force-align'
@@ -1940,10 +1959,12 @@ export function markup (input?: string) {
           if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
 
             if (tag !== 'comment') {
+
               ltype = 'ignore';
               ignore = true;
               start = source.slice(a, from + 1);
               end = source.slice(idx1, idx2 + 1);
+
             } else {
 
               ltype = 'comment';
@@ -2255,6 +2276,7 @@ export function markup (input?: string) {
               ltype = 'comment';
               end = '%}';
               lchar = end.charAt(end.length - 1);
+
               return parseComments(true);
 
             }
@@ -2286,10 +2308,7 @@ export function markup (input?: string) {
 
       lchar = end.charAt(end.length - 1);
 
-      if (ltype === 'comment' && (u.is(b[a], cc.LAN) || (
-        u.is(b[a], cc.LCB) &&
-        u.is(b[a + 1], cc.PER))
-      )) {
+      if (ltype === 'comment' && (u.is(b[a], cc.LAN) || (u.is(b[a], cc.LCB) && u.is(b[a + 1], cc.PER)))) {
 
         return parseComments();
 
@@ -2604,6 +2623,7 @@ export function markup (input?: string) {
 
           } else if (
             u.isLastAt(lexed, cc.RSB) &&
+            u.isLast(lexed, cc.WSP) &&
             u.not(b[a], cc.WSP) &&
             u.not(b[a], cc.COM) &&
             u.not(b[a], cc.DOT)
@@ -3879,8 +3899,29 @@ export function markup (input?: string) {
 
       if (ignore === false) {
         if (ltype === 'liquid') {
+
           token = lq.tokenize(lexed, tname, liquid, rules);
+
+          // Normalize Patches
+          //
+          // A second pass-through to ensure no incorrect normalizations
+          // have been applied to the token. Normalization is not always
+          // perfect at the traverse level, this condition will quickly
+          // check the token and fix any potential issues
+          //
+          if (rules.liquid.normalizeSpacing) {
+
+            token = token
+              .replace(/\] \[/g, '][') // Fixes object braces
+              .replace(/(\])(\w+:)/, '$1 $2'); // Fixes argument spacing
+
+            // Fixes "as" spacing on rendeer tag
+            if (tname === 'render' && token.indexOf(']as') > -1) token = token.replace(/\]as(?=\s+)/, '] as');
+
+          }
+
           if (tname === 'liquid') return parseLiquidTag();
+
         } else {
           token = lexed.join(NIL);
         }

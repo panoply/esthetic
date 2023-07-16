@@ -19,13 +19,9 @@ anchors:
 
 # CLI
 
-Æsthetic provides CLI support via the `esthetic` command and assumes configuration has defined within a `package.json` file via the `esthetic` property. CLI usage requires a path/pattern match be provided and will resolve files from the path location passed. Æsthetic will print formatted code to `stdout` and requires an `-f` or `--format` flag to be passed for file overwrites.
+Æsthetic provides basic CLI support via the `esthetic` command and assumes configuration is defined within a projects `package.json` file via an `esthetic` key property. CLI usage requires a path/pattern match be passed and will resolve files for from the location provided. Æsthetic will print formatted code to `stdout` and requires an `-f` or `--format` flag for file overwrites.
 
-::: note
-
-The `-` or `--format` flag will overwrite files matching the path pattern provided. You can have Æsthetic output to a different location using the `-o` or `--output` flag.
-
-:::
+> The `-` or `--format` flag will overwrite files matching the path pattern provided. If you'd like to have Æsthetic output files to a different location then use the `-o` or `--output` flag.
 
 # Configuration Files
 
@@ -40,27 +36,27 @@ Refer to [Config File](/usage/config-file/) for more information
 
 ```bash
 
-Default:
+# Default:
   esthetic                  # command executable
 
-Commands:
+# Commands:
   esthetic                  # Starts interactive CLI command prompt
   esthetic <path> --flags   # Glob path of files to format and flags
 
-Resource:
+# Resource:
   -f, --format              # Overwrite matched files
   -w, --watch               # Watch and format files when documents are changed
   -o, --output <path>       # Optional output path to write formatted files
   -c, --config <file>       # Provide a configuration file
   -h, --help,               # Prints command list and some help information
 
-Settings:
+# Settings:
   --no-color                # Disable standard log colors
   --no-syntax               # Disable syntax highlighting in logs
   --silent                  # Silence the CLI logs and only print errors
   --rules                   # Prints Æsthetic formatting rules
 
-Language:
+# Language:
   --liquid                  # Liquid language formatting
   --html                    # HTML language formatting
   --xml                     # XML language formatting
@@ -77,35 +73,29 @@ Language:
 
 Æsthetic will format all files matched by the glob `*` path pattern provided. As aforementioned, Æsthetic will not overwrite files unless explicitly instructed to using the `-f` or `--format` flag. Let's assume we have a project using the following directory structure:
 
-```
-src
-│
-├── stylesheets
+```treeview
+src/
+├── stylesheets/
 │   ├── file-1.css
 │   ├── file-2.css
 │   └── file-3.css
-│
-├── templates
+├── templates/
 │   ├── file-1.liquid
 │   ├── file-2.liquid
 │   └── file-3.liquid
-│
-├── statics
+├── statics/
 │   ├── file-1.html
 │   ├── file-2.html
 │   └── file-3.html
-│
-├── data
+├── data/
 │   ├── file-1.json
 │   └── file-2.json
-│
 └── package.json
-
 ```
 
 The CLI uses the file extensions suffixes to determine formatting languages but also accepts language identifier flags. Using or example project, let's leverage the language identifier flags to target certain files within the glob `*` pattern match:
 
-```
+```bash
 $ esthetic src/** --liquid --css
 ```
 

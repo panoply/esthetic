@@ -8,10 +8,14 @@ import { run } from 'cli/run';
     watch: 'w',
     output: 'o',
     config: 'c',
-    format: 'f'
+    format: 'f',
+    help: 'h',
+    javascript: 'js',
+    typescript: 'ts'
   },
   default: {
     format: false,
+    help: false,
     liquid: false,
     html: false,
     xml: false,
@@ -21,11 +25,16 @@ import { run } from 'cli/run';
     javascript: false,
     jsx: false,
     typescript: false,
-    tsx: false
+    tsx: false,
+    'no-color': false
   },
   boolean: [
     'watch',
     'dry',
+    'no-color',
+    'silent',
+    'rules',
+    'help',
     'liquid',
     'html',
     'xml',

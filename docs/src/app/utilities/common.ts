@@ -1,4 +1,6 @@
-import * as viewport from '@panoply/viewports';
+import qvp from 'qvp';
+import { LinesAndColumns } from 'lines-and-columns';
+import JSONFallback from 'json-parse-better-errors';
 
 /**
  * Check if an element is out of the viewport
@@ -22,6 +24,43 @@ export function isOutOfViewport (element: HTMLElement) {
  */
 export function isScreen (screens: string) {
 
-  return screens.split('|').some(viewport.active);
+  return screens.split('|').some(qvp.active);
+
+}
+
+export function parseJSON (input: string) {
+
+  try {
+
+    try {
+      return JSON.parse(input);
+
+    } catch (error) {
+      JSONFallback(input);
+      throw error;
+
+    }
+  } catch (error) {
+
+    const indexMatch = error.message.match(/in JSON at position (\d+) while parsing/);
+
+    if (indexMatch && indexMatch.length > 0) {
+
+      const lines = new LinesAndColumns(input);
+      const index = Number(indexMatch[1]);
+      const location = lines.locationForIndex(index);
+
+      error.message = error.message.replace(/parsing/, 'parsing:\n\n').replace(/'/g, '');
+
+      error.stack = [
+        `LineNo:  ${location.line}`,
+        `Column:  ${location.column}`,
+        `Offset:  ${indexMatch[1]}`
+      ].join('\n');
+    }
+
+    throw error;
+
+  }
 
 }

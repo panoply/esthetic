@@ -417,6 +417,79 @@ export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esth
 export const CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!--)\s*esthetic-ignore-next\b/;
 
 /**
+ * Captures list item occurance of a bullet point character
+ *
+ * ```js
+ *
+ * /^\s*[*-]\s/
+ *
+ * ```
+ *
+ * **EXAMPLE**
+ *
+ * ```liquid
+ * {% comment %}
+ *
+ *    - one
+ *    - two
+ *
+ *  OR
+ *
+ *  * one
+ *  * two
+ *
+ * {% endcomment %}
+ * ```
+ */
+export const CommBulletLine = /^\s*[*-]\s/;
+
+/**
+ * Captures list item occurance of a number
+ *
+ * ```js
+ *
+ * /^\s*\d+\.\s/
+ *
+ * ```
+ *
+ * **EXAMPLE**
+ *
+ * ```liquid
+ * {% comment %}
+ *
+ *    1. one
+ *    2. two
+ *
+ * {% endcomment %}
+ * ```
+ */
+export const CommNumberLine = /^\s*\d+\.\s/;
+
+/**
+ * Captures list item occurances within comment blocks
+ *
+ * ```js
+ *
+ * /^\s*(?:[*-]|\d+\.)\s/
+ *
+ * ```
+ *
+ * @see https://regex101.com/r/WB0gZp/1
+ *
+ * **EXAMPLE**
+ *
+ * ```liquid
+ * {% comment %}
+ *
+ *    - one
+ *    - two
+ *
+ * {% endcomment %}
+ * ```
+ */
+export const CommLineChars = /^\s*(?:[*-]|\d+\.)\s/;
+
+/**
  * HTML Comment Opening Delimiter
  *
  * Opening delimiter for HTML comment tokens

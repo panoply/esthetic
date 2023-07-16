@@ -115,6 +115,9 @@ test('Structure Test: Indentation depth levels encapsulated by markup', t => {
   )(
     {
       language: 'liquid',
+      liquid: {
+        delimiterPlacement: 'default'
+      },
       markup: {
         forceAttribute: 2
       }

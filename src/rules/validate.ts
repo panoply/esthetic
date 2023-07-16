@@ -387,8 +387,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'always':
       case 'tags':
       case 'outputs':
-      case 'multiline':
-      case 'linebreak': return true;
+      case 'multiline': return true;
       default: throw RuleError({
         message: `Invalid "${rule}" option provided`,
         option: `${language} → ${rule}`,

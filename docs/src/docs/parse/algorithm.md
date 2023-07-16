@@ -20,7 +20,7 @@ Generators like ANTLR and Tree Sitter require grammars and leave users at the be
 Consider the following code sample. The HTML (markup) consists of Liquid, CSS, JavaScript and JSON. All languages in the sample are encapsulated within the appropriate regional based denominated tags but more importantly, Liquid token expressions exist within the CSS, JavaScript and HTML.
 
 <!-- prettier-ignore -->
-```html
+```liquid
 <style>
   .list {
     background-color: {{ bg.color }};

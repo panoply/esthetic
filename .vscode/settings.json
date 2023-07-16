@@ -2,17 +2,47 @@
   "cSpell.words": [
     "Æsthetic",
     "aestheticignore",
+    "aliqua",
+    "aliquip",
     "Amato",
     "ANTLR",
+    "aute",
+    "cillum",
+    "commodo",
+    "consequat",
+    "cupidatat",
+    "deserunt",
+    "Duis",
     "endcase",
     "endcustom",
     "endfor",
     "endrandom",
+    "enim",
     "estheticignore",
     "estheticrc",
+    "Excepteur",
+    "fugiat",
+    "irure",
+    "laboris",
+    "laborum",
     "linebreak",
+    "mollit",
+    "nostrud",
+    "nulla",
+    "occaecat",
+    "officia",
+    "pariatur",
+    "proident",
+    "quis",
+    "reprehenderit",
+    "sint",
     "stylelint",
-    "toets"
+    "sunt",
+    "toets",
+    "ullamco",
+    "velit",
+    "veniam",
+    "voluptate"
   ],
   "json.schemas": [
     {
@@ -20,6 +50,13 @@
         "package.json"
       ],
       "url": "./schema.json"
+    },
+    {
+      "url": "https://unpkg.com/tsup/schema.json",
+      "fileMatch": [
+        "package.json",
+        "tsup.config.json"
+      ]
     }
   ],
   "files.exclude": {
@@ -29,8 +66,8 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
-    "**/LICENSE":true,
-   //"**/node_modules": true
+    "**/LICENSE": true,
+    //"**/node_modules": true
   },
   "workbench.colorCustomizations": {
     "window.inactiveBorder": "#00aeff",
@@ -41,6 +78,60 @@
       "decorations": [
         {
           "color": "#81D4FA",
+        }
+      ]
+    },
+    "(:{3,4})": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#E91E63"
+        }
+      ]
+    },
+    "(?<=:{3,4}\\s)(grid|rule|note)": {
+      "decorations": [
+        {
+          "color": "#81D4FA",
+          "fontWeight": "900"
+        }
+      ]
+    },
+    "(?<=:{3,4}[a-z ]+)([colsxmd0-9-]+)": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#91EBC2",
+          "isWholeLine": true
+        }
+      ]
+    },
+    "(```)(json)(\\:)(rules)(\\@)?(range)?(\\:)?(\\w+)?": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#FAFAFA",
+        },
+        {
+          "color": "#FAFAFA",
+        },
+        {
+          "color": "#9EE34F",
+        },
+        {
+          "color": "#F48FB1",
+        },
+        {
+          "color": "#9EE34F",
+        },
+        {
+          "color": "#F48FB1",
+        },
+        {
+          "color": "#9EE34F",
+        },
+        {
+          "color": "#F48FB1",
         }
       ]
     },
@@ -61,10 +152,14 @@
       ]
     }
   },
+  "liquid.engine": "11ty",
+  "liquid.config.method": "workspace",
   "liquid.format.ignore": [
     "tests/samples/**"
   ],
   "liquid.format.rules": {
+    "wrap": 120,
+    "wrapFraction": 80,
     "liquid": {
       "commentIndent": true,
       "commentNewline": true,
@@ -74,14 +169,14 @@
       "normalizeSpacing": true,
       "preserveComment": false,
       "quoteConvert": "single",
-      "valueForce": "intent"
+      "forceFilter": 3,
+      "forceArgument": 4
     },
     "markup": {
       "quoteConvert": "double",
       "commentNewline": true,
       "forceIndent": true,
       "ignoreJS": false,
-      "attributeSortList": [],
       "forceAttribute": 2
     }
   },
@@ -89,5 +184,4 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "sissel.shopify-liquid"
   }
-
 }

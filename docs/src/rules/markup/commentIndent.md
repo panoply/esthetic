@@ -10,31 +10,15 @@ options:
   - true
 ---
 
+::: grid col-9 p-100
+
 # Comment Indent
 
-Applies single indentation to containing content of HTML and XML comments which span multiple lines.
+Applies single indentation to containing content of HTML and XML comments which span multiple lines. This is a markup specific formatting rule which will be applied to HTML or XML comments. It will **default** to using `false` when no option has been specified and the **recommended** option to use is `true`.
 
-::: note
-
-This rule only effects markup comments containing newlines. Inline markup comments which start and end on the same line will skipped.
-
-:::
+> This rule only effects markup comments containing newlines. Inline markup comments which start and end on the same line will skipped.
 
 ---
-
-# Rule Options
-
-This is a markup specific formatting rule which will be applied to HTML or XML comments. It will **default** to using `false` when no option has been specified and the **recommended** option to use is `true`.
-
-<!--
-
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-
--->
 
 ::: rule 👎
 

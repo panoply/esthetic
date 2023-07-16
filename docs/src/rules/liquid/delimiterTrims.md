@@ -12,16 +12,15 @@ options:
   - never
   - always
   - multiline
-  - linebreak
 ---
+
+::: grid col-9 p-100
 
 # Delimiter Trims
 
-Delimiter whitespace trim dashes `{%-`, `-%}`, `{{-` and `-}}` control. This rule can be used for handling trim `-` application of delimiter expressions in Liquid tag and output type tokens.
+Delimiter whitespace trim dashes `{%-`, `-%}`, `{{-` and `-}}` control. This rule can be used for handling trim `-` application of delimiter expressions in Liquid tag and output type tokens. This is a Liquid specific formatting rule which defaults to using `preserve` when no option has been specified. The **recommended** option to use is `tags` or `never`.
 
-::: note
-
-This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ foo }}"`. Tags which exist in string values or those contained between quotation characters are left intact.
+> This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ foo }}"`. Tags which exist in string values or those contained between quotation characters are left intact.
 
 :::
 
@@ -35,9 +34,7 @@ This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ fo
 
 -->
 
-# Rule Options
-
-This is a Liquid specific formatting rule which defaults to using `preserve` when no option has been specified. The **recommended** option to use is `tags` or `never`.
+---
 
 ::: rule 👍
 
@@ -57,7 +54,7 @@ The `delimiterTrims` rule is set to `preserve` by default and delimiter trims ap
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% if condition -%}
   {{- foo }}
   {{ bar -}}
@@ -84,7 +81,7 @@ When the `delimiterTrims` rule is set to `tags` then Liquid tokens using `{%` an
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% if condition -%}
 
   {% # Trims will be inserted here %}
@@ -117,7 +114,7 @@ When the `delimiterTrims` rule is set to `outputs` then Liquid tokens using `{{`
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {%- if condition -%}
 
   {% # Trim application will be preserved %}
@@ -150,7 +147,7 @@ When the `delimiterTrims` rule is set to `never` then all occurrence's trim dash
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {%- if condition -%}
 
   {% # All trims will be stripped %}
@@ -184,7 +181,7 @@ When the `delimiterTrims` rule is set to `always` then all Liquid delimiters wil
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {% if condition %}
 
   {% # Trims will be applied to all tokens %}
@@ -197,6 +194,8 @@ When the `delimiterTrims` rule is set to `always` then all Liquid delimiters wil
 
 {% endif %}
 ```
+
+---
 
 ::: rule 👎
 
@@ -217,7 +216,7 @@ When the `delimiterTrims` rule is set to `multiline` trims will be applied to ta
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 {%
   if condition == assertion
   or condition == expectation
@@ -226,48 +225,6 @@ When the `delimiterTrims` rule is set to `multiline` trims will be applied to ta
 
   {{
     object.prop
-    | param_1: true
-    | param_2: 1000
-    | param_3:
-      arg_1: 'value',
-      arg_2: 2000,
-      arg_3: false,
-      arg_4: true,
-      arg_5: 2000,
-      arg_6: nil
-    | param_4: true
-    | param_5: 1000
-  }}
-
-{% endif %}
-```
-
----
-
-::: rule 🙌
-
-#### linebreak
-
-:::
-
-When the `delimiterTrims` rule is set to `linebreak` then a single trim will be applied to an **opening** delimiter (`{{`, `{%`) of multiline tokens. The choice uses the internal structure of tokens together with the [lineBreakSeparator](/rules/liquid/lineBreakSeparator) and [delimiterPlacement](/rules/liquid/delimiterPlacement) rules to determine when a trim `-` insertion is to be applied. Using this choice helps overall readability but comes with drawbacks. Trims will only ever be applied to multiline tokens and insertion differs based on the `lineBreakSeparator` value. The `delimiterPlacement` rule is also referenced during the determination cycle.
-
-```json:rules
-{
-  "language": "liquid",
-  "wrap": 40,
-  "liquid": {
-    "delimiterTrims": "linebreak",
-    "delimiterPlacement": "force-multiline"
-  }
-}
-```
-
-<!-- prettier-ignore -->
-```html
-{% if condition == assertion or condition == expectation or something == comparison %}
-
-  {{- object.prop
     | param_1: true
     | param_2: 1000
     | param_3:

@@ -1,16 +1,26 @@
 # DIRECTORIES
-# --------------------
-stores
-versions
+
+.vscode
 src
 tests
 docs
+versions
 
-# FILES
-# -------------------
-rollup.config.mjs
-.pnpm-debug.log
+# BUILD FILES
+
 tsconfig.json
 tsup.config.ts
+
+# MARKDOWN FILES
+
 readme.md
 changelog.md
+
+# DOT FILES
+
+.npmignore
+.npmrc
+.gitignore
+.liquidrc
+.pnpm-lock.yaml
+.pnpm-debug.log

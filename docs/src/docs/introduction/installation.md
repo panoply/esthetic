@@ -19,19 +19,19 @@ anchors:
 
 # Installation
 
-Æsthetic can be consumed via the NPM registry and supports both ESM and CJS, in browser/node environments. It is recommended to avoid installing the project globally and instead install it as a dev-dependency.
+Æsthetic can be consumed via the NPM registry and supports both ESM and CJS environments. It is recommended to avoid installing the project globally and instead install it as a dev-dependency.
 
 ##### PNPM
 
 Æsthetic recommends developers choose [pnpm](https://pnpm.js.org/en/cli/install) as their package manager.
 
-```
+```bash
 $ pnpm add esthetic
 ```
 
 ##### CDN
 
-Use the [unpkg](https://unpkg.com/estheitc) CDN for quick usage in web browser.
+Use the [unpkg](https://unpkg.com/estheitc) CDN for quick usage in the web browser.
 
 ```
 https://unpkg.com/esthetic
@@ -47,16 +47,12 @@ https://unpkg.com/esthetic/schema.json
 
 You can provide the schema store reference a couple of different ways. For developers who use the **VSCode** text editor can either install the [Æsthetic Extension](#) or alternatively you can provide the schema store to your workspace settings:
 
-```js
+```json
 {
   "json.schemas": [
     {
       "url": "https://unpkg.com/esthetic/schema.json",
-      "fileMatch": [
-        "package.json",
-        ".esthetic.json",
-        ".esthetic"
-      ]
+      "fileMatch": ["package.json", ".esthetic.json", ".esthetic"]
     }
   ]
 }
@@ -64,7 +60,7 @@ You can provide the schema store reference a couple of different ways. For devel
 
 You may optionally choose to provide the schema store directly within JSON configuration files.
 
-```js
+```json
 {
   "$schema": "https://unpkg.com/esthetic/schema.json"
 }

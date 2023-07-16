@@ -4,35 +4,130 @@ layout: base
 permalink: '/rules/global/indentChar/index.html'
 ---
 
-&nbsp;⚙️&nbsp;&nbsp;&nbsp;**Default** `' '`
+::: grid col-9 p-100
 
-&nbsp;💁🏽‍♀️&nbsp;&nbsp;&nbsp;Recommended setting is `' '`
-
-#### Indent Char
+# Indent Char
 
 The string characters to comprise a single indentation. Any string combination is accepted. Generally speaking, you should leave this alone unless you know what you are doing.
 
-#### Related Rule
+# Related Rule
 
 The `indentSize` rule will use this character. For example, if you were to set `indentSize` to `4` then this character will be repeated 4 times, ie: `    ` - by default the `indentSize` is set to `2`.
 
-#### Example
+- [indentSize](/rules/global/indentSize)
 
-_Below is we have set `.` to be used as the indentation character. You should never do this, it is for example sake._
+:::
+
+---
+
+<!--
+
+# Rule Options
+
+This is a global rule definition and will be used for all languages.
+
+::: options
+
+### `false`
+
+> Strip additional newlines from the end of input.
+
+### `true`
+
+> Insert a newline at the end of input
+
+:::
+
+🙌 - Recommended Choice
+👍 - Good Choice
+👎 - Not Recommended
+🤡 - Clown Choice
+😳 - Bad Choice
+🧐 - You gotta do, what you gotta do
+💡 - Showing an example of the rule
+-->
+
+::: rule 💡
+
+#### ` `
+
+:::
+
+The default `indentChar` is a single whitespace value.
+
+```json:rules
+{
+  "language": "html",
+  "indentChar": " "
+}
+```
 
 <!-- prettier-ignore -->
 ```html
-<!-- Before Formatting -->
+<header>
+<nav>
 <ul class="foo">
-  <li>bar</li>
-  <li>baz</li>
+<li>bar</li>
+<li>baz</li>
 </ul>
+</nav>
+</header>
+```
 
-<!-- After Formatting -->
+---
+
+::: rule 💡
+
+#### `\t`
+
+:::
+
+Below we are using tab `\t` character for indentation.
+
+```json:rules
+{
+  "language": "html",
+  "indentChar": "\t"
+}
+```
+
+<!-- prettier-ignore -->
+```html
+<header>
+<nav>
 <ul class="foo">
-  ..
-  <li>....bar ..</li>
-  ..
-  <li>....baz ..</li>
+<li>bar</li>
+<li>baz</li>
 </ul>
+</nav>
+</header>
+```
+
+---
+
+::: rule 💡
+
+#### `-`
+
+:::
+
+The below example is purely for demonstration purposes.
+
+```json:rules
+{
+  "language": "html",
+  "indentChar": "-"
+}
+```
+
+<!-- prettier-ignore -->
+```html
+<header>
+<nav>
+<ul class="foo">
+<li>bar</li>
+<li>baz</li>
+</ul>
+</nav>
+</header>
 ```

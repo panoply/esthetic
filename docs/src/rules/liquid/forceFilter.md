@@ -14,15 +14,13 @@ options:
   - 3
 ---
 
+::: grid col-9 p-100
+
 # Force Filter
 
-Forces Liquid filter `|` expressions onto newlines when the number of filters contained on a tag exceeds the limit defined. By default, this rule uses a value of `0` which will result in Liquid filters being forced when the tag or output token containing them spans **¾** (or 75%) of defined global [`wrap`](/rules/global/wrap) limit.
+Forces Liquid filter `|` expressions onto newlines when the number of filters contained on a tag exceeds the limit defined. By default, this rule uses a value of `0` which will result in Liquid filters being forced when the tag or output token containing them spans **¾** (or 75%) of defined global [`wrap`](/rules/global/wrap) limit. This is a Liquid specific formatting rule which defaults to using `0` when no option has been specified.
 
-::: note
-
-See [fractional wrapping](/terminologies#fractional-wrapping) for more information regarding how fraction based thresholds are determined and calculated.
-
-:::
+> See [fractional wrapping](/terminologies#fractional-wrapping) for more information regarding how fraction based thresholds are determined and calculated.
 
 # Related Rules
 
@@ -32,10 +30,6 @@ The `forceArgument`
 - [`forceArgument`](/rules/liquid/forceArgument/)
 - [`lineBreakSeparator`](/rules/liquid/lineBreakSeparator/)
 - [`delimiterPlacement`](/rules/liquid/lineBreakSeparator/)
-
-# Rule Options
-
-This is a Liquid specific formatting rule which defaults to using `0` when no option has been specified.
 
 <!--
 
@@ -47,6 +41,10 @@ This is a Liquid specific formatting rule which defaults to using `0` when no op
 🧐 - You gotta do, what you gotta do
 
 -->
+
+:::
+
+---
 
 ::: rule 👍
 
@@ -61,7 +59,7 @@ By default, this rule uses a value of `0` which infers forcing to apply at a len
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 30,
+  "wrap": 80,
   "liquid": {
     "forceFilter": 0
   }
@@ -69,7 +67,15 @@ By default, this rule uses a value of `0` which infers forcing to apply at a len
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
+
+{{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
+
+{{ object.prop
+| filter_1: 'value'
+| filter_2: 'xxx' | filter_3: 'foo' }}
+
+{{ object.prop | filter_1: 'value' }}
 
 ```
 
@@ -94,7 +100,7 @@ This is an example of the `forceFilter` using a value of `3` which will result i
 ```
 
 <!-- prettier-ignore -->
-```html
+```liquid
 
 {% # No forcing will be applied as only 2 filters exist %}
 {{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}

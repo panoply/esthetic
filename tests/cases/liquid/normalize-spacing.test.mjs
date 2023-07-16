@@ -19,6 +19,14 @@ test('Spacing in object expressions', t => {
       [
         liquid`{{   object.  property[  foo]   }}`,
         liquid`{{ object.property[foo] }}`
+      ],
+      [
+        liquid`{{   object.  property[  foo][ 0][ 100 ].prop[ object . prop [0 ] ]   }}`,
+        liquid`{{ object.property[foo][0][100].prop[object.prop[0]] }}`
+      ],
+      [
+        liquid`{% assign x = object . xxx['prop'][ 0 ][[item[0] ] [item[1] ]]. prop . foo [0] [ 1] %}`,
+        liquid`{% assign x = object.xxx['prop'][0][[item[0]][item[1]]].prop.foo[0][1] %}`
       ]
 
     ]
@@ -209,16 +217,16 @@ test('Spacing in parameters', t => {
   forAssert(
     [
       [
-        liquid`{%  for    x   in   object . prop [ 'array'  ] parameter  :  2000  %}{%   endif  %}`,
-        liquid`{% for x in object.prop['array'] parameter: 2000 %}{% endif %}`
+        liquid`{%  for    x   in   object . prop [ 'array'  ] parameter  :  2000  %}{%   endfor  %}`,
+        liquid`{% for x in object.prop['array'] parameter: 2000 %}{% endfor %}`
       ],
       [
-        liquid`{%  for    x   in   (foo .. bar) parameter  :  2000  %}{%   endif  %}`,
-        liquid`{% for x in (foo..bar) parameter: 2000 %}{% endif %}`
+        liquid`{%  for    x   in   (foo .. bar) parameter  :  2000  %}{%   endfor  %}`,
+        liquid`{% for x in (foo..bar) parameter: 2000 %}{% endfor %}`
       ],
       [
-        liquid`{%  for    x   in   (10 . . 200) parameter  :  2000 param  limit :1  %}{%   endif  %}`,
-        liquid`{% for x in (10..200) parameter: 2000 param limit: 1 %}{% endif %}`
+        liquid`{%  for    x   in   (10 . . 200) parameter  :  2000 param  limit :1  %}{%   endfor  %}`,
+        liquid`{% for x in (10..200) parameter: 2000 param limit: 1 %}{% endfor %}`
       ]
 
     ]

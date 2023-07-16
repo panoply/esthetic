@@ -14,6 +14,17 @@ export interface LiquidRules {
   /**
    * **Default** `true`
    *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
+   * Whether or not to format LiquidDoc comment structures. When
+   * enabled keywords such a `Usage:` and `Accepts:` will apply
+   * beautification to align with LiquidDoc appropriation.
+   */
+  commentDoc?: boolean;
+
+  /**
+   * **Default** `true`
+   *
    * This will determine whether comments should always start at position
    * `0` of each line or if comments should be indented according to the code.
    * It is unlikely you will ever want to set this to `false` so generally, just

@@ -1,57 +1,78 @@
-{% if condition_1 == assertion_1 and logical_forcing and forced%}
+<div
+  class="col-12 product-variants"
+  data-controller="variants"
+  data-variants-current-value="{{ product.title | replace_first: '-', '–' | split: '–' | last }}">
 
-{% elsif 'yy' %}
+  <h5 class="mb-4 fw-light" data-variants-target="variant">
+    {{ product.title | replace_first: '-', '–' | split: '–' | last }}
+  </h5>
 
-{% if condition_1 == assertion_1%}
+  {% for item in product.metafields.data.variants.value %}
 
-{% unless condition_1 == assertion_1%}
+    {% if forloop.length == 1 %}
+      {% break %}
+    {% endif %}
 
-{% case variable %}
-  {% when first_value or second_value or third_value %}
-    first_expression
-  {% when fourth_value, fifth_value, sixth_value %}
-    second_expression
-  {% else %}
-    third_expression
-{% endcase %}
 
-{% endunless %}
-{% endif %}
+      {% liquid
 
-{% elsif 'xx' %}
-  {{
-    will_inline
-    | append: 'xxx'
-  }}
+        # COLUMN CLASS
 
-{% else %}
+        capture class
+          if item.id == product.id
+            echo 'bg-color'
+          else
+            echo 'v-link'
+          endif
 
-bar
+        endcapture
 
-{% endif %}
+        # FLAT CROP
 
-{% case variable %}
-  {% when first_value or second_value or third_value %}
-    first_expression
-  {% when fourth_value, fifth_value, sixth_value %}
-    second_expression
-  {% else %}
-    third_expression
-{% endcase %}
+        capture height
+          if item.metafields.image.crop
+            echo 280 | minus: item.metafields.image.crop
+          else
+            echo 280
+          endif
+        endcapture
+        capture width
+          echo 200
+        endcapture
+      %}
 
-{% case variable %}
-  {% when first_value %}
-    first_expression
-  {% when fourth_value %}
-    second_expression
-{% endcase %}
+  {% # comment%}
+      <a href="{{ item.url }}"
+        class="col-auto bd bc-gray {{ class }}"
+        aria-label="{{ item.title | replace_first: '-', '–' | split: '–' | last }}"
+        data-action="mouseenter->variants#onHover"
+        style="width: 60px; height: 100%;">
+
+
+        <div class="ratio" style="--ratio: calc({{ height }} / {{ width }});">
+
+          <picture>
+            <img
+              itemprop="image"
+              src="{{ item.metafields.image.flat | image_url: width: width, height: height, crop: 'center' }}"
+              alt="{{ item.title }}"
+              loading="lazy"
+              class="img-fluid lazy">
+          </picture>
+        </div>
+      </a>
+
+
+
+  {% endfor %}
+
+</div>
 
 {% schema %}
 {
-  "foo": "bar",
-  "arr": [
-    "one",
-    100
-  ]
+  "name": "Variants",
+  "tag": "section",
+  "class": "row g-0 px-3 mb-4 px-md-5 od-2 od-md-first rel",
+  "settings": []
 }
 {% endschema %}

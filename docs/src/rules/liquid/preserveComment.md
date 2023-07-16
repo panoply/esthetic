@@ -10,33 +10,17 @@ options:
   - true
 ---
 
+::: grid col-9 p-100
+
 # Preserve Comment
 
-Preserve the inner contents of Liquid block comments. When this rule is enabled (i.e: `true`) it will ignore formatting Liquid comments and will override `commentIndent` and `commentNewline` rule definitions.
+Preserve the inner contents of Liquid block comments. When this rule is enabled (i.e: `true`) it will ignore formatting Liquid comments and will override `commentIndent` and `commentNewline` rule definitions. The `preserveComment` rule is disabled (`false`) by default. The **recommended** setting to use is `false` unless you have extensive context contained within comments.
 
-::: note
-Comment blocks which appear on the same line, e.g: `{% comment %} xxx {% endcomment %}` are always preserved. The rule only take effect on
-comments which span multiple lines.
+> Comment blocks which appear on the same line, e.g: `{% comment %} xxx {% endcomment %}` are always preserved. The rule only take effect on comments which span multiple lines.
+
 :::
 
-# Rule Options
-
-The `preserveComment` rule is disabled (`false`) by default. The **recommended** setting to use is `false` unless you have extensive context contained within comments.
-
-##### Example
-
-In the below example we have enabled comment preservation. Both the `commentIndent` and `commentNewline` rules will no longer have effect on output as the the `preserveComment` rule takes precedence.
-
-```js
-{
-  "language": "liquid",
-  "liquid": {
-    "commentNewline": false, // This setting will be ignored
-    "commentIndent": true,   // This setting will be ignored
-    "preserveComment": true  // When enabled, this rule takes precedence
-  }
-}
-```
+---
 
 ::: rule 🙌
 
@@ -59,7 +43,7 @@ This `preserveComment` rule is set to `false` by default. In the example below, 
 ```
 
 <!--prettier-ignore-->
-```html
+```liquid
 <main>
   {% comment %}
 
@@ -107,7 +91,7 @@ When the `preserveComment` rule is enabled (`true`) then the contents of block c
 ```
 
 <!--prettier-ignore-->
-```html
+```liquid
 <ul>
   <li>Hello</li>
 
@@ -134,5 +118,3 @@ When the `preserveComment` rule is enabled (`true`) then the contents of block c
               {% endcomment %}
 </ul>
 ```
-
----

@@ -1,10 +1,6 @@
 export interface MarkupRules {
 
   /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
-   *
    * If a blank new line should be forced above comments.
    */
   commentNewline?: boolean;
@@ -233,6 +229,11 @@ export interface MarkupRules {
    * ```
    */
   attributeSort?: boolean | string[];
+
+  /**
+   * Attribute class list sorting
+   */
+  classSort?: boolean | string[] | 'tailwind'
 
   /**
    * **Default** `false`

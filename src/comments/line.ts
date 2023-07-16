@@ -114,6 +114,7 @@ export function commentLine (config: WrapComment): [string, number] {
       output = `// ${output.slice(c).replace(rx.SpaceLead, NIL)}`;
 
       d = output.length;
+
     } while (wrap < d);
 
     c = 0;

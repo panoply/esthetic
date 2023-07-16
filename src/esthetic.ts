@@ -9,12 +9,32 @@ import { isObject, isUndefined, stats } from 'utils/helpers';
 import { getLexerName, getLexerType } from 'rules/language';
 import { isValidChoice } from 'rules/validate';
 import { config } from 'config';
+import { defineProperty } from 'utils/native';
+import merge from 'mergerino';
+import { defaults } from 'rules/presets/default';
+import * as presets from 'rules/presets';
 
 export const esthetic = new class Esthetic {
 
   constructor () {
 
-    if (config.env === 'node') config.cwd = process.cwd();
+    if (config.env === 'node') {
+      config.cwd = process.cwd();
+    }
+
+    if (config.env === 'browser') {
+
+      // @ts-expect-error
+      if (!('esthetic' in window)) {
+      // @ts-expect-error
+        defineProperty(window, 'esthetic', {
+          configurable: true,
+          get () {
+            return esthetic;
+          }
+        });
+      }
+    }
 
   }
 
@@ -28,9 +48,11 @@ export const esthetic = new class Esthetic {
     parse: []
   };
 
+  get presets () { return presets; }
   get table () { return parse.data; }
   get definitions () { return definitions; }
   get detect () { return detect; }
+  get error () { return parse.error; }
 
   grammar (grammars?: Grammars) {
 
@@ -48,7 +70,13 @@ export const esthetic = new class Esthetic {
 
     for (const o in options) if (o in config) config[o] = options[o];
 
+    if (config.env === 'browser' && config.globalThis === false) {
+      // @ts-expect-error
+      if ('esthetic' in window) delete window.esthetic;
+    }
+
     return this;
+
   }
 
   on (name: 'error' | 'format' | 'rules' | 'parse' | 'language', callback: any) {
@@ -101,9 +129,7 @@ export const esthetic = new class Esthetic {
       }
     }
 
-    const timing = action === null
-      ? this.stats
-      : this.stats = action(output.length);
+    const timing = action === null ? null : this.stats = action(output.length);
 
     if (this.events.format.length > 0) {
       for (const cb of this.events.format) {
@@ -128,16 +154,15 @@ export const esthetic = new class Esthetic {
     parse.source = source;
 
     if (isObject(options)) {
-
       if ('language' in options && this.language !== options.language) {
         if (isValidChoice('global', 'language', options.language)) {
           this.language = parse.language = parse.rules.language = options.language;
           this.lexer = parse.lexer = getLexerName(parse.language);
         }
       }
-
-      this.rules(options);
     }
+
+    this.rules(options);
 
     if (this.lexer === 'auto') {
       const detect = this.detect(parse.source);
@@ -146,33 +171,36 @@ export const esthetic = new class Esthetic {
     }
 
     const invoke = getLexerType(this.language);
-    const action = stats(this.language, this.lexer);
+    const action = config.reportStats ? stats(this.language, this.lexer) : null;
     const parsed = parse.document(invoke, Modes.Parse);
-    const statistic = this.stats = action(parse.count);
+
+    if (parse.error !== null) {
+      if (this.events.error.length > 0) {
+        // @ts-ignore
+        for (const cb of this.events.error) cb(parse.error);
+        return [];
+      } else {
+        if (config.throwErrors) throw parse.error;
+        return [];
+      }
+    }
+
+    const timing = action === null
+      ? null
+      : this.stats = action(parse.count);
 
     if (this.events.parse.length > 0) {
       for (const cb of this.events.parse) {
 
         const fn = cb({
           get data () { return parse.data; },
-          get stats () { return statistic; },
+          get stats () { return timing; },
           get rules () { return parse.rules; }
         });
 
         if (fn === false) return source;
 
       }
-    }
-
-    if (parse.error !== null) {
-
-      if (this.events.error.length > 0) {
-        // @ts-ignore
-        for (const cb of this.events.error) cb(parse.error);
-      }
-
-      return [];
-
     }
 
     return parsed;
@@ -183,12 +211,12 @@ export const esthetic = new class Esthetic {
 
     if (isUndefined(options)) return parse.rules;
 
-    const { language } = setRules(options, this.events);
+    parse.rules = setRules(options, this.events);
 
-    this.language = language;
-    this.lexer = parse.lexer = getLexerName(language);
+    this.language = parse.language;
+    this.lexer = parse.lexer = getLexerName(parse.language);
 
-    return this;
+    return parse.rules;
 
   }
 
