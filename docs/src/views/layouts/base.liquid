@@ -52,7 +52,7 @@
     <script src="{{'/assets/bundle.min.js' | url }}"></script>
 
   </head>
-  <body>
+  <body class="{% if page.url contains '/playground/' %}no-font-smoothing{% endif%}">
 
     {% if page.url == '/' %}
 

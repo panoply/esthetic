@@ -41,7 +41,7 @@
     "lines-and-columns": "^2.0.3",
     "mergerino": "^0.4.0",
     "mithril": "^2.2.2",
-    "moloko": "workspace:0.1.0-beta.1",
+    "moloko": "workspace:^",
     "papyrus": "workspace:^",
     "qvp": "^0.3.2",
     "relapse": "^0.5.0",

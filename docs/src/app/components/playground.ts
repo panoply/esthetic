@@ -1,5 +1,6 @@
 import type Moloko from 'moloko';
 import { Controller } from '@hotwired/stimulus';
+import esthetic from 'esthetic'
 
 export class Playground extends Controller {
 
@@ -28,12 +29,13 @@ export class Playground extends Controller {
 
   async connect () {
 
+
     if (Playground.loaded) return this.mount();
 
     this.splashTarget.classList.remove('d-none');
 
     this.loading();
-    this.module();
+    await this.module();
 
   }
 
@@ -51,8 +53,7 @@ export class Playground extends Controller {
     Playground.moloko.mount(this.mountTarget, {
       offset: 52,
       resolve: {
-        path: 'assets/moloko',
-        esthetic: false
+        path: 'assets/moloko'
       }
     });
 

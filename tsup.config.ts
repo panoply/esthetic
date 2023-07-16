@@ -10,6 +10,9 @@ export default defineConfig([
     treeshake: true,
     name: 'Æsthetic',
     minify: 'terser',
+    noExternal: [
+      'mergerino'
+    ],
     terserOptions: {
       compress: {
         passes: 10
