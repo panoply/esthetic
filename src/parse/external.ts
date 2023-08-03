@@ -23,6 +23,7 @@ export function determine (tag: string, ref: 'html' | 'liquid', attrs?: any) {
         if (attribute.attr.has(attrs[0]) && attribute.attr.get(attrs[0]).value.has(attrs[1])) {
           return attribute.attr.get(attrs[0]);
         }
+
       }
     }
 
