@@ -92,6 +92,9 @@ class Parser {
    */
   static region: string | string[] = NIL;
 
+  /**
+   *
+   */
   static range: { lineNumber: number; depth: number };
 
   /**
@@ -102,6 +105,11 @@ class Parser {
    * to augment and adjust tokens.
    */
   public hooks: Hooks = { parse: null, format: null };
+
+  /**
+   * Hard coded line numbers
+   */
+  public numbers: number[] = [];
 
   /**
    * Reference to a starting index within the data structure. This is
@@ -349,6 +357,7 @@ class Parser {
     this.lineDepth = 2;
     this.lineIndex = 0;
     this.lineOffset = 0;
+    this.numbers = [];
     this.data.begin = [];
     this.data.ender = [];
     this.data.lexer = [];
@@ -577,6 +586,8 @@ class Parser {
     data.types.push(record.types);
     data.lines.push(record.lines);
 
+    this.numbers.push(this.lineNumber);
+
     if (data !== this.data) return;
 
     this.count = this.count + 1;
@@ -674,6 +685,8 @@ class Parser {
   public pop (data: Data): Record {
 
     if (data === this.data) this.count = this.count - 1;
+
+    this.numbers.pop();
 
     return {
       begin: data.begin.pop(),
