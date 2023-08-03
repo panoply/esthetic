@@ -15,7 +15,7 @@ export enum LogLevel {
   Detailed
 }
 
-export interface IConfig {
+export interface ISettings {
   /**
    * **Use `.editorconfig` File**
    *
@@ -99,7 +99,7 @@ export interface IConfig {
   resolveConfig?: LiteralUnion<'package.json' | '.esthetic' | '.esthetic.json', string>
 }
 
-export interface IConfigInternal extends IConfig {
+export interface IConfigInternal extends ISettings {
   /**
    * **Environment**
    *
