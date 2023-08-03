@@ -29,7 +29,7 @@ How quotation characters of markup attributes and Liquid tokens should be handle
 
 :::
 
-Below is an example of how this rule works if set to `none` which is the **default** setting. No conversion of quotations is applied when using `none` as per the **before** and **after** examples
+Below is an example of how this rule works if set to `none` which is the **default** setting. No conversion of quotations is applied when using `none` and one should consider setting a specific value.
 
 ```json:rules
 {

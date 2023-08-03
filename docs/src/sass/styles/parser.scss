@@ -1,0 +1,44 @@
+.parser {
+  .papyrus {
+    background-color: #12161d;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  &-table {
+    background-color: #12161d;
+
+    tr {
+      border-bottom: $border-width solid $border-color;
+
+      &:hover {
+        background-color: rgba(
+          var(--papyrus-line-highlight-bg),
+          var(--papyrus-line-highlight-alpha)
+        );
+      }
+
+      &.stripe {
+        background-color: #151a22;
+      }
+
+      td {
+        font-size: $font-size-sm;
+
+        &.number {
+          width: 3em;
+        }
+
+        pre {
+          margin: 0 !important;
+          background-color: transparent;
+
+          code {
+            padding: 0;
+            font-size: $font-size-sm;
+          }
+        }
+      }
+    }
+  }
+}

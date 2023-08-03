@@ -135,18 +135,18 @@ declare namespace Æsthetic {
      *
      * @example
      *
-    * import esthetic from 'esthetic';
-    *
-    * const output = esthetic.format('<div id="foo"> Hello World </div>', {
-    *   language: 'html',
-    *   markup: {
-    *     forceAttribute: true
-    *   }
-    * });
-    *
-    * console.log(output);
-    *
-    */
+     * import esthetic from 'esthetic';
+     *
+     * const output = esthetic.format('<div id="foo"> Hello World </div>', {
+     *   language: 'html',
+     *   markup: {
+     *     forceAttribute: true
+     *   }
+     * });
+     *
+     * console.log(output);
+     *
+     */
     format: (source: string | Buffer, rules?: Æ.Rules) => string;
 
     /**
@@ -190,6 +190,31 @@ declare namespace Æsthetic {
     /**
      * #### _ÆSTHETIC_
      *
+     * Lines
+     *
+     * The line numbers according to parse table record indexes. This is an isolated
+     * reference and is used in logs, reports and parse operations.
+     *
+     * @example
+     *
+     * // Take the following data structure
+     * [
+     *  { begin: -1, ender: 1, lexer: 'markup', }, // etc
+     *  { begin: -1, ender: 1, lexer: 'markup', } // etc
+     * ]
+     *
+     * // The lines reference will be as followed, assuming
+     * // index 0 and index 1 ae on the same line
+     * [
+     *   1,
+     *   1
+     * ]
+     */
+    lines: number[]
+
+    /**
+     * #### _ÆSTHETIC_
+     *
      * Events
      *
      * Event Listener which invokes on different operations.
@@ -209,7 +234,7 @@ declare namespace Æsthetic {
     /**
      * #### _ÆSTHETIC_
      *
-     * Configuration
+     * Settings
      *
      * Control the execution behaviour of Æsthetic. Options exposed in this method
      * allow you to refine operations.
@@ -217,7 +242,7 @@ declare namespace Æsthetic {
      * To return the configuration settings currently applied along with addition
      * reference applied internally, then do no provide a parameter.
      */
-    config: {
+    settings: {
       /**
        * Returns the current configuration options with additional internal references
        */
@@ -239,10 +264,10 @@ declare namespace Æsthetic {
        *
        * // Alternatively, you can chain:
        *
-       * esthetic.config({}).format('')
+       * esthetic.settings({}).format('')
        * ```
        */
-      (options: Æ.IConfig): Pick<Static, 'on' | 'grammar' | 'rules' | 'hook' | 'parse' | 'format'>;
+      (options: Æ.ISettings): Pick<Static, 'on' | 'grammar' | 'rules' | 'hook' | 'parse' | 'format'>;
     };
 
     /**
@@ -293,7 +318,7 @@ declare namespace Æsthetic {
     /**
      * #### _ÆSTHETIC_
      *
-     * Language Detection**
+     * Language Detection
      *
      * Automatic language detection based on the string input.
      * Returns lexer, language and official name.
@@ -304,17 +329,17 @@ declare namespace Æsthetic {
   /**
    * #### _ÆSTHETIC_
    *
-   *  Configuration (Type)
+   * Settings (Type)
    *
    * Type export of the execution configuration options which is available
    * via the `esthetic.config(configuration)` method.
    */
-  type Configuration = Æ.IConfig;
+  type Settings = Æ.ISettings;
 
   /**
    * #### _ÆSTHETIC_
    *
-   *  Stats (Type)
+   * Stats (Type)
    *
    * Type export of Statistics return value which is available via
    * the `esthetic.stats` getter method.
@@ -324,21 +349,21 @@ declare namespace Æsthetic {
   /**
    * #### _ÆSTHETIC_
    *
-   *  Global Rules (Type)
+   * Global Rules (Type)
    *
    * Type export of Global Formatting Rules. These rules are used
    * for every supported language.
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules#global)
+   * [Æsthetic Docs](https://æsthetic.dev/rules)
    */
-  type Rules = Æ.GlobalRules;
+  type Rules = Æ.Rules;
 
   /**
    * #### _ÆSTHETIC_
    *
-   *  Global Rules (Type)
+   * Global Rules (Type)
    *
    * Type export of Global Formatting Rules. These rules are used
    * for every supported language.

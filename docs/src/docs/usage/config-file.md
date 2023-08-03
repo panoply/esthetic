@@ -2,20 +2,22 @@
 title: 'Config File'
 layout: base
 permalink: '/usage/config-files/index.html'
+prev:
+  label: 'CLI'
+  uri: '/usage/cli'
+next:
+  label: 'Rules'
+  uri: '/usage/rules'
 anchors:
   - Config Files
   - Supported Files
   - Ignoring Files
   - Configuration
-  - package.json
-  - .esthetic.json
 ---
 
 # Config Files
 
 Æsthetic supports configuration files for defining formatting rules, settings and other options. By default, Æsthetic assumes that configuration is provided within a `package.json` file.
-
-> Despite the package name shipping under the U.S spelt variation the naming convention of files supports both U.S or U.K variations.
 
 # Supported Files
 
@@ -24,7 +26,7 @@ You may prefer to keep formatting rules in an external file opposed using the de
 - `.esthetic`
 - `.esthetic.json`
 
-> You can also use the CLI `-c` or `--config` flag to provide a custom config file and/or path location reference.
+> You can also use the CLI `-c` or `--config` flag to provide a custom configuration file and/or path location reference.
 
 # Ignoring Files
 

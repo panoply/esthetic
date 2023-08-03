@@ -4,4 +4,6 @@ layout: base
 permalink: '/integrate/text-editor/index.html'
 ---
 
-# TODO
+# Text Editor
+
+Æsthetic is not yet available within text editors, but support is on the he roadmap. Though an official Æsthetic text editor extension/plugin is planned, Æsthetic is leverages within the [VSCode Liquid](#) extension.

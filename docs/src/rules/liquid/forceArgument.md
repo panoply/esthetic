@@ -65,7 +65,10 @@ By default, this rule uses a value of `0` which infers forcing to apply at a len
 
 {{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
 
-{% render 'snippet', param_1: true, param_2: 1000, param_3: 'string', param_4: nil %}
+{% render 'snippet',
+param_1: true, param_2: 1000,
+param_3: 'string', param_4: nil %}
+
 
 <div id="foo" class="bar baz">
 
@@ -125,14 +128,22 @@ This is an example of the `forceFilter` using a value of `3` which will result i
 ```liquid
 
 {{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
-{% render 'snippet', param_1: true, param_2: 1000, param_3: 'string', param_4: nil %}
+
+{% render 'snippet',
+param_1: true, param_2: 1000,
+param_3: 'string', param_4: nil %}
 
 
 <div id="foo" class="bar baz">
 <section data-id="qux" aria-label="{{ object.prop }}">
 {% assign x = settings.logo
   | image_url: width: 500
-  | image_tag: class: 'header__heading-logo motion-reduce', widths: '50, 100, 150, 200, 250, 300, 400, 500', height: logo_height, width: settings.logo_width, alt: logo_alt
+  | image_tag:
+   class: 'header__heading-logo motion-reduce'
+  , widths: '50, 100, 150, 200, 250, 300, 400, 500',
+  height: logo_height, width: settings.logo_width
+  ,
+   alt: logo_alt
   | replace: ',' , 'foo'
   | font_family: 'bold', '300', 'exec'
    | image_url: width: 500 %}

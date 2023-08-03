@@ -208,8 +208,10 @@ When the `delimiterTrims` rule is set to `multiline` trims will be applied to ta
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 40,
+  "wrap": 0,
+  "wrapFraction": 30,
   "liquid": {
+    "lineBreakSeparator": "after",
     "delimiterTrims": "multiline"
   }
 }

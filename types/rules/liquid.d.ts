@@ -34,6 +34,34 @@ export interface LiquidRules {
   commentIndent?: boolean;
 
   /**
+   * **Default** `true`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   *
+   * Will force indentation upon all content and tags without regard for the
+   * text nodes.
+   *
+   * ---
+   *
+   * #### Example
+   *
+   * *Below is an example of how this rule works if it's enabled, ie: `true`*
+   *
+   *
+   * ```liquid
+   *
+   * <!-- Before Formatting -->
+   * {% if foo %}{{ object.prop }}{% endif %}
+   *
+   * <!-- After formatting -->
+   * {% if foo %}
+   *   {{ object.prop }}
+   * {% endif %}
+   * ```
+   */
+  forceIndent?: boolean;
+
+  /**
    * **Default** `preserve`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `tags`

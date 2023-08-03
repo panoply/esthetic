@@ -3,6 +3,12 @@
  * Style lexer stack token types
  */
 export enum StyleTypes {
+
+  /**
+   * Describes a `:root`selector. This types value exists to uniquely set colon
+   * characters apart from other types values.
+   */
+  root = 'root',
   /**
    * Describes a : character. This types value exists to uniquely set colon
    * characters apart from other types values.

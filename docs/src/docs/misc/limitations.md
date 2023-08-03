@@ -6,7 +6,7 @@ permalink: '/misc/limitations/index.html'
 
 # Limitations
 
-Æsthetic is comparatively _recluse_ in terms of PnP integrations/extensibility. Depending on your stack and development preferences you may wish to use Æsthetic together with additional tools like [eslint](https://eslint.org/), [stylelint](https://stylelint.io/) or even [Prettier](https://prettier.io/). There are a few notable caveats you should be aware before running Æsthetic, most of which are trivial.
+Æsthetic is comparatively _recluse_ in terms of PnP (plug and play) integrations/extensibility. Depending on your stack and development preferences you may wish to use Æsthetic together with additional tools like [eslint](https://eslint.org/), [stylelint](https://stylelint.io/) or even [Prettier](https://prettier.io/). There are a few notable caveats you should be aware before running Æsthetic, most of which are trivial.
 
 ## Æsthetic and Prettier
 

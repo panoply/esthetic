@@ -537,10 +537,12 @@ export function style () {
 
           }
 
-          outy = b.slice(bb - 6, bb + 1).join(NIL);
+          if (data.types[parse.count] !== 'start') {
+            outy = b.slice(bb - 6, bb + 1).join(NIL);
 
-          if (outy.indexOf('filter') === outy.length - 6 || outy.indexOf('progid') === outy.length - 6) {
-            outy = 'filter';
+            if (outy.indexOf('filter') === outy.length - 6 || outy.indexOf('progid') === outy.length - 6) {
+              outy = 'filter';
+            }
           }
 
         }
@@ -601,7 +603,7 @@ export function style () {
 
     if (func === true) {
 
-      if (grammar.css.atrules(ltoke) && rules.style.atRuleSpace === true) {
+      if (parse.count > -1 && grammar.css.atrules(ltoke) && rules.style.atRuleSpace === true) {
 
         data.token[parse.count] = data.token[parse.count]
           .replace(/\s*\(/g, ' (')
@@ -614,6 +616,7 @@ export function style () {
           .replace(/\s+\(/g, '(')
           .replace(/\s+\)/g, ')')
           .replace(/,\(/g, ', (');
+
       }
 
     }
@@ -680,6 +683,7 @@ export function style () {
         if (is(outy[outy.length - 1], cc.RPR) && aa > 0) {
           outy = outy.slice(aa + 1, outy.length - 1);
           data.token[parse.count] = data.token[parse.count].slice(0, aa + 1) + value(outy) + ')';
+
         }
       }
 
@@ -794,6 +798,10 @@ export function style () {
         .replace(/^\s+/, NIL)
         .replace(/\s+$/, NIL)
         .replace(/\s+::\s+/, '::');
+
+      if (is(data.token[ss], cc.ATT)) {
+        data.token[index] = data.token[index].replace(/(\(\s*[a-z-]+\s*)(:)(\S)/g, '$1$2 $3');
+      }
 
       if (not(data.token[ss], cc.COM) && data.types[ss] !== 'comment') {
 
@@ -1027,6 +1035,15 @@ export function style () {
 
             data.types[aa] = 'variable';
 
+          } else if (is(data.token[bb], cc.COL) && data.token[aa] === 'root') {
+
+            data.types[bb] = 'selector';
+            data.token[bb] = data.token[bb] + data.token[aa];
+
+            parse.pop(data);
+
+            return;
+
           } else {
 
             data.types[aa] = 'value';
@@ -1060,7 +1077,9 @@ export function style () {
             parse.pop(data);
 
           } else {
+
             data.types[aa] = 'value';
+
           }
         }
 
@@ -1153,6 +1172,7 @@ export function style () {
       if (ltype === 'item') {
         if (endtype === 'colon') {
           data.types[parse.count] = 'value';
+
         } else {
           parseToken(endtype);
         }
@@ -1205,7 +1225,7 @@ export function style () {
               quote = '*';
             }
 
-          } else if (b[a + 1] === end.charAt(0)) {
+          } else if (is(end, b[a + 1].charCodeAt(0))) {
 
             do {
 
@@ -1260,10 +1280,12 @@ export function style () {
 
                 let namesLen = templateNames.length - 1;
 
-                name = name.slice(0, name.indexOf(WSP));
-
-                if (name.indexOf('(') > 0) {
-                  name = name.slice(0, name.indexOf('('));
+                // Unsure what I've done here but it is responsible for something
+                // will likely encounter reason in future
+                //
+                const nameParen = name.slice(0, name.indexOf(WSP) + 1);
+                if (nameParen.indexOf('(') > 0) {
+                  name = nameParen.slice(0, nameParen.indexOf('('));
                 }
 
                 if (grammar.liquid.else.has(name)) {
@@ -1640,6 +1662,7 @@ export function style () {
 
     removes();
     parse.lineOffset = lines;
+
   };
 
   /**
@@ -1848,6 +1871,5 @@ export function style () {
 
   if (rules.style.sortProperties === true) sortObject(data);
 
-  // console.log(data);
   return data;
 };

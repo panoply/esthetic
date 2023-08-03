@@ -23,7 +23,7 @@ $enable-rfs: true;
 /* PALETTE                                      */
 /* -------------------------------------------- */
 
-$white: rgb(240, 240, 240);
+$white: #f0f0f0;
 $black: #1c1e21;
 $blue: #0d6efd;
 $indigo: #6610f2;
@@ -135,7 +135,7 @@ $body-bg: #0f1215; // $black; //#282a36; // $gray-100;
 $body-color: $white; //$gray-900;
 $code-bg: #181b20; //$black; // #282a36;
 $code-inline-bg: #23262d; // #efefef;
-$link-color: $white;
+$link-color: $gray-400;
 
 $letter-spacing-base: 1rem;
 $letter-spacing-heading: 0.04rem;
@@ -177,10 +177,10 @@ $font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
 /* FONT SIZES                                   */
 /* -------------------------------------------- */
 
-$font-size-base: 0.925rem;
+$font-size-base: 1rem;
 
 $font-size-xs: $font-size-base * 0.595;
-$font-size-sm: $font-size-base * 0.725;
+$font-size-sm: $font-size-base * 0.825;
 $font-size-md: $font-size-base * 0.975;
 $font-size-lg: $font-size-base * 1.25;
 $font-size-xl: $font-size-base * 1.75;
@@ -280,7 +280,7 @@ $papyrus-code-padding-x: 0.5em;
 $papyrus-code-border-radius: 0.5em;
 
 $papyrus-code-color: #fafafa;
-$papyrus-code-bg: #181b20;
+$papyrus-code-bg: #12161d;
 $papyrus-code-inline-bg: #eeebeb;
 $papyrus-code-caret-color: #ffffff;
 

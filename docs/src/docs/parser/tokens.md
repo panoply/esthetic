@@ -1,7 +1,7 @@
 ---
 title: 'Tokens'
 layout: base
-permalink: '/parse/tokens/index.html'
+permalink: '/parser/tokens/index.html'
 anchors:
   - 'Tokens'
   - 'Parse Table'

@@ -50,11 +50,6 @@
     },
     {
       "group": "global",
-      "title": "preset",
-      "url": "/rules/global/preset/"
-    },
-    {
-      "group": "global",
       "title": "wrap",
       "url": "/rules/global/wrap/"
     },
@@ -236,11 +231,6 @@
       "group": "style",
       "title": "classPadding",
       "url": "/rules/style/classPadding/"
-    },
-    {
-      "group": "style",
-      "title": "correct",
-      "url": "/rules/style/correct/"
     },
     {
       "group": "style",

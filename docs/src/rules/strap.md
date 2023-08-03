@@ -26,11 +26,15 @@ This is a LANGUAGE_NAME specific formatting rule which defaults to using `preser
 
 <!--
 
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
+🤡 => The choice of a clown
+🙌 => Authors choice
+👍 => Good choice.
+🤌 => Delightful. Your mother is proud of you.
+👎 => Not recommended
+🫡 => Alright
+😳 => We live in a society, we\'re not animals
+💡 => Showing an example of the rule
+🧐 => You gotta do, what you gotta do
 
 -->
 

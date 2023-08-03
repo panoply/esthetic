@@ -1,7 +1,7 @@
 ---
-title: 'Data Structure'
+title: 'Parse Table'
 layout: base
-permalink: '/parse/data-structure/index.html'
+permalink: '/parser/parse-table/index.html'
 anchors:
   - 'Algorithm'
   - 'Parse Table'

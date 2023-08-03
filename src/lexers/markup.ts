@@ -104,7 +104,7 @@ export function markup (input?: string) {
   /**
    * HTML String
    */
-  let html = markup ? parse.language : 'html';
+  let html = parse.language;
 
   /**
    * Stack nesting reference for Liquid tokens, increments by 1
@@ -131,6 +131,7 @@ export function markup (input?: string) {
     } else if (u.isObject(structure)) {
 
       assign(record, structure);
+
       parse.push(data, record, NIL);
 
     } else if (u.isArray(structure)) {
@@ -615,6 +616,9 @@ export function markup (input?: string) {
 
           record.types = ltype = 'liquid_start';
 
+          //  console.log(record);
+          return parseAttribute();
+
         } else if (tname.startsWith('end')) {
 
           const name = tname.slice(3);
@@ -920,7 +924,7 @@ export function markup (input?: string) {
      */
     function parseIgnore (): ReturnType<typeof parseSingleton | typeof parseScript> {
 
-      if (parse.count < 1) return parseSingleton();
+      if (parse.count < 1 && embed === false) return parseSingleton();
 
       /**
        * The ender token name, used for Liquid tag ignores
@@ -1157,12 +1161,11 @@ export function markup (input?: string) {
           //       <div>
           //
           if (spacer === NIL) {
-
-            const last = data.token[parse.count].search(rx.NonSpace);
-
-            spacer = last > 0
-              ? u.repeatChar(data.token[parse.count].search(rx.NonSpace))
-              : NIL;
+            if (data.token[parse.count].search(rx.NonSpace) > 0) {
+              spacer = u.repeatChar(data.token[parse.count].search(rx.NonSpace));
+            } else {
+              spacer = NIL;
+            }
           }
 
           attrs = [];
@@ -1260,7 +1263,7 @@ export function markup (input?: string) {
      * Parse exts
      *
      * Determines whether or not the token contains an external region
-     * like that of `<script>`, `<style>` and Liquid equivalents `{% schema %}` etc.
+     * like that of `<scrit>`, `<style>` and Liquid equivalents `{% schema %}` etc.
      * Some additional context is required before passing the contents of these tags
      * to different lexers. It's here where we establish that context.
      */
@@ -1293,6 +1296,7 @@ export function markup (input?: string) {
 
                 ltype = 'script_preserve';
                 ignore = true;
+
                 break;
 
               } else if (q.language === 'css' && rules.markup.ignoreCSS) {
@@ -1380,9 +1384,10 @@ export function markup (input?: string) {
     function parseAttribute (advance = false): ReturnType<typeof parseScript> {
 
       /* PUSH RECORD -------------------------------- */
-
       if (advance !== null) push(record);
 
+      // if (u.is(b[a], cc.RAN) && u.is(b[a + 1], cc.FWS)) return;
+      // console.log(embed, end, ignore, preserve, token, b.slice(a).join(NIL));
       /* -------------------------------------------- */
       /* CONSTANTS                                    */
       /* -------------------------------------------- */
@@ -2054,7 +2059,9 @@ export function markup (input?: string) {
           const begin = token.indexOf('%}', 2) + 2;
           const last = token.lastIndexOf('{%');
 
-          token = inner(token.slice(0, begin), tname) + token.slice(begin, last) + inner(token.slice(last), tname);
+          token = inner(token.slice(0, begin), tname)
+          + token.slice(begin, last)
+          + inner(token.slice(last), tname);
 
         }
 
@@ -4003,18 +4010,12 @@ export function markup (input?: string) {
     /**
      * The tag name or known name reference
      */
+    let type: Languages = Languages.HTML;
+
+    /**
+     * The tag name or known name reference
+     */
     let name: string = NIL;
-
-    if (embed === true) {
-      if (jsxbrace === true) {
-        name = 'script';
-      } else if (parse.stack.index > -1) {
-        name = lx.getTagName(data.token[parse.stack.index]);
-      } else {
-        name = lx.getTagName(data.token[data.begin[parse.count]]);
-      }
-
-    }
 
     /**
      * Initial data record state for the parsed content
@@ -4028,6 +4029,53 @@ export function markup (input?: string) {
       token: NIL,
       types: 'content'
     };
+
+    if (embed === true) {
+
+      if (jsxbrace === true) {
+
+        name = 'script';
+
+      } else if (parse.stack.index > -1) {
+
+        name = lx.getTagName(data.token[parse.stack.index]);
+
+        if (data.types[parse.stack.index].startsWith('liquid_')) {
+          type = Languages.Liquid;
+        }
+
+      } else {
+
+        name = lx.getTagName(data.token[data.begin[parse.count]]);
+
+        if (data.types[data.begin[parse.count]].startsWith('liquid_')) {
+          type = Languages.Liquid;
+        }
+      }
+
+      // EMPTY CONTENTS
+      //
+      // Handle occurances of empty inner embedded code regions.
+      //
+      //
+      if (type === Languages.Liquid) {
+        if (source.slice(a, source.lastIndexOf('{', source.indexOf(`end${name}`, a))).trim() === NIL) {
+          embed = false;
+          record.types = 'liquid_end';
+        }
+      } else {
+        if (type === Languages.HTML && (name === 'script' || name === 'style')) {
+          if (source.slice(a, source.indexOf('</script>', a)).trim() === NIL) {
+            embed = false;
+            record.types = 'end';
+          } else if (source.slice(a, source.indexOf('</style>', a)).trim() === NIL) {
+            embed = false;
+            record.types = 'end';
+          }
+
+        }
+      }
+    }
 
     /**
      * SGML Test
@@ -4093,57 +4141,43 @@ export function markup (input?: string) {
 
       do {
 
-        if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
+        if (u.is(b[a], cc.NWL)) {
+          lines = parse.lines(a, lines);
+        }
 
         // Embed code requires additional parsing to look for the appropriate end
         // tag, but that end tag cannot be quoted or commented
         //
         if (embed === true) {
 
-          if (data.types[parse.count] === 'liquid_start') {
+          if (type === Languages.Liquid) {
 
             const ename = `end${name}`;
-            const ender = source.indexOf(`end${name}`, a);
+            const ender = source.indexOf(ename, a);
 
             if (ender > -1) {
 
-              let i: number = ender;
+              const from = b.lastIndexOf('{', ender);
+              const next = b.indexOf('}', ender + ename.length) + 1;
 
-              do {
-
-                if (u.ws(b[i]) === false) {
-                  if (u.is(b[i], cc.PER) && u.is(b[i - 1], cc.LCB)) {
-                    i = i - 2;
-                    break;
-                  }
-                }
-
-              } while (b[i--]);
-
-              end = b
-                .slice(i + 1, b.indexOf('%', ender + ename.length) + 2)
-                .join(NIL);
+              end = b.slice(from, next).join(NIL);
 
               if (lq.exp(ename).test(end)) {
 
                 lines = 1;
-                output = b
-                  .slice(a, i)
-                  .join(NIL)
-                  .replace(rx.SpaceEnd, NIL);
-
-                a = i + end.length;
+                output = b.slice(a, from).join(NIL);
 
                 parse.external(language, output);
 
-                do if (u.is(b[i], cc.NWL)) lines = lines + 1;
-                while (u.ws(b[i--]));
+                if (lines !== parse.lineOffset) lines = parse.lineOffset;
 
-                push(record, {
-                  token: inner(end),
-                  types: 'liquid_end',
-                  lines
-                });
+                record.token = inner(end);
+                record.types = 'liquid_end';
+                record.lines = lines;
+
+                push(record);
+
+                a = next - 1;
 
                 break;
 
@@ -4220,15 +4254,15 @@ export function markup (input?: string) {
             if (name === 'script') {
 
               end = b
-                .slice(a + 1, a + 9)
+                .slice(a + 1, a + 10)
                 .join(NIL)
                 .toLowerCase();
 
-              if (end === '</script') {
-
-                output = lexed.join(NIL).trimEnd();
+              if (end === '</script>') {
 
                 if (lexed.length < 1) break;
+
+                output = lexed.join(NIL).trimEnd();
 
                 if (rx.HTMLCommDelimOpen.test(output) && rx.HTMLCommDelimClose.test(output)) {
 
@@ -4245,6 +4279,9 @@ export function markup (input?: string) {
                 } else {
 
                   parse.external(language, output);
+
+                  record.token = end;
+                  record.types = 'end';
 
                 }
 
@@ -4263,11 +4300,11 @@ export function markup (input?: string) {
 
                 if (end === '</style') {
 
-                  output = lexed
-                    .join(NIL)
-                    .trimEnd();
-
                   if (lexed.length < 1) break;
+
+                  output = lexed.join(NIL).trimEnd();
+
+                  if (u.is(output, cc.RAN)) output = output.slice(1);
 
                   if ((rx.HTMLCommDelimOpen).test(output) && (rx.HTMLCommDelimClose).test(output)) {
 
@@ -4351,7 +4388,7 @@ export function markup (input?: string) {
             end = source.slice(a + 1, a + 11).toLowerCase();
             end = end.slice(0, end.length - 2);
 
-            if (name === 'script' && end === '</script') quote = NIL;
+            if (name === 'script' && end === '</') quote = NIL;
 
             end = end.slice(0, end.length - 1);
 
@@ -4541,7 +4578,8 @@ export function markup (input?: string) {
           }
 
           lines = 0;
-          push(record, { token: ltoke });
+          record.token = ltoke;
+          push(record);
 
           break;
         }
@@ -4579,12 +4617,21 @@ export function markup (input?: string) {
     } else if (a !== now || (a === now && embed === false)) {
 
       // regular content at the end of the supplied source
-      ltoke = lexed.join(NIL).replace(rx.SpaceEnd, NIL);
+      if (type === Languages.Liquid && record.types === 'liquid_end') {
+        ltoke = inner(lexed.join(NIL).replace(rx.SpaceEnd, NIL));
+      } else {
+        ltoke = lexed.join(NIL).replace(rx.SpaceEnd, NIL);
+      }
+
       lines = 0;
 
       // this condition prevents adding content that was just added in the loop above
       if (record.token !== ltoke) {
-        push(record, { token: ltoke });
+
+        if (type === Languages.Liquid && record.types === 'liquid_end') ltoke = inner(ltoke);
+
+        record.token = ltoke;
+        push(record);
         parse.lineOffset = 0;
       }
     }
@@ -4632,17 +4679,25 @@ export function markup (input?: string) {
 
       parseSpace();
 
-    } else if (u.is(b[a], cc.LAN)) {
+    } else if (embed === false) {
 
-      parseToken(NIL);
+      if (u.is(b[a], cc.LAN)) {
 
-    } else if (u.is(b[a], cc.LCB) && (jsx || u.is(b[a + 1], cc.LCB) || u.is(b[a + 1], cc.PER))) {
+        parseToken(NIL);
 
-      parseToken(NIL);
+      } else if (u.is(b[a], cc.LCB) && (jsx || u.is(b[a + 1], cc.LCB) || u.is(b[a + 1], cc.PER))) {
 
-    } else if (u.is(b[a], cc.DSH) && u.is(b[a + 1], cc.DSH) && u.is(b[a + 2], cc.DSH)) {
+        parseToken(NIL);
 
-      parseToken('---');
+      } else if (u.is(b[a], cc.DSH) && u.is(b[a + 1], cc.DSH) && u.is(b[a + 2], cc.DSH)) {
+
+        parseToken('---');
+
+      } else {
+
+        parseContent();
+
+      }
 
     } else {
 

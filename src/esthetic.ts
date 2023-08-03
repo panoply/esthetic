@@ -1,4 +1,4 @@
-import type { Rules, LanguageName, LexerName, Stats, ParseHook, EventListeners, IConfig, Grammars } from 'types';
+import type { Rules, LanguageName, LexerName, Stats, ParseHook, EventListeners, ISettings, Grammars } from 'types';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
 import { definitions } from 'rules/definitions';
@@ -53,6 +53,7 @@ export const esthetic = new class Esthetic {
   get definitions () { return definitions; }
   get detect () { return detect; }
   get error () { return parse.error; }
+  get lines () { return parse.numbers; }
 
   grammar (grammars?: Grammars) {
 
@@ -64,7 +65,7 @@ export const esthetic = new class Esthetic {
 
   }
 
-  config (options?: IConfig) {
+  settings (options?: ISettings) {
 
     if (!options) return config;
 

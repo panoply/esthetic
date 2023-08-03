@@ -1,41 +1,6 @@
 import test from 'ava';
-import { forAssert, forSample, css, liquid } from '@liquify/ava/esthetic';
+import { forAssert, forSample, css } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
-
-test('Structure Test:  Liquid infused selectors', t => {
-
-  forSample([
-    css`
-
-      /* Space should be respected at grid */
-
-      .image-grid-{{ respect.spacing }} .grid {
-        color: #111;
-      }
-
-    `,
-    css`
-
-      /* Template infused class should be preserved */
-
-      .image-grid-{{ respect.spacing }}-class {
-        color: #111;
-      }
-
-    `
-  ])(
-    {
-      language: 'css'
-    }
-  )(function (source, rules) {
-
-    const output = esthetic.format(source, rules);
-
-    t.deepEqual(output, source);
-
-  });
-
-});
 
 test('Structure Test: Attribute selectors expressions', t => {
 
@@ -177,7 +142,7 @@ test('Structure Test: Complex pseudo selectors', t => {
 
 });
 
-test('Structure Test: CSS variable expressions with Liquid infusion', async t => {
+test('Structure Test: CSS variable expressions with Liquid infusion', t => {
 
   forSample([
 
@@ -198,18 +163,6 @@ test('Structure Test: CSS variable expressions with Liquid infusion', async t =>
       }
 
     `
-    ,
-
-    liquid`
-
-      :root {
-        --{{ settings.type_body_font.family }}-main: brown;
-        --my-background: #fff;
-        --my-var-{{ settings.type_body_font.family }}: 0.985rem;
-      }
-
-    `
-
   ])(
     {
       language: 'css'

@@ -19,9 +19,17 @@ Provides sorting of HTML and XML Attributes. When **enabled** (`true`) it will s
 
 :::
 
----
+<!--
 
-# Rule Options
+🙌 - Recommended Choice
+👍 - Good Choice
+👎 - Not Recommended
+🤡 - Clown Choice
+😳 - Bad Choice
+
+-->
+
+---
 
 ::: rule 🙌
 
@@ -50,6 +58,8 @@ Take the following tag with several attributes defined in no specific order. Whe
   class="xxx"
   data-a="foo"></div>
 ```
+
+---
 
 ::: rule 👍
 
@@ -80,23 +90,15 @@ Take the following tag with several attributes defined in no specific order. Whe
   id="x"></div>
 ```
 
+---
+
 ::: rule 🙌
 
 #### string[]
 
 :::
 
-Below is an example of how this rule works and you've defined the following attribute sorting structure
-
-```js
-{
-  markup: {
-    attributeSort: ['id', 'class', 'data-b', 'data-z'];
-  }
-}
-```
-
-Using the above example options, let's consider the following attributes contained on a tag. Notice how each attribute is expressed in a no specific order. This will change **after** formatting as per the **after** example.
+In addition to alphabetical sorting using boolean `true`, developers may prefer to control the sorting behavior of Æsthetic. The `attributeSort` rule accepts a string list of attribute names. When provided, markup attributes will be sorted according to the list entries and then alphabetically. Custom sorting will sort in the same order passed. Click the **rules** tab to inspect the sorting logic being used in the below sample.
 
 ```json:rules
 {

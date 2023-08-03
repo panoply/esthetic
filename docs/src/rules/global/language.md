@@ -20,27 +20,17 @@ options:
   - tsx
 ---
 
+::: grid col-8 p-100
+
 # Language
 
 The `language` rule is used to inform Æsthetic on the type of input that has been provided. By default, Æsthetic will attempt to detect the language of content provided. It is discouraged to omit this rule and rely upon the automatic detection of languages based on input because the internal detection logic may not always be correct.
 
-::: note
-
-The language reference is used to determine the lexical process operation code is to be handled.
+> The language reference is used to determine the lexical process operation code is to be handled.
 
 :::
 
-# Rule Options
 
-The `language` rule is a global setting.
-
-::: rule
-
-#### auto
-
-:::
-
-The `auto` option is used by default and will attempt to automatically detect the language.
 
 ---
 
@@ -108,7 +98,8 @@ The `liquid` option refers to the **[Liquid Template Language](https://shopify.g
 <ul>
   <li data-attr="{{ i.xxx }}">
   {{
-  i.something|filter:'some-filter'|append:'some-append'|prepend:'some-prepend'
+  i.something|filter:'some-filter'
+  |append:'some-append'|prepend:'some-prepend'
 | example: one: 1,two: 2, three: 3,four: 4
 }}
 </li>
@@ -138,7 +129,8 @@ The `html` option refers to the **[Hyper Text Markup Language](https://en.wikipe
     "forceFilter": 3
   },
   "markup": {
-    "forceAttribute": 3
+    "forceAttribute": 3,
+    "forceIndent": true
   }
 }
 ```

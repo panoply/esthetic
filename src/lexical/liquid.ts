@@ -337,8 +337,10 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
     }
 
   } else {
+
     open += WSP;
     close = WSP + close;
+
   }
 
   /* -------------------------------------------- */
@@ -396,8 +398,6 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
   const pipes: number = liquid.pipes.length;
 
   if (pipes > 0) {
-
-    // console.log(lexed.join(NIL), lexed.length, wrapFraction);
 
     if ((
       (

@@ -4,6 +4,7 @@ import { NIL, WSP } from 'chars';
 import { cc } from 'lexical/codes';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
+import { create } from 'utils/native';
 
 export function style () {
 
@@ -20,6 +21,11 @@ export function style () {
    * Reference to `options.parsed`
    */
   const { data, rules, crlf } = parse;
+
+  /**
+   * Hold state reference of indents
+   */
+  const indents: { [K in Types]: number } = create(null);
 
   /**
    * The input length
@@ -68,9 +74,6 @@ export function style () {
    */
   let when = [ NIL, NIL ];
 
-  /* -------------------------------------------- */
-  /* FUNCTIONS                                    */
-  /* -------------------------------------------- */
   /* -------------------------------------------- */
   /* UTILITIES                                    */
   /* -------------------------------------------- */
@@ -135,22 +138,32 @@ export function style () {
   do {
 
     if (isType(a + 1, 'end') || isType(a + 1, 'liquid_end') || isType(a + 1, 'liquid_else')) {
-
-      indent = indent - 1;
-
+      if (indent > 0) indent = indent - 1;
     }
 
-    if (isType(a, 'liquid') && data.lines[a] > 0) {
+    if (isType(a, 'liquid')) {
+
+      if (isType(a - 1, 'separator')) newline(indent);
 
       build.push(data.token[a]);
 
-      if (not(data.token[a + 1], cc.SEM) && grammar.css.units.has(data.token[a + 1]) === false) {
+      if (
+        isType(a + 1, 'separator') === false &&
+        not(data.token[a + 1], cc.SEM) &&
+        grammar.css.units.has(data.token[a + 1]) === false) {
 
-        newline(indent);
-
+        if (isType(a + 1, 'start')) {
+          build.push(WSP);
+        } else if (isType(a + 1, 'colon') === false) {
+          newline(indent);
+        }
       }
 
-    } else if (isType(a - 1, 'selector') && isType(a, 'liquid') && isType(a + 1, 'selector')) {
+    } else if (
+      isType(a - 1, 'selector') &&
+      isType(a, 'liquid') &&
+      isType(a + 1, 'selector')
+    ) {
 
       build.push(data.token[a]);
 
@@ -171,27 +184,127 @@ export function style () {
 
       build.push(data.token[a]);
 
-      indent = indent + 1;
+      // if next item is a property type
+      if (isType(a + 1, 'property')) indent = indent + 1;
 
-      newline(indent);
+      if (data.lines[a + 1] === 1) {
 
-    } else if (isType(a, 'start') || isType(a, 'liquid_start')) {
+        build.push(WSP);
 
-      indent = indent + 1;
-
-      build.push(data.token[a]);
-
-      if (isType(a + 1, 'end') === false && isType(a + 1, 'liquid_end') === false) {
+      } else if (data.lines[a + 1] > 1) {
 
         newline(indent);
 
       }
 
-    } else if (is(data.token[a], cc.SEM) || (
-      isType(a, 'end') ||
-      isType(a, 'liquid_end') ||
-      isType(a, 'comment')
-    )) {
+    } else if (isType(a, 'liquid_start')) {
+
+      build.push(data.token[a]);
+
+      if (data.lines[a + 1] === 1) {
+
+        build.push(WSP);
+
+      } else if (data.lines[a + 1] > 1) {
+
+        indent = indent + 1;
+
+        // if next item has 0 lines then the liquid start
+        // token is glued, eg: {% if x %}something
+        //
+        // When lines of next entry is more than 1, eg: {% if x %} something
+        // then we will apply indentation
+        //
+        newline(indent);
+
+      } else {
+
+        // EDGE CASE
+        //
+        // The structure looks like this:
+        //
+        // {% if foo %}{{ something }} {
+        //
+        // We need to determine whether or not to apply forcing. This will be
+        // done by checking data lines, if start type (eg: `{`) is forced then
+        // we should force next occurance. data.lines[a + 3] will give us the
+        // determination here.
+        //
+        if ((isType(a + 1, 'liquid') || isType(a + 1, 'selector')) && isType(a + 2, 'start')) {
+
+          indent = indent + 1;
+          newline(indent);
+        }
+
+      }
+
+    } else if (isType(a, 'liquid_end')) {
+
+      build.push(data.token[a]);
+
+      if (isType(a + 1, 'start')) {
+        build.push(WSP);
+      } else if (data.lines[a + 1] !== 0) {
+        newline(indent);
+      }
+
+    } else if (isType(a, 'start')) {
+
+      // indent = indent + 1;
+
+      build.push(data.token[a]);
+
+      // if next item is a property type
+      //
+      // .class {^
+      //   property: value
+      // }
+      //
+      if (
+        isType(a + 1, 'property') ||
+        isType(a + 1, 'selector') ||
+        isType(a + 1, 'comment') ||
+        isType(a + 1, 'liquid') ||
+        isType(a + 1, 'liquid_start')
+      ) {
+
+        indent = indent + 1;
+      }
+
+      if (isType(a + 1, 'end') === false) {
+
+        // if next item has 0 lines then the liquid start
+        // token is glued, eg: {% if x %}something
+        //
+        // When lines of next entry is more than 1, eg: {% if x %} something
+        // then we will apply indentation
+        //
+        newline(indent);
+
+      }
+
+    } else if (is(data.token[a], cc.SEM)) {
+
+      build.push(data.token[a]);
+
+      if (isType(a + 1, 'property')) {
+        if ((
+          (isType(a - 2, 'liquid') || isType(a - 2, 'liquid_end')) && isType(a - 1, 'value')
+        ) || (
+          isType(a - 1, 'liquid_end')
+        )) {
+
+          indent = indent + 1;
+
+          if (indent > indents.property) indent = indents.property;
+
+        }
+
+      }
+
+      newline(indent);
+
+    } else if (isType(a, 'end') || isType(a, 'comment')) {
 
       build.push(data.token[a]);
 
@@ -207,6 +320,15 @@ export function style () {
 
         }
 
+      } else if (
+        isType(a - 1, 'liquid_end') &&
+        isType(a, 'separator') &&
+        isType(a + 1, 'property')
+      ) {
+
+        indent = indent + 1;
+        newline(indent);
+
       } else if (isType(a + 1, 'separator') === false) {
 
         if (isType(a + 1, 'comment') === false || (isType(a + 1, 'comment') && data.lines[a + 1] > 1)) {
@@ -218,6 +340,7 @@ export function style () {
           build.push(WSP);
 
         }
+
       } else if (isType(a, 'comment') && isType(a + 1, 'comment') === false) {
 
         if (data.lines[a] > 1) {
@@ -225,6 +348,7 @@ export function style () {
           newline(indent);
 
         }
+
       }
 
     } else if (is(data.token[a], cc.COL)) {
@@ -265,12 +389,28 @@ export function style () {
       } else {
 
         build.push(data.token[a]);
+
       }
 
       if (isType(a + 1, 'start')) {
 
         build.push(WSP);
 
+        if (isType(a, 'at_rule')) indent = indent + 1;
+
+      } else if (data.types[a + 1].indexOf('liquid') > -1) {
+
+        // CSS Selector glue occurance
+        // connects liquid token with selector
+        if (data.lines[a + 1] === 0) {
+          build.push(data.token[a + 1]);
+
+          a = a + 1;
+
+          if (isType(a + 1, 'start')) build.push(WSP);
+          if (isType(a + 1, 'selector') && is(data.token[a + 1], cc.DOT)) build.push(WSP);
+
+        }
       }
 
     } else if (is(data.token[a], cc.COM)) {
@@ -284,6 +424,7 @@ export function style () {
       } else {
 
         build.push(data.token[a]);
+
       }
 
       if (isType(a + 1, 'selector') || isType(a + 1, 'property')) {
@@ -292,7 +433,17 @@ export function style () {
         build.push(WSP);
       }
 
-    } else if (data.stack[a] === 'map' && is(data.token[a + 1], cc.RPR) && a - data.begin[a] > 5) {
+      if (isType(a - 1, 'selector') && isType(a + 1, 'liquid_end')) {
+
+        newline(indent);
+
+      }
+
+    } else if (
+      data.stack[a] === 'map' &&
+      is(data.token[a + 1], cc.RPR) &&
+      a - data.begin[a] > 5
+    ) {
 
       build.push(data.token[a]);
 
@@ -302,7 +453,10 @@ export function style () {
 
       newline(indent);
 
-    } else if ((isType(a, 'variable') || isType(a, 'function')) &&
+    } else if ((
+      isType(a, 'variable') ||
+      isType(a, 'function')
+    ) &&
       rules.style.classPadding === true &&
       isType(a - 1, 'end') &&
       data.lines[a] < 3
@@ -315,6 +469,44 @@ export function style () {
 
       build.push(data.token[a]);
 
+      // Structure look like this:
+      //
+      // something^ {% endtag %}
+      //
+      // OR
+      //
+      // something^
+      // {% endtag %}
+      //
+      // We will determine the amount of lines
+      // and apply forced indentation or not
+      //
+      if (isType(a + 1, 'liquid_end') || isType(a + 1, 'liquid_else')) {
+
+        if (data.lines[a + 1] === 1) {
+
+          build.push(WSP);
+
+        } else if (data.lines[a + 1] > 1) {
+
+          newline(indent);
+
+        }
+
+      }
+
+    }
+
+    switch (data.types[a + 1]) {
+      case 'property':
+        indents.property = indent;
+        break;
+      case 'end':
+        indents.property = indent - 1;
+        break;
+      case 'selector':
+        if (data.types[a] === 'selector') indents.property = indent;
+        break;
     }
 
     a = a + 1;
@@ -322,8 +514,6 @@ export function style () {
   } while (a < len);
 
   parse.iterator = len - 1;
-
-  // console.log(data);
 
   if (build[0] === parse.crlf || is(build[0], cc.WSP)) build[0] = NIL;
 

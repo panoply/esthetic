@@ -1,7 +1,7 @@
 ---
 title: 'Terminology'
 layout: base
-permalink: '/parse/terminology/index.html'
+permalink: '/parser/terminology/index.html'
 ---
 
 # TODO
