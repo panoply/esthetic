@@ -785,6 +785,8 @@ test('Force Multiline: Force delimiters when token spans newlines', t => {
       language: 'liquid',
       wrapFraction: 30,
       liquid: {
+        forceFilter: 0,
+        forceArgument: 0,
         lineBreakSeparator: 'after',
         delimiterPlacement: 'force-multiline'
       }
