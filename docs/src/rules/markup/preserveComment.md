@@ -10,28 +10,38 @@ options:
   - true
 ---
 
+::: grid col-9 p-100
+
 # Preserve Comment
 
 Preserve the inner contents of HTML comments. When this rule is enabled (i.e: `true`) it will ignore formatting HTML comments and override `commentIndent` and `commentNewline` rule definitions.
 
-# Rule Options
+### Rule Options
 
 The `preserveComment` rule is disabled (`false`) by default. The **recommended** setting to use is `false` unless you have extensive context contained within comments.
 
-##### Example
+### Example
 
 In the below example we have enabled comment preservation. Both the `commentIndent` and `commentNewline` rules will no longer have effect on output as the the `preserveComment` rule takes precedence.
 
-```js
+:::
+
+::: grid col-7
+
+```json
 {
   "language": "html",
   "liquid": {
     "commentNewline": false, // This setting will be ignored
-    "commentIndent": true,   // This setting will be ignored
-    "preserveComment": true  // When enabled, this rule takes precedence
+    "commentIndent": true, // This setting will be ignored
+    "preserveComment": true // When enabled, this rule takes precedence
   }
 }
 ```
+
+:::
+
+---
 
 ::: rule 🙌
 
@@ -43,9 +53,9 @@ This `preserveComment` rule is set to `false` by default. In the example below, 
 
 ```json:rules
 {
-  "language": "liquid",
+  "language": "html",
   "preserveLine": 2,
-  "liquid": {
+  "markup": {
     "commentNewline": true,
     "commentIndent": true,
     "preserveComment": false
@@ -54,7 +64,7 @@ This `preserveComment` rule is set to `false` by default. In the example below, 
 ```
 
 <!--prettier-ignore-->
-```liquid
+```html
 <main>
   <!--
 
@@ -92,8 +102,8 @@ When the `preserveComment` rule is enabled (`true`) then the contents of block c
 
 ```json:rules
 {
-  "language": "liquid",
-  "liquid": {
+  "language": "html",
+  "markup": {
     "commentNewline": true,
     "commentIndent": true,
     "preserveComment": true
@@ -102,7 +112,7 @@ When the `preserveComment` rule is enabled (`true`) then the contents of block c
 ```
 
 <!--prettier-ignore-->
-```liquid
+```html
 <ul>
   <li>Hello</li>
 

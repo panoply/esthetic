@@ -6,6 +6,7 @@ import { Demo } from './components/demo';
 import { Dropdown } from './components/dropdown';
 import { ScrollSpy } from './components/scrollspy';
 import { Playground } from './components/playground';
+import { Parser } from './components/parser';
 import spx from 'spx';
 
 spx.connect({
@@ -25,6 +26,7 @@ spx.connect({
   stimulus.register('demo', Demo);
   stimulus.register('scrollspy', ScrollSpy);
   stimulus.register('playground', Playground);
+  stimulus.register('parser', Parser);
 
 });
 

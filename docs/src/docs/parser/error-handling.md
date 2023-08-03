@@ -1,7 +1,7 @@
 ---
 title: 'Parse Errors'
 layout: base
-permalink: '/parse/error-handling/index.html'
+permalink: '/parser/error-handling/index.html'
 anchors:
   - 'Parse Errors'
   - 'Error Exception'

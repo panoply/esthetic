@@ -20,24 +20,134 @@ Whether or not ending HTML tag delimiters should be forced onto a newline. This 
 
 ---
 
-#### 👍 &nbsp;&nbsp; Disabled
+::: rule 🤌
 
-_Below is the default, which does not force ending delimiters `>` onto newlines in tags containing attributes._
+#### inline
 
+:::
+
+The `delimiterTerminus` rule is set to use an `inline` terminus by default. The behavior of delimiter terminus using `inline` results in the last `>` delimiter character occurrence being inlined.
+
+```json:rules
+{
+  "language": "html",
+  "preserveLine":0,
+  "markup": {
+    "forceAttribute": 2,
+    "delimiterTerminus": "inline"
+  }
+}
+```
+
+<!-- prettier-ignore -->
 ```html
-<div id="x" class="xx">
-  <div id="x" class="xx"></div>
+<div
+id="x"class="xx"
+data-attr="foo">
+
+  <div
+  id="x"
+  class="xx" data-attr="foo">
+    <!--
+      Attributes will apply forcing but ending delimiter
+      character will remain inline.
+    -->
+  </div>
 </div>
 ```
 
 ---
 
-#### 👎 &nbsp;&nbsp; Enabled
+::: rule 🤡
 
-_Below is an example of how this rule works if it's enabled, ie: `true`. Notice how the ending delimiters are forced onto newlines._
+#### force
 
+:::
+
+When the `delimiterTerminus` rule is set to use `force` then formatting behavior will replicate that of Prettier. Æsthetic will use forced terminus in accordance with the [`forceAttribute`](/rules/markup/forceAttribute) defined rule and only apply forcing when structures adhere. In the below code sample, toggle the **Rules** tab and inspect the ruleset.
+
+```json:rules
+{
+  "language": "html",
+  "preserveLine": 1,
+  "markup": {
+    "forceAttribute": 3,
+    "delimiterTerminus": "force"
+  }
+}
+```
+
+<!-- prettier-ignore -->
 ```html
-<div id="x" class="xx">
-  <div id="x" class="xx"></div>
+
+<!-- Forced terminus will not be applied -->
+<div
+  id="bar"
+  class="bax">
+
+<!-- Forced terminus will apply -->
+<div
+id="x"class="xx"
+data-attr="foo">
+<!-- Forced terminus will apply -->
+  <main
+id="x"class="xx"
+data-attr="foo">
+    <!--
+      Notice how terminus forcing has been applied to tags
+      with more than 2 attributes only. This is because
+      we set attribute forcing to that limit.
+    -->
+  </main>
+
+  </div>
+</div>
+```
+
+---
+
+::: rule 👍
+
+#### adapt
+
+:::
+
+When the `delimiterTerminus` rule is set to use `adapt` delimiter terminus will be determined based on structures. Æsthetic will apply the terminus based on several factors and take into consideration markup rules such a [`lineBreakValue`](/rules/markup/lineBreakValue). Terminus is not guaranteed when set to `adapt` but is generally the preferred option to use.
+
+```json:rules
+{
+  "language": "html",
+  "preserveLine": 1,
+  "markup": {
+    "forceAttribute": 3,
+    "delimiterTerminus": "adapt"
+  }
+}
+```
+
+<!-- prettier-ignore -->
+```html
+
+<!-- Forced terminus will not be applied -->
+<div
+  id="bar"
+  class="bax">
+
+<!-- Forced terminus will apply -->
+<div
+id="x"class="xx"
+data-attr="foo">
+<!-- Forced terminus will apply -->
+  <main
+id="x"class="xx"
+data-attr="foo">
+    <!--
+      Notice how terminus forcing has been applied to tags
+      with more than 2 attributes only. This is because
+      we set attribute forcing to that limit.
+    -->
+  </main>
+
+  </div>
 </div>
 ```

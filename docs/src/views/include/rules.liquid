@@ -1,12 +1,12 @@
-{%- if page.url == '/' -%}
-  {%- assign is_open = 'false' -%}
-  {%- assign hidden = 'false' -%}
-  {%- assign active = '' -%}
-{%- else -%}
-  {%- assign is_open = 'true' -%}
-  {%- assign hidden = 'true' -%}
-  {%- assign active = 'drawer-active' -%}
-{%- endif -%}
+{% if page.url == '/' %}
+  {% assign is_open = 'false' %}
+  {% assign hidden = 'false' %}
+  {% assign active = '' %}
+{% else %}
+  {% assign is_open = 'true' %}
+  {% assign hidden = 'true' %}
+  {% assign active = 'drawer-active' %}
+{% endif %}
 
 <div
   data-controller="sticky"
@@ -19,8 +19,8 @@
 
       <form class="p-4 d-none">
         <input
-          class="fm-input fm-sm rd-2"
           type="search"
+          class="fm-input fm-sm rd-2"
           placeholder="Search...">
       </form>
 
@@ -28,22 +28,16 @@
         class="accordion mb-2 bx-0"
         data-controller="accordion">
 
+        {% for link in rules.data %}
 
-
-        {%- for link in rules.data %}
-
-          {% assign base = link.title
-           | slugify
-           | prepend: '/' %}
+          {% assign base = link.title | slugify | prepend: '/' %}
 
           {% assign url = link.links
-           | first
-           | slugify
-           | prepend: '/'
-           | prepend: base
-           | append: '/' %}
-
-
+            | first
+            | slugify
+            | prepend: '/'
+            | prepend: base
+            | append: '/' %}
 
           <button class="accordion-btn px-3 py-2 {% if page.url contains base %}initial{%- endif -%}">
             {{ link.title }}
@@ -51,24 +45,24 @@
 
           <div class="accordion-fold bt bg-gray {% if page.url contains base %}expanded{%- endif -%}">
             <ul
-              class="py-4 px-2  ml-0"
-              id="{{- link.data.title | slugify -}}">
+              id="{{- link.data.title | slugify -}}"
+              class="py-4 px-2  ml-0">
 
-              {%- for item in link.links %}
+              {% for item in link.links %}
                 <li class="pt-1 pl-3">
                   <a
                     href="/rules/{{ base -}}/{{- item | slugify }}/"
                     {% if page.url == url %}
-                    class="active"
+                      class="active"
                     {% endif %}>
-                    {{- item | replace: 'Esthetic', 'Æsthetic' -}}
+                    {{ item | replace: 'Esthetic', 'Æsthetic' }}
                   </a>
                 </li>
-              {%- endfor -%}
+              {% endfor %}
 
             </ul>
           </div>
-        {%- endfor -%}
+        {% endfor %}
       </nav>
     </div>
   </aside>

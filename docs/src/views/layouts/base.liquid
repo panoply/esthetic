@@ -91,17 +91,22 @@
 
               {{ content }}
 
+              {% if page.url == '/usage/format/' %}
+                {% svg 'process', 'icon-process' %}
+              {% endif %}
+
               {% include 'navigators' %}
 
             </div>
 
-            {% unless in_rules %}
+            {% unless in_rules and page.url != '/rules/' %}
               <div class="col-auto px-4">
                 {% include 'anchors' %}
               </div>
             {% endunless %}
 
           </div>
+
         </main>
 
       {% else %}

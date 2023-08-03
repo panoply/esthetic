@@ -1,7 +1,7 @@
 ---
 title: 'Lexers'
 layout: base
-permalink: '/parse/lexers/index.html'
+permalink: '/parser/lexers/index.html'
 order: 4
 anchors:
   - 'Markup'

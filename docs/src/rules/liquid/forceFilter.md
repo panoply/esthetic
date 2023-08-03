@@ -103,13 +103,16 @@ This is an example of the `forceFilter` using a value of `3` which will result i
 ```liquid
 
 {% # No forcing will be applied as only 2 filters exist %}
-{{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
+{{ object.prop
+| filter_1: 'value'
+| filter_2: 'xxx' }}
 
 {% # Forcing is applied because there are 3 filters %}
-{{ object.prop | filter_1: 'value' | filter_2: 'xxx' | filter_3: 'foo' }}
+{{ object.prop | filter_1: 'value' | filter_2: 'x' | filter_3: 'foo' }}
 
 {% # No forcing will be applied as only 1 filter exists %}
-{{ object.prop | filter_1: 'value' }}
+{{ object.prop
+| filter_1: 'value' }}
 ```
 
 ---

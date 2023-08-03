@@ -2,7 +2,7 @@
   "groups": [
     "Introduction",
     "Usage",
-    "Parse",
+    "Parser",
     "Integrate",
     "Misc"
   ],
@@ -11,6 +11,16 @@
       "group": "introduction",
       "title": "What is Æsthetic?",
       "url": "/introduction/what-is-esthetic/"
+    },
+    {
+      "group": "introduction",
+      "title": "Motivation",
+      "url": "/introduction/motivation/"
+    },
+    {
+      "group": "introduction",
+      "title": "Language Support",
+      "url": "/introduction/language-support/"
     },
     {
       "group": "introduction",
@@ -35,8 +45,8 @@
     },
     {
       "group": "usage",
-      "title": "Formatting",
-      "url": "/usage/formatting/"
+      "title": "Format",
+      "url": "/usage/format/"
     },
     {
       "group": "usage",
@@ -46,7 +56,7 @@
     {
       "group": "usage",
       "title": "Parse",
-      "url": "/usage/parsing/"
+      "url": "/usage/parse/"
     },
     {
       "group": "usage",
@@ -64,29 +74,29 @@
       "url": "/usage/utilities/"
     },
     {
-      "group": "parse",
+      "group": "parser",
       "title": "Algorithm",
-      "url": "/parse/algorithm/"
+      "url": "/parser/algorithm/"
     },
     {
-      "group": "parse",
+      "group": "parser",
       "title": "Tokens",
-      "url": "/parse/tokens/"
+      "url": "/parser/tokens/"
     },
     {
-      "group": "parse",
+      "group": "parser",
       "title": "Lexers",
-      "url": "/parse/lexers/"
+      "url": "/parser/lexers/"
     },
     {
-      "group": "parse",
+      "group": "parser",
       "title": "Error Handling",
-      "url": "/parse/error-handling/"
+      "url": "/parser/error-handling/"
     },
     {
-      "group": "parse",
+      "group": "parser",
       "title": "Terminology",
-      "url": "/parse/terminology/"
+      "url": "/parser/terminology/"
     },
     {
       "group": "integrate",

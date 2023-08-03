@@ -26,6 +26,7 @@ const TOOLTIPS = {
   '🙌': 'Authors choice',
   '👍': 'Good choice.',
   '👎': 'Not recommended',
+  '🤌': 'Delightful. Your mother is proud of you',
   '😳': 'We live in a society, we\'re not animals',
   '💡': 'Showing an example of the rule',
   '🧐': 'You gotta do, what you gotta do'
@@ -346,6 +347,10 @@ function highlightCode(md, raw, language) {
           language,
           editor: false,
           showSpace: false,
+          showTab: false,
+          showCR: false,
+          showLF: false,
+          showCRLF: false,
           lineNumbers: false
         })
 
@@ -573,7 +578,7 @@ function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
       <div
         style="width: ${rules.example.value}%"
         class="wrap-line"
-        data-demo-target="wrap">
+        data-demo-target="wrapLine">
       </div>
       <div class="demo-input">
         ${output}
@@ -844,7 +849,8 @@ function codeblocks(md) {
         data-demo-language-value="${language}"
         data-demo-input-value="${input.trim()}"
         data-demo-input-original-value="${input.trim()}"
-        data-demo-papyrus-value="${papyrusValue}">
+        data-demo-papyrus-value="${papyrusValue}"
+        spx-morph="children">
         ${template.trim()}
       </div>`
 

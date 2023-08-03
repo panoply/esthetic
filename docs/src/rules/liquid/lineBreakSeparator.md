@@ -97,7 +97,7 @@ Below is an example of how this rule works if set to `default` which is the **de
 
 <!-- prettier-ignore -->
 ```liquid
-{% # All argument comma separators will be placed at before expression %}
+{% # Comma separated args will be placed before expression %}
 {% render 'snippet',
   param_1: true,
   param_2: 1000,
@@ -106,16 +106,15 @@ Below is an example of how this rule works if set to `default` which is the **de
 
 {% if condition == assertion %}
 
-
+{% # Comma separated args will be placed before expression %}
   {{
     object.prop
-    | param_1: true
-    | param_2: 1000
-    | param_3: arg_1
-    , arg_2: 2000
-    , arg_3: false
-    , arg_4: nil
-    | param_4: 'xxxx'
+    | filter:
+     arg_1: 'foo',
+     arg_2: 2000,
+    arg_3: false,
+    arg_4: nil
+    | append: 'xxx'
     }}
 
 {% endif %}

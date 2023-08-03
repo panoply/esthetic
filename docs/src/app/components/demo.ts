@@ -168,6 +168,24 @@ export class Demo extends Controller {
 
   }
 
+  getOutputReact () {
+
+    const ih = this.inputTarget.getBoundingClientRect().height;
+
+    let height = ih;
+
+    const oh = this.outputTarget.getBoundingClientRect().height;
+    const sh = this.output.code.scrollHeight;
+
+    if (oh > ih) height = oh;
+    if (height < sh) height = sh + 5;
+
+    this.input.pre.style.minHeight = height + 'px';
+    this.input.pre.style.maxHeight = height + 'px';
+    this.output.pre.style.maxHeight = height + 'px';
+    this.output.pre.style.minHeight = height + 'px';
+  }
+
   /**
    * Set max-height and min-height based on output bounding height
    */
@@ -242,13 +260,20 @@ export class Demo extends Controller {
 
     try {
       const output = esthetic.format(input || this.inputValue, rules(this.rulesValue));
+
       if (input) {
         this.output.update(output);
       } else {
         this.formatCode(output);
       }
+
+      this.getEditorRect();
+
     } catch (e) {
+
       this.output.showError(e, { heading: 'Error thrown by Æsthetic' });
+      this.getOutputReact();
+
     }
 
   }
@@ -313,11 +338,12 @@ export class Demo extends Controller {
             stack: error.stack
           });
 
+          this.getOutputReact();
           this.timer = NaN;
 
         }
 
-      }, 1500);
+      }, 500);
 
     } else {
 

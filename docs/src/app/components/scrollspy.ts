@@ -62,7 +62,7 @@ export class ScrollSpy extends Controller {
     }
 
     if (window.scrollY < 10) {
-      this.anchorTargets[0].classList.add(this.activeClass);
+      this.anchorTargets[0]?.classList.add(this.activeClass);
     } else {
       this.onScroll();
     }

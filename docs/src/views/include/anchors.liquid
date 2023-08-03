@@ -4,7 +4,61 @@
   data-sticky-offset-value="20">
 
   {% for link in collections.all %}
-    {% if link.url == page.url %}
+
+    {% if page.url == '/rules/' %}
+
+      <h6 class="mt-0 mb-4">
+        Rules
+      </h6>
+
+      <ul class="mt-3 mb-4">
+        {% for anchor in link.data.describe %}
+          <li>
+            <a
+              href="#{{ anchor | slugify }}"
+              data-scrollspy-target="anchor">
+              {{ anchor }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <h6 class="mt-0 mb-2">
+        Liquid
+      </h6>
+
+      <ul class="mt-1 mb-4">
+        {% assign links = 'Extended Behaviour, Dynamic Determination, Ruleset' | split: ',' %}
+        {% for anchor in links %}
+          <li>
+            <a
+              href="#{{ anchor | slugify }}"
+              data-scrollspy-target="anchor">
+              {{ anchor }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <h6 class="mt-0 mb-4">
+        Markup
+      </h6>
+
+      <ul class="mt-3 mb-2">
+        {% for anchor in link.data.describe %}
+          <li>
+            <a
+              href="#{{ anchor | slugify }}"
+              data-scrollspy-target="anchor">
+              {{ anchor }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+
+      {% break %}
+
+    {% elsif link.url == page.url %}
 
       {% if link.data.describe %}
 

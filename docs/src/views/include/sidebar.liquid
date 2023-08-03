@@ -31,7 +31,8 @@
 
       <nav
         class="accordion mb-2 bx-0"
-        data-controller="accordion">
+        data-controller="accordion"
+        spx-morph="children">
         {% for group in links.groups %}
 
           {%
@@ -60,11 +61,20 @@
             endif
           %}
 
-          <button class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}">
+          {% if group contains 'Json' or group contains 'Script' %}
+
+            {% continue %}
+          {% endif %}
+
+          <button
+            class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}"
+            spx-morph="children">
             {{ group }}
           </button>
 
-          <div class="accordion-fold {% if open %}expanded{%- endif -%}">
+          <div
+            class="accordion-fold {% if open %}expanded{%- endif -%}"
+            spx-morph="children">
             <ul
               id="{{ link.title | slugify }}"
               class="py-4 px-2 ml-0">

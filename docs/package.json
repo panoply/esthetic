@@ -45,7 +45,7 @@
     "papyrus": "workspace:^",
     "qvp": "^0.3.2",
     "relapse": "^0.5.0",
-    "spx": "0.1.0-beta.1",
+    "spx": "0.1.2-beta.1",
     "stickybits": "^3.7.11"
   },
   "devDependencies": {
@@ -63,18 +63,18 @@
     "concurrently": "^8.2.0",
     "cssnano": "^6.0.1",
     "eleventy-plugin-svg-sprite": "^2.4.0",
-    "esbuild": "^0.18.6",
-    "eslint": "^8.43.0",
+    "esbuild": "^0.18.17",
+    "eslint": "^8.46.0",
     "language-literals": "^0.0.2",
     "markdown-it": "^13.0.1",
     "markdown-it-anchor": "^8.6.7",
     "markdown-it-container": "^3.0.0",
-    "netlify-cli": "^15.6.0",
-    "postcss": "^8.4.24",
+    "netlify-cli": "^15.10.0",
+    "postcss": "^8.4.27",
     "postcss-cli": "^10.1.0",
-    "prettier": "^2.8.8",
-    "sass": "^1.63.5",
-    "tsup": "^7.0.0",
-    "typescript": "^5.1.3"
+    "prettier": "^3.0.0",
+    "sass": "^1.64.2",
+    "tsup": "^7.1.0",
+    "typescript": "^5.1.6"
   }
 }

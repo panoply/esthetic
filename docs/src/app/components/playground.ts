@@ -1,6 +1,5 @@
 import type Moloko from 'moloko';
 import { Controller } from '@hotwired/stimulus';
-import esthetic from 'esthetic'
 
 export class Playground extends Controller {
 
@@ -23,12 +22,21 @@ export class Playground extends Controller {
     loaded: Boolean
   };
 
-  moloko: typeof Moloko;
+  get moloko () {
+
+    return Playground.moloko;
+  }
+
+  get hash () {
+    return localStorage.getItem('moloko');
+  }
+
   svg: Element;
   timer: NodeJS.Timer;
 
   async connect () {
 
+    if (this.hash) window.location.hash = this.hash;
 
     if (Playground.loaded) return this.mount();
 
@@ -36,6 +44,12 @@ export class Playground extends Controller {
 
     this.loading();
     await this.module();
+
+  }
+
+  disconnect (): void {
+
+    localStorage.setItem('moloko', this.moloko.hash());
 
   }
 
@@ -67,7 +81,7 @@ export class Playground extends Controller {
 
         this.loading();
 
-      }, 1200);
+      }, 500);
 
     } else {
 
