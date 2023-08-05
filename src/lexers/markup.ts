@@ -591,6 +591,60 @@ export function markup (input?: string) {
     }
 
     /**
+     * Parse Liquid Capture
+     *
+     * Liquid `{% capture %}` tokens are handled a little differently
+     * than other Liquid tokens. We will preserve the inner contents of
+     * Liquid captures and assign it a unique `types`. This function carries
+     * out the traversal and parse for this.
+     */
+    function parseLiquidCapture () {
+
+      let i = source.indexOf('capture', a);
+
+      if (b[i - 3] === 'e' && b[i - 2] === 'n' && b[i - 1] === 'd') {
+
+        i = b.indexOf('}', i) + 1;
+
+        record.types = ltype = 'liquid_capture';
+        record.token = token + b.slice(a, i).join(NIL);
+        parse.lineNumber = u.cline(token, parse.lineNumber);
+
+        push(record);
+
+        a = i;
+
+      } else {
+
+        const x = source.indexOf('endcapture', i + 7) + 9;
+
+        if (x > -1 && /[a-z]/.test(b[x + 1]) === false) {
+
+          i = b.indexOf('}', x) + 1;
+
+          // Consume an ending newline
+          //
+          // In some cases the next character might be a newline
+          // if the occurs, we need to to ensure to include it when
+          // applying the slice.
+          //
+          //
+          token = token + b.slice(a, i).join(NIL);
+          parse.lineNumber = u.cline(token, parse.lineNumber);
+
+          a = i;
+
+          return parseLiquidCapture();
+
+        }
+
+        MarkupError(ParseError.MissingLiquidEndTag, token, tname);
+
+      }
+
+    }
+
+    /**
      * Parse Liquid
      *
      * This will parse template identified tokens and tags (Liquid).
@@ -614,9 +668,13 @@ export function markup (input?: string) {
 
         } else if (grammar.liquid.tags.has(tname)) {
 
+          if (tname === 'capture') {
+            a = a + 1;
+            return parseLiquidCapture();
+          }
+
           record.types = ltype = 'liquid_start';
 
-          //  console.log(record);
           return parseAttribute();
 
         } else if (tname.startsWith('end')) {
@@ -704,7 +762,6 @@ export function markup (input?: string) {
        * Split token onto newlines
        */
       const nl = token.slice(i).split(NWL);
-
       const ender = nl.pop().trim();
       const match = u.is(ender[ender.length - 3], cc.DSH) ? ender.length - 3 : ender.length - 2;
       const slice = ender.slice(0, match);
@@ -815,9 +872,13 @@ export function markup (input?: string) {
         });
 
       } else {
-        parse.replace({
-          token: lq.closeDelims(parse.current.token + delim, rules.liquid)
+
+        push(record, {
+          token: WSP + delim,
+          types: 'liquid_end',
+          lines: 0
         });
+
       }
 
     }
@@ -4030,28 +4091,28 @@ export function markup (input?: string) {
       types: 'content'
     };
 
-    if (embed === true) {
+    if (jsxbrace === true) {
 
-      if (jsxbrace === true) {
+      name = 'script';
 
-        name = 'script';
+    } else if (parse.stack.index > -1) {
 
-      } else if (parse.stack.index > -1) {
+      name = lx.getTagName(data.token[parse.stack.index]);
 
-        name = lx.getTagName(data.token[parse.stack.index]);
-
-        if (data.types[parse.stack.index].startsWith('liquid_')) {
-          type = Languages.Liquid;
-        }
-
-      } else {
-
-        name = lx.getTagName(data.token[data.begin[parse.count]]);
-
-        if (data.types[data.begin[parse.count]].startsWith('liquid_')) {
-          type = Languages.Liquid;
-        }
+      if (data.types[parse.stack.index].startsWith('liquid_')) {
+        type = Languages.Liquid;
       }
+
+    } else {
+
+      name = lx.getTagName(data.token[data.begin[parse.count]]);
+
+      if (data.types[data.begin[parse.count]].startsWith('liquid_')) {
+        type = Languages.Liquid;
+      }
+    }
+
+    if (embed === true) {
 
       // EMPTY CONTENTS
       //
@@ -4072,7 +4133,39 @@ export function markup (input?: string) {
             embed = false;
             record.types = 'end';
           }
+        }
+      }
+    }
 
+    if (type === Languages.Liquid) {
+      if (name === 'capture') {
+
+        const start = source.indexOf('endcapture', a);
+
+        if (start > -1) {
+
+          const from = b.lastIndexOf('{', start);
+
+          record.token = b.slice(a, from).join(NIL);
+          record.types = 'ignore';
+
+          console.log(record);
+
+          push(record);
+
+          a = from - 1;
+
+          return;
+
+        } else {
+          SyntacticError(ParseError.MissingLiquidEndTag, {
+            expect: '{% endcapture%}',
+            index: a,
+            line: parse.lineNumber,
+            stack: record.stack,
+            token: b.slice(now, a).join(NIL),
+            type: Languages.Liquid
+          });
         }
       }
     }
@@ -4141,9 +4234,7 @@ export function markup (input?: string) {
 
       do {
 
-        if (u.is(b[a], cc.NWL)) {
-          lines = parse.lines(a, lines);
-        }
+        if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
 
         // Embed code requires additional parsing to look for the appropriate end
         // tag, but that end tag cannot be quoted or commented
