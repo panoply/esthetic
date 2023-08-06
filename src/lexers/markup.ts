@@ -3,7 +3,7 @@ import { parse } from 'parse/parser';
 import { sortSafe } from 'parse/sorting';
 import { grammar } from 'parse/grammar';
 import { MarkupError, SyntacticError } from 'parse/errors';
-import { commentBlock } from 'comments';
+import { commentBlock, control } from 'comments';
 import { DQO, NIL, NWL, SQO, WSP } from 'chars';
 import * as external from 'parse/external';
 import { ParseError } from 'lexical/errors';
@@ -117,6 +117,31 @@ export function markup (input?: string) {
   /* -------------------------------------------- */
 
   /**
+   * Create Record
+   *
+   * Generates a parse table `record` entry.
+   */
+  function create (): Record {
+
+    return {
+      lexer: 'markup',
+      lines: parse.lineOffset,
+      stack: parse.stack.token !== 'global' ? parse.stack.token : 'global',
+      begin: parse.stack.index,
+      token: NIL,
+      types: NIL,
+      ender: -1
+    };
+
+  }
+
+  function parseIncrement (add: number = 1) {
+
+    a = a + add;
+
+  }
+
+  /**
    * Push Record
    *
    * Pushes a record into the parse table populating the data structure.
@@ -205,16 +230,16 @@ export function markup (input?: string) {
    * Counts the number of newlines between the `from` point up until
    * the the next non whitespace character detected
    */
-  function newlines (from: number, input: string | string[] = b) {
+  // function newlines (from: number, input: string | string[] = b) {
 
-    let i: number = from;
-    let n: number = 1;
+  //   let i: number = from;
+  //   let n: number = 1;
 
-    while (u.is(input[i++], cc.NWL)) n = n + 1;
+  //   while (u.is(input[i++], cc.NWL)) n = n + 1;
 
-    return n;
+  //   return n;
 
-  }
+  // }
 
   /**
    * Glue
@@ -346,15 +371,7 @@ export function markup (input?: string) {
     /* CONSTANTS                                    */
     /* -------------------------------------------- */
 
-    const record: Record = {
-      lexer: 'markup',
-      lines: parse.lineOffset,
-      stack: parse.stack.token !== 'global' ? parse.stack.token : 'global',
-      begin: parse.stack.index,
-      token: NIL,
-      types: NIL,
-      ender: -1
-    };
+    const record: Record = create();
 
     /* -------------------------------------------- */
     /* LOCAL SCOPES                                 */
@@ -976,16 +993,90 @@ export function markup (input?: string) {
     }
 
     /**
-     * Parse Ignores
+     * Parse Preserve
+     *
+     * This function is responsible for skipping embedded code regions
+     * when rules like `ignoreJS`, `ignoreJSON` and `ignoreCSS` are enabled.
+     * This will push the entire token to the table. Every line encountered
+     * will be given a `types` of ignore including newlines. This will ensure
+     * the inner contents will respect indentation but still allow preservation.
+     *
+     * The function is only handling embedded regions, but may in the future be
+     * used for different excluded/preservation imposed logic.
+     *
+     */
+    function parsePreserve (ender: string) {
+
+      const now = a;
+      let q = -1;
+
+      do {
+
+        if (u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO) || u.is(b[a], cc.TQO)) {
+          q = b.indexOf(b[a], a + 1);
+          if (q > -1) {
+            a = q + 1;
+            q = -1;
+            continue;
+          } else {
+            MarkupError(ParseError.UnterminateString, b.slice(a).join(NIL));
+          }
+        }
+
+        if (b.slice(a, a + ender.length).join(NIL) === ender) {
+          token = b.slice(now, a).join(NIL);
+          break;
+        }
+
+        a = a + 1;
+
+      } while (a < c);
+
+      const lines = token.split(NWL).flatMap(toke => toke === '' ? NWL : [ toke, NWL ]);
+
+      let i = 0;
+      let s = lines.length;
+
+      if (u.is(lines[i], cc.NWL)) i = 1;
+      if (u.is(lines[s - 1], cc.NWL)) s = s - 1;
+
+      for (; i < s; i++) push(record, { token: lines[i], types: 'ignore', lines: 0 });
+
+      record.types = ltype = 'end';
+      record.token = token = ender;
+      record.lines = parse.lineOffset;
+
+      a = a + ender.length;
+      attrs = [];
+
+      parseAttribute();
+
+    }
+
+    /**
+     * Parse Ignore
      *
      * Additional logic required to find the end of a tag when it contains
      * a `data-esthetic-ignore` attribute annotation. The function also
-     * handles `@esthetic-ignore-next` ignore comments placed above tag regions.
+     * handles `esthetic-ignore-next` ignore comments placed above tag regions.
      *
      */
     function parseIgnore (): ReturnType<typeof parseSingleton | typeof parseScript> {
 
-      if (parse.count < 1 && embed === false) return parseSingleton();
+      if (ltype === 'script_preserve' || ltype === 'json_preserve' || ltype === 'style_preserve') {
+
+        record.types = 'start';
+        record.lines = parse.lineOffset;
+        record.stack = 'script';
+
+        parseAttribute();
+        parseIncrement();
+
+        return parsePreserve(`</${tname}>`);
+
+      }
+
+      if (embed === false) return parseSingleton();
 
       /**
        * The ender token name, used for Liquid tag ignores
@@ -1038,11 +1129,7 @@ export function markup (input?: string) {
             ltype !== 'style_preserve' &&
             ltype !== 'liquid_json_preserve' &&
             ltype !== 'liquid_script_preserve' &&
-            ltype !== 'liquid_style_preserve') {
-
-            ltype = 'ignore';
-
-          }
+            ltype !== 'liquid_style_preserve') ltype = 'ignore';
 
           /* -------------------------------------------- */
           /* LOCAL SCOPES                                 */
@@ -1340,6 +1427,7 @@ export function markup (input?: string) {
       let item: number = attrs.length - 1;
 
       if (u.is(token, cc.LAN)) {
+
         if (item > -1) {
 
           do {
@@ -2072,46 +2160,10 @@ export function markup (input?: string) {
       a = comm[1];
 
       if (rx.CommMarkupIgnore.test(token)) {
-        if (rx.CommIgnoreStart.test(token)) {
 
-          let begin: number;
-
-          if (token.startsWith('<!--')) {
-
-            begin = token.indexOf('-->') + 3;
-
-          } else if (rx.LiquidLineComment.test(token)) {
-
-            begin = token.indexOf('%}') + 2;
-
-          } else {
-
-            begin = token.indexOf('%}', token.indexOf('%}') + 2) + 2;
-
-          }
-
-          push(record, [
-            {
-              token: indent(parse.iterator, token.slice(0, begin)),
-              types: 'ignore'
-            },
-            {
-              token: token.slice(begin).replace(rx.NewlineLead, NIL),
-              types: 'ignore',
-              lines: newlines(begin, token)
-            }
-          ]);
-
-        } else {
-
-          push(record, {
-            token: indent(parse.iterator, token),
-            types: 'ignore'
-          });
-
-          parse.iterator = a + 1;
-
-        }
+        record.token = token;
+        record.types = 'ignore';
+        push(record);
 
       } else {
 
@@ -2182,7 +2234,11 @@ export function markup (input?: string) {
           nowalk = true;
 
           parse.stack.push([ 'liquid_bad', parse.count ]);
-          push(record, { token: x, types: 'liquid_start_bad' });
+
+          record.token = x;
+          record.types = 'liquid_bad_start';
+
+          push(record);
 
           return;
 
@@ -2376,15 +2432,8 @@ export function markup (input?: string) {
 
       lchar = end.charAt(end.length - 1);
 
-      if (ltype === 'comment' && (u.is(b[a], cc.LAN) || (u.is(b[a], cc.LCB) && u.is(b[a + 1], cc.PER)))) {
-
-        return parseComments();
-
-      } else if (a < c) {
-
-        return traverse();
-
-      }
+      if (ltype === 'comment') return parseComments();
+      if (a < c) return traverse();
 
       return parseExternal();
 
