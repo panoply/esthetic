@@ -1012,6 +1012,13 @@ export function markup (input?: string) {
 
       do {
 
+        // String Handling
+        //
+        // We need to ensure the string occurances are digested and skipped.
+        // This will prevent potention issues from occuring when string structures
+        // contain enders or starters.
+        //
+        //
         if (u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO) || u.is(b[a], cc.TQO)) {
           q = b.indexOf(b[a], a + 1);
           if (q > -1) {
@@ -1063,6 +1070,11 @@ export function markup (input?: string) {
      */
     function parseIgnore (): ReturnType<typeof parseSingleton | typeof parseScript> {
 
+      // Parse Preserve
+      //
+      // We will first detect any preserved structures and pass it on
+      // these types infer ignores that respect indentation and are rule based.
+      //
       if (ltype === 'script_preserve' || ltype === 'json_preserve' || ltype === 'style_preserve') {
 
         record.types = 'start';
@@ -4186,39 +4198,6 @@ export function markup (input?: string) {
       }
     }
 
-    if (type === Languages.Liquid) {
-      if (name === 'capture') {
-
-        const start = source.indexOf('endcapture', a);
-
-        if (start > -1) {
-
-          const from = b.lastIndexOf('{', start);
-
-          record.token = b.slice(a, from).join(NIL);
-          record.types = 'ignore';
-
-          console.log(record);
-
-          push(record);
-
-          a = from - 1;
-
-          return;
-
-        } else {
-          SyntacticError(ParseError.MissingLiquidEndTag, {
-            expect: '{% endcapture%}',
-            index: a,
-            line: parse.lineNumber,
-            stack: record.stack,
-            token: b.slice(now, a).join(NIL),
-            type: Languages.Liquid
-          });
-        }
-      }
-    }
-
     /**
      * SGML Test
      *
@@ -4394,7 +4373,7 @@ export function markup (input?: string) {
             if (name === 'script') {
 
               end = b
-                .slice(a + 1, a + 10)
+                .slice(a, a + 9)
                 .join(NIL)
                 .toLowerCase();
 
@@ -4422,6 +4401,8 @@ export function markup (input?: string) {
 
                   record.token = end;
                   record.types = 'end';
+
+                  a = a - 1;
 
                 }
 
