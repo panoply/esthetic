@@ -1013,9 +1013,9 @@ module.exports = eleventy(function (config) {
       collapseWhitespace: true,
       decodeEntities: true,
       html5: true,
-      removeAttributeQuotes: true,
+      removeAttributeQuotes: false,
       removeComments: true,
-      removeOptionalTags: true,
+      removeOptionalTags: false,
       sortAttributes: true,
       sortClassName: true
     });
