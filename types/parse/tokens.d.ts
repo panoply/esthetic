@@ -75,9 +75,8 @@ export enum StyleTypes {
    * of start or end types.
    *
    * ---
-   * @prettify
    *
-   * This infers Liquid code in Prettify
+   * This infers Liquid code in Æsthetic
    */
   template = 'template',
   /**
@@ -85,25 +84,22 @@ export enum StyleTypes {
    * Else tokens do not behave the same way as a templates start or end types.
    *
    * ---
-   * @prettify
    *
-   * This infers Liquid code in Prettify
+   * This infers Liquid code in Æsthetic
    */
   liquid_else = 'liquid_else',
   /**
    * Describes the closing sequence for a third party language template tag.
    *
    * ---
-   * @prettify
    *
-   * This infers Liquid code in Prettify
+   * This infers Liquid code in Æsthetic
    */
   liquid_end = 'liquid_end',
   /**
    * Describes the closing sequence for a third party language template tag.
    *
    * ---
-   * @prettify
    *
    * This infers Liquid code in Prettify
    */
@@ -127,7 +123,6 @@ export enum ScriptTypes {
    * Describes both block comments (`/*`) and line comments (`//`)
    *
    * ---
-   * @prettify
    *
    * This infers Liquid `{% comment %}` and `{% endcomment%}` in Prettify
    */
@@ -178,27 +173,24 @@ export enum ScriptTypes {
    * template language, and is otherwise illegal syntax in JavaScript.
    *
    * ---
-   * @prettify
    *
-   * This infers Liquid code in Prettify
+   * This infers Liquid code in Æsthetic
    */
   template = 'template',
   /**
    * A template type that is used as the else block of a condition.
    *
    * ---
-   * @prettify
    *
-   * This infers Liquid code in Prettify
+   * This infers Liquid code in Æsthetic
    */
   liquid_else = 'liquid_else',
   /**
    *  A terminal token of a template body
    *
    * ---
-   * @prettify
    *
-   * This infers Liquid code in Prettify
+   * This infers Liquid code in Æsthetic
    */
   liquid_end = 'liquid_end',
   /**
@@ -692,6 +684,27 @@ export enum LiquidTypes {
    * {% endif %}
    */
   liquid_end = 'liquid_end',
+  /**
+   * A Liquid capture tag
+   *
+   * ---
+   * @example
+   *
+   * {% capture foo %}
+   */
+  liquid_capture = 'liquid_capture',
+
+  /**
+   * Ignore next comment
+   *
+   * ---
+   * @example
+   *
+   * <!-- esthetic-ignore-next -->
+   * {% # esthetic-ignore-next %}
+   */
+  ignore_next = 'ignore_next',
+
 }
 
 /**
@@ -701,5 +714,7 @@ export enum ExtraTypes {
   else = 'else',
   mixin = 'mixin',
   comment = 'comment',
+  ignore_start = 'ignore_start',
+  ignore_end = 'ignore_end',
   'content-ignore' = 'content-ignore'
 }
