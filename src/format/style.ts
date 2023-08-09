@@ -4,7 +4,7 @@ import { NIL, WSP } from 'chars';
 import { cc } from 'lexical/codes';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
-import { create } from 'utils/native';
+import { object } from 'utils/native';
 
 export function style () {
 
@@ -25,7 +25,7 @@ export function style () {
   /**
    * Hold state reference of indents
    */
-  const indents: { [K in Types]: number } = create(null);
+  const indents: { [K in Types]: number } = object(null);
 
   /**
    * The input length
