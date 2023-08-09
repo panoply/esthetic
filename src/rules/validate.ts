@@ -126,6 +126,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
         return isValidBoolean(language, rule, value);
 
       case 'attributeCasing':
+      case 'commentDelimiters':
       case 'delimiterTerminus':
       case 'lineBreakValue':
       case 'quoteConvert':
@@ -375,6 +376,26 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
           'lowercase',
           'lowercase-name',
           'lowercase-value'
+        ]
+      });
+    }
+
+  } else if (rule === 'commentDelimiters') {
+
+    switch (value as MarkupRules['commentDelimiters']) {
+      case 'preserve':
+      case 'consistent':
+      case 'inline':
+      case 'force': return true;
+      default: throw RuleError({
+        message: `Invalid "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        expected: [
+          'preserve',
+          'consistent',
+          'inline',
+          'force'
         ]
       });
     }
