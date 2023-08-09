@@ -107,6 +107,62 @@ export function join (...message: string[]) {
 }
 
 /**
+ * Count (newlines)
+ *
+ * Returns the number of newline `\n` character occurances
+ * in a provided string. Optionally provide a `current` parameter
+ * which will typically be the current `parse.lineNumber` value.
+ *
+ * **Passing `current` as `NaN` or `undefined`**
+ *
+ * When `current` is undefined, it will default to `NaN` and return
+ * the number of newlines of input only.
+ *
+ * **Passing `current` as `parse.lineNumber`**
+ *
+ * When passing in a `current` number value, then the returning
+ * number of lines will be calculated together.
+ */
+export function cline (input: string | string[], current: number = NaN) {
+
+  if (input.indexOf(NWL) < 0) return isNaN(current) ? 0 : current;
+
+  /**
+   * Newline Count
+   */
+  let c: number;
+
+  if (isArray(input)) {
+
+    let i: number = 0;
+
+    do {
+
+      i = input.indexOf(NWL, i);
+
+      if (i === -1) break;
+
+      c = c + 1;
+      i = i + 1;
+
+    } while (i < input.length);
+
+  } else {
+
+    c = input.split(NWL).length;
+
+  }
+
+  if (isNaN(current)) return c === 1 ? 0 : c;
+  if (c === 1) return current;
+
+  c = (c - 1) + current;
+
+  return c > current ? c : current;
+
+}
+
+/**
  * Newline Generate
  *
  * Returns a newline sequence. Expects a function callback to be
@@ -154,6 +210,18 @@ export function repeatChar (count: number, character: string = WSP) {
 export function is (string: string, code: number) {
 
   return string ? string.charCodeAt(0) === code : false;
+
+}
+
+/**
+ * Last Character
+ *
+ * Returns the last character of the provided string. Optionally
+ * convert to character code by passing a boolen `true` as 2nd parameter.
+ */
+export function lastChar (string: string | string[], toCode = false) {
+
+  return string[string.length - 1];
 
 }
 
@@ -245,6 +313,17 @@ export function notLast (string: string | string[], code: number) {
   return isLast(string, code) === false;
 
 };
+
+/**
+ * Non Whitespace
+ *
+ * Check if provided string is NOT a whitespace (`\s`,`\t`,`\n` etc) character
+ */
+export function ns (string: string) {
+
+  return /\S/.test(string);
+
+}
 
 /**
  * Whitespace
