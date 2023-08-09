@@ -494,6 +494,18 @@ export const definitions: Definitions = {
         warrington: 'preserve'
       }
     },
+    commentDelimiters: {
+      default: 'preserve',
+      description: 'Controls the formatting style of HTML and XML comment delimiters.',
+      type: 'choice',
+      preset: {
+        default: 'preserve',
+        prettier: 'consistent',
+        recommended: 'preserve',
+        strict: 'force',
+        warrington: 'consistent'
+      }
+    },
     commentNewline: {
       default: false,
       description: 'If a blank new line should be forced above comments.',

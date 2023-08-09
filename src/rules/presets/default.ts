@@ -38,6 +38,7 @@ export const defaults: Rules = merge({
   markup: {
     attributeCasing: 'preserve',
     attributeSort: false,
+    commentDelimiters: 'preserve',
     commentNewline: false,
     commentIndent: true,
     delimiterTerminus: 'inline',

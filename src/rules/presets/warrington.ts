@@ -20,6 +20,7 @@ export const warrington: Rules = merge({
   },
   markup: {
     commentNewline: true,
+    commentDelimiters: 'consistent',
     delimiterTerminus: 'adapt',
     forceAttribute: 1,
     forceIndent: true,
