@@ -10,11 +10,8 @@ import { Parser } from './components/parser';
 import spx from 'spx';
 
 spx.connect({
-  targets: [ '#navbar', '#main' ],
-  progress: false,
-  hover: {
-    trigger: 'href'
-  }
+  targets: [ 'body' ],
+  progress: false
 })(function () {
 
   const stimulus = Application.start();
