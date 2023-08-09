@@ -91,6 +91,11 @@
       "url": "/rules/liquid/forceArgument/"
     },
     {
+      "group": "markup",
+      "title": "forceIndent",
+      "url": "/rules/liquid/forceIndent/"
+    },
+    {
       "group": "liquid",
       "title": "forceFilter",
       "url": "/rules/liquid/forceFilter/"
@@ -140,6 +145,11 @@
       "group": "markup",
       "title": "attributeSort",
       "url": "/rules/markup/attributeSort/"
+    },
+    {
+      "group": "markup",
+      "title": "commentDelimiters",
+      "url": "/rules/markup/commentDelimiters/"
     },
     {
       "group": "markup",
