@@ -218,6 +218,17 @@ export function markup () {
      */
     const line = data.lines[a + 1];
 
+    const isHTML = not(data.token[a][1], cc.PER) && (
+      rules.markup.commentIndent === true &&
+      (
+        rules.markup.commentDelimiters === 'inline' ||
+        (
+          rules.markup.commentDelimiters === 'consistent' &&
+          /<!--\n/.test(data.token[a]) === false
+        )
+      )
+    );
+
     if (isType(a, 'comment') && (
       (
         is(data.token[a][1], cc.PER) &&
@@ -228,7 +239,11 @@ export function markup () {
       )
     )) {
 
-      lines = data.token[a].split(parse.crlf).map(l => l.trimStart());
+      if (isHTML) {
+        lines = data.token[a].split(parse.crlf);
+      } else {
+        lines = data.token[a].split(parse.crlf).map(l => l.trimStart());
+      }
 
     } else {
 
@@ -292,7 +307,7 @@ export function markup () {
 
           } else {
 
-            // We need to first count the number of line proceeded by the comment
+            // We need to first count the number of lines proceeded by the comment
             // to determine whether or not we should insert an additional lines.
             // We need to add an additional 1 value as lines are not zero based.
             //
@@ -429,7 +444,14 @@ export function markup () {
 
       // } else {
 
-      build.push(lines[len]);
+      if (isHTML) {
+
+        build.push('  ' + lines[len]);
+
+      } else {
+
+        build.push(lines[len]);
+      }
 
       // }
     }
@@ -689,8 +711,7 @@ export function markup () {
   /**
    * Comments
    *
-   * HTML / Liquid Comment Identation for markup
-   * and template tags.
+   * HTML / Liquid Comment Identation for markup and template tags.
    */
   function onComment () {
 

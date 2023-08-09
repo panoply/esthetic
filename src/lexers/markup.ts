@@ -236,23 +236,6 @@ export function markup (input?: string) {
   // }
 
   /**
-   * Glue
-   *
-   * Slices and joins the document array list starting at the provided `from`
-   * index up until the provided `to` index. By default the function will apply
-   * a `trimStart()` to the joined portion, unless a boolean `true` is passed as
-   * a final parameter. The `to` parameter is optional, when not provided the array
-   * list will slice `from` up until the end of the document.
-   */
-  function glue (from: number, to: number = -1, noTrim = false) {
-
-    return noTrim === false
-      ? source.slice(from, to).trimStart()
-      : source.slice(from, to);
-
-  }
-
-  /**
    * Esc
    *
    * Finds escaped slash character sequences
@@ -1001,6 +984,8 @@ export function markup (input?: string) {
      */
     function parseIgnoreToken (ender: string, type: Languages) {
 
+      parseSpace();
+
       /**
        * The starting index
        */
@@ -1026,6 +1011,20 @@ export function markup (input?: string) {
       let t: string;
 
       do {
+
+        // Comment Skipping
+        //
+        // We need to esnure that comment occuranced within the tag blocks
+        // are excluded to offset any occurances of tag names.
+        if (tname === 'script') {
+          if (u.is(b[a], cc.FWS)) {
+            if (u.is(b[a + 1], cc.FWS)) {
+              a = b.indexOf(NWL, a + 1) + 1;
+            } else if (u.is(b[a + 1], cc.ARS)) {
+              a = source.indexOf('*/', a + 1) + 2;
+            }
+          }
+        }
 
         // String Handling
         //
@@ -1122,7 +1121,12 @@ export function markup (input?: string) {
 
         parse.lineNumber = u.cline(token, parse.lineNumber);
 
-        if (token.trim() !== NIL) push(record, { token, types: 'ignore' });
+        if (token.trim() !== NIL) {
+          record.token = token;
+          record.lines = parse.lineOffset;
+          record.types = 'ignore';
+          push(record);
+        }
 
         record.types = ltype = 'end';
         record.token = token = ender;
@@ -1181,6 +1185,20 @@ export function markup (input?: string) {
         let t: string;
 
         do {
+
+          // Comment Skipping
+          //
+          // We need to esnure that comment occuranced within the tag blocks
+          // are excluded to offset any occurances of tag names.
+          if (tname === 'script') {
+            if (u.is(b[a], cc.FWS)) {
+              if (u.is(b[a + 1], cc.FWS)) {
+                a = b.indexOf(NWL, a + 1) + 1;
+              } else if (u.is(b[a + 1], cc.ARS)) {
+                a = source.indexOf('*/', a + 1) + 2;
+              }
+            }
+          }
 
           // String Handling
           //
@@ -1516,6 +1534,7 @@ export function markup (input?: string) {
 
       // if (u.is(b[a], cc.RAN) && u.is(b[a + 1], cc.FWS)) return;
       // console.log(embed, end, ignore, preserve, token, b.slice(a).join(NIL));
+
       /* -------------------------------------------- */
       /* CONSTANTS                                    */
       /* -------------------------------------------- */
@@ -2051,61 +2070,42 @@ export function markup (input?: string) {
     };
 
     /**
-     * Tag/Content Exclusion
+     * Liquid Comment Blocks
      *
      * This is a utility function for obtaining ending liquid tags
      * before traversal. Specifically for handling comment blocks
      * and/or ignored markup tags like scripts or styles.
      */
-    function parseExclude (tag: string, from: number) {
-
-      tag = tag.trimStart().split(/\s/)[0];
+    function parseLiquidComment (from: number) {
 
       // Lets look for liquid tokens keywords before proceeding,
       // We are skipping ahead from the normal parse here.
       //
-      if (tag === 'comment' || ignored.has(tag)) {
+      const e = source.indexOf('{%', from);
 
-        let idx1 = source.indexOf('{%', from);
+      // Lets reference this index
+      let i = e;
 
-        // Lets reference this index
-        let idx2 = idx1;
+      // Lets make sure to consume any whitespace dash
+      // characters that might be defined
+      //
+      if (u.is(b[e + 1], cc.DSH)) i = e + 1;
 
-        // Lets make sure to consume any whitespace dash
-        // characters that might be defined
-        //
-        if (b[idx1 + 1].charCodeAt(0) === cc.DSH) idx2 = idx1 + 1;
+      // Lets now look for the starting index of the `endcomment` keyword
+      //
+      i = source.indexOf(`end${tname}`, i);
 
-        // Lets now look for the starting index of the `endcomment` keyword
-        //
-        idx2 = source.indexOf(`end${tag}`, idx2);
+      if (i > 0) {
 
-        if (idx2 > 0) {
+        i = b.indexOf('}', i);
 
-          idx2 = b.indexOf('}', idx2);
-
-          if (idx2 > 0 && b[idx2 - 1].charCodeAt(0) === cc.PER) {
-
-            if (tag !== 'comment') {
-
-              ltype = 'ignore';
-              ignore = true;
-              start = source.slice(a, from + 1);
-              end = source.slice(idx1, idx2 + 1);
-
-            } else {
-
-              ltype = 'comment';
-              start = source.slice(a, from + 1);
-
-              idx1 = source.lastIndexOf('{%', idx2);
-              end = source.slice(idx1, idx2 + 1);
-
-            }
-
-          }
+        if (i > 0 && b[i - 1].charCodeAt(0) === cc.PER) {
+          ltype = 'comment';
+          start = source.slice(a, from + 1);
+          end = source.slice(source.lastIndexOf('{%', i), i + 1);
         }
       }
+
     }
 
     /**
@@ -2375,23 +2375,24 @@ export function markup (input?: string) {
               tag = tag.trimEnd();
             }
 
-            if (ignored.size > 0 && ignored.has(tname)) {
-              parse.iterator = a;
-              ignore = true;
+            if (tname === 'comment') {
+
+              parseLiquidComment(from);
+
+            } else {
+
+              if (ignored.size > 0 && ignored.has(tname)) {
+                parse.iterator = a;
+                ignore = true;
+              }
+
+              if (u.is(tag, cc.HSH)) {
+                ltype = 'comment';
+                end = '%}';
+                lchar = end.charAt(end.length - 1);
+                return parseComments(true);
+              }
             }
-
-            // parseExclude(tag, from);
-
-            if (u.is(tag, cc.HSH)) {
-
-              ltype = 'comment';
-              end = '%}';
-              lchar = end.charAt(end.length - 1);
-
-              return parseComments(true);
-
-            }
-
           } else {
 
             preserve = true;

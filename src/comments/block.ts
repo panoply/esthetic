@@ -3,7 +3,7 @@ import { parse } from 'parse/parser';
 import * as rx from 'lexical/regex';
 import { cc as ch } from 'lexical/codes';
 import { NWL, NIL, WSP } from 'chars';
-import { sanitizeComment, ws, is, not } from 'utils/helpers';
+import { sanitizeComment, ws, is, not, isOf } from 'utils/helpers';
 
 /**
  * Wrap Comment Block
@@ -20,7 +20,12 @@ export function commentBlock (config: WrapComment): [string, number] {
   /**
    * Deconstructed Rules
    */
-  const { rules } = parse;
+  const { rules, data } = parse;
+
+  /**
+   * Deconstructed Config
+   */
+  const { start, begin, chars, lexer } = config;
 
   /**
    * The composed output structure
@@ -35,40 +40,50 @@ export function commentBlock (config: WrapComment): [string, number] {
   /**
    * Sanatized opening delimiter sequence
    */
-  const sanitize = config.begin.replace(rx.CharEscape, sanitizeComment);
+  const sanitize = begin.replace(rx.CharEscape, sanitizeComment);
 
   /**
    * Whether or not we are dealing with a Liquid comment
    */
-  const isLiquid = is(config.begin[0], ch.LCB) && is(config.begin[1], ch.PER);
+  const isLiquid = isOf(begin, ch.LCB, ch.PER);
 
   /**
    * Whether or not we are dealing with a Liquid Line comment
    */
-  const isLiquidLine = isLiquid === false ? false : config.chars
-    .slice(config.start + config.begin.length, config.chars.indexOf('%}', config.start + 2))
+  const isLiquidLine = isLiquid === false ? false : chars
+    .slice(start + begin.length, chars.indexOf('%}', start + 2))
     .join(NIL)
     .trimStart()
     .charCodeAt(0) === ch.HSH;
 
   /**
+   * Whether or not we are dealing with a HTML (markup) comment
+   */
+  const isHTML = lexer === 'markup' && isLiquid === false && isOf(begin, ch.LAN, ch.BNG);
+
+  /**
    * Regular expression for ignore comment starters
    */
-  const ignoreStart = isLiquidLine
+  const ignoreStart: RegExp = isLiquidLine
     ? new RegExp(`^(${sanitize}\\s*#\\s*esthetic-ignore-start)`)
     : new RegExp(`^(${sanitize}\\s*esthetic-ignore-start)`);
 
   /**
    * Regular expression for ignore comment next
    */
-  const ignoreNext = isLiquidLine
+  const ignoreNext: RegExp = isLiquidLine
     ? new RegExp(`^(${sanitize}\\s*#\\s*esthetic-ignore-next)`)
     : new RegExp(`^(${sanitize}\\s*esthetic-ignore-next)`);
 
   /**
    * Regular expression start type comment blocks
    */
-  const regexStart = new RegExp(`(${sanitize}\\s*)`);
+  const regexStart: RegExp = new RegExp(`(${sanitize}\\s*)`);
+
+  /**
+   * Regular Expression CRLF
+   */
+  const regexCRLF: RegExp = new RegExp(`${parse.crlf}`, 'g');
 
   /**
    * Liquid ending expression
@@ -84,7 +99,11 @@ export function commentBlock (config: WrapComment): [string, number] {
   /**
    * Starting index offset of the comment
    */
-  let a = config.start;
+  let a = start;
+
+  /**
+   * Second reference to `a` used in the `parseNewlines`
+   */
   let b = 0;
   let c = 0;
   let d = 0;
@@ -107,7 +126,7 @@ export function commentBlock (config: WrapComment): [string, number] {
   /**
    * Newline characters
    */
-  let nwl = NIL;
+  const nwl = NIL;
 
   /**
    * Whether or not empty line is contained
@@ -153,6 +172,37 @@ export function commentBlock (config: WrapComment): [string, number] {
   /* FUNCTIONS                                    */
   /* -------------------------------------------- */
 
+  function parseCommentDelimiters (input: string) {
+
+    if (isHTML && rules.markup.preserveComment === false) {
+
+      if (rules.markup.commentDelimiters === 'consistent') {
+
+        if (/^<!--\n/.test(input)) {
+          if (!/\n-->$/.test(input)) input = input.replace(/-->$/, '\n-->');
+        } else {
+          if (/\n-->$/.test(input)) input = input.replace(/\n-->$/, ' -->');
+        }
+
+      } else if (rules.markup.commentDelimiters === 'force') {
+
+        if (!/^<!--\n/.test(input)) input = input.replace(/^<!--/, '<!--\n');
+        if (!/\s*\n-->$/.test(input)) input = input.replace(/\s*\n-->$/, '\n-->');
+
+      } else if (rules.markup.commentDelimiters === 'inline') {
+
+        input = input
+          .replace(/^<!--\s*/, '<!-- ')
+          .replace(/\s*-->$/, ' -->');
+
+      }
+
+    }
+
+    return input;
+
+  }
+
   /**
    * Parse Empty Newlines
    *
@@ -179,15 +229,14 @@ export function commentBlock (config: WrapComment): [string, number] {
   function parseIgnoreNext (): [string, number] {
 
     output = build.join(NIL).replace(rx.WhitespaceEnd, NIL);
-    const record = parse.current;
 
-    if (record.lines > 1) {
+    if (data.lines[parse.count] > 1) {
 
-      b = config.chars.lastIndexOf(NWL, parse.iterator) + 1;
+      b = chars.lastIndexOf(NWL, parse.iterator) + 1;
 
       if (b > 0) {
 
-        before = config.chars.slice(b, parse.iterator).join(NIL);
+        before = chars.slice(b, parse.iterator).join(NIL);
 
         if (before.trim() === NIL) {
           output = before + output;
@@ -199,8 +248,6 @@ export function commentBlock (config: WrapComment): [string, number] {
       }
 
     }
-
-    console.log(output);
 
     return [ output, a ];
 
@@ -221,35 +268,30 @@ export function commentBlock (config: WrapComment): [string, number] {
 
     do {
 
-      build.push(config.chars[a]);
+      build.push(chars[a]);
 
       // Supports comment start/end comment ignores using Liquid
       // tags. We don't have any knowledge of the comment formation
       // upon parse, this will re-assign the terminator
       //
       // We check the last 5 characters before applying a join and
-      // checking is the ignore comment has reached the end.
+      // checking if the ignore comment has reached the end.
       //
       if (
-        config.chars[a - 4] === 'e' &&
-        config.chars[a - 3] === '-' &&
-        config.chars[a - 2] === 'e' &&
-        config.chars[a - 1] === 'n' &&
-        config.chars[a] === 'd') {
+        chars[a - 4] === 'e' &&
+        chars[a - 3] === '-' &&
+        chars[a - 2] === 'e' &&
+        chars[a - 1] === 'n' &&
+        chars[a] === 'd') {
 
         if (build.slice(build.length - 19).join(NIL) === 'esthetic-ignore-end') {
           if (isLiquid) {
 
-            const d = config.chars.indexOf('{', a);
+            const d = chars.indexOf('{', a);
 
-            if (is(config.chars[d + 1], ch.PER)) {
-
-              const ender = config.chars
-                .slice(d, config.chars.indexOf('}', d + 1) + 1)
-                .join(NIL);
-
+            if (is(chars[d + 1], ch.PER)) {
+              const ender = chars.slice(d, chars.indexOf('}', d + 1) + 1).join(NIL);
               if (regexEnder.test(ender)) config.ender = ender;
-
             }
           }
         }
@@ -264,58 +306,57 @@ export function commentBlock (config: WrapComment): [string, number] {
 
     b = a;
 
-    tlen = config.begin.length - 1;
-    term = config.begin.charAt(tlen);
+    tlen = begin.length - 1;
+    term = begin.charAt(tlen);
 
     do {
 
       // Script OR Style Comment Blocks
-      if (config.begin === '/*' && is(config.chars[b - 1], ch.FWS) && (
-        is(config.chars[b], ch.ARS) ||
-        is(config.chars[b], ch.FWS))) break;
+      if (begin === '/*' && is(chars[b - 1], ch.FWS) && (
+        is(chars[b], ch.ARS) ||
+        is(chars[b], ch.FWS))) break;
 
       // Markup Comment Blocks
       if (
-        config.begin !== '/*' &&
-        config.chars[b] === term &&
-        config.chars.slice(b - tlen, b + 1).join(NIL) === config.begin) break;
+        begin !== '/*' &&
+        chars[b] === term &&
+        chars.slice(b - tlen, b + 1).join(NIL) === begin) break;
 
-      console.log(b);
       b = b - 1;
 
-    } while (b > config.start);
+    } while (b > start);
 
-    if (config.begin === '/*' && is(config.chars[b], ch.ARS)) {
+    if (begin === '/*' && is(chars[b], ch.ARS)) {
       ender = '\u002a/';
-    } else if (config.begin !== '/*') {
+    } else if (begin !== '/*') {
       ender = config.ender;
     }
 
     tlen = ender.length - 1;
     term = ender.charAt(tlen);
 
-    if (not(ender, ch.NWL) || not(config.chars[a], ch.NWL)) {
+    if (not(ender, ch.NWL) || not(chars[a], ch.NWL)) {
       do {
 
-        build.push(config.chars[a]);
+        build.push(chars[a]);
 
-        if (is(ender, ch.NWL) && is(config.chars[a + 1], ch.NWL)) break;
-        if (config.chars[a] === term && config.chars.slice(a - tlen, a + 1).join(NIL) === ender) break;
+        if (is(ender, ch.NWL) && is(chars[a + 1], ch.NWL)) break;
+        if (chars[a] === term && chars.slice(a - tlen, a + 1).join(NIL) === ender) break;
 
         a = a + 1;
       } while (a < config.end);
     }
 
-    if (config.chars[a] === NWL) a = a - 1;
+    if (chars[a] === NWL) a = a - 1;
 
     output = build.join(NIL).replace(rx.WhitespaceEnd, NIL);
 
-    if (ws(config.chars[parse.iterator - 1])) {
+    if (ws(chars[parse.iterator - 1])) {
 
-      const last = config.chars.lastIndexOf(NWL, parse.iterator);
+      const last = chars.lastIndexOf(NWL, parse.iterator);
 
       if (last > -1) {
-        output = config.chars.slice(last + 1, parse.iterator).join(NIL) + output;
+        output = chars.slice(last + 1, parse.iterator).join(NIL) + output;
       }
 
     }
@@ -333,48 +374,61 @@ export function commentBlock (config: WrapComment): [string, number] {
    */
   function parsePreserve (): boolean {
 
-    // Markup Preserve
-    if (parse.lexer === 'markup' && rules.markup.preserveComment) return true;
-
-    // Style Preserve
-    if (parse.lexer === 'style' && rules.style.preserveComment) return true;
-
-    // Script Preserve
-    if (parse.lexer === 'script' && rules.style.preserveComment) return true;
-
-    if (isLiquid) {
-
-      // Liquid Preserve
-      if (rules.liquid.preserveComment) return true;
-
-      // Liquid Inline Preserve
-      if (
-        rules.wrap < 1 &&
-        isLiquidLine === false &&
-        rx.LiquidCommentNewline.test(output) === false) return true;
-
-      lines = output.replace(/\r\n/g, NWL).split(NWL);
-      for (let i = 1, l = lines.length - 1; i < l; i++) {
-        if (not(lines[i].trimStart(), ch.HSH) && lines[i].trimStart() !== '') {
-          lines[i] = '# ' + lines[i].trimStart();
-        }
-      }
-      return true;
-    }
-
-    // No Newlines Preserve
+    // Preserve when comment is last token
+    //
     if (a === config.end) return true;
 
-    // No Wrap Exceeded
-    if (output.length <= rules.wrap && output.indexOf(NWL) === -1) return true;
+    // Preserve comments based on rules
+    //
+    if (
+      (isLiquid && rules.liquid.preserveComment) ||
+      (isHTML && rules.markup.preserveComment) ||
+      (lexer === 'style' && rules.style.preserveComment) ||
+      (lexer === 'script' && rules.script.preserveComment)) return true;
 
-    // Style and Script Comment Block
-    return (
-      config.begin === '/*' &&
+    // Preserve when wrap is not exceeded and no newlines exist
+    //
+    if (
+      isLiquid === false &&
+      output.length <= rules.wrap &&
+      output.indexOf(NWL) < 0) return true;
+
+    // Preserve Liquid block comments when inline
+    if (
+      rules.wrap < 1 &&
+      isLiquid === true &&
+      isLiquidLine === false &&
+      rx.LiquidCommentNewline.test(output) === false) return true;
+
+    // Preserve Liquid line comments when no newlines exist
+    //
+    if (
+      rules.wrap < 1 &&
+      isLiquidLine === true &&
+      rx.Newline.test(output) === false) return true;
+
+    // Preserve when wrap is not exceeded and now newlines exist
+    if (
+      rules.wrap > 0 &&
+      output.length <= rules.wrap &&
+      output.slice(5, -4).indexOf(NWL) < 0) return true;
+
+    // Preserve when innner comment contents does not contain newlines
+    if (
+      isLiquid === false &&
+      rules.wrap < 1 &&
+      output.slice(5, -4).indexOf(NWL) < 0) return true;
+
+    // Preserve Style and Script Comment Blocks
+    if (
+      begin === '/*' &&
       output.indexOf(NWL) > 0 &&
       output.replace(NWL, NIL).indexOf(NWL) > 0 &&
-      /\n(?!\s*\*)/.test(output) === false
-    );
+      rx.CommBlockNewline.test(output) === false) return true;
+
+    // Additional Processing is required
+    //
+    return false;
 
   }
 
@@ -387,24 +441,32 @@ export function commentBlock (config: WrapComment): [string, number] {
    */
   function parseNewlines (): void {
 
-    b = config.start;
+    b = start;
 
-    if (b > 0 && not(config.chars[b - 1], ch.NWL) && ws(config.chars[b - 1])) {
+    if (
+      b > 0 &&
+      not(chars[b - 1], ch.NWL) &&
+      ws(chars[b - 1])) {
+
       do b = b - 1;
-      while (b > 0 && not(config.chars[b - 1], ch.NWL) && ws(config.chars[b - 1]));
+      while (
+        b > 0 &&
+        not(chars[b - 1], ch.NWL) &&
+        ws(chars[b - 1]));
+
     }
 
     /**
-     * Whitespace reference
-     */
-    const space = config.chars.slice(b, config.start).join(NIL);
-
-    /**
      * Newline + Whitespace match
+     *
+     * **TODO**
+     *
+     * This is used for `commentNewline` rule - This logic needs some
+     * work as it's being repeated within markup formatter to an extend
      */
-    const spaceLine = new RegExp(NWL + space, 'g');
+    const space = new RegExp(`\n${chars.slice(b, start).join(NIL)}`, 'g');
 
-    lines = output.replace(/\r\n/g, NWL).replace(spaceLine, NWL).split(NWL);
+    lines = output.replace(regexCRLF, NWL).replace(space, NWL).split(NWL);
     lsize = lines.length;
     lines[0] = lines[0].replace(regexStart, NIL);
     lines[lsize - 1] = lines[lsize - 1].replace(regexEnder, NIL);
@@ -412,20 +474,36 @@ export function commentBlock (config: WrapComment): [string, number] {
     if (lsize < 2) lines = lines[0].split(WSP);
 
     if (lines[0] === NIL) {
-      lines[0] = config.begin;
+      lines[0] = begin;
     } else {
-      lines.splice(0, 0, config.begin);
+      lines.splice(0, 0, begin);
     }
 
     lsize = lines.length;
 
-    nwl = NIL;
+    let nl = NIL;
     let bw = lsize - 1;
 
-    while (bw--) if (lines[bw] === NIL) nwl += NWL; else break;
-    if (nwl !== NIL) nwl = nwl.slice(0, rules.preserveLine);
+    while (bw--) if (lines[bw] === NIL) nl += NWL; else break;
+
+    if (nl !== NIL) nl = nwl.slice(0, rules.preserveLine);
 
     b = 0;
+
+    // Comment Delimiters
+    //
+    // Applies inline structure when delimiter rule is set to consistent
+    //
+    if (
+      isHTML === true &&
+      rules.markup.commentDelimiters === 'consistent' &&
+      /<!--\n/.test(output) === false) {
+
+      lines[1] = `${begin} ${lines[1]}`;
+
+      b = 1;
+
+    }
 
   }
 
@@ -438,11 +516,16 @@ export function commentBlock (config: WrapComment): [string, number] {
    */
   function parseSpecials (): void {
 
+    /**
+     * Replaced string stripped of whitespace and newlines
+     */
+    let strip: string;
+
     do {
 
       bline = NIL;
 
-      if (b < lsize - 1) bline = lines[b + 1].replace(rx.WhitespaceLead, NIL);
+      if (b < lsize - 1) bline = lines[b + 1].replace(rx.SpaceLead, NIL);
 
       if (rx.EmptyLine.test(lines[b]) === true || lines[b] === NIL) {
 
@@ -450,9 +533,12 @@ export function commentBlock (config: WrapComment): [string, number] {
 
       } else {
 
-        const strip = lines[b].replace(rx.WhitespaceLead, NIL);
+        strip = lines[b].replace(rx.SpaceLead, NIL);
 
-        if (rules.wrap > 0 && strip.length > rules.wrap && strip.indexOf(WSP) > rules.wrap) {
+        if (
+          rules.wrap > 0 &&
+          strip.length > rules.wrap &&
+          strip.indexOf(WSP) > rules.wrap) {
 
           lines[b] = strip;
 
@@ -466,17 +552,23 @@ export function commentBlock (config: WrapComment): [string, number] {
         } else {
 
           if (b < 1) {
-            twrap = rules.wrap - (config.begin.length + 1);
+            twrap = rules.wrap - (begin.length + 1);
           } else {
             twrap = rules.wrap;
           }
 
-          if (config.begin === '/*' && lines[b].indexOf('/*') !== 0) {
-            lines[b] = '   ';
+          if (begin === '/*' && lines[b].indexOf('/*') !== 0) {
+
+            lines[b] = '   ' + lines[b]
+              .replace(rx.SpaceLead, NIL)
+              .replace(rx.SpaceEnd, NIL)
+              .replace(rx.SpacesGlob, WSP);
+
           } else {
+
             lines[b] = lines[b]
-              .replace(rx.WhitespaceLead, NIL)
-              .replace(rx.WhitespaceEnd, NIL)
+              .replace(rx.SpaceLead, NIL)
+              .replace(rx.SpaceEnd, NIL)
               .replace(rx.SpacesGlob, WSP);
           }
 
@@ -492,7 +584,9 @@ export function commentBlock (config: WrapComment): [string, number] {
               if (ws(lines[b].charAt(c)) && c <= rules.wrap) break;
             } while (c > 0);
 
-            if (rx.CommNumberLine.test(lines[b]) && rx.CommNumberLine.test(lines[b + 1]) === false) {
+            if (
+              rx.CommNumberLine.test(lines[b]) === true &&
+              rx.CommNumberLine.test(lines[b + 1]) === false) {
 
               lines.splice(b + 1, 0, '1. ');
 
@@ -519,7 +613,7 @@ export function commentBlock (config: WrapComment): [string, number] {
               numberLine = true;
               b = b - 1;
 
-            } else if (lines[b].replace(rx.WhitespaceLead, NIL).indexOf(WSP) < rules.wrap) {
+            } else if (lines[b].replace(rx.SpaceLead, NIL).indexOf(WSP) < rules.wrap) {
 
               if (lines[b].length > rules.wrap) {
                 lines[b + 1] = lines[b].slice(c + 1) + parse.crlf + lines[b + 1];
@@ -529,9 +623,10 @@ export function commentBlock (config: WrapComment): [string, number] {
 
             }
 
-            if (emptyLine === false && bulletLine === false && numberLine === false) {
-              lines[b] = lines[b].slice(0, c);
-            }
+            if (
+              emptyLine === false &&
+              bulletLine === false &&
+              numberLine === false) lines[b] = lines[b].slice(0, c);
 
           } else if (lines[b + 1] !== undefined && (
             (
@@ -551,7 +646,7 @@ export function commentBlock (config: WrapComment): [string, number] {
             // which essentially led comment indentation being ignored. This ensures
             // that even when wrap is 0 that the comment content will still be passed.
             //
-            if (rules.wrap !== 0) b = b + 1;
+            if (rules.wrap > 0) b = b + 1;
 
             emptyLine = true;
 
@@ -599,15 +694,15 @@ export function commentBlock (config: WrapComment): [string, number] {
 
     if (store.length > 0) {
 
+      const glue: string = WSP;
+
       if (store[store.length - 1].length > rules.wrap - (config.ender.length + 1)) {
 
         store.push(config.ender);
 
       } else {
 
-        store.push(nwl + config.ender);
-
-        // store[store.length - 1] = `${store[store.length - 1]} ${config.ender}`;
+        store[store.length - 1] = `${store[store.length - 1]} ${config.ender}`;
 
       }
 
@@ -617,12 +712,32 @@ export function commentBlock (config: WrapComment): [string, number] {
         }
       }
 
-      output = store.join(parse.crlf);
+      if (isHTML) {
+
+        if (rules.markup.commentDelimiters === 'inline') {
+
+          output = `${store[0]} ${store.slice(1, -1).join(parse.crlf + '   ')} ${config.ender}`;
+
+        } else if (rules.markup.commentDelimiters === 'consistent' && store[0].length > 4) {
+
+          output = `${store.slice(0, -1).join(parse.crlf + '   ')} ${store.pop()}`;
+
+        } else {
+
+          output = store.join(parse.crlf);
+        }
+
+      } else {
+
+        output = store.join(parse.crlf);
+
+      }
 
     } else {
 
       lines[lines.length - 1] = lines[lines.length - 1] + config.ender;
       output = lines.join(parse.crlf);
+
     }
 
   }
@@ -633,16 +748,18 @@ export function commentBlock (config: WrapComment): [string, number] {
 
   do {
 
-    build.push(config.chars[a]);
+    build.push(chars[a]);
 
     // Newline Increments
     //
-    if (is(config.chars[a], ch.NWL)) parse.lineOffset = parse.lines(a, parse.lineOffset);
+    if (is(chars[a], ch.NWL)) parse.lineOffset = parse.lines(a, parse.lineOffset);
 
     // Comment Token
     //
-    if (config.chars[a] === term && config.chars.slice(a - tlen, a + 1).join(NIL) === config.ender) {
-      output = build.join(NIL);
+    if (chars[a] === term && chars.slice(a - tlen, a + 1).join(NIL) === config.ender) {
+
+      output = parseCommentDelimiters(build.join(NIL));
+
       break;
     }
 
