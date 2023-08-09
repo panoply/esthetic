@@ -6,7 +6,7 @@ export const assign = Object.assign;
 /**
  * Native object create
  */
-export const create = Object.create;
+export const object = Object.create;
 
 /**
  * Native object keys
