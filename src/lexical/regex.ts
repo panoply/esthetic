@@ -1,15 +1,22 @@
 /**
+ * CarriageNewline
+ *
+ * Newline and return feed global
+ *
+ * ---
+ *
+ * @exports /\r\n/g
+ *
+ */
+export const CarriageNewline = /\r\n/g;
+/**
  * Non Space
  *
  * Non whitespace or newline character
  *
  * ---
  *
- * ```js
- *
- * '\S'
- *
- * ```
+ * @example /\S/
  *
  */
 export const NonSpace = /\S/;
@@ -21,13 +28,9 @@ export const NonSpace = /\S/;
  *
  * ---
  *
- * ```js
+ * @example /\n/
  *
-* '\n'
-*
-* ```
-*
-*/
+ */
 export const Newline = /\n/;
 
 /**
@@ -37,11 +40,7 @@ export const Newline = /\n/;
  *
  * ---
  *
- * ```js
- *
- * /^\s+$/
- *
- * ```
+ * @example /^\s+$/
  *
  */
 export const EmptyLine = /^\s+$/;
@@ -53,11 +52,7 @@ export const EmptyLine = /^\s+$/;
  *
  * ---
  *
- * ```js
- *
- * '\s*'
- *
- * ```
+ * @example '\s*'
  *
  */
 export const Spaces = /\s*/;
@@ -69,13 +64,9 @@ export const Spaces = /\s*/;
  *
  * ---
  *
- * ```js
+ * @example /\s+/g
  *
- * /\s+/g
- *
- * ```
- *
-*/
+ */
 export const SpacesGlob = /\s+/g;
 
 /**
@@ -85,15 +76,10 @@ export const SpacesGlob = /\s+/g;
  *
  * ---
  *
- * ```js
- *
- * /^\s+/
+ * @example /^\s+/
  *
  * BEFORE: '  \n  foo  '
  * AFTER:  'foo  '
- *
- *
- * ```
  *
  */
 export const SpaceLead = /^\s+/;
@@ -106,15 +92,11 @@ export const SpaceLead = /^\s+/;
  *
  * ---
  *
- * ```js
- *
- * /\s+$/
+ * @example /\s+$/
  *
  * BEFORE: '  foo   \n '
  * AFTER:  '  foo'
  *
- *
- * ```
  */
 export const SpaceEnd = /\s+$/;
 
@@ -130,15 +112,12 @@ export const SpaceEnd = /\s+$/;
  *
  * ---
  *
- * ```js
  *
- * /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/
+ * @example /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/
  *
  * BEFORE: ' \n  foo'
  * AFTER:  '\nfoo'
  *
- *
- * ```
  */
 export const WhitespaceLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
 
@@ -151,15 +130,11 @@ export const WhitespaceLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000
  *
  * ---
  *
- * ```js
  *
- * /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/
+ * @example /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/
  *
  * BEFORE: ' \n  foo'
  * AFTER:  '\nfoo'
- *
- *
- * ```
  */
 export const WhitespaceEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
 
@@ -170,12 +145,7 @@ export const WhitespaceEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/
  *
  * ---
  *
- * ```js
- *
- * ' \t\v\r'
- *
- *
- * ```
+ * @example /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g
  */
 export const WhitespaceGlob = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
 
@@ -189,11 +159,8 @@ export const WhitespaceGlob = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/
  *
  * ---
  *
- * ```js
+ * @example [\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]
  *
- * '\t\v\r '
- *
- * ```
  */
 export const WhitespaceChar = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]/;
 
@@ -204,12 +171,7 @@ export const WhitespaceChar = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]/;
  *
  * ---
  *
- * ```js
- *
- * /^\n+/
- *
- *
- * ```
+ * @example /^\n+/
  *
  */
 export const NewlineLead = /^\n+/;
@@ -221,12 +183,7 @@ export const NewlineLead = /^\n+/;
  *
  * ---
  *
- * ```js
- *
- * /\n+/g
- *
- *
- * ```
+ * @example  /\n+/g
  *
  */
 export const Newlines = /\n+/g;
@@ -238,12 +195,11 @@ export const Newlines = /\n+/g;
  *
  * ---
  *
- * ```js
+ * @example /\t+/g
  *
  * BEFORE: 'foo   \t\n '
  * AFTER:  'foo   \n'
  *
- * ```
  */
 export const TabsGlob = /\t+/g;
 
@@ -251,34 +207,35 @@ export const TabsGlob = /\t+/g;
  * Regex is used to inject whitespace and equally distributes spacing
  * within Liquid tokens. It directly relates to `normalizeSpacing` rules.
  *
+ * [Regex101](https://regex101.com/r/jxLNhv/1)
+ *
  * - `g` Global Flag
  *
  * ---
  *
- * https://regex101.com/r/jxLNhv/1
  *
- * ```js
+ * @example /[|:,[\]](?=[0-9a-z-])/g
  *
  * BEFORE: '|filter:" foo "|append:123'
  * AFTER:  '| filter: " foo " | append: 123'
  *
- * ```
  */
 export const SpaceInjectBefore = /[|:,[\]](?=[0-9a-z-])/g;
 
 /**
-* Regex is used to inject whitespace and equally distributes spacing
-* within Liquid tokens. It directly relates to `normalizeSpacing` rules.
-* This regex is specifically used for prefixed token characters.
-*
-* ---
-*
-* @see https://regex101.com/r/jxLNhv/1
-* @example
-*
-* BEFORE: 'foo="bar"'
-* AFTER:  'foo = "bar"' // SpaceInjectBefore will handle `="bar"`
-*/
+ * Regex is used to inject whitespace and equally distributes spacing
+ * within Liquid tokens. It directly relates to `normalizeSpacing` rules.
+ * This regex is specifically used for prefixed token characters.
+ *
+ * [Regex101](https://regex101.com/r/jxLNhv/1)
+ *
+ * ---
+ *
+ * @example /(?<=[0-9a-z\]-])(?:[!=]=|[<>]=?)/g
+ *
+ * BEFORE: 'foo="bar"'
+ * AFTER:  'foo = "bar"' // SpaceInjectBefore will handle `="bar"`
+ */
 export const SpaceInjectAfter = /(?<=[0-9a-z\]-])(?:[!=]=|[<>]=?)/g;
 
 /**
@@ -286,12 +243,24 @@ export const SpaceInjectAfter = /(?<=[0-9a-z\]-])(?:[!=]=|[<>]=?)/g;
 * can be avoided.
 *
 * ---
-* @example
+* @example /[.[\]] {1,}/g
 *
 * BEFORE: 'object . prop'
 * AFTER:  'object.prop' // SpaceInjectBefore will handle `="bar"`
 */
 export const StripSpaceInject = /[.[\]] {1,}/g;
+
+/**
+* Comment Block type newline occurance for Script and Style Languages
+*
+* ---
+
+* @example /\n(?!\s*\*)/
+*
+* BEFORE: 'object . prop'
+* AFTER:  'object.prop' // SpaceInjectBefore will handle `="bar"`
+*/
+export const CommBlockNewline = /\n(?!\s*\*)/;
 
 /**
 * Captures esthetic inline comment controls
@@ -329,9 +298,10 @@ export const CommIgnore = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*estheti
 /**
  * Captures esthetic inline comment ignore next line
  *
+ * [Regex101](https://regex101.com/r/TTD6yY/1)
+ *
  * ---
  *
- * @see https://regex101.com/r/TTD6yY/1
  * @example
  *
  * LINE LIQUID:    // {% # esthetic-ignore-(next|start|end)
@@ -341,35 +311,38 @@ export const CommIgnore = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*estheti
 export const CommMarkupIgnore = /({%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-(start|next|end)\b/;
 
 /**
-* Captures esthetic inline comment file ignores
-*
-* ---
-* @see https://regex101.com/r/wmnwOe/1
-* @example
-*
-* LINE COMMENT:    // esthetic-ignore
-* BLOCK COMMENT:   /* esthetic-ignore
-* LINE LIQUID:     {% # esthetic-ignore
-* BLOCK LIQUID:    {% comment %} esthetic-ignore
-* HTML COMMENT:    <!-- esthetic-ignore
-* YAML COMMENT:    # esthetic-ignore
-*/
+ * Captures esthetic inline comment file ignores
+ *
+ * [Regex101](https://regex101.com/r/wmnwOe/1)
+ *
+ * ---
+ *
+ * @example
+ *
+ * LINE COMMENT:    // esthetic-ignore
+ * BLOCK COMMENT:   /* esthetic-ignore
+ * LINE LIQUID:     {% # esthetic-ignore
+ * BLOCK LIQUID:    {% comment %} esthetic-ignore
+ * HTML COMMENT:    <!-- esthetic-ignore
+ * YAML COMMENT:    # esthetic-ignore
+ */
 export const CommIgnoreFile = /^\s*(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore(?![a-z-][^-])/;
 
 /**
-* Captures esthetic inline comment ignore starters
-*
-* ---
-* @see https://regex101.com/r/BvjwOE/1
-* @example
-*
-* LINE COMMENT:    // esthetic-ignore-start
-* BLOCK COMMENT:   /* esthetic-ignore-start
-* LINE LIQUID:     {% # esthetic-ignore-start
-* BLOCK LIQUID:    {% comment %} esthetic-ignore-start
-* HTML COMMENT:    <!-- esthetic-ignore-start
-* YAML COMMENT:    # esthetic-ignore-start
-*/
+ * Captures esthetic inline comment ignore starters
+ *
+ * [Regex101](https://regex101.com/r/BvjwOE/1)
+ * ---
+ *
+ * @example
+ *
+ * LINE COMMENT:    // esthetic-ignore-start
+ * BLOCK COMMENT:   /* esthetic-ignore-start
+ * LINE LIQUID:     {% # esthetic-ignore-start
+ * BLOCK LIQUID:    {% comment %} esthetic-ignore-start
+ * HTML COMMENT:    <!-- esthetic-ignore-start
+ * YAML COMMENT:    # esthetic-ignore-start
+ */
 export const CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-start\b/;
 
 /**
@@ -377,8 +350,10 @@ export const CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*es
  *
  * Starting position (`^`) expression for line comment (`//`) region ignore `esthetic-ignore-start` tokens.
  *
+ * [Regex101](https://regex101.com/r/Uv5QGq/1)
+ *
  * ---
- * @see https://regex101.com/r/Uv5QGq/1
+ *
  * @example
  *
  * LINE COMMENT:    // esthetic-ignore-start
@@ -391,8 +366,10 @@ export const CommLineIgnoreStart = /^\/\/\s*esthetic-ignore-start\b/;
  * Starting position (`^`) expression for line comment (`/*`) region ignore `esthetic-ignore-start` tokens.
  * This expression supports multiline comments like that used in jsdocs annotations.
  *
+ * [Regex101](https://regex101.com/r/kfE18n/1)
+ *
  * ---
- * @see https://regex101.com/r/kfE18n/1
+ *
  * @example
  *
  * BLOCK COMMENT:    /* esthetic-ignore-start
@@ -400,27 +377,29 @@ export const CommLineIgnoreStart = /^\/\/\s*esthetic-ignore-start\b/;
 export const CommBlockIgnoreStart = /^\/\*{1,2}(?:\s*|\n\s*\*\s*)esthetic-ignore-start\b/;
 
 /**
-* Captures esthetic inline comment ignore enders
-*
-* ---
-* @see https://regex101.com/r/rAz9iQ/1
-* @example
-*
-* LINE COMMENT:    // esthetic-ignore-end
-* BLOCK COMMENT:   /* esthetic-ignore-end
-* LINE LIQUID:     {% # esthetic-ignore-end
-* BLOCK LIQUID:    {% comment %} esthetic-ignore-end
-* HTML COMMENT:    <!-- esthetic-ignore-end
-* YAML COMMENT:    # esthetic-ignore-end
-*/
+ * Captures esthetic inline comment ignore enders
+ *
+ * [Regex101](https://regex101.com/r/rAz9iQ/1)
+ *
+ * ---
+ *
+ * @example
+ *
+ * LINE COMMENT:    // esthetic-ignore-end
+ * BLOCK COMMENT:   /* esthetic-ignore-end
+ * LINE LIQUID:     {% # esthetic-ignore-end
+ * BLOCK LIQUID:    {% comment %} esthetic-ignore-end
+ * HTML COMMENT:    <!-- esthetic-ignore-end
+ * YAML COMMENT:    # esthetic-ignore-end
+ */
 export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2}|#)\s*esthetic-ignore-end\b/;
 
 /**
  * Captures esthetic inline comment ignore next line
  *
+ * [Regex101](https://regex101.com/r/DBL6TR/1)
  * ---
  *
- * @see https://regex101.com/r/DBL6TR/1
  * @example
  *
  * LINE COMMENT:    // @esthetic-ignore-next
@@ -435,73 +414,43 @@ export const CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!--)\s*esthe
 /**
  * Captures list item occurance of a bullet point character
  *
- * ```js
+ * ---
  *
- * /^\s*[*-]\s/
+ * @example /^\s*[*-]\s/
  *
- * ```
+ * - one
+ * - two
  *
- * **EXAMPLE**
+ *  // OR
  *
- * ```liquid
- * {% comment %}
- *
- *    - one
- *    - two
- *
- *  OR
- *
- *  * one
- *  * two
- *
- * {% endcomment %}
- * ```
+ * * one
+ * * two
  */
 export const CommBulletLine = /^\s*[*-]\s/;
 
 /**
  * Captures list item occurance of a number
  *
- * ```js
+ * ---
  *
- * /^\s*\d+\.\s/
  *
- * ```
+ * @example /^\s*\d+\.\s/
  *
- * **EXAMPLE**
+ *  1. one
+ *  2. two
  *
- * ```liquid
- * {% comment %}
- *
- *    1. one
- *    2. two
- *
- * {% endcomment %}
- * ```
  */
 export const CommNumberLine = /^\s*\d+\.\s/;
 
 /**
  * Captures list item occurances within comment blocks
  *
- * ```js
+ * [Regex101](https://regex101.com/r/WB0gZp/1)
  *
- * /^\s*(?:[*-]|\d+\.)\s/
+ * ---
  *
- * ```
+ * @example /^\s*(?:[*-]|\d+\.)\s/
  *
- * @see https://regex101.com/r/WB0gZp/1
- *
- * **EXAMPLE**
- *
- * ```liquid
- * {% comment %}
- *
- *    - one
- *    - two
- *
- * {% endcomment %}
- * ```
  */
 export const CommLineChars = /^\s*(?:[*-]|\d+\.)\s/;
 
@@ -512,11 +461,7 @@ export const CommLineChars = /^\s*(?:[*-]|\d+\.)\s/;
  *
  * ---
  *
- * ```js
- *
- * /^<!--+/
- *
- * ```
+ * @example /^<!--+/
  *
  */
 export const HTMLCommDelimOpen = /^<!--+/;
@@ -528,11 +473,7 @@ export const HTMLCommDelimOpen = /^<!--+/;
  *
  * ---
  *
- * ```js
- *
- * /--+>$/
- *
- * ```
+ * @example /--+>$/
  *
  */
 export const HTMLCommDelimClose = /--+>$/;
@@ -555,8 +496,11 @@ export const LiquidDelimiters = /{%-?|-?%}/g;
  *
  * Starting position (`^`) expression for capturing Liquid Tag Type `{% liquid %}` token.
  *
+ * [Regex101]( https://regex101.com/r/EVf8kY/1)
+ *
  * ---
- * @see https://regex101.com/r/EVf8kY/1
+ *
+ * @example /^{%-?\s*liquid\b/
  *
  */
 export const LiquidTag = /^{%-?\s*liquid\b/;
@@ -567,8 +511,11 @@ export const LiquidTag = /^{%-?\s*liquid\b/;
  * Starting position (`^`) expression for capturing a Liquid block comment
  * (`{% comment %}`) or line comment (`{% # %}`) tag token.
  *
+ * [Regex101](https://regex101.com/r/EdCJTV/1)
+ *
  * ---
- * @see https://regex101.com/r/EdCJTV/1
+ *
+ * @example https://regex101.com/r/EdCJTV/1
  *
  */
 export const LiquidComment = /^{%-?\s*(?:#|comment\b)/;
@@ -578,8 +525,11 @@ export const LiquidComment = /^{%-?\s*(?:#|comment\b)/;
  *
  * Starting position (`^`) expression for capturing a Liquid line comment (`{% # %}`) tag token.
  *
+ * [Regex101](https://regex101.com/r/nKULIP/1)
+ *
  * ---
- * @see https://regex101.com/r/nKULIP/1
+ *
+ * @example /^{%-?\s*#/
  *
  */
 export const LiquidLineComment = /^{%-?\s*#/;
@@ -589,8 +539,11 @@ export const LiquidLineComment = /^{%-?\s*#/;
  *
  * Starting position (`^`) expression for capturing a Liquid block comment (`{% comment %}`) tag token.
  *
+ * [Regex101](https://regex101.com/r/qw8avq/1)
+ *
  * ---
- * @see https://regex101.com/r/qw8avq/1
+ *
+ * @example /^{%-?\s*comment\b/
  *
  */
 export const LiquidBlockComment = /^{%-?\s*comment\b/;
@@ -598,9 +551,9 @@ export const LiquidBlockComment = /^{%-?\s*comment\b/;
 /**
  * Liquid Block Comment Newline
  *
- * ```js
- * /comment\s*-?%}[\r\n]/
- * ```
+ * ---
+ *
+ * @example /comment\s*-?%}[\r\n]/
  *
  */
 export const LiquidCommentNewline = /comment\s*-?%}[\r\n]/;
@@ -608,12 +561,11 @@ export const LiquidCommentNewline = /comment\s*-?%}[\r\n]/;
 /**
  * Liquid Attribute
  *
- * ```js
- * /[%}]}=(?:["']|{[{%])/
- * ```
+ * [Regex101](https://regex101.com/r/qw8avq/1)
  *
  * ---
- * @see https://regex101.com/r/qw8avq/1
+ *
+ * @example /[%}]}=(?:["']|{[{%])/
  *
  */
 export const LiquidAttr = /[%}]}=(?:["']|{[{%])/;
@@ -621,9 +573,9 @@ export const LiquidAttr = /[%}]}=(?:["']|{[{%])/;
 /**
  * Liquid Filter Existence
  *
- * ```js
- * /\|\s*[a-z0-9_]+/
- * ```
+ * ---
+ *
+ * @example /\|\s*[a-z0-9_]+/
  *
  */
 export const LiquidFilter = /\|\s*[a-z0-9_]+/;
