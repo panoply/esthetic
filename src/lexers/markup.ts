@@ -3,7 +3,7 @@ import { parse } from 'parse/parser';
 import { sortSafe } from 'parse/sorting';
 import { grammar } from 'parse/grammar';
 import { MarkupError, SyntacticError } from 'parse/errors';
-import { commentBlock, control } from 'comments';
+import { commentBlock } from 'comments';
 import { DQO, NIL, NWL, SQO, WSP } from 'chars';
 import * as external from 'parse/external';
 import { ParseError } from 'lexical/errors';
@@ -12,8 +12,8 @@ import * as rx from 'lexical/regex';
 import * as lx from 'lexical/lexing';
 import * as lq from 'lexical/liquid';
 import * as u from 'utils/helpers';
-import { assign } from 'utils/native';
-import { Languages } from 'lexical/enum';
+import { assign, object } from 'utils/native';
+import { Languages, TokenType } from 'lexical/enum';
 
 /**
  * Markup Lexer
@@ -97,7 +97,7 @@ export function markup (input?: string) {
   let language: LanguageName;
 
   /**
-   * embed Tag, eg: <scrip> or {% schema %} etc
+   * embed Tag, eg: <script> or {% schema %} etc
    */
   let embed: boolean = false;
 
@@ -121,9 +121,9 @@ export function markup (input?: string) {
    *
    * Generates a parse table `record` entry.
    */
-  function create (): Record {
+  function create (record?: Partial<Record>): Record {
 
-    return {
+    return assign(object(null), {
       lexer: 'markup',
       lines: parse.lineOffset,
       stack: parse.stack.token !== 'global' ? parse.stack.token : 'global',
@@ -131,13 +131,7 @@ export function markup (input?: string) {
       token: NIL,
       types: NIL,
       ender: -1
-    };
-
-  }
-
-  function parseIncrement (add: number = 1) {
-
-    a = a + add;
+    }, record);
 
   }
 
@@ -367,6 +361,8 @@ export function markup (input?: string) {
    */
   function parseToken (end: string) {
 
+    // console.log(JSON.stringify(b.slice(a).join(NIL)));
+
     /* -------------------------------------------- */
     /* CONSTANTS                                    */
     /* -------------------------------------------- */
@@ -388,7 +384,7 @@ export function markup (input?: string) {
     let lchar: string = NIL;
 
     /**
-     * Last Type, ie: `start`, `template` etc etc
+     * Last Type, ie: `start`, `liquid` etc etc
      */
     let ltype: Types = NIL;
 
@@ -408,7 +404,7 @@ export function markup (input?: string) {
     let nowalk: boolean = false;
 
     /**
-     * Ignored reference to skip lexing certain sources
+     * embed Tag, eg: <script> or {% schema %} etc
      */
     let ignore: boolean = false;
 
@@ -993,22 +989,41 @@ export function markup (input?: string) {
     }
 
     /**
-     * Parse Preserve
+     * Parse Ignore Embedded
      *
      * This function is responsible for skipping embedded code regions
      * when rules like `ignoreJS`, `ignoreJSON` and `ignoreCSS` are enabled.
-     * This will push the entire token to the table. Every line encountered
-     * will be given a `types` of ignore including newlines. This will ensure
-     * the inner contents will respect indentation but still allow preservation.
+     * This will push the entire token to the table.
      *
      * The function is only handling embedded regions, but may in the future be
      * used for different excluded/preservation imposed logic.
      *
      */
-    function parsePreserve (ender: string) {
+    function parseIgnoreToken (ender: string, type: Languages) {
 
+      /**
+       * The starting index
+       */
       const now = a;
-      let q = -1;
+
+      /* -------------------------------------------- */
+      /* LEXICAL SCOPE                                */
+      /* -------------------------------------------- */
+
+      /**
+       * Quotations store reference, is used to skip quotes
+       */
+      let i = -1;
+
+      /**
+       * Tag count should be zero to negate repeating occurances
+       */
+      let n = 0;
+
+      /**
+       * Tag capture letting for matching against `tname`
+       */
+      let t: string;
 
       do {
 
@@ -1020,43 +1035,285 @@ export function markup (input?: string) {
         //
         //
         if (u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO) || u.is(b[a], cc.TQO)) {
-          q = b.indexOf(b[a], a + 1);
-          if (q > -1) {
-            a = q + 1;
-            q = -1;
+
+          i = b.indexOf(b[a], a + 1);
+
+          if (i > -1) {
+
+            a = i + 1;
+            i = -1;
+
             continue;
+
           } else {
             MarkupError(ParseError.UnterminateString, b.slice(a).join(NIL));
           }
         }
 
-        if (b.slice(a, a + ender.length).join(NIL) === ender) {
-          token = b.slice(now, a).join(NIL);
-          break;
+        if (type === Languages.Liquid) {
+
+          if (u.is(b[a - 2], cc.LCB) && u.is(b[a - 1], cc.PER)) {
+
+            if (u.is(b[a], cc.DSH)) a = a + 1;
+
+            i = b.indexOf(NWL, a);
+            t = b.slice(a, i).join(NIL).trimStart();
+
+            if (t.startsWith(tname)) {
+
+              a = i > -1 ? i + 1 : a + tname.length;
+              n = n + 1;
+              i = -1;
+
+              continue;
+
+            } else if (t.startsWith(ender)) {
+
+              if (n === 0) {
+
+                a = b.lastIndexOf('{', a);
+                i = b.indexOf('}', a + ender.length) + 1;
+
+                if (i === -1) return MarkupError(ParseError.MissingLiquidCloseDelimiter, t, tname);
+
+                break;
+
+              } else {
+
+                n = n - 1;
+                a = a + ender.length;
+
+              }
+            }
+          }
+
+        } else {
+
+          if (b.slice(a, a + ender.length).join(NIL) === ender) {
+
+            token = b.slice(now, a)
+              .join(NIL)
+              .replace(rx.NewlineLead, NIL)
+              .replace(rx.SpaceEnd, NIL);
+
+            break;
+
+          }
+
         }
 
         a = a + 1;
 
       } while (a < c);
 
-      const lines = token.split(NWL).flatMap(toke => toke === '' ? NWL : [ toke, NWL ]);
+      if (type === Languages.Liquid) {
 
-      let i = 0;
-      let s = lines.length;
+        const from = b.lastIndexOf(NWL, parse.iterator) + 1;
 
-      if (u.is(lines[i], cc.NWL)) i = 1;
-      if (u.is(lines[s - 1], cc.NWL)) s = s - 1;
+        record.types = ltype = 'ignore';
+        record.token = token = b.slice(from, i).join(NIL);
 
-      for (; i < s; i++) push(record, { token: lines[i], types: 'ignore', lines: 0 });
+        push(record);
 
-      record.types = ltype = 'end';
-      record.token = token = ender;
-      record.lines = parse.lineOffset;
+        a = i - 1;
+        attrs = [];
 
-      a = a + ender.length;
+      } else {
+
+        parse.lineNumber = u.cline(token, parse.lineNumber);
+
+        if (token.trim() !== NIL) push(record, { token, types: 'ignore' });
+
+        record.types = ltype = 'end';
+        record.token = token = ender;
+
+        a = a + ender.length - 1;
+
+        return parseAttribute();
+
+      }
+
+    }
+
+    /**
+     * Parse Ignore Next
+     *
+     * This function is responsible for skipping embedded code regions
+     * when rules like `ignoreJS`, `ignoreJSON` and `ignoreCSS` are enabled.
+     * This will push the entire token to the table.
+     *
+     * The function is only handling embedded regions, but may in the future be
+     * used for different excluded/preservation imposed logic.
+     *
+     */
+    function parseIgnoreNext (ender: string, type: TokenType) {
+
+      /**
+       * Index from which we will generate a `record.token` for the parse table.
+       * We will capture the leading whitespace and newlines starting from the
+       * `esthetic-ignore-next` comment.
+       */
+      const from = b.lastIndexOf(u.lastChar(data.token[parse.count]), parse.iterator) + 1;
+
+      /* -------------------------------------------- */
+      /* TRAVERSE                                     */
+      /* -------------------------------------------- */
+
+      if (type === TokenType.LiquidEndTag || type === TokenType.MarkupEnd) {
+
+        /* -------------------------------------------- */
+        /* LEXICAL SCOPE                                */
+        /* -------------------------------------------- */
+
+        /**
+         * Quotations store reference, is used to skip quotes
+         */
+        let i = -1;
+
+        /**
+         * Tag count should be zero to negate repeating occurances
+         */
+        let n = 0;
+
+        /**
+         * Tag capture letting for matching against `tname`
+         */
+        let t: string;
+
+        do {
+
+          // String Handling
+          //
+          // We need to ensure the string occurances are digested and skipped.
+          // This will prevent potention issues from occuring when string structures
+          // contain enders or starters.
+          //
+          //
+          if (u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO) || u.is(b[a], cc.TQO)) {
+
+            i = b.indexOf(b[a], a + 1);
+
+            if (i > -1) {
+
+              parse.lineNumber = u.cline(b.slice(a, i), parse.lineNumber);
+
+              a = i + 1;
+              i = -1;
+
+              continue;
+
+            }
+
+            return MarkupError(ParseError.UnterminateString, b.slice(a).join(NIL));
+
+          }
+
+          if (type === TokenType.LiquidEndTag) {
+
+            if (u.is(b[a - 2], cc.LCB) && u.is(b[a - 1], cc.PER)) {
+
+              if (u.is(b[a], cc.DSH)) a = a + 1;
+
+              i = b.indexOf(NWL, a);
+              t = b.slice(a, i).join(NIL).trimStart();
+
+              if (t.startsWith(tname)) {
+
+                a = i > -1 ? i + 1 : a + tname.length;
+                n = n + 1;
+                i = -1;
+
+                continue;
+
+              } else if (t.startsWith(ender)) {
+
+                if (n === 0) {
+
+                  i = b.indexOf('}', a + ender.length) + 1;
+
+                  if (i === -1) return MarkupError(ParseError.MissingLiquidCloseDelimiter, t, tname);
+
+                  a = i;
+
+                  break;
+
+                } else {
+
+                  n = n - 1;
+                  a = a + ender.length;
+
+                }
+              }
+
+            }
+
+          } else {
+
+            if (
+              u.is(b[a - 1], cc.LAN) &&
+              b.slice(a, a + tname.length).join(NIL) === tname) {
+
+              n = n + 1;
+
+            } else if (
+              u.is(b[a], cc.LAN) &&
+              u.is(b[a + 1], cc.FWS) &&
+              b.slice(a, a + ender.length).join(NIL) === ender) {
+
+              if (n === 0) {
+
+                a = a + ender.length - 1;
+
+                break;
+
+              } else {
+
+                n = n - 1;
+
+              }
+
+            }
+          }
+
+          a = a + 1;
+
+        } while (a < c);
+
+        // ERRORS
+        //
+        // We will quickly ensure that the traversal was successful.
+        // if n is more than 0 then we have unclosed tag.
+        //
+        if (n > 0) {
+          if (type === TokenType.LiquidEndTag) {
+            return MarkupError(ParseError.MissingLiquidEndTag, token, tname);
+          } else {
+            return MarkupError(ParseError.MissingHTMLEndTag, token, tname);
+          }
+        }
+
+        // Update Parse Table Record
+        //
+        record.types = 'ignore';
+        record.token = token = b.slice(from, a + 1).join(NIL);
+
+        // Align line numbers
+        //
+        parse.lineNumber = u.cline(token, parse.lineNumber);
+
+      } else {
+
+        // Update Parse Table Record (this is singleton or void)
+        //
+        record.types = 'ignore';
+        record.token = token = b.slice(from, a + 1).join(NIL);
+
+      }
+
       attrs = [];
+      ignore = false;
 
-      parseAttribute();
+      push(record);
 
     }
 
@@ -1075,343 +1332,57 @@ export function markup (input?: string) {
       // We will first detect any preserved structures and pass it on
       // these types infer ignores that respect indentation and are rule based.
       //
-      if (ltype === 'script_preserve' || ltype === 'json_preserve' || ltype === 'style_preserve') {
+      if (ltype === 'script_preserve' || ltype === 'json_preserve') {
 
         record.types = 'start';
-        record.lines = parse.lineOffset;
-        record.stack = 'script';
+        record.stack = ltype === 'style_preserve' ? 'style' : 'script';
 
         parseAttribute();
-        parseIncrement();
-
-        return parsePreserve(`</${tname}>`);
-
-      }
-
-      if (embed === false) return parseSingleton();
-
-      /**
-       * The ender token name, used for Liquid tag ignores
-       */
-      let ender: string = NIL;
-
-      if (rx.CommIgnoreNext.test(data.token[parse.count])) {
-
-        if (grammar.html.voids.has(tname)) {
-          record.token = token.replace('>', attrs.map(([ value ]) => value).join(WSP) + '>');
-          record.types = 'ignore';
-          return push(record);
-        }
-
-        if (ltype.indexOf('liquid') > -1 && grammar.liquid.tags.has(tname)) {
-          ender = `end${tname}`;
-        }
-
-        ignore = true;
-        preserve = false;
-
-      } else if (external.detect(tname, 'liquid') && ignored.has(tname)) {
-
-        ender = null;
-
-      }
-
-      if (ender !== null && preserve === false && ignore === true && (
-        end === '>' ||
-        end === '}}' ||
-        end === '%}'
-      )) {
-
-        /**
-         * Lexed characters traversed in the ignored region
-         */
-        const tags: string[] = [];
-
-        // if (cheat === true) ltype = 'singleton'; } else {
-
-        preserve = true;
 
         a = a + 1;
 
-        if (a < c) {
+        return parseIgnoreToken(`</${tname}>`, Languages.HTML);
 
-          if (
-            ltype !== 'json_preserve' &&
-            ltype !== 'script_preserve' &&
-            ltype !== 'style_preserve' &&
-            ltype !== 'liquid_json_preserve' &&
-            ltype !== 'liquid_script_preserve' &&
-            ltype !== 'liquid_style_preserve') ltype = 'ignore';
+      }
 
-          /* -------------------------------------------- */
-          /* LOCAL SCOPES                                 */
-          /* -------------------------------------------- */
+      // if (embed === false) return parseSingleton();
 
-          /**
-           * The delimiter match
-           */
-          let delim = NIL;
+      // Ignore Next
+      //
+      // When the previous token type is ignore_next we need to determine
+      // the next token and exclude it from formatting.
+      //
+      if (data.types[parse.count] === 'ignore_next') {
 
-          /**
-           * The token name used to skip start tags when using ignore next
-           */
-          let tcount = 0;
+        if (ltype === 'liquid_start') {
 
-          /**
-           * The token name used to skip start tags when using ignore next
-           */
-          let next = -1;
+          return parseIgnoreNext(`end${tname}`, TokenType.LiquidEndTag);
 
-          /**
-           * The token name used to skip start tags when using ignore next
-           */
-          let name = NIL;
+        } else if (ltype === 'liquid') {
 
-          /**
-           * The delimiter length used to validate endtag match
-           */
-          let ee: number = 0;
+          return parseIgnoreNext(end, end === '}}' ? TokenType.LiquidOutput : TokenType.LiquidSingular);
 
-          /**
-           * The iterator index for matching endtag
-           */
-          let ff: number = 0;
+        } else if (grammar.html.voids.has(tname)) {
 
-          /**
-           * Whether or not we've reached the endtag
-           */
-          let endtag: boolean = false;
+          return parseIgnoreNext(end, TokenType.MarkupVoid);
 
-          /* -------------------------------------------- */
-          /* ITERATOR                                     */
-          /* -------------------------------------------- */
+        } else if (u.is(end, cc.RAN)) {
 
-          do {
-
-            if (u.is(b[a], cc.NWL)) parse.lines(a);
-
-            tags.push(b[a]);
-
-            if (delim === NIL) {
-
-              delim = u.is(b[a], cc.DQO) ? DQO : u.is(b[a], cc.SQO) ? SQO : NIL;
-
-              if (u.is(b[a], cc.LCB) && (u.is(b[a + 1], cc.LCB) || u.is(b[a + 1], cc.PER))) {
-
-                next = u.is(b[a + 1], cc.PER) ? b.indexOf('}', a) + 1 : b.indexOf('}', a) + 2;
-                name = glue(u.is(b[a + 2], cc.DSH) ? a + 3 : a + 2, next);
-
-                if (name.startsWith(tname)) {
-
-                  tcount = tcount + 1;
-
-                } else if (name.startsWith(ender)) {
-
-                  if (tcount > 0) {
-
-                    tcount = tcount - 1;
-
-                  } else {
-
-                    if (u.is(b[a + 1], cc.LCB)) next = next + 1;
-
-                    if (u.is(b[next - 2], cc.PER)) {
-                      tags.push(...b.slice(a + 1, next));
-                      ltype = 'liquid_ignore';
-                      a = next - 1;
-                      break;
-                    }
-                  }
-
-                }
-
-              } else if (u.is(b[a], cc.LAN) && basic === true) {
-
-                endtag = u.is(b[a + 1], cc.FWS);
-
-              } else if (b[a] === lchar && u.not(b[a - 1], cc.FWS)) {
-
-                if (endtag === true) {
-
-                  icount = icount - 1;
-
-                  if (icount < 0) break;
-
-                } else {
-
-                  icount = icount + 1;
-
-                }
-              }
-
-            } else if (u.is(b[a], delim.charCodeAt(delim.length - 1))) {
-
-              ff = 0;
-              ee = delim.length - 1;
-
-              if (u.is(delim[ee], cc.RCB)) {
-
-                if (glue(a + (u.is(b[a + 2], cc.DSH) ? 3 : 2), b.indexOf('%', a + 2)).startsWith(ender)) break;
-
-              } else if (ee > -1) {
-
-                do {
-
-                  if (u.not(b[a - ff], delim.charCodeAt(ee))) break;
-
-                  ff = ff + 1;
-                  ee = ee - 1;
-
-                } while (ee > -1);
-
-              }
-
-              if (ee < 0) delim = NIL;
-            }
-
-            a = a + 1;
-
-          } while (a < c);
+          return parseIgnoreNext(`</${tname}>`, TokenType.MarkupEnd);
 
         }
 
-        if (ltype === 'ignore') {
+        // TODO: PARSE WARNINGS
+        // We will add a parse warning here in the future
 
-          if (!parse.is('types', 'ignore')) data.types[parse.count] = 'ignore';
+        ignore = false;
+        preserve = false;
 
-          //
-          // Capture the opening token and use the source array
-          // to avoid any potential code errors that might be contained
-          // in the starting tag. For example:
-          //
-          //  <!-- esthetic-ignore-next -->
-          //
-          //  <div class == 'invalid" !~=>
-          //
-          // Even though the div tag in the example is invalid, esthetic will
-          // exclude the region. Using the parse.iterator reference assigned
-          // within parseComments we determine the starting point of the beginning
-          // token, basically consuming this portion:
-          //
-          // -->
-          //
-          // <div
-          //
-          // Whitespace and newlines contained between the closing delimiter ">" of
-          // the ignore comment and the starting div "<" delimiter is consumed and
-          // now the begins reference points to "<" which from here we can use the
-          // tags[] array length to obtain starting token.
-          //
-          const begins = parse.iterator + b.slice(parse.iterator, a).join(NIL).search(rx.NonSpace);
+        return parseSingleton();
 
-          /**
-           * Obtain the indentation spaces
-           */
-          let spacer = indent(begins);
+      } else if (ignored.has(tname)) {
 
-          // Edge case to ensure the correct amount of indentation is applied
-          // in situations where token is place inline, eg:
-          //
-          // foo   <!-- esthetic-ignore-next --> <div>
-          //
-          // In this situation the <div> tag is forced and aligned to the starting
-          // point of the "<!--" delimiters, example:
-          //
-          // foo   <!-- esthetic-ignore-next -->
-          //       <div>
-          //
-          if (spacer === NIL) {
-            if (data.token[parse.count].search(rx.NonSpace) > 0) {
-              spacer = u.repeatChar(data.token[parse.count].search(rx.NonSpace));
-            } else {
-              spacer = NIL;
-            }
-          }
-
-          attrs = [];
-          token = spacer + b.slice(begins, a - tags.length + 1).join(NIL) + tags.join(NIL);
-
-          record.types = 'ignore';
-          record.token = token;
-
-        } else if (ltype === 'liquid_ignore') {
-
-          if (!parse.is('types', 'ignore')) data.types[parse.count] = 'ignore';
-
-          // Similar to regular ignores, we need to obtain the offset spacing
-          // to ensure indentation of the first token following the ignore comment
-          // We can obtain the starting point index using the following subtraction
-          // and addition. The ending result will point to the {{ or {% location.
-          //
-          token = indent(a - token.length - tags.length + 1, token) + tags.join(NIL);
-          ltype = 'ignore';
-
-          record.types = 'ignore';
-          record.token = token;
-
-        } else {
-
-          if (ltype.startsWith('liquid_')) {
-
-            // TODO
-
-          } else {
-
-            record.types = 'start';
-
-            // Parse the attributes
-            //
-            parseAttribute(true);
-
-            // Get Closing Token
-            //
-            const close = tags.lastIndexOf('<');
-            const inner = tags.slice(0, close).join(NIL);
-
-            if (!rx.NonSpace.test(inner)) {
-
-              // The inner content of the tag contains nothing
-              // We will instead just push the ender token
-              //
-              push(record, [
-                {
-                  lexer: 'markup',
-                  types: 'end',
-                  token: tags.slice(close).join(NIL).trim()
-                }
-              ]);
-
-            } else {
-
-              // The inner content contains something other
-              // than whitespace or newlines, so we add it and
-              // also push the ender token
-              //
-              push(record, [
-                {
-                  lexer: 'markup',
-                  types: ltype,
-                  token: inner
-                },
-                {
-                  lexer: 'markup',
-                  types: 'end',
-                  token: tags
-                    .slice(close)
-                    .join(NIL)
-                    .trim()
-                }
-              ]);
-            }
-
-            embed = false;
-            language = html;
-
-            return parseScript();
-
-          }
-
-        }
+        return parseIgnoreToken(`end${tname}`, Languages.Liquid);
 
       }
 
@@ -1431,20 +1402,20 @@ export function markup (input?: string) {
 
       //  cheat = correct();
 
-      if (u.is(token, cc.LAN) && u.is(token[1], cc.FWS)) return parseIgnore();
+      if (ignore || (u.is(token, cc.LAN) && u.is(token[1], cc.FWS))) return parseIgnore();
 
       /**
        * Length of the `attrs` store reference
        */
-      let item: number = attrs.length - 1;
+      let i: number = attrs.length - 1;
 
       if (u.is(token, cc.LAN)) {
 
-        if (item > -1) {
+        if (i > -1) {
 
           do {
 
-            const q = external.determine(tname, 'html', attrname(attrs[item][0], false));
+            const q = external.determine(tname, 'html', attrname(attrs[i][0], false));
 
             if (q !== false) {
               if (q.language === 'json' && rules.markup.ignoreJSON) {
@@ -1472,15 +1443,14 @@ export function markup (input?: string) {
                 ltype = 'start';
                 embed = true;
                 ignore = false;
-
                 break;
 
               }
             }
 
-            item = item - 1;
+            i = i - 1;
 
-          } while (item > -1);
+          } while (i > -1);
 
         } else {
 
@@ -1518,16 +1488,13 @@ export function markup (input?: string) {
         const q = external.determine(tname, 'liquid', token);
 
         if (q !== false) {
-
           if (ignored.has(tname)) {
             ignore = true;
             preserve = false;
-            return parseIgnore();
+          } else {
+            embed = true;
+            language = q.language;
           }
-
-          embed = true;
-          language = q.language;
-
         }
       }
 
@@ -1919,9 +1886,6 @@ export function markup (input?: string) {
           if (attrs[idx] === undefined) break;
 
           record.lines = attrs[idx][1];
-
-          // console.log(attrs[idx]);
-
           attrs[idx][0] = attrs[idx][0].replace(rx.SpaceEnd, NIL);
 
           if (jsx === true && /^\/[/*]/.test(attrs[idx][0])) {
@@ -1934,8 +1898,6 @@ export function markup (input?: string) {
             idx = idx + 1;
             continue;
           }
-
-          // console.log(attrs[idx]);
 
           if (attrs[idx][1] <= 1 && lq.isChain(attrs[idx][0])) {
             if (!lq.isValue(attrs[idx][0])) {
@@ -2106,7 +2068,7 @@ export function markup (input?: string) {
 
         let idx1 = source.indexOf('{%', from);
 
-        //  Lets reference this index
+        // Lets reference this index
         let idx2 = idx1;
 
         // Lets make sure to consume any whitespace dash
@@ -2171,15 +2133,23 @@ export function markup (input?: string) {
       token = comm[0];
       a = comm[1];
 
-      if (rx.CommMarkupIgnore.test(token)) {
+      if (rx.CommIgnoreNext.test(token)) {
 
-        record.token = token;
-        record.types = 'ignore';
-        push(record);
+        push(record, {
+          token,
+          types: 'ignore_next'
+        });
+
+      } else if (rx.CommMarkupIgnore.test(token)) {
+
+        push(record, {
+          token,
+          types: 'ignore'
+        });
 
       } else {
 
-        if (u.is(token[0], cc.LCB) && u.is(token[1], cc.PER) && lineComment === false) {
+        if (token.startsWith(start) && lineComment === false) {
 
           const begin = token.indexOf('%}', 2) + 2;
           const last = token.lastIndexOf('{%');
@@ -2405,7 +2375,12 @@ export function markup (input?: string) {
               tag = tag.trimEnd();
             }
 
-            parseExclude(tag, from);
+            if (ignored.size > 0 && ignored.has(tname)) {
+              parse.iterator = a;
+              ignore = true;
+            }
+
+            // parseExclude(tag, from);
 
             if (u.is(tag, cc.HSH)) {
 
@@ -2440,15 +2415,28 @@ export function markup (input?: string) {
 
       }
 
+      if (parse.count > -1 && data.types[parse.count] === 'ignore_next') {
+        ignore = true;
+        parse.iterator = a;
+      }
+
       if (nowalk) return parseExternal();
 
       lchar = end.charAt(end.length - 1);
 
-      if (ltype === 'comment') return parseComments();
-      if (a < c) return traverse();
+      if (ltype === 'comment') {
 
-      return parseExternal();
+        return parseComments();
 
+      } else if (a < c) {
+
+        return traverse();
+
+      } else {
+
+        return parseExternal();
+
+      }
     }
 
     /**
@@ -2986,33 +2974,6 @@ export function markup (input?: string) {
           lines = 1;
         }
 
-        // if (within > 0 || lq.isType(attr, 1)) {
-
-        //   if (lq.isType(attr, 5) === false) {
-
-        //     lines = 0;
-
-        //     if (u.is(b[a + 1], cc.NWL) || u.is(b[a], cc.NWL)) lines = 2;
-        //     if (u.is(b[a], cc.WSP) && u.not(b[a + 1], cc.WSP)) lines = 1;
-
-        //   } else {
-
-        //     if (lines <= 2 && u.is(b[a + 1], cc.NWL)) {
-        //       lines = 2;
-        //     } else if (u.is(b[a + 1], cc.WSP)) {
-        //       lines = 1;
-        //     } else if (lines >= 1) {
-        //       lines = 0;
-        //     }
-        //   }
-        // } else {
-        //   if (u.is(b[a + 1], cc.NWL)) {
-        //     lines = 2;
-        //   } else if (u.is(b[a + 1], cc.WSP)) {
-        //     lines = 1;
-        //   }
-        // }
-
         if (attrs.length > 0) {
 
           const ln = attrs.length - 1;
@@ -3030,55 +2991,8 @@ export function markup (input?: string) {
 
           } else if (lines === 0) {
 
-            //   if (attrs[ln][1] === 0 && within > 0) {
+            // TODO
 
-            //     attrs[ln][0] = attrs[ln][0] + attr;
-            //     attrs[ln][1] = lines;
-            //     attr = NIL;
-
-            //   } else if (attrs[ln][1] === 1 && lq.isType(attr, LT.HasOpen)) {
-
-            //     attrs[ln][0] = attrs[ln][0] + attr;
-            //     attrs[ln][1] = lines;
-            //     attr = NIL;
-
-            //   } else if (within > 0 && lq.isControl(attrs[ln][0])) {
-
-            //     attrs[ln][0] = attrs[ln][0] + attr;
-            //     attrs[ln][1] = lines;
-            //     attr = NIL;
-
-            //   }
-
-            // } else if (lines > 0) {
-
-            //   if (attrs[ln][1] === 0) {
-
-            //     if (lq.isEnd(attr)) {
-
-            //       attrs[ln][0] = attrs[ln][0] + attr;
-            //       attrs[ln][1] = lines;
-            //       attr = NIL;
-
-            //     }
-            //     // else if (
-            //     //   within > 0 &&
-            //     //   lq.isType(attrs[ln][0], LT.HasOpen) &&
-            //     //   rx.LiquidAttr.test(attrs[ln][0]) === false) {
-
-            //     //   // Attributes contains a Liquid token
-            //     //   //
-            //     //   attrs[ln][0] = attrs[ln][0] + attr;
-            //     //   attr = NIL;
-            //     // }
-
-            //   } else if (attrs[ln][1] > 0 && lq.isEnd(attr) && lq.isType(attr, LT.OpenTag) === false) {
-
-            //     const i = attr.indexOf('{%');
-            //     attrs.push([ attr.slice(0, i), lines ]);
-            //     attr = attr.slice(i);
-
-          //   }
           }
         }
 
@@ -3100,15 +3014,15 @@ export function markup (input?: string) {
 
           const [ value ] = attrs[attrs.length - 1];
 
-          if (value.indexOf('=\u201c') > 0) { // “
+          if (value.indexOf('=\u201c') > 0) {
 
+            // “
             return MarkupError(ParseError.InvalidQuotation, value);
-            // parse.error = 'Invalid quote character (\u201c, &#x201c) used.';
 
-          } else if (value.indexOf('=\u201d') > 0) { // ”
+          } else if (value.indexOf('=\u201d') > 0) {
 
+            // ”
             return MarkupError(ParseError.InvalidQuotation, value);
-            //  parse.error = 'Invalid quote character (\u201d, &#x201d) used.';
 
           }
         }
@@ -4052,8 +3966,11 @@ export function markup (input?: string) {
           if (tname === 'liquid') return parseLiquidTag();
 
         } else {
+
           token = lexed.join(NIL);
+
         }
+
       } else {
 
         token = lexed.join(NIL);
@@ -4142,15 +4059,11 @@ export function markup (input?: string) {
     /**
      * Initial data record state for the parsed content
      */
-    const record: Record = {
+    const record: Record = create({
       begin: parse.stack.index,
-      ender: -1,
-      lexer: 'markup',
-      lines,
       stack: lx.getTagName(parse.stack.token) || 'global',
-      token: NIL,
       types: 'content'
-    };
+    });
 
     if (jsxbrace === true) {
 
@@ -4261,6 +4174,12 @@ export function markup (input?: string) {
       let quotes: number = 0;
 
       do {
+
+        // console.log(
+        //   'BLOCK',
+        //   JSON.stringify(b.slice(a).join(NIL))
+
+        // );
 
         if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
 
@@ -4708,6 +4627,7 @@ export function markup (input?: string) {
         lexed.push(b[a]);
 
         a = a + 1;
+
       } while (a < c);
     }
 
@@ -4752,8 +4672,11 @@ export function markup (input?: string) {
         if (type === Languages.Liquid && record.types === 'liquid_end') ltoke = inner(ltoke);
 
         record.token = ltoke;
+
         push(record);
+
         parse.lineOffset = 0;
+
       }
     }
 
@@ -4787,7 +4710,6 @@ export function markup (input?: string) {
 
     } while (a < c);
 
-  //  console.log(parse.current);
   }
 
   if (parse.language === 'html' || parse.language === 'liquid') html = 'html';
@@ -4800,25 +4722,21 @@ export function markup (input?: string) {
 
       parseSpace();
 
-    } else if (embed === false) {
+    } else if (u.is(b[a], cc.LAN)) {
 
-      if (u.is(b[a], cc.LAN)) {
+      parseToken(NIL);
 
-        parseToken(NIL);
+    } else if (u.is(b[a], cc.LCB) && (u.is(b[a + 1], cc.LCB) || u.is(b[a + 1], cc.PER))) {
 
-      } else if (u.is(b[a], cc.LCB) && (jsx || u.is(b[a + 1], cc.LCB) || u.is(b[a + 1], cc.PER))) {
+      parseToken(NIL);
 
-        parseToken(NIL);
+    } else if (jsx && u.is(b[a], cc.LCB)) {
 
-      } else if (u.is(b[a], cc.DSH) && u.is(b[a + 1], cc.DSH) && u.is(b[a + 2], cc.DSH)) {
+      parseToken(NIL);
 
-        parseToken('---');
+    } else if (u.is(b[a], cc.DSH) && u.is(b[a + 1], cc.DSH) && u.is(b[a + 2], cc.DSH)) {
 
-      } else {
-
-        parseContent();
-
-      }
+      parseToken('---');
 
     } else {
 
