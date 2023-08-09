@@ -3,10 +3,11 @@ import { lexers } from 'lexers';
 import { format } from 'format';
 import { Languages, Lexers, Modes } from 'lexical/enum';
 import * as lx from 'lexical/lexing';
-import { NIL, NWL } from 'chars';
+import * as rx from 'lexical/regex';
+import { NIL } from 'chars';
 import { getLexerName, getLexerType } from 'rules/language';
 import { defaults } from 'rules/presets/default';
-import { ws } from 'utils/helpers';
+import { is, ns } from 'utils/helpers';
 import { SyntacticError } from 'parse/errors';
 import { ParseError } from 'lexical/errors';
 import { config } from 'config';
@@ -23,6 +24,8 @@ import type {
   Rules,
   Hooks
 } from 'types';
+
+import { cc } from 'lexical/codes';
 
 /**
  * Parse Stack
@@ -124,7 +127,9 @@ class Parser {
   public ender = 0;
 
   /**
-   * Reference to `a`
+   * A reference to `a` which holds index reference. This is not always identical
+   * to the current index when lexing, instead it acts as a universal store
+   * when specific position reference indexes need to be referred.
    */
   public iterator = 0;
 
@@ -400,6 +405,8 @@ class Parser {
    * Executes a full parse - top to bottom.
    */
   public document (lexer: Lexers, mode: Modes = Modes.Format) {
+
+    if (rx.CommIgnoreFile.test(this.source)) return this.source;
 
     this.reset();
 
@@ -799,12 +806,13 @@ class Parser {
 
     do {
 
-      if (args.array[args.index] === NWL) {
+      if (is(args.array[args.index], cc.NWL)) {
+        this.lineIndex = args.index;
         this.lineOffset = this.lineOffset + 1;
         this.lineNumber = this.lineNumber + 1;
       }
 
-      if (ws(args.array[args.index + 1]) === false) break;
+      if (ns(args.array[args.index + 1])) break;
 
       args.index = args.index + 1;
 
