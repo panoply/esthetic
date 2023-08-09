@@ -221,14 +221,14 @@ export function is (string: string, code: number) {
  */
 export function lastChar (string: string | string[], toCode = false) {
 
-  return string[string.length - 1];
+  return toCode ? string[string.length - 1].charCodeAt(0) : string[string.length - 1];
 
 }
 
 /**
- * First (equal)
+ * Starting Characters (equal)
  *
- * If first character code of the string is equal to the provided code.
+ * If the characters codes match the starting string sequence
  */
 export function isOf (string: string | string[], ...codes: number[]) {
 
