@@ -15,6 +15,22 @@
 export const NonSpace = /\S/;
 
 /**
+ * Newline
+ *
+ * A single newline character
+ *
+ * ---
+ *
+ * ```js
+ *
+* '\n'
+*
+* ```
+*
+*/
+export const Newline = /\n/;
+
+/**
  * Empty Line
  *
  * Leading and ending whitespace or newline characters
@@ -328,7 +344,7 @@ export const CommMarkupIgnore = /({%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic
 * Captures esthetic inline comment file ignores
 *
 * ---
-* @see https://regex101.com/r/Niv3Z0/1
+* @see https://regex101.com/r/wmnwOe/1
 * @example
 *
 * LINE COMMENT:    // esthetic-ignore
@@ -338,7 +354,7 @@ export const CommMarkupIgnore = /({%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic
 * HTML COMMENT:    <!-- esthetic-ignore
 * YAML COMMENT:    # esthetic-ignore
 */
-export const CommIgnoreFile = /(\/[*/]|{%-?\s*(?:comment\s*-?%})|<!-{2})\s*esthetic-ignore\b/;
+export const CommIgnoreFile = /^\s*(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore(?![a-z-][^-])/;
 
 /**
 * Captures esthetic inline comment ignore starters
@@ -376,7 +392,7 @@ export const CommLineIgnoreStart = /^\/\/\s*esthetic-ignore-start\b/;
  * This expression supports multiline comments like that used in jsdocs annotations.
  *
  * ---
- * @see https://regex101.com/r/9LAPKl/1
+ * @see https://regex101.com/r/kfE18n/1
  * @example
  *
  * BLOCK COMMENT:    /* esthetic-ignore-start
@@ -387,7 +403,7 @@ export const CommBlockIgnoreStart = /^\/\*{1,2}(?:\s*|\n\s*\*\s*)esthetic-ignore
 * Captures esthetic inline comment ignore enders
 *
 * ---
-* @see https://regex101.com/r/zau2rO/1
+* @see https://regex101.com/r/rAz9iQ/1
 * @example
 *
 * LINE COMMENT:    // esthetic-ignore-end
@@ -397,14 +413,14 @@ export const CommBlockIgnoreStart = /^\/\*{1,2}(?:\s*|\n\s*\*\s*)esthetic-ignore
 * HTML COMMENT:    <!-- esthetic-ignore-end
 * YAML COMMENT:    # esthetic-ignore-end
 */
-export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-end\b/;
+export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2}|#)\s*esthetic-ignore-end\b/;
 
 /**
  * Captures esthetic inline comment ignore next line
  *
  * ---
  *
- * @see https://regex101.com/r/dpJ3Xq/1
+ * @see https://regex101.com/r/DBL6TR/1
  * @example
  *
  * LINE COMMENT:    // @esthetic-ignore-next
@@ -578,6 +594,16 @@ export const LiquidLineComment = /^{%-?\s*#/;
  *
  */
 export const LiquidBlockComment = /^{%-?\s*comment\b/;
+
+/**
+ * Liquid Block Comment Newline
+ *
+ * ```js
+ * /comment\s*-?%}[\r\n]/
+ * ```
+ *
+ */
+export const LiquidCommentNewline = /comment\s*-?%}[\r\n]/;
 
 /**
  * Liquid Attribute
