@@ -18,9 +18,7 @@ export const esthetic = new class Esthetic {
 
   constructor () {
 
-    if (config.env === 'node') {
-      config.cwd = process.cwd();
-    }
+    if (config.env === 'node') config.cwd = process.cwd();
 
     if (config.env === 'browser') {
 
@@ -186,9 +184,7 @@ export const esthetic = new class Esthetic {
       }
     }
 
-    const timing = action === null
-      ? null
-      : this.stats = action(parse.count);
+    const timing = action === null ? null : this.stats = action(parse.count);
 
     if (this.events.parse.length > 0) {
       for (const cb of this.events.parse) {
