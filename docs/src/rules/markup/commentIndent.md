@@ -18,6 +18,8 @@ Applies single indentation to containing content of HTML and XML comments which 
 
 > This rule only effects markup comments containing newlines. Inline markup comments which start and end on the same line will skipped.
 
+:::
+
 ---
 
 ::: rule 👎
@@ -70,8 +72,8 @@ Below is an example of how this rule works if it's enabled (`true`). Notice how 
 
 ```json:rules
 {
-  "language": "liquid",
-  "liquid": {
+  "language": "html",
+  "markup": {
     "commentIndent": true
   }
 }
