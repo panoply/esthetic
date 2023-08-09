@@ -1,9 +1,9 @@
 import type { Types } from 'types/index';
-import * as rx from 'lexical/regex';
 import { cc } from 'lexical/codes';
 import { WSP, NIL, NWL } from 'chars';
-import { is, isBoolean, isLast, isLastAt, isNumber, isUndefined, not, repeatChar, ws } from 'utils/helpers';
+import { is, isBoolean, isLast, isLastAt, isNumber, isUndefined, not, ws } from 'utils/helpers';
 import { parse } from 'parse/parser';
+import * as rx from 'lexical/regex';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
@@ -169,7 +169,7 @@ export function markup () {
    * Applies a new line character plus the correct
    * amount of identation for the given line of code
    */
-  function nl (tabs: number, newlines = true) {
+  function nl (tabs: number, newlines = true, spaces = true) {
 
     const linesout = [];
     const pres = rules.preserveLine + 1;
@@ -186,7 +186,7 @@ export function markup () {
       } while (index < total);
     }
 
-    if (tabs > 0) {
+    if (tabs > 0 && spaces) {
 
       index = 0;
 
@@ -611,12 +611,12 @@ export function markup () {
 
     if (
       isType(a, 'end') === false &&
+      isLast(data.token[a], cc.RAN) &&
       not(data.token[a], cc.LAN) &&
-      delim.get(data.begin[a]) >= 2 &&
-      isLast(data.token[a], cc.RAN)
-    ) {
+      delim.get(data.begin[a]) >= 2) {
 
       delim.delete(data.begin[a]);
+
       const newline: string = nl(levels[a - 1] - 1).replace(/\n+/, NWL);
       const replace = `${data.token[a].slice(0, -1)}${newline}>`;
 
@@ -925,7 +925,7 @@ export function markup () {
 
         let countx = 0;
 
-        const chars = data.token[a].replace(/\s+/g, WSP).split(WSP);
+        const chars = data.token[a].replace(rx.SpacesGlob, WSP).split(WSP);
 
         do {
 
@@ -985,17 +985,19 @@ export function markup () {
             return;
           }
 
-          if (data.lines[d + 1] > 0 && (
-            isType(d, 'attribute') === false || (
-              isType(d, 'attribute') &&
-              isType(d + 1, 'attribute')
-            )
-          )) {
+          if (data.lines[d + 1] > 0 && (isType(d, 'attribute') === false || (
+            isType(d, 'attribute') &&
+            isType(d + 1, 'attribute')
+          ))) {
 
-            if (isType(d, 'singleton') === false || (isType(d, 'attribute') && isType(d + 1, 'attribute'))) {
+            if (isType(d, 'singleton') === false || (
+              isType(d, 'attribute') &&
+              isType(d + 1, 'attribute'))) {
+
               count = data.token[a].length;
               if (data.lines[a + 1] > 0) count = count + 1;
               break;
+
             }
           }
 
@@ -1601,6 +1603,8 @@ export function markup () {
 
           next = forward();
 
+          //   if (isType(next, 'ignore')) onContent();
+
           if (isType(next, 'end') || (isType(next, 'liquid_end') && isType(a, 'liquid_else') === false)) {
 
             // Handle force Value for void tags
@@ -1720,7 +1724,9 @@ export function markup () {
             // {% endcase %}
             //
             if (isType(next, 'liquid_when')) {
-              if (rules.liquid.dedentTagList.includes('case') === false) indent = indent + 1;
+              if (rules.liquid.dedentTagList.includes('case') === false) {
+                indent = indent + 1;
+              }
             }
 
             if (jsx === true && isToken(a + 1, '{')) {
@@ -1782,10 +1788,6 @@ export function markup () {
             } else if ((isType(a, 'start') && isType(next, 'script_start'))) {
 
               level.push(-10);
-
-            } else if (rules.markup.forceIndent === true) {
-
-              level.push(indent);
 
             } else if (data.lines[next] === 0 && (
               isType(next, 'content') ||
@@ -2013,13 +2015,13 @@ export function markup () {
 
     } else {
 
-      if (lines[0].length === 2 || lines[0].length === 3) {
-        // indent += '  ';
-        indent += nl(levels[a - 1], false) + '  ';
+      // if (lines[0].length === 2 || lines[0].length === 3) {
+      // indent += '  ';
+      //  indent += nl(levels[a - 1], false) + '  ';
 
-      } else {
-        indent += nl(levels[a - 1], false) + '  ';
-      }
+      // } else {
+      indent += nl(levels[a - 1], false) + '  ';
+      // }
 
     }
 
@@ -2083,26 +2085,24 @@ export function markup () {
 
       if (data.lexer[a] === 'markup') {
 
-        if ((
-          isType(a, 'start') ||
-          isType(a, 'singleton') ||
-          isType(a, 'xml')
-        ) &&
+        if (
           a < c - 1 &&
+          (isType(a, 'start') || isType(a, 'singleton') || isType(a, 'xml')) &&
           isIndex(a, 'attribute') < 0 &&
           isUndefined(data.types[a + 1]) === false &&
-          isIndex(a + 1, 'attribute') > -1
-        ) {
+          isIndex(a + 1, 'attribute') > -1) {
 
           onAttributeEnd();
 
         }
 
-        if (isUndefined(data.token[a]) === false && data.token[a].indexOf(parse.crlf) > 0 && ((
-          isType(a, 'content') && rules.markup.preserveText === false) ||
-          isType(a, 'comment') ||
-          isType(a, 'attribute')
-        )) {
+        if (
+          isUndefined(data.token[a]) === false &&
+          data.token[a].indexOf(parse.crlf) > 0 && (
+            (isType(a, 'content') && rules.markup.preserveText === false) ||
+            isType(a, 'comment') ||
+            isType(a, 'attribute')
+          )) {
 
           ml();
 
@@ -2137,27 +2137,37 @@ export function markup () {
 
           build.push(data.token[a]);
 
-        } else if (isType(a + 1, 'ignore') && isType(a + 2, 'ignore')) {
+        } else if (isType(a, 'ignore')) {
 
-          build.push(
-            data.token[a],
-            nl(levels[a]).replace(rx.WhitespaceGlob, NIL),
-            data.token[a + 1],
-            repeatChar(data.lines[a + 2] - 1 === 0 ? 1 : data.lines[a + 2] - 1, NWL)
-          );
+          build.push(data.token[a]);
 
-          a = a + 1;
+          if (isType(a + 1, 'ignore') === false) {
+            if (isType(a + 1, 'ignore_next')) {
+              build.push(nl(levels[a], true, false));
+            } else {
+              build.push(nl(levels[a]));
+            }
+          }
 
         } else {
 
           lastLevel = levels[a];
 
-          if (rules.markup.delimiterTerminus === 'force') onDelimiterForce();
+          if (rules.markup.delimiterTerminus === 'force') {
+            onDelimiterForce();
+          }
 
-          if (/\n/.test(data.token[a]) && isIndex(a, 'liquid') > -1 && !isType(a, 'liquid_end')) {
+          if (
+            rx.Newline.test(data.token[a]) &&
+            isIndex(a, 'liquid') > -1 &&
+            isType(a, 'liquid_end') === false) {
+
             onLiquidForce();
+
           } else {
+
             build.push(data.token[a]);
+
           }
 
           if (levels[a] === -10 && a < c - 1) {
@@ -2166,17 +2176,26 @@ export function markup () {
 
           } else if (levels[a] > -1) {
 
-            // Exclude adding newlines to preserved regions. For example, if <script> external
-            // blocks are preserved then the next known index in the data structure will
-            // be using a "_preserve" type. We need to check for the existence of this or else
-            // new lines will be applied.
-            //
-            // Say we have ignored all <script type="application/json"> external code regions
-            // by setting "markup.ignoreJSON" to true. In this case we the inner content
-            // of this tag will be marked with a "json_preserve" type. Essentially, without checking
-            // the next record we'd end up with additional indentation and newlines.
-            //
-            if (isIndex(a + 1, '_preserve') < 0) {
+            if (isType(a + 1, 'ignore_next') === true) {
+
+              build.push(nl(levels[a], true, false));
+
+            } else if (
+              isType(a + 1, 'ignore') === false &&
+              isType(a + 1, 'ignore_next') === false) {
+
+              build.push(nl(levels[a]));
+
+            } else if (
+              isType(a, 'ignore') === false &&
+              isType(a + 1, 'ignore')) {
+
+              build.push(nl(levels[a], true, false));
+
+            } else if (
+              isType(a, 'ignore') &&
+              isType(a + 1, 'ignore') === false &&
+              isType(a + 1, 'ignore_next') === false) {
 
               build.push(nl(levels[a]));
 
@@ -2193,8 +2212,10 @@ export function markup () {
         // Liquid External Code Region - Dedent indentation
         //
         if (lastLevel > 0 && rules.liquid.dedentTagList.includes(data.stack[a])) {
+
           build.splice(build.length - 1, 1, nl(levels[a] - 1));
           lastLevel = lastLevel - 1;
+
         }
 
         const external = parse.external(lastLevel);
@@ -2211,9 +2232,14 @@ export function markup () {
 
           build.push(external);
 
-          if (rules.markup.forceIndent || (levels[parse.iterator] > -1 && a in extidx && extidx[a] > a)) {
+          if (rules.markup.forceIndent || (
+            levels[parse.iterator] > -1 &&
+            a in extidx &&
+            extidx[a] > a)) {
+
             a = parse.iterator;
             build.push(nl(levels[a]));
+
           }
 
         }
