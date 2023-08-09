@@ -15,7 +15,12 @@ export const enum ErrorTypes {
 
 export const enum ParseWarn {
 
-  LiquidHangingComma = 201
+  /**
+   * Invalid esthetic-ignore-next code token expression
+   */
+  InvalidIgnoreNext = 201,
+
+  LiquidHangingComma
 }
 
 export const enum ParseError {
