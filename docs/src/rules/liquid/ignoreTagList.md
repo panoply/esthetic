@@ -35,41 +35,46 @@ A list of Liquid tags that should excluded from formatting. Only tags which cont
 {
   "language": "liquid",
   "wrap": 0,
-  "preserveLine": 0,
+  "preserveLine": 2,
   "liquid": {
     "ignoreTagList": [
-      "capture",
+      "for",
       "unless"
     ]
   }
 }
 ```
 
-Below we are ignoring `{% capture %}` and `{% unless %}` tag regions. Æsthetic will be skipped formatting these tag blocks. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied.
+Below we are ignoring `{% for %}` and `{% unless %}` tag regions. Æsthetic will be skipped formatting these tag blocks. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied.
 
 <!-- prettier-ignore -->
 ```liquid
 <div>
-{% if x %}
+{% if x == true %}
 
-{% capture foo %}   I will not be formatter   {% endcapture %}
+{% for i in array %}
+{% # This region will not be formatted %}
+    {% for x in i.ignored %}
+{{ i.xxx }} {% # Nested tags are also ignored %}
+  {% endfor %}
+          {% # Notice how no indentation is applied %}
+{% endfor %}
 
-{% if xx %}
+{% if xx == true %}
 <ul>
-
-
-{% unless bar %}
-
 <li>
-{% # This region will be skipped completely %}
+This tag will format but below will not
 </li>
+  {% unless bar %}
 
-{% endunless %}
+      <li>
+{% # This region will not be formatted %}
+      </li>
 
+  {% endunless %}
 <li>
-Hello World
+This tag will format but above will not
 </li>
-
 </ul>
 {% endif %}
 {% endif %}
