@@ -12,7 +12,7 @@ test.skip('Liquid Tag: Normalising spacing of Liquid Tag internal expressions', 
 
 
           {% liquid
-            if x==foo .   property [   0   ]  .   xxx  and bar   !=   baz  or 5000<   2000
+            if x ==foo .   property [   0   ]  .   xxx  and bar   !=   baz  or 5000<   2000
               unless   y ==x
             assign   var    =   xxx |filter : ' preserve-string '|filter:100|filter   :true
             echo 'foo' | filter | filter: 'bar'  ,  300 | append: 'from'  , 'to'  , something  , 1000
@@ -29,12 +29,15 @@ test.skip('Liquid Tag: Normalising spacing of Liquid Tag internal expressions', 
 
           {% liquid
 
-            if x == foo and bar != baz or 5000 < 2000
+            if x == foo.property[0].xx and bar != baz or 5000 < 2000
               unless y == x
                 assign var = xxx | filter: ' preserve-string ' | filter: 100 | filter: true
               endunless
             endif
           %}
+
+          {% if x == foo and bar != baz or 5000 < 2000 %}
+          {% endif %}
 
         `
       ]

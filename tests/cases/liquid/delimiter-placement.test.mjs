@@ -250,7 +250,7 @@ test('Preserve: Delimiters are preserved according to input', t => {
 
                     {{ i.prop }}
 
-                  {% endif %}
+                  {% endfor %}
 
                 {% endif %}
 
@@ -478,7 +478,7 @@ test('Inline: Delimiters are inlined', t => {
               -}}
             {% endunless %}
           {% endif %}
-        {% endif %}
+        {% endfor %}
         `
         ,
         liquid`
@@ -490,7 +490,7 @@ test('Inline: Delimiters are inlined', t => {
               {{- i.is.nested -}}
             {% endunless %}
           {% endif %}
-        {% endif %}
+        {% endfor %}
         `
       ]
     ]
@@ -568,7 +568,7 @@ test('Consistent: Consistent placement based on opening delimiter', t => {
               -}}
             {% endunless %}
         {% endif %}
-        {% endif %}
+        {% endfor %}
         `
         ,
         liquid`
@@ -585,7 +585,7 @@ test('Consistent: Consistent placement based on opening delimiter', t => {
               {{- i.will_inline -}}
             {% endunless %}
           {% endif %}
-        {% endif %}
+        {% endfor %}
         `
       ]
     ]
@@ -674,7 +674,7 @@ test('Force: Delimiter are forced onto newlines', t => {
               {{- i.is.nested -}}
             {% endunless %}
           {% endif %}
-        {% endif %}
+        {% endfor %}
         `
         ,
         liquid`
@@ -698,7 +698,7 @@ test('Force: Delimiter are forced onto newlines', t => {
               -}}
             {% endunless %}
           {% endif %}
-        {% endif %}
+        {% endfor %}
         `
       ]
     ]
