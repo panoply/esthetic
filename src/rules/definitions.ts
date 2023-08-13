@@ -498,6 +498,28 @@ export const definitions: Definitions = {
       default: 'preserve',
       description: 'Controls the formatting style of HTML and XML comment delimiters.',
       type: 'choice',
+      values: [
+        {
+          rule: 'preserve',
+          description: 'All comment delimiters are left intact'
+        },
+        {
+          rule: 'consistent',
+          description: 'Force or inline based on the starting comment delimiter placement'
+        },
+        {
+          rule: 'force',
+          description: 'Comment delimiters will be forced onto newlines'
+        },
+        {
+          rule: 'inline',
+          description: 'Comment delimiter will be inlined'
+        },
+        {
+          rule: 'inline-align',
+          description: 'Comment delimiters will be inlined and any newline occurances will apply aligned indentation.'
+        }
+      ],
       preset: {
         default: 'preserve',
         prettier: 'consistent',

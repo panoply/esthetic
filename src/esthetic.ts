@@ -19,9 +19,7 @@ export const esthetic = new class Esthetic {
   constructor () {
 
     if (config.env === 'node') config.cwd = process.cwd();
-
     if (config.env === 'browser') {
-
       // @ts-expect-error
       if (!('esthetic' in window)) {
       // @ts-expect-error
@@ -123,7 +121,7 @@ export const esthetic = new class Esthetic {
         for (const cb of this.events.error) cb(parse.error);
         return source;
       } else {
-        if (config.throwErrors) throw parse.error;
+        if (config.throwErrors) throw new Error(parse.error);
         return source;
       }
     }
@@ -140,7 +138,6 @@ export const esthetic = new class Esthetic {
         });
 
         if (fn === false) return source;
-
       }
     }
 

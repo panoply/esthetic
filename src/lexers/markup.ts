@@ -886,7 +886,7 @@ export function markup (input?: string) {
       } else {
 
         push(record, {
-          token: WSP + delim,
+          token: delim,
           types: 'liquid_end',
           lines: 0
         });
@@ -2262,13 +2262,9 @@ export function markup (input?: string) {
 
         if (u.is(b[a + 1], cc.LCB) && (u.is(b[a + 2], cc.LCB) || u.is(b[a + 2], cc.PER))) {
 
-          // parse.stack.push([ 'liquid_bad', parse.count ]);
-
           record.token = parseBadLiquid(3);
           record.types = 'liquid_bad_start';
-
           push(record);
-
           return;
 
         } else if (u.is(b[a + 1], cc.FWS)) {
@@ -2277,9 +2273,7 @@ export function markup (input?: string) {
 
             record.token = parseBadLiquid(3);
             record.types = 'liquid_bad_end';
-
             push(record);
-
             return;
 
           } else {
@@ -2413,7 +2407,7 @@ export function markup (input?: string) {
 
           if (u.is(b[from - 1], cc.PER)) {
 
-            let tag = source.slice(a + 2, from - 1);
+            let tag = b.slice(a + 2, from - 1).join(NIL);
 
             // Lets make sure we do not interfere with dash delimiters
             if (u.is(tag, cc.DSH)) {
@@ -2424,13 +2418,13 @@ export function markup (input?: string) {
               tag = tag.trimStart();
             }
 
-            tname = tag.slice(0, tag.search(/[\s%}-]/));
+            tname = tag.slice(0, tag.search(/[\s%-]/));
 
             // Same as above but for closing delimiters
-            if (u.is(tag[tag.length - 1], cc.DSH)) {
+            if (u.isLast(tag, cc.DSH)) {
               end = '-%}';
               tag = tag.slice(0, tag.length - 1).trimEnd();
-            } else {
+            } else if (u.isLast(tag, cc.PER)) {
               end = '%}';
               tag = tag.trimEnd();
             }
@@ -2452,6 +2446,7 @@ export function markup (input?: string) {
                 lchar = end.charAt(end.length - 1);
                 return parseComments(true);
               }
+
             }
           } else {
 
@@ -2572,12 +2567,12 @@ export function markup (input?: string) {
       /**
        * Liquid store - Interal index references of Liquid tokens
        */
-      const liquid: LiquidInternal = {
-        pipes: [],
-        fargs: [],
-        targs: [],
-        logic: []
-      };
+      const liquid: LiquidInternal = object(null);
+
+      liquid.pipes = [];
+      liquid.fargs = [];
+      liquid.targs = [];
+      liquid.logic = [];
 
       /* -------------------------------------------- */
       /* REFERENCES                                   */

@@ -115,10 +115,18 @@ dev(function (source) {
     language: 'liquid',
     wrap: 50,
     liquid: {
-      delimiterPlacement: 'preserve',
-      forceFilter: 2
+      commentIndent: true,
+      commentNewline: false,
+      dedentTagList: [ 'case' ],
+      ignoreTagList: [ 'capture' ]
+    },
+    markup: {
+      forceAttribute: true,
+      forceIndent: true,
+      ignoreJS: true,
+      ignoreCSS: false,
+      ignoreJSON: false
     }
-
   });
 
   return {

@@ -271,7 +271,10 @@ export class Demo extends Controller {
 
     } catch (e) {
 
-      this.output.showError(e, { heading: 'Error thrown by Æsthetic' });
+      // eslint-disable-next-line no-control-regex
+      const clean = /\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/mg;
+
+      this.output.showError(e.replace(clean, ''), { heading: 'Error thrown by Æsthetic' });
       this.getOutputReact();
 
     }

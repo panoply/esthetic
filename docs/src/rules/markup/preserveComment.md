@@ -31,7 +31,7 @@ In the below example we have enabled comment preservation. Both the `commentInde
 ```json
 {
   "language": "html",
-  "liquid": {
+  "markup": {
     "commentNewline": false, // This setting will be ignored
     "commentIndent": true, // This setting will be ignored
     "preserveComment": true // When enabled, this rule takes precedence

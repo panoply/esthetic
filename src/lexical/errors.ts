@@ -79,6 +79,23 @@ export const enum ParseError {
    * </div // missing HTML Delimiter
    */
   MissingHTMLEndingDelimiter,
+
+  /**
+   * Invalid HTML Comment Delimiter
+   *
+   * @example
+    * <!-- comment -> // Invalid
+    */
+  MissingHTMLEndingCommentDelimiter,
+
+  /**
+   * Invalid HTML Comment Delimiter
+   *
+   * @example
+   * <!- comment // Invalid
+   */
+  InvalidHTMLCommentDelimiter,
+
   /**
    * Invalid Comment Attribute
    *

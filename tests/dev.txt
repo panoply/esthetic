@@ -1,78 +1,28 @@
-<div
-  class="col-12 product-variants"
-  data-controller="variants"
-  data-variants-current-value="{{ product.title | replace_first: '-', '–' | split: '–' | last }}">
+<{% if section.settings.sticky_header_type != 'none' %}sticky-header data-sticky-type="{{ section.settings.sticky_header_type }}"{% else %}div{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
+<section>
+{% if condition %}
+{{ object.prop }}
+<h1 id="foo" class="xxx" {{ object.prop }} {% if x %}data-attr{% endif %}>
+{% endif %}
 
-  <h5 class="mb-4 fw-light" data-variants-target="variant">
-    {{ product.title | replace_first: '-', '–' | split: '–' | last }}
-  </h5>
+{% if x %}
 
-  {% for item in product.metafields.data.variants.value %}
+<ul>
+<li>
 
-    {% if forloop.length == 1 %}
-      {% break %}
-    {% endif %}
+Hello World!
 
+</li>
+</ul>
 
-      {% liquid
+{% else %}
 
-        # COLUMN CLASS
+<button>{{ object.foo }}</button>
+hello goodby
+{% endif %}
+{% if xxx %}
+</h1>
+{% endif %}
 
-        capture class
-          if item.id == product.id
-            echo 'bg-color'
-          else
-            echo 'v-link'
-          endif
-
-        endcapture
-
-        # FLAT CROP
-
-        capture height
-          if item.metafields.image.crop
-            echo 280 | minus: item.metafields.image.crop
-          else
-            echo 280
-          endif
-        endcapture
-        capture width
-          echo 200
-        endcapture
-      %}
-
-  {% # comment%}
-      <a href="{{ item.url }}"
-        class="col-auto bd bc-gray {{ class }}"
-        aria-label="{{ item.title | replace_first: '-', '–' | split: '–' | last }}"
-        data-action="mouseenter->variants#onHover"
-        style="width: 60px; height: 100%;">
-
-
-        <div class="ratio" style="--ratio: calc({{ height }} / {{ width }});">
-
-          <picture>
-            <img
-              itemprop="image"
-              src="{{ item.metafields.image.flat | image_url: width: width, height: height, crop: 'center' }}"
-              alt="{{ item.title }}"
-              loading="lazy"
-              class="img-fluid lazy">
-          </picture>
-        </div>
-      </a>
-
-
-
-  {% endfor %}
-
-</div>
-
-{% schema %}
-{
-  "name": "Variants",
-  "tag": "section",
-  "class": "row g-0 px-3 mb-4 px-md-5 od-2 od-md-first rel",
-  "settings": []
-}
-{% endschema %}
+</section>
+</{% if section.settings.sticky_header_type != 'none' %}sticky-header{% else %}div{% endif %}>

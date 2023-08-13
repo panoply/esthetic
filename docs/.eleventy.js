@@ -83,6 +83,7 @@ function getEstheticRules (ruleOptions) {
     markup: {
       attributeCasing: 'preserve',
       attributeSort: false,
+      commentDelimiters: 'preserve',
       commentNewline: false,
       commentIndent: true,
       delimiterTerminus: 'inline',
@@ -259,9 +260,7 @@ function getCodeBlockInput (raw) {
  */
 function has (prop) {
 
-  if (typeof rules === 'object' && prop in rules) {
-    return true
-  }
+  if (typeof rules === 'object' && prop in rules) return true
 
   return false;
 
@@ -816,7 +815,10 @@ function codeblocks(md) {
 
       } catch (e) {
 
-        throw new Error('Invalid JSON in in the json:rules code block')
+
+        throw new Error(
+          'Invalid JSON in in the json:rules code block\n\n' + json
+        )
 
       }
 

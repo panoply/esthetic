@@ -25,6 +25,41 @@ export const enum Beautifiers {
   Style,
 }
 
+export const enum Comm {
+  /**
+   * Markup Comment type
+   *
+   * ```html
+   * <!-- -->
+   * ```
+   */
+  Markup = 1,
+  /**
+   * Liquid Comment Block
+   *
+   * ```liquid
+   * {% comment %} {% endcomment %}
+   * ```
+   */
+  LiquidBlock,
+  /**
+   * Liquid Comment Line
+   *
+   * ```liquid
+   * {% # %}
+   * ```
+   */
+  LiquidLine,
+  /**
+   * JavaScript/CSS Comment Block
+   *
+   * ```js
+   * /* *
+   * ```
+   */
+  Block
+}
+
 export enum LogLevel {
   /**
    * Disables logs, only parse errors will show.

@@ -1,16 +1,4 @@
 /* eslint no-unmodified-loop-condition: "off" */
-import { lexers } from 'lexers';
-import { format } from 'format';
-import { Languages, Lexers, Modes } from 'lexical/enum';
-import * as lx from 'lexical/lexing';
-import * as rx from 'lexical/regex';
-import { NIL } from 'chars';
-import { getLexerName, getLexerType } from 'rules/language';
-import { defaults } from 'rules/presets/default';
-import { is, ns } from 'utils/helpers';
-import { SyntacticError } from 'parse/errors';
-import { ParseError } from 'lexical/errors';
-import { config } from 'config';
 import type {
   LanguageName,
   Syntactic,
@@ -24,7 +12,18 @@ import type {
   Rules,
   Hooks
 } from 'types';
-
+import { lexers } from 'lexers';
+import { format } from 'format';
+import { Languages, Lexers, Modes } from 'lexical/enum';
+import * as lx from 'lexical/lexing';
+import * as rx from 'lexical/regex';
+import { NIL, NWL } from 'chars';
+import { getLexerName, getLexerType } from 'rules/language';
+import { defaults } from 'rules/presets/default';
+import { is, ns } from 'utils/helpers';
+import { SyntacticError } from 'parse/errors';
+import { ParseError } from 'lexical/errors';
+import { config } from 'config';
 import { cc } from 'lexical/codes';
 
 /**
@@ -165,7 +164,7 @@ class Parser {
   /**
    * Hardcoded string reference to CRLF rule
    */
-  public crlf = '\n';
+  public crlf = NWL;
 
   /**
    * The current operation mode running
@@ -480,8 +479,10 @@ class Parser {
     const begin = data.begin[a];
 
     if ((
-      data.lexer[a] === 'style' &&
-      this.rules.style.sortProperties
+      data.lexer[a] === 'style' && (
+        this.rules.style.sortProperties ||
+        this.rules.style.sortSelectors
+      )
     ) || (
       data.lexer[a] === 'script' && (
         this.rules.script.objectSort ||
@@ -493,6 +494,7 @@ class Parser {
       // its current index or the index of the end token, which results in
       // an endless loop. These end values are addressed at the end of
       // the "parser" function with this.sortCorrection
+      //
       return;
 
     }
@@ -526,7 +528,7 @@ class Parser {
    * This is a store The `parse.data.begin` index. This will typically
    * reference the `parse.count` value, incremented by `1`
    */
-  private syntactic (record: Record, stack: string) {
+  public syntactic (record: Record, stack: string) {
 
     if (record.types === 'liquid_start' || record.types === 'start') {
 
@@ -534,6 +536,7 @@ class Parser {
         index: this.count,
         line: this.lineNumber,
         token: record.token,
+        skip: false,
         type: record.types === 'start' ? Languages.HTML : Languages.Liquid,
         stack
       });
@@ -545,12 +548,26 @@ class Parser {
 
       const pair = this.pairs.get(this.stack.index);
 
+      if (pair.skip) {
+        this.pairs.delete(this.stack.index);
+      }
+
       if (pair.type === Languages.Liquid) {
 
         if (record.token.indexOf(`end${pair.stack}`) > -1) {
+
           this.pairs.delete(this.stack.index);
+
         } else {
-          SyntacticError(ParseError.MissingLiquidEndTag, pair);
+
+          // TODO:
+          // IMPROVE LIQUID TAG HANDLING
+          //
+          if (record.stack === 'liquid' && (record.token === '%}' || record.token === '-%}')) {
+            this.pairs.delete(this.stack.index);
+          } else {
+            SyntacticError(ParseError.MissingLiquidEndTag, pair);
+          }
         }
 
       } else if (pair.type === Languages.HTML) {
@@ -558,12 +575,13 @@ class Parser {
         if (`</${pair.stack}>` === record.token) {
           this.pairs.delete(this.stack.index);
         } else {
-          // SyntacticError(ParseError.MissingHTMLEndTag, pair);
+          SyntacticError(ParseError.MissingHTMLEndTag, pair);
         }
 
       }
 
     }
+
   }
 
   /**
@@ -605,7 +623,14 @@ class Parser {
         : lx.getTagName(record.token);
     }
 
-    // if (record.lexer === 'markup' && token !== 'liquid') this.syntactic(record, token);
+    if (
+      record.lexer === 'markup' &&
+      record.stack !== 'liquid' &&
+      record.stack !== 'svg') {
+
+      this.syntactic(record, token);
+
+    }
 
     this.lineOffset = 0;
 
@@ -660,6 +685,7 @@ class Parser {
     } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
 
       if (token === NIL) token = 'else';
+
       if (this.count > 0 && (
         data.types[this.count - 1] === 'start' ||
         data.types[this.count - 1].indexOf('_start') > 0

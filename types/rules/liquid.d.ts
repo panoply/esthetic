@@ -77,7 +77,6 @@ export interface LiquidRules {
    * - `tags`
    * - `outputs`
    * - `multiline`
-   * - `linebreak`
    *
    * ```
    */

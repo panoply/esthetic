@@ -216,12 +216,11 @@ export function is (string: string, code: number) {
 /**
  * Last Character
  *
- * Returns the last character of the provided string. Optionally
- * convert to character code by passing a boolen `true` as 2nd parameter.
+ * Returns the last character of the provided string.
  */
-export function lastChar (string: string | string[], toCode = false) {
+export function lastChar (string: string | string[]): string {
 
-  return toCode ? string[string.length - 1].charCodeAt(0) : string[string.length - 1];
+  return string[string.length - 1];
 
 }
 
@@ -394,9 +393,20 @@ export function size (bytes: number): string {
  *
  * Returns a sanatized line comment string
  */
-export function sanitizeComment (input: string) {
+export function charEsc (input: string) {
 
   return `\\${input}`;
+
+}
+
+/**
+ * Sanitize Liquid Delimiter
+ *
+ * Returns a sanatized liquid delimiters
+ */
+export function liquidEsc (char: string) {
+
+  return is(char, cc.LCB) ? '{%-?\\s*' : '\\s*-?%}';
 
 }
 

@@ -105,7 +105,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
           provided: value,
           expected: [
             'boolean',
-            'number'
+            'string[]'
           ]
         });
 
@@ -184,7 +184,7 @@ export function isValidArray (language: LanguageRuleNames, rule: string, value: 
 
     if (value.length === 0) return true;
 
-    for (let index: number = 0; index < value.length; index++) {
+    for (let index: number = 0, size = value.length; index < size; index++) {
 
       if (isString(value[index]) === false) {
         throw RuleError({
@@ -196,6 +196,7 @@ export function isValidArray (language: LanguageRuleNames, rule: string, value: 
           ]
         });
       }
+
     }
 
     return true;
@@ -386,6 +387,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'preserve':
       case 'consistent':
       case 'inline':
+      case 'inline-align':
       case 'force': return true;
       default: throw RuleError({
         message: `Invalid "${rule}" option provided`,
@@ -394,8 +396,9 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
         expected: [
           'preserve',
           'consistent',
+          'force',
           'inline',
-          'force'
+          'inline-align'
         ]
       });
     }
@@ -493,8 +496,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'indent':
       case 'force-preserve':
       case 'force-align':
-      case 'force-indent':
-        return true;
+      case 'force-indent': return true;
       default: throw RuleError({
         message: `Invalid "${rule}" option provided`,
         option: `${language} → ${rule}`,

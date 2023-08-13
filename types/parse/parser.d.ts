@@ -1,3 +1,4 @@
+import { LiteralUnion } from 'type-fest';
 import { Languages } from 'lexical/enum';
 import { Types, LanguageOfficialName, LanguageName } from '../shared';
 import { StackItem } from 'types/next';
@@ -220,6 +221,7 @@ export interface Record {
 export interface Syntactic {
   line?: number;
   index?: number;
+  skip?: boolean;
   expect?: string;
   token?: string;
   stack?: string;
@@ -335,12 +337,26 @@ export interface Splice {
   record?: Record;
 }
 
-export interface WrapComment {
-  chars: string[];
-  end: number;
-  lexer: string;
+export interface Comments {
+  /**
+   * The current index or starting position of comment
+   */
   start: number;
+  /**
+   * The last known character index
+   */
+  end: number;
+  /**
+   * The lexer mode
+   */
+  lexer: LiteralUnion< 'markup' |'script' | 'style', string>;
+  /**
+   * The opening delimiter token of the comment
+   */
   begin: string;
+  /**
+   * The closing delimiter token of the comment
+   */
   ender: string;
 }
 

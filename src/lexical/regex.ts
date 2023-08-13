@@ -455,6 +455,18 @@ export const CommNumberLine = /^\s*\d+\.\s/;
 export const CommLineChars = /^\s*(?:[*-]|\d+\.)\s/;
 
 /**
+ * HTML Attribute End
+ *
+ * Closing delimiter detection for tag attributes
+ *
+ * ---
+ *
+ * @example /(?!=)\/?>$/
+ *
+ */
+export const HTMLAttributeEnd = /(?!=)\/?>$/;
+
+/**
  * HTML Comment Opening Delimiter
  *
  * Opening delimiter for HTML comment tokens

@@ -8,6 +8,7 @@ describe:
 options:
   - preserve
   - inline
+  - inline-align
   - force
   - consistent
 ---
@@ -74,13 +75,54 @@ The `commentDelimiters` rule is set to `preserve` by default. Markup comment del
 
 :::
 
-When the `commentDelimiters` rule is set to `inline`, markup comment delimiters will be placed inline. When `commentIndent` is enabled and comment delimiters is using inline, newline indentation will align with starting delimiter lengths.
+When the `commentDelimiters` rule is set to `inline`, markup comment delimiters will be placed inline. When `commentIndent` is enabled and comments span multiple lines then each newline indentation will align with the comments starting delimiter `-` dash character that will comprise of a single indentation. Toggle the `rules` tab to enable/disable `commentIndent` and observe the differences applied to comments which span multiple lines.
 
 ```json:rules
 {
   "language": "html",
   "markup": {
+    "commentIndent": true,
     "commentDelimiters": "inline"
+  }
+}
+```
+
+<!-- prettier-ignore -->
+```html
+<!--
+  Comment delimiters will always be inlined -->
+<div>
+  <!--
+    Forcing is not possible when set to inline
+  -->
+  <nav>
+    <!--
+      Comments which span multiple lines will still
+      respect wrap but will begin and end on the same
+      line as the comment contents. This is generally
+      not very elegant, but I'm not the boss of you, so
+      do what the fuck you want.
+    -->
+  </nav>
+</div>
+```
+
+---
+
+::: rule 😳
+
+#### inline-align
+
+:::
+
+When the `commentDelimiters` rule is set to `inline-align`, markup comment delimiters will be placed inline, identical to `inline` but the difference with `inline-align` is that when comment span multiple lines, each newline will begin at the end of starting delimiter. This option requires that `commentIndent` is enabled, when disabled the rules will behave identical to `inline`. Toggle the `rules` tab to enable/disable `commentIndent` and observe the differences applied to comments which span multiple lines.
+
+```json:rules
+{
+  "language": "html",
+  "markup": {
+    "commentIndent": true,
+    "commentDelimiters": "inline-align"
   }
 }
 ```
@@ -119,6 +161,7 @@ When the `commentDelimiters` rule is set to `force` delimiters will be forced on
 {
   "language": "html",
   "markup": {
+    "commentIndent": true,
     "commentDelimiters": "force"
   }
 }
@@ -153,6 +196,7 @@ The `consistent` option will use the opening (`<!--`) delimiter placement as its
 {
   "language": "html",
   "markup": {
+    "commentIndent": true,
     "commentDelimiters": "consistent"
   }
 }

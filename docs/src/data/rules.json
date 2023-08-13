@@ -91,7 +91,7 @@
       "url": "/rules/liquid/forceArgument/"
     },
     {
-      "group": "markup",
+      "group": "liquid",
       "title": "forceIndent",
       "url": "/rules/liquid/forceIndent/"
     },

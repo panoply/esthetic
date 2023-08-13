@@ -572,8 +572,7 @@ export function script () {
 
     if (wtest > -1) word();
 
-    comment = commentBlock({
-      chars: c,
+    comment = commentBlock(c, {
       end: b,
       lexer: 'script',
       begin: '/*',
