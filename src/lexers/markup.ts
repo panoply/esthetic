@@ -69,18 +69,23 @@ export function markup (input?: string) {
    */
   const c = b.length;
 
+  /* -------------------------------------------- */
+  /* TEMP STORES                                  */
+  /* -------------------------------------------- */
+
   /**
    * SVG Store reference for tracking singletons and blocks
    */
-  const svg: {
-    start: number;
-    tname: string[],
-    index: number[],
-  } = {
-    start: -1,
-    tname: [],
-    index: []
-  };
+  const svg: { start: number; tname: string[], index: number[] } = object(null);
+
+  svg.start = -1;
+  svg.tname = [];
+  svg.index = [];
+
+  /**
+   * Liquid conditional stacks
+   */
+  const stacks: number[] = [];
 
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
@@ -123,7 +128,7 @@ export function markup (input?: string) {
    */
   function create (record?: Partial<Record>): Record {
 
-    return assign(object(null), {
+    return assign({
       lexer: 'markup',
       lines: parse.lineOffset,
       stack: parse.stack.token !== 'global' ? parse.stack.token : 'global',
@@ -193,30 +198,6 @@ export function markup (input?: string) {
     return lq.normalize(input, tname, rules.liquid);
 
   };
-
-  /**
-   * Indent
-   *
-   * Last known indentation level which is whitespace sequences.
-   * Typically, we will want to use the `parse.iterator` store reference.
-   * Optionally pass a `token` for which the indentation is to prepend.
-   */
-  function indent (from: number, token: string = NIL): string {
-
-    if (from < 1) return token as string;
-
-    let ws: string = NIL;
-
-    const nl = b.lastIndexOf(NWL, from);
-
-    if (nl > -1) {
-      ws = source.slice(nl + 1, from);
-      if (ws.length > 0 && ws.trim().length < 1) return token ? ws + token : ws;
-    }
-
-    return token as string;
-
-  }
 
   /**
    * Newlines
@@ -641,6 +622,33 @@ export function markup (input?: string) {
     }
 
     /**
+     * Parse Conditional
+     *
+     * Structural test for Liquid conditional syntactical expressions,
+     * wherein a `start` or `end` type markup type is encapsulated within
+     * a liquid conditional.
+     */
+    function parseConditional () {
+
+      if (
+        data.types[record.begin] === 'start' &&
+        data.types[data.begin[record.begin]] === 'liquid_start' &&
+        ltype === 'liquid_end') {
+
+        data.types[record.begin] = 'singleton';
+        parse.pairs.delete(parse.stack.index);
+
+      } else if (data.types[parse.count] === 'liquid_start' && ltype === 'end') {
+
+        record.types = 'singleton';
+        parse.pairs.delete(parse.stack.index);
+        parse.stack.pop();
+
+      }
+
+    }
+
+    /**
      * Parse Liquid
      *
      * This will parse template identified tokens and tags (Liquid).
@@ -652,7 +660,10 @@ export function markup (input?: string) {
       /* LIQUID TOKEN                                 */
       /* -------------------------------------------- */
 
-      if (record.types.indexOf('liquid') < 0) return cdata();
+      if (record.types.indexOf('liquid') < 0) {
+        parseConditional();
+        return cdata();
+      }
 
       if (record.token === NIL) record.token = token;
 
@@ -679,6 +690,7 @@ export function markup (input?: string) {
 
           if (grammar.liquid.tags.has(name)) {
             record.types = ltype = 'liquid_end';
+
           } else {
 
             // Unknown tag handling for situations where a custom endtag
@@ -693,6 +705,7 @@ export function markup (input?: string) {
 
               if (data.types[i] === 'liquid' && data.stack[i] === name) {
                 data.types[i] = 'liquid_start';
+                for (let x = i, s = data.stack.length; x < s; x++) parse.stack.push([ data.token[x], x ]);
                 break;
               }
 
@@ -701,6 +714,9 @@ export function markup (input?: string) {
             } while (i > -1);
 
           }
+
+          parseConditional();
+
         } else {
 
           record.stack = tname;
@@ -887,13 +903,17 @@ export function markup (input?: string) {
      */
     function parseSVG (): ReturnType<typeof parseLiquid> {
 
-      if (tname === 'svg') svg.start = parse.count + 1;
+      if (tname === 'svg') {
+        svg.start = parse.count + 1;
+        record.stack = tname;
+      }
 
-      if (grammar.svg.tags.has(tname) && svg.start > 0) {
+      if (grammar.svg.tags.has(tname) && svg.start > -1) {
 
         if (record.types === 'start') {
 
           record.types = 'singleton';
+          record.stack = tname;
 
           svg.tname.push(tname);
           svg.index.push(parse.count + 1);
@@ -903,16 +923,23 @@ export function markup (input?: string) {
           const i = svg.tname.indexOf(tname);
           const e = svg.tname.lastIndexOf(tname);
 
+          let x: number;
+
           if (i > -1) {
             if (e === i) {
 
+              x = svg.index[e];
+
               data.types[svg.index[e]] = 'start';
+
               svg.tname.splice(e, 1);
               svg.index.splice(e, 1);
 
             } else {
 
               if (data.begin[parse.count] === svg.index[i]) {
+
+                x = data.begin[parse.count];
 
                 data.types[data.begin[parse.count]] = 'start';
 
@@ -921,9 +948,17 @@ export function markup (input?: string) {
 
               } else {
 
+                x = svg.index[e];
                 data.types[svg.index[e]] = 'start';
+
               }
             }
+
+            for (; x < data.stack.length; x++) {
+              data.stack[x] = tname;
+              parse.stack.push([ tname, x ]);
+            }
+
           }
 
           if (tname === 'svg') svg.start = -1;
@@ -1016,13 +1051,11 @@ export function markup (input?: string) {
         //
         // We need to esnure that comment occuranced within the tag blocks
         // are excluded to offset any occurances of tag names.
-        if (tname === 'script') {
-          if (u.is(b[a], cc.FWS)) {
-            if (u.is(b[a + 1], cc.FWS)) {
-              a = b.indexOf(NWL, a + 1) + 1;
-            } else if (u.is(b[a + 1], cc.ARS)) {
-              a = source.indexOf('*/', a + 1) + 2;
-            }
+        if ((tname === 'script' || tname === 'style') && u.is(b[a], cc.FWS)) {
+          if (u.is(b[a + 1], cc.FWS)) {
+            a = b.indexOf(NWL, a + 1) + 1;
+          } else if (u.is(b[a + 1], cc.ARS)) {
+            a = source.indexOf('*/', a + 1) + 2;
           }
         }
 
@@ -1055,18 +1088,23 @@ export function markup (input?: string) {
 
             if (u.is(b[a], cc.DSH)) a = a + 1;
 
-            i = b.indexOf(NWL, a);
-            t = b.slice(a, i).join(NIL).trimStart();
+            i = source.indexOf(tname, a);
 
-            if (t.startsWith(tname)) {
+            if (b[i - 3] === 'e' && b[i - 2] === 'n' && b[i - 1] === 'd') {
+              t = b.slice(i - 3, i + tname.length).join(NIL).trimStart();
+            } else {
+              t = b.slice(i, i + tname.length).join(NIL).trimStart();
+            }
 
-              a = i > -1 ? i + 1 : a + tname.length;
+            if (t === tname) {
+
+              a = i + tname.length;
               n = n + 1;
               i = -1;
 
               continue;
 
-            } else if (t.startsWith(ender)) {
+            } else if (t === ender) {
 
               if (n === 0) {
 
@@ -1080,7 +1118,7 @@ export function markup (input?: string) {
               } else {
 
                 n = n - 1;
-                a = a + ender.length;
+                a = i + tname.length;
 
               }
             }
@@ -1092,8 +1130,8 @@ export function markup (input?: string) {
 
             token = b.slice(now, a)
               .join(NIL)
-              .replace(rx.NewlineLead, NIL)
-              .replace(rx.SpaceEnd, NIL);
+              .replace(rx.WhitespaceLead, NIL)
+              .replace(rx.WhitespaceEnd, NIL);
 
             break;
 
@@ -1190,13 +1228,12 @@ export function markup (input?: string) {
           //
           // We need to esnure that comment occuranced within the tag blocks
           // are excluded to offset any occurances of tag names.
-          if (tname === 'script') {
-            if (u.is(b[a], cc.FWS)) {
-              if (u.is(b[a + 1], cc.FWS)) {
-                a = b.indexOf(NWL, a + 1) + 1;
-              } else if (u.is(b[a + 1], cc.ARS)) {
-                a = source.indexOf('*/', a + 1) + 2;
-              }
+          //
+          if ((tname === 'script' || tname === 'style') && u.is(b[a], cc.FWS)) {
+            if (u.is(b[a + 1], cc.FWS)) {
+              a = b.indexOf(NWL, a + 1) + 1;
+            } else if (u.is(b[a + 1], cc.ARS)) {
+              a = source.indexOf('*/', a + 1) + 2;
             }
           }
 
@@ -1232,12 +1269,11 @@ export function markup (input?: string) {
 
               if (u.is(b[a], cc.DSH)) a = a + 1;
 
-              i = b.indexOf(NWL, a);
-              t = b.slice(a, i).join(NIL).trimStart();
+              t = b.slice(a).join(NIL).trimStart();
 
               if (t.startsWith(tname)) {
 
-                a = i > -1 ? i + 1 : a + tname.length;
+                a = a + tname.length;
                 n = n + 1;
                 i = -1;
 
@@ -1350,7 +1386,7 @@ export function markup (input?: string) {
       // We will first detect any preserved structures and pass it on
       // these types infer ignores that respect indentation and are rule based.
       //
-      if (ltype === 'script_preserve' || ltype === 'json_preserve') {
+      if (ltype === 'script_preserve' || ltype === 'json_preserve' || ltype === 'style_preserve') {
 
         record.types = 'start';
         record.stack = ltype === 'style_preserve' ? 'style' : 'script';
@@ -1358,6 +1394,7 @@ export function markup (input?: string) {
         parseAttribute();
 
         a = a + 1;
+        attrs = [];
 
         return parseIgnoreToken(`</${tname}>`, Languages.HTML);
 
@@ -1378,7 +1415,12 @@ export function markup (input?: string) {
 
         } else if (ltype === 'liquid') {
 
-          return parseIgnoreNext(end, end === '}}' ? TokenType.LiquidOutput : TokenType.LiquidSingular);
+          if (grammar.liquid.tags.has(tname)) {
+            ltype = 'liquid_start';
+            return parseIgnoreNext(`end${tname}`, TokenType.LiquidEndTag);
+          } else {
+            return parseIgnoreNext(end, end === '}}' ? TokenType.LiquidOutput : TokenType.LiquidSingular);
+          }
 
         } else if (grammar.html.voids.has(tname)) {
 
@@ -1412,7 +1454,7 @@ export function markup (input?: string) {
      * Parse exts
      *
      * Determines whether or not the token contains an external region
-     * like that of `<scrit>`, `<style>` and Liquid equivalents `{% schema %}` etc.
+     * like that of `<script>`, `<style>` and Liquid equivalents `{% schema %}` etc.
      * Some additional context is required before passing the contents of these tags
      * to different lexers. It's here where we establish that context.
      */
@@ -2121,14 +2163,23 @@ export function markup (input?: string) {
 
       parse.iterator = a;
 
-      const comm = commentBlock({
-        chars: b,
+      const comm = commentBlock(b, {
         end: c,
         lexer: 'markup',
         begin: start,
         start: a,
         ender: end
       });
+
+      if (comm[0] === NIL) {
+
+        return MarkupError(
+          ParseError.MissingHTMLEndingCommentDelimiter,
+          b.slice(parse.iterator, parse.iterator + 5).join(NIL),
+          'comment'
+        );
+
+      }
 
       token = comm[0];
       a = comm[1];
@@ -2185,7 +2236,7 @@ export function markup (input?: string) {
 
         if (u.is(b[i], cc.RAN)) {
           a = i;
-          return source.slice(from, i + 1);
+          return b.slice(from, i + 1).join(NIL);
         }
 
         i = i + 1;
@@ -2211,13 +2262,9 @@ export function markup (input?: string) {
 
         if (u.is(b[a + 1], cc.LCB) && (u.is(b[a + 2], cc.LCB) || u.is(b[a + 2], cc.PER))) {
 
-          const x = parseBadLiquid(3);
+          // parse.stack.push([ 'liquid_bad', parse.count ]);
 
-          nowalk = true;
-
-          parse.stack.push([ 'liquid_bad', parse.count ]);
-
-          record.token = x;
+          record.token = parseBadLiquid(3);
           record.types = 'liquid_bad_start';
 
           push(record);
@@ -2228,9 +2275,10 @@ export function markup (input?: string) {
 
           if (u.is(b[a + 2], cc.LCB) && (u.is(b[a + 3], cc.LCB) || u.is(b[a + 3], cc.PER))) {
 
-            const x = parseBadLiquid(3);
+            record.token = parseBadLiquid(3);
+            record.types = 'liquid_bad_end';
 
-            push(record, { token: x, types: 'liquid_end_bad' });
+            push(record);
 
             return;
 
@@ -2263,11 +2311,23 @@ export function markup (input?: string) {
             ltype = 'doctype';
             preserve = true;
 
-          } else if (u.is(b[a + 2], cc.DSH) && u.is(b[a + 3], cc.DSH)) {
+          } else if (u.is(b[a + 2], cc.DSH)) {
 
-            end = '-->';
-            start = '<!--';
-            ltype = 'comment';
+            if (u.is(b[a + 3], cc.DSH)) {
+
+              end = '-->';
+              start = '<!--';
+              ltype = 'comment';
+
+            } else {
+
+              return MarkupError(
+                ParseError.InvalidHTMLCommentDelimiter,
+                b.slice(a, a + 3).join(NIL),
+                'comment'
+              );
+
+            }
 
           } else if (
             u.is(b[a + 2], cc.LSB) &&
@@ -4112,6 +4172,10 @@ export function markup (input?: string) {
       }
     }
 
+    /* -------------------------------------------- */
+    /* FUNCTIONS                                    */
+    /* -------------------------------------------- */
+
     /**
      * SGML Test
      *
@@ -4152,6 +4216,10 @@ export function markup (input?: string) {
 
     };
 
+    /* -------------------------------------------- */
+    /* PARSE HANDLERS                               */
+    /* -------------------------------------------- */
+
     if (a < c) {
 
       /**
@@ -4175,12 +4243,6 @@ export function markup (input?: string) {
       let quotes: number = 0;
 
       do {
-
-        // console.log(
-        //   'BLOCK',
-        //   JSON.stringify(b.slice(a).join(NIL))
-
-        // );
 
         if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
 
@@ -4290,12 +4352,9 @@ export function markup (input?: string) {
 
             }
 
-            if (name === 'script') {
+            if (name === 'script' && u.is(b[a], cc.LAN) && u.is(b[a + 1], cc.FWS)) {
 
-              end = b
-                .slice(a, a + 9)
-                .join(NIL)
-                .toLowerCase();
+              end = b.slice(a, a + 9).join(NIL).toLowerCase();
 
               if (end === '</script>') {
 
@@ -4330,45 +4389,43 @@ export function markup (input?: string) {
 
               }
 
-            } else if (name === 'style') {
+            } else if (name === 'style' && u.is(b[a], cc.LAN) && u.is(b[a + 1], cc.FWS)) {
 
-              if (u.is(b[a + 1], cc.LAN) && u.is(b[a + 2], cc.FWS)) {
+              end = b.slice(a, a + 8).join(NIL).toLowerCase();
 
-                end = b
-                  .slice(a + 1, a + 8)
-                  .join(NIL)
-                  .toLowerCase();
+              if (end === '</style>') {
 
-                if (end === '</style') {
+                if (lexed.length < 1) break;
 
-                  if (lexed.length < 1) break;
+                output = lexed.join(NIL).trimEnd();
 
-                  output = lexed.join(NIL).trimEnd();
+                if ((rx.HTMLCommDelimOpen).test(output) && (rx.HTMLCommDelimClose).test(output)) {
 
-                  if (u.is(output, cc.RAN)) output = output.slice(1);
+                  push(record, { token: '<!--', types: 'comment' });
 
-                  if ((rx.HTMLCommDelimOpen).test(output) && (rx.HTMLCommDelimClose).test(output)) {
+                  output = output
+                    .replace(rx.HTMLCommDelimOpen, NIL)
+                    .replace(rx.HTMLCommDelimClose, NIL);
 
-                    push(record, { token: '<!--', types: 'comment' });
+                  parse.external('css', output);
 
-                    output = output
-                      .replace(rx.HTMLCommDelimOpen, NIL)
-                      .replace(rx.HTMLCommDelimClose, NIL);
+                  push(record, { token: '-->' });
 
-                    parse.external('css', output);
+                } else {
 
-                    push(record, { token: '-->' });
+                  parse.external(language, output);
 
-                  } else {
+                  record.token = end;
+                  record.types = 'end';
 
-                    parse.external(language, output);
-
-                  }
-
-                  break;
+                  a = a - 1;
 
                 }
+
+                break;
+
               }
+
             }
 
           } else if (
@@ -4426,7 +4483,7 @@ export function markup (input?: string) {
             u.is(b[a - 2], cc.DSH)
           ) {
 
-            end = source.slice(a + 1, a + 11).toLowerCase();
+            end = b.slice(a + 1, a + 11).join(NIL).toLowerCase();
             end = end.slice(0, end.length - 2);
 
             if (name === 'script' && end === '</') quote = NIL;
@@ -4436,9 +4493,11 @@ export function markup (input?: string) {
             if (name === 'style' && end === '</style') quote = NIL;
 
           }
+
         }
 
         // Typically this logic is for artifacts nested within an SGML tag
+        //
         if (sgml() === true && u.is(b[a], cc.RSB)) {
 
           a = a - 1;
@@ -4458,7 +4517,7 @@ export function markup (input?: string) {
             u.is(b[a], cc.LAN) &&
             u.not(b[a + 1], cc.EQS) &&
             u.digit(b[a + 1]) === false &&
-            u.ws(b[a + 1]) === false
+            u.ns(b[a + 1])
           ) || (
             u.is(b[a], cc.LSB) &&
             u.is(b[a + 1], cc.PER)
@@ -4713,6 +4772,10 @@ export function markup (input?: string) {
 
   }
 
+  /* -------------------------------------------- */
+  /* LEXING                                       */
+  /* -------------------------------------------- */
+
   if (parse.language === 'html' || parse.language === 'liquid') html = 'html';
 
   do {
@@ -4750,16 +4813,11 @@ export function markup (input?: string) {
     if (a === c) {
       if (parse.pairs.size > 0 && parse.pairs.has(parse.stack.index)) {
 
-        console.log(parse.pairs);
-
         const pair = parse.pairs.get(parse.stack.index);
 
         if (pair.type === Languages.HTML) {
-
           SyntacticError(ParseError.MissingHTMLEndTag, pair);
-
         }
-
       }
     }
 
