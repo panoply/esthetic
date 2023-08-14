@@ -120,4 +120,5 @@ export interface GlobalRules {
    * The maximum number of consecutive empty lines to retain.
    */
   preserveLine?: number;
+
 }

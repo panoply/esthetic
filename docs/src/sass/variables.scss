@@ -160,9 +160,22 @@ $accordion-border-width: $border-width;
 
 // stylelint-disable
 
-$font-family-base: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
-  Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, 'Segoe UI',
-  Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+$font-family-base:
+  system-ui,
+  -apple-system,
+  Segoe UI,
+  Roboto,
+  Ubuntu,
+  Cantarell,
+  Noto Sans,
+  sans-serif,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  Helvetica,
+  Arial,
+  sans-serif,
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
   'Segoe UI Symbol';
 
 $font-family-heading: $font-family-base;
@@ -181,7 +194,7 @@ $font-size-base: 1rem;
 
 $font-size-xs: $font-size-base * 0.595;
 $font-size-sm: $font-size-base * 0.825;
-$font-size-md: $font-size-base * 0.975;
+$font-size-md: $font-size-base * 0.945;
 $font-size-lg: $font-size-base * 1.25;
 $font-size-xl: $font-size-base * 1.75;
 

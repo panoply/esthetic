@@ -83,6 +83,7 @@ function getEstheticRules (ruleOptions) {
     markup: {
       attributeCasing: 'preserve',
       attributeSort: false,
+      commentDelimiters: 'preserve',
       commentNewline: false,
       commentIndent: true,
       delimiterTerminus: 'inline',
@@ -259,9 +260,7 @@ function getCodeBlockInput (raw) {
  */
 function has (prop) {
 
-  if (typeof rules === 'object' && prop in rules) {
-    return true
-  }
+  if (typeof rules === 'object' && prop in rules) return true
 
   return false;
 
@@ -359,7 +358,7 @@ function highlightCode(md, raw, language) {
         code = papyrus.static(raw, {
           language,
           editor: false,
-          showSpace: true,
+          showSpace: false,
           trimEnd: true,
           trimStart: true
         });
@@ -442,7 +441,9 @@ function getWrapFractionRuleExample (estheticRules, papyrusValue, rawInput) {
     <div class="col-6">
       <div class="row jc-center ai-center px-2">
         <div class="col-5">
-          <legend class="fs-xs mb-0"     aria-label="Adjustments are disabled as we showcasing the default behaviour"
+          <legend
+            class="fs-xs mb-0"
+            aria-label="Adjustments are disabled as we showcasing the default behaviour"
             data-tooltip="top">Wrap Fraction</legend>
           <input
             type="range"
@@ -526,7 +527,7 @@ function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
   /** @type {papyrus.CreateOptions} */
   const papyrusOptions = merge(papyrusValue, {
     editor: false,
-    showSpace: true,
+    showSpace: false,
     addAttrs: {
       pre: [
         'data-demo-target="input"'
@@ -611,7 +612,8 @@ function getRuleDemo (estheticRules, papyrusValue, inputValue, rawInput) {
   /** @type {papyrus.CreateOptions} */
   const papyrusOptions = merge(papyrusValue, {
     editor: false,
-    showSpace: true,
+    showSpace: false,
+    showTab: false,
     addAttrs: {
       pre: [
         'data-demo-target="output"'
@@ -753,14 +755,19 @@ function getRuleShowcase (md, inputValue, language) {
               class="tab"
               data-dropdown-target="button"
               aria-label="Choose another code sample"
+              data-action="dropdown#toggle"
               data-tooltip="top">
-              Samples
+              Preset (default)
             </button>
-            <div data-dropdown-target="collapse" class="dropdown-list">
-              <ul>
-                <li></li>
-              </ul>
-            </div>
+
+            <ul data-dropdown-target="collapse">
+              <li>default</li>
+              <li>recommended</li>
+              <li>warrington</li>
+              <li>strict</li>
+              <li>prettier</li>
+            </ul>
+
           </div>
           <button
             type="button"
@@ -816,7 +823,10 @@ function codeblocks(md) {
 
       } catch (e) {
 
-        throw new Error('Invalid JSON in in the json:rules code block')
+
+        throw new Error(
+          'Invalid JSON in in the json:rules code block\n\n' + json
+        )
 
       }
 
@@ -844,6 +854,7 @@ function codeblocks(md) {
         class="rule-example"
         data-controller="demo"
         data-demo-mode-value="${mode}"
+        data-demo-preset-value="default"
         data-demo-rules-value="${rulesValue}"
         data-demo-rules-original-value="${rulesValue}"
         data-demo-language-value="${language}"
@@ -1013,9 +1024,9 @@ module.exports = eleventy(function (config) {
       collapseWhitespace: true,
       decodeEntities: true,
       html5: true,
-      removeAttributeQuotes: true,
+      removeAttributeQuotes: false,
       removeComments: true,
-      removeOptionalTags: true,
+      removeOptionalTags: false,
       sortAttributes: true,
       sortClassName: true
     });

@@ -1,6 +1,43 @@
 export interface MarkupRules {
 
   /**
+   * **Default** `preserve`
+   *
+   *
+   * Controls the formatting style of HTML and/or XML markup comment delimiters.
+   * This rule will augment delimiter `<!--` and `-->` placements.
+   *
+   * ---
+   *
+   * ```html
+   *
+   * <!-- inline -->
+   * <!-- inline-align
+   *      inline-align -->
+   * <!--
+   *   preserve -->
+   * <!--
+   *   force
+   * -->
+   * <!-- consistent (before)
+   * -->
+   * <!-- consistent (after) -->
+   * <!--
+   *   consistent (before) -->
+   * <!--
+   *  consistent (after)
+   * -->
+   *
+   * ```
+   */
+  commentDelimiters?:
+  | 'preserve'
+  | 'consistent'
+  | 'force'
+  | 'inline'
+  | 'inline-align';
+
+  /**
    * If a blank new line should be forced above comments.
    */
   commentNewline?: boolean;

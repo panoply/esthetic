@@ -1,28 +1,165 @@
 import test from 'ava';
-import { forSample, liquid } from '@liquify/ava/esthetic';
+import { forSample, forAssert, html } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('HTML Ignore Comment Region - Newlines and indentation', t => {
+test('HTML Ignore Comment Region - Various structure tests', t => {
 
-  forSample(
+  forAssert(
     [
-      liquid`{% # 1 newline following comment is respected %}
+      [
+        html`
+        <div>
+        IGNORE START WILL FORCE
+        </div><section><!-- esthetic-ignore-start --><main>
+                    <h1>                   </h1>
+        </main><!-- esthetic-ignore-end --></section>
+        `
+        ,
+        html`
+        <div>
+          IGNORE START WILL FORCE
+        </div>
+        <section>
+        <!-- esthetic-ignore-start --><main>
+                    <h1>                   </h1>
+        </main><!-- esthetic-ignore-end -->
+        </section>
+        `
+      ],
+      [
+        html`
+        <div>
+        IGNORE START WILL FORCE
+        </div>
 
+        <aside><!-- esthetic-ignore-start -->
+        <main>
+                    <h1>                   </h1>
+        </main><!-- esthetic-ignore-end -->
+        </aside>
+        `
+        ,
+        html`
+        <div>
+          IGNORE START WILL FORCE
+        </div>
+
+        <aside>
+        <!-- esthetic-ignore-start -->
+        <main>
+                    <h1>                   </h1>
+        </main><!-- esthetic-ignore-end -->
+        </aside>
+        `
+      ],
+      [
+        html`
+        <div>
+        FORCING INLINE IGNORE WITH SIBLINGS
+        </div>
+
+        <!-- esthetic-ignore-start --><main>
+                    <h1>                   </h1>
+        </main>
+        <!-- esthetic-ignore-end -->
+        <section>
+              <ul>
+                  <li>TEST INDENTATION</li>
+              </ul>
+        </section>
+        `
+        ,
+        html`
+        <div>
+          FORCING INLINE IGNORE WITH SIBLINGS
+        </div>
+
+        <!-- esthetic-ignore-start --><main>
+                    <h1>                   </h1>
+        </main>
+        <!-- esthetic-ignore-end -->
+        <section>
+          <ul>
+            <li>TEST INDENTATION</li>
+          </ul>
+        </section>
+        `
+      ],
+      [
+        html`
         <div>
         1 NEWLINE FOLLOWING COMMENT
         </div>
 
         <!-- esthetic-ignore-start -->
         <main>
-          <h1></h1>
+                    <h1>                   </h1>
+        </main>
+        <!-- esthetic-ignore-end -->
+        `
+        ,
+        html`
+        <div>
+          1 NEWLINE FOLLOWING COMMENT
+        </div>
+
+        <!-- esthetic-ignore-start -->
+        <main>
+                    <h1>                   </h1>
+        </main>
+        <!-- esthetic-ignore-end -->
+        `
+      ]
+    ]
+  )(function (input, expect) {
+
+    const actual = esthetic.format(input, {
+      language: 'html',
+      markup: {
+        commentNewline: false
+      }
+    });
+
+    t.deepEqual(actual, expect);
+
+  });
+
+});
+
+test('HTML Ignore Comment Region - Newlines and indentation', t => {
+
+  forSample(
+    [
+      html`<!-- 1 newline following comment is respected -->
+
+      <div>
+      1 NEWLINE FOLLOWING COMMENT
+      </div>
+
+      <!-- esthetic-ignore-start -->
+      <main>
+        <h1>                   </h1>
+      </main>
+      <!-- esthetic-ignore-end -->
+
+      `,
+      html`<!-- 1 newline following comment is respected -->
+
+        <div>
+          1 NEWLINE FOLLOWING COMMENT
+        </div>
+
+        <!-- esthetic-ignore-start -->
+        <main>
+          <h1>                   </h1>
         </main>
         <!-- esthetic-ignore-end -->
 
       `,
-      liquid`{% # 2 newlines following comment are respected %}
+      html`<!-- 2 newlines following comment are respected -->
 
         <div>
-        2 NEWLINES FOLLOWING COMMENT
+          2 NEWLINES FOLLOWING COMMENT
         </div>
 
         <!-- esthetic-ignore-start -->
@@ -32,10 +169,10 @@ test('HTML Ignore Comment Region - Newlines and indentation', t => {
         </main>
         <!-- esthetic-ignore-end -->
       `,
-      liquid`{% # 3 newlines following comment are respected %}
+      html`<!-- 3 newlines following comment are respected -->
 
         <div>
-        3 NEWLINES FOLLOWING COMMENT
+          3 NEWLINES FOLLOWING COMMENT
         </div>
 
         <!-- esthetic-ignore-start -->
@@ -46,7 +183,7 @@ test('HTML Ignore Comment Region - Newlines and indentation', t => {
         </main>
         <!-- esthetic-ignore-end -->
       `,
-      liquid`{% # Respect Spacing of contained ignore content %}
+      html`<!-- Respect Spacing of contained ignore content -->
 
         <!-- esthetic-ignore-start -->
         <main>
@@ -78,17 +215,21 @@ test('HTML Ignore Comment Region - Newlines and indentation', t => {
         <!-- esthetic-ignore-end -->
 
         <footer>
-        <ul>
-        <li> SPACING IS RESPECTED AFTER IGNORE </li>
-        </ul>
+          <ul>
+            <li>
+              SPACING IS RESPECTED AFTER IGNORE
+            </li>
+          </ul>
         </footer>
       `,
-      liquid`{% # Respecting ignored indentation and newlines %}
+      html`<!-- Respecting ignored indentation and newlines -->
 
         <header>
-        <ul>
-        <li> CONTENT BEFORE WILL FORMAT </li>
-        </ul>
+          <ul>
+        <li>
+              CONTENT BEFORE WILL FORMAT
+            </li>
+          </ul>
         </header>
                                   <!-- esthetic-ignore-start -->
                                   <div>
@@ -108,17 +249,21 @@ test('HTML Ignore Comment Region - Newlines and indentation', t => {
                                   </div>
                                   <!-- esthetic-ignore-end -->
 
-                                  <main>
+                                      <main>
 
-                                    FORMAT WILL BE APPLIED HERE
+          FORMAT WILL BE APPLIED HERE
 
-                                            <ul>
-                                <li> FORMAT WILL RESPECT </li>
-                      <li> FORMAT WILL RESPECT </li>
-                                <li> FORMAT WILL RESPECT </li>
-                      <li> FORMAT WILL RESPECT </li>
-                                            </ul>
-
+          <ul>
+          <li>
+          FORMAT WILL RESPECT
+          </li>
+          <li>      FORMAT WILL RESPECT
+          </li>
+          <li>                   FORMAT WILL RESPECT
+          </li>
+                      <li>
+            FORMAT WILL RESPECT          </li>
+          </ul>
                                   <!-- esthetic-ignore-start -->
                                   <div>
 
@@ -137,18 +282,20 @@ test('HTML Ignore Comment Region - Newlines and indentation', t => {
                                   </div>
                                   <!-- esthetic-ignore-end -->
 
-                                  </main>
+        </main>
 
         <footer>
         <ul>
-        <li> CONTENT AFTER WILL FORMAT </li>
+        <li>
+        CONTENT AFTER WILL FORMAT
+        </li>
         </ul>
         </footer>
       `
     ]
   )(
     {
-      language: 'liquid'
+      language: 'html'
     }
   )(function (source, rules, label) {
 
@@ -160,17 +307,19 @@ test('HTML Ignore Comment Region - Newlines and indentation', t => {
 
 });
 
-test('HTML Ignore Comment Region - Edge cases', async t => {
+test('HTML Ignore Comment Region - Edge cases', t => {
 
   forSample(
     [
 
-      liquid`{% # Extraneous spacing and newlines following the ignore comment %}
+      html`<!-- Extraneous spacing and newlines following the ignore comment -->
 
         <header>
-        <ul>
-        <li> CONTENT BEFORE FORMAT </li>
-        </ul>
+          <ul>
+            <li>
+          CONTENT BEFORE FORMAT
+            </li>
+          </ul>
         </header>
 
         <!-- esthetic-ignore-start -->
@@ -189,16 +338,20 @@ test('HTML Ignore Comment Region - Edge cases', async t => {
 
         <footer>
         <ul>
-        <li> CONTENT AFTER WILL FORMAT </li>
-        </ul>
+                          <li>
+        CONTENT AFTER WILL FORMAT
+            </li>
+                                            </ul>
         </footer>
       `,
-      liquid`{% # Invalid characters in following start tag %}
+      html`<!-- Invalid characters in following start tag -->
 
         <header>
-        <ul>
-        <li> CONTENT BEFORE FORMAT </li>
-        </ul>
+          <ul>
+                              <li>
+          CONTENT BEFORE FORMAT
+            </li>
+          </ul>
         </header>
 
         <!-- esthetic-ignore-start -->
@@ -212,16 +365,16 @@ test('HTML Ignore Comment Region - Edge cases', async t => {
           </main >
         <!-- esthetic-ignore-end -->
 
-        <footer>
-        <ul>
-        <li> CONTENT AFTER WILL FORMAT </li>
-        </ul>
-        </footer>
+        <footer>         <ul>
+            <li>            CONTENT AFTER WILL FORMAT
+            </li>
+                          </ul>
+                                   </footer>
       `
     ]
   )(
     {
-      language: 'liquid'
+      language: 'html'
     }
   )(function (source, rules, label) {
 
@@ -238,7 +391,7 @@ test('HTML Ignore Comment Region - Followed by markup', t => {
   forSample(
     [
 
-      liquid`{% # HTML structure within before and after content %}
+      html`<!-- HTML structure within before and after content -->
 
         <header>
         <ul>
@@ -269,7 +422,7 @@ test('HTML Ignore Comment Region - Followed by markup', t => {
         </div>
 
       `,
-      liquid`{% # HTML with nested tags matching first tag name %}
+      html`<!-- HTML with nested tags matching first tag name -->
 
         <!-- esthetic-ignore-start -->
         <div id="1">
@@ -294,7 +447,7 @@ test('HTML Ignore Comment Region - Followed by markup', t => {
         </footer>
         </div>
       `,
-      liquid`{% # HTML sub-nested structures %}
+      html`<!-- HTML sub-nested structures -->
 
         <main>
         <div>
@@ -311,7 +464,7 @@ test('HTML Ignore Comment Region - Followed by markup', t => {
         </div>
         </main>
       `,
-      liquid`{% # HTML void tag exclusion %}
+      html`<!-- HTML void tag exclusion -->
 
         <ul>
         <li> CONTENT BEFORE FORMAT </li>
@@ -325,7 +478,7 @@ test('HTML Ignore Comment Region - Followed by markup', t => {
         <li> CONTENT AFTER FORMAT </li>
         </ul>
       `,
-      liquid`{% # HTML void tag exclusion %}
+      html`<!-- HTML void tag exclusion -->
 
         <ul>
         <li> CONTENT BEFORE FORMAT </li>
@@ -370,110 +523,7 @@ test('HTML Ignore Comment Region - Followed by markup', t => {
     ]
   )(
     {
-      language: 'liquid'
-    }
-  )(function (source, rules, label) {
-
-    const input = esthetic.format(source, rules);
-
-    t.snapshot(input, label);
-
-  });
-
-});
-
-test('HTML Ignore Comment Region - Followed by liquid', t => {
-
-  forSample(
-    [
-
-      liquid`{% # HTML structure within before and after content %}
-
-        <header>
-        <ul>
-        <li> CONTENT BEFORE FORMAT </li>
-        </ul>
-        </header>
-
-        <!-- esthetic-ignore-start -->
-        {% if xxx %}
-
-        <h1>  Ignored Content   </h1>
-
-        <p id="ignore-attrs"  data - = passes  >
-
-        All this content contained between the if tags will be ignored
-
-        </p  >
-
-        {% endif %}
-        <!-- esthetic-ignore-end -->
-
-        <div>
-        <footer>
-        <ul>
-        <li> CONTENT AFTER WILL FORMAT </li>
-        </ul>
-        </footer>
-        </div>
-
-      `,
-      liquid`{% # HTML with nested tags matching first tag name %}
-
-        <!-- esthetic-ignore-start -->
-        {% for one in array %}
-        <div id="xxx">
-        {%
-          for two in array
-        %}
-
-        All this content will be ignored until closing of "for one"
-
-        {%   for    two    in    array %}
-          <div></ div>
-        {% endfor %}
-
-        {% endfor %}
-        </div>
-        {% endfor %}
-
-        <!-- esthetic-ignore-end -->
-
-        <div>
-        <footer>
-        <ul>
-        <li> CONTENT AFTER WILL FORMAT </li>
-        </ul>
-        </footer>
-        </div>
-      `,
-      liquid`{% # HTML sub-nested structures with extraneous spacing %}
-
-        <main>
-        <div>
-        <ul>
-        <li>
-
-              <!-- esthetic-ignore-start -->
-
-              {% unless condition %}
-              {{  this.
-                content .
-                is .ignored  }}
-              {% endunless    %}
-
-              <!-- esthetic-ignore-end -->
-
-        </li>
-        </ul>
-        </div>
-        </main>
-      `
-    ]
-  )(
-    {
-      language: 'liquid',
-      preserveLine: 3
+      language: 'html'
     }
   )(function (source, rules, label) {
 

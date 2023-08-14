@@ -4,7 +4,7 @@ import { NIL, WSP } from 'chars';
 import { cc } from 'lexical/codes';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
-import { create } from 'utils/native';
+import { object } from 'utils/native';
 
 export function style () {
 
@@ -25,7 +25,7 @@ export function style () {
   /**
    * Hold state reference of indents
    */
-  const indents: { [K in Types]: number } = create(null);
+  const indents: { [K in Types]: number } = object(null);
 
   /**
    * The input length
@@ -396,7 +396,8 @@ export function style () {
 
         build.push(WSP);
 
-        if (isType(a, 'at_rule')) indent = indent + 1;
+        // detects :root
+        if (isType(a, 'at_rule') && isType(a + 2, 'colon')) indent = indent + 1;
 
       } else if (data.types[a + 1].indexOf('liquid') > -1) {
 

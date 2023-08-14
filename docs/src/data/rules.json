@@ -92,6 +92,11 @@
     },
     {
       "group": "liquid",
+      "title": "forceIndent",
+      "url": "/rules/liquid/forceIndent/"
+    },
+    {
+      "group": "liquid",
       "title": "forceFilter",
       "url": "/rules/liquid/forceFilter/"
     },
@@ -117,13 +122,13 @@
     },
     {
       "group": "liquid",
-      "title": "preserveComment",
-      "url": "/rules/liquid/preserveComment/"
+      "title": "paddedTagList",
+      "url": "/rules/liquid/paddedTagList/"
     },
     {
       "group": "liquid",
-      "title": "preserveInternal",
-      "url": "/rules/liquid/preserveInternal/"
+      "title": "preserveComment",
+      "url": "/rules/liquid/preserveComment/"
     },
     {
       "group": "liquid",
@@ -140,6 +145,11 @@
       "group": "markup",
       "title": "attributeSort",
       "url": "/rules/markup/attributeSort/"
+    },
+    {
+      "group": "markup",
+      "title": "commentDelimiters",
+      "url": "/rules/markup/commentDelimiters/"
     },
     {
       "group": "markup",

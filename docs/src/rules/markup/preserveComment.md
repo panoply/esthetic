@@ -10,7 +10,7 @@ options:
   - true
 ---
 
-::: grid col-9 p-100
+::: grid col-12 col-sm-9 p-100
 
 # Preserve Comment
 
@@ -31,7 +31,7 @@ In the below example we have enabled comment preservation. Both the `commentInde
 ```json
 {
   "language": "html",
-  "liquid": {
+  "markup": {
     "commentNewline": false, // This setting will be ignored
     "commentIndent": true, // This setting will be ignored
     "preserveComment": true // When enabled, this rule takes precedence

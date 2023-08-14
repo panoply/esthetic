@@ -10,13 +10,15 @@ options:
   - true
 ---
 
-::: grid col-9 p-100
+::: grid col-12 col-sm-9 p-100
 
 # Comment Indent
 
 Applies single indentation to containing content of HTML and XML comments which span multiple lines. This is a markup specific formatting rule which will be applied to HTML or XML comments. It will **default** to using `false` when no option has been specified and the **recommended** option to use is `true`.
 
 > This rule only effects markup comments containing newlines. Inline markup comments which start and end on the same line will skipped.
+
+:::
 
 ---
 
@@ -70,8 +72,8 @@ Below is an example of how this rule works if it's enabled (`true`). Notice how 
 
 ```json:rules
 {
-  "language": "liquid",
-  "liquid": {
+  "language": "html",
+  "markup": {
     "commentIndent": true
   }
 }

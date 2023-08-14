@@ -1,15 +1,4 @@
 /* eslint no-unmodified-loop-condition: "off" */
-import { lexers } from 'lexers';
-import { format } from 'format';
-import { Languages, Lexers, Modes } from 'lexical/enum';
-import * as lx from 'lexical/lexing';
-import { NIL, NWL } from 'chars';
-import { getLexerName, getLexerType } from 'rules/language';
-import { defaults } from 'rules/presets/default';
-import { ws } from 'utils/helpers';
-import { SyntacticError } from 'parse/errors';
-import { ParseError } from 'lexical/errors';
-import { config } from 'config';
 import type {
   LanguageName,
   Syntactic,
@@ -23,6 +12,20 @@ import type {
   Rules,
   Hooks
 } from 'types';
+import { lexers } from 'lexers';
+import { format } from 'format';
+import { Languages, Lexers, Modes } from 'lexical/enum';
+import * as lx from 'lexical/lexing';
+import * as rx from 'lexical/regex';
+import { NIL, NWL } from 'chars';
+import { getLexerName, getLexerType } from 'rules/language';
+import { defaults } from 'rules/presets/default';
+import { is, ns } from 'utils/helpers';
+import { SyntacticError } from 'parse/errors';
+import { ParseError } from 'lexical/errors';
+import { config } from 'config';
+import { cc } from 'lexical/codes';
+import { object } from 'utils/native';
 
 /**
  * Parse Stack
@@ -124,7 +127,9 @@ class Parser {
   public ender = 0;
 
   /**
-   * Reference to `a`
+   * A reference to `a` which holds index reference. This is not always identical
+   * to the current index when lexing, instead it acts as a universal store
+   * when specific position reference indexes need to be referred.
    */
   public iterator = 0;
 
@@ -150,7 +155,7 @@ class Parser {
    * Holds a store reference to markup start/end pairs. This is used for potential
    * parse errors and keeps track of paired sequences for syntactic reporting.
    */
-  public pairs: Map<number, Syntactic> = new Map();
+  public pairs: { [index: number]: Syntactic } = object(null);
 
   /**
    * Parse Error reference. Defaults to `null` and will be assigned an object reference exception
@@ -160,7 +165,7 @@ class Parser {
   /**
    * Hardcoded string reference to CRLF rule
    */
-  public crlf = '\n';
+  public crlf = NWL;
 
   /**
    * The current operation mode running
@@ -368,8 +373,8 @@ class Parser {
     this.references = [ [] ];
     this.stack = new Stack([ 'global', -1 ]);
     this.mode = Modes.Parse;
+    this.pairs = object(null);
 
-    if (this.pairs.size > 0) this.pairs.clear();
     if (this.attributes.size > 0) this.attributes.clear();
     if (this.regions.size > 0) this.regions.clear();
 
@@ -400,6 +405,8 @@ class Parser {
    * Executes a full parse - top to bottom.
    */
   public document (lexer: Lexers, mode: Modes = Modes.Format) {
+
+    if (rx.CommIgnoreFile.test(this.source)) return this.source;
 
     this.reset();
 
@@ -473,8 +480,10 @@ class Parser {
     const begin = data.begin[a];
 
     if ((
-      data.lexer[a] === 'style' &&
-      this.rules.style.sortProperties
+      data.lexer[a] === 'style' && (
+        this.rules.style.sortProperties ||
+        this.rules.style.sortSelectors
+      )
     ) || (
       data.lexer[a] === 'script' && (
         this.rules.script.objectSort ||
@@ -486,6 +495,7 @@ class Parser {
       // its current index or the index of the end token, which results in
       // an endless loop. These end values are addressed at the end of
       // the "parser" function with this.sortCorrection
+      //
       return;
 
     }
@@ -519,44 +529,60 @@ class Parser {
    * This is a store The `parse.data.begin` index. This will typically
    * reference the `parse.count` value, incremented by `1`
    */
-  private syntactic (record: Record, stack: string) {
+  public syntactic (record: Record, stack: string) {
 
     if (record.types === 'liquid_start' || record.types === 'start') {
 
-      this.pairs.set(this.count, {
+      this.pairs[this.count] = {
         index: this.count,
         line: this.lineNumber,
         token: record.token,
+        skip: false,
         type: record.types === 'start' ? Languages.HTML : Languages.Liquid,
         stack
-      });
+      };
 
-    } else if (this.pairs.has(this.stack.index) && (
+    } else if (this.stack.index in this.pairs && (
       record.types === 'end' ||
       record.types === 'liquid_end'
     )) {
 
-      const pair = this.pairs.get(this.stack.index);
+      const pair = this.pairs[this.stack.index];
+
+      if (pair.skip) {
+        delete this.pairs[this.stack.index];
+      }
 
       if (pair.type === Languages.Liquid) {
 
         if (record.token.indexOf(`end${pair.stack}`) > -1) {
-          this.pairs.delete(this.stack.index);
+
+          delete this.pairs[this.stack.index];
+
         } else {
-          SyntacticError(ParseError.MissingLiquidEndTag, pair);
+
+          // TODO:
+          // IMPROVE LIQUID TAG HANDLING
+          //
+          if (record.stack === 'liquid' && (record.token === '%}' || record.token === '-%}')) {
+            delete this.pairs[this.stack.index];
+          } else {
+            SyntacticError(ParseError.MissingLiquidEndTag, pair);
+          }
         }
 
       } else if (pair.type === Languages.HTML) {
 
         if (`</${pair.stack}>` === record.token) {
-          this.pairs.delete(this.stack.index);
+          delete this.pairs[this.stack.index];
         } else {
-          // SyntacticError(ParseError.MissingHTMLEndTag, pair);
+          SyntacticError(ParseError.MissingHTMLEndTag, pair);
         }
 
       }
 
     }
+
   }
 
   /**
@@ -598,7 +624,14 @@ class Parser {
         : lx.getTagName(record.token);
     }
 
-    // if (record.lexer === 'markup' && token !== 'liquid') this.syntactic(record, token);
+    if (
+      record.lexer === 'markup' &&
+      record.stack !== 'liquid' &&
+      record.stack !== 'svg') {
+
+      //  this.syntactic(record, token);
+
+    }
 
     this.lineOffset = 0;
 
@@ -653,6 +686,7 @@ class Parser {
     } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
 
       if (token === NIL) token = 'else';
+
       if (this.count > 0 && (
         data.types[this.count - 1] === 'start' ||
         data.types[this.count - 1].indexOf('_start') > 0
@@ -799,12 +833,13 @@ class Parser {
 
     do {
 
-      if (args.array[args.index] === NWL) {
+      if (is(args.array[args.index], cc.NWL)) {
+        this.lineIndex = args.index;
         this.lineOffset = this.lineOffset + 1;
         this.lineNumber = this.lineNumber + 1;
       }
 
-      if (ws(args.array[args.index + 1]) === false) break;
+      if (ns(args.array[args.index + 1])) break;
 
       args.index = args.index + 1;
 

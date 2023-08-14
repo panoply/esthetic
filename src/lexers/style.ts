@@ -1387,13 +1387,12 @@ export function style () {
 
     } else {
 
-      comm = commentBlock({
-        chars: b,
+      comm = commentBlock(b, {
         start: a,
         end: c,
         lexer: 'style',
         begin: '/*',
-        ender: '\u002a/'
+        ender: '*/'
       });
 
       ltoke = comm[0];

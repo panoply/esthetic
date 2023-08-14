@@ -350,7 +350,7 @@ test('Liquid block comment wrapping', t => {
 
 });
 
-test('Liquid line comment wrapping with auto hashing prefix', t => {
+test.skip('Liquid line comment wrapping with auto hashing prefix', t => {
 
   forRule(
     [

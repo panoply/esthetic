@@ -81,7 +81,6 @@ export function getLexerType (language: LanguageName): Lexers {
 
     case 'auto': return Lexers.Auto;
 
-    case 'markup':
     case 'html':
     case 'liquid':
     case 'xml': return Lexers.Markup;

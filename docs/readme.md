@@ -105,6 +105,7 @@ Rule documentation files, specifically rule example titles are wrapped within a 
 | 👍    | Good choice                             |
 | 👎    | Not Recommended                         |
 | 😳    | We live in a society, we're not animals |
+| 🤌    | Delightful. Your mother is proud of you |
 | 🤡    | The choice of a clown                   |
 | 💡    | Showing an example of the rule          |
 | 🧐    | You gotta do, what you gotta do         |

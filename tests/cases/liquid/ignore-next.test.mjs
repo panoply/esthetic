@@ -6,9 +6,9 @@ import esthetic from 'esthetic';
 /* BLOCK COMMENTS                                */
 /* -------------------------------------------- */
 
-test('Ignore Next (Block Comment) - Newlines and indentation', async t => {
+test('Ignore Next (Block Comment) - Newlines and indentation', t => {
 
-  await forSample(
+  forSample(
     [
       liquid`{% # 1 newline following comment is respected %}
 
@@ -160,9 +160,9 @@ test('Ignore Next (Block Comment) - Newlines and indentation', async t => {
 
 });
 
-test('Ignore Next (Block Comment) - Edge cases', async t => {
+test('Ignore Next (Block Comment) - Edge cases', t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # Extraneous spacing and newlines following the ignore comment %}
@@ -183,8 +183,7 @@ test('Ignore Next (Block Comment) - Edge cases', async t => {
 
         </p  >
 
-        </main
-        >
+        </main>
 
         <footer>
         <ul>
@@ -231,9 +230,9 @@ test('Ignore Next (Block Comment) - Edge cases', async t => {
 
 });
 
-test('Ignore Next (Block Comment) - Followed by markup', async t => {
+test('Ignore Next (Block Comment) - Followed by markup', t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # HTML structure within before and after content %}
@@ -244,18 +243,18 @@ test('Ignore Next (Block Comment) - Followed by markup', async t => {
         </ul>
         </header>
 
-        {% comment %} esthetic-ignore-next {% endcomment %}
-        <main    id="xxx"  data - = passes   >
+                    {% comment %} esthetic-ignore-next {% endcomment %}
+                    <main    id="xxx"  data - = passes   >
 
-        <h1>  Ignored Content   </h1>
+                    <h1>  Ignored Content   </h1>
 
-        <p id="ignore-attrs"  data - = passes  >
+                    <p id="ignore-attrs"  data - = passes  >
 
-        All this content contained between the main tags will be ignored
+                    All this content contained between the main tags will be ignored
 
-        </p  >
+                    </p  >
 
-        </main>
+                    </main>
 
 
         <div>
@@ -345,7 +344,7 @@ test('Ignore Next (Block Comment) - Followed by markup', async t => {
         <ul>
           <li> FORMAT </li>
           <li> FORMAT </li>
-            {% comment %} esthetic-ignore-next {% endcomment %}
+                                {% comment %} esthetic-ignore-next {% endcomment %}
             <li> DO NOT FORMAT </li>
           <li> FORMAT </li>
           <li> FORMAT </li>
@@ -364,19 +363,20 @@ test('Ignore Next (Block Comment) - Followed by markup', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
-    const input = await esthetic.format(source, rules);
+    const input = esthetic.format(source, rules);
 
+    //  t.log(input);
     t.snapshot(input, label);
 
   });
 
 });
 
-test('Ignore Next (Block Comment) - Followed by liquid', async t => {
+test('Ignore Next (Block Comment) - Followed by liquid', t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # HTML structure within before and after content %}
@@ -392,7 +392,7 @@ test('Ignore Next (Block Comment) - Followed by liquid', async t => {
         {% endcomment %}
         {% if xxx %}
 
-        <h1>  Ignored Content   </h1>
+        <h1>       Ignored Content         </h1>
 
         <p id="ignore-attrs"  data - = passes  >
 
@@ -414,21 +414,23 @@ test('Ignore Next (Block Comment) - Followed by liquid', async t => {
       liquid`{% # HTML with nested tags matching first tag name %}
 
         {% comment %} esthetic-ignore-next {% endcomment %}
-        {% for one in array %}
+        {%        for one in        array %}
+
         <div id="xxx">
         {%
-          for two in array
+          for       two in array
         %}
 
         All this content will be ignored until closing of "for one"
 
-        {%   for    two    in    array %}
+        {%   for    three    in    array %}
           <div></ div>
-        {% endfor %}
+        {%endfor%}
 
-        {% endfor %}
+        {%              endfor %}
+
         </div>
-        {% endfor %}
+        {%-                       endfor                %}
 
         <div>
 
@@ -446,14 +448,14 @@ test('Ignore Next (Block Comment) - Followed by liquid', async t => {
         <ul>
         <li>
 
-        {% comment %}
-          esthetic-ignore-next
-        {% endcomment %}
-              {% unless condition %}
-              {{  this.
-                content .
-                is .ignored  }}
-              {% endunless    %}
+                      {% comment %}
+                        esthetic-ignore-next
+                      {% endcomment %}
+                      {% unless condition %}
+                      {{  this.
+                        content .
+                        is .ignored  }}
+                      {% endunless    %}
 
         </li>
         </ul>
@@ -469,7 +471,7 @@ test('Ignore Next (Block Comment) - Followed by liquid', async t => {
   )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
-
+    // t.log(input);
     t.snapshot(input, label);
 
   });
@@ -480,9 +482,9 @@ test('Ignore Next (Block Comment) - Followed by liquid', async t => {
 /* LINE COMMENTS                                */
 /* -------------------------------------------- */
 
-test('Ignore Next (Line Comment) - Newlines and indentation', async t => {
+test('Ignore Next (Line Comment) - Newlines and indentation', t => {
 
-  await forSample(
+  forSample(
     [
       liquid`{% # 1 newline following comment is respected %}
 
@@ -492,7 +494,7 @@ test('Ignore Next (Line Comment) - Newlines and indentation', async t => {
 
         {% # esthetic-ignore-next %}
         <main>
-          <h1></h1>
+                  <h1>                </h1>
         </main>
 
 
@@ -649,19 +651,19 @@ test('Ignore Next (Line Comment) - Newlines and indentation', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
-
+    // t.log(input);
     t.snapshot(input, label);
 
   });
 
 });
 
-test('Ignore Next (Line Comment) - Edge cases', async t => {
+test('Ignore Next (Line Comment) - Edge cases', t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # Extraneous spacing and newlines following the ignore comment %}
@@ -682,8 +684,7 @@ test('Ignore Next (Line Comment) - Edge cases', async t => {
 
         </p  >
 
-        </main
-        >
+        </main>
 
 
         <footer>
@@ -708,7 +709,7 @@ test('Ignore Next (Line Comment) - Edge cases', async t => {
 
         <p  >   </ p  >
 
-          </main >
+          </main>
 
 
         <footer>
@@ -722,19 +723,20 @@ test('Ignore Next (Line Comment) - Edge cases', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
 
+    // t.log(input);
     t.snapshot(input, label);
 
   });
 
 });
 
-test('Ignore Next (Line Comment) - Followed by markup', async t => {
+test('Ignore Next (Line Comment) - Followed by markup', t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # HTML structure within before and after content %}
@@ -777,7 +779,7 @@ test('Ignore Next (Line Comment) - Followed by markup', async t => {
 
         All tags contained in 1 will be ignored until closing of 1
         <div>
-          <div></div>
+                        <div>                         </div>
         </div>
 
         </div>
@@ -865,19 +867,20 @@ test('Ignore Next (Line Comment) - Followed by markup', async t => {
     {
       language: 'liquid'
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
 
+    //  t.log(input);
     t.snapshot(input, label);
 
   });
 
 });
 
-test('Ignore Next (Line Comment) - Followed by liquid', async t => {
+test('Ignore Next (Line Comment) - Followed by liquid', t => {
 
-  await forSample(
+  forSample(
     [
 
       liquid`{% # HTML structure within before and after content %}
@@ -913,21 +916,22 @@ test('Ignore Next (Line Comment) - Followed by liquid', async t => {
       liquid`{% # HTML with nested tags matching first tag name %}
 
         {% # esthetic-ignore-next %}
-        {% for one in array %}
+        {%        for     one in array %}
         <div id="xxx">
         {%
-          for two in array
+                  for two in array
         %}
 
         All this content will be ignored until closing of "for one"
 
-        {%   for    two    in    array %}
+        {%   for    three    in    array %}
           <div></ div>
         {% endfor %}
 
-        {% endfor %}
+        {%
+          endfor %}
         </div>
-        {% endfor %}
+        {%                          endfor                 %}
 
         <div>
         <footer>
@@ -944,12 +948,12 @@ test('Ignore Next (Line Comment) - Followed by liquid', async t => {
         <ul>
         <li>
 
-        {% # esthetic-ignore-next %}
-              {% unless condition %}
-              {{  this.
-                content .
-                is .ignored  }}
-              {% endunless    %}
+                        {% # esthetic-ignore-next %}
+                        {% unless condition %}
+                        {{  this.
+                          content .
+                          is .ignored  }}
+                        {% endunless    %}
 
         </li>
         </ul>
@@ -962,10 +966,11 @@ test('Ignore Next (Line Comment) - Followed by liquid', async t => {
       language: 'liquid',
       preserveLine: 3
     }
-  )(async function (source, rules, label) {
+  )(function (source, rules, label) {
 
     const input = esthetic.format(source, rules);
 
+    // t.log(input);
     t.snapshot(input, label);
 
   });

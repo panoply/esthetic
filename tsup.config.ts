@@ -9,7 +9,7 @@ export default defineConfig([
     clean: false,
     treeshake: true,
     name: 'Æsthetic',
-    minify: 'terser',
+    minify: false,
     noExternal: [
       'mergerino'
     ],

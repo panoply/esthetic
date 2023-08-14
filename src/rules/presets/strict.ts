@@ -34,6 +34,7 @@ export const strict: Rules = merge({
       'src'
     ],
     attributeCasing: 'lowercase-name',
+    commentDelimiters: 'force',
     commentNewline: true,
     delimiterTerminus: 'adapt',
     forceAttribute: 1,

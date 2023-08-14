@@ -11,7 +11,7 @@ options:
   - single
 ---
 
-::: grid col-9 p-100
+::: grid col-12 col-sm-9 p-100
 
 # Quote Convert
 
@@ -96,16 +96,13 @@ Below is an example of how this rule works if set to `double` which will go abou
 
 ---
 
-
 ::: rule 😳
 
 #### single
 
 :::
 
-
 Below is an example of how this rule works if set to `single` which will go about converting and ensuring all markup quotations are using singles. This is typically discourage in HTML and other markup languages.
-
 
 ```json:rules
 {
@@ -126,4 +123,3 @@ Below is an example of how this rule works if set to `single` which will go abou
 
 </div>
 ```
-

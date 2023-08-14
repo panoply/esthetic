@@ -30,13 +30,13 @@
 
     {
       "group": "usage",
-      "title": "CLI",
-      "url": "/usage/cli/"
+      "title": "Config Files",
+      "url": "/usage/config-files/"
     },
     {
       "group": "usage",
-      "title": "Config Files",
-      "url": "/usage/config-files/"
+      "title": "CLI",
+      "url": "/usage/cli/"
     },
     {
       "group": "usage",
@@ -47,6 +47,11 @@
       "group": "usage",
       "title": "Format",
       "url": "/usage/format/"
+    },
+    {
+      "group": "usage",
+      "title": "Ignoring Code",
+      "url": "/usage/ignoring-code/"
     },
     {
       "group": "usage",

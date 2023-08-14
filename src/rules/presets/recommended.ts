@@ -24,6 +24,7 @@ export const recommended: Rules = merge({
   },
   markup: {
     attributeCasing: 'lowercase-name',
+    commentDelimiters: 'preserve',
     commentNewline: true,
     delimiterTerminus: 'adapt',
     forceAttribute: 2,

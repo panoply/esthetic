@@ -4,7 +4,7 @@ layout: base
 permalink: '/rules/global/indentChar/index.html'
 ---
 
-::: grid col-9 p-100
+::: grid col-12 col-sm-9 p-100
 
 # Indent Char
 

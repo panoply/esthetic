@@ -112,11 +112,19 @@ dev(function (source) {
   // });
 
   const output = esthetic.format(source, {
+
     language: 'liquid',
-    wrap: 50,
+    wrap: 0,
+    indentSize: 2,
     liquid: {
-      delimiterPlacement: 'preserve',
-      forceFilter: 2
+      normalizeSpacing: true,
+      dedentTagList: [
+
+      ]
+    },
+    markup: {
+      forceAttribute: false,
+      forceIndent: false
     }
 
   });

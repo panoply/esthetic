@@ -1,6 +1,6 @@
 import type { IParseError, Syntactic } from 'types';
 import { parse } from 'parse/parser';
-import { NWL } from 'lexical/chars';
+import { NWL, WSP } from 'lexical/chars';
 import { isUndefined, join } from 'utils/helpers';
 import { getLanguageName } from 'rules/language';
 import { ParseError } from 'lexical/errors';
@@ -24,11 +24,11 @@ export function MarkupError (errorCode: ParseError, token: string, tname?: strin
     , NWL
     , getSampleSnippet()
     , NWL
-    , error.details
+    , error.details.replace(/\n/g, WSP)
     , NWL
     , `Language: ${getLanguageName(parse.language)} `
     , `Location: ${parse.lineNumber}:${parse.lineColumn}`
-    , `Æsthetic: Parse Failed (Code: ${error})`
+    , `Æsthetic: Parse Failed (Code: ${error.code})`
   );
 
 }
@@ -340,6 +340,21 @@ function message (code: ParseError, token: string, lineNo: number = parse.lineNu
       details: ansi(
         'The HTML tag is missing its closing delimiter resulting in malformed syntax.',
         'You can have Esthetic autofix syntax errors like this by setting the markup rule "correct" to true.'
+      )
+    }),
+    [ParseError.MissingHTMLEndingCommentDelimiter]: ({
+      code,
+      message: ansi(`Syntax Error (line ${lineNo}): Missing HTML "-->" comment delimiter`),
+      details: ansi(
+        'An invalid HTML comment expression which has resulting in malformed syntax.',
+        'HTML Comment require ending delimiters to be passed.'
+      )
+    }),
+    [ParseError.InvalidHTMLCommentDelimiter]: ({
+      code,
+      message: ansi(`Syntax Error (line ${lineNo}): Invalid HTML "<!--" comment delimeter`),
+      details: ansi(
+        'An invalid HTML opening comment delimiter expressed resulting in malformed syntax.'
       )
     }),
     [ParseError.InvalidHTMLCommentAttribute]: ({

@@ -28,6 +28,10 @@ $demo-output-font-color: #65696f;
 
 .demo-output {
   background-color: $demo-bg-color;
+
+  @include media-breakpoint-down(sm) {
+    margin-top: 20px;
+  }
 }
 
 .demo-cover,

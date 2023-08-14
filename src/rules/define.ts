@@ -6,7 +6,7 @@ import { recommended } from 'rules/presets/recommended';
 import { strict } from 'rules/presets/strict';
 import { warrington } from 'rules/presets/warrington';
 import { prettier } from 'rules/presets/prettier';
-import { assign } from 'utils/native';
+import { assign, object } from 'utils/native';
 import { CNL, NWL } from 'lexical/chars';
 import { hasProp } from 'utils/helpers';
 import { config } from 'config';
@@ -126,12 +126,19 @@ export function setRules (opts: Rules, events: EventListeners) {
 
     if (has(lang) === false) continue;
     if (parse.rules[lang] === options[lang]) continue;
-    if (change) change[lang] = {};
+    if (change) change[lang] = object(null);
 
     for (const rule in options[lang]) {
       if (isValid(lang, rule, options[lang][rule])) {
-        if (change) change[lang][rule] = { old: parse.rules[lang][rule], now: options[lang][rule] };
+
+        if (change) {
+          change[lang][rule] = object(null);
+          change[lang][rule].old = parse.rules[lang][rule];
+          change[lang][rule].new = options[lang][rule];
+        }
+
         parse.rules[lang][rule] = options[lang][rule];
+
       }
     }
   }

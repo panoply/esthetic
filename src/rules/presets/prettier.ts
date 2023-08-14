@@ -21,7 +21,8 @@ export const prettier: Rules = merge({
     quoteConvert: 'double'
   },
   markup: {
-    commentNewline: true,
+    commentDelimiters: 'consistent',
+    commentIndent: true,
     delimiterTerminus: 'force',
     forceAttribute: 1,
     forceIndent: true,

@@ -107,6 +107,62 @@ export function join (...message: string[]) {
 }
 
 /**
+ * Count (newlines)
+ *
+ * Returns the number of newline `\n` character occurances
+ * in a provided string. Optionally provide a `current` parameter
+ * which will typically be the current `parse.lineNumber` value.
+ *
+ * **Passing `current` as `NaN` or `undefined`**
+ *
+ * When `current` is undefined, it will default to `NaN` and return
+ * the number of newlines of input only.
+ *
+ * **Passing `current` as `parse.lineNumber`**
+ *
+ * When passing in a `current` number value, then the returning
+ * number of lines will be calculated together.
+ */
+export function cline (input: string | string[], current: number = NaN) {
+
+  if (input.indexOf(NWL) < 0) return isNaN(current) ? 0 : current;
+
+  /**
+   * Newline Count
+   */
+  let c: number;
+
+  if (isArray(input)) {
+
+    let i: number = 0;
+
+    do {
+
+      i = input.indexOf(NWL, i);
+
+      if (i === -1) break;
+
+      c = c + 1;
+      i = i + 1;
+
+    } while (i < input.length);
+
+  } else {
+
+    c = input.split(NWL).length;
+
+  }
+
+  if (isNaN(current)) return c === 1 ? 0 : c;
+  if (c === 1) return current;
+
+  c = (c - 1) + current;
+
+  return c > current ? c : current;
+
+}
+
+/**
  * Newline Generate
  *
  * Returns a newline sequence. Expects a function callback to be
@@ -158,9 +214,20 @@ export function is (string: string, code: number) {
 }
 
 /**
- * First (equal)
+ * Last Character
  *
- * If first character code of the string is equal to the provided code.
+ * Returns the last character of the provided string.
+ */
+export function lastChar (string: string | string[]): string {
+
+  return string[string.length - 1];
+
+}
+
+/**
+ * Starting Characters (equal)
+ *
+ * If the characters codes match the starting string sequence
  */
 export function isOf (string: string | string[], ...codes: number[]) {
 
@@ -247,6 +314,17 @@ export function notLast (string: string | string[], code: number) {
 };
 
 /**
+ * Non Whitespace
+ *
+ * Check if provided string is NOT a whitespace (`\s`,`\t`,`\n` etc) character
+ */
+export function ns (string: string) {
+
+  return /\S/.test(string);
+
+}
+
+/**
  * Whitespace
  *
  * Check if provided string is a whitespace (`\s`,`\t`,`\n` etc) character
@@ -315,9 +393,20 @@ export function size (bytes: number): string {
  *
  * Returns a sanatized line comment string
  */
-export function sanitizeComment (input: string) {
+export function charEsc (input: string) {
 
   return `\\${input}`;
+
+}
+
+/**
+ * Sanitize Liquid Delimiter
+ *
+ * Returns a sanatized liquid delimiters
+ */
+export function liquidEsc (char: string) {
+
+  return is(char, cc.LCB) ? '{%-?\\s*' : '\\s*-?%}';
 
 }
 
