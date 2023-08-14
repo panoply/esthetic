@@ -396,7 +396,7 @@ export function style () {
 
         build.push(WSP);
 
-        if (isType(a, 'at_rule')) indent = indent + 1;
+        //  if (isType(a, 'at_rule')) indent = indent + 1;
 
       } else if (data.types[a + 1].indexOf('liquid') > -1) {
 
