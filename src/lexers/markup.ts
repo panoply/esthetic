@@ -670,7 +670,9 @@ export function markup (input?: string) {
 
         if (grammar.liquid.else.has(tname)) {
 
-          record.types = ltype = tname === 'when' ? 'liquid_when' : 'liquid_else';
+          record.types = ltype = tname === 'when'
+            ? 'liquid_when'
+            : 'liquid_else';
 
         } else if (grammar.liquid.tags.has(tname)) {
 
@@ -679,7 +681,9 @@ export function markup (input?: string) {
             return parseLiquidCapture();
           }
 
-          record.types = ltype = 'liquid_start';
+          record.types = ltype = tname === 'case'
+            ? 'liquid_case_start'
+            : 'liquid_start';
 
           return parseAttribute();
 
@@ -688,7 +692,10 @@ export function markup (input?: string) {
           const name = tname.slice(3);
 
           if (grammar.liquid.tags.has(name)) {
-            record.types = ltype = 'liquid_end';
+
+            record.types = ltype = name === 'case'
+              ? 'liquid_case_end'
+              : 'liquid_end';
 
           } else {
 
@@ -822,7 +829,7 @@ export function markup (input?: string) {
           if (grammar.liquid.tags.has(lname)) {
 
             record.token = liner;
-            record.types = 'liquid_start';
+            record.types = lname === 'case' ? 'liquid_case_start' : 'liquid_start';
             record.lines = lines;
 
             push(record);
