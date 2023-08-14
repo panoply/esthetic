@@ -82,11 +82,6 @@ export function markup (input?: string) {
   svg.tname = [];
   svg.index = [];
 
-  /**
-   * Liquid conditional stacks
-   */
-  const stacks: number[] = [];
-
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
   /* -------------------------------------------- */
@@ -128,15 +123,17 @@ export function markup (input?: string) {
    */
   function create (record?: Partial<Record>): Record {
 
-    return assign({
-      lexer: 'markup',
-      lines: parse.lineOffset,
-      stack: parse.stack.token !== 'global' ? parse.stack.token : 'global',
-      begin: parse.stack.index,
-      token: NIL,
-      types: NIL,
-      ender: -1
-    }, record);
+    const entry = object(null);
+
+    entry.lexer = 'markup';
+    entry.lines = parse.lineOffset;
+    entry.stack = parse.stack.token !== 'global' ? parse.stack.token : 'global';
+    entry.begin = parse.stack.index;
+    entry.token = NIL;
+    entry.types = NIL;
+    entry.ender = -1;
+
+    return record ? assign(entry, record) : entry;
 
   }
 
@@ -584,7 +581,7 @@ export function markup (input?: string) {
         i = b.indexOf('}', i) + 1;
 
         record.types = ltype = 'liquid_capture';
-        record.token = token + b.slice(a, i).join(NIL);
+        record.token = token + source.slice(a, i);
         parse.lineNumber = u.cline(token, parse.lineNumber);
 
         push(record);
@@ -606,7 +603,7 @@ export function markup (input?: string) {
           // applying the slice.
           //
           //
-          token = token + b.slice(a, i).join(NIL);
+          token = token + source.slice(a, i);
           parse.lineNumber = u.cline(token, parse.lineNumber);
 
           a = i;
@@ -636,12 +633,14 @@ export function markup (input?: string) {
         ltype === 'liquid_end') {
 
         data.types[record.begin] = 'singleton';
-        parse.pairs.delete(parse.stack.index);
+
+        delete parse.pairs[parse.stack.index];
 
       } else if (data.types[parse.count] === 'liquid_start' && ltype === 'end') {
 
         record.types = 'singleton';
-        parse.pairs.delete(parse.stack.index);
+
+        delete parse.pairs[parse.stack.index];
         parse.stack.pop();
 
       }
@@ -1068,17 +1067,21 @@ export function markup (input?: string) {
         //
         if (u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO) || u.is(b[a], cc.TQO)) {
 
-          i = b.indexOf(b[a], a + 1);
+          i = a + 1;
+          t = b[a];
 
-          if (i > -1) {
+          // Proceed to next quotation
+          while (t !== b[i] && i < c) {
+            if (u.is(b[i], cc.BWS)) i = i + 1;
+            if (t === b[i]) break;
+            i = i + 1;
+          }
 
+          if (i !== c) {
             a = i + 1;
             i = -1;
-
-            continue;
-
           } else {
-            MarkupError(ParseError.UnterminateString, b.slice(a).join(NIL));
+            return MarkupError(ParseError.UnterminateString, source.slice(a));
           }
         }
 
@@ -1088,15 +1091,17 @@ export function markup (input?: string) {
 
             if (u.is(b[a], cc.DSH)) a = a + 1;
 
-            i = source.indexOf(tname, a);
+            i = a;
 
-            if (b[i - 3] === 'e' && b[i - 2] === 'n' && b[i - 1] === 'd') {
-              t = b.slice(i - 3, i + tname.length).join(NIL).trimStart();
-            } else {
-              t = b.slice(i, i + tname.length).join(NIL).trimStart();
+            // Proceed to first known character
+            while (u.ws(b[i])) {
+              i = i + 1;
+              if (u.ns(b[i])) break;
             }
 
-            if (t === tname) {
+            t = source.slice(i, i + ender.length);
+
+            if (t.startsWith(tname)) {
 
               a = i + tname.length;
               n = n + 1;
@@ -1108,8 +1113,7 @@ export function markup (input?: string) {
 
               if (n === 0) {
 
-                a = b.lastIndexOf('{', a);
-                i = b.indexOf('}', a + ender.length) + 1;
+                i = b.indexOf('}', i + ender.length) + 1;
 
                 if (i === -1) return MarkupError(ParseError.MissingLiquidCloseDelimiter, t, tname);
 
@@ -1118,7 +1122,7 @@ export function markup (input?: string) {
               } else {
 
                 n = n - 1;
-                a = i + tname.length;
+                a = i + ender.length;
 
               }
             }
@@ -1126,10 +1130,9 @@ export function markup (input?: string) {
 
         } else {
 
-          if (b.slice(a, a + ender.length).join(NIL) === ender) {
+          if (source.slice(a, a + ender.length) === ender) {
 
-            token = b.slice(now, a)
-              .join(NIL)
+            token = source.slice(now, a)
               .replace(rx.WhitespaceLead, NIL)
               .replace(rx.WhitespaceEnd, NIL);
 
@@ -1146,9 +1149,8 @@ export function markup (input?: string) {
       if (type === Languages.Liquid) {
 
         const from = b.lastIndexOf(NWL, parse.iterator) + 1;
-
         record.types = ltype = 'ignore';
-        record.token = token = b.slice(from, i).join(NIL);
+        record.token = token = source.slice(from, i);
 
         push(record);
 
@@ -1259,7 +1261,7 @@ export function markup (input?: string) {
 
             }
 
-            return MarkupError(ParseError.UnterminateString, b.slice(a).join(NIL));
+            return MarkupError(ParseError.UnterminateString, source.slice(a));
 
           }
 
@@ -1269,7 +1271,7 @@ export function markup (input?: string) {
 
               if (u.is(b[a], cc.DSH)) a = a + 1;
 
-              t = b.slice(a).join(NIL).trimStart();
+              t = source.slice(a).trimStart();
 
               if (t.startsWith(tname)) {
 
@@ -1305,14 +1307,14 @@ export function markup (input?: string) {
 
             if (
               u.is(b[a - 1], cc.LAN) &&
-              b.slice(a, a + tname.length).join(NIL) === tname) {
+              source.slice(a, a + tname.length) === tname) {
 
               n = n + 1;
 
             } else if (
               u.is(b[a], cc.LAN) &&
               u.is(b[a + 1], cc.FWS) &&
-              b.slice(a, a + ender.length).join(NIL) === ender) {
+              source.slice(a, a + ender.length) === ender) {
 
               if (n === 0) {
 
@@ -1349,7 +1351,7 @@ export function markup (input?: string) {
         // Update Parse Table Record
         //
         record.types = 'ignore';
-        record.token = token = b.slice(from, a + 1).join(NIL);
+        record.token = token = source.slice(from, a + 1);
 
         // Align line numbers
         //
@@ -1360,7 +1362,7 @@ export function markup (input?: string) {
         // Update Parse Table Record (this is singleton or void)
         //
         record.types = 'ignore';
-        record.token = token = b.slice(from, a + 1).join(NIL);
+        record.token = token = source.slice(from, a + 1);
 
       }
 
@@ -2025,6 +2027,97 @@ export function markup (input?: string) {
 
           } else {
 
+            function processValues (val: string) {
+
+              let i = 0;
+              let s = 0;
+              let e = 0;
+
+              const spl = val.split(/\s/);
+              const len = spl.length;
+              const arr: string[] = [];
+
+              do {
+
+                if (spl[i] !== NIL) {
+
+                  s = spl[i].indexOf('{');
+
+                  if (s > -1) {
+
+                    console.log(spl[i][s - 1]);
+
+                    if (u.is(spl[i][s + 1], cc.PER) || u.is(spl[i][s + 1], cc.LCB)) {
+
+                      if (s !== 0) {
+
+                        if (u.not(spl[i][s - 1], cc.DSH)) {
+
+                          arr.push(spl[i].slice(0, s));
+
+                          if (u.is(spl[i][s + 2], cc.DSH)) {
+                            spl[i] = spl[i].slice(s);
+                          } else {
+                            spl[i] = u.is(spl[i][s + 1], cc.LCB) ? '{{-' : '{%-' + spl[i].slice(s + 3);
+                          }
+                        }
+                      }
+
+                      e = i;
+
+                      do {
+
+                        const cl = u.is(spl[i][s + 1], cc.LCB)
+                          ? spl[e].indexOf('}}')
+                          : spl[e].indexOf('%}');
+
+                        if (cl > -1) {
+                          arr.push(spl.slice(i, e + 1).join(WSP));
+                          i = e;
+                          break;
+                        }
+
+                        e = e + 1;
+                      } while (e < len);
+
+                    }
+
+                  } else {
+                    arr.push(spl[i]);
+                  }
+
+                }
+
+                i = i + 1;
+              } while (i < len);
+
+              const str = [];
+
+              for (let i = 0; i < arr.length; i++) {
+
+                const element = arr[i];
+
+                if (lq.isStart(element) || lq.isEnd(element) || lq.isElse(element)) {
+
+                  if (u.isLast(str, cc.NWL)) {
+                    str.push(element, NWL);
+                  } else if (u.isLast(str, cc.WSP)) {
+                    str.pop();
+                    str.push(NWL, element, NWL);
+                  }
+
+                } else {
+
+                  str.push(element, WSP);
+
+                }
+
+              }
+
+              return str.join(NIL).replace(rx.SpaceEnd, NIL);
+
+            }
+
             // Separates out the attribute name from its value
             // We need context of the attribute expression for
             // dealing with and handling Liquid attributes specifically
@@ -2236,7 +2329,7 @@ export function markup (input?: string) {
 
         if (u.is(b[i], cc.RAN)) {
           a = i;
-          return b.slice(from, i + 1).join(NIL);
+          return source.slice(from, i + 1);
         }
 
         i = i + 1;
@@ -2403,11 +2496,11 @@ export function markup (input?: string) {
           /**
            * `}` - The index of the next Right Curly brace
            */
-          const from = b.indexOf('}', a + 2);
+          const from = source.indexOf('}', a + 2);
 
           if (u.is(b[from - 1], cc.PER)) {
 
-            let tag = b.slice(a + 2, from - 1).join(NIL);
+            let tag = source.slice(a + 2, from - 1);
 
             // Lets make sure we do not interfere with dash delimiters
             if (u.is(tag, cc.DSH)) {
@@ -2708,6 +2801,7 @@ export function markup (input?: string) {
             liquid.fargs[liquid.fargs.length - 1].push(lexed.length - 1);
             type = cc.COM;
           } else {
+
             liquid.targs.push(lexed.length - 1);
           }
 
@@ -2735,7 +2829,6 @@ export function markup (input?: string) {
           u.is(b[a], cc.NWL) &&
           tname !== 'liquid' &&
           ntest === false &&
-          rules.liquid.preserveInternal === false &&
           lexed.length > 3 && !(
             (
               u.is(b[a + 1], cc.DSH) &&
@@ -2776,7 +2869,7 @@ export function markup (input?: string) {
 
               }
 
-            } else if (u.not(b[a + 1], cc.WSP)) {
+            } else if (u.not(b[a + 1], cc.WSP) && u.not(b[a + 1], cc.NWL)) {
 
               lexed.push(WSP);
 
@@ -2808,11 +2901,11 @@ export function markup (input?: string) {
 
             lexed.pop();
 
-          } else if (u.is(b[a], cc.COM) && u.not(b[a + 1], cc.WSP)) {
+          } else if (u.is(b[a], cc.COM) && u.ns(b[a + 1])) {
 
             lexed.push(WSP);
 
-          } else if (u.is(b[a], cc.COL) && u.not(b[a + 1], cc.WSP)) {
+          } else if (u.is(b[a], cc.COL) && u.not(b[a + 1], cc.WSP) && u.not(b[a + 1], cc.NWL)) {
 
             lexed.push(WSP);
 
@@ -3139,8 +3232,7 @@ export function markup (input?: string) {
 
             }
 
-          } else if (isliq === true && u.is(b[a], cc.NWL) &&
-            rules.liquid.preserveInternal === false && (
+          } else if (isliq === true && u.is(b[a], cc.NWL) && (
             rules.liquid.delimiterPlacement === 'preserve' ||
             rules.liquid.delimiterPlacement === 'consistent'
           )) {
@@ -4010,12 +4102,12 @@ export function markup (input?: string) {
           //
           if (rules.liquid.normalizeSpacing) {
 
-            token = token
-              .replace(/\] \[/g, '][') // Fixes object braces
-              .replace(/(\])(\w+:)/, '$1 $2'); // Fixes argument spacing
+            //  token = token
+            //  .replace(/\] \[/g, '][') // Fixes object braces
+            // .replace(/(\])(\w+:)/, '$1 $2'); // Fixes argument spacing
 
             // Fixes "as" spacing on rendeer tag
-            if (tname === 'render' && token.indexOf(']as') > -1) token = token.replace(/\]as(?=\s+)/, '] as');
+            //   if (tname === 'render' && token.indexOf(']as') > -1) token = token.replace(/\]as(?=\s+)/, '] as');
 
           }
 
@@ -4256,12 +4348,12 @@ export function markup (input?: string) {
               const from = b.lastIndexOf('{', ender);
               const next = b.indexOf('}', ender + ename.length) + 1;
 
-              end = b.slice(from, next).join(NIL);
+              end = source.slice(from, next);
 
               if (lq.exp(ename).test(end)) {
 
                 lines = 1;
-                output = b.slice(a, from).join(NIL);
+                output = source.slice(a, from);
 
                 parse.external(language, output);
 
@@ -4349,7 +4441,7 @@ export function markup (input?: string) {
 
             if (name === 'script' && u.is(b[a], cc.LAN) && u.is(b[a + 1], cc.FWS)) {
 
-              end = b.slice(a, a + 9).join(NIL).toLowerCase();
+              end = source.slice(a, a + 9).toLowerCase();
 
               if (end === '</script>') {
 
@@ -4386,7 +4478,7 @@ export function markup (input?: string) {
 
             } else if (name === 'style' && u.is(b[a], cc.LAN) && u.is(b[a + 1], cc.FWS)) {
 
-              end = b.slice(a, a + 8).join(NIL).toLowerCase();
+              end = source.slice(a, a + 8).toLowerCase();
 
               if (end === '</style>') {
 
@@ -4478,7 +4570,7 @@ export function markup (input?: string) {
             u.is(b[a - 2], cc.DSH)
           ) {
 
-            end = b.slice(a + 1, a + 11).join(NIL).toLowerCase();
+            end = source.slice(a + 1, a + 11).toLowerCase();
             end = end.slice(0, end.length - 2);
 
             if (name === 'script' && end === '</') quote = NIL;
@@ -4806,9 +4898,9 @@ export function markup (input?: string) {
     a = a + 1;
 
     if (a === c) {
-      if (parse.pairs.size > 0 && parse.pairs.has(parse.stack.index)) {
+      if (parse.stack.index in parse.pairs) {
 
-        const pair = parse.pairs.get(parse.stack.index);
+        const pair = parse.pairs[parse.stack.index];
 
         if (pair.type === Languages.HTML) {
           SyntacticError(ParseError.MissingHTMLEndTag, pair);
