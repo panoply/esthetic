@@ -113,7 +113,7 @@ dev(function (source) {
 
   const output = esthetic.format(source, {
 
-    language: 'css',
+    language: 'liquid',
     wrap: 0,
     indentSize: 2,
     liquid: {

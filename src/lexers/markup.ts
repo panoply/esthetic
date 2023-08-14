@@ -800,8 +800,8 @@ export function markup (input?: string) {
         if (lname.startsWith('end')) {
 
           record.token = liner;
-          record.types = 'liquid_end';
-          record.lines = lines;
+          record.types = lname === 'endcase' ? 'liquid_case_end' : 'liquid_end';
+          record.lines = lines <= 1 ? 2 : lines;
 
           push(record);
 
@@ -2891,16 +2891,23 @@ export function markup (input?: string) {
             }
 
           } else if (
-            (u.ws(b[a + 1]) || u.is(b[a + 1], cc.LSB)) &&
-            u.ws(b[a]) &&
-            u.is(b[a - 1], cc.RSB)) {
+            (
+              tname !== 'liquid' &&
+              u.ws(b[a + 1]) &&
+              u.ws(b[a]) &&
+              u.is(b[a - 1], cc.RSB)
+            ) || (
+              u.is(b[a], cc.WSP) &&
+              u.is(b[a + 1], cc.WSP)
+            )
+          ) {
 
             lexed.pop();
 
           } else if (
             lexed.length > 3 &&
             u.is(b[a + 1], cc.NWL) &&
-            u.ns(b[a + 2])) {
+            u.not(b[a + 2], cc.WSP)) {
 
             lexed.push(WSP);
 
@@ -2983,7 +2990,7 @@ export function markup (input?: string) {
 
             lexed.push(WSP);
 
-          } else if (tname === 'if' || tname === 'unless' || tname === 'elsif') {
+          } else if (tname === 'if' || tname === 'unless' || tname === 'elsif' || tname === 'liquid') {
 
             if ((
               u.not(b[a], cc.WSP) ||
@@ -3016,6 +3023,7 @@ export function markup (input?: string) {
               lexed.push(WSP);
 
             }
+
           }
 
         }

@@ -1,15 +1,10 @@
-
-/* media query pseudo selector nesting */
-
-@media (prefers-reduced-motion: no-preference) {
+{% liquid
 
 
-  :root {
-    scroll-behavior: smooth;
-  }
+  if product.tags contains "Women"
+    assign model = shop.metafields.product.model.value["woman"]
+  else
+    assign model = shop.metafields.product.model.value["man"]
+  endif
+%}
 
-  ::-webkit-search-decoration {
-    -webkit-appearance: none;
-  }
-
-}
