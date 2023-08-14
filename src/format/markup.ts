@@ -41,6 +41,11 @@ export function markup () {
   let a = parse.start;
 
   /**
+   * Holds the last level
+   */
+  let p: number;
+
+  /**
    * Comment starting positions
    */
   let comstart = -1;
@@ -97,6 +102,11 @@ export function markup () {
   const dedent: Set<string> = new Set(rules.liquid.dedentTagList);
 
   /**
+   * Padded Tags - NOT YET SUPPORTED
+   */
+  // const padded: Set<string> = new Set(rules.liquid.paddedTagList);
+
+  /**
    * Delimiter forcing references
    */
   const delim: Map<number, number> = new Map();
@@ -136,6 +146,20 @@ export function markup () {
   function isType (index: number, name: Types) {
 
     return data.types[index] === name;
+
+  }
+
+  /**
+   * Is Stack
+   *
+   * Check whether the token type at specific index
+   * equals the provided name. Returns a truthy.
+   *
+   * > Use `isNotType` for false comparisons.
+   */
+  function isStack (index: number, name: string) {
+
+    return data.stack[index] === name;
 
   }
 
@@ -374,21 +398,21 @@ export function markup () {
 
           } else if (lineBreakValue === 'indent' || lineBreakValue === 'force-indent') {
 
-            // if (aa + 1 === len) {
-            // build.push(lines[aa].trimEnd(), nl(levels[a]));
-            // } else {
+            if (aa + 1 === len) {
 
-            // if (aa === 0) {
+              build.push(lines[aa].trimEnd(), nl(levels[a]));
 
-            // build.push(lines[aa].replace(/(["'])\s+/, '$1' + nl(lev)).trim(), nl(lev));
+            } else {
 
-            // } else {
+              if (aa === 0) {
 
-            build.push(lines[aa].trim(), nl(lev));
-            // }
+                build.push(lines[aa].replace(/(["'])\s+/, '$1' + nl(lev)).trim(), nl(lev));
 
-            // }
+              } else {
+                build.push(lines[aa], nl(lev));
+              }
 
+            }
           } else {
 
             build.push(lines[aa]);
@@ -1637,8 +1661,7 @@ export function markup () {
 
           if (isType(next, 'end') || (
             isType(next, 'liquid_end') &&
-            isType(a, 'liquid_else') === false
-          )) {
+            isType(a, 'liquid_else') === false)) {
 
             // Handle force Value for void tags
             //
@@ -1739,10 +1762,11 @@ export function markup () {
 
             }
 
-          } else if ((
+          } else if (
             isType(a, 'start') ||
             isType(a, 'liquid_start') ||
-            isType(a, 'liquid_bad_start'))) {
+            isType(a, 'liquid_bad_start') ||
+            isType(a, 'liquid_case_start')) {
 
             // Indents the content from the left, for example:
             //
@@ -1976,14 +2000,40 @@ export function markup () {
 
             level[a - 1] = -20;
 
-          } else if (isType(a, 'liquid_when')) {
+          } else if (
+            isType(a, 'liquid_when') &&
+            isType(next, 'liquid_when') === false) {
 
             if (dedent.has('case')) {
               level[a - 1] = indent - 1;
-              level.push(indent);
             } else {
-              level.push(indent + 1);
+              indent = indent + 1;
             }
+
+            level.push(indent);
+
+          } else if (
+            isType(a, 'liquid_start') &&
+            isType(next, 'liquid_when')) {
+
+            indent = indent + 1;
+
+          } else if (
+            isType(next, 'liquid_when') &&
+            dedent.has('case') === false && (
+              isType(a, 'end') ||
+              isType(a, 'liquid_end') ||
+              isType(a, 'liquid_bad_end')
+            )
+          ) {
+
+            indent = indent - 1;
+            level.push(indent);
+
+          } else if (isType(next, 'liquid_case_end')) {
+
+            indent = dedent.has('case') ? indent - 1 : indent - 2;
+            level.push(indent);
 
           } else {
 
@@ -2104,7 +2154,7 @@ export function markup () {
    * still apply indentation to tokens but right side is excluded.
    *
    */
-  function onIgnoreRuleIndent () {
+  function onIgnoreRule () {
 
     /**
      * Split ignore onto newlines, this allows us to apply indentation
@@ -2193,8 +2243,12 @@ export function markup () {
     /* -------------------------------------------- */
 
     a = parse.start;
+    p = rules.indentLevel;
 
-    let lastLevel = rules.indentLevel;
+    // Apply indentLevel into build as first entry to ensure
+    // leading space is applied.
+    //
+    if (build.length === 0 && p > 0) build.push(nl(levels[a], false, true));
 
     do {
 
@@ -2267,6 +2321,7 @@ export function markup () {
 
                 x = x + 1;
               } while (x < lines.length);
+
               build.push(
                 nl(levels[a])
               );
@@ -2283,9 +2338,11 @@ export function markup () {
 
         } else if (isType(a, 'ignore')) {
 
-          if (data.stack[a] === 'script' || data.stack[a] === 'style') {
+          if (
+            isStack(a, 'script') ||
+            isStack(a, 'style')) {
 
-            onIgnoreRuleIndent();
+            onIgnoreRule();
 
           } else {
 
@@ -2313,7 +2370,7 @@ export function markup () {
 
         } else {
 
-          lastLevel = levels[a];
+          p = levels[a];
 
           if (rules.markup.delimiterTerminus === 'force') {
             onDelimiterForce();
@@ -2345,22 +2402,22 @@ export function markup () {
               build.push(nl(levels[a], true, false));
 
             } else if (
+              isType(a, 'ignore') === false &&
+              isType(a, 'ignore_next') === false &&
+              isType(a + 1, 'ignore') === true &&
+              isStack(a + 1, 'script') === false &&
+              isStack(a + 1, 'style') === false) {
+
+              build.push(nl(levels[a], true, false));
+
+            } else if (
+              isType(a, 'ignore') &&
               isType(a + 1, 'ignore') === false &&
               isType(a + 1, 'ignore_next') === false) {
 
               build.push(nl(levels[a]));
 
             } else if (
-              isType(a, 'ignore') === false &&
-              isType(a, 'ignore_next') === false &&
-              isType(a + 1, 'ignore') &&
-              data.stack[a + 1] !== 'script' &&
-              data.stack[a + 1] !== 'style') {
-
-              build.push(nl(levels[a], true, false));
-
-            } else if (
-              isType(a, 'ignore') &&
               isType(a + 1, 'ignore') === false &&
               isType(a + 1, 'ignore_next') === false) {
 
@@ -2378,14 +2435,12 @@ export function markup () {
 
         // Liquid External Code Region - Dedent indentation
         //
-        if (lastLevel > 0 && rules.liquid.dedentTagList.includes(data.stack[a])) {
-
+        if (p > 0 && rules.liquid.dedentTagList.includes(data.stack[a])) {
           build.splice(build.length - 1, 1, nl(levels[a] - 1));
-          lastLevel = lastLevel - 1;
-
+          p = p - 1;
         }
 
-        const external = parse.external(lastLevel);
+        const external = parse.external(p);
 
         if ((
           rules.language === 'jsx' ||
@@ -2424,7 +2479,7 @@ export function markup () {
 
     parse.iterator = c - 1;
 
-    if (build[0] === parse.crlf || is(build[0], cc.WSP)) build[0] = NIL;
+    // if (rules.indentLevel === 0 && isIndex(0, 'ignore') < 0 && ws(build[0])) build[0] = NIL;
 
     return rules.endNewline === true
       ? build.join(NIL).replace(/\s*$/, parse.crlf)
