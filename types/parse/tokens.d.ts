@@ -637,7 +637,7 @@ export enum LiquidTypes {
    */
   liquid_bad_end = 'liquid_bad_end',
   /**
-   * A template tag that contains content or other tags not associated with
+   * A Liquid tag that contains content or other tags not associated with
    * the template language and expects a closing tag. This is representative of
    * Liquid tags.
    *
@@ -650,6 +650,15 @@ export enum LiquidTypes {
    */
   liquid_start = 'liquid_start',
   /**
+   * A Liquid case start tag
+   *
+   * ---
+   * @example
+   *
+   * {% case foo %}
+   */
+  liquid_case_start = 'liquid_case_start',
+  /**
    * A singleton Liquid tag which is used within the `{% case %}` block tag
    * expression.
    *
@@ -661,6 +670,24 @@ export enum LiquidTypes {
    * {% when arg or arg %}
    */
   liquid_when = 'liquid_when',
+  /**
+   * A Liquid case else tag
+   *
+   * ---
+   * @example
+   *
+   * {% else %}
+   */
+  liquid_case_else = 'liquid_case_else',
+  /**
+   * A Liquid case end tag
+   *
+   * ---
+   * @example
+   *
+   * {% case foo %}
+   */
+  liquid_case_end = 'liquid_case_end',
   /**
    * A template tag acting as the else block of a condition. This is representative of
    * Liquid tags.
