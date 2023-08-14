@@ -30,8 +30,6 @@ The `language` rule is used to inform Æsthetic on the type of input that has be
 
 :::
 
-
-
 ---
 
 ::: rule
@@ -42,14 +40,14 @@ The `language` rule is used to inform Æsthetic on the type of input that has be
 
 The `text` option refers to a **Plain Text** document, wherein the content will be formatted according to only a couple of global rules.
 
-```json:rules
+```
 {
   "language": "text"
 }
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```
 Lorem ipsum dolor sit amet, consectetur adipiscing elit,
 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -91,11 +89,12 @@ The `liquid` option refers to the **[Liquid Template Language](https://shopify.g
 {%if condition %}
 <div class="xxx" id="some-id">
 <ul>
+
   {%-unless condition ==something%}
 <li class="some-class" data-attr ="xxx"
  {% if xxx %}id="{{ object.prop }}"{% endif %}>
-{% for i in list%}
 <ul>
+{% for i in list%}
   <li data-attr="{{ i.xxx }}">
   {{
   i.something|filter:'some-filter'
@@ -103,10 +102,10 @@ The `liquid` option refers to the **[Liquid Template Language](https://shopify.g
 | example: one: 1,two: 2, three: 3,four: 4
 }}
 </li>
-{% endunless%}
-</ul>
 {% endfor %}
+</ul>
 </li>
+{% endunless%}
 </ul>
 </div>
 {% endif %}
@@ -189,6 +188,7 @@ The `xml` options refers to the **[Extensible Markup Language](https://developer
             <td><xsl:value-of select="$customer"/>
             </td></xsl:for-each>
         </tr>
+        </xsl:for-each>
     </table>
 ```
 

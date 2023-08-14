@@ -25,6 +25,7 @@ import { SyntacticError } from 'parse/errors';
 import { ParseError } from 'lexical/errors';
 import { config } from 'config';
 import { cc } from 'lexical/codes';
+import { object } from 'utils/native';
 
 /**
  * Parse Stack
@@ -154,7 +155,7 @@ class Parser {
    * Holds a store reference to markup start/end pairs. This is used for potential
    * parse errors and keeps track of paired sequences for syntactic reporting.
    */
-  public pairs: Map<number, Syntactic> = new Map();
+  public pairs: { [index: number]: Syntactic } = object(null);
 
   /**
    * Parse Error reference. Defaults to `null` and will be assigned an object reference exception
@@ -372,8 +373,8 @@ class Parser {
     this.references = [ [] ];
     this.stack = new Stack([ 'global', -1 ]);
     this.mode = Modes.Parse;
+    this.pairs = object(null);
 
-    if (this.pairs.size > 0) this.pairs.clear();
     if (this.attributes.size > 0) this.attributes.clear();
     if (this.regions.size > 0) this.regions.clear();
 
@@ -532,31 +533,31 @@ class Parser {
 
     if (record.types === 'liquid_start' || record.types === 'start') {
 
-      this.pairs.set(this.count, {
+      this.pairs[this.count] = {
         index: this.count,
         line: this.lineNumber,
         token: record.token,
         skip: false,
         type: record.types === 'start' ? Languages.HTML : Languages.Liquid,
         stack
-      });
+      };
 
-    } else if (this.pairs.has(this.stack.index) && (
+    } else if (this.stack.index in this.pairs && (
       record.types === 'end' ||
       record.types === 'liquid_end'
     )) {
 
-      const pair = this.pairs.get(this.stack.index);
+      const pair = this.pairs[this.stack.index];
 
       if (pair.skip) {
-        this.pairs.delete(this.stack.index);
+        delete this.pairs[this.stack.index];
       }
 
       if (pair.type === Languages.Liquid) {
 
         if (record.token.indexOf(`end${pair.stack}`) > -1) {
 
-          this.pairs.delete(this.stack.index);
+          delete this.pairs[this.stack.index];
 
         } else {
 
@@ -564,7 +565,7 @@ class Parser {
           // IMPROVE LIQUID TAG HANDLING
           //
           if (record.stack === 'liquid' && (record.token === '%}' || record.token === '-%}')) {
-            this.pairs.delete(this.stack.index);
+            delete this.pairs[this.stack.index];
           } else {
             SyntacticError(ParseError.MissingLiquidEndTag, pair);
           }
@@ -573,7 +574,7 @@ class Parser {
       } else if (pair.type === Languages.HTML) {
 
         if (`</${pair.stack}>` === record.token) {
-          this.pairs.delete(this.stack.index);
+          delete this.pairs[this.stack.index];
         } else {
           SyntacticError(ParseError.MissingHTMLEndTag, pair);
         }
@@ -628,7 +629,7 @@ class Parser {
       record.stack !== 'liquid' &&
       record.stack !== 'svg') {
 
-      this.syntactic(record, token);
+      //  this.syntactic(record, token);
 
     }
 

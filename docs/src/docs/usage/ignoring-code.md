@@ -22,12 +22,6 @@ Excluding regions of code, entire documents and token specific occurrences can b
 
 The `esthetic-ignore` comment can be used to exclude formatting on the entire document.
 
-```json:rules
-{
-  "language": "html"
-}
-```
-
 ```liquid
 
 // esthetic-ignore

@@ -576,7 +576,10 @@ export function markup (input?: string) {
 
       let i = source.indexOf('capture', a);
 
-      if (b[i - 3] === 'e' && b[i - 2] === 'n' && b[i - 1] === 'd') {
+      if (
+        b[i - 3] === 'e' &&
+        b[i - 2] === 'n' &&
+        b[i - 1] === 'd') {
 
         i = b.indexOf('}', i) + 1;
 
@@ -1025,8 +1028,6 @@ export function markup (input?: string) {
      */
     function parseIgnoreToken (ender: string, type: Languages) {
 
-      parseSpace();
-
       /**
        * The starting index
        */
@@ -1395,7 +1396,10 @@ export function markup (input?: string) {
       // We will first detect any preserved structures and pass it on
       // these types infer ignores that respect indentation and are rule based.
       //
-      if (ltype === 'script_preserve' || ltype === 'json_preserve' || ltype === 'style_preserve') {
+      if (
+        ltype === 'script_preserve' ||
+        ltype === 'json_preserve' ||
+        ltype === 'style_preserve') {
 
         record.types = 'start';
         record.stack = ltype === 'style_preserve' ? 'style' : 'script';
@@ -2876,21 +2880,33 @@ export function markup (input?: string) {
 
               }
 
-            } else if (u.not(b[a + 1], cc.WSP) && u.not(b[a + 1], cc.NWL)) {
+            } else if (
+              u.ns(b[a + 1]) &&
+              u.not(b[a + 1], cc.LSB) &&
+              u.not(b[a + 1], cc.DOT)
+            ) {
 
               lexed.push(WSP);
 
             }
 
-          } else if (u.is(b[a], cc.WSP) && u.is(b[a - 1], cc.RSB)) {
+          } else if (
+            (u.ws(b[a + 1]) || u.is(b[a + 1], cc.LSB)) &&
+            u.ws(b[a]) &&
+            u.is(b[a - 1], cc.RSB)) {
 
             lexed.pop();
 
-          } else if (lexed.length > 3 && u.is(b[a + 1], cc.NWL) && u.not(b[a + 2], cc.WSP)) {
+          } else if (
+            lexed.length > 3 &&
+            u.is(b[a + 1], cc.NWL) &&
+            u.ns(b[a + 2])) {
 
             lexed.push(WSP);
 
-          } else if (u.is(b[a], cc.WSP) && u.is(b[a + 1], cc.WSP)) {
+          } else if (
+            u.is(b[a], cc.WSP) &&
+            u.is(b[a + 1], cc.WSP)) {
 
             lexed.pop();
 
@@ -2904,19 +2920,28 @@ export function markup (input?: string) {
 
             lexed.splice(lexed.length - 1, 1, WSP, b[a]);
 
-          } else if (u.isLastAt(lexed, cc.WSP) && u.is(b[a], cc.WSP) && u.is(b[a + 1], cc.WSP)) {
+          } else if (
+            u.isLastAt(lexed, cc.WSP) &&
+            u.is(b[a], cc.WSP) &&
+            u.is(b[a + 1], cc.WSP)) {
 
             lexed.pop();
 
-          } else if (u.is(b[a], cc.COM) && u.ns(b[a + 1])) {
+          } else if (
+            u.is(b[a], cc.COM) &&
+            u.ns(b[a + 1])) {
 
             lexed.push(WSP);
 
-          } else if (u.is(b[a], cc.COL) && u.not(b[a + 1], cc.WSP) && u.not(b[a + 1], cc.NWL)) {
+          } else if (
+            u.is(b[a], cc.COL) &&
+            u.ns(b[a + 1])) {
 
             lexed.push(WSP);
 
-          } else if (u.is(b[a], cc.WSP) && u.isLastAt(lexed, cc.DOT)) {
+          } else if (
+            u.is(b[a], cc.WSP) &&
+            u.isLastAt(lexed, cc.DOT)) {
 
             lexed.pop();
 
@@ -2924,11 +2949,15 @@ export function markup (input?: string) {
 
             lexed.pop();
 
-          } else if (u.not(b[a], cc.WSP) && u.is(b[a + 1], cc.PIP)) {
+          } else if (
+            u.not(b[a], cc.WSP) &&
+            u.is(b[a + 1], cc.PIP)) {
 
             lexed.push(WSP);
 
-          } else if (u.is(b[a], cc.PIP) && u.not(b[a + 1], cc.WSP)) {
+          } else if (
+            u.is(b[a], cc.PIP) &&
+            u.not(b[a + 1], cc.WSP)) {
 
             lexed.push(WSP);
 

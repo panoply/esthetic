@@ -285,6 +285,18 @@ export const definitions: Definitions = {
         warrington: true
       }
     },
+    paddedTagList: {
+      default: [],
+      description: 'A list of liquid tag to enforce newlines before and after',
+      type: 'array',
+      preset: {
+        default: [],
+        prettier: [],
+        recommended: [],
+        strict: [],
+        warrington: []
+      }
+    },
     preserveComment: {
       default: false,
       description: 'Prevent comment reformatting due to option wrap.',
@@ -409,18 +421,6 @@ export const definitions: Definitions = {
         warrington: 'consistent'
       }
     },
-    preserveInternal: {
-      default: false,
-      description: 'Whether or not to preserve the inner contents of tokens',
-      type: 'boolean',
-      preset: {
-        default: false,
-        prettier: false,
-        recommended: false,
-        strict: false,
-        warrington: false
-      }
-    },
     quoteConvert: {
       description: 'If the quotes should be converted to single quotes or double quotes.',
       type: 'choice',
@@ -460,7 +460,13 @@ export const definitions: Definitions = {
         default: false,
         prettier: false,
         recommended: true,
-        strict: [ 'id', 'class', 'type', 'name', 'value' ],
+        strict: [
+          'id',
+          'class',
+          'type',
+          'name',
+          'value'
+        ],
         warrington: false
       }
     },
@@ -567,7 +573,7 @@ export const definitions: Definitions = {
         },
         {
           rule: 'adapt',
-          description: 'adapt the delimiter in accordance with structure'
+          description: 'Adapt the delimiter in accordance with structure'
         }
       ],
       preset: {

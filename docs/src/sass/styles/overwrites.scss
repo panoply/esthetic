@@ -79,13 +79,20 @@ blockquote {
   border-radius: 0.5rem;
   position: relative;
 
+  @include media-breakpoint-down(sm) {
+    background-image: none;
+    padding: 15px !important;
+
+    > p {
+      font-size: $font-size-sm !important;
+    }
+  }
+
   > p code {
     //background: #363f4e;
     // color: #a176ff;
-    //background-color: $code-bg;
 
     font-weight: 200;
-
     -webkit-font-smoothing: antialiased;
   }
 
@@ -108,7 +115,9 @@ blockquote {
     margin: 0;
     width: 100% !important;
     color: $body-color;
-    font-size: $font-size-base;
+    //background-color: $code-bg;
+
+    font-size: $font-size-md;
     letter-spacing: 0.03rem;
     font-family: $font-family-base;
     font-weight: 200;
@@ -148,7 +157,9 @@ p {
 }
 .content-rules {
   p {
-    width: 50%;
+    @include media-breakpoint-up(sm) {
+      width: 50%;
+    }
 
     a {
       color: #6eb2d3;
@@ -228,6 +239,7 @@ table {
 
 .papyrus > pre > code {
   padding: 1em;
+  overflow-x: scroll;
 }
 
 .rule-description {

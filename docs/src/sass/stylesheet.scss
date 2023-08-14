@@ -50,6 +50,7 @@
 /* COMPONENTS -------------------------------- */
 
 @import '../../node_modules/@brixtol/bootstrap/sass/components/dropdown';
+@import '../../node_modules/@brixtol/bootstrap/sass/components/drawer';
 // @import '../../node_modules/@brixtol/bootstrap/sass/components/accordion';
 // @import '../../node_modules/@brixtol/bootstrap/sass/components/modal';
 
@@ -59,9 +60,9 @@
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/text';
 @import '../../node_modules/@brixtol/bootstrap/sass/forms/input';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/dropdown';
-// @import '../../node_modules/@brixtol/bootstrap/sass/forms/check';
+@import '../../node_modules/@brixtol/bootstrap/sass/forms/check';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/color';
-// @import '../../node_modules/@brixtol/bootstrap/sass/forms/switch';
+@import '../../node_modules/@brixtol/bootstrap/sass/forms/switch';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/select';
 @import '../../node_modules/@brixtol/bootstrap/sass/forms/range';
 // @import '../../node_modules/@brixtol/bootstrap/sass/forms/float';

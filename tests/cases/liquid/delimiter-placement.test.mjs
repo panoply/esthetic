@@ -237,10 +237,10 @@ test('Preserve: Delimiters are preserved according to input', t => {
                   {{-
                     will_force
                     | arguments:
-                       one: 'foo',
-                       two: 'bar',
-                       three: 'baz',
-                       four: 1
+                      one: 'foo',
+                      two: 'bar',
+                      three: 'baz',
+                      four: 1
                     | filter: 'using wrap fraction'
                   }}
 

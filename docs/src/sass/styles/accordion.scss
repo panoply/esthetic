@@ -4,6 +4,7 @@
   width: 100%;
   border: $accordion-border-width solid $accordion-border-color;
   border-top: none;
+  background-color: $body-bg;
 
   &.accordion-markdown {
     margin-bottom: 40px;

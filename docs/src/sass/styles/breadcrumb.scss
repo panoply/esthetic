@@ -1,4 +1,9 @@
 .breadcrumb {
+  @include media-breakpoint-down(sm) {
+    margin-top: 50px !important;
+    font-size: $font-size-sm;
+    margin: 0 auto;
+  }
   .icon-right,
   .icon-home {
     width: 15px;

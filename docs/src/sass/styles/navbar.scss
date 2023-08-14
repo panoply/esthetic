@@ -20,6 +20,17 @@ header {
   width: 100%;
   // margin-right:  33.3%;
 
+  .drawer-toggle {
+    background-image: url(icon-menu($body-color));
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .e {
+    @include media-breakpoint-down(sm) {
+      color: $pink !important;
+    }
+  }
   .icon-github {
     width: 20px;
     height: 20px;
@@ -54,8 +65,9 @@ header {
     }
 
     .icon-logo {
-      width: 40px;
-      height: 40px;
+      width: 120px;
+      height: 17px;
+      stroke: purple;
     }
   }
 }

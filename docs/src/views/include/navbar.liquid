@@ -1,17 +1,19 @@
 <header
   id="navbar"
   class="container-fluid navbar bb">
-  <div class="row ai-center bg-white w-100 pr-0">
+  <div class="row jc-between jc-sm-start ai-center bg-white w-100 pr-0">
+
+    <input
+      type="button"
+      class="d-unset d-sm-none col-auto btn drawer-toggle ml-4">
+
     <a
       href="/"
-      class="col-auto italic fc-white fs-lg pl-4 pr-0"
-      style="font-weight: 800;">
-      ÆSTHETIC
+      class="col-auto italic fc-white fs-lg pl-4 pr-0 logo">
+      {% svg 'esthetic', 'icon icon-logo' %}
     </a>
-    <small class="col-auto fs-xs pl-4 pr-5">
-      V
-      {% version %}
-
+    <small class="d-none d-sm-unset col-auto fs-xs pl-4 pr-5">
+      V {% version %}
     </small>
 
     {%
@@ -34,14 +36,14 @@
       <a
         href="{{ link.url }}"
         title="{{ link.title }}"
-        class="col-auto fw-bolder nav-link {% unless forloop.index == active %}off{% endunless %}">
+        class="d-none d-sm-unset col-auto fw-bolder nav-link {% unless forloop.index == active %}off{% endunless %}">
         {{ link.title }}
       </a>
     {% endfor %}
 
     <a
       href="https://github.com/panoply/esthetic"
-      class="col-auto ml-auto pr-0">
+      class=" col-auto ml-sm-auto pr-0">
       {% svg 'github-2', 'icon icon-github' %}
     </a>
   </div>

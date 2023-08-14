@@ -238,8 +238,8 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
     forceArgument,
     lineBreakSeparator,
     delimiterTrims,
-    delimiterPlacement,
-    preserveInternal
+    delimiterPlacement
+
   }
 }: Rules) {
 
@@ -349,9 +349,7 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
 
   // Exclude processing of {% liquid %} multiline tags
   //
-  if (tname === 'liquid' || preserveInternal === true) {
-    return open + lexed.slice(o, c).join(NIL).trim() + close;
-  }
+  if (tname === 'liquid') return open + lexed.slice(o, c).join(NIL).trim() + close;
 
   /* -------------------------------------------- */
   /* FORCE WRAP CONDITIONALS                      */
@@ -466,11 +464,15 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
 
             if (lineBreakSeparator === 'after') {
 
+              if (is(lexed[arg + 1], cc.WSP) && is(lexed[arg + 2], cc.WSP)) lexed[arg + 1] = NIL;
+
               lexed[is(lexed[arg - 1], cc.COM) ? arg - 1 : arg] = n === 0
                 ? NWL + '  '
                 : COM + NWL + ' ';
 
             } else if (lineBreakSeparator === 'before') {
+
+              if (is(lexed[arg + 1], cc.WSP) && is(lexed[arg + 2], cc.WSP)) lexed[arg + 1] = NIL;
 
               if (is(lexed[arg - 1], cc.COM)) {
 

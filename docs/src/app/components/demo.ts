@@ -29,7 +29,7 @@ const rules = (ruleOptions: Rules) => merge<Rules>({
     lineBreakSeparator: 'before',
     normalizeSpacing: true,
     preserveComment: false,
-    preserveInternal: false,
+
     dedentTagList: [],
     quoteConvert: 'none'
   },
@@ -223,26 +223,32 @@ export class Demo extends Controller {
 
   connect () {
 
-    this.input = papyrus.mount(this.inputTarget, merge<papyrus.Options>({
+    this.input = papyrus.mount(this.inputTarget, merge<papyrus.Options>(this.papyrusValue, {
       showSpace: true,
       showTab: false,
+      showCR: false,
+      showCRLF: false,
+      showLF: false,
       editor: {
         completions: {
           json: JSONCompletions
         }
       }
-    }, this.papyrusValue));
+    }));
 
     this.input.onupdate(this.onInputEdit, this);
     this.input.onsave(this.onInputSave, this);
 
     if (this.hasOutputTarget) {
 
-      this.output = papyrus.mount(this.outputTarget, merge<papyrus.Options>({
+      this.output = papyrus.mount(this.outputTarget, merge<papyrus.Options>(this.papyrusValue, {
         editor: false,
-        showSpace: true,
-        showTab: true
-      }, this.papyrusValue));
+        showSpace: false,
+        showTab: false,
+        showCR: false,
+        showCRLF: false,
+        showLF: false
+      }));
 
     }
 
@@ -274,7 +280,7 @@ export class Demo extends Controller {
       // eslint-disable-next-line no-control-regex
       const clean = /\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/mg;
 
-      this.output.showError(e.replace(clean, ''), { heading: 'Error thrown by Æsthetic' });
+      this.output.showError(e.message.replace(clean, ''), { heading: 'Error thrown by Æsthetic' });
       this.getOutputReact();
 
     }

@@ -237,12 +237,41 @@ export interface LiquidRules {
   preserveComment?: boolean;
 
   /**
-   * **Default** `false`
+   * **NOT YET AVAILABLE**
    *
-   * Prevent the internals structures of Liquid tokens from being formatted. When enabled, Æsthetic
-   * will preserve the internal formations of output and tags.
+   * _This rule is under consideration and is not yet available for usage_
+   *
+   * ---
+   *
+   * **Default** `[]`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is subjective
+   *
+   * A list of Liquid tags that should have newlines forced above and
+   * below. Singleton type Liquid tags are not supported, the rule will
+   * only apply newlines on start and end types.
+   *
+   * > **Note**
+   * >
+   * > _This rule will respect the liquid `forceIndent` rule. Only when newline
+   * > occurances are detected will padding be applied._
    */
-  preserveInternal?: boolean;
+  paddedTagList?: Array<LiteralUnion<
+  | 'form'
+  | 'paginate'
+  | 'when'
+  | 'elsif'
+  | 'else'
+  | 'for'
+  | 'if'
+  | 'raw'
+  | 'tablerow'
+  | 'unless'
+  | 'schema'
+  | 'style'
+  | 'script'
+  | 'stylesheet'
+  | 'javascript', string>>;
 
   /**
    * **Default** `[]`

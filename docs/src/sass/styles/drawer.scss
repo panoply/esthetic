@@ -76,7 +76,8 @@ $drawer-directions: (left, right, top, bottom) !default;
   }
 
   @if $mode == push or $mode == pull or $mode == overlay {
-    transition: visibility 0s linear $drawer-duration,
+    transition:
+      visibility 0s linear $drawer-duration,
       opacity 0.05s linear $drawer-duration,
       transform $drawer-duration $drawer-easing;
   }
@@ -134,7 +135,6 @@ $drawer-directions: (left, right, top, bottom) !default;
   will-change: transform;
 }
 
-
 @if index($drawer-directions, left) {
   .drawer-left {
     @include drawer(left);
@@ -182,7 +182,8 @@ $drawer-directions: (left, right, top, bottom) !default;
   background-color: $drawer-overlay-bg;
   visibility: hidden;
   opacity: 0;
-  transition: visibility 0s linear $drawer-duration,
+  transition:
+    visibility 0s linear $drawer-duration,
     transform $drawer-duration $drawer-easing,
     opacity $drawer-overlay-duration ease;
   user-select: none;
@@ -191,14 +192,16 @@ $drawer-directions: (left, right, top, bottom) !default;
   .bg-visible & {
     visibility: visible;
     opacity: 1;
-    transition: visibility 0.5s linear $drawer-duration,
+    transition:
+      visibility 0.5s linear $drawer-duration,
       opacity 0.5s linear;
   }
 
   .drawer-open & {
     visibility: visible;
     opacity: 1;
-    transition: transform $drawer-duration $drawer-easing,
+    transition:
+      transform $drawer-duration $drawer-easing,
       opacity $drawer-overlay-duration ease;
     will-change: transform, opacity;
   }

@@ -1,28 +1,15 @@
-<{% if section.settings.sticky_header_type != 'none' %}sticky-header data-sticky-type="{{ section.settings.sticky_header_type }}"{% else %}div{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
-<section>
-{% if condition %}
-{{ object.prop }}
-<h1 id="foo" class="xxx" {{ object.prop }} {% if x %}data-attr{% endif %}>
-{% endif %}
 
-{% if x %}
+/* media query pseudo selector nesting */
 
-<ul>
-<li>
+@media (prefers-reduced-motion: no-preference) {
 
-Hello World!
 
-</li>
-</ul>
+  :root {
+    scroll-behavior: smooth;
+  }
 
-{% else %}
+  ::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
 
-<button>{{ object.foo }}</button>
-hello goodby
-{% endif %}
-{% if xxx %}
-</h1>
-{% endif %}
-
-</section>
-</{% if section.settings.sticky_header_type != 'none' %}sticky-header{% else %}div{% endif %}>
+}

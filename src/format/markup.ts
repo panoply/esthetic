@@ -1244,7 +1244,11 @@ export function markup () {
 
       }
 
-      if (isType(next, 'end') || isType(next, 'liquid_end')) {
+      if (isType(next, 'end') || isType(next, 'liquid_end') || (
+        isType(next, 'liquid_when') &&
+        rules.markup.forceIndent === true
+      )) {
+
         return isType(parent, 'singleton')
           ? indent + 2
           : indent + 1;
@@ -1299,6 +1303,7 @@ export function markup () {
     do attcount = attcount + 1;
     while (isIndex(a + attcount, 'attribute') > -1 && (
       isType(a + attcount, 'end') === false ||
+      isType(a + attcount, 'liquid_when') === false ||
       isType(a + attcount, 'singleton') === false ||
       isType(a + attcount, 'start') === false ||
       isType(a + attcount, 'comment') === false
@@ -1661,7 +1666,13 @@ export function markup () {
 
           //   if (isType(next, 'ignore')) onContent();
 
-          if (isType(next, 'end') || (isType(next, 'liquid_end') && isType(a, 'liquid_else') === false)) {
+          if (
+            isType(next, 'end') ||
+            isType(next, 'liquid_case_end') || (
+              isType(next, 'liquid_end') &&
+              isType(a, 'liquid_else') === false
+            )
+          ) {
 
             // REMOVED DUE TO CONTENT AND LIQUID END DEFECT
             //
@@ -1693,25 +1704,31 @@ export function markup () {
               level.push(-10);
             }
 
-          } else if ((rules.markup.forceIndent === false || (
-            rules.markup.forceIndent === true &&
-            isType(next, 'script_start')
-          )) && (
-            isType(a, 'content') ||
-            isType(a, 'singleton') ||
-            isType(a, 'liquid')
-          )) {
+          } else if (
+            (
+              rules.markup.forceIndent === false ||
+              (rules.markup.forceIndent === true && isType(next, 'script_start'))
+            ) && (
+              isType(a, 'content') ||
+              isType(a, 'singleton') ||
+              isType(a, 'liquid')
+            )
+          ) {
 
             count = count + data.token[a].length;
 
-            if (data.lines[next] > 0 && isType(next, 'script_start')) {
+            if (
+              data.lines[next] > 0 &&
+              isType(next, 'script_start')) {
 
               level.push(-10);
 
             } else if (
               rules.wrap > 0 &&
-              isType(a, 'singleton') === false && (
-                isIndex(a, 'liquid') < 0 || (
+              isType(a, 'singleton') === false &&
+              (
+                isIndex(a, 'liquid') < 0 ||
+                (
                   next < c &&
                   isIndex(a, 'liquid') > -1 &&
                   isIndex(next, 'liquid') < 0
@@ -1721,13 +1738,22 @@ export function markup () {
 
               onContent();
 
-            } else if (next < c && (
-              isIndex(next, 'end') > -1 ||
-              isIndex(next, 'start') > -1
-            ) && (
-              data.lines[next] > 0 ||
-              isIndex(a, 'liquid_') > -1
-            )) {
+            } else if (
+              next < c &&
+              (
+                isIndex(next, 'end') > -1 ||
+                isIndex(next, 'start') > -1
+              ) && (
+                data.lines[next] > 0 ||
+                isIndex(a, 'liquid_') > -1
+              )
+            ) {
+
+              if (
+                isType(next, 'liquid_case_end') &&
+                dedent.has('case') === false) {
+                indent = indent - 1;
+              }
 
               level.push(indent);
 
@@ -1739,6 +1765,14 @@ export function markup () {
 
               level.push(-10);
 
+            } else if (isType(next, 'liquid_when') && (
+              isType(a, 'liquid') ||
+              isType(a, 'content')
+            )) {
+
+              indent = indent - 1;
+              level.push(indent);
+
             } else {
 
               level.push(indent);
@@ -1748,8 +1782,7 @@ export function markup () {
           } else if (
             isType(a, 'start') ||
             isType(a, 'liquid_start') ||
-            isType(a, 'liquid_bad_start') ||
-            isType(a, 'liquid_case_start')) {
+            isType(a, 'liquid_bad_start')) {
 
             // Indents the content from the left, for example:
             //
@@ -1983,11 +2016,19 @@ export function markup () {
 
             level[a - 1] = -20;
 
+          } else if (isType(a, 'liquid_case_start')) {
+
+            if (dedent.has('case') === false) indent = indent + 1;
+
+            level.push(indent);
+
           } else if (
             isType(a, 'liquid_when') &&
             isType(next, 'liquid_when') === false) {
 
-            if (dedent.has('case')) {
+            if (
+              isType(prev, 'attribute') &&
+              rules.markup.forceIndent === false) {
               level[a - 1] = indent - 1;
             } else {
               indent = indent + 1;
@@ -1996,25 +2037,17 @@ export function markup () {
             level.push(indent);
 
           } else if (
-            isType(a, 'liquid_start') &&
-            isType(next, 'liquid_when')) {
-
-            indent = indent + 1;
-
-            level.push(indent);
-
-          } else if (
-            isType(a, 'liquid_when') === false &&
             isType(next, 'liquid_when') &&
-            dedent.has('case') === false
-          ) {
+            isType(a, 'liquid_when') === false) {
 
             indent = indent - 1;
             level.push(indent);
 
-          } else if (isType(next, 'liquid_case_end')) {
+          } else if (
+            isType(next, 'liquid_case_end') &&
+            dedent.has('case') === false) {
 
-            indent = dedent.has('case') ? indent - 1 : indent - 2;
+            indent = indent - 1;
             level.push(indent);
 
           } else {
@@ -2028,6 +2061,7 @@ export function markup () {
           isType(a, 'content') === false &&
           isType(a, 'singleton') === false &&
           isType(a, 'liquid') === false &&
+          isType(a, 'liquid_when') === false &&
           isType(a, 'attribute') === false) count = 0;
 
       } else {

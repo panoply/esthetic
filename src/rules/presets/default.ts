@@ -30,6 +30,7 @@ export const defaults: Rules = merge({
     indentAttribute: false,
     lineBreakSeparator: 'before',
     normalizeSpacing: true,
+    paddedTagList: [],
     preserveComment: false,
     preserveInternal: false,
     dedentTagList: [],

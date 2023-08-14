@@ -1,6 +1,6 @@
 import type { IParseError, Syntactic } from 'types';
 import { parse } from 'parse/parser';
-import { NWL } from 'lexical/chars';
+import { NWL, WSP } from 'lexical/chars';
 import { isUndefined, join } from 'utils/helpers';
 import { getLanguageName } from 'rules/language';
 import { ParseError } from 'lexical/errors';
@@ -24,7 +24,7 @@ export function MarkupError (errorCode: ParseError, token: string, tname?: strin
     , NWL
     , getSampleSnippet()
     , NWL
-    , error.details
+    , error.details.replace(/\n/g, WSP)
     , NWL
     , `Language: ${getLanguageName(parse.language)} `
     , `Location: ${parse.lineNumber}:${parse.lineColumn}`

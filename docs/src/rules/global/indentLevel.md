@@ -6,7 +6,7 @@ describe:
   - Indent Level
 ---
 
-::: grid col-9 p-100
+::: grid col-12 col-sm-9 p-100
 
 # Indent Level
 
@@ -84,6 +84,36 @@ Below we are using an `indentLevel` value of `2`
 {
   "language": "html",
   "indentLevel": 2
+}
+```
+
+<!-- prettier-ignore -->
+```html
+<!-- Notice the left side padding applied -->
+<header>
+<nav>
+<ul class="foo">
+<li>bar</li>
+<li>baz</li>
+</ul>
+</nav>
+</header>
+```
+
+---
+
+::: rule 💡
+
+#### `5`
+
+:::
+
+Below we are using an `indentLevel` value of `5`
+
+```json:rules
+{
+  "language": "html",
+  "indentLevel": 5
 }
 ```
 

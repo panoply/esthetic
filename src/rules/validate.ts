@@ -52,7 +52,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'indentAttribute':
       case 'normalizeSpacing':
       case 'preserveComment':
-      case 'preserveInternal':
 
         return isValidBoolean(language, rule, value);
 
@@ -63,6 +62,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 
       case 'ignoreTagList':
       case 'dedentTagList':
+      case 'paddedTagList':
 
         return isValidArray(language, rule, value);
 

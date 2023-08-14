@@ -12,7 +12,7 @@ options:
   - before
 ---
 
-::: grid col-9 p-100
+::: grid col-12 col-sm-9 p-100
 
 # Line Break Separator
 

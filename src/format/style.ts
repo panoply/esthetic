@@ -396,7 +396,8 @@ export function style () {
 
         build.push(WSP);
 
-        //  if (isType(a, 'at_rule')) indent = indent + 1;
+        // detects :root
+        if (isType(a, 'at_rule') && isType(a + 2, 'colon')) indent = indent + 1;
 
       } else if (data.types[a + 1].indexOf('liquid') > -1) {
 

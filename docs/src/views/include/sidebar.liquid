@@ -12,91 +12,87 @@
   endif
 %}
 
-<div
-  data-controller="sticky"
-  data-sticky-offset-value="51">
-  <aside
-    id="sidebar"
-    class="drawer-panel drawer-left {{ drawer }} sidebar vh-100 br"
-    data-controller="drawer">
+<aside
+  id="sidebar"
+  class="drawer-panel drawer-left {{ drawer }} sidebar br"
+  data-controller="drawer">
 
-    <div class="container-fluid g-0">
+  <div class="container-fluid g-0">
 
-      <form class="p-4 d-none">
-        <input
-          type="search"
-          class="fm-input fm-sm bd bd-1 rd-2"
-          placeholder="Search...">
-      </form>
+    <form class="p-4 d-none">
+      <input
+        type="search"
+        class="fm-input fm-sm bd bd-1 rd-2"
+        placeholder="Search...">
+    </form>
 
-      <nav
-        class="accordion mb-2 bx-0"
-        data-controller="accordion"
-        spx-morph="children">
-        {% for group in links.groups %}
+    <nav
+      class="accordion mb-2 bx-0"
+      data-controller="accordion"
+      spx-morph="children">
+      {% for group in links.groups %}
 
-          {%
-            liquid
+        {%
+          liquid
 
-            assign name = group | downcase
+          assign name = group | downcase
 
-            if type == 'rules'
-              if page.url == '/rules/' and name == 'global'
-                assign open = true
-              else
-                assign open = false
-                assign size = name | size | plus: 7
-                assign slice = page.url | slice: size, 50
-                assign item = page.url | remove: slice | remove: '/rules/' | strip
-                if item == name
-                  assign open = true
-                endif
-              endif
+          if type == 'rules'
+            if page.url == '/rules/' and name == 'global'
+              assign open = true
             else
-              if page.url contains name
+              assign open = false
+              assign size = name | size | plus: 7
+              assign slice = page.url | slice: size, 50
+              assign item = page.url | remove: slice | remove: '/rules/' | strip
+              if item == name
                 assign open = true
-              else
-                assign open = false
               endif
             endif
-          %}
+          else
+            if page.url contains name
+              assign open = true
+            else
+              assign open = false
+            endif
+          endif
+        %}
 
-          {% if group contains 'Json' or group contains 'Script' %}
+        {% if group contains 'Json' or group contains 'Script' %}
 
-            {% continue %}
-          {% endif %}
+          {% continue %}
+        {% endif %}
 
-          <button
-            class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}"
-            spx-morph="children">
-            {{ group }}
-          </button>
+        <button
+          class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}"
+          spx-morph="children">
+          {{ group }}
+        </button>
 
-          <div
-            class="accordion-fold {% if open %}expanded{%- endif -%}"
-            spx-morph="children">
-            <ul
-              id="{{ link.title | slugify }}"
-              class="py-4 px-2 ml-0">
-              {% for item in links.urls %}
-                {% if item.group == name %}
-                  <li class="pt-1 pl-3">
-                    <a
-                      href="{{ item.url }}"
-                      data-spx-position="y:0"
-                      {% if page.url == item.url %}
-                        class="fc-pink"
-                      {% endif %}>
-                      {{ item.title }}
-                    </a>
-                  </li>
-                {% endif %}
-              {% endfor %}
-            </ul>
-          </div>
+        <div
+          class="accordion-fold {% if open %}expanded{%- endif -%}"
+          spx-morph="children">
+          <ul
+            id="{{ link.title | slugify }}"
+            class="py-4 px-2 ml-0">
+            {% for item in links.urls %}
+              {% if item.group == name %}
+                <li class="pt-1 pl-3">
+                  <a
+                    href="{{ item.url }}"
+                    data-spx-position="y:0"
+                    {% if page.url == item.url %}
+                      class="fc-pink"
+                    {% endif %}>
+                    {{ item.title }}
+                  </a>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
 
-        {% endfor %}
-      </nav>
-    </div>
-  </aside>
-</div>
+      {% endfor %}
+    </nav>
+  </div>
+</aside>
