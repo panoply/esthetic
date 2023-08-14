@@ -103,8 +103,10 @@ export function markup () {
 
   /**
    * Padded Tags - NOT YET SUPPORTED
+   *
+   * const padded: Set<string> = new Set(rules.liquid.paddedTagList);
+   *
    */
-  // const padded: Set<string> = new Set(rules.liquid.paddedTagList);
 
   /**
    * Delimiter forcing references
@@ -1659,30 +1661,11 @@ export function markup () {
 
           //   if (isType(next, 'ignore')) onContent();
 
-          if (isType(next, 'end') || (
-            isType(next, 'liquid_end') &&
-            isType(a, 'liquid_else') === false)) {
-
-            // Handle force Value for void tags
-            //
-            // if (parse.attributes.has(data.begin[a]) || (
-            //   data.types[data.begin[a - 1]] === 'singleton' &&
-            //   data.types[a - 1] === 'attribute'
-            // )) {
-
-            //   // indent = indent - 1;
-            //   // level[a - 1] = indent;
-            // }
+          if (isType(next, 'end') || (isType(next, 'liquid_end') && isType(a, 'liquid_else') === false)) {
 
             // REMOVED DUE TO CONTENT AND LIQUID END DEFECT
             //
             if (indent > -1) indent = indent - 1;
-
-            // if (isType(next, 'liquid_end') && isType(a, 'liquid_else')) {
-
-            //   if (indent > -1) indent = indent - 1;
-
-            // }
 
             if (
               isToken(a, '</ol>') ||
@@ -2018,13 +2001,12 @@ export function markup () {
 
             indent = indent + 1;
 
+            level.push(indent);
+
           } else if (
+            isType(a, 'liquid_when') === false &&
             isType(next, 'liquid_when') &&
-            dedent.has('case') === false && (
-              isType(a, 'end') ||
-              isType(a, 'liquid_end') ||
-              isType(a, 'liquid_bad_end')
-            )
+            dedent.has('case') === false
           ) {
 
             indent = indent - 1;
