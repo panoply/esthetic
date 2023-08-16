@@ -408,7 +408,20 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
     if (
       (type === Comm.LiquidBlock && rules.liquid.preserveComment) ||
       (type === Comm.LiquidLine && rules.liquid.preserveComment) ||
-      (type === Comm.Markup && rules.markup.preserveComment) ||
+      (type === Comm.Markup && rules.markup.preserveComment)) {
+
+      output = build.join(NIL).replace(rx.WhitespaceEnd, NIL);
+
+      if (ws(chars[parse.iterator - 1])) {
+        const last = chars.lastIndexOf(NWL, parse.iterator);
+        if (last > -1) output = chars.slice(last + 1, parse.iterator).join(NIL) + output;
+      }
+
+      return true;
+
+    }
+
+    if (
       (type === Comm.Block && lexer === 'style' && rules.style.preserveComment) ||
       (type === Comm.Block && lexer === 'script' && rules.script.preserveComment)) return true;
 

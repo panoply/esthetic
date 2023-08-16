@@ -2285,7 +2285,12 @@ export function markup () {
           isUndefined(data.token[a]) === false &&
           data.token[a].indexOf(parse.crlf) > 0 && (
             (isType(a, 'content') && rules.markup.preserveText === false) ||
-            (isType(a, 'comment') && not(data.token[a][1], cc.BNG)) ||
+            (isType(a, 'comment') && (
+              not(data.token[a][1], cc.BNG) || (
+                is(data.token[a][1], cc.PER) &&
+                rules.liquid.preserveComment === false
+              )
+            )) ||
             isType(a, 'attribute')
           )) {
 
