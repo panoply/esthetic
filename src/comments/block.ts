@@ -410,8 +410,6 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
       (type === Comm.LiquidLine && rules.liquid.preserveComment) ||
       (type === Comm.Markup && rules.markup.preserveComment)) {
 
-      output = build.join(NIL).replace(rx.WhitespaceEnd, NIL);
-
       if (ws(chars[parse.iterator - 1])) {
         const last = chars.lastIndexOf(NWL, parse.iterator);
         if (last > -1) output = chars.slice(last + 1, parse.iterator).join(NIL) + output;

@@ -8,8 +8,7 @@
   endif
 %}
 
-                {% comment %}
-
+    {% comment %}
     {% render 'product-media-gallery'
     , variant_images: variant_images
     , is_duplicate: true

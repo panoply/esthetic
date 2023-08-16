@@ -2285,16 +2285,18 @@ export function markup () {
           isUndefined(data.token[a]) === false &&
           data.token[a].indexOf(parse.crlf) > 0 && (
             (isType(a, 'content') && rules.markup.preserveText === false) ||
-            (isType(a, 'comment') && (
-              not(data.token[a][1], cc.BNG) || (
-                is(data.token[a][1], cc.PER) &&
-                rules.liquid.preserveComment === false
-              )
-            )) ||
+            (isType(a, 'comment') && not(data.token[a].trimStart()[1], cc.BNG)) ||
             isType(a, 'attribute')
           )) {
 
-          ml();
+          if (is(data.token[a].trimStart()[1], cc.PER) && rules.liquid.preserveComment === true) {
+
+            build.push(data.token[a], nl(levels[a]));
+
+          } else {
+
+            ml();
+          }
 
         } else if (isType(a, 'comment') && rules.markup.preserveComment === false && (
           (
