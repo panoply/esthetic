@@ -2282,6 +2282,40 @@ export function markup () {
         }
 
         if (
+          isType(a, 'comment') &&
+          is(data.token[a].trimStart()[1], cc.PER) &&
+          rules.liquid.preserveComment === true
+        ) {
+
+          build.push(data.token[a]);
+
+          if ((
+            isType(a + 1, 'comment') &&
+            is(data.token[a + 1].trimStart()[1], cc.PER) &&
+            rules.liquid.preserveComment === true) === false) {
+            build.push(nl(levels[a]));
+          } else {
+            build.push(nl(levels[a], true, false));
+          }
+
+        } else if (
+          isType(a, 'comment') &&
+          is(data.token[a].trimStart()[1], cc.BNG) &&
+          rules.markup.preserveComment === true
+        ) {
+
+          build.push(data.token[a]);
+
+          if ((
+            isType(a + 1, 'comment') &&
+            is(data.token[a + 1].trimStart()[1], cc.BNG) &&
+            rules.markup.preserveComment === true) === false) {
+            build.push(nl(levels[a]));
+          } else {
+            build.push(nl(levels[a], true, false));
+          }
+
+        } else if (
           isUndefined(data.token[a]) === false &&
           data.token[a].indexOf(parse.crlf) > 0 && (
             (isType(a, 'content') && rules.markup.preserveText === false) ||
@@ -2289,14 +2323,7 @@ export function markup () {
             isType(a, 'attribute')
           )) {
 
-          if (is(data.token[a].trimStart()[1], cc.PER) && rules.liquid.preserveComment === true) {
-
-            build.push(data.token[a], nl(levels[a]));
-
-          } else {
-
-            ml();
-          }
+          ml();
 
         } else if (isType(a, 'comment') && rules.markup.preserveComment === false && (
           (
@@ -2439,6 +2466,22 @@ export function markup () {
               isType(a + 1, 'ignore_next') === false) {
 
               build.push(nl(levels[a]));
+
+            } else if (
+              isType(a + 1, 'comment') &&
+              rules.markup.preserveComment === true &&
+              is(data.token[a + 1].trimStart()[1], cc.BNG)
+            ) {
+
+              build.push(nl(levels[a], true, false));
+
+            } else if (
+              isType(a + 1, 'comment') &&
+              rules.liquid.preserveComment === true &&
+              is(data.token[a + 1].trimStart()[1], cc.PER)
+            ) {
+
+              build.push(nl(levels[a], true, false));
 
             } else if (
               isType(a + 1, 'ignore') === false &&

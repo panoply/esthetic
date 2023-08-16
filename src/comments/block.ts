@@ -410,11 +410,20 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
       (type === Comm.LiquidLine && rules.liquid.preserveComment) ||
       (type === Comm.Markup && rules.markup.preserveComment)) {
 
-      if (ws(chars[parse.iterator - 1])) {
-        const last = chars.lastIndexOf(NWL, parse.iterator);
-        if (last > -1) output = chars.slice(last + 1, parse.iterator).join(NIL) + output;
-      }
+      b = chars.lastIndexOf(NWL, parse.iterator) + 1;
 
+      if (b > 0) {
+
+        let before = chars.slice(b, parse.iterator).join(NIL);
+
+        if (before.trim() === NIL) {
+          output = before + output;
+        } else {
+          before = before.slice(0, before.search(rx.NonSpace));
+          output = before + output;
+        }
+
+      }
       return true;
 
     }
