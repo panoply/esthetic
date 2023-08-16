@@ -8,3 +8,19 @@
   endif
 %}
 
+                {% comment %}
+
+    {% render 'product-media-gallery'
+    , variant_images: variant_images
+    , is_duplicate: true
+    , class: 'file-1 ddl' %}
+    {% endcomment %}
+
+{% liquid
+
+  if product.tags contains "Women"
+    assign model = shop.metafields.product.model.value["woman"]
+  else
+    assign model = shop.metafields.product.model.value["man"]
+  endif
+%}

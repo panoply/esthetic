@@ -2,6 +2,9 @@ import test from 'ava';
 import { liquid, forAssert, forRule } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
+test.todo('Liquid Comment with preserveComment set to true');
+test.todo('HTML Comment with preserveComment set to true');
+
 test('Liquid comment indentation with commentNewline disabled', t => {
 
   forAssert(
