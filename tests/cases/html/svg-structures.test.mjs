@@ -255,7 +255,7 @@ test('Structure Test: singleton <polyline>', t => {
       `
       ,
       liquid`
-        {% #  polyline expressed with end tag %}
+        {% # polyline expressed with end tag %}
 
         <svg>
           <symbol>
@@ -368,7 +368,7 @@ test('Structure Test: singleton <ellipse>', t => {
         </svg>
       `
       ,
-      liquid`{% #  ellipse expressed with end tag %}
+      liquid`{% # ellipse expressed with end tag %}
 
         <svg>
           <symbol>

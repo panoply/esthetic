@@ -173,7 +173,7 @@ test('Sorting using sort list', t => {
   forAssert(
     [
       [
-        liquid`{% # Sorting attributes with sort list%}
+        liquid`{% # Sorting attributes with sort list %}
 
           <ul>
 
@@ -205,7 +205,7 @@ test('Sorting using sort list', t => {
 
           </ul>
         `,
-        liquid`{% # Sorting attributes with sort list%}
+        liquid`{% # Sorting attributes with sort list %}
 
           <ul>
 
