@@ -1187,7 +1187,7 @@ export function style () {
       }
 
       ltype = typeName;
-      ltoke = lq.normalize(ltoke, name, rules.liquid);
+      ltoke = lq.delimiters(ltoke, name);
 
       // console.log(ltoke);
 
