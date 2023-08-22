@@ -101,6 +101,20 @@ export const SpaceLead = /^\s+/;
 export const SpaceEnd = /\s+$/;
 
 /**
+ * Whitespace Hash - Preserves leading whitespace
+ *
+ * ---
+ *
+ *
+ * @example /(^\s*#)[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]*?/
+ *
+ * BEFORE: '   #    \n   foo'
+ * AFTER:  '   #\n   foo'
+ *
+ */
+export const WhitespaceHash = /(^\s*#)[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]*?/;
+
+/**
  * Leading Whitespace Only
  *
  * - `+` More Than 1
@@ -189,6 +203,16 @@ export const NewlineLead = /^\n+/;
 export const Newlines = /\n+/g;
 
 /**
+ * Non Word
+ *
+ * ---
+ *
+ * @example  /\W/
+ *
+ */
+export const NonWordChar = /\W/;
+
+/**
  * All Tab Characters
  *
  * Global captures of more than 1 tab character occurances but does not touch newlines.
@@ -251,15 +275,15 @@ export const SpaceInjectAfter = /(?<=[0-9a-z\]-])(?:[!=]=|[<>]=?)/g;
 export const StripSpaceInject = /[.[\]] {1,}/g;
 
 /**
-* Comment Block type newline occurance for Script and Style Languages
-*
-* ---
-
-* @example /\n(?!\s*\*)/
-*
-* BEFORE: 'object . prop'
-* AFTER:  'object.prop' // SpaceInjectBefore will handle `="bar"`
-*/
+ * Comment Block type newline occurance for Script and Style Languages
+ *
+ * ---
+ *
+ * @example /\n(?!\s*\*)/
+ *
+ * BEFORE: 'object . prop'
+ * AFTER:  'object.prop' // SpaceInjectBefore will handle `="bar"`
+ */
 export const CommBlockNewline = /\n(?!\s*\*)/;
 
 /**
@@ -491,6 +515,36 @@ export const HTMLCommDelimOpen = /^<!--+/;
 export const HTMLCommDelimClose = /--+>$/;
 
 /**
+ * Liquid Left Tag Delimiter
+ *
+ * ---
+ *
+ * @example /[a-zA-Z0-9_$#]+/
+ *
+ */
+export const LiquidTagName = /[a-zA-Z0-9_$#]+/;
+
+/**
+ * Liquid Left Tag Delimiter with spaces
+ *
+ * ---
+ *
+ * @example /({%-?)(\s*)/
+ *
+ */
+export const LiquidLeftDelimiter = /({%-?)(\s*)/;
+
+/**
+ * Liquid Right Tag Delimiter with spaces
+ *
+ * ---
+ *
+ * @example /(\s*)(-?%})/
+ *
+ */
+export const LiquidRightDelimiter = /(\s*)(-?%})/;
+
+/**
  * Liquid Tag Delimiters
  *
  * Used in the `wrapCommentBlock` method of the `Parser` class, captures
@@ -498,7 +552,7 @@ export const HTMLCommDelimClose = /--+>$/;
  *
  * ---
  *
- * @example /{%-?\s*|\s*-?%}/g
+ * @example /{%-?|-?%}/g
  *
  */
 export const LiquidDelimiters = /{%-?|-?%}/g;
@@ -545,6 +599,42 @@ export const LiquidComment = /^{%-?\s*(?:#|comment\b)/;
  *
  */
 export const LiquidLineComment = /^{%-?\s*#/;
+
+/**
+ * Liquid Line Comment Hash
+ *
+ * Tests for a hash + whitespace (or none)
+ *
+ * ---
+ *
+ * @example /#\s+|#\S/
+ *
+ */
+export const LiquidLineCommentHash = /#\s+|#/;
+
+/**
+ * Liquid Line Comment
+ *
+ * Tests for the existence of a newline following the first delimiter or first hash
+ *
+ * ---
+ *
+ * @example /^{%-?\n|{%-?\s*#\n/
+ *
+ */
+export const LiquidLineCommForce = /^{%-?\n|{%-?\s*#\n/;
+
+/**
+ * Liquid Ending Delimiter Newline
+ *
+ * Tests for the existence of a newline at the ending delimiter point.
+ *
+ * ---
+ *
+ * @example /\n\s*-?%}$/
+ *
+ */
+export const LiquidEndDelimiterNewline = /\n\s*-?%}$/;
 
 /**
  * Liquid Block Comment Match
