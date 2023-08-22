@@ -25,7 +25,7 @@ export const enum Beautifiers {
   Style,
 }
 
-export const enum Comm {
+export const enum CommentType {
   /**
    * Markup Comment type
    *
@@ -34,6 +34,14 @@ export const enum Comm {
    * ```
    */
   Markup = 1,
+  /**
+   * JavaScript/CSS Comment Block
+   *
+   * ```js
+   * /* *
+   * ```
+   */
+  Block,
   /**
    * Liquid Comment Block
    *
@@ -50,14 +58,6 @@ export const enum Comm {
    * ```
    */
   LiquidLine,
-  /**
-   * JavaScript/CSS Comment Block
-   *
-   * ```js
-   * /* *
-   * ```
-   */
-  Block
 }
 
 export enum LogLevel {
@@ -188,6 +188,18 @@ export const enum Languages {
    * TypeScript
    */
   TypeScript
+}
+
+export const enum Chars {
+  /**
+   * `'    '` –  Big String comprised of 4 whitespaces (Used in block comment formatting)
+   */
+  BigLine = '    ',
+  /**
+   * `'   '` –  Mid String comprised of 2 whitespaces (Used in block comment formatting)
+   */
+  MidLine = '   '
+
 }
 
 export const enum TagBlocks {
