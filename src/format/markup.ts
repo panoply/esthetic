@@ -4,6 +4,7 @@ import { WSP, NIL, NWL } from 'chars';
 import { is, isBoolean, isLast, isLastAt, isNumber, isUndefined, not, ws } from 'utils/helpers';
 import { parse } from 'parse/parser';
 import * as rx from 'lexical/regex';
+import { object } from 'utils/native';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
@@ -89,7 +90,7 @@ export function markup () {
    * markup elements that require external handling.
    * ie: `<script>` tags etc etc.
    */
-  const extidx = {};
+  const extidx = object(null);
 
   /**
    * Whether or not language mode is TSX / JSX
