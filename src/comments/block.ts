@@ -582,11 +582,23 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
         if (rx.LiquidEndDelimiterNewline.test(output)) {
           if (output.slice(output.indexOf('#') + 1, output.lastIndexOf(NWL)).indexOf(NWL) < 0) {
 
-            output = output
-              .replace(rx.Newlines, NIL)
-              .replace(rx.LiquidLeftDelimiter, '$1 ')
-              .replace(rx.LiquidLineCommentHash, '# ')
-              .replace(rx.LiquidRightDelimiter, ' $2');
+            if (rules.wrap > 0) {
+
+              output = output
+                .replace(rx.Newlines, NIL)
+                .replace(rx.LiquidLeftDelimiter, '$1 # ')
+                .replace(rx.LiquidLineCommentHash, '# ')
+                .replace(rx.LiquidRightDelimiter, ' $2');
+
+            } else {
+
+              output = output
+                .replace(rx.Newlines, NIL)
+                .replace(rx.LiquidLeftDelimiter, '$1 ')
+                .replace(rx.LiquidLineCommentHash, '# ')
+                .replace(rx.LiquidRightDelimiter, ' $2');
+
+            }
 
             return true;
 
@@ -595,10 +607,22 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
       } else {
 
-        output = output
-          .replace(rx.LiquidLeftDelimiter, '$1 ')
-          .replace(rx.LiquidLineCommentHash, '# ')
-          .replace(rx.LiquidRightDelimiter, ' $2');
+        if (rules.wrap > 0) {
+
+          output = output
+
+            .replace(rx.LiquidLeftDelimiter, '$1 # ')
+            .replace(rx.LiquidLineCommentHash, '# ')
+            .replace(rx.LiquidRightDelimiter, ' $2');
+
+        } else {
+
+          output = output
+            .replace(rx.LiquidLeftDelimiter, '$1 ')
+            .replace(rx.LiquidLineCommentHash, '# ')
+            .replace(rx.LiquidRightDelimiter, ' $2');
+
+        }
 
         return true;
       }
@@ -1135,12 +1159,12 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
   do {
 
-    if (is(chars[a], ch.NWL)) parse.lineOffset = parse.lines(a, parse.lineOffset);
-
+    if (is(chars[a], ch.NWL)) {
+      parse.lineOffset = parse.lines(a, parse.lineOffset);
+    }
     // Liquid Line
     //
     if (
-
       is(chars[a], ch.HSH) &&
       type === CommentType.LiquidLine &&
       rules.liquid.preserveComment === false &&
