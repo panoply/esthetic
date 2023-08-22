@@ -1,10 +1,12 @@
 /* eslint-disable prefer-const */
 import type { LiquidInternal, LiquidRules, Rules } from 'types';
 import { grammar } from 'parse/grammar';
-import { is } from 'utils/helpers';
+import { is, isLast } from 'utils/helpers';
 import { cc } from 'lexical/codes';
 import { LT } from 'lexical/enum';
 import { COM, NIL, NWL, WSP } from 'lexical/chars';
+import { parse } from 'parse/parser';
+import { countChars } from './lexing';
 
 /**
  * Opening Delimiters
@@ -123,18 +125,30 @@ export function closeDelims (input: string, rules: LiquidRules) {
 }
 
 /**
- * Inner
+ * Liquid Delimiters
  *
- * Pads template tag delimters with a space. This function
- * was updated to also support whitespace dashes:
+ * Applies delimiter rules to Liquid tokens. The `input` parameter expects a
+ * fully parsed token.
  *
  * - `{{` or `{{-`
  * - `{%` or`{%-`
  * - `}}` or `-}}`
  * - `%}`or `-%}`
  */
-export function normalize (input: string, tname: string, rules: LiquidRules) {
+export function delimiters (input: string, tname?: string, space = WSP) {
 
+  /* -------------------------------------------- */
+  /* CONSTANTS                                    */
+  /* -------------------------------------------- */
+
+  /**
+   * Destructed Liquid specific delimiter rules
+   */
+  const { delimiterTrims, delimiterPlacement } = parse.rules.liquid;
+
+  /**
+   * Destructed open and close delimiters from input
+   */
   const [ o, c ] = delims(input);
 
   /**
@@ -152,18 +166,18 @@ export function normalize (input: string, tname: string, rules: LiquidRules) {
    */
   let close: string;
 
-  if (rules.delimiterTrims === 'never') {
+  if (delimiterTrims === 'never') {
 
     open = `{${input[1]}`;
     close = `${input[input.length - 2]}}`;
 
   } else if ((
-    rules.delimiterTrims === 'always'
+    delimiterTrims === 'always'
   ) || (
-    rules.delimiterTrims === 'outputs' &&
+    delimiterTrims === 'outputs' &&
     is(input[1], cc.LCB)
   ) || (
-    rules.delimiterTrims === 'tags' &&
+    delimiterTrims === 'tags' &&
     is(input[1], cc.PER)
   )) {
 
@@ -186,52 +200,73 @@ export function normalize (input: string, tname: string, rules: LiquidRules) {
     tname === 'increment' ||
     tname === 'decrement' || tname.startsWith('end')) {
 
-    open += WSP;
-    close = WSP + close;
+    open += space;
+    close = space + close;
 
   } else {
 
-    if (rules.delimiterPlacement === 'preserve') {
+    if (delimiterPlacement === 'preserve') {
 
-      open += /^\s*\n/.test(token) ? NWL : WSP;
-      close = (/\s*\n\s*$/.test(token) ? NWL : WSP) + close;
+      open += /^\s*\n/.test(token) ? NWL : space;
+      close = (/\s*\n\s*$/.test(token) ? NWL : space) + close;
 
-    } else if (rules.delimiterPlacement === 'force') {
+    } else if (tname === '#' && delimiterPlacement === 'force-multiline') {
+
+      if (/\n{2,}/g.test(token.trim())) {
+
+        open += NWL;
+        close = NWL + close;
+
+      } else {
+        open += space;
+        close = space + close;
+      }
+
+    } else if (delimiterPlacement === 'force') {
 
       open += NWL;
       close = NWL + close;
 
     } else if (
-      rules.delimiterPlacement === 'inline' ||
-      rules.delimiterPlacement === 'default' ||
-      rules.delimiterPlacement === 'force-multiline') {
+      delimiterPlacement === 'inline' ||
+      delimiterPlacement === 'default' ||
+      delimiterPlacement === 'force-multiline') {
 
-      open += WSP;
-      close = WSP + close;
+      open += space;
+      close = space + close;
 
-    } else if (rules.delimiterPlacement === 'consistent') {
+    } else if (delimiterPlacement === 'consistent') {
 
       if (/^\s*\n/.test(token)) {
         open += NWL;
         close = NWL + close;
-
       } else {
-        open += WSP;
-        close = WSP + close;
+        open += space;
+        close = space + close;
       }
 
     }
 
   }
 
-  token = token.trim();
+  // Liquid Line Comment Post handling
+  //
+  // if (
+  //   tname === '#' &&
+  //   isLast(open, cc.NWL) &&
+  //   countChars(token, '#') > 1 &&
+  //   /^#\s*\n/.test(token.trimStart())
+  // ) {
 
-  // ensure normalize spacing is enabld
-  return open + token + close;
+  //   token = token.trimStart().replace(/^#/, NWL);
+
+  // }
+
+  return open + token.trim() + close;
 
 };
 
-export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal, {
+export function normalize (lexed: string[], tname: string, liquid: LiquidInternal, {
   wrapFraction,
   liquid: {
     forceFilter,
