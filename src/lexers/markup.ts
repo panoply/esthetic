@@ -644,6 +644,7 @@ export function markup (input?: string) {
         record.types = 'singleton';
 
         delete parse.pairs[parse.stack.index];
+
         parse.stack.pop();
 
       }
@@ -673,13 +674,15 @@ export function markup (input?: string) {
 
         if (grammar.liquid.else.has(tname)) {
 
-          record.types = ltype = tname === 'when'
-            ? 'liquid_when'
-            : 'liquid_else';
+          record.types = ltype = tname === 'when' ? 'liquid_when' : 'liquid_else';
 
         } else if (grammar.liquid.tags.has(tname)) {
 
-          if (tname === 'capture') {
+          if (embed === true) {
+
+            record.types = ltype = 'liquid_start';
+
+          } else if (tname === 'capture') {
             a = a + 1;
             return parseLiquidCapture();
           }
@@ -1565,8 +1568,9 @@ export function markup (input?: string) {
             ignore = true;
             preserve = false;
           } else {
-            embed = true;
+            ltype = 'liquid_start';
             language = q.language;
+            embed = true;
           }
         }
       }
@@ -1587,7 +1591,7 @@ export function markup (input?: string) {
       /* PUSH RECORD -------------------------------- */
       if (advance !== null) push(record);
 
-      // if (u.is(b[a], cc.RAN) && u.is(b[a + 1], cc.FWS)) return;
+      if (u.is(b[a], cc.RAN) && u.is(b[a + 1], cc.FWS)) return;
       // console.log(embed, end, ignore, preserve, token, b.slice(a).join(NIL));
 
       /* -------------------------------------------- */
@@ -2807,7 +2811,7 @@ export function markup (input?: string) {
         } else if (rules.liquid.normalizeSpacing === true) {
 
           if (
-            u.not(b[a], cc.WSP) && (
+            u.isWS(b[a]) === false && (
               u.isLastAt(lexed, cc.SQO) ||
               u.isLastAt(lexed, cc.DQO)
             )
@@ -2821,7 +2825,7 @@ export function markup (input?: string) {
               lexed.splice(lexed.length - 1, 1, WSP, b[a]);
 
               if (
-                u.not(b[a + 1], cc.WSP) &&
+                u.isWS(b[a + 1]) === false &&
                 u.not(b[a + 1], cc.EQS) &&
                 u.not(b[a + 1], cc.RCB)
               ) {
@@ -2869,7 +2873,7 @@ export function markup (input?: string) {
 
           } else if (
             u.isLastAt(lexed, cc.RSB) &&
-            u.isLast(lexed, cc.WSP) &&
+            u.isWS(lexed[lexed.length - 1]) &&
             u.not(b[a], cc.WSP) &&
             u.not(b[a], cc.COM) &&
             u.not(b[a], cc.DOT)
@@ -2878,9 +2882,9 @@ export function markup (input?: string) {
             lexed.splice(lexed.length - 1, 1, WSP, b[a]);
 
           } else if (
-            u.isLastAt(lexed, cc.WSP) &&
-            u.is(b[a], cc.WSP) &&
-            u.is(b[a + 1], cc.WSP)) {
+            u.isWS(lexed[lexed.length - 2]) &&
+            u.isWS(b[a]) &&
+            u.isWS(b[a + 1])) {
 
             lexed.pop();
 
@@ -4360,9 +4364,8 @@ export function markup (input?: string) {
                 push(record);
 
                 a = next - 1;
-
+                embed = false;
                 break;
-
               }
 
             }
@@ -4593,6 +4596,9 @@ export function markup (input?: string) {
 
         // General Content Processing
         //
+        // It is here where we detect markup or Liquid delimiter structures
+        // and break out of the traversal cycle.
+        //
         if (embed === false && lexed.length > 0 && (
           (
             u.is(b[a], cc.LAN) &&
@@ -4600,7 +4606,7 @@ export function markup (input?: string) {
             u.digit(b[a + 1]) === false &&
             u.ns(b[a + 1])
           ) || (
-            u.is(b[a], cc.LSB) &&
+            u.is(b[a], cc.LCB) &&
             u.is(b[a + 1], cc.PER)
           ) || (
             u.is(b[a], cc.LCB) && (
@@ -4753,7 +4759,7 @@ export function markup (input?: string) {
                 record.lines = 1;
               } else {
                 record.lines = 2;
-                ltoke = ltoke.replace(rx.SpaceLead, NIL);
+                ltoke = ltoke.replace(rx.WhitespaceLead, NIL);
               }
             }
           }
@@ -4766,6 +4772,7 @@ export function markup (input?: string) {
         }
 
         lexed.push(b[a]);
+        // console.log(lexed.join(''), embed);
 
         a = a + 1;
 
@@ -4866,6 +4873,10 @@ export function markup (input?: string) {
     if (u.ws(b[a])) {
 
       parseSpace();
+
+    } else if (embed) {
+
+      parseContent();
 
     } else if (u.is(b[a], cc.LAN)) {
 
