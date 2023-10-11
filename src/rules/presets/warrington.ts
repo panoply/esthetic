@@ -1,4 +1,4 @@
-import merge from 'mergerino';
+import { merge } from 'utils/helpers';
 import { Rules } from 'types';
 
 /**
