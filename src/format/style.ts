@@ -5,6 +5,7 @@ import { cc } from 'lexical/codes';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
 import { object } from 'utils/native';
+import { Modes } from 'lexical/enum';
 
 export function style () {
 
@@ -518,8 +519,10 @@ export function style () {
 
   if (build[0] === parse.crlf || is(build[0], cc.WSP)) build[0] = NIL;
 
-  return rules.endNewline === true
-    ? build.join(NIL).replace(/\s*$/, parse.crlf)
-    : build.join(NIL).replace(/\s+$/, NIL);
+  return parse.mode === Modes.Embed
+    ? build.join(NIL).trimEnd()
+    : rules.endNewline === true
+      ? build.join(NIL).replace(/\s*$/, parse.crlf)
+      : build.join(NIL).trimEnd();
 
 };
