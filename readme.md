@@ -1,7 +1,7 @@
 <br>
 <p align="center">
 <a href="https://æsthetic.dev">
-<img src="https://raw.githubusercontent.com/panoply/esthetic/next/docs/src/assets/svg/æsthetic.svg" width="270px">
+<img src="https://raw.githubusercontent.com/panoply/esthetic/next/docs/src/assets/svg/æsthetic.svg" width="280px">
 </a>
 </p>
 
