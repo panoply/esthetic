@@ -2,8 +2,9 @@
 <p align="center">
 <br>
 <a href="https://æsthetic.dev">
-<img src="https://raw.githubusercontent.com/panoply/esthetic/next/docs/src/assets/svg/æsthetic.svg" width="280px">
+<img src="https://raw.githubusercontent.com/panoply/esthetic/next/docs/src/assets/svg/æsthetic.svg" width="290px">
 </a>
+<br>
 <br>
 </p>
 
