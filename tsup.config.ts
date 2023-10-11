@@ -1,5 +1,14 @@
 import { defineConfig } from 'tsup';
 import * as pkg from './package.json';
+import { join } from 'node:path';
+import { writeFileSync, readFileSync } from 'node:fs';
+
+const cwd = process.cwd();
+const pkjson = readFileSync('./node_modules/@liquify/schema/esthetic.json').toString();
+const config = readFileSync('./node_modules/@liquify/schema/esthetic/package-json.json').toString();
+
+writeFileSync(join(cwd, 'schema.config.json'), JSON.stringify(pkjson));
+writeFileSync(join(cwd, 'schema.package.json'), JSON.stringify(config));
 
 export default defineConfig([
   {
@@ -54,28 +63,30 @@ export default defineConfig([
   },
   {
     entry: {
-      index: './src/cli.ts'
+      cli: './src/cli.ts'
     },
-    external: [
-      'ansis',
-      'chokidar',
-      'fast',
-      'minimist',
-      './index.js'
+    format: [
+      'cjs',
+      'esm'
     ],
-    outDir: 'dist/cli',
+    external: [
+      'chokidar',
+      'fast-glob',
+      './esthetic.cjs'
+    ],
     name: 'Æsthetic',
     clean: false,
     minify: process.env.production ? 'terser' : false,
+    define: {
+      VERSION: `"${pkg.version}"`
+    },
     treeshake: true,
+    cjsInterop: true,
     shims: true,
     bundle: true,
     splitting: false,
     esbuildOptions: options => {
       options.treeShaking = true;
-    },
-    format: [
-      'cjs'
-    ]
+    }
   }
 ]);

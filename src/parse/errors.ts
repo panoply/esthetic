@@ -113,7 +113,9 @@ export function RuleError (error: {
 /* PRIVATES                                     */
 /* -------------------------------------------- */
 
-const point = (size: number) => `\x1b[93m${'^'.repeat(size)}\x1b[39m`;
+const point = (size: number) => config.logColors
+  ? `\x1b[93m${'^'.repeat(size)}\x1b[39m`
+  : `${'^'.repeat(size)}`;
 
 /**
  * Get Sample Token
@@ -170,7 +172,9 @@ function getSampleToken (context: Syntactic) {
     /**
      * Line number prependiture, notice the starting space if true
      */
-    const p = offset - l.length > 0 ? ` \x1b[90m${l} |` : `\x1b[90m${l} |`;
+    const p = offset - l.length > 0
+      ? config.logColors ? ` \x1b[90m${l} |` : ` ${l} |`
+      : config.logColors ? `\x1b[90m${l} |` : `${l} |`;
 
     /* -------------------------------------------- */
     /* BEGIN                                        */
@@ -181,12 +185,20 @@ function getSampleToken (context: Syntactic) {
     if (i === 0) {
 
       if (isUndefined(source[i])) {
-        output.push(`${p} \x1b[31m${context.token}\x1b[39m`);
+        if (config.logColors) {
+          output.push(`${p} \x1b[31m${context.token}\x1b[39m`);
+        } else {
+          output.push(`${p} ${context.token}`);
+        }
         break;
       }
 
       token = source[i].trimStart();
-      output.push(`${p} \x1b[31m${token}\x1b[39m`);
+      if (config.logColors) {
+        output.push(`${p} \x1b[31m${token}\x1b[39m`);
+      } else {
+        output.push(`${p} ${token}`);
+      }
 
     } else {
 
@@ -194,10 +206,14 @@ function getSampleToken (context: Syntactic) {
 
       if (match !== null && match[0].length > indentSize) {
         token = indentChar.repeat(indentSize) + token.trimStart();
+      }
+
+      if (config.logColors) {
         output.push(`${p} \x1b[31m${token}\x1b[39m`);
       } else {
-        output.push(`${p} \x1b[31m${token}\x1b[39m`);
+        output.push(`${p} ${token}`);
       }
+
     }
 
     i = i + 1;
@@ -230,13 +246,20 @@ function getSampleSnippet (line = parse.lineNumber) {
   do {
 
     const num = `${no + 1}`;
-    const prepend = chars - num.length > 0 ? ` \x1b[90m${num} |` : `\x1b[90m${num} |`;
+    const prepend = chars - num.length > 0
+      ? config.logColors ? ` \x1b[90m${num} |` : ` ${num} |`
+      : config.logColors ? `\x1b[90m${num} |` : `${num} |`;
+
     const token = input[no].trim();
 
     if (no > ender) break;
 
     if (!token) {
-      output.push(`${prepend} \x1b[90m${token || '␤'}`);
+      if (config.logColors) {
+        output.push(`${prepend} \x1b[90m${token || '␤'}`);
+      } else {
+        output.push(`${prepend} ${token || '␤'}`);
+      }
       no = no + 1;
       continue;
     }
@@ -246,13 +269,22 @@ function getSampleSnippet (line = parse.lineNumber) {
       if (token.length === 0) {
         output.push(`${' '.repeat(chars + 2)} ${point(prev.length)}`);
       } else {
-        output.push(`${prepend} \x1b[31m${token}\x1b[39m`);
+        if (config.logColors) {
+          output.push(`${prepend} \x1b[31m${token}\x1b[39m`);
+        } else {
+          output.push(`${prepend} ${token}`);
+        }
+
         output.push(`${' '.repeat(chars + 2)} ${point(token.length)}`);
       }
 
     } else {
 
-      output.push(`${prepend} \x1b[90m${token || '␤'}`);
+      if (config.logColors) {
+        output.push(`${prepend} \x1b[90m${token || '␤'}`);
+      } else {
+        output.push(`${prepend} ${token || '␤'}`);
+      }
 
     }
 

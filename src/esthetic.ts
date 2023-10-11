@@ -10,8 +10,6 @@ import { getLexerName, getLexerType } from 'rules/language';
 import { isValidChoice } from 'rules/validate';
 import { config } from 'config';
 import { defineProperty } from 'utils/native';
-import merge from 'mergerino';
-import { defaults } from 'rules/presets/default';
 import * as presets from 'rules/presets';
 
 export const esthetic = new class Esthetic {

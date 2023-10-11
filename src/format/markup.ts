@@ -4,6 +4,7 @@ import { WSP, NIL, NWL } from 'chars';
 import { is, isBoolean, isLast, isLastAt, isNumber, isUndefined, not, ws } from 'utils/helpers';
 import { parse } from 'parse/parser';
 import * as rx from 'lexical/regex';
+import { object } from 'utils/native';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
@@ -89,7 +90,7 @@ export function markup () {
    * markup elements that require external handling.
    * ie: `<script>` tags etc etc.
    */
-  const extidx = {};
+  const extidx = object(null);
 
   /**
    * Whether or not language mode is TSX / JSX
@@ -1882,9 +1883,7 @@ export function markup () {
 
             level.push(-20);
 
-          } else if (
-            isType(a, 'liquid_else') &&
-            isType(next, 'liquid_end')) {
+          } else if (isType(a, 'liquid_else') && isType(next, 'liquid_end')) {
 
             // LAST EMPTY LIQUID CONDITIONAL
             //
@@ -1901,9 +1900,7 @@ export function markup () {
 
             level.push(indent);
 
-          } else if (
-            isType(a, 'liquid_else') &&
-            isType(next, 'liquid_else')) {
+          } else if (isType(a, 'liquid_else') && isType(next, 'liquid_else')) {
 
             // ELSE EMPTY LIQUID CONDITIONAL
             //
@@ -1926,11 +1923,7 @@ export function markup () {
             level[a - 1] = indent - 1;
             level.push(indent - 1);
 
-          } else if (
-            isType(a, 'liquid_else') && (
-              isType(next, 'content') ||
-              isType(next, 'liquid')
-            )) {
+          } else if (isType(a, 'liquid_else') && (isType(next, 'content') || isType(next, 'liquid'))) {
 
             level[a - 1] = indent - 1;
             level.push(indent);
@@ -2009,10 +2002,7 @@ export function markup () {
             level[a - 1] = indent - 1;
             level.push(indent);
 
-          } else if (
-            isType(prev, 'liquid_start') &&
-            isType(next, 'liquid_end') &&
-            data.lines[next] === 0) {
+          } else if (isType(prev, 'liquid_start') && isType(next, 'liquid_end') && data.lines[next] === 0) {
 
             level[a - 1] = -20;
 
@@ -2085,6 +2075,11 @@ export function markup () {
     const lines = data.token[a].split(NWL);
 
     /**
+     * Additional spacing characters
+     */
+    const space = rules.indentChar.repeat(rules.indentSize);
+
+    /**
      * The amount of lines assigned for better perf
      */
     const length = lines.length;
@@ -2108,16 +2103,16 @@ export function markup () {
     //
     if (a - 1 > 0) {
 
-      indent += nl(levels[a - 1], false) + '  ';
+      indent += nl(levels[a - 1], false) + space;
 
     } else {
 
       // if (lines[0].length === 2 || lines[0].length === 3) {
-      // indent += '  ';
-      //  indent += nl(levels[a - 1], false) + '  ';
+      // indent += space;
+      //  indent += nl(levels[a - 1], false) + space;
 
       // } else {
-      indent += nl(levels[a - 1], false) + '  ';
+      indent += nl(levels[a - 1], false) + space;
       // }
 
     }
@@ -2166,7 +2161,7 @@ export function markup () {
    * Ignored Indentations
    *
    * Applied to embedded code regions marked as ignored via the
-   * `ignoreJS`, `ignoreCSS` or `ignoreJSON` makrup rules. These rules
+   * `ignoreJS`, `ignoreCSS` or `ignoreJSON` markup rules. These rules
    * still apply indentation to tokens but right side is excluded.
    *
    */
@@ -2282,10 +2277,44 @@ export function markup () {
         }
 
         if (
+          isType(a, 'comment') &&
+          is(data.token[a].trimStart()[1], cc.PER) &&
+          rules.liquid.preserveComment === true
+        ) {
+
+          build.push(data.token[a]);
+
+          if ((
+            isType(a + 1, 'comment') &&
+            is(data.token[a + 1].trimStart()[1], cc.PER) &&
+            rules.liquid.preserveComment === true) === false) {
+            build.push(nl(levels[a]));
+          } else {
+            build.push(nl(levels[a], true, false));
+          }
+
+        } else if (
+          isType(a, 'comment') &&
+          is(data.token[a].trimStart()[1], cc.BNG) &&
+          rules.markup.preserveComment === true
+        ) {
+
+          build.push(data.token[a]);
+
+          if ((
+            isType(a + 1, 'comment') &&
+            is(data.token[a + 1].trimStart()[1], cc.BNG) &&
+            rules.markup.preserveComment === true) === false) {
+            build.push(nl(levels[a]));
+          } else {
+            build.push(nl(levels[a], true, false));
+          }
+
+        } else if (
           isUndefined(data.token[a]) === false &&
           data.token[a].indexOf(parse.crlf) > 0 && (
             (isType(a, 'content') && rules.markup.preserveText === false) ||
-            (isType(a, 'comment') && not(data.token[a][1], cc.BNG)) ||
+            (isType(a, 'comment') && not(data.token[a].trimStart()[1], cc.BNG)) ||
             isType(a, 'attribute')
           )) {
 
@@ -2354,9 +2383,7 @@ export function markup () {
 
         } else if (isType(a, 'ignore')) {
 
-          if (
-            isStack(a, 'script') ||
-            isStack(a, 'style')) {
+          if (isStack(a, 'script') || isStack(a, 'style')) {
 
             onIgnoreRule();
 
@@ -2434,6 +2461,22 @@ export function markup () {
               build.push(nl(levels[a]));
 
             } else if (
+              isType(a + 1, 'comment') &&
+              rules.markup.preserveComment === true &&
+              is(data.token[a + 1].trimStart()[1], cc.BNG)
+            ) {
+
+              build.push(nl(levels[a], true, false));
+
+            } else if (
+              isType(a + 1, 'comment') &&
+              rules.liquid.preserveComment === true &&
+              is(data.token[a + 1].trimStart()[1], cc.PER)
+            ) {
+
+              build.push(nl(levels[a], true, false));
+
+            } else if (
               isType(a + 1, 'ignore') === false &&
               isType(a + 1, 'ignore_next') === false) {
 
@@ -2473,14 +2516,9 @@ export function markup () {
 
           build.push(external);
 
-          if (rules.markup.forceIndent || (
-            levels[parse.iterator] > -1 &&
-            a in extidx &&
-            extidx[a] > a)) {
-
-            a = parse.iterator;
+          if (rules.markup.forceIndent || (levels[parse.iterator] > -1 && a in extidx)) {
+            if (extidx[a] > a) a = parse.iterator;
             build.push(nl(levels[a]));
-
           }
 
         }

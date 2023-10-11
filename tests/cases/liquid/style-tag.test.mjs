@@ -19,7 +19,6 @@ test('Structure Test: Empty style tags', t => {
           {% style %}
 
           {% endstyle %}
-
         `
       ],
       [
@@ -55,6 +54,7 @@ test('Structure Test: Empty style tags', t => {
 
           {%- style %}
           {% endstyle%}
+
         `,
         liquid`{% # Multiple empty style tag sequences %}
 
@@ -166,10 +166,8 @@ test('Structure Test: Empty style tags', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      markup: {
-        forceIndent: true
-      }
+      language: 'liquid'
+
     });
 
     t.deepEqual(actual, expect);

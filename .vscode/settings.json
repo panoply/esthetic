@@ -47,9 +47,18 @@
   "json.schemas": [
     {
       "fileMatch": [
-        "package.json"
+        "**/package.json"
       ],
-      "url": "./schema.json"
+      "url": "./schema.package.json"
+    },
+    {
+      "fileMatch": [
+        "Æ",
+        "Æ.json",
+        ".esthetic",
+        ".esthetic.json"
+      ],
+      "url": "./schema.config.json"
     },
     {
       "url": "https://unpkg.com/tsup/schema.json",
@@ -154,9 +163,6 @@
   },
   "liquid.engine": "11ty",
   "liquid.config.method": "workspace",
-  "liquid.format.ignore": [
-    "tests/samples/**"
-  ],
   "liquid.format.rules": {
     "wrap": 120,
     "wrapFraction": 80,

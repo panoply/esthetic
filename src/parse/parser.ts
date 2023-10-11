@@ -629,7 +629,7 @@ class Parser {
       record.stack !== 'liquid' &&
       record.stack !== 'svg') {
 
-      //  this.syntactic(record, token);
+      this.syntactic(record, token);
 
     }
 

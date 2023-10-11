@@ -9,8 +9,6 @@ import { prettier } from 'rules/presets/prettier';
 import { assign, object } from 'utils/native';
 import { CNL, NWL } from 'lexical/chars';
 import { hasProp } from 'utils/helpers';
-import { config } from 'config';
-import merge from 'mergerino';
 
 const GLOB = [
   'correct',

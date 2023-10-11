@@ -5,6 +5,7 @@ import { cc as ch } from 'lexical/codes';
 import { parse } from 'parse/parser';
 import { grammar } from 'parse/grammar';
 import { Modes } from 'lexical/enum';
+import { Newline } from 'lexical/regex';
 
 export function script () {
 
@@ -47,7 +48,7 @@ export function script () {
    * Holds reference to the source ending index or
    * the token ending index.
    */
-  const b = (parse.ender < 1 || parse.ender > data.token.length) ? data.token.length : parse.ender + 1;
+  const b = parse.ender < 1 || parse.ender > data.token.length ? data.token.length : parse.ender + 1;
 
   /**
    * Levels
@@ -699,8 +700,15 @@ export function script () {
         vindex.pop();
       }
 
-      if (option.bracePadding === false && ctoke !== '}' && ltype !== 'markup' && ltype !== 'liquid') {
+      if (
+        option.bracePadding === false &&
+        ctoke !== '}' &&
+        ctoke !== ']' &&
+        ltype !== 'markup' &&
+        ltype !== 'liquid') {
+
         level[a - 1] = -20;
+
       }
 
       if (
@@ -1251,6 +1259,7 @@ export function script () {
       } else {
 
         level.push(-20);
+
       }
 
       if (data.types[a - 1] === 'comment') level[a - 1] = indent;
@@ -3055,10 +3064,13 @@ export function script () {
 
         level.push(indent);
 
-      } else if (ltype !== 'liquid' && data.types[a + 1] !== 'liquid') {
+      } else if (ltype === 'liquid') {
+
+        level[a - 1] = -10;
+
+      } else {
 
         level.push(-10);
-
       }
 
       if (
@@ -3084,8 +3096,45 @@ export function script () {
       // Let's preserve occurances of Liquid tokens contained within
       // JSON strings. This prevents extra spaces being applied.
       //
+      if (ctype === 'liquid_start') {
 
-      if (ctype === 'liquid_else') {
+        if (ltype === 'string') {
+
+          if (data.lines[a - 1] <= 1) level[a - 1] = -20;
+
+          if (data.lines[a] > 1) {
+
+            indent = indent + 1;
+            level.push(indent);
+
+          } else {
+
+            level.push(-10);
+
+          }
+
+        } else {
+
+          if (data.lines[a] > 1) {
+
+            indent = indent + 1;
+
+            level.push(indent);
+
+          } else if (data.lines[a] === 1) {
+
+            level.push(-10);
+
+          } else {
+
+            level[a - 1] = -20;
+            level.push(-20);
+
+          }
+
+        }
+
+      } else if (ctype === 'liquid_else') {
 
         if (ltype === 'string') {
 
@@ -3100,34 +3149,20 @@ export function script () {
 
         } else {
 
-          level[a - 1] = indent - 1;
-          level.push(indent);
+          if (data.lines[a] > 1) {
 
-        }
+            level[a - 1] = indent - 1;
 
-      } else if (ctype === 'liquid_start') {
-
-        if (ltype === 'string') {
-
-          if (data.lines[a - 1] <= 1) level[a - 1] = -20;
-
-          if (data.lines[a] > 0) {
-            indent = indent + 1;
             level.push(indent);
+
+          } else if (data.lines[a] === 1) {
+
+            level.push(-10);
+
           } else {
+
             level.push(-20);
-          }
 
-        } else {
-
-          indent = indent + 1;
-
-          if (data.lines[a - 1] < 1) level[a - 1] = -20;
-
-          if (data.lines[a] > 0) {
-            level.push(indent);
-          } else {
-            level.push(-20);
           }
 
         }
@@ -3141,22 +3176,30 @@ export function script () {
           if (data.lines[a] > 1) {
             level[a - 1] = indent - 1;
             level.push(indent);
+          } else {
+            level.push(-10);
           }
+
+        } else if (ltype === 'liquid' && data.lines[a] < 2) {
+
+          // TODO
+          // We are enforcing inline on all tags, like will produce
+          // defect but will address this in the future.
+          //
+          level.push(-10);
 
         } else {
 
-          indent = indent - 1;
-
-          if (ltype === 'liquid_start' || data.lines[a - 1] < 1) {
-            level[a - 1] = -20;
-          } else {
+          if (data.lines[a] > 1) {
             level[a - 1] = indent;
-          }
-
-          if (data.lines[a] > 0) {
             level.push(indent);
-          } else {
+          } else if (data.lines[a] === 0) {
+            level[a - 1] = -20;
+            indent = indent - 1;
             level.push(-20);
+          } else {
+            indent = indent - 1;
+            level.push(indent);
           }
         }
 
@@ -3164,12 +3207,38 @@ export function script () {
 
         if (is(ltoke, ch.COL) && level[a - 2] === -10) level[a - 2] = -20;
 
-        if (data.lines[a] > 0) {
+        if (ltype === 'string') {
+
+          if (level[a - 2] === -10) {
+
+            level[a - 1] = -20;
+            level.push(-10);
+
+          } else if (data.lines[a] > 1) {
+
+            level.push(indent);
+
+          } else if (data.lines[a] === 1) {
+
+            level.push(-10);
+
+          } else {
+
+            level.push(-20);
+          }
+
+        } else if (data.lines[a] > 1) {
 
           level.push(indent);
 
+        } else if (data.lines[a] === 1) {
+
+          level.push(-10);
+
         } else {
+
           level.push(-20);
+
         }
       }
 
@@ -3463,7 +3532,7 @@ export function script () {
           onReference();
         } else if (ctype === 'markup') {
           onMarkup();
-        } else if (ctype.indexOf('liquid') === 0) {
+        } else if (ctype.indexOf('liquid') > -1) {
           onLiquid();
         } else if (ctype === 'generic') {
 
@@ -3756,13 +3825,13 @@ export function script () {
         //
         if (data.types[a] === 'comment' && option.commentIndent === true) {
 
-          if (/\n/.test(data.token[a])) {
+          if (Newline.test(data.token[a])) {
 
             const space = data.begin[a] > -1 ? is(data.token[a][2], ch.ARS)
               ? (repeatChar(levels[a], tab) + rules.indentChar)
               : repeatChar(levels[a], tab) : rules.indentChar;
 
-            const comm = data.token[a].split(/\n/);
+            const comm = data.token[a].split(NWL);
 
             let i = 1;
 

@@ -192,7 +192,7 @@ export function markup (input?: string) {
     if (/(?:{[=#/]|%[>\]])|\}%[>\]]/.test(input)) return input;
     if (!lq.isType(input, 3)) return input;
 
-    return lq.normalize(input, tname, rules.liquid);
+    return lq.delimiters(input, tname);
 
   };
 
@@ -644,6 +644,7 @@ export function markup (input?: string) {
         record.types = 'singleton';
 
         delete parse.pairs[parse.stack.index];
+
         parse.stack.pop();
 
       }
@@ -673,13 +674,15 @@ export function markup (input?: string) {
 
         if (grammar.liquid.else.has(tname)) {
 
-          record.types = ltype = tname === 'when'
-            ? 'liquid_when'
-            : 'liquid_else';
+          record.types = ltype = tname === 'when' ? 'liquid_when' : 'liquid_else';
 
         } else if (grammar.liquid.tags.has(tname)) {
 
-          if (tname === 'capture') {
+          if (embed === true) {
+
+            record.types = ltype = 'liquid_start';
+
+          } else if (tname === 'capture') {
             a = a + 1;
             return parseLiquidCapture();
           }
@@ -1565,8 +1568,9 @@ export function markup (input?: string) {
             ignore = true;
             preserve = false;
           } else {
-            embed = true;
+            ltype = 'liquid_start';
             language = q.language;
+            embed = true;
           }
         }
       }
@@ -1587,7 +1591,7 @@ export function markup (input?: string) {
       /* PUSH RECORD -------------------------------- */
       if (advance !== null) push(record);
 
-      // if (u.is(b[a], cc.RAN) && u.is(b[a + 1], cc.FWS)) return;
+      if (u.is(b[a], cc.RAN) && u.is(b[a + 1], cc.FWS)) return;
       // console.log(embed, end, ignore, preserve, token, b.slice(a).join(NIL));
 
       /* -------------------------------------------- */
@@ -2216,45 +2220,6 @@ export function markup (input?: string) {
     };
 
     /**
-     * Liquid Comment Blocks
-     *
-     * This is a utility function for obtaining ending liquid tags
-     * before traversal. Specifically for handling comment blocks
-     * and/or ignored markup tags like scripts or styles.
-     */
-    function parseLiquidComment (from: number) {
-
-      // Lets look for liquid tokens keywords before proceeding,
-      // We are skipping ahead from the normal parse here.
-      //
-      const e = source.indexOf('{%', from);
-
-      // Lets reference this index
-      let i = e;
-
-      // Lets make sure to consume any whitespace dash
-      // characters that might be defined
-      //
-      if (u.is(b[e + 1], cc.DSH)) i = e + 1;
-
-      // Lets now look for the starting index of the `endcomment` keyword
-      //
-      i = source.indexOf(`end${tname}`, i);
-
-      if (i > 0) {
-
-        i = b.indexOf('}', i);
-
-        if (i > 0 && b[i - 1].charCodeAt(0) === cc.PER) {
-          ltype = 'comment';
-          start = source.slice(a, from + 1);
-          end = source.slice(source.lastIndexOf('{%', i), i + 1);
-        }
-      }
-
-    }
-
-    /**
      * Comments
      *
      * Handling for comment lines and blocks. Additional processing for
@@ -2503,62 +2468,52 @@ export function markup (input?: string) {
           preserve = true; // Required for lexer
           end = '%}';
           ltype = 'liquid';
+          lchar = '}';
 
-          /**
-           * `}` - The index of the next Right Curly brace
-           */
-          const from = source.indexOf('}', a + 2);
+          const next = source.indexOf(end, a + 3);
 
-          if (u.is(b[from - 1], cc.PER)) {
+          if (next === -1) {
+            return MarkupError(ParseError.MissingLiquidCloseDelimiter, source.slice(a));
+          }
 
-            let tag = source.slice(a + 2, from - 1);
+          if (u.is(b[a + 2], cc.DSH)) {
+            start = '{%-';
+            tname = rx.LiquidTagName.exec(source.slice(a + 3, next).trimStart())[0];
+          } else {
+            start = '{%';
+            tname = rx.LiquidTagName.exec(source.slice(a + 2, next).trimStart())[0];
+          }
 
-            // Lets make sure we do not interfere with dash delimiters
-            if (u.is(tag, cc.DSH)) {
-              start = '{%-';
-              tag = tag.slice(1).trimStart();
-            } else {
-              start = '{%';
-              tag = tag.trimStart();
+          if (tname === 'comment') {
+
+            ltype = 'comment';
+
+            // Lets find the endcomment token. We will skip ahead here
+            //
+            const ender = source.indexOf('endcomment', next + 2);
+
+            if (ender === -1) {
+              return MarkupError(ParseError.MissingLiquidEndTag, source.slice(a, next + 2), 'comment');
             }
 
-            tname = tag.slice(0, tag.search(/[\s%-]/));
+            start = source.slice(a, next + 2);
+            end = source.slice(source.lastIndexOf('{', ender), source.indexOf('}', ender + 10) + 1);
+            return parseComments();
 
-            // Same as above but for closing delimiters
-            if (u.isLast(tag, cc.DSH)) {
-              end = '-%}';
-              tag = tag.slice(0, tag.length - 1).trimEnd();
-            } else if (u.isLast(tag, cc.PER)) {
-              end = '%}';
-              tag = tag.trimEnd();
-            }
-
-            if (tname === 'comment') {
-
-              parseLiquidComment(from);
-
-            } else {
-
-              if (ignored.size > 0 && ignored.has(tname)) {
-                parse.iterator = a;
-                ignore = true;
-              }
-
-              if (u.is(tag, cc.HSH)) {
-                ltype = 'comment';
-                end = '%}';
-                lchar = end.charAt(end.length - 1);
-                return parseComments(true);
-              }
-
-            }
           } else {
 
-            preserve = true;
-            end = '%}';
-            ltype = 'liquid';
+            if (ignored.size > 0 && ignored.has(tname)) {
+              parse.iterator = a;
+              ignore = true;
+            }
+
+            if (u.is(tname, cc.HSH)) {
+              ltype = 'comment';
+              return parseComments(true);
+            }
 
           }
+
         } else {
 
           preserve = true;
@@ -2580,9 +2535,8 @@ export function markup (input?: string) {
         parse.iterator = a;
       }
 
+      if (!lchar) lchar = end.charAt(end.length - 1);
       if (nowalk) return parseExternal();
-
-      lchar = end.charAt(end.length - 1);
 
       if (ltype === 'comment') {
 
@@ -2857,7 +2811,7 @@ export function markup (input?: string) {
         } else if (rules.liquid.normalizeSpacing === true) {
 
           if (
-            u.not(b[a], cc.WSP) && (
+            u.isWS(b[a]) === false && (
               u.isLastAt(lexed, cc.SQO) ||
               u.isLastAt(lexed, cc.DQO)
             )
@@ -2871,7 +2825,7 @@ export function markup (input?: string) {
               lexed.splice(lexed.length - 1, 1, WSP, b[a]);
 
               if (
-                u.not(b[a + 1], cc.WSP) &&
+                u.isWS(b[a + 1]) === false &&
                 u.not(b[a + 1], cc.EQS) &&
                 u.not(b[a + 1], cc.RCB)
               ) {
@@ -2919,7 +2873,7 @@ export function markup (input?: string) {
 
           } else if (
             u.isLastAt(lexed, cc.RSB) &&
-            u.isLast(lexed, cc.WSP) &&
+            u.isWS(lexed[lexed.length - 1]) &&
             u.not(b[a], cc.WSP) &&
             u.not(b[a], cc.COM) &&
             u.not(b[a], cc.DOT)
@@ -2928,9 +2882,9 @@ export function markup (input?: string) {
             lexed.splice(lexed.length - 1, 1, WSP, b[a]);
 
           } else if (
-            u.isLastAt(lexed, cc.WSP) &&
-            u.is(b[a], cc.WSP) &&
-            u.is(b[a + 1], cc.WSP)) {
+            u.isWS(lexed[lexed.length - 2]) &&
+            u.isWS(b[a]) &&
+            u.isWS(b[a + 1])) {
 
             lexed.pop();
 
@@ -4135,7 +4089,7 @@ export function markup (input?: string) {
       if (ignore === false) {
         if (ltype === 'liquid') {
 
-          token = lq.tokenize(lexed, tname, liquid, rules);
+          token = lq.normalize(lexed, tname, liquid, rules);
 
           // Normalize Patches
           //
@@ -4410,9 +4364,8 @@ export function markup (input?: string) {
                 push(record);
 
                 a = next - 1;
-
+                embed = false;
                 break;
-
               }
 
             }
@@ -4643,6 +4596,9 @@ export function markup (input?: string) {
 
         // General Content Processing
         //
+        // It is here where we detect markup or Liquid delimiter structures
+        // and break out of the traversal cycle.
+        //
         if (embed === false && lexed.length > 0 && (
           (
             u.is(b[a], cc.LAN) &&
@@ -4650,7 +4606,7 @@ export function markup (input?: string) {
             u.digit(b[a + 1]) === false &&
             u.ns(b[a + 1])
           ) || (
-            u.is(b[a], cc.LSB) &&
+            u.is(b[a], cc.LCB) &&
             u.is(b[a + 1], cc.PER)
           ) || (
             u.is(b[a], cc.LCB) && (
@@ -4803,7 +4759,7 @@ export function markup (input?: string) {
                 record.lines = 1;
               } else {
                 record.lines = 2;
-                ltoke = ltoke.replace(rx.SpaceLead, NIL);
+                ltoke = ltoke.replace(rx.WhitespaceLead, NIL);
               }
             }
           }
@@ -4816,6 +4772,7 @@ export function markup (input?: string) {
         }
 
         lexed.push(b[a]);
+        // console.log(lexed.join(''), embed);
 
         a = a + 1;
 
@@ -4916,6 +4873,10 @@ export function markup (input?: string) {
     if (u.ws(b[a])) {
 
       parseSpace();
+
+    } else if (embed) {
+
+      parseContent();
 
     } else if (u.is(b[a], cc.LAN)) {
 

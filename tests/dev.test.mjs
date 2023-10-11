@@ -118,6 +118,7 @@ dev(function (source) {
     indentSize: 2,
     liquid: {
       normalizeSpacing: true,
+      preserveComment: true,
       dedentTagList: [
 
       ]
@@ -131,7 +132,7 @@ dev(function (source) {
 
   return {
     source: output,
-    repeat: 0,
+    repeat: 3,
     inspect: true,
     logger: false,
     colors: false,

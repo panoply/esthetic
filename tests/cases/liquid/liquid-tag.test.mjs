@@ -101,7 +101,7 @@ test('Liquid Tag - Structural tests and syntactical formations', t => {
         `
       ],
       [
-        liquid`{% # Forloop enders  %}
+        liquid`{% # Forloop enders %}
 
           {% liquid
 
@@ -117,7 +117,7 @@ test('Liquid Tag - Structural tests and syntactical formations', t => {
           %}
 
         `,
-        liquid`{% # Forloop enders  %}
+        liquid`{% # Forloop enders %}
 
           {% liquid
 

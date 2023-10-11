@@ -9,6 +9,16 @@
 export const NIL = '';
 
 /**
+ * `'   '` –  Mid String comprised of 2 whitespaces (Used in block comment formatting)
+ */
+export const MID = '   ';
+
+/**
+ * `'    '` –  Big String comprised of 4 whitespaces (Used in block comment formatting)
+ */
+export const BIG = '    ';
+
+/**
  * `"` –  Double quotation character
  */
 export const DQO = '"';

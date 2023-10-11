@@ -1,4 +1,5 @@
 import { grammar } from 'parse/grammar';
+import { isRegex } from 'utils/helpers';
 
 /**
  * Determine External
@@ -46,7 +47,7 @@ export function determine (tag: string, ref: 'html' | 'liquid', attrs?: any) {
           return key;
         } else {
           for (const test of match) {
-            if (test instanceof RegExp && test.test(arg)) return key;
+            if (isRegex(test) && test.test(arg)) return key;
           }
         }
       }
