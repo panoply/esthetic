@@ -2,9 +2,10 @@
   position: relative;
   display: block;
   width: 100%;
+  border-top-right-radius: 10px;
   border: $accordion-border-width solid $accordion-border-color;
-  border-top: none;
-  background-color: $body-bg;
+
+  //background-color: $code-bg; // $body-bg;
 
   &.accordion-markdown {
     margin-bottom: 40px;
@@ -74,14 +75,16 @@
     }
   }
 
+  .first {
+    border-top-right-radius: 10px;
+  }
   &-btn,
   > h3 {
     display: inline-block;
     width: 100%;
     text-align: left;
-    border: none;
+    border: transparent;
     border-top: $accordion-border-width solid $accordion-border-color;
-    border-radius: 0;
     cursor: pointer;
     color: $link-color;
     user-select: none;

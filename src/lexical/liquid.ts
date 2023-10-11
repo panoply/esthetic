@@ -1,12 +1,11 @@
 /* eslint-disable prefer-const */
 import type { LiquidInternal, LiquidRules, Rules } from 'types';
 import { grammar } from 'parse/grammar';
-import { is, isLast } from 'utils/helpers';
+import { is, isWS } from 'utils/helpers';
 import { cc } from 'lexical/codes';
 import { LT } from 'lexical/enum';
 import { COM, NIL, NWL, WSP } from 'lexical/chars';
 import { parse } from 'parse/parser';
-import { countChars } from './lexing';
 
 /**
  * Opening Delimiters
@@ -294,6 +293,10 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
   /* TRIMS                                        */
   /* -------------------------------------------- */
 
+  // HOT PATCH
+  // schema tag should not apply trims
+  // this is a hot patch for now until support in vscode can digest {%- schema -%}
+  // tag expressions with delimiters
   if (delimiterTrims === 'never') {
 
     open = `{${lexed[1]}`;
@@ -461,7 +464,7 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 
         const pipe = liquid.pipes[i];
 
-        if (is(lexed[pipe - 1], cc.WSP)) lexed[pipe - 1] = NIL;
+        if (isWS(lexed[pipe - 1])) lexed[pipe - 1] = NIL;
 
         lexed[pipe] = NWL + lexed[pipe];
 
@@ -470,9 +473,9 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 
           let p: number = pipe - 1;
 
-          if (is(lexed[p - 1], cc.WSP)) {
+          if (isWS(lexed[p - 1])) {
             do lexed[p--] = NIL;
-            while (is(lexed[p], cc.WSP));
+            while (isWS(lexed[p]));
           }
 
         }
@@ -499,7 +502,7 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 
             if (lineBreakSeparator === 'after') {
 
-              if (is(lexed[arg + 1], cc.WSP) && is(lexed[arg + 2], cc.WSP)) lexed[arg + 1] = NIL;
+              if (isWS(lexed[arg + 1]) && isWS(lexed[arg + 2])) lexed[arg + 1] = NIL;
 
               lexed[is(lexed[arg - 1], cc.COM) ? arg - 1 : arg] = n === 0
                 ? NWL + '  '
@@ -507,7 +510,7 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 
             } else if (lineBreakSeparator === 'before') {
 
-              if (is(lexed[arg + 1], cc.WSP) && is(lexed[arg + 2], cc.WSP)) lexed[arg + 1] = NIL;
+              if (isWS(lexed[arg + 1]) && isWS(lexed[arg + 2])) lexed[arg + 1] = NIL;
 
               if (is(lexed[arg - 1], cc.COM)) {
 
@@ -558,8 +561,12 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 
       if (lineBreakSeparator === 'after') {
 
-        if (is(lexed[arg + 1], cc.WSP)) lexed[arg + 1] = NIL;
-        if (is(lexed[arg - 1], cc.WSP)) lexed[arg - 1] = NIL;
+        // ADDED TO IN ATTEMPT TO PATCH TAB ANIMALS CC: WOLFGREY
+        let b = arg;
+        while (isWS(lexed[b--])) lexed[b] = NIL;
+
+        if (isWS(lexed[arg + 1])) lexed[arg + 1] = NIL;
+        if (isWS(lexed[arg - 1])) lexed[arg - 1] = NIL;
 
         lexed[arg] = is(lexed[arg], cc.COM)
           ? COM + NWL

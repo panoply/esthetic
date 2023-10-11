@@ -542,7 +542,7 @@ class Parser {
         stack
       };
 
-    } else if (this.stack.index in this.pairs && (
+    } else if ((this.stack.index in this.pairs) && (
       record.types === 'end' ||
       record.types === 'liquid_end'
     )) {
@@ -576,6 +576,7 @@ class Parser {
         if (`</${pair.stack}>` === record.token) {
           delete this.pairs[this.stack.index];
         } else {
+
           SyntacticError(ParseError.MissingHTMLEndTag, pair);
         }
 
@@ -626,10 +627,9 @@ class Parser {
 
     if (
       record.lexer === 'markup' &&
-      record.stack !== 'liquid' &&
-      record.stack !== 'svg') {
+      record.stack !== 'liquid') {
 
-      this.syntactic(record, token);
+      // this.syntactic(record, token);
 
     }
 

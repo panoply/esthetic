@@ -1,81 +1,37 @@
-<section
-  id="MainProduct-{{ section.id }}"
-  class="page-width section-{{ section.id }}-padding"
-  data-section="{{ section.id }}">
-  {{ 'section-main-product.css' | asset_url | stylesheet_tag }}
-  {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
-  {{ 'component-price.css' | asset_url | stylesheet_tag }}
-  {{ 'component-slider.css' | asset_url | stylesheet_tag }}
-  {{ 'component-rating.css' | asset_url | stylesheet_tag }}
-  {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
-  {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
-  {% if product.quantity_price_breaks_configured? %}
-    {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
-  {% endif %}
-
-  {% style %}
-
-
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-    }
-
-    @media screen and (min-width: 750px) {
-      .section-{{ section.id }}-padding {
-        padding-top: {{ section.settings.padding_top }}px;
-        padding-bottom: {{ section.settings.padding_bottom }}px;
-      }
-    }
-
-
-
+<div class="section">
+  {% style %}{% render 'ba-parts-configurator.css' %}
   {% endstyle %}
+  <div class="section-stack">
+    <div class="parts-configurator">
+      <div class="parts-configurator__head">
+        <h3 class="parts-conifigurator__title">Wybierz producenta *</h3>
+        <div class="parts-configuration__producer">
+          {{ section.settings.conifg_collection }}
 
-  <script
-    src="{{ 'product-info.js' | asset_url }}"
-    defer="defer"></script>
-  <script
-    src="{{ 'product-form.js' | asset_url }}"
-    defer="defer"></script>
-  {% if product.quantity_price_breaks_configured? %}
-    <script
-      src="{{ 'show-more.js' | asset_url }}"
-      defer="defer"></script>
-    <script
-      src="{{ 'price-per-item.js' | asset_url }}"
-      defer="defer"></script>
-  {% endif %}
-
-  {% if section.settings.image_zoom == 'hover' %}
-    <script
-      id="EnableZoomOnHover-main"
-      src="{{ 'magnify.js' | asset_url }}"
-      defer="defer"></script>
-  {% endif %}
-  {% if request.design_mode %}
-    <script
-      src="{{ 'theme-editor.js' | asset_url }}"
-      defer="defer"></script>
-  {% endif %}
-
-  {% assign first_3d_model = product.media | where: 'media_type', 'model' | first %}
-  {% if first_3d_model %}
-    {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
-
-  {% endif %}
-
-  {% assign variant_images = product.images
-    | where: 'attached_to_variant?', true
-    | map: 'src' %}
-
-  <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{
-      section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if
-    product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
-    <div class="grid__item product__media-wrapper{% if section.settings.media_position == 'right' %} medium-hide large-up-hide{%
-      endif %}">
-      {% render 'product-media-gallery'
-        , variant_images: variant_images %}
+          {% for collection in section.settings.conifg_collection %}
+            {{ collection.title }}
+          {% endfor %}
+        </div>
+      </div>
     </div>
-    </div>
-    </section>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Parts configurator",
+  "class": "section--parts-configurator",
+  "settings": [
+    {
+      "type": "collection_list",
+      "id": "conifg_collection",
+      "label": "Choose collections to configurator"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Parts configurator"
+    }
+  ]
+}
+{% endschema %}

@@ -112,27 +112,74 @@ dev(function (source) {
   // });
 
   const output = esthetic.format(source, {
-
+    // wrap: 80,
     language: 'liquid',
-    wrap: 0,
+    crlf: false,
+    indentChar: ' ',
     indentSize: 2,
+    preserveLine: 1,
+    endNewline: false,
+    //  wrapFraction: 60,
     liquid: {
-      normalizeSpacing: true,
-      preserveComment: true,
+      commentIndent: true,
+      commentNewline: true,
       dedentTagList: [
-
-      ]
+        'schema',
+        'case'
+      ],
+      delimiterPlacement: 'preserve',
+      delimiterTrims: 'preserve',
+      lineBreakSeparator: 'after',
+      indentAttribute: true,
+      normalizeSpacing: true,
+      preserveComment: false,
+      quoteConvert: 'single',
+      forceFilter: 0,
+      forceArgument: 2
     },
     markup: {
-      forceAttribute: false,
-      forceIndent: false
+      quoteConvert: 'double',
+      // lineBreakValue: 'preserve',
+      commentNewline: true,
+      // attributeSort: true,
+      forceAttribute: 3,
+      // forceIndent: true,
+      // delimiterTerminus: 'inline',
+      // ignoreJS: false,
+      preserveText: false,
+      selfCloseSVG: false
+    },
+    json: {
+      braceAllman: true,
+      arrayFormat: 'indent',
+      objectIndent: 'indent'
+    },
+    style: {
+      correct: true,
+      commentNewline: true,
+      commentIndent: true,
+      noLeadZero: true,
+      quoteConvert: 'single',
+      classPadding: true
+    },
+    script: {
+      correct: true,
+      arrayFormat: 'indent',
+      objectIndent: 'indent',
+      methodChain: 3,
+      caseSpace: true,
+      quoteConvert: 'single',
+      elseNewline: true,
+      functionNameSpace: true,
+      functionSpace: true,
+      commentNewline: true,
+      noCaseIndent: true
     }
-
   });
 
   return {
     source: output,
-    repeat: 3,
+    repeat: 0,
     inspect: true,
     logger: false,
     colors: false,

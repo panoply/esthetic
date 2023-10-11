@@ -46,10 +46,10 @@
           <div class="accordion-fold bt bg-gray {% if page.url contains base %}expanded{%- endif -%}">
             <ul
               id="{{- link.data.title | slugify -}}"
-              class="py-4 px-2  ml-0">
+              class="py-4 px-2 ml-0">
 
               {% for item in link.links %}
-                <li class="pt-1 pl-3">
+                <li class="pt-1 pl-2">
                   <a
                     href="/rules/{{ base -}}/{{- item | slugify }}/"
                     {% if page.url == url %}

@@ -26,11 +26,13 @@ import { run } from 'cli/run';
     jsx: false,
     typescript: false,
     tsx: false,
+    test: false,
     'no-color': false
   },
   boolean: [
     'watch',
     'dry',
+    'test',
     'no-color',
     'silent',
     'rules',
@@ -45,6 +47,7 @@ import { run } from 'cli/run';
     'jsx',
     'typescript',
     'tsx'
+
   ],
   string: [
     'config',

@@ -1,15 +1,15 @@
-import highlight from '@liquify/highlight';
-import { resolve } from 'node:path';
+import { cursorTo, clearScreenDown } from 'node:readline';
+import { stdout } from 'node:process';
 import {
-  open,
   red,
   cyan,
   neonCyan,
   colon,
-  yellow,
-  line,
+
   gray,
-  whiteBright
+  whiteBright,
+  neonGreen,
+  neonRouge
 } from './tui';
 import { CLI } from './run';
 
@@ -18,6 +18,10 @@ import { CLI } from './run';
 /* -------------------------------------------- */
 
 export const { log } = console;
+
+// @ts-expect-error
+const TITLE = gray(`Æsthetic: ${VERSION}`);
+const NWL = '\n';
 
 /**
  * Error
@@ -34,43 +38,28 @@ export function error (...message: string[]) {
 
 }
 
-export function output (code: string, language: string, color: boolean) {
+export function output (code: string) {
 
-  if (color) {
-
-    const lines = highlight(code, { language }).split('\n');
-    const space = ' '.repeat(`${lines.length}`.length);
-
-    log(lines.map((nl) => line.gray + nl).join('\n'));
-
-  } else {
-    log(output);
-  }
+  print(code);
 
 }
 
 /**
  * Starting
  */
-export function start (options: CLI, path: string) {
-
-  const text: string[] = [];
-
-  text.push(
-    `${open}${gray('Æsthetic')} ${gray('~')} ${gray(getTime())}`,
-    `${line.gray}`,
-    `${line.gray}${whiteBright.bold('v0.1.0')}`,
-    `${line.gray}`
-  );
+export function start (mode: string, options: CLI, path: string) {
 
   if (options.watch) {
 
-    text.push(`${line.gray}Watching${colon}${cyan.bold(path.slice(process.cwd().length + 1))} `);
+    print(`${whiteBright(mode)}${colon}${cyan(path.slice(process.cwd().length + 1))}`);
 
   }
 
-  log(text.join('\n'));
+}
 
+export function prefix (action: string, file: string) {
+
+  print(`${neonGreen(action)}${colon}${file}`);
 }
 
 /**
@@ -78,11 +67,41 @@ export function start (options: CLI, path: string) {
  */
 export function change (file: string) {
 
-  log(`${line.gray}${neonCyan('change')}${colon}${yellow(file)}`);
+  print(`${neonCyan('change')}${colon}${file}`);
 
 }
 
-export function print () {
+/**
+ * File Changed
+ */
+export function config (file: string) {
+
+  print(`${neonRouge('config')}${colon}${file}`);
+
+}
+
+/**
+ * File Changed
+ */
+export function update (file: string) {
+
+  log(`${neonGreen('update')}${colon}${file}`);
+
+}
+
+export function print (message: string) {
+
+  clear();
+  log(TITLE + NWL + NWL + message);
+}
+
+export function clear () {
+
+  const count = stdout.rows - 2;
+
+  log(count > 0 ? NWL.repeat(count) : '');
+  cursorTo(stdout, 0, 0);
+  clearScreenDown(stdout);
 
 }
 

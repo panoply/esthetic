@@ -96,51 +96,6 @@ export const neonCyan = ansis.hex('#69d5fd');
 export const neonRouge = ansis.hex('#D47179');
 
 /* -------------------------------------------- */
-/* TREE CHARACTERS                              */
-/* -------------------------------------------- */
-
-/**
- * TUI Tree - Crown
- *
- * ```
- * ┌─
- * ```
- */
-export const open = lightGray('┌─ ');
-
-/**
- * TUI Tree - line
- *
- * ```
- * │
- * ```
- */
-export const line = {
-  /**
-   * Light Gray (default) line
-   */
-  gray: lightGray('│  '),
-  /**
-   * Red dim - used in errors
-   */
-  red: red.dim('│  '),
-  /**
-   * Yellow dim - used in warnings
-   */
-  yellow: yellow.dim('│  ')
-
-};
-
-/**
- * TUI Tree - close
- *
- * ```
- * └─
- * ```
- */
-export const close = lightGray('└─ ');
-
-/* -------------------------------------------- */
 /* HELPER UTILITIES                             */
 /* -------------------------------------------- */
 

@@ -3,14 +3,16 @@
 
   @include media-breakpoint-up(md) {
     position: fixed;
-    margin-top: 52px;
-    width: 280px;
+    margin-top: 72px;
+    width: 270px;
     height: 100vh;
     display: block !important;
     visibility: visible;
     opacity: 1;
     transform: translateX(0);
-    background-color: $body-bg;
+    background-color: $code-bg; // $body-bg;
+    border-top-right-radius: 10px;
+    border: none;
   }
   //left: 0;
 

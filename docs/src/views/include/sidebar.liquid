@@ -14,7 +14,7 @@
 
 <aside
   id="sidebar"
-  class="drawer-panel drawer-left {{ drawer }} sidebar br"
+  class="drawer-panel drawer-left {{ drawer }} sidebar"
   data-controller="drawer">
 
   <div class="container-fluid g-0">
@@ -27,7 +27,7 @@
     </form>
 
     <nav
-      class="accordion mb-2 bx-0"
+      class="accordion mb-2 bx-0 bt-0 br"
       data-controller="accordion"
       spx-morph="children">
       {% for group in links.groups %}
@@ -64,7 +64,7 @@
         {% endif %}
 
         <button
-          class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}"
+          class="accordion-btn px-3 py-2 {% if forloop.first %}first{% endif %} {% if open %}initial{%- endif -%}"
           spx-morph="children">
           {{ group }}
         </button>
@@ -74,7 +74,7 @@
           spx-morph="children">
           <ul
             id="{{ link.title | slugify }}"
-            class="py-4 px-2 ml-0">
+            class="py-3 px-1 ml-0">
             {% for item in links.urls %}
               {% if item.group == name %}
                 <li class="pt-1 pl-3">

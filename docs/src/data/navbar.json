@@ -24,8 +24,13 @@
     ]
   },
   {
-    "title": "Playground",
+    "title": "Play",
     "url": "/playground/",
-    "group": ["format", "parser", "grammar", "language"]
+    "group": [
+      "format",
+      "parser",
+      "grammar",
+      "language"
+    ]
   }
 ]

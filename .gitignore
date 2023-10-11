@@ -7,7 +7,6 @@ tests/cases/todo
 dist/
 bin/
 
-versions/
 .pnpm-debug.log
 
 docs/old
