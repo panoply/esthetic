@@ -1883,9 +1883,7 @@ export function markup () {
 
             level.push(-20);
 
-          } else if (
-            isType(a, 'liquid_else') &&
-            isType(next, 'liquid_end')) {
+          } else if (isType(a, 'liquid_else') && isType(next, 'liquid_end')) {
 
             // LAST EMPTY LIQUID CONDITIONAL
             //
@@ -1902,9 +1900,7 @@ export function markup () {
 
             level.push(indent);
 
-          } else if (
-            isType(a, 'liquid_else') &&
-            isType(next, 'liquid_else')) {
+          } else if (isType(a, 'liquid_else') && isType(next, 'liquid_else')) {
 
             // ELSE EMPTY LIQUID CONDITIONAL
             //
@@ -1927,11 +1923,7 @@ export function markup () {
             level[a - 1] = indent - 1;
             level.push(indent - 1);
 
-          } else if (
-            isType(a, 'liquid_else') && (
-              isType(next, 'content') ||
-              isType(next, 'liquid')
-            )) {
+          } else if (isType(a, 'liquid_else') && (isType(next, 'content') || isType(next, 'liquid'))) {
 
             level[a - 1] = indent - 1;
             level.push(indent);
@@ -2010,10 +2002,7 @@ export function markup () {
             level[a - 1] = indent - 1;
             level.push(indent);
 
-          } else if (
-            isType(prev, 'liquid_start') &&
-            isType(next, 'liquid_end') &&
-            data.lines[next] === 0) {
+          } else if (isType(prev, 'liquid_start') && isType(next, 'liquid_end') && data.lines[next] === 0) {
 
             level[a - 1] = -20;
 
@@ -2086,6 +2075,11 @@ export function markup () {
     const lines = data.token[a].split(NWL);
 
     /**
+     * Additional spacing characters
+     */
+    const space = rules.indentChar.repeat(rules.indentSize);
+
+    /**
      * The amount of lines assigned for better perf
      */
     const length = lines.length;
@@ -2109,16 +2103,16 @@ export function markup () {
     //
     if (a - 1 > 0) {
 
-      indent += nl(levels[a - 1], false) + '  ';
+      indent += nl(levels[a - 1], false) + space;
 
     } else {
 
       // if (lines[0].length === 2 || lines[0].length === 3) {
-      // indent += '  ';
-      //  indent += nl(levels[a - 1], false) + '  ';
+      // indent += space;
+      //  indent += nl(levels[a - 1], false) + space;
 
       // } else {
-      indent += nl(levels[a - 1], false) + '  ';
+      indent += nl(levels[a - 1], false) + space;
       // }
 
     }
@@ -2167,7 +2161,7 @@ export function markup () {
    * Ignored Indentations
    *
    * Applied to embedded code regions marked as ignored via the
-   * `ignoreJS`, `ignoreCSS` or `ignoreJSON` makrup rules. These rules
+   * `ignoreJS`, `ignoreCSS` or `ignoreJSON` markup rules. These rules
    * still apply indentation to tokens but right side is excluded.
    *
    */
@@ -2389,9 +2383,7 @@ export function markup () {
 
         } else if (isType(a, 'ignore')) {
 
-          if (
-            isStack(a, 'script') ||
-            isStack(a, 'style')) {
+          if (isStack(a, 'script') || isStack(a, 'style')) {
 
             onIgnoreRule();
 
@@ -2524,14 +2516,9 @@ export function markup () {
 
           build.push(external);
 
-          if (rules.markup.forceIndent || (
-            levels[parse.iterator] > -1 &&
-            a in extidx &&
-            extidx[a] > a)) {
-
-            a = parse.iterator;
+          if (rules.markup.forceIndent || (levels[parse.iterator] > -1 && a in extidx)) {
+            if (extidx[a] > a) a = parse.iterator;
             build.push(nl(levels[a]));
-
           }
 
         }
