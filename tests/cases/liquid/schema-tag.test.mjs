@@ -8,13 +8,13 @@ test('Structure Test: Empty schema tags', t => {
     [
 
       [
-        liquid`{% # Empty Style tag %}
+        liquid`{% # Empty schema tag %}
 
           {% schema %}
 
           {% endschema%}
         `,
-        liquid`{% # Empty Style tag %}
+        liquid`{% # Empty schema tag %}
 
           {% schema %}
 
@@ -23,13 +23,13 @@ test('Structure Test: Empty schema tags', t => {
         `
       ],
       [
-        liquid`{% # Empty Style tag with trims %}
+        liquid`{% # Empty schema tag with trims %}
 
           {%- schema -%}
 
           {%- endschema -%}
         `,
-        liquid`{% # Empty Style tag with trims %}
+        liquid`{% # Empty schema tag with trims %}
 
           {%- schema -%}
 
@@ -48,8 +48,6 @@ test('Structure Test: Empty schema tags', t => {
 
           {%- schema %}
 
-
-
           {% endschema -%}
 
 
@@ -66,7 +64,6 @@ test('Structure Test: Empty schema tags', t => {
           {% endschema -%}
 
           {%- schema %}
-
 
           {% endschema -%}
 
