@@ -5,6 +5,7 @@ import { cc as ch } from 'lexical/codes';
 import { parse } from 'parse/parser';
 import { grammar } from 'parse/grammar';
 import { Modes } from 'lexical/enum';
+import { Newline } from 'lexical/regex';
 
 export function script () {
 
@@ -47,7 +48,7 @@ export function script () {
    * Holds reference to the source ending index or
    * the token ending index.
    */
-  const b = (parse.ender < 1 || parse.ender > data.token.length) ? data.token.length : parse.ender + 1;
+  const b = parse.ender < 1 || parse.ender > data.token.length ? data.token.length : parse.ender + 1;
 
   /**
    * Levels
@@ -3824,13 +3825,13 @@ export function script () {
         //
         if (data.types[a] === 'comment' && option.commentIndent === true) {
 
-          if (/\n/.test(data.token[a])) {
+          if (Newline.test(data.token[a])) {
 
             const space = data.begin[a] > -1 ? is(data.token[a][2], ch.ARS)
               ? (repeatChar(levels[a], tab) + rules.indentChar)
               : repeatChar(levels[a], tab) : rules.indentChar;
 
-            const comm = data.token[a].split(/\n/);
+            const comm = data.token[a].split(NWL);
 
             let i = 1;
 
