@@ -1,0 +1,16 @@
+{
+  "wrap": 100,
+  "language": "liquid",
+  "liquid": {
+    "forceArgument": 3
+  },
+  "markup": {
+    "forceIndent": true
+  },
+  "json": {
+    "braceAllman": true
+  },
+  "script": {
+    "braceNewline": false
+  }
+}
