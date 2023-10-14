@@ -1,6 +1,6 @@
 {
   "name": "esthetic",
-  "version": "0.6.4-beta.1",
+  "version": "0.7.0-beta.1",
   "license": "MIT",
   "homepage": "https://æsthetic.dev",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <n.savvidis@gmx.com>",
@@ -61,8 +61,7 @@
     "dev": "tsup --watch",
     "play": "ava tests/dev.test.mjs --watch",
     "build": "tsup --minify --env.NODE_ENV production && gzip-size dist/esthetic.js --include-original",
-    "pack": "cd versions; pnpm pack ../ && cd ..",
-    "release": "pnpm -w release --pkg $npm_package_name",
+    "release": "pnpm build && cd docs; pnpm release && pnpm publish --dry",
     "test": "ava --serial",
     "tests": "tests -t cases,rules,units",
     "test:cli": "cd tests; pnpm esthetic ./cli/*.liquid -w --liquid; cd ..;",

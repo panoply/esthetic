@@ -26,7 +26,7 @@ $code-font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
 
 li > a {
   &::before {
-    //  content: '–';
+    content: '–';
     color: $gray-600;
     margin-right: 20px;
   }

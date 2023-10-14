@@ -112,12 +112,12 @@ dev(function (source) {
   // });
 
   const output = esthetic.format(source, {
-    // wrap: 80,
+    wrap: 80,
     language: 'liquid',
     crlf: false,
     indentChar: ' ',
     indentSize: 2,
-    preserveLine: 1,
+    preserveLine: 2,
     endNewline: false,
     //  wrapFraction: 60,
     liquid: {
@@ -127,7 +127,7 @@ dev(function (source) {
         'schema',
         'case'
       ],
-      delimiterPlacement: 'preserve',
+      delimiterPlacement: 'inline',
       delimiterTrims: 'preserve',
       lineBreakSeparator: 'after',
       indentAttribute: true,
@@ -141,6 +141,8 @@ dev(function (source) {
       quoteConvert: 'double',
       // lineBreakValue: 'preserve',
       commentNewline: true,
+      commentIndent: true,
+      commentDelimiters: 'force',
       // attributeSort: true,
       forceAttribute: 3,
       // forceIndent: true,
@@ -179,11 +181,12 @@ dev(function (source) {
 
   return {
     source: output,
-    repeat: 0,
+    repeat: 4,
     inspect: true,
     logger: false,
     colors: false,
     finish: () => {
+
       // console.log(JSON.stringify(output));
       console.log(esthetic.stats);
       // console.log(esthetic.table);

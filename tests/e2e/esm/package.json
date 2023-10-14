@@ -22,6 +22,7 @@
       "forceArgument": 3
     },
     "markup": {
+      "commentDelimiters": "force",
       "forceIndent": true,
       "selfCloseSvg": true
     },

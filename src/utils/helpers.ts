@@ -5,7 +5,7 @@ import { Stats, MultipleTopLevelPatch } from 'types/index';
 import { getLanguageName } from 'rules/language';
 import { parse } from 'parse/parser';
 import { cc } from 'lexical/codes';
-import { WhitespaceChar } from 'lexical/regex';
+import { WhitespaceChar, WhitespaceGlob } from 'lexical/regex';
 import { assign } from './native';
 
 /**
@@ -257,6 +257,40 @@ export function repeatChar (count: number, character: string = WSP) {
   while (i++ < count);
 
   return char;
+
+}
+
+/**
+ * Word Wrap
+ *
+ * If first character code is whitespace or tab
+ */
+export function wordWrap (text: string, width: number, lexed: string[] = []) {
+
+  const words = text.split(/\b/);
+
+  let currentLine = '';
+  let lastWhite = '';
+  words.forEach(function (d) {
+    const prev = currentLine;
+    currentLine += lastWhite + d;
+
+    const l = currentLine.length;
+
+    if (l > width) {
+      lexed.push(prev.trim());
+      currentLine = d;
+      lastWhite = '';
+    } else {
+      const m = currentLine.match(/(.*)(\s+)$/);
+      lastWhite = (m && m.length === 3 && m[2]) || '';
+      currentLine = (m && m.length === 3 && m[1]) || currentLine;
+    }
+  });
+
+  if (currentLine) {
+    lexed.push(currentLine.trim());
+  }
 
 }
 

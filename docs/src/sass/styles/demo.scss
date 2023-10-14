@@ -125,13 +125,13 @@ $demo-output-font-color: #65696f;
   margin: 0px;
   height: 40px;
   border: 0.01em solid $demo-border-color;
+  border-bottom: none;
   border-bottom-left-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
   font-family: $font-family-other;
-  font-weight: 600;
+  font-weight: 300;
   font-size: 0.8rem;
   color: $demo-output-font-color;
-
   padding-left: 40px;
   padding-right: 20px;
   display: flex;
@@ -146,6 +146,23 @@ $demo-output-font-color: #65696f;
   > .dropdown {
     width: auto;
     display: flex;
+    z-index: 99999;
+
+    &.is-open > .tab + ul {
+      top: 36px;
+      left: 0px;
+    }
+
+    &.is-open {
+      > .tab {
+        color: $white;
+        opacity: 1;
+        .icon {
+          transform: rotate(180deg);
+          background-image: url(icon-arrow($white, 2));
+        }
+      }
+    }
 
     > .tab {
       background-color: transparent;
@@ -153,20 +170,47 @@ $demo-output-font-color: #65696f;
       font-weight: 600;
       font-size: 0.8rem;
       padding-right: 20px;
-      padding-left: 0;
+      padding-left: 15px;
       margin: 0;
       border: 0.01em solid transparent;
       background-color: transparent;
-      background-repeat: no-repeat;
-      background-position: right 0 center;
-      background-size: $input-height-inner-half
-        $input-height-inner-half;
-      background-image: url(icon-arrow($demo-output-font-color, 2));
+      background-image: none;
+
+      .icon {
+        position: absolute;
+        right: -5px;
+        width: 17px;
+        height: 17px;
+        padding: 0;
+        background-image: url(icon-arrow($demo-output-font-color, 2));
+        background-repeat: no-repeat;
+      }
 
       &:hover {
         opacity: 1;
         color: $white;
-        background-image: url(icon-arrow($white, 2));
+
+        .icon {
+          background-image: url(icon-arrow($white, 2));
+        }
+      }
+
+      + ul {
+        border: 0.01em solid $demo-border-color;
+        border-top: none;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        width: 105%;
+        > li {
+          padding: 5px 5px 5px 15px;
+          font-weight: 300;
+
+          &.selected,
+          &:hover {
+            color: $pink;
+            background-color: transparent;
+          }
+        }
       }
     }
   }
@@ -174,7 +218,7 @@ $demo-output-font-color: #65696f;
   > .tab {
     background-color: transparent;
     color: $demo-output-font-color;
-    font-weight: 600;
+    font-weight: 300;
     font-size: 0.8rem;
     padding-right: 20px;
     margin: 0;
@@ -196,6 +240,7 @@ $demo-output-font-color: #65696f;
     &.is-active {
       color: $gray-300;
       opacity: 1;
+      font-weight: 600;
     }
 
     &:hover {
@@ -208,7 +253,7 @@ $demo-output-font-color: #65696f;
 .demo-input,
 .demo-output {
   border-radius: $demo-border-radius;
-  border: 0.01em solid $demo-border-color;
+  // border: 0.01em solid $demo-border-color;
   display: block;
   padding: 0;
 

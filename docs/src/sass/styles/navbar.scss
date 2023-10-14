@@ -1,12 +1,12 @@
 header {
   position: fixed;
   //background-color: $white;
-  z-index: 300;
+  z-index: 999999;
   display: flex;
   background-color: $body-bg;
 
   right: 0;
-  height: 72px;
+  height: 62px;
   font-size: 1.075rem;
   //letter-spacing: 00.06rem;
   //box-shadow: $box-shadow;
@@ -45,6 +45,24 @@ header {
 
   .off {
     color: $gray-300;
+  }
+
+  .dropdown {
+    z-index: 9999999;
+
+    > .btn {
+      padding: 3px 25px 3px 10px;
+      text-transform: none;
+      font-size: $font-size-base * 0.625;
+      border-color: $accordion-border-color;
+      border-radius: 5px;
+      background-image: url(icon-arrow($white));
+    }
+
+    ul > li {
+      background-color: $white;
+      padding: 10px 5px;
+    }
   }
 
   a {

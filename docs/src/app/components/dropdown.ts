@@ -1,6 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import relapse from 'relapse';
-
+import { Demo } from './demo';
 /**
  * Dropdown
  *
@@ -15,6 +15,7 @@ export class Dropdown extends Controller {
     selected: String,
     form: String,
     accordion: String,
+    kind: String,
     required: {
       type: Boolean,
       default: false
@@ -125,7 +126,7 @@ export class Dropdown extends Controller {
    */
   outsideClick (event: Event) {
 
-    if (this.buttonTarget !== event.target) {
+    if (this.buttonTarget !== event.target && this.collapseTarget !== event.target) {
       if (this.element.classList.contains('is-open')) {
         this.close();
       }
@@ -184,7 +185,7 @@ export class Dropdown extends Controller {
   /**
    * Items in dropdown - An ul > li <select> element equivelent
    */
-  options (event: MouseEvent) {
+  option (event: MouseEvent) {
 
     if (event.target instanceof HTMLElement) {
 
@@ -206,8 +207,24 @@ export class Dropdown extends Controller {
         this.buttonTarget.classList.add('selected');
       }
 
-      this.selectedValue = event.target.textContent;
-      this.buttonTarget.textContent = event.target.textContent;
+      if (this.kindValue === 'preset') {
+
+        this.selectedValue = `Preset (${event.target.textContent.trim()})`;
+        this.buttonTarget.innerHTML = `Preset (${event.target.textContent.trim()})<span class="icon"></span>`;
+
+      } else {
+        this.selectedValue = event.target.textContent;
+        this.buttonTarget.textContent = event.target.textContent;
+      }
+
+      for (const node of this.collapseTarget.children) {
+        if (node.id !== event.target.id) {
+          node.classList.remove('selected');
+        } else {
+          node.classList.add('selected');
+        }
+      }
+
       this.collapseValue = 'selected';
 
       this.toggle(event);
@@ -304,6 +321,8 @@ export class Dropdown extends Controller {
    */
   hasSelectedValue: boolean;
 
+  kindValue: string;
+  hasKindValue: boolean;
   /* -------------------------------------------- */
   /* CLASSES                                      */
   /* -------------------------------------------- */

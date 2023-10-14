@@ -27,6 +27,8 @@ Using Æsthetic in your project is straightforward: simply use the `format` meth
 
 #### Basic Usage
 
+Below we are formatting code using the `format` method and leveraging try/catch to control potential parse errors. Using try/catch is optional (see [error handling](/parser/error-handling)) but typically the best way to perform beautification.
+
 <!-- prettier-ignore -->
 ```js
 import esthetic from "esthetic";
@@ -44,10 +46,9 @@ try {
 
   console.log(output)
 
-} catch(e) {
+} catch (e) {
 
   console.error(e)
-
 }
 ```
 

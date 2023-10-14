@@ -2,9 +2,9 @@
   position: relative;
   display: block;
   width: 100%;
-  border-top-right-radius: 10px;
+  // border-top-right-radius: 10px;
   border: $accordion-border-width solid $accordion-border-color;
-
+  border-right: none !important;
   //background-color: $code-bg; // $body-bg;
 
   &.accordion-markdown {
@@ -76,7 +76,7 @@
   }
 
   .first {
-    border-top-right-radius: 10px;
+    border-top: none;
   }
   &-btn,
   > h3 {
@@ -93,7 +93,7 @@
     background-position: right $accordion-icon-padding-x center;
     background-image: url(icon-plus($body-color));
     background-size: $input-height-inner-half $input-height-inner-half;
-
+    border-right: none;
     &.no-icon {
       background-image: none !important;
     }

@@ -1,13 +1,5 @@
 {
   "engine": "11ty",
-  "files": {
-    "data": [
-      "./docs/src/data/*.js"
-    ],
-    "includes": [
-      "./docs/src/views/include/*.liquid"
-    ]
-  },
   "format": {
     "wrap": 120,
     "crlf": false,

@@ -1,128 +1,13 @@
 import { Controller } from '@hotwired/stimulus';
 import { parseJSON } from '../utilities/common';
 import { Rules } from 'esthetic';
-import papyrus, { Languages } from 'papyrus';
+import papyrus, { Languages, Model } from 'papyrus';
 import merge from 'mergerino';
-import JSONCompletions from '../completions/rules';
-
-const rules = (ruleOptions: Rules) => merge<Rules>({
-  crlf: false,
-  correct: false,
-  preset: 'default',
-  language: 'auto',
-  endNewline: false,
-  indentChar: ' ',
-  indentLevel: 0,
-  indentSize: 2,
-  preserveLine: 2,
-  wrap: 0,
-  wrapFraction: 0,
-  liquid: {
-    commentNewline: false,
-    commentIndent: true,
-    delimiterTrims: 'preserve',
-    delimiterPlacement: 'preserve',
-    forceFilter: 0,
-    forceArgument: 0,
-    ignoreTagList: [],
-    indentAttribute: false,
-    lineBreakSeparator: 'before',
-    normalizeSpacing: true,
-    preserveComment: false,
-
-    dedentTagList: [],
-    quoteConvert: 'none'
-  },
-  markup: {
-    attributeCasing: 'preserve',
-    attributeSort: false,
-    commentNewline: false,
-    commentIndent: true,
-    delimiterTerminus: 'inline',
-    forceAttribute: 3,
-    forceAttributeValue: true,
-    forceIndent: false,
-    ignoreCSS: false,
-    ignoreJS: true,
-    ignoreJSON: false,
-    lineBreakValue: 'preserve',
-    preserveComment: false,
-    preserveText: false,
-    preserveAttribute: false,
-    selfCloseSpace: true,
-    selfCloseSVG: true,
-    stripAttributeLines: false,
-    quoteConvert: 'none'
-  },
-  json: {
-    arrayFormat: 'default',
-    braceAllman: false,
-    bracePadding: false,
-    objectIndent: 'default',
-    objectSort: false,
-
-    braceStyle: 'none',
-    caseSpace: false,
-    commentIndent: false,
-    commentNewline: false,
-    correct: false,
-    elseNewline: false,
-    functionNameSpace: false,
-    functionSpace: false,
-    methodChain: 4,
-    neverFlatten: false,
-    noCaseIndent: false,
-    preserveComment: false,
-    styleGuide: 'none',
-    ternaryLine: false,
-    variableList: 'none',
-
-    quoteConvert: 'double',
-    endComma: 'never',
-    noSemicolon: true,
-    vertical: false
-  },
-  style: {
-    commentIndent: false,
-    commentNewline: false,
-    atRuleSpace: true,
-    classPadding: false,
-    noLeadZero: false,
-    preserveComment: false,
-    sortSelectors: false,
-    sortProperties: false,
-    quoteConvert: 'none'
-  },
-  script: {
-    arrayFormat: 'default',
-    braceNewline: false,
-    bracePadding: false,
-    braceStyle: 'none',
-    braceAllman: false,
-    caseSpace: false,
-    commentIndent: false,
-    commentNewline: false,
-    elseNewline: false,
-    endComma: 'never',
-    functionNameSpace: false,
-    functionSpace: false,
-    inlineReturn: true,
-    methodChain: 4,
-    neverFlatten: false,
-    noCaseIndent: false,
-    noSemicolon: false,
-    objectSort: false,
-    objectIndent: 'default',
-    preserveComment: false,
-    quoteConvert: 'none',
-    styleGuide: 'none',
-    ternaryLine: false,
-    variableList: 'none',
-    vertical: false
-  }
-}, ruleOptions);
 
 export class Demo extends Controller {
+
+  static rules: Map<string, Rules> = new Map();
+  static source: Map<string, string> = new Map();
 
   /**
    * Stimulus: Targets
@@ -135,6 +20,7 @@ export class Demo extends Controller {
     'rulesTab',
     'input',
     'inputTab',
+    'presetTab',
     'output',
 
     /* RULE REALTED ------------------------------- */
@@ -153,13 +39,15 @@ export class Demo extends Controller {
    */
   static values = {
     mode: String,
+    uuid: String,
     rules: Object,
     rulesOriginal: Object,
     input: String,
     inputOriginal: String,
     language: String,
     papyrus: Object,
-    tab: Number
+    tab: Number,
+    preset: String
   };
 
   get rulesInput () {
@@ -168,22 +56,28 @@ export class Demo extends Controller {
 
   }
 
-  getOutputReact () {
+  updateRules (value?: Rules) {
 
-    const ih = this.inputTarget.getBoundingClientRect().height;
+    this.rulesValue = merge(this.rulesValue, value);
+
+  }
+
+  getOutputReact (input: Model, output: Model) {
+
+    const ih = input.pre.getBoundingClientRect().height;
 
     let height = ih;
 
-    const oh = this.outputTarget.getBoundingClientRect().height;
-    const sh = this.output.code.scrollHeight;
+    const oh = output.pre.getBoundingClientRect().height;
+    const sh = output.code.scrollHeight;
 
     if (oh > ih) height = oh;
     if (height < sh) height = sh + 5;
 
-    this.input.pre.style.minHeight = height + 'px';
-    this.input.pre.style.maxHeight = height + 'px';
-    this.output.pre.style.maxHeight = height + 'px';
-    this.output.pre.style.minHeight = height + 'px';
+    input.pre.style.minHeight = height + 'px';
+    input.pre.style.maxHeight = height + 'px';
+    output.pre.style.maxHeight = height + 'px';
+    output.pre.style.minHeight = height + 'px';
   }
 
   /**
@@ -197,7 +91,7 @@ export class Demo extends Controller {
 
     if (this.hasOutputTarget) {
 
-      const oh = this.outputTarget.getBoundingClientRect().height;
+      const oh = this.output.pre.getBoundingClientRect().height;
       const sh = this.output.code.scrollHeight;
 
       if (oh > ih) height = oh;
@@ -221,19 +115,81 @@ export class Demo extends Controller {
 
   }
 
+  setPreset () {
+
+    const label = `Preset (${this.presetValue})<span class="icon"></span>`;
+
+    for (const target of document.querySelectorAll('[data-demo-target=presetTab]')) {
+
+      if (target.parentElement.getAttribute('data-dropdown-selected-value') !== this.presetValue) {
+        target.parentElement.setAttribute('data-dropdown-selected-value', this.presetValue);
+      }
+
+      if (target.innerHTML !== label) target.innerHTML = label;
+
+      for (const node of target.nextElementSibling.children) {
+        if (node.id !== this.presetValue) {
+          if (node.classList.contains('selected')) {
+            node.classList.remove('selected');
+          }
+        } else {
+          if (!node.classList.contains('selected')) {
+            node.classList.add('selected');
+          }
+        }
+      }
+    }
+
+    for (const [ uuid, rules ] of Demo.rules) {
+
+      const input = papyrus.get(`input:${uuid}`);
+      const output = papyrus.get(`output:${uuid}`);
+      const string = Demo.source.get(uuid);
+
+      const format = esthetic.format(string, rules);
+      output.update(format, output.language);
+
+      const ih = input.code.getBoundingClientRect().height;
+
+      let height = ih;
+
+      const oh = output.code.getBoundingClientRect().height;
+      const sh = output.code.scrollHeight;
+
+      if (oh > ih) height = oh;
+      if (height < sh) height = sh + 5;
+
+      input.pre.style.minHeight = height + 'px';
+      input.pre.style.maxHeight = height + 'px';
+      output.pre.style.maxHeight = height + 'px';
+      output.pre.style.minHeight = height + 'px';
+    }
+
+  }
+
+  onPresetChange (event: { target: HTMLLIElement }) {
+
+    if (this.presetValue !== event.target.id) {
+      this.presetValue = event.target.id;
+      localStorage.setItem('preset', this.presetValue);
+      Demo.rules.set(this.uuidValue, esthetic.preset(this.presetValue, this.rulesValue));
+      this.setPreset();
+    }
+  }
+
   connect () {
 
+    this.presetValue = localStorage.getItem('preset') || 'default';
+
     this.input = papyrus.mount(this.inputTarget, merge<papyrus.Options>(this.papyrusValue, {
+      id: `input:${this.uuidValue}`,
       showSpace: true,
+      input: this.inputValue,
       showTab: false,
       showCR: false,
       showCRLF: false,
       showLF: false,
-      editor: {
-        completions: {
-          json: JSONCompletions
-        }
-      }
+      editor: true
     }));
 
     this.input.onupdate(this.onInputEdit, this);
@@ -242,6 +198,7 @@ export class Demo extends Controller {
     if (this.hasOutputTarget) {
 
       this.output = papyrus.mount(this.outputTarget, merge<papyrus.Options>(this.papyrusValue, {
+        id: `output:${this.uuidValue}`,
         editor: false,
         showSpace: false,
         showTab: false,
@@ -252,7 +209,11 @@ export class Demo extends Controller {
 
     }
 
+    Demo.rules.set(this.uuidValue, esthetic.preset(this.presetValue, this.rulesValue));
+    Demo.source.set(this.uuidValue, this.inputValue);
+
     this.getEditorRect();
+    this.setPreset();
 
   }
 
@@ -265,7 +226,8 @@ export class Demo extends Controller {
   formatCode (input?: string) {
 
     try {
-      const output = esthetic.format(input || this.inputValue, rules(this.rulesValue));
+
+      const output = esthetic.format(input || this.inputValue, Demo.rules.get(this.uuidValue));
 
       if (input) {
         this.output.update(output);
@@ -274,14 +236,15 @@ export class Demo extends Controller {
       }
 
       this.getEditorRect();
+      this.getOutputReact(this.input, this.output);
 
     } catch (e) {
 
       // eslint-disable-next-line no-control-regex
       const clean = /\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/mg;
 
-      this.output.showError(e.message.replace(clean, ''), { heading: 'Error thrown by Æsthetic' });
-      this.getOutputReact();
+      this.output.showError(e.replace(clean, ''), { heading: 'Error thrown by Æsthetic' });
+      this.getOutputReact(this.input, this.output);
 
     }
 
@@ -307,7 +270,7 @@ export class Demo extends Controller {
           bracePadding: false,
           objectSort: false
         }
-      } : rules(this.rulesValue));
+      } : Demo.rules.get(this.uuidValue));
 
       return output;
 
@@ -334,6 +297,7 @@ export class Demo extends Controller {
         try {
 
           this.rulesValue = parseJSON(value);
+
           this.formatCode();
           this.timer = NaN;
 
@@ -341,13 +305,13 @@ export class Demo extends Controller {
 
         } catch (error) {
 
-          this.output.showError(error.message, {
+          this.output.showError(error, {
             title: 'JSON ERROR',
             heading: 'Invalid JSON Syntax',
             stack: error.stack
           });
 
-          this.getOutputReact();
+          this.getOutputReact(this.input, this.output);
           this.timer = NaN;
 
         }
@@ -357,6 +321,8 @@ export class Demo extends Controller {
     } else {
 
       this.inputValue = value;
+
+      console.log(esthetic.rules());
       this.formatCode();
       this.getEditorRect();
 
@@ -368,9 +334,10 @@ export class Demo extends Controller {
 
     if (rule === null) {
 
-      this.rulesValue.wrap = value;
+      const rules = Demo.rules.get(this.uuidValue);
+      rules.wrap = value;
 
-      const input = esthetic.format(this.input.raw, rules({ ...this.rulesValue, wrap: value }));
+      const input = esthetic.format(this.input.raw, rules);
 
       this.wrapCountTarget.innerHTML = `${value}`;
       this.wrapLineTarget.style.width = `${value}%`;
@@ -398,11 +365,11 @@ export class Demo extends Controller {
     this.wrapFractionLineTarget.style.willChange = 'auto';
     this.wrapFractionRangeTarget.value = `${target.valueAsNumber - Math.round(wrap / 6)}`;
 
-    const input = esthetic.format(this.input.raw, rules({
-      ...this.rulesValue,
-      wrap,
-      wrapFraction: wrap - Math.round((wrap / 6))
-    }));
+    const rules = Demo.rules.get(this.uuidValue);
+    rules.wrap = wrap;
+    rules.wrapFraction = wrap - Math.round((wrap / 6));
+
+    const input = esthetic.format(this.input.raw, rules);
 
     this.input.update(input);
 
@@ -435,12 +402,14 @@ export class Demo extends Controller {
 
       this.inputValue = this.inputOriginalValue;
       this.input.update(this.inputValue, this.languageValue);
+
       this.formatCode();
 
     } else if (this.modeValue === 'rules') {
 
       this.rulesValue = this.rulesOriginalValue;
       this.input.update(this.rulesInput, 'json');
+
       this.formatCode();
     }
 
@@ -462,6 +431,7 @@ export class Demo extends Controller {
     }
 
     this.modeValue = 'rules';
+    // this.input.editor.disable();
     this.input.update(this.rulesInput, 'json', true);
 
   }
@@ -484,9 +454,13 @@ export class Demo extends Controller {
     }
 
     if (this.hasOutputTarget) {
+
+      // this.input.editor.enable();
       this.input.update(this.inputValue, this.languageValue, true);
       this.output.hideError();
+
     } else {
+
       this.formatCode();
     }
 
@@ -509,6 +483,7 @@ export class Demo extends Controller {
 
   /* MODE --------------------------------------- */
 
+  uuidValue: string;
   /**
    * The current mode
    */
@@ -569,6 +544,22 @@ export class Demo extends Controller {
    * Whether or not an rules tab target exists
    */
   hasRulesTabTarget: boolean;
+  /**
+   * The preset tab element button
+   */
+  presetTabTarget: HTMLButtonElement;
+  /**
+   * The preset tab element button
+   */
+  presetTabTargets: HTMLButtonElement[];
+  /**
+   * Whether or not an preset tab target exists
+   */
+  hasPresetTabTarget: boolean;
+  /**
+   * The input value before edits
+   */
+  presetValue: string;
 
   /* INPUT DEMO --------------------------------- */
 
@@ -591,6 +582,10 @@ export class Demo extends Controller {
    * The output code target provided on initial render
    */
   outputTarget: HTMLPreElement;
+  /**
+   * The output code target provided on initial render
+   */
+  outputTargets: HTMLPreElement[];
   /**
    * The output value escaped string
    */

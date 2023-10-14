@@ -1,6 +1,12 @@
 [build]
   command = "pnpm run build"
 
+[[plugins]]
+  package = "@netlify/plugin-sitemap"
+
+  [plugins.inputs]
+    buildDir = "public"
+    exclude  = ['public/v/**/*']
 
 # REQUEST HEADERS
 # ---------------------------
