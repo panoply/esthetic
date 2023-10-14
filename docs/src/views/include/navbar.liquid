@@ -1,6 +1,6 @@
 <header
   id="navbar"
-  class="container-fluid navbar">
+  class="container-fluid navbar bb">
   <div class="row jc-between jc-sm-start ai-center bg-white w-100 pr-0">
 
     <input
@@ -9,18 +9,23 @@
 
     <a
       href="/"
-      class="col-auto italic fc-white fs-lg pl-3 pr-0 logo">
+      class="col-auto italic fc-white fs-lg pl-2 pr-0 logo">
       {% svg 'esthetic', 'icon icon-logo' %}
     </a>
-    <div class="d-none d-sm-flex col-auto fs-xs pl-3 pr-5">
-      <dropdown class="dropdown">
-        <button type="button"> V {% version %}</button>
-        <ul>
-          <li></li>
+    <div class="d-none d-sm-flex col-auto pr-5">
+      <dropdown
+        class="dropdown  bc-gray rd"
+        data-controller="dropdown">
+        <button
+          type="button"
+          class="btn fc-white"
+          data-action="dropdown#toggle"
+          data-dropdown-target="button">{% version %}</button>
+        <ul data-dropdown-target="collapse">
+          {% versions %}
         </ul>
       </dropdown>
     </div>
-
 
     {%
       liquid
@@ -43,7 +48,6 @@
         href="{{ link.url }}"
         title="{{ link.title }}"
         class="d-none d-sm-unset col-auto fw-bolder nav-link
-         {% if forloop.first %} ml-auto {% endif %}
         {% unless forloop.index == active %} off{% endunless %}
       ">
         {{ link.title }}
@@ -52,7 +56,7 @@
 
     <a
       href="https://github.com/panoply/esthetic"
-      class=" col-auto pr-0">
+      class=" col-auto ml-sm-auto pr-0">
       {% svg 'github-2', 'icon icon-github' %}
     </a>
   </div>
