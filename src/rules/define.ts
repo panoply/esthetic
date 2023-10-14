@@ -6,9 +6,9 @@ import { recommended } from 'rules/presets/recommended';
 import { strict } from 'rules/presets/strict';
 import { warrington } from 'rules/presets/warrington';
 import { prettier } from 'rules/presets/prettier';
-import { assign, object } from 'utils/native';
+import {  object } from 'utils/native';
 import { CNL, NWL } from 'lexical/chars';
-import { hasProp } from 'utils/helpers';
+import { hasProp, merge } from 'utils/helpers';
 
 const GLOB = [
   'correct',
@@ -38,40 +38,20 @@ const LANG: LanguageRuleNames[] = [
  */
 export function setPreset (options: Rules) {
 
-  if (options.preset === parse.rules.preset) return;
+  if (options.preset === parse.rules.preset) return options;
 
   if (isValidChoice('global', 'preset', options.preset)) {
-
-    parse.rules = assign({}, defaults);
-    parse.rules.preset = options.preset;
-
-    if (options.preset === 'default') return;
-
-    let has: ReturnType<typeof hasProp>;
-
     switch (options.preset) {
-      case 'strict':
-        has = hasProp(strict);
-        for (const p of GLOB) if (has(p)) parse.rules[p] = strict[p];
-        for (const p of LANG) if (has(p)) assign(parse.rules[p], strict[p]);
-        break;
-      case 'recommended':
-        has = hasProp(recommended);
-        for (const p of GLOB) if (has(p)) parse.rules[p] = recommended[p];
-        for (const p of LANG) if (has(p)) assign(parse.rules[p], recommended[p]);
-        break;
-      case 'warrington':
-        has = hasProp(warrington);
-        for (const p of GLOB) if (has(p)) parse.rules[p] = warrington[p];
-        for (const p of LANG) if (has(p)) assign(parse.rules[p], warrington[p]);
-        break;
-      case 'prettier':
-        has = hasProp(prettier);
-        for (const p of GLOB) if (has(p)) parse.rules[p] = prettier[p];
-        for (const p of LANG) if (has(p)) assign(parse.rules[p], prettier[p]);
-        break;
+      case 'default': return merge(defaults, options);
+      case 'strict': return merge(strict, options);
+      case 'recommended': return merge(recommended, options);
+      case 'warrington': return merge(warrington, options);
+      case 'prettier': return merge(prettier, options);
     }
   }
+
+  return options
+
 }
 
 /**
@@ -82,12 +62,12 @@ export function setPreset (options: Rules) {
  */
 export function setRules (opts: Rules, events: EventListeners) {
 
-  const options: Rules = opts;
-
   /**
    * Properties Existence
    */
-  const has = hasProp(options);
+  const has = hasProp(opts);
+
+  const options: Rules = has('preset') ? setPreset(opts) : opts;
 
   /**
    * Rule Changes
@@ -95,7 +75,6 @@ export function setRules (opts: Rules, events: EventListeners) {
   let change: RulesChanges;
 
   if (events.rules.length > 0) change = {};
-  if ('preset' in options) setPreset(options);
 
   if (has('language') && isValid('global', 'language', options.language) && parse.language !== options.language) {
     parse.language = parse.rules.language = options.language;
@@ -143,6 +122,5 @@ export function setRules (opts: Rules, events: EventListeners) {
 
   if (events.rules.length > 0) for (const cb of events.rules) cb(change, parse.rules);
 
-  return parse.rules;
 
 }
