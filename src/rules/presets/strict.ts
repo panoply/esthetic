@@ -1,5 +1,6 @@
 import { merge } from 'utils/helpers';
 import { Rules } from 'types';
+import { defaults } from './default';
 
 /**
  * Strict Presets
@@ -7,7 +8,7 @@ import { Rules } from 'types';
  * The `recommended` rule presets which produce the most common
  * and expect formatted results.
  */
-export const strict: Rules = merge({
+export const strict: Rules = merge(defaults, {
   preset: 'strict',
   language: 'auto',
   preserveLine: 1,

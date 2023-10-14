@@ -1,5 +1,6 @@
 import { merge } from 'utils/helpers';
 import { Rules } from 'types';
+import { defaults } from './default';
 
 /**
  * Warrington Presets
@@ -7,7 +8,7 @@ import { Rules } from 'types';
  * The `warrington` rule presets which are geared towards
  * Shopify projects.
  */
-export const warrington: Rules = merge({
+export const warrington: Rules = merge(defaults, {
   preset: 'warrington',
   language: 'auto',
   preserveLine: 2,

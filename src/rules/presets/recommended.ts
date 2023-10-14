@@ -1,5 +1,6 @@
 import { merge } from 'utils/helpers';
 import { Rules } from 'types';
+import { defaults } from './default';
 
 /**
  * Recommended Presets
@@ -7,7 +8,7 @@ import { Rules } from 'types';
  * The `recommended` rule presets which produce the most common
  * and expect formatted results.
  */
-export const recommended: Rules = merge({
+export const recommended: Rules = merge(defaults, {
   preset: 'recommended',
   language: 'auto',
   preserveLine: 2,
@@ -17,7 +18,7 @@ export const recommended: Rules = merge({
     ignoreTagList: [ 'javascript' ],
     indentAttribute: true,
     commentNewline: true,
-    delimiterTrims: 'tags',
+    delimiterTrims: 'preserve',
     lineBreakSeparator: 'after',
     quoteConvert: 'double',
     delimiterPlacement: 'consistent'

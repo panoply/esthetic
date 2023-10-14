@@ -7,7 +7,7 @@ import { Rules, ScriptRules } from 'types';
  * The default rules of Æsthetic from which all **presets** and
  * custom rules will be merged.
  */
-export const defaults: Rules = merge({
+export const defaults: Rules = {
   crlf: false,
   correct: false,
   preset: 'default',
@@ -32,7 +32,6 @@ export const defaults: Rules = merge({
     normalizeSpacing: true,
     paddedTagList: [],
     preserveComment: false,
-    preserveInternal: false,
     dedentTagList: [],
     quoteConvert: 'none'
   },
@@ -124,4 +123,4 @@ export const defaults: Rules = merge({
     variableList: 'none',
     vertical: false
   }
-});
+};

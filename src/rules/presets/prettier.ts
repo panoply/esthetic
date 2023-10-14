@@ -1,5 +1,6 @@
 import { merge } from 'utils/helpers';
 import { Rules } from 'types';
+import { defaults } from './default';
 
 /**
  * Prettier Presets
@@ -7,7 +8,7 @@ import { Rules } from 'types';
  * Rules which replicates the Prettier formatting style.
  * These also reflect the prettier-liquid plugin.
  */
-export const prettier: Rules = merge({
+export const prettier = merge<Rules>(defaults, {
   preset: 'prettier',
   language: 'auto',
   preserveLine: 1,
