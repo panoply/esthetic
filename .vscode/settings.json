@@ -162,30 +162,7 @@
     }
   },
   "liquid.engine": "11ty",
-  "liquid.config.method": "workspace",
-  "liquid.format.rules": {
-    "wrap": 120,
-    "wrapFraction": 80,
-    "liquid": {
-      "commentIndent": true,
-      "commentNewline": true,
-      "delimiterTrims": "preserve",
-      "ignoreTagList": [],
-      "lineBreakSeparator": "before",
-      "normalizeSpacing": true,
-      "preserveComment": false,
-      "quoteConvert": "single",
-      "forceFilter": 3,
-      "forceArgument": 4
-    },
-    "markup": {
-      "quoteConvert": "double",
-      "commentNewline": true,
-      "forceIndent": true,
-      "ignoreJS": false,
-      "forceAttribute": 2
-    }
-  },
+  "liquid.config.method": "liquidrc",
   "[liquid]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "sissel.shopify-liquid"
