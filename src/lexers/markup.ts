@@ -4737,8 +4737,7 @@ export function markup (input?: string) {
               .replace(rx.SpaceEnd, NIL)
               .replace(rx.SpacesGlob, WSP);
 
-            do wrapper();
-            while (width < chars);
+            do wrapper(); while (width < chars);
 
             if (ltoke !== NIL && u.not(ltoke, cc.WSP)) store.push(ltoke);
 
@@ -4780,7 +4779,6 @@ export function markup (input?: string) {
     }
 
     if (a > now && a < c) {
-
       if (u.ws(b[a])) {
 
         let x = a;
