@@ -5,7 +5,6 @@ import { CommentType } from 'lexical/enum';
 import { NWL, NIL, WSP, BIG, MID } from 'chars';
 import { charEsc, ws, is, not, liquidEsc } from 'utils/helpers';
 import * as rx from 'lexical/regex';
-import * as lq from 'lexical/liquid';
 
 /**
  * Comment Block Parser
@@ -33,7 +32,7 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
   /**
    * Deconstructed Config
    */
-  const { start, lexer, end } = config;
+  const { start, lexer, end, ender } = config;
 
   /**
    * Deconstructed  Parse
@@ -211,45 +210,57 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
       if (rules.markup.commentDelimiters === 'consistent') {
 
-        if (is(output.slice(4).replace(rx.WhitespaceLead, NIL), ch.NWL)) {
+        const token = chars.slice(start + 4).join(NIL);
+
+        if (token.slice(0, token.search(rx.NonSpace)).indexOf(NWL) > -1) {
           if (rules.markup.commentIndent) {
-            output = output.replace(/^<!--\s*/, '<!--\n  ').replace(/\s*-->$/, '\n-->');
+            output = output.replace(/^<!--\s*/, `<!--${NWL}  `);
+            output = output.replace(/\s*-->$/, `${NWL}-->`);
           } else {
-            output = output.replace(/^<!--\s*/, '<!--\n').replace(/\s*-->$/, '\n-->');
+            output = output.replace(/^<!--\s*/, `<!--${NWL}`);
+            output = output.replace(/\s*-->$/, `${NWL}-->`);
           }
         } else {
-          output = output.replace(/^<!--\s*/, '<!-- ').replace(/\s*-->$/, ' -->');
+          output = output.replace(/^<!--\s*/, '<!-- ');
+          output = output.replace(/\s*-->$/, ' -->');
         }
 
       } else if (rules.markup.commentDelimiters === 'force') {
 
         if (rules.markup.commentIndent) {
-          output = output.replace(/^<!--\s*/, '<!--\n  ').replace(/\s*-->$/, '\n-->');
+          output = output.replace(/^<!--\s*/, `<!--${NWL}  `);
+          output = output.replace(/\s*-->$/, `${NWL}-->`);
         } else {
-          output = output.replace(/^<!--\s*/, '<!--\n').replace(/\s*-->$/, '\n-->');
+          output = output.replace(/^<!--\s*/, `<!--${NWL}`);
+          output = output.replace(/\s*-->$/, `${NWL}-->`);
         }
 
       } else if (rules.markup.commentDelimiters === 'inline' || rules.markup.commentDelimiters === 'inline-align') {
 
-        output = output.replace(/^<!--\s*/, '<!-- ').replace(/\s*-->$/, ' -->');
+        output = output.replace(/^<!--\s*/, '<!-- ');
+        output = output.replace(/\s*-->$/, ' -->');
 
       } else {
 
-        if (is(output.slice(4).replace(rx.WhitespaceLead, NIL), ch.NWL)) {
+        const token = chars.slice(start + 4).join(NIL);
+
+        if (token.slice(0, token.search(rx.NonSpace)).indexOf(NWL) > -1) {
           if (rules.markup.commentIndent) {
-            output = output.replace(/^<!--\s*/, '<!--\n  ');
+            output = output.replace(/^<!--\s*/, `<!--${NWL}  `);
           } else {
-            output = output.replace(/^<!--\s*/, '<!--\n');
+            output = output.replace(/^<!--\s*/, `<!--${NWL}`);
           }
         } else {
           output = output.replace(/^<!--\s*/, '<!-- ');
         }
 
-        if (output.slice(output.lastIndexOf(NWL) + 1).trimStart() === config.ender) {
+        const close = token.indexOf(ender);
+
+        if (token.slice(token.lastIndexOf(NWL, close) + 1, close + 3).trimStart() === config.ender) {
           if (rules.markup.commentIndent) {
-            output = output.replace(/\s*-->$/, '\n-->');
+            output = output.replace(/\s*-->$/, `${NWL}-->`);
           } else {
-            output = output.replace(/\s*-->$/, '\n-->');
+            output = output.replace(/\s*-->$/, `${NWL}-->`);
           }
         } else {
           output = output.replace(/\s*-->$/, ' -->');
@@ -692,9 +703,16 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
     b = start;
 
-    if (b > 0 && not(chars[b - 1], ch.NWL) && ws(chars[b - 1])) {
+    if (
+      b > 0 &&
+      not(chars[b - 1], ch.NWL) &&
+      ws(chars[b - 1])) {
+
       do b = b - 1;
-      while (b > 0 && not(chars[b - 1], ch.NWL) && ws(chars[b - 1]));
+      while (
+        b > 0 &&
+        not(chars[b - 1], ch.NWL) &&
+        ws(chars[b - 1]));
     }
 
     /**
@@ -711,7 +729,6 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
       .replace(regexLead, NWL);
 
     lines = output.split(NWL);
-
     lsize = lines.length;
     lines[0] = lines[0].replace(regexStart, NIL);
     lines[lsize - 1] = lines[lsize - 1].replace(regexEnder, NIL);
@@ -746,7 +763,87 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
     lsize = lines.length;
 
-    return parseSpecials(lines, lsize);
+    return type === CommentType.Markup
+      ? parseMarkupComment(lines, lsize - 1)
+      : parseSpecials(lines, lsize);
+
+  }
+
+  function parseMarkupComment (lines: string[], lsize: number): [string, number] {
+
+    const lexed: string[] = [ lines.shift() ];
+
+    let indent: string = NIL;
+    let b: number = 0;
+
+    if (rules.markup.commentDelimiters === 'inline-align') {
+      indent = '     ';
+    } else if (rules.markup.commentIndent) {
+      indent = '  ';
+    }
+
+    let hasMarkup: boolean = false;
+    let lineCount: number = 0;
+
+    do {
+      if (rx.EmptyLine.test(lines[b]) === true || lines[b] === NIL) {
+
+        lineCount = lineCount + 1;
+
+        if (lineCount <= rules.preserveLine) lexed.push(NWL);
+
+      } else {
+
+        if (hasMarkup) {
+
+          lexed.push(lines[b].replace(rx.WhitespaceEnd, NIL), NWL);
+
+        } else {
+
+          const words = b === 0
+            ? lines[b].trimStart().replace(rx.WhitespaceEnd, NIL)
+            : lines[b].trim();
+
+          if (/<\/?[a-zA-Z]|{{|{%/.test(words)) {
+
+            hasMarkup = true;
+            lexed.push(lines[b].replace(rx.WhitespaceEnd, NIL));
+
+          } else {
+
+            if (rules.wrap > 0 && words.length > rules.wrap) {
+
+              const split: string[] = words
+                .replace(rx.WhitespaceGlob, ' ')
+                .split(WSP)
+                .concat(NWL);
+
+              for (let i = 0, s = 0, w = 0, length = split.length; i < length; i++) {
+
+                w += split[i].length + 1;
+
+                if (w > rules.wrap || (i + 1 === length)) {
+                  lexed.push(indent + split.slice(s, i).join(WSP) + NWL);
+                  s = i;
+                  w = 0;
+                }
+
+              }
+
+            } else {
+              lexed.push(`${indent}${words}${NWL}`);
+            }
+          }
+        }
+      }
+
+      b = b + 1;
+
+    } while (b < lsize);
+
+    output = lexed.join(NIL) + WSP + config.ender;
+
+    return onCommentDelimitersInline();
 
   }
 
@@ -826,7 +923,9 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
         if (rx.EmptyLine.test(lines[b + 1]) === true || lines[b + 1] === NIL) {
           do b = b + 1;
-          while (b < lsize && (rx.EmptyLine.test(lines[b + 1]) === true || lines[b + 1] === NIL));
+          while (b < lsize && (
+            rx.EmptyLine.test(lines[b + 1]) === true ||
+            lines[b + 1] === NIL));
         }
 
         if (b < lsize - 1) lexed.push(NIL);
@@ -862,12 +961,11 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
             lines[b] = lines[b]
               .replace(rx.WhitespaceLead, NIL)
-              .replace(rx.WhitespaceEnd, NIL)
-              .replace(rx.SpacesGlob, WSP);
+              .replace(rx.WhitespaceEnd, NIL);
 
           }
 
-          twrap = (b < 1) ? rules.wrap - (config.begin.length + 1) : rules.wrap;
+          twrap = b < 1 ? rules.wrap - (config.begin.length + 1) : rules.wrap;
 
           d = lines[b].replace(rx.SpaceLead, NIL).indexOf(WSP);
           c = lines[b].length;
@@ -881,10 +979,10 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
               if (ws(lines[b].charAt(c)) && c <= rules.wrap) break;
             } while (c > 0);
 
-            if (rx.CommNumberLine.test(lines[b]) === true && rx.CommNumberLine.test(lines[b + 1]) === false) {
-
+            if (
+              rx.CommNumberLine.test(lines[b]) === true &&
+              rx.CommNumberLine.test(lines[b + 1]) === false) {
               lines.splice(b + 1, 0, '1. ');
-
             }
 
             if (c < 4) {
@@ -927,7 +1025,7 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
               bigLine = true;
               b = b - 1;
 
-            } else if (c + before.length > rules.wrap && before.indexOf(WSP) < 0) {
+            } else if ((c + before.length) > rules.wrap && before.indexOf(WSP) < 0) {
 
               lexed.push(lines[b].slice(0, c));
               lines[b] = lines[b].slice(c + 1);
@@ -938,6 +1036,7 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
               if (lines[b].length > rules.wrap) {
                 lines[b + 1] = `${lines[b].slice(c + 1)}${parse.crlf}${lines[b + 1]}`;
+
               } else {
                 lines[b + 1] = `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
               }
@@ -1104,7 +1203,7 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
           lexed[lexed.length - 1] = `${lexed[lexed.length - 1]} ${config.ender}`;
         }
 
-        output = lexed.join(parse.crlf);
+        output = lexed.join(NWL);
 
       }
 
@@ -1116,6 +1215,7 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
           if (rules.markup.commentIndent) {
             if (rules.markup.commentDelimiters === 'inline-align') {
+
               output = `${lines[0]} ${lines.slice(1).join(parse.crlf + '     ')}`;
             } else {
               output = `${lines[0]} ${lines.slice(1).join(parse.crlf + '  ')}`;
@@ -1129,7 +1229,7 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
           if (rules.markup.commentIndent) {
             output = `${lines[0] + NWL}  ${lines.slice(1).join(parse.crlf + '  ')}`;
           } else {
-            output = lines.join(parse.crlf);
+            output = lines.join(NWL);
           }
         }
 
@@ -1143,7 +1243,7 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
 
         lsize = lines.length - 1;
         lines[lsize] = lines[lsize] + config.ender;
-        output = lines.join(parse.crlf);
+        output = lines.join(NWL);
 
       }
 
