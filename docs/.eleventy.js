@@ -8,7 +8,10 @@ const anchor = require('markdown-it-anchor');
 const papyrus = require('papyrus');
 const merge = require('mergerino');
 const yaml = require('js-yaml');
+const fs = require('node:fs')
 const esthetic = require('esthetic');
+const { join } = require('node:path');
+const { cwd } = require('node:process');
 
 /* -------------------------------------------- */
 /* CONSTANTS                                    */
@@ -31,10 +34,6 @@ const TOOLTIPS = {
   '💡': 'Showing an example of the rule',
   '🧐': 'You gotta do, what you gotta do'
 };
-
-const SVG_GEARS = `
-<svg xmlns="http://www.w3.org/2000/svg" class="gears" preserveAspectRatio="none" viewBox="0 0 100 100"><g class="gear-1"><animateTransform fill="freeze" data-demo-target="gear" attributeName="none" dur="4.68s" from="360 78.5 37" repeatCount="indefinite" to="0 78.5 37" type="rotate"/><path d="M93.942 35.007 100 32c-.379-1.686-.954-3.326-1.715-4.878l-6.61 1.435c-.921-1.467-2.095-2.794-3.493-3.901l2.16-6.407c-.722-.457-1.474-.886-2.261-1.265-.791-.379-1.592-.699-2.401-.977l-3.66 5.685c-1.738-.398-3.506-.489-5.228-.29l-3.006-6.058c-1.687.375-3.326.95-4.878 1.708l1.434 6.607c-1.47.918-2.803 2.091-3.917 3.492-2.255-.761-4.474-1.506-6.407-2.159-.461.725-.893 1.479-1.271 2.277-.379.78-.695 1.574-.974 2.378 1.716 1.102 3.689 2.373 5.688 3.656-.408 1.748-.496 3.522-.297 5.254-2.131 1.056-4.231 2.098-6.062 3.007.376 1.683.948 3.319 1.706 4.871 1.996-.435 4.283-.931 6.606-1.435.925 1.48 2.104 2.816 3.516 3.935l-2.163 6.403c.723.458 1.471.883 2.265 1.262.784.379 1.584.699 2.389.98 1.104-1.716 2.368-3.689 3.659-5.692 1.751.409 3.532.494 5.267.294l3 6.055c1.686-.379 3.322-.95 4.875-1.712-.435-1.993-.932-4.283-1.435-6.61 1.47-.921 2.803-2.101 3.917-3.509l6.408 2.156c.454-.715.875-1.46 1.251-2.244.379-.794.706-1.602.983-2.411l-5.688-3.663c.399-1.741.488-3.515.284-5.237zm-8.89 4.91c-1.729 3.588-6.034 5.098-9.619 3.372-3.588-1.725-5.097-6.031-3.372-9.619 1.723-3.588 6.032-5.097 9.619-3.372 3.585 1.723 5.093 6.032 3.372 9.619z"/></g><g class="gear-2"><animateTransform data-demo-target="gear" fill="freeze" attributeName="none" dur="7s" from="0 31 53" repeatCount="indefinite" to="360 31 53" type="rotate"/><path d="m56.452 54.774 6.297-1.147c.017-1.813-.124-3.616-.415-5.388l-6.397-.192c-.444-2.078-1.15-4.098-2.102-6.003l4.879-4.143c-.879-1.571-1.896-3.064-3.042-4.47l-5.637 3.035c-1.401-1.559-3.016-2.957-4.829-4.149l2.15-6.025c-.769-.457-1.562-.889-2.386-1.284-.82-.395-1.646-.741-2.479-1.059l-3.365 5.447c-2.062-.673-4.163-1.065-6.258-1.189l-1.149-6.296c-1.813-.02-3.614.12-5.385.411l-.193 6.397c-2.081.444-4.101 1.15-6.008 2.104l-4.146-4.878c-1.565.882-3.059 1.898-4.46 3.042l3.032 5.633c-1.559 1.401-2.961 3.022-4.153 4.836-2.186-.78-4.248-1.516-6.026-2.152-.454.774-.885 1.562-1.28 2.382s-.742 1.649-1.062 2.486c1.607.993 3.466 2.144 5.443 3.365-.67 2.062-1.062 4.166-1.187 6.261L.001 52.947c-.02 1.811.121 3.61.412 5.385l6.397.189c.447 2.085 1.156 4.107 2.107 6.009L4.04 68.674c.883 1.568 1.896 3.062 3.046 4.466l5.63-3.035c1.408 1.559 3.025 2.957 4.835 4.149l-2.146 6.025c.765.451 1.556.882 2.376 1.274.823.398 1.653.748 2.492 1.062l3.366-5.44c2.058.67 4.159 1.062 6.25 1.184l1.15 6.296c1.813.02 3.613-.124 5.388-.412l.196-6.4c2.078-.444 4.094-1.15 5.999-2.104l4.143 4.875c1.568-.875 3.062-1.892 4.467-3.035l-3.032-5.64c1.556-1.401 2.95-3.016 4.143-4.829l6.025 2.153c.454-.771.889-1.565 1.284-2.385.392-.817.738-1.65 1.059-2.487l-5.443-3.365c.669-2.06 1.06-4.158 1.184-6.252zm-13.638 4.009c-3.039 6.319-10.622 8.979-16.941 5.937-6.319-3.035-8.979-10.619-5.937-16.938 3.038-6.319 10.622-8.979 16.938-5.94 6.319 3.039 8.98 10.622 5.94 16.941z"/></g></svg>
-`
 
 /* -------------------------------------------- */
 /* CONFIGS                                      */
@@ -359,6 +358,10 @@ function highlightCode(md, raw, language) {
           language,
           editor: false,
           showSpace: false,
+          showTab: false,
+          showCR: false,
+          showLF: false,
+          showCRLF: false,
           trimEnd: true,
           trimStart: true
         });
@@ -676,7 +679,7 @@ function getRuleShowcase (md, inputValue, language) {
   const mode = has('example') ? 'example' : 'editor'
 
   /** @type {esthetic.Rules} */
-  const rulesValue = has('esthetic') ? rules.esthetic : rules;
+  const rulesValue = has('esthetic') ? merge(rules.esthetic, { language }) : merge(rules, { language });
 
   /** @type {papyrus.MountOptions} */
   const papyrusValue = has('papyrus') ? merge(rules.papyrus, { language }) : { language };
@@ -742,30 +745,47 @@ function getRuleShowcase (md, inputValue, language) {
           </button>
           <button
             type="button"
-            class="tab"
+            class="tab pr-2"
             data-demo-target="rulesTab"
             data-action="demo#onClickRulesTab"
             aria-label="${tabs.rules.tooltip}"
             data-tooltip="top">
             ${tabs.rules.label}
           </button>
-          <div data-controller="dropdown" class="dropdown">
+          <div
+            data-controller="dropdown"
+            data-dropdown-selected-value="default"
+            data-dropdown-kind-value="preset"
+            class="dropdown">
             <button
               type="button"
               class="tab"
               data-dropdown-target="button"
-              aria-label="Choose another code sample"
+              aria-label="Select different preset"
               data-action="dropdown#toggle"
+              data-demo-target="presetTab"
               data-tooltip="top">
               Preset (default)
+              <span class="icon"></span>
             </button>
 
             <ul data-dropdown-target="collapse">
-              <li>default</li>
-              <li>recommended</li>
-              <li>warrington</li>
-              <li>strict</li>
-              <li>prettier</li>
+              <li
+                id="default"
+                data-action="click->dropdown#option click->demo#onPresetChange"
+                class="selected">default</li>
+              <li
+                data-action="click->dropdown#option click->demo#onPresetChange"
+                id="recommended">recommended</li>
+              <li
+                data-action="click->dropdown#option click->demo#onPresetChange"
+                id="warrington">warrington</li>
+              <li
+                data-action="click->dropdown#option click->demo#onPresetChange"
+                id="strict">strict</li>
+              <li
+                data-action="click->dropdown#option click->demo#onPresetChange"
+                id="prettier">prettier</li>
             </ul>
 
           </div>
@@ -853,6 +873,7 @@ function codeblocks(md) {
       <div
         class="rule-example"
         data-controller="demo"
+        data-demo-uuid-value="${Math.random().toString(36).slice(2)}"
         data-demo-mode-value="${mode}"
         data-demo-preset-value="default"
         data-demo-rules-value="${rulesValue}"
@@ -962,6 +983,14 @@ function grid(md, tokens, idx) {
 
 }
 
+function versions ()  {
+
+  return fs.readdirSync(join(cwd(), 'version')).map(version => {
+    const v = version.replace(/\.zip/, '')
+   return `<li><a href="/v/${v}/">${v.replace(/-beta/, '(beta)')}</a></li>`
+  }).join('')
+
+}
 
 module.exports = eleventy(function (config) {
 
@@ -972,22 +1001,17 @@ module.exports = eleventy(function (config) {
     typographer: true,
     breaks: false,
     highlight: (str, lang) => highlightCode(md, str, lang)
-  })
+   })
     .use(anchor)
     .use(codeblocks)
-    .use(mdcontainer, 'grid', {
-      render: (tokens, idx) => grid(md, tokens, idx)
-    })
-    .use(mdcontainer, 'note', {
-      render: (tokens, idx) => notes(tokens, idx)
-    })
-    .use(mdcontainer, 'rule', {
-      render: (tokens, idx) => rule(md, tokens, idx)
-    })
+    .use(mdcontainer, 'grid', { render: (tokens, idx) => grid(md, tokens, idx) })
+    .use(mdcontainer, 'note', { render: (tokens, idx) => notes(tokens, idx) })
+    .use(mdcontainer, 'rule', { render: (tokens, idx) => rule(md, tokens, idx) })
     .disable("code");
 
-  config.setBrowserSyncConfig();
-  config.addLiquidShortcode('version', () =>require('../package.json').version)
+  config.addLiquidShortcode('version', () => require('../package.json').version);
+  config.addLiquidShortcode('versions', () => versions());
+
   config.setLibrary('md', md);
   config.addPlugin(svgsprite, {
     path: 'src/assets/svg',
@@ -1019,6 +1043,7 @@ module.exports = eleventy(function (config) {
 
 
   if(process.env.ENV ==='prod') {
+
     config.addPlugin(htmlmin, {
       collapseBooleanAttributes: false,
       collapseWhitespace: true,
@@ -1030,6 +1055,7 @@ module.exports = eleventy(function (config) {
       sortAttributes: true,
       sortClassName: true
     });
+
   }
 
   return {
