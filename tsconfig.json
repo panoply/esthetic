@@ -6,7 +6,8 @@
     "test",
     "indexs.mjs",
     "indexs.js",
-    "index.d.ts"
+    "index.d.ts",
+    "docs/**"
   ],
   "include": [
     "src",
@@ -15,10 +16,17 @@
   ],
   "typeAcquisition": {
     "enable": true,
-    "include": ["node"],
+    "include": [
+      "node"
+    ],
+    "exclude": [
+      "esthetic"
+    ]
   },
   "compilerOptions": {
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "incremental": false,
     "allowJs": true,
     "declaration": true,
