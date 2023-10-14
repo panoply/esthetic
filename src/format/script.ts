@@ -3493,7 +3493,7 @@ export function script () {
 
         level[a - 1] = -20;
         level.push(-20);
-        console.log(ltoke, ltype, ctoke, ctype, level[a], indent);
+        // console.log(ltoke, ltype, ctoke, ctype, level[a], indent);
 
       } else {
 
