@@ -120,9 +120,9 @@ export interface IConfigInternal extends ISettings {
   /**
    * **Version**
    *
-   * The Æsthetic version
+   * The Æsthetic version number
    *
-   * @default 'node'
+   * @example '1.2.0'
    */
   version?: string;
   /**

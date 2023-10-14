@@ -9,7 +9,6 @@ export interface GlobalRules {
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
    */
   correct?: boolean;
-
   /**
    * **Default** `none`
    *
