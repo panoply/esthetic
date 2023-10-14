@@ -12,7 +12,7 @@
 
 ### WIP ~ WORK IN PROGRESS
 
-The new generation code beautification tool for formatting HTML, Liquid, CSS/SCSS, JavaScript, TypeScript and more! Æsthetic leverages the [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and its parse approach has been repurposed from the distributed source of the late and powerful [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
+A new generation code beautification tool for formatting HTML, Liquid, CSS/SCSS, JavaScript, TypeScript and more! Æsthetic leverages the [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and its parse approach has been repurposed from the distributed source of the late and powerful [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
 
 ### Documentation
 
@@ -29,7 +29,7 @@ Documentation lives on **[æsthetic.dev](https://æsthetic.dev)**
 
 ## Installation
 
-Æsthetic is supports both CJS/ESM environments and also provides basic CLI support.
+Æsthetic supports both CJS/ESM environments and also provides basic CLI support.
 
 ###### PNPM
 
@@ -65,7 +65,7 @@ Consult the [documentation](https://æsthetic.dev) for a better understanding.
 $ esthetic <file> --flag
 ```
 
-###### ESM
+###### ESM / BROWSER
 
 <!--prettier-ignore-->
 ```js
@@ -91,6 +91,33 @@ Looking to contribute? Æsthetic leverages [pnpm](https://pnpm.js.org/) so ensur
 
 <details>
 <summary>
+  Overview
+</summary>
+<p>
+
+The Æsthetic codebase may seem large and daunting to navigate at first glance, but it's relatively easy to dissect and grasp. The first place you want to start is [src/esthetic.ts](/src/esthetic.ts) which is where the esthetic instance is established.
+
+**Parser**
+
+The [src/parse/parser.ts](/src/parse/parser.ts) file is where you will finds the controller responsible for maintaining and generating the data-structure parse table. The lexers will refer to the values and methods contained within.
+
+**Lexers**
+
+The [src/lexers](/src/lexers/) directory and containing files are responsible for parse operations, this where the parse table gets generated. Markup languages use the [markup.ts](/src/lexers/markup.ts) lexer, Script languages (i.e: JSON, JavaScript etc) use [script.ts](/src/lexers/script.ts) lexer and Style languages (i.e: CSS) use [style.ts](/src/lexers/style.ts) lexer
+
+**Format**
+
+The [src/format](/src/format/) directory and containing files are used in the second cycle, following the lexer operation/s. This where the generated parse table will be traversed and beautification is applied.
+
+---
+
+If you have any questions or would like more context etc please do not hesitate to submit an issue or reach me on [Twitter](https://twitter.com/niksavvidis). I'm also happy to hear from, learn from or help developers interested in this project.
+
+</p>
+</details>
+
+<details>
+<summary>
   Pre-requisites
 </summary>
 <p>
@@ -103,22 +130,22 @@ Looking to contribute? Æsthetic leverages [pnpm](https://pnpm.js.org/) so ensur
 </p>
 </details>
 
-### Testing / Development
-
-Æsthetic uses the powerful [AVA](https://github.com/avajs/ava) test runner together with a small helper utility that helps alleviate some of the complexities involved with testing tools of its criteria. It's recommended that you develop in a two pane terminal. The [dev.test.mjs](/tests/dev.test.mjs) and [dev.txt](/tests/dev.txt) files are core to testing and working on the module, they will be called when running `pnpm play`
-
 ### Commands
 
 The following commands are available as executable scripts.
 
 ```
 pnpm dev         Bundles module with ESBuild (via tsup) in watch mode
-pnpm play        Starts up AVA in development mode and runs the dev.txt
 pnpm build       Generates the distribution bundles
-pnpm pack        Packages the module up for distribution on NPM registry
+pnpm release     Builds bundle, build then deploys docs and publish on npm
+pnpm play        Starts up AVA in development mode and runs the dev.txt
 pnpm test        Runs all the tests
 pnpm tests       Cherry pick test cases to run
 ```
+
+### Testing / Development
+
+Æsthetic uses the powerful [AVA](https://github.com/avajs/ava) test runner together with a small helper utility that helps alleviate some of the complexities involved with testing tools of its criteria. It's recommended that you develop in a two pane terminal. The [dev.test.mjs](/tests/dev.test.mjs) and [dev.txt](/tests/dev.txt) files are core to testing and working on the module, they will be called when running `pnpm play`
 
 > Consult the [tests](/tests/) readme for more information on `test` prefixed commands
 
@@ -135,4 +162,4 @@ Both PrettyDiff and Sparser were retired in 2019 after a nearly a decade of prod
 
 ## Author 🥛 [Νίκος Σαβίδης](mailto:nicos@gmx.com)
 
-Follow me on [Twitter](https://twitter.com/niksavvidis) or shoot me an [Email](mailto:n.savvidis@gmx.com).
+Follow me on [X](https://x.com/niksavvidis) or shoot me an [Email](mailto:n.savvidis@gmx.com).
