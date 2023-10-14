@@ -811,6 +811,7 @@ export function markup () {
       //
       // if (ind === indent + 1)
       //
+
       level[a] = indent;
 
       // Indentation must be applied to the tag following the comment
@@ -834,7 +835,7 @@ export function markup () {
 
         // Removed in the 10/06/23 patch
         //
-        // level[data.begin[x]] = ind;
+        // level[a - 1] = indent - 2;
 
         // This will ensure comments are indented folowing a tag with attributes
         //
@@ -865,6 +866,11 @@ export function markup () {
         //
         level[x] = indent - 1;
 
+      } else if (isType(next, 'liquid')) {
+
+        level[prev] = indent - 1;
+        level[a - 1] = indent;
+
       }
 
     } else {
@@ -890,17 +896,14 @@ export function markup () {
    */
   function onContent () {
 
-    let ind = indent;
-
     if (rules.markup.forceIndent === true || rules.markup.forceAttribute === true) {
       level.push(indent);
       return;
     }
 
-    if (next < c && (
-      isIndex(next, 'end') > -1 ||
-      isIndex(next, 'start') > -1
-    ) && data.lines[next] > 0) {
+    let ind = indent;
+
+    if (next < c && (isIndex(next, 'end') > -1 || isIndex(next, 'start') > -1) && data.lines[next] > 0) {
 
       level.push(indent);
       ind = ind + 1;
@@ -962,13 +965,10 @@ export function markup () {
     } else {
       count = count + 1;
       level.push(-10);
+
     }
 
-    if (
-      a > 0 &&
-      isIndex(a - 1, 'attribute') > -1 &&
-      data.lines[a] < 1
-    ) {
+    if (a > 0 && isIndex(a - 1, 'attribute') > -1 && data.lines[a] < 1) {
 
       level[a - 1] = -20;
     }
@@ -2240,6 +2240,40 @@ export function markup () {
 
   }
 
+  function onMarkupComment () {
+
+    if (rx.Newline.test(data.token[a])) {
+
+      const lines = data.token[a].split(NWL);
+      const length = lines.length;
+
+      let i = 0;
+
+      do {
+
+        if (lines[i] === NIL) {
+          if (i + 1 !== length && lines[i + 1] !== NIL) {
+            build.push(NWL, nl(levels[a], false, true));
+          } else {
+            build.push(NWL);
+          }
+        } else if (i + 1 === length) {
+          build.push(lines[i], NWL, nl(levels[a], false, true));
+        } else {
+
+          build.push(lines[i], NWL, nl(levels[a], false, true));
+        }
+
+        i = i + 1;
+      } while (i < length);
+
+    } else {
+
+      build.push(data.token[a], nl(levels[a]));
+
+    }
+
+  }
   /**
    * Beautify
    *
@@ -2288,7 +2322,9 @@ export function markup () {
             isType(a + 1, 'comment') &&
             is(data.token[a + 1].trimStart()[1], cc.PER) &&
             rules.liquid.preserveComment === true) === false) {
+
             build.push(nl(levels[a]));
+
           } else {
             build.push(nl(levels[a], true, false));
           }
@@ -2301,14 +2337,16 @@ export function markup () {
 
           build.push(data.token[a]);
 
-          if ((
-            isType(a + 1, 'comment') &&
-            is(data.token[a + 1].trimStart()[1], cc.BNG) &&
-            rules.markup.preserveComment === true) === false) {
-            build.push(nl(levels[a]));
-          } else {
-            build.push(nl(levels[a], true, false));
-          }
+          // if ((
+          //   isType(a + 1, 'comment') &&
+          //   is(data.token[a + 1].trimStart()[1], cc.BNG) &&
+          //   rules.markup.preserveComment === true) === false) {
+
+          //   build.push(nl(levels[a]));
+
+          // } else {
+          //   build.push(nl(levels[a], true, false));
+          // }
 
         } else if (
           isUndefined(data.token[a]) === false &&
@@ -2320,62 +2358,40 @@ export function markup () {
 
           ml();
 
-        } else if (isType(a, 'comment') && rules.markup.preserveComment === false && (
-          (
-            is(data.token[a][1], cc.PER) &&
-            rules.liquid.commentNewline === true
-          )
-        ) && (
-          rules.preserveLine === 0 || (
-            build.length > 0 &&
-            build[build.length - 1].lastIndexOf(NWL) + 1 < 2
-          )
-        )) {
+        }
 
-          build.push(
-            nl(levels[a]),
-            build.pop(),
-            data.token[a],
-            nl(levels[a])
-          );
+        // else if (isType(a, 'comment') && rules.markup.preserveComment === false && (
+        //   (
+        //     is(data.token[a][1], cc.PER) &&
+        //     rules.liquid.commentNewline === true
+        //   )
+        // ) && (
+        //   rules.preserveLine === 0 || (
+        //     build.length > 0 &&
+        //     build[build.length - 1].lastIndexOf(NWL) + 1 < 2
+        //   )
+        // )) {
 
-          // When preserve line is zero, we will insert
-          // the new line above the comment.
-          //
-          // build.push(nl(levels[a]), data.token[a], nl(levels[a]));
+        //   build.push(data.token[a], nl(levels[a]));
 
-        } else if ((isType(a, 'comment') && is(data.token[a][1], cc.BNG))) {
+        //   // build.push(
+        //   //   nl(levels[a]),
+        //   //   build.pop(),
+        //   //   data.token[a],
+        //   //   nl(levels[a])
+        //   // );
 
-          if (rx.Newline.test(data.token[a])) {
+        //   // When preserve line is zero, we will insert
+        //   // the new line above the comment.
+        //   //
+        //   // build.push(nl(levels[a]), data.token[a], nl(levels[a]));
 
-            if (levels[a] === 0) {
-              build.push(data.token[a], nl(levels[a]));
-            } else {
+        // }
 
-              const lines = data.token[a].split(NWL);
+        else if (isType(a, 'comment')) {
 
-              let x: number = 0;
-
-              do {
-
-                if (lines[x] === NIL) {
-                  build.push(NWL);
-                } else {
-                  build.push(lines[x], nl(levels[a - 1 > 0 ? a - 1 : 0], false, true));
-                }
-
-                x = x + 1;
-              } while (x < lines.length);
-
-              build.push(
-                nl(levels[a])
-              );
-            }
-
-          } else {
-
-            build.push(data.token[a], nl(levels[a]));
-          }
+          // build.push(data.token[a], nl(levels[a]));
+          onMarkupComment();
 
         } else if (isType(a, 'liquid_capture')) {
 
