@@ -14,7 +14,9 @@ After installing, run `pnpm dev` to start in development mode. Documentation wil
 
 ```cli
 pnpm dev                 Starts development in watch mode
-pnpm build               Builds documentation for production
+pnpm stage               Serve up via Netlify for staging
+pnpm build               Builds for production and applies version copy .zip
+pnpm release             Runs netlify build, generates sitemap and deploys
 pnpm 11ty:build          Triggers an 11ty build
 pnpm 11ty:watch          Starts 11ty in watch mode with server
 pnpm scss:build          Compiles SASS into CSS
