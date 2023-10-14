@@ -629,7 +629,7 @@ class Parser {
       record.lexer === 'markup' &&
       record.stack !== 'liquid') {
 
-      // this.syntactic(record, token);
+      this.syntactic(record, token);
 
     }
 
