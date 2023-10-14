@@ -826,7 +826,7 @@ export function isEnd (input: string | string[]) {
 }
 
 /**
- * Checks for existense of liquid tokens.
+ * Checks for existence of liquid tokens.
  *
  * - `1` Check open delimiters, eg: `{{`, `{%`
  * - `2` Check close delimiters, eg: `}}`, `%}`
