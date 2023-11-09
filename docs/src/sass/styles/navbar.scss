@@ -60,8 +60,28 @@ header {
     }
 
     ul > li {
-      background-color: $white;
-      padding: 10px 5px;
+      padding: 5px;
+      list-style-type: none;
+      text-align: center;
+
+      &:hover {
+        background-color: transparent;
+      }
+
+      > a {
+        font-size: $font-size-base * 0.625;
+        margin-right: 0;
+        color: $white;
+
+        &:hover {
+          color: $pink;
+        }
+
+        &::before {
+          content: '';
+          margin-right: 7px;
+        }
+      }
     }
   }
 

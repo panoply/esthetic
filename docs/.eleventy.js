@@ -985,9 +985,11 @@ function grid(md, tokens, idx) {
 
 function versions ()  {
 
-  return fs.readdirSync(join(cwd(), 'version')).map(version => {
-    const v = version.replace(/\.zip/, '')
-   return `<li><a href="/v/${v}/">${v.replace(/-beta/, '(beta)')}</a></li>`
+  return fs.readdirSync(join(cwd(), 'version'))
+  .filter(v => v !== '.DS_Store')
+  .map(version => {
+   const v = version.replace(/\.zip/, '')
+   return `<li><a href="/v/${v}/">${v.replace(/-beta/, ' (beta)')}</a></li>`
   }).join('')
 
 }

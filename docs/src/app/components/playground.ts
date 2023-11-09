@@ -44,6 +44,7 @@ export class Playground extends Controller {
 
     this.loading();
     await this.module();
+    return this.mount();
 
   }
 
@@ -58,7 +59,6 @@ export class Playground extends Controller {
     const moloko = await import(this.moduleValue);
 
     Playground.moloko = moloko.default;
-    Playground.loaded = true;
 
   }
 
@@ -71,6 +71,8 @@ export class Playground extends Controller {
       }
     });
 
+    if (!Playground.loaded) Playground.loaded = true;
+
   }
 
   loading () {
@@ -81,14 +83,13 @@ export class Playground extends Controller {
 
         this.loading();
 
-      }, 500);
+      }, 1500);
 
     } else {
 
       this.splashTarget.classList.add('d-none');
 
       clearInterval(this.timer);
-      this.mount();
 
     }
 

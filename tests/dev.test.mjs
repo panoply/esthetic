@@ -145,7 +145,7 @@ dev(function (source) {
       commentDelimiters: 'force',
       // attributeSort: true,
       forceAttribute: 3,
-      // forceIndent: true,
+      forceIndent: true,
       // delimiterTerminus: 'inline',
       // ignoreJS: false,
       preserveText: false,

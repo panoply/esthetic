@@ -1,6 +1,8 @@
 .sidebar {
   // background-color: #fff;
-
+  background-color: $body-bg;
+  border-right: $border-width solid $accordion-border-color;
+  margin-top: 62px;
   @include media-breakpoint-up(md) {
     position: fixed;
     margin-top: 62px;
@@ -10,8 +12,6 @@
     visibility: visible;
     opacity: 1;
     transform: translateX(0);
-    background-color: $body-bg;
-    border-right: $border-width solid $accordion-border-color;
   }
   //left: 0;
 

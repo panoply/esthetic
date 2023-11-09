@@ -5,13 +5,16 @@
 
     <input
       type="button"
-      class="d-unset d-sm-none col-auto btn drawer-toggle ml-4">
+      class="d-unset d-sm-none col-auto btn drawer-toggle ml-4"
+      data-drawer="sidebar">
 
     <a
       href="/"
       class="col-auto italic fc-white fs-lg pl-2 pr-0 logo">
-      {% svg 'esthetic', 'icon icon-logo' %}
+      {% svg 'esthetic', 'icon icon-logo d-none d-sm-unset' %}
+      {% svg 'æsthetic', 'icon icon-logo d-unset d-sm-none' %}
     </a>
+
     <div class="d-none d-sm-flex col-auto pr-5">
       <dropdown
         class="dropdown  bc-gray rd"
