@@ -16,7 +16,7 @@ A new generation code beautification tool for formatting HTML, Liquid, CSS/SCSS,
 
 ### Documentation
 
-Documentation lives on **[æsthetic.dev](https://æsthetic.dev)**
+Documentation lives on **[aesthetic.js.org](aesthetic.js.org)**
 
 ### Features
 
