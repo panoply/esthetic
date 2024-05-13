@@ -1,9 +1,11 @@
+@import '../variables.scss';
+
 .accordion {
   position: relative;
   display: block;
   width: 100%;
-  // border-top-right-radius: 10px;
-  border: $accordion-border-width solid $accordion-border-color;
+  border-top-right-radius: 10px;
+  //border: $accordion-border-width solid $accordion-border-color;
   border-right: none !important;
   //background-color: $code-bg; // $body-bg;
 
@@ -61,18 +63,7 @@
     opacity: 0;
     max-height: 0;
     will-change: opacity, max-height;
-    background-color: $code-bg;
-    @include transition(
-      opacity $accordion-transition-opacity linear,
-      max-height $accordion-transition-height
-        $accordion-transition-easing
-    );
-
-    &.expanded {
-      max-height: auto;
-      visibility: visible;
-      opacity: 1;
-    }
+    background-color: $body-bg;
   }
 
   .first {
@@ -84,9 +75,13 @@
     width: 100%;
     text-align: left;
     border: transparent;
-    border-top: $accordion-border-width solid $accordion-border-color;
+    // border-top: $accordion-border-width solid $accordion-border-color;
     cursor: pointer;
+    font-family: $font-family-other;
     color: $link-color;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: 600;
     user-select: none;
     background-color: inherit;
     background-repeat: no-repeat;

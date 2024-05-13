@@ -1,29 +1,70 @@
-{% for link in collections.all %}
-  {% if link.url == page.url and link.data.prev and link.data.next %}
+<section class="pt-4">
+  {% for item in navigation.menu %}
 
-    <hr>
+    {% assign menu_index = forloop.index %}
+    {% assign menu_last = forloop.last %}
 
-    <div class="row jc-between mt-1 navigators">
-      <div class="col-auto">
+    {% for link in item.links %}
+
+      {% liquid
+        #
+        # SKIP LINKS
+        #
+        unless link.url == page.url
+          continue
+        endunless
+        #
+        # PREV AND NEXT LINKS
+        #
+        if link.url == page.url
+          #
+          # PREV LINK
+          #
+          if forloop.first
+            assign prev_index = menu_index | minus: 2
+            assign prev = navigation.menu[prev_index].links | last
+          else
+            assign prev_link = forloop.index0 | minus: 1
+            assign prev = item.links[prev_link]
+          endif
+          #
+          # NEXT LINK
+          #
+          if menu_last and forloop.last
+            assign next = navigation.menu[0].links | first
+          elsif forloop.last
+            assign next = navigation.menu[menu_index].links | first
+          else
+            assign next_index = forloop.index0 | plus: 1
+            assign next = item.links[next_index]
+          endif
+        endif
+      %}
+
+      <div class="row jc-between mt-5 mb-3 navigators">
+
+        {% unless menu_index == 1 and forloop.index == 1 %}
+          <a
+            href="{{ prev.url | url }}"
+            class="col-auto btn prev"
+            spx-scroll="0">
+            {% svg 'chevron-left', 'icon icon-left mr-2' %}
+            {{ prev.title }}
+          </a>
+        {% endunless %}
+
         <a
-          href="{{ link.data.prev.uri }}"
-          class="btn pl-0">
-          <span class="mr-2">
-            {% svg 'chevron-left', 'icon icon-left' %}
-          </span>
-          {{ link.data.prev.label }}
+          href="{{ next.url | url }}"
+          class="col-auto btn next ml-auto"
+          spx-scroll="0">
+          {{ next.title }}
+          {% svg 'chevron-right', 'icon icon-right ml-2' %}
         </a>
+
       </div>
-      <div class="col-auto">
-        <a
-          href="{{ link.data.next.uri }}"
-          class="btn pr-0">
-          {{ link.data.next.label }}
-          <span class="ml-2">
-            {% svg 'chevron-right', 'icon icon-right' %}
-          </span>
-        </a>
-      </div>
-    </div>
-  {% endif %}
-{% endfor %}
+
+      {% break %}
+
+    {% endfor %}
+  {% endfor %}
+</section>

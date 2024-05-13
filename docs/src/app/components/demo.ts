@@ -1,64 +1,59 @@
-import { Controller } from '@hotwired/stimulus';
 import { parseJSON } from '../utilities/common';
 import { Rules } from 'esthetic';
-import papyrus, { Languages, Model } from 'papyrus';
+import papyrus, { Model } from 'papyrus';
 import merge from 'mergerino';
+import spx from 'spx'
 
-export class Demo extends Controller {
+export class Demo extends spx.Component<typeof Demo.define> {
 
   static rules: Map<string, Rules> = new Map();
   static source: Map<string, string> = new Map();
 
-  /**
-   * Stimulus: Targets
-   */
-  static targets = [
+  static define = {
+    nodes: [
 
-    /* EDITOR RELATED ----------------------------- */
+      /* EDITOR RELATED ----------------------------- */
 
-    'rules',
-    'rulesTab',
-    'input',
-    'inputTab',
-    'presetTab',
-    'output',
+      'rules',
+      'rulesTab',
+      'input',
+      'inputTab',
+      'presetTab',
+      'output',
 
-    /* RULE REALTED ------------------------------- */
+      /* RULE REALTED ------------------------------- */
 
-    'wrapLine',
-    'wrapCount',
-    'wrapFractionRange',
-    'wrapFractionCount',
-    'wrapFractionLine',
-    'wrapRange'
+      'wrapLine',
+      'wrapCount',
+      'wrapFractionRange',
+      'wrapFractionCount',
+      'wrapFractionLine',
+      'wrapRange'
 
-  ];
-
-  /**
-   * Stimulus: Values
-   */
-  static values = {
-    mode: String,
-    uuid: String,
-    rules: Object,
-    rulesOriginal: Object,
-    input: String,
-    inputOriginal: String,
-    language: String,
-    papyrus: Object,
-    tab: Number,
-    preset: String
-  };
+    ],
+    state: {
+      mode: String,
+      uuid: String,
+      rules: Object,
+      rulesOriginal: Object,
+      input: String,
+      inputOriginal: String,
+      language: String,
+      papyrus: Object,
+      tab: Number,
+      preset: String
+    }
+  }
 
   get rulesInput () {
 
-    return JSON.stringify(this.rulesValue, null, 2);
+    return JSON.stringify(this.state.rules, null, 2);
 
   }
 
   updateRules (value?: Rules) {
 
-    this.rulesValue = merge(this.rulesValue, value);
+    this.state.rules = merge(this.state.rules, value);
 
   }
 
@@ -85,11 +80,11 @@ export class Demo extends Controller {
    */
   getEditorRect () {
 
-    const ih = this.inputTarget.getBoundingClientRect().height;
+    const ih = this.inputNode.getBoundingClientRect().height;
 
     let height = ih;
 
-    if (this.hasOutputTarget) {
+    if (this.hasoutputNode) {
 
       const oh = this.output.pre.getBoundingClientRect().height;
       const sh = this.output.code.scrollHeight;
@@ -117,18 +112,18 @@ export class Demo extends Controller {
 
   setPreset () {
 
-    const label = `Preset (${this.presetValue})<span class="icon"></span>`;
+    const label = `Preset (${this.state.preset})<span class="icon"></span>`;
 
     for (const target of document.querySelectorAll('[data-demo-target=presetTab]')) {
 
-      if (target.parentElement.getAttribute('data-dropdown-selected-value') !== this.presetValue) {
-        target.parentElement.setAttribute('data-dropdown-selected-value', this.presetValue);
+      if (target.parentElement.getAttribute('data-dropdown-selected-value') !== this.state.preset) {
+        target.parentElement.setAttribute('data-dropdown-selected-value', this.state.preset);
       }
 
       if (target.innerHTML !== label) target.innerHTML = label;
 
       for (const node of target.nextElementSibling.children) {
-        if (node.id !== this.presetValue) {
+        if (node.id !== this.state.preset) {
           if (node.classList.contains('selected')) {
             node.classList.remove('selected');
           }
@@ -169,22 +164,23 @@ export class Demo extends Controller {
 
   onPresetChange (event: { target: HTMLLIElement }) {
 
-    if (this.presetValue !== event.target.id) {
-      this.presetValue = event.target.id;
-      localStorage.setItem('preset', this.presetValue);
-      Demo.rules.set(this.uuidValue, esthetic.preset(this.presetValue, this.rulesValue));
+    if (this.state.preset !== event.target.id) {
+
+      this.state.preset = event.target.id;
+      localStorage.setItem('preset', this.state.preset);
+      Demo.rules.set(this.state.uuid, esthetic.preset(this.state.preset, this.state.rules));
       this.setPreset();
     }
   }
 
-  connect () {
+  onmount () {
 
-    this.presetValue = localStorage.getItem('preset') || 'default';
+    this.state.preset = localStorage.getItem('preset') || 'default';
 
-    this.input = papyrus.mount(this.inputTarget, merge<papyrus.Options>(this.papyrusValue, {
-      id: `input:${this.uuidValue}`,
+    this.input = papyrus.mount(this.inputNode, merge<papyrus.Options>(this.state.papyrus, {
+      id: `input:${this.state.uuid}`,
       showSpace: true,
-      input: this.inputValue,
+      input: this.state.input,
       showTab: false,
       showCR: false,
       showCRLF: false,
@@ -195,10 +191,10 @@ export class Demo extends Controller {
     this.input.onupdate(this.onInputEdit, this);
     this.input.onsave(this.onInputSave, this);
 
-    if (this.hasOutputTarget) {
+    if (this.outputNode) {
 
-      this.output = papyrus.mount(this.outputTarget, merge<papyrus.Options>(this.papyrusValue, {
-        id: `output:${this.uuidValue}`,
+      this.output = papyrus.mount(this.outputNode, merge<papyrus.Options>(this.state.papyrus, {
+        id: `output:${this.state.uuid}`,
         editor: false,
         showSpace: false,
         showTab: false,
@@ -209,15 +205,15 @@ export class Demo extends Controller {
 
     }
 
-    Demo.rules.set(this.uuidValue, esthetic.preset(this.presetValue, this.rulesValue));
-    Demo.source.set(this.uuidValue, this.inputValue);
+    Demo.rules.set(this.state.uuid, esthetic.preset(this.state.preset, this.state.rules));
+    Demo.source.set(this.state.uuid, this.state.input);
 
     this.getEditorRect();
     this.setPreset();
 
   }
 
-  disconnect (): void {
+  unmount (): void {
 
     if (this.input.complete) this.input.complete.destroy(true);
 
@@ -227,7 +223,7 @@ export class Demo extends Controller {
 
     try {
 
-      const output = esthetic.format(input || this.inputValue, Demo.rules.get(this.uuidValue));
+      const output = esthetic.format(input || this.state.input, Demo.rules.get(this.state.uuid));
 
       if (input) {
         this.output.update(output);
@@ -261,7 +257,7 @@ export class Demo extends Controller {
 
     try {
 
-      const output = esthetic.format(value, this.modeValue === 'rules' ? {
+      const output = esthetic.format(value, this.state.mode === 'rules' ? {
         language: 'json',
         json: {
           arrayFormat: 'indent',
@@ -270,7 +266,7 @@ export class Demo extends Controller {
           bracePadding: false,
           objectSort: false
         }
-      } : Demo.rules.get(this.uuidValue));
+      } : Demo.rules.get(this.state.uuid));
 
       return output;
 
@@ -282,7 +278,9 @@ export class Demo extends Controller {
 
   onInputEdit (value: string) {
 
-    if (this.modeValue === 'rules') {
+    console.log(this)
+
+    if (this.state.mode === 'rules') {
 
       this.formatCode();
       this.getEditorRect();
@@ -296,7 +294,7 @@ export class Demo extends Controller {
 
         try {
 
-          this.rulesValue = parseJSON(value);
+          this.state.rules = parseJSON(value);
 
           this.formatCode();
           this.timer = NaN;
@@ -320,9 +318,8 @@ export class Demo extends Controller {
 
     } else {
 
-      this.inputValue = value;
+      this.state.input = value;
 
-      console.log(esthetic.rules());
       this.formatCode();
       this.getEditorRect();
 
@@ -334,15 +331,15 @@ export class Demo extends Controller {
 
     if (rule === null) {
 
-      const rules = Demo.rules.get(this.uuidValue);
+      const rules = Demo.rules.get(this.state.uuid);
       rules.wrap = value;
 
       const input = esthetic.format(this.input.raw, rules);
 
-      this.wrapCountTarget.innerHTML = `${value}`;
-      this.wrapLineTarget.style.width = `${value}%`;
-      this.wrapLineTarget.style.transition = 'width 50ms ease-in-out';
-      this.wrapLineTarget.style.willChange = 'auto';
+      this.wrapCountNode.innerHTML = `${value}`;
+      this.wrapLineNode.style.width = `${value}%`;
+      this.wrapLineNode.style.transition = 'width 50ms ease-in-out';
+      this.wrapLineNode.style.willChange = 'auto';
 
       this.input.update(input);
 
@@ -354,18 +351,18 @@ export class Demo extends Controller {
 
     const wrap = target.valueAsNumber + 15;
 
-    this.wrapCountTarget.innerHTML = `${target.valueAsNumber}`;
-    this.wrapLineTarget.style.width = `${target.valueAsNumber}%`;
-    this.wrapLineTarget.style.transition = 'width 50ms ease-in-out';
-    this.wrapLineTarget.style.willChange = 'auto';
+    this.wrapCountNode.innerHTML = `${target.valueAsNumber}`;
+    this.wrapLineNode.style.width = `${target.valueAsNumber}%`;
+    this.wrapLineNode.style.transition = 'width 50ms ease-in-out';
+    this.wrapLineNode.style.willChange = 'auto';
 
-    this.wrapFractionCountTarget.innerHTML = `${target.valueAsNumber - Math.round(wrap / 6)}`;
-    this.wrapFractionLineTarget.style.width = `${target.valueAsNumber - Math.round(wrap / 6)}%`;
-    this.wrapFractionLineTarget.style.transition = 'width 50ms ease-in-out';
-    this.wrapFractionLineTarget.style.willChange = 'auto';
-    this.wrapFractionRangeTarget.value = `${target.valueAsNumber - Math.round(wrap / 6)}`;
+    this.wrapFractionCountNode.innerHTML = `${target.valueAsNumber - Math.round(wrap / 6)}`;
+    this.wrapFractionLineNode.style.width = `${target.valueAsNumber - Math.round(wrap / 6)}%`;
+    this.wrapFractionLineNode.style.transition = 'width 50ms ease-in-out';
+    this.wrapFractionLineNode.style.willChange = 'auto';
+    this.wrapFractionRangeNode.value = `${target.valueAsNumber - Math.round(wrap / 6)}`;
 
-    const rules = Demo.rules.get(this.uuidValue);
+    const rules = Demo.rules.get(this.state.uuid);
     rules.wrap = wrap;
     rules.wrapFraction = wrap - Math.round((wrap / 6));
 
@@ -398,16 +395,16 @@ export class Demo extends Controller {
    */
   onClickResetButton () {
 
-    if (this.modeValue === 'editor') {
+    if (this.state.mode === 'editor') {
 
-      this.inputValue = this.inputOriginalValue;
-      this.input.update(this.inputValue, this.languageValue);
+      this.state.input = this.state.inputOriginal;
+      this.input.update(this.state.input, this.state.language);
 
       this.formatCode();
 
-    } else if (this.modeValue === 'rules') {
+    } else if (this.state.mode === 'rules') {
 
-      this.rulesValue = this.rulesOriginalValue;
+      this.state.rules = this.state.rulesOriginal;
       this.input.update(this.rulesInput, 'json');
 
       this.formatCode();
@@ -420,17 +417,17 @@ export class Demo extends Controller {
    */
   onClickRulesTab () {
 
-    if (this.modeValue === 'rules') return;
+    if (this.state.mode === 'rules') return;
 
-    if (this.inputTabTarget.classList.contains('is-active')) {
-      this.inputTabTarget.classList.remove('is-active');
+    if (this.inputTabNode.classList.contains('is-active')) {
+      this.inputTabNode.classList.remove('is-active');
     }
 
-    if (!this.rulesTabTarget.classList.contains('is-active')) {
-      this.rulesTabTarget.classList.add('is-active');
+    if (!this.rulesTabNode.classList.contains('is-active')) {
+      this.rulesTabNode.classList.add('is-active');
     }
 
-    this.modeValue = 'rules';
+    this.state.mode = 'rules';
     // this.input.editor.disable();
     this.input.update(this.rulesInput, 'json', true);
 
@@ -441,22 +438,22 @@ export class Demo extends Controller {
    */
   onClickInputTab () {
 
-    if (this.modeValue === 'editor') return;
+    if (this.state.mode === 'editor') return;
 
     if (this.output) this.output.hideError();
 
-    if (this.rulesTabTarget.classList.contains('is-active')) {
-      this.rulesTabTarget.classList.remove('is-active');
+    if (this.rulesTabNode.classList.contains('is-active')) {
+      this.rulesTabNode.classList.remove('is-active');
     }
 
-    if (!this.inputTabTarget.classList.contains('is-active')) {
-      this.inputTabTarget.classList.add('is-active');
+    if (!this.inputTabNode.classList.contains('is-active')) {
+      this.inputTabNode.classList.add('is-active');
     }
 
-    if (this.hasOutputTarget) {
+    if (this.hasoutputNode) {
 
       // this.input.editor.enable();
-      this.input.update(this.inputValue, this.languageValue, true);
+      this.input.update(this.state.input, this.state.language, true);
       this.output.hideError();
 
     } else {
@@ -464,7 +461,7 @@ export class Demo extends Controller {
       this.formatCode();
     }
 
-    this.modeValue = 'editor';
+    this.state.mode = 'editor';
 
   }
 
@@ -481,152 +478,91 @@ export class Demo extends Controller {
    */
   output: papyrus.Model;
 
-  /* MODE --------------------------------------- */
-
-  uuidValue: string;
-  /**
-   * The current mode
-   */
-  modeValue: 'editor' | 'rules' | 'demo' | 'example';
-  /**
-   * Whether or not a mode value was provided
-   */
-  hasModeValue: boolean;
-
-  /* LANGUAGE ----------------------------------- */
-
-  /**
-   * The language name
-   */
-  languageValue: Languages;
-
-  /* PAPYRUS ------------------------------------ */
-
-  /**
-   * The Papyrus options
-   */
-  papyrusValue: papyrus.Options;
-  /**
-   * Whether or not custom papyrus configuration was provided
-   */
-  hasPapyrusValue: boolean;
-
-  /* RULES -------------------------------------- */
-
-  /**
-   * The rules to use when formatting code with Æsthetic
-   */
-  rulesValue: Rules;
-  /**
-   * The original value before edits, used to reset
-   */
-  rulesOriginalValue: Rules;
-  /**
-   * Whether or not rules value was provided
-   */
-  hasRulesValue: boolean;
-
   /* TABS --------------------------------------- */
 
   /**
    * The input tab element button
    */
-  inputTabTarget: HTMLButtonElement;
+  inputTabNode: HTMLButtonElement;
   /**
    * Whether or not an input tab target exists
    */
-  hasInputTabTarget: boolean;
+  hasInputTabNode: boolean;
   /**
    * The rules tab element button
    */
-  rulesTabTarget: HTMLButtonElement;
+  rulesTabNode: HTMLButtonElement;
   /**
    * Whether or not an rules tab target exists
    */
-  hasRulesTabTarget: boolean;
+  hasRulesTabNode: boolean;
   /**
    * The preset tab element button
    */
-  presetTabTarget: HTMLButtonElement;
+  presetTabNode: HTMLButtonElement;
   /**
    * The preset tab element button
    */
-  presetTabTargets: HTMLButtonElement[];
+  presetTabNodes: HTMLButtonElement[];
   /**
    * Whether or not an preset tab target exists
    */
-  hasPresetTabTarget: boolean;
-  /**
-   * The input value before edits
-   */
-  presetValue: string;
+  hasPresetTabNode: boolean;
 
   /* INPUT DEMO --------------------------------- */
 
   /**
    * The input code target provided on initial render
    */
-  inputTarget: HTMLPreElement;
-  /**
-   * The input value escaped string
-   */
-  inputValue: string;
-  /**
-   * The input value before edits
-   */
-  inputOriginalValue: string;
+  inputNode: HTMLPreElement;
 
   /* OUTPUT DEMO -------------------------------- */
 
   /**
    * The output code target provided on initial render
    */
-  outputTarget: HTMLPreElement;
+  outputNode: HTMLPreElement;
   /**
    * The output code target provided on initial render
    */
-  outputTargets: HTMLPreElement[];
-  /**
-   * The output value escaped string
-   */
-  outputValue: string;
+  outputNodes: HTMLPreElement[];
   /**
    * Whether or not an output target exists
    */
-  hasOutputTarget: boolean;
+  hasOutputNode: boolean;
 
   /* WRAP RULE ---------------------------------- */
 
   /**
    * The count element used in example range
    */
-  wrapCountTarget: HTMLElement;
+  wrapCountNode: HTMLElement;
   /**
    * The wrap line overlay target
    */
-  wrapLineTarget: HTMLElement;
+  wrapLineNode: HTMLElement;
   /**
    * The `wrap` form range input element
    */
-  wrapRangeTarget: HTMLInputElement;
+  wrapRangeNode: HTMLInputElement;
   /**
    * Whether or not `wrap` rule line target exists
    */
-  hasWrapLineTarget: boolean;
+  hasWrapLineNode: boolean;
 
   /* WRAP FRACTION RULE --------------------------- */
 
   /**
    * The count element used in example range
    */
-  wrapFractionCountTarget: HTMLElement;
+  wrapFractionCountNode: HTMLElement;
   /**
    * The wrapFraction line overlay target
    */
-  wrapFractionLineTarget: HTMLElement;
+  wrapFractionLineNode: HTMLElement;
   /**
    * The `wrapFraction` form range input element
    */
-  wrapFractionRangeTarget: HTMLInputElement;
+  wrapFractionRangeNode: HTMLInputElement;
 
 }

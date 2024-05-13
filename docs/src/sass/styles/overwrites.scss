@@ -155,6 +155,11 @@ p {
     }
   }
 }
+
+.content {
+  margin-top: 75px;
+}
+
 .content-rules {
   p {
     @include media-breakpoint-up(sm) {
@@ -237,10 +242,10 @@ table {
   transition: fill 0.5s linear;
 }
 
-.papyrus > pre > code {
-  padding: 1em;
-  overflow-x: scroll;
-}
+// .papyrus > pre > code {
+//   padding: 1em;
+//   overflow-x: scroll;
+// }
 
 .rule-description {
   p {

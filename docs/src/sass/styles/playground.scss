@@ -27,6 +27,21 @@
 }
 
 .playground {
+  moloko-editor {
+    height: 100vh;
+  }
+  moloko-sidebar,
+  moloko-preview,
+  moloko-rules,
+  moloko-language,
+  moloko-parse-table,
+  moloko-input {
+    margin-top: 70px;
+  }
+
+  moloko-parse-table > table {
+    margin: 0;
+  }
   .sidebar-options {
     margin-top: 52px;
     width: 70px;
@@ -98,7 +113,7 @@
 
   .code-editor {
     position: relative;
-    height: 95%;
+    height: 100%;
   }
 }
 

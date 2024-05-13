@@ -32,9 +32,11 @@ export class Playground extends Controller {
   }
 
   svg: Element;
-  timer: NodeJS.Timer;
+  timer: NodeJS.Timeout
 
   async connect () {
+
+
 
     if (this.hash) window.location.hash = this.hash;
 
@@ -43,6 +45,7 @@ export class Playground extends Controller {
     this.splashTarget.classList.remove('d-none');
 
     this.loading();
+
     await this.module();
     return this.mount();
 
@@ -56,20 +59,26 @@ export class Playground extends Controller {
 
   async module () {
 
+    try {
+
     const moloko = await import(this.moduleValue);
 
     Playground.moloko = moloko.default;
 
+    } catch(e) {
+      throw e
+    }
   }
 
   mount () {
 
     Playground.moloko.mount(this.mountTarget, {
-      offset: 52,
+      offset: 0,
       resolve: {
-        path: 'assets/moloko'
+        path: 'assets/moloko',
       }
     });
+
 
     if (!Playground.loaded) Playground.loaded = true;
 

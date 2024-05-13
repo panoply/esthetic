@@ -1,10 +1,10 @@
 :root {
-  --papyrus-font-size: 0.85em;
+  --papyrus-font-size: 0.9em;
   --papyrus-code-padding-y: 0.9em;
   --papyrus-code-padding-x: 0.8em;
   --papyrus-code-border-radius: none;
-  --papyrus-line-fence-width: 0;
-  --papyrus-line-fence-color: transparent;
+  // --papyrus-line-fence-width: 0;
+  // --papyrus-line-fence-color: transparent;
 }
 
 /* -------------------------------------------- */
@@ -131,10 +131,10 @@ $container-max-widths: (
 /* BODY                                         */
 /* -------------------------------------------- */
 
-$body-bg: #0f1215; // $black; //#282a36; // $gray-100;
+$body-bg: #16181c; // $black; //#282a36; // $gray-100;
 $body-color: $white; //$gray-900;
-$code-bg: #181b20; //$black; // #282a36;
-$code-inline-bg: #23262d; // #efefef;
+$code-bg: #20242c;
+$code-inline-bg: $code-bg;
 $link-color: $gray-400;
 
 $letter-spacing-base: 1rem;
@@ -275,8 +275,7 @@ $form-range-thumb-disabled-bg: $gray-500;
 // FONT FAMILY
 $papyrus-font-family: consolas, monaco, 'Andale Mono', 'Ubuntu Mono',
   monospace;
-$papyrus-font-size-root: 14px;
-$papyrus-font-size: 1em;
+$papyrus-font-size: 1rem;
 $papyrus-line-height: 1.7;
 
 // EDITOR SIZING
@@ -286,40 +285,3 @@ $papyrus-width: 100%;
 // SELECTION
 $papyrus-selection-bg: 255, 255, 255;
 $papyrus-selection-alpha: 0.3;
-
-// CODE REGION
-$papyrus-code-padding-y: 0.8em;
-$papyrus-code-padding-x: 0.5em;
-$papyrus-code-border-radius: 0.5em;
-
-$papyrus-code-color: #fafafa;
-$papyrus-code-bg: #12161d;
-$papyrus-code-inline-bg: #eeebeb;
-$papyrus-code-caret-color: #ffffff;
-
-// SCROLLBAR
-$papyrus-scrollbar-width: 2px;
-$papyrus-scrollbar-track: #181b20;
-$papyrus-scrollbar-bg: #384355;
-$papyrus-scrollbar-thumb: #384355;
-
-// INVISIBLE CHARACTERS
-$papyrus-invisible-space-color: #42454d;
-$papyrus-invisible-tab-color: #808080;
-$papyrus-invisible-lf-color: #808080;
-$papyrus-invisible-cr-color: #808080;
-$papyrus-invisible-crlf-color: #808080;
-
-// LINE NUMBERS
-$papyrus-line-number-width: 3.3em;
-$papyrus-line-number-color: #363d49;
-
-// LINE NUMBER FENCE
-$papyrus-line-fence-width: 0.01em;
-$papyrus-line-scroll-left: 0;
-$papyrus-line-fence-color: #363d49;
-
-// LINE HIGHLIGHT
-$papyrus-line-highlight-alpha: 0.05;
-$papyrus-line-highlight-bg: 171, 190, 206;
-$papyrus-line-highlight-number: #fafafa;

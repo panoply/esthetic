@@ -24,13 +24,13 @@ $code-font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
   }
 }
 
-li > a {
-  &::before {
-    content: '–';
-    color: $gray-600;
-    margin-right: 20px;
-  }
-}
+// li > a {
+//   &::before {
+//     content: '–';
+//     color: $gray-600;
+//     margin-right: 20px;
+//   }
+// }
 
 a {
   &:hover {
@@ -104,13 +104,14 @@ pre:not(.papyrus) {
   background-color: #22272d;
   letter-spacing: 0.05em;
 }
+
 .editor-output {
   background-color: $code-bg;
   border-bottom: 1px solid $black;
   text-align: center;
   color: $code-bg;
   font-weight: 900;
-  font-size: 0.8em;
+  font-size: 1em;
   padding: 3px 14px;
   margin: 0 1.2rem 0px 0;
   margin-bottom: -3px;
@@ -171,7 +172,7 @@ pre:not(.papyrus) {
 .output-panel {
   font-family: $font-family-heading;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 1rem;
   padding: 7px;
   border-top-left-radius: var(--papyrus-code-border-radius);
   border-top-right-radius: var(--papyrus-code-border-radius);

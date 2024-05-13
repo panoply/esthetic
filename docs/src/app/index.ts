@@ -8,11 +8,17 @@ import { ScrollSpy } from './components/scrollspy';
 import { Playground } from './components/playground';
 import { Parser } from './components/parser';
 import spx from 'spx';
+import relapse from 'relapse';
 
 spx.connect({
-  targets: [ 'body' ],
-  progress: false
-})(function () {
+  progress: false,
+  fragments: ['main', 'navbar', 'sidebar'],
+  components: {
+    Demo
+  }
+})(function() {
+
+   relapse()
 
   const stimulus = Application.start();
 
@@ -20,10 +26,21 @@ spx.connect({
   stimulus.register('accordion', Accordion);
   stimulus.register('dropdown', Dropdown);
   stimulus.register('sticky', Sticky);
-  stimulus.register('demo', Demo);
   stimulus.register('scrollspy', ScrollSpy);
   stimulus.register('playground', Playground);
   stimulus.register('parser', Parser);
+
+});
+
+spx.on('load', (page) => {
+
+  if (page.key === '/') {
+    relapse.has() && relapse.destroy();
+  } else if (!relapse.has()) {
+    relapse();
+  } else {
+    relapse.reinit();
+  }
 
 });
 
@@ -31,7 +48,8 @@ spx.on('fetch', ({ key }) => {
 
   if (key === '/playground') {
 
-    import(window.location.host + '/assets/moloko.js');
+    console.log(key)
+
 
   }
 

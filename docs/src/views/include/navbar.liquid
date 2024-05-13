@@ -1,6 +1,6 @@
 <header
   id="navbar"
-  class="container-fluid navbar bb">
+  class="container-fluid navbar">
   <div class="row jc-between jc-sm-start ai-center bg-white w-100 pr-0">
 
     <input
@@ -57,10 +57,15 @@
       </a>
     {% endfor %}
 
-    <a
-      href="https://github.com/panoply/esthetic"
-      class=" col-auto ml-sm-auto pr-0">
-      {% svg 'github-2', 'icon icon-github' %}
-    </a>
+    <div class="col-auto ml-sm-auto pr-0">
+      <div class="d-block mr-5">
+        {% include 'search' %}
+      </div>
+      <a
+        href="https://github.com/panoply/esthetic"
+        class="ml-5 pr-0">
+        {% svg 'github-2', 'icon icon-github' %}
+      </a>
+    </div>
   </div>
 </header>

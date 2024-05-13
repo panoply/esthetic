@@ -1,0 +1,405 @@
+{
+  "github": {
+    "title": "Github",
+    "url": "https://github.com/panoply/spx",
+    "target": "_blank"
+  },
+  "npm": {
+    "title": "NPM",
+    "url": "https://www.npmjs.com/package/spx",
+    "target": "_blank"
+  },
+  "discord": {
+    "title": "Discord",
+    "url": "https://discord.gg/shopify-developers-597504637167468564",
+    "target": "_blank"
+  },
+  "menu": [
+    {
+      "title": "Introduction",
+      "links": [
+        {
+          "title": "What is Æsthetic?",
+          "url": "/introduction/what-is-esthetic/"
+        },
+        {
+          "title": "Motivation",
+          "url": "/introduction/motivation/"
+        },
+        {
+          "title": "Language Support",
+          "url": "/introduction/language-support/"
+        },
+        {
+          "title": "Installation",
+          "url": "/introduction/installation/"
+        }
+      ]
+    },
+    {
+      "title": "Usage",
+      "links": [
+        {
+          "title": "Config Files",
+          "url": "/usage/config-files/"
+        },
+        {
+          "title": "CLI",
+          "url": "/usage/cli/"
+        },
+        {
+          "title": "Rules",
+          "url": "/usage/rules/"
+        },
+        {
+          "title": "Format",
+          "url": "/usage/format/"
+        },
+        {
+          "title": "Ignoring Code",
+          "url": "/usage/ignoring-code/"
+        },
+        {
+          "title": "Inline Control",
+          "url": "/usage/inline-control/"
+        },
+        {
+          "title": "Parse",
+          "url": "/usage/parse/"
+        },
+        {
+          "title": "Settings",
+          "url": "/usage/settings/"
+        },
+        {
+          "title": "Events",
+          "url": "/usage/events/"
+        },
+        {
+          "title": "Utilities",
+          "url": "/usage/utilities/"
+        }
+      ]
+    },
+    {
+      "title": "Parser",
+      "links": [
+        {
+          "title": "Algorithm",
+          "url": "/parser/algorithm/"
+        },
+        {
+          "title": "Tokens",
+          "url": "/parser/tokens/"
+        },
+        {
+          "title": "Lexers",
+          "url": "/parser/lexers/"
+        },
+        {
+          "title": "Error Handling",
+          "url": "/parser/error-handling/"
+        },
+        {
+          "group": "parser",
+          "title": "Terminology",
+          "url": "/parser/terminology/"
+        }
+      ]
+    },
+    {
+      "title": "Integrate",
+      "links": [
+        {
+          "title": "Text Editor",
+          "url": "/integrate/text-editor/"
+        },
+        {
+          "title": "Linters",
+          "url": "/integrate/linters/"
+        },
+        {
+          "title": "Browser",
+          "url": "/integrate/browser/"
+        }
+      ]
+    },
+    {
+      "title": "Misc",
+      "links": [
+        {
+          "title": "Limitations",
+          "url": "/misc/limitations/"
+        },
+        {
+          "title": "Benchmarks",
+          "url": "/misc/benchmarks/"
+        },
+        {
+          "title": "Acknowledgements",
+          "url": "/misc/acknowledgements/"
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "title": "Global",
+      "links": [
+        {
+          "title": "correct",
+          "url": "/rules/global/correct/"
+        },
+        {
+          "title": "crlf",
+          "url": "/rules/global/crlf/"
+        },
+        {
+          "title": "endNewline",
+          "url": "/rules/global/endNewline/"
+        },
+        {
+          "title": "language",
+          "url": "/rules/global/language/"
+        },
+        {
+          "title": "indentChar",
+          "url": "/rules/global/indentChar/"
+        },
+        {
+          "title": "indentLevel",
+          "url": "/rules/global/indentLevel/"
+        },
+        {
+          "title": "indentSize",
+          "url": "/rules/global/indentSize/"
+        },
+        {
+          "title": "preserveLine",
+          "url": "/rules/global/preserveLine/"
+        },
+        {
+          "title": "wrap",
+          "url": "/rules/global/wrap/"
+        },
+        {
+          "title": "wrapFraction",
+          "url": "/rules/global/wrapFraction/"
+        }
+      ]
+    },
+    {
+      "title": "Liquid",
+      "links": [
+        {
+          "title": "commentIndent",
+          "url": "/rules/liquid/commentIndent/"
+        },
+        {
+          "title": "commentNewline",
+          "url": "/rules/liquid/commentNewline/"
+        },
+
+        {
+          "title": "dedentTagList",
+          "url": "/rules/liquid/dedentTagList/"
+        },
+        {
+          "title": "delimiterTrims",
+          "url": "/rules/liquid/delimiterTrims/"
+        },
+        {
+          "title": "delimiterPlacement",
+          "url": "/rules/liquid/delimiterPlacement/"
+        },
+        {
+          "title": "forceArgument",
+          "url": "/rules/liquid/forceArgument/"
+        },
+        {
+          "title": "forceFilter",
+          "url": "/rules/liquid/forceFilter/"
+        },
+        {
+          "title": "indentAttribute",
+          "url": "/rules/liquid/indentAttribute/"
+        },
+        {
+          "title": "ignoreTagList",
+          "url": "/rules/liquid/ignoreTagList/"
+        },
+        {
+          "title": "lineBreakSeparator",
+          "url": "/rules/liquid/lineBreakSeparator/"
+        },
+        {
+          "title": "normalizeSpacing",
+          "url": "/rules/liquid/normalizeSpacing/"
+        },
+        {
+          "title": "paddedTagList",
+          "url": "/rules/liquid/paddedTagList/"
+        },
+        {
+          "title": "preserveComment",
+          "url": "/rules/liquid/preserveComment/"
+        },
+        {
+          "title": "quoteConvert",
+          "url": "/rules/liquid/quoteConvert/"
+        }
+      ]
+    },
+    {
+      "title": "Markup",
+      "links": [
+        {
+          "title": "attributeCasing",
+          "url": "/rules/markup/attributeCasing/"
+        },
+        {
+          "title": "attributeSort",
+          "url": "/rules/markup/attributeSort/"
+        },
+        {
+          "title": "commentDelimiters",
+          "url": "/rules/markup/commentDelimiters/"
+        },
+        {
+          "title": "commentIndent",
+          "url": "/rules/markup/commentIndent/"
+        },
+        {
+          "title": "commentNewline",
+          "url": "/rules/markup/commentNewline/"
+        },
+        {
+          "title": "delimiterTerminus",
+          "url": "/rules/markup/delimiterTerminus/"
+        },
+        {
+          "title": "forceAttribute",
+          "url": "/rules/markup/forceAttribute/"
+        },
+        {
+          "title": "forceIndent",
+          "url": "/rules/markup/forceIndent/"
+        },
+        {
+          "title": "ignoreCSS",
+          "url": "/rules/markup/ignoreCSS/"
+        },
+        {
+          "title": "ignoreJS",
+          "url": "/rules/markup/ignoreJS/"
+        },
+        {
+          "title": "ignoreJSON",
+          "url": "/rules/markup/ignoreJSON/"
+        },
+        {
+          "title": "lineBreakValue",
+          "url": "/rules/markup/lineBreakValue/"
+        },
+        {
+          "title": "preserveAttribute",
+          "url": "/rules/markup/preserveAttribute/"
+        },
+        {
+          "title": "preserveComment",
+          "url": "/rules/markup/preserveComment/"
+        },
+        {
+          "title": "preserveText",
+          "url": "/rules/markup/preserveText/"
+        },
+        {
+          "title": "selfCloseSpace",
+          "url": "/rules/markup/selfCloseSpace/"
+        },
+        {
+          "title": "selfCloseSVG",
+          "url": "/rules/markup/selfCloseSVG/"
+        },
+        {
+          "title": "stripAttributeLines",
+          "url": "/rules/markup/stripAttributeLines/"
+        },
+        {
+          "title": "quoteConvert",
+          "url": "/rules/markup/quoteConvert/"
+        }
+      ]
+    },
+    {
+      "title": "Style",
+      "links": [
+        {
+          "title": "atRuleSpace",
+          "url": "/rules/style/atRuleSpace/"
+        },
+        {
+          "title": "classPadding",
+          "url": "/rules/style/classPadding/"
+        },
+        {
+          "title": "commentIndent",
+          "url": "/rules/style/commentIndent/"
+        },
+        {
+          "title": "commentNewline",
+          "url": "/rules/style/commentNewline/"
+        },
+        {
+          "title": "preserveComment",
+          "url": "/rules/style/preserveComment/"
+        },
+        {
+          "title": "noLeadZero",
+          "url": "/rules/style/noLeadZero/"
+        },
+        {
+          "title": "sortProperties",
+          "url": "/rules/style/sortProperties/"
+        },
+        {
+          "title": "sortSelectors",
+          "url": "/rules/style/sortSelectors/"
+        },
+        {
+          "title": "quoteConvert",
+          "url": "/rules/style/quoteConvert/"
+        }
+      ]
+    },
+    {
+      "title": "JSON",
+      "links": [
+        {
+          "title": "allowComments",
+          "url": "/rules/json/allowComments/"
+        },
+        {
+          "title": "arrayFormat",
+          "url": "/rules/json/arrayFormat/"
+        },
+        {
+          "title": "braceAllman",
+          "url": "/rules/json/braceAllman/"
+        },
+        {
+          "title": "bracePadding",
+          "url": "/rules/json/bracePadding/"
+        },
+        {
+          "title": "objectIndent",
+          "url": "/rules/json/objectIndent/"
+        },
+        {
+          "title": "objectSort",
+          "url": "/rules/json/objectSort/"
+        }
+      ]
+    }
+  ]
+}
