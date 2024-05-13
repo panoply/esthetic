@@ -1,6 +1,5 @@
 import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/esthetic';
-import esthetic from 'esthetic';
 
 test.todo('Write Force Tests');
 
