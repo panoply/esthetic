@@ -1,5 +1,6 @@
 import type { Grammars, EmbeddedHTML, EmbeddedLiquid, LanguageName } from 'types';
 import { isArray, isObject, isRegex } from 'utils/helpers';
+import { set } from 'utils/native';
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -82,10 +83,10 @@ class Liquid {
     ]
   };
 
-  public else = new Set(this.grammar.else);
-  public control = new Set(this.grammar.control);
-  public tags = new Set(this.grammar.tags);
-  public singleton = new Set(this.grammar.singletons);
+  public else = set(this.grammar.else);
+  public control = set(this.grammar.control);
+  public tags = set(this.grammar.tags);
+  public singleton = set(this.grammar.singletons);
   public embed: {
     [tag: string]: {
       tag: string;
@@ -267,7 +268,7 @@ class SVG {
     ]
   };
 
-  public tags = new Set(this.grammar.tags);
+  public tags = set(this.grammar.tags);
 
   extend (rules: Grammars['svg']) {
 
@@ -324,6 +325,203 @@ class HTML {
           language: 'css'
         }
       ]
+    },
+    types: {
+      dom: set([
+        'html',
+        'head',
+        'body'
+      ]),
+      flow: set([
+        'a',
+        'abbr',
+        'address',
+        'area',
+        'article',
+        'aside',
+        'audio',
+        'b',
+        'bdo',
+        'bdi',
+        'blockquote',
+        'br',
+        'button',
+        'canvas',
+        'cite',
+        'code',
+        'data',
+        'datalist',
+        'del',
+        'details',
+        'dfn',
+        'dialog',
+        'div',
+        'dl',
+        'em',
+        'embed',
+        'fieldset',
+        'figure',
+        'footer',
+        'form',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'header',
+        'hgroup',
+        'hr',
+        'i',
+        'iframe',
+        'img',
+        'input',
+        'ins',
+        'kbd',
+        'label',
+        'main',
+        'map',
+        'mark',
+        'math',
+        'menu',
+        'meter',
+        'nav',
+        'noscript',
+        'object',
+        'ol',
+        'output',
+        'p',
+        'picture',
+        'pre',
+        'progress',
+        'q',
+        'ruby',
+        's',
+        'samp',
+        'search',
+        'script',
+        'section',
+        'select',
+        'slot',
+        'small',
+        'span',
+        'strong',
+        'sub',
+        'sup',
+        'svg',
+        'table',
+        'template',
+        'textarea',
+        'time',
+        'u',
+        'ul',
+        'var',
+        'video',
+        'wbr'
+      ]),
+      form: set([
+        'button',
+        'fieldset',
+        'input',
+        'label',
+        'meter',
+        'object',
+        'output',
+        'progress',
+        'select',
+        'textarea'
+      ]),
+      phrasing: set([
+        'a',
+        'abbr',
+        'area',
+        'audio',
+        'b',
+        'bdi',
+        'bdo',
+        'br',
+        'button',
+        'canvas',
+        'cite',
+        'code',
+        'command',
+        'datalist',
+        'del',
+        'dfn',
+        'em',
+        'embed',
+        'i',
+        'iframe',
+        'img',
+        'input',
+        'ins',
+        'kbd',
+        'keygen',
+        'label',
+        'map',
+        'mark',
+        'math',
+        'meter',
+        'noscript',
+        'object',
+        'output',
+        'progress',
+        'q',
+        'ruby',
+        's',
+        'samp',
+        'script',
+        'select',
+        'small',
+        'span',
+        'strong',
+        'sub',
+        'sup',
+        'svg',
+        'textarea',
+        'time',
+        'u',
+        'var',
+        'video',
+        'wbr',
+        'text'
+      ]),
+      embedded: set([
+        'audio',
+        'canvas',
+        'embed',
+        'iframe',
+        'img',
+        'math',
+        'object',
+        'picture',
+        'svg',
+        'video'
+      ]),
+      heading: set([
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'hgroup'
+      ]),
+      sectioning: set([
+        'article',
+        'aside',
+        'nav',
+        'section'
+      ]),
+      interactive: set([
+        'button',
+        'details',
+        'embed',
+        'iframe',
+        'label',
+        'select',
+        'textarea'
+      ])
     },
     voids: [
       'area',
@@ -382,14 +580,18 @@ class HTML {
       'fieldset',
       'figcaption',
       'figure',
-      'figure',
       'font',
       'footer',
       'form',
       'frame',
       'frameset',
       'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
       'h6',
+      'hgroup',
       'head',
       'header',
       'html',
@@ -441,7 +643,6 @@ class HTML {
       'style',
       'sub',
       'summary',
-      'details',
       'sup',
       'svg',
       'table',
@@ -465,8 +666,8 @@ class HTML {
     ]
   };
 
-  public tags = new Set(this.grammar.tags);
-  public voids = new Set(this.grammar.voids);
+  public tags = set(this.grammar.tags);
+  public voids = set(this.grammar.voids);
   public embed: {
     [tag: string]: {
       tag: string;
@@ -483,6 +684,8 @@ class HTML {
       }>
     }
   } = {};
+
+  get types () { return this.grammar.types; }
 
   constructor () {
 
@@ -748,13 +951,13 @@ class CSS {
     }
   };
 
-  public units = new Set(this.grammar.units);
-  public atRules = new Set(this.grammar.atrules);
-  public pseudoClasses = new Set(this.grammar.pseudo.classes);
-  public pseudoElements = new Set(this.grammar.pseudo.elements);
-  public pseudoFunctions = new Set(this.grammar.pseudo.functions);
-  public webkitElements = new Set(this.grammar.webkit.elements);
-  public webkitClasses = new Set(this.grammar.webkit.classes);
+  public units = set(this.grammar.units);
+  public atRules = set(this.grammar.atrules);
+  public pseudoClasses = set(this.grammar.pseudo.classes);
+  public pseudoElements = set(this.grammar.pseudo.elements);
+  public pseudoFunctions = set(this.grammar.pseudo.functions);
+  public webkitElements = set(this.grammar.webkit.elements);
+  public webkitClasses = set(this.grammar.webkit.classes);
 
   atrules (token: string) {
 
@@ -892,7 +1095,7 @@ class JavaScript {
     ]
   };
 
-  public keywords = new Set(this.grammar.keywords);
+  public keywords = set(this.grammar.keywords);
 
   extend (rules: Grammars['js']) {
 
