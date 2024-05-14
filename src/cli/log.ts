@@ -5,12 +5,12 @@ import {
   cyan,
   neonCyan,
   colon,
-
   gray,
   whiteBright,
   neonGreen,
   neonRouge
 } from './tui';
+
 import { CLI } from './run';
 
 /* -------------------------------------------- */

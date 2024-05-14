@@ -5,8 +5,7 @@ import { defaults } from './default';
 /**
  * Warrington Presets
  *
- * The `warrington` rule presets which are geared towards
- * Shopify projects.
+ * The `warrington` rule presets which are geared towards Shopify projects.
  */
 export const warrington: Rules = merge(defaults, {
   preset: 'warrington',

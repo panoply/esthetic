@@ -521,7 +521,10 @@ export function sortCorrect (start: number, end: number) {
  *
  * Used to sort objects, properties and selectors
  */
-function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]) {
+function safeSortAscend (
+  this: { recursive: boolean; },
+  item: [string, number][]
+) {
 
   let c: number = 0;
 
@@ -639,7 +642,10 @@ function safeSortAscend (this: { recursive: boolean; }, item: [string, number][]
  *
  * Used to sort objects, properties and selectors
  */
-function safeSortDescend (this: { recursive: boolean;}, item: [string, number][]) {
+function safeSortDescend (
+  this: { recursive: boolean;},
+  item: [string, number][]
+) {
 
   let c = 0;
   const len = item.length;
@@ -738,7 +744,10 @@ function safeSortDescend (this: { recursive: boolean;}, item: [string, number][]
 
 };
 
-function safeSortNormal (this: { array: [string, number][], recursive: boolean; }, item: [string, number][]) {
+function safeSortNormal (
+  this: { array: [string, number][], recursive: boolean; },
+  item: [string, number][]
+) {
 
   let storeb = item;
   const done = [ item[0] ];

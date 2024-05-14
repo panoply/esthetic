@@ -1,4 +1,3 @@
-import { merge } from 'utils/helpers';
 import { Rules, ScriptRules } from 'types';
 
 /**

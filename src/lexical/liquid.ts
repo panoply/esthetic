@@ -1,4 +1,5 @@
 /* eslint-disable prefer-const */
+
 import type { LiquidInternal, LiquidRules, Rules } from 'types';
 import { grammar } from 'parse/grammar';
 import { is, isWS } from 'utils/helpers';
@@ -294,6 +295,7 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
   /* -------------------------------------------- */
 
   // HOT PATCH
+  //
   // schema tag should not apply trims
   // this is a hot patch for now until support in vscode can digest {%- schema -%}
   // tag expressions with delimiters

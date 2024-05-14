@@ -200,9 +200,10 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
    *
    * Applied the same logic as `onHTMLDelimiters` but used for comments
    * that do **not** span multiple newlines. The difference is that this function will
-   * use regular expression replacements to apply the rule. This function is used
-   * exclusively for the `markup.commentDelimiters` rule and any non markup identified
-   * comment types will pass through untouched.
+   * use regular expression replacements to apply the rule.
+   *
+   * This function is used exclusively for the `markup.commentDelimiters` rule and any
+   * non markup identified comment types will pass through untouched.
    */
   function onCommentDelimitersInline (): [string, number] {
 
@@ -651,6 +652,7 @@ export function commentBlock (chars: string[], config: Comments): [string, numbe
       return true;
 
     }
+
     // Preserve when innner comment contents does not contain newlines
     if (
       rules.wrap < 1 &&

@@ -5,8 +5,7 @@ import { defaults } from './default';
 /**
  * Strict Presets
  *
- * The `recommended` rule presets which produce the most common
- * and expect formatted results.
+ * The `strict` ruleset.
  */
 export const strict: Rules = merge(defaults, {
   preset: 'strict',

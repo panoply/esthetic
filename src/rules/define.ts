@@ -6,7 +6,7 @@ import { recommended } from 'rules/presets/recommended';
 import { strict } from 'rules/presets/strict';
 import { warrington } from 'rules/presets/warrington';
 import { prettier } from 'rules/presets/prettier';
-import {  object } from 'utils/native';
+import { object } from 'utils/native';
 import { CNL, NWL } from 'lexical/chars';
 import { hasProp, merge } from 'utils/helpers';
 
@@ -50,7 +50,7 @@ export function setPreset (options: Rules) {
     }
   }
 
-  return options
+  return options;
 
 }
 
@@ -121,6 +121,5 @@ export function setRules (opts: Rules, events: EventListeners) {
   }
 
   if (events.rules.length > 0) for (const cb of events.rules) cb(change, parse.rules);
-
 
 }

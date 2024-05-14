@@ -10,7 +10,6 @@ import chokidar from 'chokidar';
 import * as log from './log.js';
 import * as tui from './tui.js';
 import type { Rules } from 'types/index';
-import { NWL } from 'lexical/chars';
 
 export interface CLI {
   _?: string[];
