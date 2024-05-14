@@ -76,7 +76,7 @@ declare namespace Æsthetic {
     /**
      * #### _ÆSTHETIC ~ Statistics_
      *
-     * Maintains a reference of statistic information about the
+     * Maintains a reference of statistical information about the executed
      * operation, also available in events like `esthetic.on('format')` and
      * `esthetic.on('parse')` arguments.
      */
@@ -253,12 +253,12 @@ declare namespace Æsthetic {
      * Event Listener which invokes on different operations.
      */
     on: Events<
-      Pick<
-        Static,
-        | 'on'
-        | 'parse'
-        | 'format'
-      >
+    Pick<
+    Static,
+    | 'on'
+    | 'parse'
+    | 'format'
+    >
     >;
 
     /**
@@ -270,12 +270,12 @@ declare namespace Æsthetic {
      * refine output and control different logic during execution cycles.
      */
     hook: Hooks<
-      Pick<
-        Static,
-        | 'on'
-        | 'parse'
-        | 'format'
-      >
+    Pick<
+    Static,
+    | 'on'
+    | 'parse'
+    | 'format'
+    >
     >;
 
     /**
@@ -314,15 +314,7 @@ declare namespace Æsthetic {
        * esthetic.settings({}).format('')
        * ```
        */
-      (options: Æ.ISettings): Pick<
-        Static,
-        | 'on'
-        | 'grammar'
-        | 'rules'
-        | 'hook'
-        | 'parse'
-        | 'format'
-      >;
+      (options: Æ.ISettings): Pick<Static, | 'on' | 'grammar' | 'rules' | 'hook' | 'parse' | 'format'>;
     };
 
     /**
@@ -407,7 +399,7 @@ declare namespace Æsthetic {
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules)
+   * [Æsthetic Docs](https://aesthetic.js.org/rules)
    */
   type Rules = Æ.Rules;
 
@@ -421,7 +413,7 @@ declare namespace Æsthetic {
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules#global)
+   * [Æsthetic Docs](https://aesthetic.js.org/rules#global)
    */
   type GlobalRules = Æ.GlobalRules;
   /**
@@ -437,7 +429,7 @@ declare namespace Æsthetic {
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules#liquid)
+   * [Æsthetic Docs](https://aesthetic.js.org/rules#liquid)
    */
   type LiquidRules = Æ.LiquidRules;
   /**
@@ -454,7 +446,7 @@ declare namespace Æsthetic {
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules#markup)
+   * [Æsthetic Docs](https://aesthetic.js.org/rules#markup)
    */
   type MarkupRules = Æ.MarkupRules;
   /**
@@ -472,7 +464,7 @@ declare namespace Æsthetic {
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules#script)
+   * [Æsthetic Docs](https://aesthetic.js.org/rules#script)
    */
   type ScriptRules = Æ.ScriptRules;
   /**
@@ -488,7 +480,7 @@ declare namespace Æsthetic {
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules#style)
+   * [Æsthetic Docs](https://aesthetic.js.org/rules#style)
    */
   type StyleRules = Æ.StyleRules;
   /**
@@ -504,7 +496,7 @@ declare namespace Æsthetic {
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules#style)
+   * [Æsthetic Docs](https://aesthetic.js.org/rules#style)
    */
   type JSONRules = Æ.JSONRules;
   /**
@@ -532,7 +524,7 @@ declare namespace Æsthetic {
    *
    * ---
    *
-   * [Æsthetic Docs](https://æsthetic.dev/rules#style)
+   * [Æsthetic Docs](https://aesthetic.js.org/rules#style)
    */
   type LanguageOfficialName = Æ.LanguageOfficialName;
   /**
