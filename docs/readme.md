@@ -2,7 +2,7 @@
 
 The Æsthetic documentation website is built using [11ty](https://www.11ty.dev/docs/) and served via [Netlify](https://netlify.com/).
 
-Visit the docs: [æsthetic.dev](https://æsthetic.dev)
+Visit the docs: [aesthetic.js.org](https://aesthetic.js.org)
 
 # Development
 
@@ -27,7 +27,7 @@ pnpm ts:watch            Start ESBuild in watch mode
 
 # Markdown Customizations
 
-Markdown files will are processed using [markdown-it](https://github.com/markdown-it/markdown-it) and a couple of custom plugins. Frontmatter and JSON data files are used to the order of navigation and various other reference specific information.
+Markdown files are processed using [markdown-it](https://github.com/markdown-it/markdown-it) and a couple of custom plugins. Frontmatter and JSON data files are used to order navigation and various other reference specific information.
 
 - [Grid Container](#grid-container)
 - [Rule Heading](#rule-heading)
@@ -70,7 +70,7 @@ Lorem ipsum dolor sit...
 
 ## Rule Heading
 
-Rule documentation files, specifically rule example titles are wrapped within a custom container with annotation emoji. These containers will render tooltips and are required when describing rule behaviors. Different emoji types will result in different tooltip hovers.
+Rule documentation files, specifically rule example titles are wrapped within a custom container and accept an annotation emoji. These containers will render tooltips and are required when describing rule behaviors. Different emoji types will result in different tooltip hovers.
 
 ### INPUT
 
@@ -116,15 +116,15 @@ Rule documentation files, specifically rule example titles are wrapped within a 
 
 # Rule Showcasing
 
-Rule documentation files generate interactive demos/examples to showcase how code will be formatted. There are 2 different showcase types (`demo` and `example`) for describing formatting rules. The markdown files for formatting rules use a common structure to achieve this.
+Rule documentation files generate interactive demos/examples to showcase how code will be formatted. There are 2 different showcase types (`demo` and `example`) for describing formatting rules. The markdown files for rules use a common structure to achieve this.
 
-Whenever a JSON codeblock uses an annotation identifier of `json:rules` then a standard codeblock show immediately follow. The contents of the `json:rules` is parsed during the 11ty build process (via markdown-it) and used as a reference point. The `json:rules` contents inform upon how and what the showcase should generate.
+Whenever a JSON codeblock uses a language identifier of `json:rules` then a standard codeblock **MUST** immediately follow. The contents of the `json:rules` is parsed during the 11ty build process (via markdown-it) and used as a reference point. The `json:rules` codeblock contents will inform upon how and what the showcase should generate.
 
 ## Demo Showcase
 
-The below structure is used for generating a rule demo type showcase. Æsthetic formatting rules are provided and the resulting output will be a split pane editor. The left pane is the `input` and the right is `output`. An additional tab is also made available which will inject the rules provided.
+The below structure is used for generating a rule demo type showcase. Æsthetic formatting rules are provided and the resulting output will be a split pane (papyrus) editor. The left pane is the `input` and the right is `output`. An additional tab is also made available which will inject the rules provided.
 
-The below is a basic example of how a demo showcase is generated and expressed:
+The below is a basic example of how a **demo** showcase is generated and expressed:
 
 <!--prettier-ignore-->
 ```md
