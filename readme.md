@@ -99,7 +99,7 @@ The Æsthetic codebase may seem large and daunting to navigate at first glance, 
 
 **Parser**
 
-The [src/parse/parser.ts](/src/parse/parser.ts) file is where you will finds the controller responsible for maintaining and generating the data-structure parse table. The lexers will refer to the values and methods contained within.
+The [src/parse/parser.ts](/src/parse/parser.ts) file is where you will find the controller responsible for maintaining and generating the data-structure parse table. The lexers will refer to the values and methods contained within.
 
 **Lexers**
 
@@ -111,7 +111,7 @@ The [src/format](/src/format/) directory and containing files are used in the se
 
 ---
 
-If you have any questions or would like more context etc please do not hesitate to submit an issue or reach me on [Twitter](https://twitter.com/niksavvidis). I'm also happy to hear from, learn from or help developers interested in this project.
+If you have any questions or would like more context etc please do not hesitate to submit an issue or reach me on [X (Formerly Twitter)](https://x.com/niksavvidis). I'm also happy to hear from, learn from or help developers interested in this project.
 
 </p>
 </details>
@@ -145,7 +145,7 @@ pnpm tests       Cherry pick test cases to run
 
 ### Testing / Development
 
-Æsthetic uses the powerful [AVA](https://github.com/avajs/ava) test runner together with a small helper utility that helps alleviate some of the complexities involved with testing tools of its criteria. It's recommended that you develop in a two pane terminal. The [dev.test.mjs](/tests/dev.test.mjs) and [dev.txt](/tests/dev.txt) files are core to testing and working on the module, they will be called when running `pnpm play`
+Æsthetic uses the powerful [AVA](https://github.com/avajs/ava) test runner together with a small helper utility that helps alleviate some of the complexities involved with testing tools of its criteria. It's recommended that you develop in a two pane terminal. The [dev.test.mjs](/tests/dev.test.mjs) and [dev.txt](/tests/dev.txt) files are core to testing and working on the module, they will be used as a scratch-pad when running `pnpm play`
 
 > Consult the [tests](/tests/) readme for more information on `test` prefixed commands
 
