@@ -1,4 +1,14 @@
-import type { Rules, LanguageName, LexerName, Stats, ParseHook, EventListeners, ISettings, Grammars, RulePresetNames } from 'types';
+import type {
+  Rules,
+  LanguageName,
+  LexerName,
+  Stats,
+  ParseHook,
+  EventListeners,
+  ISettings,
+  Grammars,
+  RulePresetNames
+} from 'types';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
 import { definitions } from 'rules/definitions';
@@ -19,8 +29,6 @@ import { merge } from 'cli/utils';
 
 export const esthetic = new class Esthetic {
 
-
-
   constructor () {
 
     if (config.env === 'node') config.cwd = process.cwd();
@@ -38,12 +46,12 @@ export const esthetic = new class Esthetic {
     }
 
     defineProperties(this.preset, {
-      default: { get() { return defaults } },
-      warrington: { get() { return warrington } },
-      prettier: { get() { return prettier } },
-      strict: { get() { return strict } },
-      recommended: { get() { return recommended } }
-    })
+      default: { get () { return defaults; } },
+      warrington: { get () { return warrington; } },
+      prettier: { get () { return prettier; } },
+      strict: { get () { return strict; } },
+      recommended: { get () { return recommended; } }
+    });
 
   }
 
@@ -59,7 +67,7 @@ export const esthetic = new class Esthetic {
 
   preset (preset: RulePresetNames, rules: Rules) {
 
-    return merge(this.preset[preset], rules)
+    return merge(this.preset[preset], rules);
 
   }
 
@@ -124,7 +132,6 @@ export const esthetic = new class Esthetic {
     }
 
     this.rules(options);
-
 
     if (this.lexer === 'auto') {
       const detect = this.detect(parse.source);
