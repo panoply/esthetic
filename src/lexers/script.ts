@@ -2,7 +2,7 @@
 /* eslint-disable no-control-regex */
 
 import { Record, ScriptRules, Structure, Types, VariableDeclarations } from 'types';
-import { commentBlock, commentLine } from 'comments';
+import { CommentBlock, commentLine } from 'comments';
 import { parse } from 'parse/parser';
 import { sortCorrect, sortObject } from 'parse/sorting';
 import { DQO, NIL, NWL, SQO } from 'chars';
@@ -518,7 +518,7 @@ export function script () {
     }
 
     if (data.token[i] === 'from') i = i - 2;
-    if (data.token[i] === 'x;') parse.splice({ data, howmany: 1, index: i });
+    if (data.token[i] === 'x;') parse.splice({ data, remove: 1, index: i });
 
   };
 
@@ -540,7 +540,7 @@ export function script () {
 
     parse.splice({
       data,
-      howmany: 0,
+      remove: 0,
       index: i,
       record: {
         begin: data.begin[i],
@@ -572,7 +572,7 @@ export function script () {
 
     if (wtest > -1) word();
 
-    comment = commentBlock(c, {
+    comment = CommentBlock(c, {
       end: b,
       lexer: 'script',
       begin: '/*',
@@ -1576,7 +1576,7 @@ export function script () {
           i = i + 1;
         } while (i < parse.count + 1);
 
-        parse.splice({ data, howmany: parse.count - walk, index: walk });
+        parse.splice({ data, remove: parse.count - walk, index: walk });
 
       }
 
@@ -1723,7 +1723,7 @@ export function script () {
     if (pre === true) {
       parse.splice({
         data
-        , howmany: 1
+        , remove: 1
         , index: walk - 1
       });
 
@@ -2250,7 +2250,7 @@ export function script () {
 
       parse.splice({
         data
-        , howmany: 0
+        , remove: 0
         , index: x
         , record: {
           begin: data.begin[x]
@@ -3129,7 +3129,7 @@ export function script () {
 
       parse.splice({
         data
-        , howmany: 1
+        , remove: 1
         , index: parse.count - 3
       });
     };
@@ -3641,7 +3641,7 @@ export function script () {
             brace.pop();
             parse.splice({
               data,
-              howmany: 0,
+              remove: 0,
               index: parse.count - 1,
               record: {
                 begin: data.begin[data.begin[data.begin[parse.count - 1] - 1] - 1],
