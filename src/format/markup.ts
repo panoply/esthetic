@@ -32,7 +32,7 @@ export function markup () {
 
   const { rules, data, ender, start } = parse;
   const { valueLineBreak } = rules.markup;
-  const { phrasing } = grammar.html;
+  const { textNodes } = grammar.html;
 
   /* -------------------------------------------- */
   /* LOCAL SCOPES                                 */
@@ -82,7 +82,7 @@ export function markup () {
   const external: { [index: number]: number } = object(null);
 
   /** Phrasing content text node elements, keys are indices and values signal whether or not to force */
-  const phrase: Map<number, boolean> = new Map();
+  const inline: Map<number, boolean> = new Map();
 
   /** Delimiter forcing references */
   const delims: Map<number, number> = new Map();
@@ -122,7 +122,7 @@ export function markup () {
    */
   function isText (index: number) {
 
-    return phrase.get(data.begin[a]);
+    return inline.get(data.begin[a]);
 
   }
 
@@ -227,9 +227,9 @@ export function markup () {
     //
     if (n > 0) p = n - 1;
 
-    if (isType(a - 1, 'content') && phrasing.has(data.token[a]) && (
+    if (isType(a - 1, 'content') && textNodes.has(data.token[a]) && (
       isType(a, 'start') ||
-      isType(a, 'singleton'))) phrase.set(a, false);
+      isType(a, 'singleton'))) inline.set(a, false);
 
     let x: number = a + 1;
     let y: number = 0;
@@ -319,12 +319,12 @@ export function markup () {
       attrForce = false;
     }
 
-    if (phrase.has(p)) {
+    if (inline.has(p)) {
       if (u.isNumber(rules.markup.forceTextNode) && rules.markup.forceTextNode > 0) {
         attrLimit = rules.markup.forceTextNode;
         attrForce = false;
       } else if (rules.markup.forceTextNode === true) {
-        phrase.set(p, true);
+        inline.set(p, true);
       }
     }
 
@@ -388,7 +388,7 @@ export function markup () {
 
         if (attrForce === true || attrCount >= attrLimit) {
 
-          if (phrase.has(p)) phrase.set(p, true);
+          if (inline.has(p)) inline.set(p, true);
 
           if (rules.liquid.indentAttribute) {
             if (isType(a - 1, 'liquid_attribute_start')) levels[a - 1] = attrLevel + liquidLevel;
@@ -655,7 +655,7 @@ export function markup () {
           delims.set(p, attrCount);
         }
 
-        if (phrase.has(p)) phrase.set(p, true);
+        if (inline.has(p)) inline.set(p, true);
 
       } else {
 
@@ -1430,9 +1430,9 @@ export function markup () {
      */
     function TextElement () {
 
-      if (phrase.has(a + 1)) {
+      if (inline.has(a + 1)) {
 
-        if (phrase.get(a + 1)) {
+        if (inline.get(a + 1)) {
 
           build.push(indent);
           wrap = 0;
@@ -1544,7 +1544,7 @@ export function markup () {
         const next = isVoid ? a : a + 1;
 
         if (
-          phrase.get(next) === true ||
+          inline.get(next) === true ||
           isType(next, 'content') ||
           isType(next, 'singleton') ||
           isType(next, 'liquid')) {
@@ -1615,7 +1615,12 @@ export function markup () {
       }
     }
 
-    if (rules.markup.forceIndent || isText(n) || data.lines[n] > 1) {
+    if (
+      rules.markup.forceIndent ||
+      data.lines[n] > 1 ||
+      isText(n) ||
+      isStack(n, 'script') ||
+      isStack(n, 'style')) {
 
       levels.push(indent);
 

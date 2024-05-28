@@ -3611,12 +3611,12 @@ export function markup (input?: string) {
     function PhrasingToken (): ReturnType<typeof AttributeToken> {
 
       if (ltype === 'start') {
-        if (grammar.html.phrasing.has(tname)) {
-          parse.phrasing.add(parse.count + 1);
+        if (grammar.html.textNodes.has(tname)) {
+          parse.textNodes.add(parse.count + 1);
         }
       } else if (ltype === 'end') {
-        if (grammar.html.phrasing.has(tname) && parse.current.types === 'content') {
-          parse.phrasing.add(parse.count);
+        if (grammar.html.textNodes.has(tname) && parse.current.types === 'content') {
+          parse.textNodes.add(parse.count);
         }
       }
 
@@ -4282,8 +4282,8 @@ export function markup (input?: string) {
             }
           }
 
-          if (parse.phrasing.has(begin)) {
-            parse.phrasing.add(parse.count);
+          if (parse.textNodes.has(begin)) {
+            parse.textNodes.add(parse.count);
           }
 
           idx = idx + 1;
