@@ -9,6 +9,7 @@
  *
  */
 export const CarriageNewline = /\r\n/g;
+
 /**
  * Non Space
  *
@@ -68,6 +69,18 @@ export const Spaces = /\s*/;
  *
  */
 export const SpacesGlob = /\s+/g;
+
+/**
+ * Group Whitespace and Newlines - `+` One or More
+ *
+ * Group captures for 1 or more leading whitespace and newline characters
+ *
+ * ---
+ *
+ * @example /(\s+)/
+ *
+ */
+export const SpacesGroup = /(\s+)/;
 
 /**
  * Leading Whitespace and Newlines
@@ -136,6 +149,27 @@ export const WhitespaceHash = /(^\s*#)[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029
 export const WhitespaceLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/;
 
 /**
+ * Leading Whitespace Global
+ *
+ * - `+` More Than 1
+ * - `^` Starter
+ *
+ * 1 or more **leading** whitespace only characters. This will remove carriage
+ * returns (`\r`), so if the input contains `\r\n` pairs, they can be converted to `\n`.
+ * This is a more fluent capture and uses unicodes.
+ *
+ * ---
+ *
+ *
+ * @example /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g
+ *
+* BEFORE: ' \n  foo'
+* AFTER:  '\nfoo'
+*
+*/
+export const WhitespaceLeadGlob = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/gm;
+
+/**
  * Ending Whitespace Only
  *
  * 1 or more **ending** whitespace only characters. This will remove carriage
@@ -147,8 +181,8 @@ export const WhitespaceLead = /^[\t\v\f\r \u00a0\u2000-\u200b\u2028-\u2029\u3000
  *
  * @example /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/
  *
- * BEFORE: ' \n  foo'
- * AFTER:  '\nfoo'
+ * BEFORE: 'foo  \n  '
+ * AFTER:  'foo\n'
  */
 export const WhitespaceEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/;
 
@@ -162,6 +196,17 @@ export const WhitespaceEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/
  * @example /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g
  */
 export const WhitespaceGlob = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
+
+/**
+ * Global Group Whitespace
+ *
+ * Group global capture of more than 1 whitespace character occurances but does not touch newlines.
+ *
+ * ---
+ *
+ * @example /([\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+)/g
+ */
+export const WhitespaceGlobGroup = /([\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+)/g;
 
 /**
  * Single Whitespace character only
@@ -191,7 +236,19 @@ export const WhitespaceChar = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]/;
 export const NewlineLead = /^\n+/;
 
 /**
- * Newlines
+ * Ending Newlines
+ *
+ * 1 or more ending newline characters
+ *
+ * ---
+ *
+ * @example /\n+$/
+ *
+ */
+export const NewlineEnd = /\n+$/;
+
+/**
+ * Global Newlines
  *
  * 1 or more newline characters
  *
@@ -287,19 +344,20 @@ export const StripSpaceInject = /[.[\]] {1,}/g;
 export const CommBlockNewline = /\n(?!\s*\*)/;
 
 /**
-* Captures esthetic inline comment controls
-*
-* ---
-* @see https://regex101.com/r/awwTh0/1
-* @example
-*
-* LINE COMMENT:    // @esthetic
-* BLOCK COMMENT:   /* @esthetic
-* LINE LIQUID:     {% # @esthetic
-* BLOCK LIQUID:    {% comment %} @esthetic
-* HTML COMMENT:    <!-- @esthetic
-* YAML COMMENT:    # @esthetic
-*/
+ * Captures esthetic inline comment controls
+ *
+ * ---
+ *
+ * @see https://regex101.com/r/awwTh0/1
+ * @example
+ *
+ * 'LINE LIQUID':     // {% # @esthetic
+ * 'BLOCK LIQUID':    // {% comment %} @esthetic
+ * 'HTML COMMENT':    // <!-- @esthetic
+ * 'YAML COMMENT':    // # @esthetic
+ * 'LINE COMMENT':    // @esthetic
+ * 'BLOCK COMMENT':   /* @esthetic
+ */
 export const CommControl = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic\s+/;
 
 /**
@@ -310,12 +368,12 @@ export const CommControl = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthet
  * @see https://regex101.com/r/SLG0Or/1
  * @example
  *
- * LINE COMMENT:    // esthetic-ignore-(next|start|end)
- * BLOCK COMMENT:   /* esthetic-ignore-(next|start|end)
- * LINE LIQUID:     {% # esthetic-ignore-(next|start|end)
- * BLOCK LIQUID:    {% comment %} esthetic-ignore-(next|start|end)
- * HTML COMMENT:    <!-- esthetic-ignore-(next|start|end)
- * YAML COMMENT:    # esthetic-ignore-(next|start|end)
+ * 'LINE LIQUID':     // {% # esthetic-ignore-(next|start|end)
+ * 'BLOCK LIQUID':    // {% comment %} esthetic-ignore-(next|start|end)
+ * 'HTML COMMENT':    // <!-- esthetic-ignore-(next|start|end)
+ * 'YAML COMMENT':    // # esthetic-ignore-(next|start|end)
+ * 'LINE COMMENT':    // esthetic-ignore-(next|start|end)
+ * 'BLOCK COMMENT':   /* esthetic-ignore-(next|start|end)
  */
 export const CommIgnore = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-(?:start|next|end)\b/;
 
@@ -328,9 +386,9 @@ export const CommIgnore = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*estheti
  *
  * @example
  *
- * LINE LIQUID:    // {% # esthetic-ignore-(next|start|end)
- * BLOCK LIQUID:   // {% comment %} esthetic-ignore-(next|start|end)
- * HTML COMMENT:   //  <!-- esthetic-ignore-(next|start|end)
+ * 'LINE LIQUID':    // {% # esthetic-ignore-(next|start|end)
+ * 'BLOCK LIQUID':   // {% comment %} esthetic-ignore-(next|start|end)
+ * 'HTML COMMENT':   //  <!-- esthetic-ignore-(next|start|end)
  */
 export const CommMarkupIgnore = /({%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-(start|next|end)\b/;
 
@@ -343,12 +401,12 @@ export const CommMarkupIgnore = /({%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic
  *
  * @example
  *
- * LINE COMMENT:    // esthetic-ignore
- * BLOCK COMMENT:   /* esthetic-ignore
- * LINE LIQUID:     {% # esthetic-ignore
- * BLOCK LIQUID:    {% comment %} esthetic-ignore
- * HTML COMMENT:    <!-- esthetic-ignore
- * YAML COMMENT:    # esthetic-ignore
+ * 'LINE LIQUID':     // {% # esthetic-ignore
+ * 'BLOCK LIQUID':    // {% comment %} esthetic-ignore
+ * 'HTML COMMENT':    // <!-- esthetic-ignore
+ * 'YAML COMMENT':    // # esthetic-ignore
+ * 'LINE COMMENT':    // esthetic-ignore
+ * 'BLOCK COMMENT':   /* esthetic-ignore
  */
 export const CommIgnoreFile = /^\s*(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore(?![a-z-][^-])/;
 
@@ -356,16 +414,17 @@ export const CommIgnoreFile = /^\s*(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s
  * Captures esthetic inline comment ignore starters
  *
  * [Regex101](https://regex101.com/r/BvjwOE/1)
+ *
  * ---
  *
  * @example
  *
- * LINE COMMENT:    // esthetic-ignore-start
- * BLOCK COMMENT:   /* esthetic-ignore-start
- * LINE LIQUID:     {% # esthetic-ignore-start
- * BLOCK LIQUID:    {% comment %} esthetic-ignore-start
- * HTML COMMENT:    <!-- esthetic-ignore-start
- * YAML COMMENT:    # esthetic-ignore-start
+ * 'LINE LIQUID':     // {% # esthetic-ignore-start
+ * 'BLOCK LIQUID':    // {% comment %} esthetic-ignore-start
+ * 'HTML COMMENT':    // <!-- esthetic-ignore-start
+ * 'YAML COMMENT':    // # esthetic-ignore-start
+ * 'LINE COMMENT':    // esthetic-ignore-start
+ * 'BLOCK COMMENT':   /* esthetic-ignore-start
  */
 export const CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*esthetic-ignore-start\b/;
 
@@ -380,7 +439,7 @@ export const CommIgnoreStart = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2})\s*es
  *
  * @example
  *
- * LINE COMMENT:    // esthetic-ignore-start
+ * 'LINE COMMENT':    // esthetic-ignore-start
  */
 export const CommLineIgnoreStart = /^\/\/\s*esthetic-ignore-start\b/;
 
@@ -396,7 +455,7 @@ export const CommLineIgnoreStart = /^\/\/\s*esthetic-ignore-start\b/;
  *
  * @example
  *
- * BLOCK COMMENT:    /* esthetic-ignore-start
+ * 'BLOCK COMMENT':    /* esthetic-ignore-start
  */
 export const CommBlockIgnoreStart = /^\/\*{1,2}(?:\s*|\n\s*\*\s*)esthetic-ignore-start\b/;
 
@@ -409,12 +468,12 @@ export const CommBlockIgnoreStart = /^\/\*{1,2}(?:\s*|\n\s*\*\s*)esthetic-ignore
  *
  * @example
  *
- * LINE COMMENT:    // esthetic-ignore-end
- * BLOCK COMMENT:   /* esthetic-ignore-end
- * LINE LIQUID:     {% # esthetic-ignore-end
- * BLOCK LIQUID:    {% comment %} esthetic-ignore-end
- * HTML COMMENT:    <!-- esthetic-ignore-end
- * YAML COMMENT:    # esthetic-ignore-end
+ * 'LINE LIQUID':     // {% # esthetic-ignore-end
+ * 'BLOCK LIQUID':    // {% comment %} esthetic-ignore-end
+ * 'HTML COMMENT':    // <!-- esthetic-ignore-end
+ * 'YAML COMMENT':    // # esthetic-ignore-end
+ * 'LINE COMMENT':    // esthetic-ignore-end
+ * 'BLOCK COMMENT':   /* esthetic-ignore-end
  */
 export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2}|#)\s*esthetic-ignore-end\b/;
 
@@ -426,12 +485,12 @@ export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2}|#)\s*es
  *
  * @example
  *
- * LINE COMMENT:    // @esthetic-ignore-next
- * BLOCK COMMENT:   /* @esthetic-ignore-next
- * LINE LIQUID:     {% # @esthetic-ignore-next
- * BLOCK LIQUID:    {% comment %} @esthetic-ignore-next
- * HTML COMMENT:    <!-- @esthetic-ignore-next
- * YAML COMMENT:    # @esthetic-ignore-next
+ * 'LINE LIQUID':     // {% # esthetic-ignore-next
+ * 'BLOCK LIQUID':    // {% comment %} esthetic-ignore-next
+ * 'HTML COMMENT':    // <!-- esthetic-ignore-next
+ * 'YAML COMMENT':    // # esthetic-ignore-next
+ * 'LINE COMMENT':    // esthetic-ignore-next
+ * 'BLOCK COMMENT':   /* esthetic-ignore-next
  */
 export const CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!--)\s*esthetic-ignore-next\b/;
 
@@ -485,10 +544,10 @@ export const CommLineChars = /^\s*(?:[*-]|\d+\.)\s/;
  *
  * ---
  *
- * @example /(?!=)\/?>$/
+ * @example /(\/|\?)?>$/
  *
  */
-export const HTMLAttributeEnd = /(?!=)\/?>$/;
+export const HTMLAttributeEnd = /(\/|\?)?>$/;
 
 /**
  * HTML Comment Opening Delimiter
@@ -497,10 +556,46 @@ export const HTMLAttributeEnd = /(?!=)\/?>$/;
  *
  * ---
  *
- * @example /^<!--+/
+ * @example /^<!--/
  *
  */
-export const HTMLCommDelimOpen = /^<!--+/;
+export const HTMLCommDelimOpen = /^<!--/;
+
+/**
+ * HTML Comment Opening Delimiter Whitespace
+ *
+ * Opening delimiter for HTML comment tokens with whitespace
+ *
+ * ---
+ *
+ * @example /^<!--\s*?/
+ *
+ */
+export const HTMLCommDelimOpenWhitespace = /^<!--\s*/;
+
+/**
+ * HTML Comment Closeing Delimiter Whitespace
+ *
+ * Closing delimiter for HTML comment tokens with whitespace
+ *
+ * ---
+ *
+ * @example /\s*-->$/
+ *
+ */
+export const HTMLCommDelimCloseWhitespace = /\s*-->$/;
+
+/**
+ * HTML Comment Opening Delimiter Newline
+ *
+ * Opening delimiter for HTML comment tokens with newline
+ *
+ * ---
+ *
+ * @example /^<!--\n/
+ *
+ */
+export const HTMLCommDelimOpenNewline = /^<!--\n/;
 
 /**
  * HTML Comment Closing Delimiter
@@ -509,10 +604,10 @@ export const HTMLCommDelimOpen = /^<!--+/;
  *
  * ---
  *
- * @example /--+>$/
+ * @example /-->$/
  *
  */
-export const HTMLCommDelimClose = /--+>$/;
+export const HTMLCommDelimClose = /-->$/;
 
 /**
  * Liquid Left Tag Delimiter
@@ -527,6 +622,9 @@ export const LiquidTagName = /[a-zA-Z0-9_$#]+/;
 /**
  * Liquid Left Tag Delimiter with spaces
  *
+ * Captures Liquid left side tag delimiter with spaces. Groups the prefix whitespace
+ * or newlines and the starting delimiter.
+ *
  * ---
  *
  * @example /({%-?)(\s*)/
@@ -535,7 +633,10 @@ export const LiquidTagName = /[a-zA-Z0-9_$#]+/;
 export const LiquidLeftDelimiter = /({%-?)(\s*)/;
 
 /**
- * Liquid Right Tag Delimiter with spaces
+ * Liquid Right Delimiter with spaces
+ *
+ * Captures Liquid right side tag Delimiter with spaces. Groups the prefix whitespace
+ * or newlines and the ending delimiter.
  *
  * ---
  *
@@ -637,11 +738,49 @@ export const LiquidLineCommForce = /^{%-?\n|{%-?\s*#\n/;
 export const LiquidEndDelimiterNewline = /\n\s*-?%}$/;
 
 /**
+ * Liquid Block Start Comment
+ *
+ * Expression for capturing a Liquid block start comment (`{% comment %}`) tag tokens.
+ * Provides group captures of `{%`,`{%-`, `%}` or `-%}` (delimiters) and the `comment` name.
+ *
+ * - [0] `{%` or `{%-`
+ * - [1] `comment`
+ * - [2] `%}` or `-%}`
+ *
+ * [Regex101](https://regex101.com/r/YYZhhS/1)
+ *
+ * ---
+ *
+ * @example /^({%-?)\s*(comment)\b\s*(-?%})$/
+ *
+ */
+export const LiquidBlockCommentStart = /^({%-?)\s*(comment)\b\s*(-?%})$/;
+
+/**
+ * Liquid Block End Comment
+ *
+ * Expression for capturing a Liquid block start comment (`{% endcomment %}`) tag tokens.
+ * Provides group captures of `{%`,`{%-`, `%}` or `-%}` (delimiters) and the `endcomment` name.
+ *
+ * - [0] `{%` or `{%-`
+ * - [1] `endcomment`
+ * - [2] `%}` or `-%}`
+ *
+ * [Regex101](https://regex101.com/r/YYZhhS/1)
+ *
+ * ---
+ *
+ * @example /^({%-?)\s*(endcomment)\b\s*(-?%})$/
+ *
+ */
+export const LiquidBlockCommentEnd = /^({%-?)\s*(endcomment)\b\s*(-?%})$/;
+
+/**
  * Liquid Block Comment Match
  *
  * Starting position (`^`) expression for capturing a Liquid block comment (`{% comment %}`) tag token.
  *
- * [Regex101](https://regex101.com/r/qw8avq/1)
+ * [Regex101](https://regex101.com/r/3nK2d8/1)
  *
  * ---
  *
