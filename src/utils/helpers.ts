@@ -221,26 +221,6 @@ export function cline (input: string | string[], current: number = NaN) {
 }
 
 /**
- * Newline Generate
- *
- * Returns a newline sequence. Expects a function callback to be
- * provided which will return `null` if `count` is less than or equal to `0`
- */
-export function nline (count: number, callback: (char: string) => void) {
-
-  if (count <= 0) return callback(null);
-
-  let char = NIL;
-  let i = 1;
-
-  do char += parse.crlf;
-  while (i++ < count);
-
-  return callback(char);
-
-}
-
-/**
  * Repeat Character
  *
  * Repeats a character x amount of times. Used for generating repeating characters
@@ -261,6 +241,67 @@ export function repeatChar (count: number, character: string = WSP) {
 }
 
 /**
+ * Newline Iterator
+ *
+ * Accepts a string input and will returns a callback function for every newline
+ * occurance in the string. Respects the `rules.preserveLine` value, skipping
+ * any occurance of multiple newlines.
+ */
+export function nline (
+  input: string,
+  callback: (
+    line: string,
+    info: {
+      index: number,
+      count: number,
+      isEnd: boolean,
+      inline: boolean
+    }
+  ) => void
+) {
+
+  if (input.indexOf(NWL) > -1) {
+
+    for (
+      let lines = input.trimEnd().split(/(\n+)/)
+        , token = NIL
+        , count = 0
+        , index = 0
+        , length = lines.length; index < length; index++) {
+
+      token = lines[index];
+
+      if (is(token, cc.NWL)) {
+
+        count = token.length + 1;
+
+      } else {
+
+        callback(token.trim(), {
+          index,
+          count,
+          inline: false,
+          isEnd: index === lines.length - 1
+        });
+
+        count = 0;
+      }
+    }
+
+  } else {
+
+    callback(input, {
+      index: 0,
+      count: 0,
+      isEnd: true,
+      inline: true
+    });
+
+  }
+
+}
+
+/**
  * Word Wrap
  *
  * If first character code is whitespace or tab
@@ -271,7 +312,9 @@ export function wordWrap (text: string, width: number, lexed: string[] = []) {
 
   let currentLine = '';
   let lastWhite = '';
+
   words.forEach(function (d) {
+
     const prev = currentLine;
     currentLine += lastWhite + d;
 
