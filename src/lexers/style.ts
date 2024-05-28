@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import type { Types } from 'types';
-import { commentBlock, commentLine } from 'comments';
+import { CommentBlock, commentLine } from 'comments';
 import { parse } from 'parse/parser';
 import { grammar } from 'parse/grammar';
 import { sortCorrect, sortObject } from 'parse/sorting';
@@ -830,7 +830,7 @@ export function style () {
           data.types[ss - 1] = 'selector';
           parse.splice({
             data,
-            howmany: 1,
+            remove: 1,
             index: ss
           });
 
@@ -840,7 +840,7 @@ export function style () {
           data.types[ss - 1] = 'selector';
           parse.splice({
             data,
-            howmany: 1,
+            remove: 1,
             index: ss
           });
 
@@ -850,7 +850,7 @@ export function style () {
           data.types[ss - 1] = 'selector';
           parse.splice({
             data,
-            howmany: 1,
+            remove: 1,
             index: ss
           });
 
@@ -876,7 +876,7 @@ export function style () {
 
                 parse.splice({
                   data,
-                  howmany: 2,
+                  remove: 2,
                   index: ss
                 });
 
@@ -1135,7 +1135,7 @@ export function style () {
 
     parse.splice({
       data,
-      howmany: 0,
+      remove: 0,
       index: x + 1,
       record: {
         begin: parse.stack.index,
@@ -1387,7 +1387,7 @@ export function style () {
 
     } else {
 
-      comm = commentBlock(b, {
+      comm = CommentBlock(b, {
         start: a,
         end: c,
         lexer: 'style',
@@ -1616,7 +1616,7 @@ export function style () {
 
             parse.splice({
               data,
-              howmany: (data.types[props.removes[ii][0] + 1] === 'separator') ? 4 : 3,
+              remove: (data.types[props.removes[ii][0] + 1] === 'separator') ? 4 : 3,
               index: props.removes[ii][0] - 2
             });
           }
