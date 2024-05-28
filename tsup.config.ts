@@ -19,9 +19,7 @@ export default defineConfig([
     treeshake: true,
     name: 'Æsthetic',
     minify: false,
-    noExternal: [
-      'mergerino'
-    ],
+    noExternal: [],
     terserOptions: {
       compress: {
         passes: 10
@@ -37,22 +35,17 @@ export default defineConfig([
     },
     esbuildOptions: options => {
       options.treeShaking = true;
+      options.mangleProps = /^\$[a-z]/;
+
     },
     outExtension ({ format }) {
 
       if (format === 'cjs') {
-        return {
-          js: '.cjs'
-        };
+        return { js: '.cjs' };
       } else if (format === 'esm') {
-        return {
-          js: '.mjs'
-        };
-
+        return { js: '.mjs' };
       } else {
-        return {
-          js: '.js'
-        };
+        return { js: '.js' };
       }
     },
     format: [
@@ -74,8 +67,9 @@ export default defineConfig([
       'fast-glob',
       './esthetic.cjs'
     ],
-    name: 'Æsthetic',
+    name: 'Æsthetic CLI',
     clean: false,
+    platform: 'node',
     minify: process.env.production ? 'terser' : false,
     define: {
       VERSION: `"${pkg.version}"`
