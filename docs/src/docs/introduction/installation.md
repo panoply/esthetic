@@ -17,7 +17,7 @@ anchors:
 
 # Installation
 
-Æsthetic is available for consumption via the NPM registry and supports both ESM and CJS environments. For the best practice, it is recommended to install Æsthetic on a per-project basis rather than globally. While tree-shaking is not feasible with Æsthetic, developers can rest assured that the module remains relatively small, with a gzipped size of 57.5kb. Additionally, its import bundle is distributed as a single, concise file.
+Æsthetic is available for consumption via the NPM registry and supports both ESM and CJS environments. For the best practice, it is recommended to install Æsthetic on a per-project basis rather than globally. While tree-shaking is not feasible with Æsthetic, the module remains relatively small, with a gzipped size of 57.5kb distributed as a single file.
 
 ###### PNPM
 

@@ -14,9 +14,9 @@ next:
 
 Excluding regions of code, entire documents and token specific occurrences can be achieved a few different ways in Æsthetic. Code exclusion and preservation is handled differently depending on the method leveraged and language.
 
-# Comments
+# Comment Ignores
 
-Æsthetic supports inline ignore comments and developers.
+Æsthetic supports inline ignore comments which can be used within files. There are 3 different ignore comments available that can be used to control exclusion points within documents.
 
 ##### esthetic-ignore
 
@@ -38,10 +38,17 @@ The `esthetic-ignore` comment can be used to exclude formatting on the entire do
 
 ##### esthetic-ignore-next
 
-```html
+<!-- prettier-ignore -->
+```liquid
+// esthetic-ignore-next
+
+/* esthetic-ignore-next */
+
 <!-- esthetic-ignore-next -->
 
-{% # esthetic-ignore-next %} {% comment %} esthetic-ignore-next {% endcomment %}
+{% # esthetic-ignore-next %}
+
+{% comment %} esthetic-ignore-next {% endcomment %}
 ```
 
 ##### esthetic-ignore-start → esthetic-ignore-end
@@ -64,5 +71,3 @@ The `esthetic-ignore` comment can be used to exclude formatting on the entire do
 {% comment %} esthetic-ignore-end {% endcomment %}
 
 ```
-
-# Rules

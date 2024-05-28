@@ -82,6 +82,47 @@
       ]
     },
     {
+      "title": "Languages",
+      "links": [
+        {
+          "title": "XML",
+          "url": "/languages/xml/"
+        },
+        {
+          "title": "HTML",
+          "url": "/languages/html/"
+        },
+        {
+          "title": "Liquid",
+          "url": "/languages/liquid/"
+        },
+        {
+          "title": "CSS",
+          "url": "/languages/css/"
+        },
+        {
+          "title": "JSON",
+          "url": "/languages/json/"
+        },
+        {
+          "title": "JavaScript",
+          "url": "/languages/javascript/"
+        },
+        {
+          "title": "JSX",
+          "url": "/languages/jsx/"
+        },
+        {
+          "title": "TypeScript",
+          "url": "/languages/typescript/"
+        },
+        {
+          "title": "TSX",
+          "url": "/languages/tsx/"
+        }
+      ]
+    },
+    {
       "title": "Parser",
       "links": [
         {
@@ -199,7 +240,6 @@
           "title": "commentNewline",
           "url": "/rules/liquid/commentNewline/"
         },
-
         {
           "title": "dedentTagList",
           "url": "/rules/liquid/dedentTagList/"
@@ -286,6 +326,10 @@
           "url": "/rules/markup/forceIndent/"
         },
         {
+          "title": "forceTextNode",
+          "url": "/rules/markup/forceTextNode/"
+        },
+        {
           "title": "ignoreCSS",
           "url": "/rules/markup/ignoreCSS/"
         },
@@ -320,6 +364,10 @@
         {
           "title": "selfCloseSVG",
           "url": "/rules/markup/selfCloseSVG/"
+        },
+        {
+          "title": "stripTextWrapLines",
+          "url": "/rules/markup/stripTextWrapLines/"
         },
         {
           "title": "stripAttributeLines",

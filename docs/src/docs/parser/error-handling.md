@@ -13,7 +13,7 @@ Invalid syntax encountered during the parse cycle will result in an exception to
 
 ### Error Exception
 
-The exception that throws will hold the following information about the error. You can be access the error within a `catch` block.
+The exception that throws will hold the following information about the error. You can access the error within a `catch` block.
 
 ```js
 export interface ParseError {

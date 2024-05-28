@@ -21,7 +21,7 @@ anchors:
 
 # Supported Files
 
-You may prefer to keep formatting rules in an external file opposed using the default `package.json` method. Æsthetic provides support for the following external config files.
+You may prefer to keep formatting rules in an external file opposed to using the default `package.json` method. Support for the following external config files is made available:
 
 - `.esthetic`
 - `.esthetic.json`

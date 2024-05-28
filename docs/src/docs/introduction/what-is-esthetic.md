@@ -17,13 +17,13 @@ anchors:
 
 # What is Æsthetic?
 
-Æsthetic is a lightweight, fast, and extensible code beautification tool that offers comprehensive formatting support for front-end oriented (client-side) languages. It presents itself as a viable alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/), providing developers with a powerful and flexible option for code formatting. Based on a variation of the universal [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm, Æsthetic has been thoughtfully adapted from the distributed source of [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
+Æsthetic is a lightweight, fast, and extensible code beautification tool that offers comprehensive formatting support for front-end oriented languages. It presents itself as a viable alternative to [Prettier](https://prettier.io/) and [JS Beautify](https://beautifier.io/). Based on a variation of the universal [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm, Æsthetic has been thoughtfully adapted from the distributed source of [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
 
 # Why Æsthetic?
 
-The adoption of Æsthetic as a code beautification tool largely comes down to personal preference. However, several key differentiators set it apart from alternative solutions in the realm of code formatting. Æsthetic's unique approach involves formatting code in alignment with the **implied** structures of the provided input. It takes a preservationist approach while incorporating progressive adaptation to ensure the most natural and intuitive formatting results.
+The adoption of Æsthetic as a code beautification tool largely comes down to personal preference. However, several key differentiators set it apart from alternative solutions in the realm of code formatting. Æsthetic employs a "_first, do no harm_" tactic to formatting code, wherein it will align with the **implied** structures of provided input. This is preservationist approach with progressive adaptation.
 
-At the core of Æsthetic is a commitment to maintaining the original intent of the code. It achieves this through a uniformed data structure known as the parse table, which enables progressive customizations, incremental updates, and extensible control during traversal operations. The parse table itself provides a concise lexical context of the code input, streamlining the formatting process.
+At the core of Æsthetic is a commitment to maintaining the original intent of the code. It achieves this through a uniformed data structure known as the parse table, which enables progressive customizations, incremental updates, and extensible control during traversal operations.
 
 Æsthetic boasts a remarkably efficient two-cycle process for parse and format operations, eliminating the need for additional resources. It exposes a granular set of formatting rules, empowering developers to produce results that align with their preferred code style while retaining readability and consistency.
 

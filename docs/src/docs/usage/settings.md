@@ -23,7 +23,7 @@ anchors:
 
 # Settings
 
-Æsthetic exposes core configuration control via the `esthetic.settings()` method. The settings method can be used to configure the execution preferences of Æsthetic in Node and Browser environments. Calling the `esthetic.settings` methods with parameters omitted will return the current setting configurations being used by Æsthetic, plus some additional information such as the version number, environment and current working directory.
+Æsthetic exposes core configuration control via the `esthetic.settings()` method. The settings method can be used to configure the execution preferences of Æsthetic in Node and Browser environments. Calling the `esthetic.settings` method with parameters omitted will return the current setting configurations being used by Æsthetic, plus some additional information such as the version number, environment and current working directory.
 
 #### Basic Usage
 

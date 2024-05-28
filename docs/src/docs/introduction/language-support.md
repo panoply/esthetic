@@ -15,7 +15,7 @@ anchors:
 
 # Language Support
 
-Though Æsthetic uses the (language aware) Sparser algorithm, the majority of languages supported by Sparser are not supported in Æsthetic. Sparser's (and PrettyDiff) underlying parse approach in the adaptation to Æsthetic was heavily modified and the original language support list differs. Æsthetic (currently) aims to support only a small subset of languages, specifically those which pertain to front-end (client side) web development. Global language support is not something that Æsthetic aspires to provide currently as it's difficult to achieve both from a maintenance perspective but also from the performance level.
+Though Æsthetic uses the (language aware) Sparser algorithm, the majority of languages supported by Sparser are not supported in Æsthetic. The underlying parse approach of Sparser (and PrettyDiff) in their adaptation to Æsthetic have been heavily modified and the original language support list differs. Æsthetic (currently) aims to support only a small subset of languages, specifically those which pertain to front-end (client side) web development. Global language support is not something that Æsthetic aspires to provide as it's difficult to achieve both from a maintenance perspective but also on the performance level.
 
 # Support List
 

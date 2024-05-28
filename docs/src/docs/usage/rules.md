@@ -19,11 +19,11 @@ anchors:
 
 # Rules
 
-The `rules` method within Æsthetic can be used to perform immutable merges to formatting options and define customized rules for code beautification and parsing. Once applied, these formatting options are persisted, ensuring that the defined rules are consistently used for all subsequent beautification processes, until changed or session ends.
+The `rules` method within Æsthetic can be used to perform immutable merges to formatting options and define customized rules for code beautification or parsing. Once applied, these formatting options are persisted, ensuring that the defined rules are consistently used for all subsequent beautification processes, until changed or the execution session ends.
 
 > You can enable/disable rule persistence behavior using the [settings](/usage/settings/) method. When **disabled** Æsthetic will use defaults for each beautification execution.
 
-By utilizing the rules method, you can preset the configuration logic, which will be automatically employed every time a beautification or parsing operation is invoked. This enables seamless and consistent code formatting across multiple calls. In essence, the rules method empowers developers to tailor the behavior of Æsthetic according to their specific project requirements and coding preferences.
+Utilizing the `rules` method will preset the configuration logic, allowing seamless and consistent code formatting across multiple calls.
 
 #### Basic Usage
 
@@ -41,11 +41,6 @@ esthetic.rules({
   },
   style: {
     noLeadZero: true
-    // etc etc
-  },
-  script: {
-    noSemicolon: true,
-    vertical: true
     // etc etc
   }
 });
@@ -65,11 +60,11 @@ esthetic.rules() // Returns the current ruleset
 
 # Using Preset Style Guides
 
-Æsthetic comes equipped with a useful feature called **Rule Presets**. These pre-defined style guides serve as default settings, carefully curated to assist users in achieving polished output without having to understand how each rule works. By choosing the [global](/rules#global) → [preset](/rules/global/preset) option, users can conveniently apply one of the available presets as the runtime rule defaults. This simplifies the creative process and ensures consistent, aesthetically pleasing results without introducing any unnecessary complexities or learning curves.
+Æsthetic comes equipped with a useful feature called **Rule Presets**. These pre-defined style guides serve as default ruleset's and have been carefully curated to assist users in achieving polished output without having to understand how each rule works. Using the [global](/rules#global) → [preset](/rules/global/preset) option, you can conveniently apply one of the available presets as the runtime rule default. This simplifies the creative process and ensures consistent, aesthetically pleasing results without introducing any unnecessary complexities or learning curves.
 
 ### Presets
 
-Currently, there are **6** different presets available, each offering unique beautified output, with some presets being more extensive than others. These options provide users with a range of stylistic choices that can be used a starting point from which, you can progressively tailor and customizing to your specific tastes.
+Currently, there are **5** different presets available, each offering unique beautified output, with some presets being more extensive than others. These options provide users with a range of stylistic choices that can be used a starting point from which, you can progressively tailor and customizing to your specific tastes.
 
 <!--
 
@@ -179,24 +174,5 @@ The `prettier` style guide preset offers a replication of the Prettier style of 
 ```json
 {
   "preset": "prettier"
-}
-```
-
----
-
-::: rule 🧐
-
-#### blanklob
-
-:::
-
-The `blanklob` preset style guide, is curated by ([Blanklob](https://github.com/blanklob)). This choice reflects a particular style that may not appeal to everyone, but is a great starting point for developers.
-
-- [Example](#)
-- [Ruleset](#)
-
-```json
-{
-  "preset": "blanklob"
 }
 ```
