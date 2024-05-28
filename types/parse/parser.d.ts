@@ -322,11 +322,11 @@ export interface Splice {
   /**
    * The parse table data structure object to alter
    */
-  data: Data;
+  data?: Data;
   /**
    * How many indexes to remove
    */
-  howmany: number;
+  remove: number;
   /**
    * The index where to start
    */

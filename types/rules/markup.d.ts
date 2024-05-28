@@ -1,49 +1,32 @@
 export interface MarkupRules {
 
   /**
-   * **Default** `preserve`
+   * #### Default: `preserve`
    *
+   * >
    *
-   * Controls the formatting style of HTML and/or XML markup comment delimiters.
-   * This rule will augment delimiter `<!--` and `-->` placements.
+   * ### [Comment Delimiters](https://aesthetic.js.org/rules/markup/commentDelimiters/)
    *
-   * ---
+   * This rule controls the formatting style of HTML and XML markup comment delimiters. Æsthetic
+   * can produce 5 different output styles for markup comments, based on this ruleset as it will
+   * augments delimiter (`<!--` and `-->`) placements.
    *
-   * ```html
-   *
-   * <!-- inline -->
-   * <!-- inline-align
-   *      inline-align -->
-   * <!--
-   *   preserve -->
-   * <!--
-   *   force
-   * -->
-   * <!-- consistent (before)
-   * -->
-   * <!-- consistent (after) -->
-   * <!--
-   *   consistent (before) -->
-   * <!--
-   *  consistent (after)
-   * -->
-   *
-   * ```
    */
-  commentDelimiters?:
-  | 'preserve'
-  | 'consistent'
-  | 'force'
-  | 'inline'
-  | 'inline-align';
+  commentDelimiters?: 'preserve' | 'consistent'| 'force' | 'inline' | 'inline-align';
 
   /**
-   * If a blank new line should be forced above comments.
+   * #### Default: `false`
+   *
+   * >
+   *
+   * If a blank new line should be inserted above comments.
    */
   commentNewline?: boolean;
 
   /**
-   * **Default** `true`
+   * #### Default: `true`
+   *
+   * >
    *
    * This will determine whether comments should always start at position
    * `0` of each line or if comments should be indented according to the code.
@@ -54,9 +37,11 @@ export interface MarkupRules {
   commentIndent?: boolean;
 
   /**
-   * **Default** `preserve`
+   * #### Default: `preserve`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `preserve`
+   * >
+   *
+   * ### [Attribute Casing](https://aesthetic.js.org/rules/markup/attributeCasing/)
    *
    * How attribute keys and value casing should be processed. This defaults to `preserve`
    * which will leave casing intact and _typically_ the best option to use. Accepts one
@@ -67,141 +52,197 @@ export interface MarkupRules {
    * - `lowercase-name`
    * - `lowercase-value`
    *
-   * ---
-   *
-   * #### Preserve Example
-   *
-   * *Below is an example of how this rule works when it is set to `preserve`. This is
-   * the default and the safest option to use.*
-   *
-   * ```html
-   *
-   * <!-- Before Formatting -->
-   * <div dAtA-AtTr="FoO-bAr"></div>
-   *
-   * <!-- After Formatting -->
-   * <div dAtA-AtTr="FoO-bAr"></div>
-   *
-   * ```
-   *
-   * ---
-   *
-   * #### Lowercase Example
-   *
-   * *Below is an example of how this rule work it it's set to `lowercase`. This might
-   * be problematic to use projects where casing needs to be respected as both attribute
-   * names and values will be converted to lowercase*
-   *
-   * ```html
-   *
-   * <!-- Before Formatting -->
-   * <div DATA-ATTR="FOO-BAR"></div>
-   *
-   * <!-- After Formatting -->
-   * <div data-attr="foo-bar"></div>
-   *
-   * ```
-   *
-   * ---
-   *
-   * #### Lowercase Name Example
-   *
-   * *Below is an example of how this rule work it it's set to `lowercase-name`. This will
-   * ensure the the attribute names are always converted to lowercase*
-   *
-   * ```html
-   *
-   * <!-- Before Formatting -->
-   * <div DATA-ATTR="FOO-BAR"></div>
-   *
-   * <!-- After Formatting -->
-   * <div class="FOO-BAR"></div>
-   *
-   * ```
-   *
-   * ---
-   *
-   * #### Lowercase Value Example
-   *
-   * *Below is an example of how this rule work it it's set to `lowercase-value`. This will
-   * ensure the the attribute values are always converted to lowercase*
-   *
-   * ```html
-   *
-   * <!-- Before Formatting -->
-   * <div DATA-ATTR="FOO-BAR"></div>
-   *
-   * <!-- After Formatting -->
-   * <div DATA-ATTR="foo-bar"></div>
-   *
-   * ```
    */
   attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value';
 
   /**
-   * **Default** `false`
+   * #### Default: `inline`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * >
+   *
+   * ### [Delimiter Terminus](https://aesthetic.js.org/rules/markup/valueLineBreaks/)
    *
    * Whether or not ending HTML tag delimiters should be forced onto a newline.
    * This will emulate the style of Prettier's `singleAttributePerLine` formatting
    * option, wherein the last `>` delimiter character breaks itself onto a new line.
    *
-   * **Tip**
+   * > **NOTE**
+   * >
+   * > If you wish to emulate the behaviour of Prettier, then you will need to either
+   * > set this to `adapt` or `force`. The `adapt` option is generally preferred.
+   */
+  delimiterTerminus?: 'inline' | 'force' | 'adapt';
+
+  /**
+   * #### Default: `preserve`
    *
-   * Though this output style was popularized by Prettier, the resulting structures
-   * produced are far from elegant (aesthetically).
+   * ### [Value Line Breaks](https://aesthetic.js.org/rules/markup/valueLineBreaks/)
+   *
+   * Controls how Æsthetic should handle attribute values which exceed wrap or span
+   * multiple lines. This rule is helpful for developers using Tailwind.
+   *
+   * >
    *
    * ---
    *
-   * #### Example
+   * ### Preserve
    *
-   * *Below is an example of how this rule works if it's enabled, ie: `true`. Notice
-   * how the ending delimiter is forced onto a newline after formatting.*
+   * _Instructs Æsthetic to preserve attribute values as they have been provided.
+   * The example below, where the `class` value contains a newline will be preserved._
    *
    * ```html
    *
    * <!-- Before formatting -->
    * <div
-   *  id="x"
-   *  class="xx">
+   *   class="
+   *    a1-2 b1-2 c1-2 d1-2 e1-2 f1-2
+   *    g1-2 h1-2 i1-2 j1-2
+   *   "
+   *   id="x"></div>
    *
+   * <!-- After formatting -->
+   * <div
+   *   class="
+   *    a1-2 b1-2 c1-2 d1-2 e1-2 f1-2
+   *    g1-2 h1-2 i1-2 j1-2
+   *   "
+   *   id="x"></div>
+   *
+   *
+   * ```
+   *
+   * >
+   *
+   * ---
+   *
+   * >
+   *
+   * ### Inline
+   *
+   * _Instructs Æsthetic ensure the value of an attribute which spans multiple lines
+   * is always inlined, with quotation starting and ending on the same line._
+   *
+   * ```html
+   *
+   * <!-- Before formatting -->
+   * <div
+   *   id="x"
+   *   class="
+   *    a1-2 b1-2 c1-2 d1-2 e1-2 f1-2
+   *    g1-2 h1-2 i1-2 j1-2
+   *   ">
    * </div>
    *
    * <!-- After formatting -->
    * <div
-   *  id="x"
-   *  class="xx"
-   * >
-   *
+   *   id="x"
+   *   class="a1-2 b1-2 c1-2 d1-2 e1-2 f1-2
+   *   g1-2 h1-2 i1-2 j1-2">
    * </div>
+   *
+   *
    * ```
-   */
-  delimiterTerminus?: 'inline' | 'force' | 'adapt';
-
-  /**
-   * Line Break Value
    *
-   * Forces attribute values onto newlines
-   */
-  lineBreakValue?: 'preserve' | 'align' | 'indent' | 'force-preserve' | 'force-align' | 'force-indent'
-
-  /**
-   * **Default** `[]`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `[]`
-   *
-   * A comma separated list of attribute names. Attributes will be sorted according to
-   * this list and then alphanumerically. This option requires `attributeSort` have
-   * to be enabled, ie: have a value of `true`.
+   * >
    *
    * ---
    *
-   * #### Example
+   * >
    *
-   * *Below is an example of how this rule works if it's enabled, ie: `true`. Notice
+   *
+   * ### Align
+   *
+   * _Whenever values span multiple lines or exceed word wrap, the entries will be forced onto
+   * a newline, and will align to the attributes starting point each line. In the below example
+   * lets assume the class value has exceeded wrap length._
+   *
+   * ```html
+   *
+   * <!-- Before formatting -->
+   * <div
+   *   class="a1-2 b1-2 c1-2 d1-2 e1-2 f1-2 g1-2 h1-2 i1-2 j1-2"
+   *   id="x">
+   * </div>
+   *
+   * <!-- After formatting -->
+   * <div
+   *   class="
+   *   a1-2 b1-2 c1-2 d1-2 e1-2
+   *   f1-2 g1-2 h1-2 i1-2 j1-2
+   *   "
+   *   id="x">
+   * </div>
+   *
+   *
+   * ```
+   *
+   *
+   * >
+   *
+   * ---
+   *
+   * >
+   *
+   *
+   * ### Indent
+   *
+   * _Whenever values span multiple lines or exceed word wrap, the entries will be forced onto
+   * a newline and be indented at the starting point of each line. In the below example
+   * lets assume the class value has exceeded wrap length._
+   *
+   * ```html
+   *
+   * <!-- Before formatting -->
+   * <div
+   *   class="a1-2 b1-2 c1-2 d1-2 e1-2 f1-2 g1-2 h1-2 i1-2 j1-2"
+   *   id="x">
+   * </div>
+   *
+   * <!-- After formatting -->
+   * <div
+   *   class="
+   *    a1-2 b1-2 c1-2 d1-2 e1-2
+   *    f1-2 g1-2 h1-2 i1-2 j1-2
+   *   "
+   *   id="x">
+   * </div>
+   *
+   *
+   * ```
+   */
+  valueLineBreak?: 'preserve' | 'inline' | 'align' | 'indent';
+
+  /**
+   * #### Default: `false`
+   *
+   * >
+   *
+   * ### [Attribute Sort](https://aesthetic.js.org/rules/markup/attributeSort/)
+   *
+   * The rule will alphanumerically sort attributes annotated on markup tags. The rules
+   * accepts either a `boolean` or a `string[]` type. When a boolean value of `true` is
+   * provided, Æsthetic will sort attributes alphanumerically. Passing a list of attribute
+   * names allows you to customize the ordering of attributes names, wherein sorting applies
+   * according to the provided list and then alphanumerically thereafter.
+   *
+   * > **NOTE**
+   * >
+   * > **Sorting will be skipped on elements which containg Liquid expressions or conditional**
+   * > **rendering logic. The rule will only work on markup safe elements.**
+   *
+   * >
+   * >
+   *
+   * ---
+   *
+   * >
+   *
+   * #### Enable: `true`
+   *
+   * _Below is an example of how this rule works if it's enabled, ie: `true`. Notice
    * how the attributes are not alphabetically sorted before formatting is applied
-   * whereas after formatting they are sorted alphabetically.*
+   * whereas after formatting they are sorted alphabetically._
    *
    * ```html
    *
@@ -224,21 +265,31 @@ export interface MarkupRules {
    *   id="x">
    *
    * </div>
+   *
    * ```
    *
-   * #### Example
+   * >
    *
-   * *Below is an example of how this rule works if it's enabled and you've defined
-   * the following attribute sorting structure:*
+   * ---
+   *
+   * >
+   *
+   * #### Enable: `string[]`
+   *
+   * _Below is an example of how this rule works if it's enabled and you've defined
+   * the following attribute sorting structure:_
    *
    * ```js
+   *
    * {
    *   attributeSort: ['id', 'class', 'data-b']
    * }
+   *
+   *
    * ```
    *
-   * *Using the above options, notice how how `data-a`, `data-c` and `data-d` are sorted
-   * alphabetically in order following the sort list we provided*
+   * _Using the above options, notice how how `data-a`, `data-c` and `data-d` are sorted
+   * alphabetically in order following the sort list we provided_
    *
    * ```html
    *
@@ -263,6 +314,7 @@ export interface MarkupRules {
    *   data-d>
    *
    * </div>
+   *
    * ```
    */
   attributeSort?: boolean | string[];
@@ -273,11 +325,11 @@ export interface MarkupRules {
   classSort?: boolean | string[] | 'tailwind'
 
   /**
-   * **Default** `false`
+   * <h5>Default</h5>
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
    *
-   * Markup self-closing tags end will end with `' />'` instead of `'/>'`
+   * Markup self-closing tags will end with `' />'` instead of `'/>'`
    *
    * ---
    *
@@ -303,15 +355,30 @@ export interface MarkupRules {
   selfCloseSpace?: boolean;
 
   /**
-   * **Default** `true`
+   * #### Default: `true`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   * >
+   *
+   * ### [Self Close SVG](https://aesthetic.js.org/rules/selfCloseSVG/)
    *
    * Whether or not SVG type tags should be converted to self closing void
-   * types. When enabled, tags which contain a closing tag will instead become
-   * void type.
+   * types, or vice-versa. When enabled (`true`), tags contained within an `<svg>`
+   * element and are determined to use an ender type will be transformed to a
+   * void, self-closing tag, i.e: `</path>` → `<path />`.
+   *
+   * >
+   *
+   * ---
+   *
+   * >
+   *
+   * ### Enable: `true`
+   *
+   * _Below is an example of the `selfCloseSVG` rules when it is set to `true`.
+   * Notice how the `</path>` tag transformed to a void type with self closing delimiter `/>`_
    *
    * ```html
+   *
    * <!-- Before Formatting -->
    * <svg>
    *   <path d="M.865 15.978a.5.5"></path>
@@ -321,24 +388,46 @@ export interface MarkupRules {
    * <svg>
    *   <path d="M.865 15.978a.5.5" />
    * </svg>
+   *
+   *
+   * ```
+   *
+   * ---
+   *
+   * >
+   *
+   * ### Disable: `true`
+   *
+   * _Below is an example of the `selfCloseSVG` rules when it is set to `false`.
+   * Notice how the self closing delimiter `/>` is replaced with an `</path>` end tag._
+   *
+   * ```html
+   *
+   * <!-- Before Formatting -->
+   * <svg>
+   *   <path d="M.865 15.978a.5.5" />
+   * </svg>
+   *
+   * <!-- After Formatting -->
+   * <svg>
+   *   <path d="M.865 15.978a.5.5"></path>
+   * </svg>
+   *
+   *
    * ```
    */
   selfCloseSVG?: boolean;
 
   /**
-   * **Default** `false`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * |:-----|:-----:|-----:|
    *
-   * If text in the provided markup code should be preserved exactly as provided.
-   * This option eliminates beautification and wrapping of text content.
-   */
-  preserveText?: boolean;
-
-  /**
-   * **Default** `false`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `3`
+   * **Default Setting**:`false`
+   *
+   * **Recommended:** `3`
+   *
+   * ----
    *
    * If all markup attributes should be indented each onto their own line. You
    * can optionally provide an integer value of `1` or more. When an integer value
@@ -410,11 +499,6 @@ export interface MarkupRules {
   forceAttribute?: boolean | number;
 
   /**
-   * Force Attribute Values
-   */
-  forceAttributeValue?: boolean;
-
-  /**
    * **Default** `false`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
@@ -451,12 +535,34 @@ export interface MarkupRules {
   forceIndent?: boolean;
 
   /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
+   * Controls the forcing behaviour of text node (phrasing content) intra-paragraph elements.
+   * Tags like `<strong>`, `<i>`, `<label>` etc etc are categorized as "Phrasing Content".
+   * This rule will apply to only those elements.
+   *
+   * The rule accepts either a `boolean` or `number` value.
+   *
+   * - Passing a value of `false` will preventing forcing from being applied.
+   * - Passing a value of `true` will force text node content.
+   * - Passing a value of `0` will apply forcing in accordance with `forceAttribute`
+   * - Passing a value of `1` or more will apply forcing when attribute count exeeds limit defined
+   *
+   * If left `undefined`, text nodes will apply in accordance with `forceIndent` and
+   * `forceAttribute`, with `forceIndent` overriding `forceAttribute` if enabled.
+   *
+   */
+  forceTextNode?: boolean | number;
+
+  /**
    * **Default** `none`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `double`
    *
    * If the quotes of markup attributes should be converted to single quotes
-   * or double quotes. Don't be a fucking hero with this option. Markup content
+   * or double quotes. Don't be a hero with this option. Markup content
    * should use double quotations, it's the standard.
    *
    * **Options**
@@ -466,6 +572,16 @@ export interface MarkupRules {
    * - `single` Converts double quotes to single quotes
    */
   quoteConvert?: 'double' | 'single' | 'none';
+
+  /**
+   * **Default** `false`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   *
+   * If text in the provided markup code should be preserved exactly as provided.
+   * This option eliminates beautification and wrapping of text content.
+   */
+  preserveText?: boolean;
 
   /**
    * **Default** `false`
@@ -526,6 +642,31 @@ export interface MarkupRules {
   stripAttributeLines?: boolean;
 
   /**
+   * #### Default: `false`
+   *
+   * >
+   *
+   * ### [Strip Text Wrap Lines](https://aesthetic.js.org/rules/markup/stripTextWrapLines/)
+   *
+   * Whether or not Æsthetic should strip newline occurances when applying word-wrap on text
+   * content. This rule will only take effect if a word wrap limit has been defined via `wrap` option.
+   * When enabled, Æsthetic will remove newline occurances from text identified content and produce a
+   * strictly formed wrap.
+   *
+   * By default, this rule is `false` and Æsthetic will preserve newlines within text content, ensuring that
+   * newline occurances adhere to the `preserveLine` limit regardless of whether or not a `wrap` limit has been set.
+   * Setting this to `true` will override `preserveLine` within text specific content and instead refer to the `wrap`
+   * limitation.
+   *
+   *
+   * > **NOTE**
+   * >
+   * > If you have set `preserveText` to `true` this rule will be ignored, as `preserveText` take precedence and
+   * > will override all text content related formatting options.
+   */
+  stripTextWrapLines?: boolean;
+
+  /**
    * **Default** `false`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
@@ -556,9 +697,9 @@ export interface MarkupRules {
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
    *
-   * Whether HTML `<script>` tags annotated with a JSON identifiable attribute
-   * should be ignored from beautification. When disabled, formatting will be
-   * applied in accordancee with rules defined in the `json` ruleset.
+   * Whether HTML `<script type="application/json>` tags or those annotated with a
+   * JSON identifiable attribute should be ignored from beautification. When disabled,
+   * formatting will be applied in accordancee with rules defined in the `json` ruleset.
    *
    */
   ignoreJSON?: boolean;

@@ -1,4 +1,3 @@
-
 /**
  * Style lexer stack token types
  */
@@ -732,6 +731,33 @@ export enum LiquidTypes {
    */
   ignore_next = 'ignore_next',
 
+  /**
+   * Liquid block comment start tag
+   *
+   * ---
+   * @example
+   *
+   * {% comment %}
+   */
+  liquid_comment_start = 'liquid_comment_start',
+  /**
+   * Liquid block comment contents
+   *
+   * ---
+   * @example
+   *
+   * Lorem ipsum
+   */
+  liquid_comment = 'liquid_comment',
+  /**
+   * Liquid block comment end tag
+   *
+   * ---
+   * @example
+   *
+   * {% endcomment %}
+   */
+  liquid_comment_end = 'liquid_comment_end',
 }
 
 /**

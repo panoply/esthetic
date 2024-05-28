@@ -242,7 +242,7 @@ export interface Grammars {
      * #### Example
      *
      * ```js
-     * prettify.grammar({
+     * esthetic.grammar({
      *   liquid: {
      *     embedded: {
      *       schema: [
@@ -306,14 +306,26 @@ export interface Grammars {
      *
      * String list of HTML tag blocks
      */
-    tags?: string[]
+    tags?: string[];
+    /**
+     * HTML Phrasing Content
+     *
+     * String list of HTML text nodes that should be categorized as
+     * [Phrasing Content](https://html.spec.whatwg.org/single-page.html#phrasing-content).
+     * By default, Æsthetic references the HTML Specification, treating all phrasing content
+     * elements (tags) according to the specification.
+     *
+     * Prefix entries with an exclimation mark `!` if you wish for Æsthetic to exclude any of
+     * the default entries, and instead treat such elements as flow content.
+     */
+    phrasing?: string[];
     /**
      * HTML Voids
      *
      * String list of additional or custom void type
      * HTML tags.
      */
-    voids?: string[]
+    voids?: string[];
     /**
      * **Embedded**
      *
@@ -373,7 +385,6 @@ export interface Grammars {
    * Internal Usage
    */
   css?: {
-
     /**
      * At-rules are CSS statements that instruct CSS how to behave.
      * They begin with an at sign, `@`, followed by an identifier and
