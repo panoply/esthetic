@@ -97,6 +97,18 @@ export const enum ParseError {
   InvalidHTMLCommentDelimiter,
 
   /**
+   * Invalid Phrasing Content
+   *
+   * @example
+   * <p>
+   *  <p> // Invalid p tag contained in paragraph
+   *
+   *  </p>
+   * </p>
+   */
+  InvalidHTMLPhrasingContent,
+
+  /**
    * Invalid Comment Attribute
    *
    * @example
