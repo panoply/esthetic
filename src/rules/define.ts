@@ -8,7 +8,7 @@ import { warrington } from 'rules/presets/warrington';
 import { prettier } from 'rules/presets/prettier';
 import { object } from 'utils/native';
 import { CNL, NWL } from 'lexical/chars';
-import { hasProp, merge } from 'utils/helpers';
+import { hasProp, isNumber, isUndefined, merge } from 'utils/helpers';
 
 const GLOB = [
   'correct',
@@ -117,6 +117,24 @@ export function setRules (opts: Rules, events: EventListeners) {
         parse.rules[lang][rule] = options[lang][rule];
 
       }
+    }
+  }
+
+  if (isUndefined(parse.rules.markup.forceTextNode)) {
+    if (parse.rules.markup.forceIndent === false) {
+      if (parse.rules.markup.forceAttribute === true) {
+        parse.rules.markup.forceTextNode = true;
+      } else if (isNumber(parse.rules.markup.forceAttribute)) {
+        parse.rules.markup.forceTextNode = parse.rules.markup.forceAttribute;
+      }
+    } else if (isNumber(parse.rules.markup.forceAttribute)) {
+      parse.rules.markup.forceTextNode = parse.rules.markup.forceAttribute;
+    } else {
+      parse.rules.markup.forceTextNode = true;
+    }
+  } else if (isNumber(parse.rules.markup.forceTextNode)) {
+    if (parse.rules.markup.forceTextNode === 0) {
+      parse.rules.markup.forceTextNode = parse.rules.markup.forceAttribute;
     }
   }
 
