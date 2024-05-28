@@ -1,5 +1,5 @@
 import type { GlobalRules, LanguageRuleNames, LiquidRules, MarkupRules, LanguageName } from 'types';
-import { isArray, isBoolean, isNumber, isString } from 'utils/helpers';
+import { isArray, isBoolean, isNumber, isString, isUndefined } from 'utils/helpers';
 import { RuleError } from 'parse/errors';
 
 /**
@@ -52,6 +52,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'indentAttribute':
       case 'normalizeSpacing':
       case 'preserveComment':
+      case 'forceIndent':
 
         return isValidBoolean(language, rule, value);
 
@@ -94,6 +95,23 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
           ]
         });
 
+      case 'forceTextNode':
+
+        if (isNumber(value)) return isValidNumber(language, rule, value);
+        if (isBoolean(value)) return isValidBoolean(language, rule, value);
+        if (isUndefined(value)) return true;
+
+        throw RuleError({
+          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
+          option: `${language} → ${rule}`,
+          provided: value,
+          expected: [
+            'undefined',
+            'boolean',
+            'number'
+          ]
+        });
+
       case 'attributeSort':
 
         if (isBoolean(value)) return isValidBoolean(language, rule, value);
@@ -112,7 +130,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'commentNewline':
       case 'commentIndent':
       case 'forceIndent':
-      case 'forceAttributeValue':
       case 'ignoreCSS':
       case 'ignoreJS':
       case 'ignoreJSON':
@@ -121,6 +138,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'preserveAttribute':
       case 'selfCloseSpace':
       case 'selfCloseSVG':
+      case 'stripTextWrapLines':
       case 'stripAttributeLines':
 
         return isValidBoolean(language, rule, value);
@@ -128,7 +146,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'attributeCasing':
       case 'commentDelimiters':
       case 'delimiterTerminus':
-      case 'lineBreakValue':
+      case 'valueLineBreak':
       case 'quoteConvert':
 
         return isValidChoice(language, rule, value);
@@ -488,15 +506,13 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       });
     }
 
-  } else if (rule === 'lineBreakValue') {
+  } else if (rule === 'valueLineBreak') {
 
-    switch (value as MarkupRules['lineBreakValue']) {
+    switch (value as MarkupRules['valueLineBreak']) {
       case 'preserve':
       case 'align':
       case 'indent':
-      case 'force-preserve':
-      case 'force-align':
-      case 'force-indent': return true;
+      case 'inline': return true;
       default: throw RuleError({
         message: `Invalid "${rule}" option provided`,
         option: `${language} → ${rule}`,
