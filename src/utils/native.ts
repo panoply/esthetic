@@ -32,3 +32,8 @@ export const defineProperties = Object.defineProperties;
  * Native Console Warn
  */
 export const warn = console.warn;
+
+/**
+ * Set Helper Storage
+ */
+export const set = <T = any>(value?: any[]) => new Set<T>(value);
