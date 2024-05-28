@@ -25,7 +25,7 @@ import { SyntacticError } from 'parse/errors';
 import { ParseError } from 'lexical/errors';
 import { config } from 'config';
 import { cc } from 'lexical/codes';
-import { object } from 'utils/native';
+import { grammar } from './grammar';
 
 /**
  * Parse Stack
@@ -155,7 +155,13 @@ class Parser {
    * Holds a store reference to markup start/end pairs. This is used for potential
    * parse errors and keeps track of paired sequences for syntactic reporting.
    */
-  public pairs: { [index: number]: Syntactic } = object(null);
+  public textNodes: Set<number> = new Set();
+
+  /**
+   * Holds a store reference to markup start/end pairs. This is used for potential
+   * parse errors and keeps track of paired sequences for syntactic reporting.
+   */
+  public pairs: Map<number, Syntactic> = new Map();
 
   /**
    * Parse Error reference. Defaults to `null` and will be assigned an object reference exception
@@ -373,10 +379,11 @@ class Parser {
     this.references = [ [] ];
     this.stack = new Stack([ 'global', -1 ]);
     this.mode = Modes.Parse;
-    this.pairs = object(null);
 
+    if (this.pairs.size > 0) this.pairs.clear();
     if (this.attributes.size > 0) this.attributes.clear();
     if (this.regions.size > 0) this.regions.clear();
+    if (this.textNodes.size > 0) this.textNodes.clear();
 
   }
 
@@ -385,7 +392,7 @@ class Parser {
    *
    * Returns a record at the give index
    */
-  public get (index: number) {
+  public get (index: number = this.count) {
 
     return {
       begin: this.data.begin[index],
@@ -531,9 +538,11 @@ class Parser {
    */
   public syntactic (record: Record, stack: string) {
 
-    if (record.types === 'liquid_start' || record.types === 'start') {
+    if (
+      record.types === 'liquid_start' ||
+      record.types === 'start') {
 
-      this.pairs[this.count] = {
+      const pair = {
         index: this.count,
         line: this.lineNumber,
         token: record.token,
@@ -542,22 +551,33 @@ class Parser {
         stack
       };
 
-    } else if ((this.stack.index in this.pairs) && (
+      if (
+        this.pairs.size > 0 &&
+        this.pairs.has(this.stack.index) &&
+        this.pairs.get(this.stack.index).stack === 'p') {
+
+        if (!grammar.html.textNodes.has(lx.getTagName(record.token))) {
+          SyntacticError(ParseError.InvalidHTMLPhrasingContent, pair);
+        }
+
+      }
+
+      this.pairs.set(this.count, pair);
+
+    } else if (this.pairs.has(this.stack.index) && (
       record.types === 'end' ||
       record.types === 'liquid_end'
     )) {
 
-      const pair = this.pairs[this.stack.index];
+      const pair = this.pairs.get(this.stack.index);
 
-      if (pair.skip) {
-        delete this.pairs[this.stack.index];
-      }
+      if (pair.skip) this.pairs.delete(this.stack.index);
 
       if (pair.type === Languages.Liquid) {
 
         if (record.token.indexOf(`end${pair.stack}`) > -1) {
 
-          delete this.pairs[this.stack.index];
+          this.pairs.delete(this.stack.index);
 
         } else {
 
@@ -565,7 +585,7 @@ class Parser {
           // IMPROVE LIQUID TAG HANDLING
           //
           if (record.stack === 'liquid' && (record.token === '%}' || record.token === '-%}')) {
-            delete this.pairs[this.stack.index];
+            this.pairs.delete(this.stack.index);
           } else {
             SyntacticError(ParseError.MissingLiquidEndTag, pair);
           }
@@ -574,7 +594,7 @@ class Parser {
       } else if (pair.type === Languages.HTML) {
 
         if (`</${pair.stack}>` === record.token) {
-          delete this.pairs[this.stack.index];
+          this.pairs.delete(this.stack.index);
         } else {
 
           SyntacticError(ParseError.MissingHTMLEndTag, pair);
@@ -625,9 +645,7 @@ class Parser {
         : lx.getTagName(record.token);
     }
 
-    if (
-      record.lexer === 'markup' &&
-      record.stack !== 'liquid') {
+    if (record.lexer === 'markup' && record.stack !== 'liquid') {
 
       this.syntactic(record, token);
 
@@ -655,7 +673,7 @@ class Parser {
        */
       const length = this.stack.length;
 
-      if (length > 2 && (
+      if (length > 2 && data.types[this.stack[length - 1][1]] && (
         data.types[this.stack[length - 1][1]] === 'else' ||
         data.types[this.stack[length - 1][1]].indexOf('_else') > 0
       ) && (
@@ -683,7 +701,7 @@ class Parser {
       this.stack.pop();
       this.lineDepth = this.lineDepth - this.rules.indentSize;
 
-    } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
+    } else if (record.types && (record.types === 'else' || record.types.indexOf('_else') > 0)) {
 
       if (token === NIL) token = 'else';
 
@@ -761,22 +779,24 @@ class Parser {
    */
   public splice (splice: Splice) {
 
+    if (!('data' in splice)) splice.data = this.data;
+
     const begin = this.data.begin[this.count];
     const token = this.data.token[this.count];
 
     if (splice.record !== undefined && splice.record.token !== NIL) {
 
-      splice.data.begin.splice(splice.index, splice.howmany, splice.record.begin);
-      splice.data.ender.splice(splice.index, splice.howmany, splice.record.ender);
-      splice.data.token.splice(splice.index, splice.howmany, splice.record.token);
-      splice.data.lexer.splice(splice.index, splice.howmany, splice.record.lexer);
-      splice.data.stack.splice(splice.index, splice.howmany, splice.record.stack);
-      splice.data.types.splice(splice.index, splice.howmany, splice.record.types);
-      splice.data.lines.splice(splice.index, splice.howmany, splice.record.lines);
+      splice.data.begin.splice(splice.index, splice.remove, splice.record.begin);
+      splice.data.ender.splice(splice.index, splice.remove, splice.record.ender);
+      splice.data.token.splice(splice.index, splice.remove, splice.record.token);
+      splice.data.lexer.splice(splice.index, splice.remove, splice.record.lexer);
+      splice.data.stack.splice(splice.index, splice.remove, splice.record.stack);
+      splice.data.types.splice(splice.index, splice.remove, splice.record.types);
+      splice.data.lines.splice(splice.index, splice.remove, splice.record.lines);
 
       if (splice.data === this.data) {
 
-        this.count = (this.count - splice.howmany) + 1;
+        this.count = (this.count - splice.remove) + 1;
         if (begin !== this.data.begin[this.count] || token !== this.data.token[this.count]) {
           this.lineOffset = 0;
         }
@@ -784,19 +804,20 @@ class Parser {
 
     } else {
 
-      splice.data.begin.splice(splice.index, splice.howmany);
-      splice.data.ender.splice(splice.index, splice.howmany);
-      splice.data.token.splice(splice.index, splice.howmany);
-      splice.data.lexer.splice(splice.index, splice.howmany);
-      splice.data.stack.splice(splice.index, splice.howmany);
-      splice.data.types.splice(splice.index, splice.howmany);
-      splice.data.lines.splice(splice.index, splice.howmany);
+      splice.data.begin.splice(splice.index, splice.remove);
+      splice.data.ender.splice(splice.index, splice.remove);
+      splice.data.token.splice(splice.index, splice.remove);
+      splice.data.lexer.splice(splice.index, splice.remove);
+      splice.data.stack.splice(splice.index, splice.remove);
+      splice.data.types.splice(splice.index, splice.remove);
+      splice.data.lines.splice(splice.index, splice.remove);
 
       if (splice.data === this.data) {
-        this.count = this.count - splice.howmany;
+        this.count = this.count - splice.remove;
         this.lineOffset = 0;
       }
     }
+
   }
 
   /**
