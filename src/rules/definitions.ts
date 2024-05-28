@@ -383,6 +383,18 @@ export const definitions: Definitions = {
         warrington: 0
       }
     },
+    forceIndent: {
+      default: false,
+      description: 'Force indentation of start/end type tags. When enabled, tag structures cannot be inline',
+      type: 'boolean',
+      preset: {
+        default: false,
+        prettier: true,
+        recommended: true,
+        strict: false,
+        warrington: true
+      }
+    },
     delimiterPlacement: {
       default: 'preserve',
       description: 'Controls the placement of Liquid delimiters',
@@ -611,6 +623,18 @@ export const definitions: Definitions = {
         warrington: true
       }
     },
+    forceTextNode: {
+      default: undefined,
+      description: 'Controls forcing behaviour on phrasing content (text node) intra paragraph elements.',
+      type: 'boolean',
+      preset: {
+        default: undefined,
+        prettier: 2,
+        recommended: false,
+        strict: 2,
+        warrington: false
+      }
+    },
     ignoreJS: {
       default: true,
       description: 'Whether to ignore embedded regions of tags identified to contain JavaScript',
@@ -683,7 +707,19 @@ export const definitions: Definitions = {
         warrington: false
       }
     },
-    lineBreakValue: {
+    stripTextWrapLines: {
+      default: false,
+      description: 'Removes newlines from text identified content when using wrap formatting',
+      type: 'boolean',
+      preset: {
+        default: false,
+        prettier: true,
+        recommended: false,
+        strict: true,
+        warrington: true
+      }
+    },
+    valueLineBreak: {
       default: 'preserve',
       description: 'Determines how Æsthetic should handle line break occurance sequences within attribute values',
       type: 'choice',
