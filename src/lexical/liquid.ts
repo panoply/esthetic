@@ -266,6 +266,15 @@ export function delimiters (input: string, tname?: string, space = WSP) {
 
 };
 
+/**
+ * Liquid Normalize
+ *
+ * This function is a post-processor which will analyze Liquid tokens which were
+ * traversed during lexical token parsing operations. It's here where we will correct
+ * and apply beautification to the internal markup of Liquid tokens, such as applying
+ * liquid filter, argument and linebreak forcing. In addition, this function is responsible
+ * for setting delimiter trims and placements.
+ */
 export function normalize (lexed: string[], tname: string, liquid: LiquidInternal, {
   wrapFraction,
   liquid: {
@@ -274,7 +283,6 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
     lineBreakSeparator,
     delimiterTrims,
     delimiterPlacement
-
   }
 }: Rules) {
 
@@ -353,8 +361,8 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 
   if (delimiterPlacement === 'preserve') {
 
-    open += (is(lexed[o], cc.NWL) ? NWL : WSP);
-    close = (is(lexed[c - 1], cc.NWL) ? NWL : WSP) + close;
+    open += is(lexed[o], cc.NWL) ? NWL : WSP;
+    close = is(lexed[c - 1], cc.NWL) ? NWL + close : WSP + close;
 
   } else if (delimiterPlacement === 'force') {
 
@@ -496,9 +504,9 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
           )
         )) {
 
-          const args: number = liquid.fargs[i].length;
-
-          for (let n: number = 0; n < args; n++) {
+          for (
+            let n: number = 0
+              , s = liquid.fargs[i].length; n < s; n++) {
 
             const arg = liquid.fargs[i][n];
 
