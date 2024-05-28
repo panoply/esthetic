@@ -12,7 +12,7 @@ test('Structure Test: Empty style tags', t => {
 
           {% style %}
 
-          {% endstyle%}
+          {% endstyle %}
         `,
         liquid`{% # Empty Style tag %}
 
@@ -53,13 +53,12 @@ test('Structure Test: Empty style tags', t => {
 
 
           {%- style %}
-          {% endstyle%}
+          {% endstyle %}
 
         `,
         liquid`{% # Multiple empty style tag sequences %}
 
-          {% style %}
-          {% endstyle %}
+          {% style %} {% endstyle %}
 
           {% style %}
 

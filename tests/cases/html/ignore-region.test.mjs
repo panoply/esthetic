@@ -80,7 +80,9 @@ test('HTML Ignore Comment Region - Various structure tests', t => {
         <!-- esthetic-ignore-end -->
         <section>
           <ul>
-            <li>TEST INDENTATION</li>
+            <li>
+              TEST INDENTATION
+            </li>
           </ul>
         </section>
         `
@@ -116,7 +118,7 @@ test('HTML Ignore Comment Region - Various structure tests', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentNewline: false
+        forceIndent: true
       }
     });
 
@@ -295,7 +297,10 @@ test('HTML Ignore Comment Region - Newlines and indentation', t => {
     ]
   )(
     {
-      language: 'html'
+      language: 'html',
+      markup: {
+        forceIndent: true
+      }
     }
   )(function (source, rules, label) {
 

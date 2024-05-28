@@ -305,8 +305,8 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
                 {{ 'Indentation 2' }}
               </div>
             </main>
-          {% else %}
-            {% render 'filename' %}
+        {% else %}
+          {% render 'filename' %}
         {% endcase %}
         `
       ],
@@ -343,8 +343,8 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
             {%- endif -%}
           {% when 'Dedentation 1' %}
             {{ 'Indentation 2' }}
-          {% else %}
-            {{ 'Indentation 2' }}
+        {% else %}
+          {{ 'Indentation 2' }}
         {% endcase %}
         `
       ]
@@ -401,8 +401,8 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
                     {{ 'Indentation Level 7' }}
                   {% when level[6] %}
                     {{ 'Indentation Level 7' }}
-                  {% else %}
-                    {{ 'Indentation Level 7' }}
+                {% else %}
+                  {{ 'Indentation Level 7' }}
                 {% endcase %}
               {% else %}
                 {{ 'Indentation Level 5' }}
@@ -412,8 +412,8 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
             {%- endif -%}
           {% when 'Dedentation 1' %}
             {{ 'Indentation 2' }}
-          {% else %}
-            {{ 'Indentation 2' }}
+        {% else %}
+          {{ 'Indentation 2' }}
         {% endcase %}
       `
       ],
@@ -474,12 +474,12 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
                 {%- endif -%}
               {% when 'Dedentation 1' %}
                 {{ 'Indentation 2' }}
-              {% else %}
-                <main>
-                  <div>
-                    {{ 'Indentation 2' }}
-                  </div>
-                </main>
+            {% else %}
+              <main>
+                <div>
+                  {{ 'Indentation 2' }}
+                </div>
+              </main>
             {% endcase %}
           </main>
         </section>
@@ -722,8 +722,8 @@ test('Case tag with rules (default) - forceIndent: false, forceAttribute: true',
               {{ 'Indentation 2' }}
             </div>
           </main>
-        {% else %}
-          {% render 'filename' %}
+      {% else %}
+        {% render 'filename' %}
       {% endcase %}
       `
     ]
@@ -799,8 +799,8 @@ test('Case tag with rules (default) - forceIndent: true, forceAttribute: false',
               {{ 'Indentation 2' }}
             </div>
           </main>
-        {% else %}
-          {% render 'filename' %}
+      {% else %}
+        {% render 'filename' %}
       {% endcase %}
       `
     ]
@@ -993,8 +993,8 @@ test('Case tag with rules (default) - forceIndent: true, forceAttribute: true', 
                 first_expression
               {% when second_value %}
                 second_expression
-              {% else %}
-                third_expression
+            {% else %}
+              third_expression
             {% endcase %}
           </section>
         {% when 'Dedentation 1' %}
@@ -1003,16 +1003,16 @@ test('Case tag with rules (default) - forceIndent: true, forceAttribute: true', 
               {{ 'Indentation 2' }}
             </div>
           </main>
-        {% else %}
-          {% render 'filename' %}
+      {% else %}
+        {% render 'filename' %}
       {% endcase %}
       {% case variable %}
         {% when first_value %}
           first_expression
         {% when second_value %}
           second_expression
-        {% else %}
-          third_expression
+      {% else %}
+        third_expression
       {% endcase %}
       `
     ]

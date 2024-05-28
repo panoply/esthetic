@@ -120,8 +120,7 @@ test('Limit Attribute Force: Forcing attributes onto newlines when limit is exce
           id="foo"
           {% if condition %}
           data-id="xx"
-          {% endif %}
-          class="foo bar baz"></div>
+          {% endif %} class="foo bar baz"></div>
         `
       ],
       [
@@ -136,8 +135,7 @@ test('Limit Attribute Force: Forcing attributes onto newlines when limit is exce
             id="foo"
             {% if condition %}
             data-id="xx"
-            {% endif %}
-            class="foo bar baz"></div>
+            {% endif %} class="foo bar baz"></div>
         </div>
         `
       ]
@@ -146,6 +144,9 @@ test('Limit Attribute Force: Forcing attributes onto newlines when limit is exce
 
     const actual = esthetic.format(source, {
       language: 'liquid',
+      liquid: {
+        indentAttribute: true
+      },
       markup: {
         forceAttribute: 4
       }

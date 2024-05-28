@@ -1,5 +1,5 @@
 import test from 'ava';
-import { forAssert, html } from '@liquify/ava/esthetic';
+import { forRule, forAssert, html } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('HTML Preserve Text - Free range structures', t => {
@@ -7,19 +7,18 @@ test('HTML Preserve Text - Free range structures', t => {
   forAssert(
     [
       [
-        html`<!-- Text will not be touched -->
+        html`<!-- Text will not be touched 1 -->
           Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua.
         `
         ,
-        html`<!-- Text will not be touched -->
+        html`<!-- Text will not be touched 1 -->
           Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua.
         `
       ],
       [
-        html`<!-- Text will not be touched but lines will be respected -->
-
+        html`<!-- Text will not be touched but lines will be respected 2 -->
 
 
           Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
@@ -33,7 +32,7 @@ test('HTML Preserve Text - Free range structures', t => {
 
         `
         ,
-        html`<!-- Text will not be touched but lines will be respected -->
+        html`<!-- Text will not be touched but lines will be respected 2 -->
 
 
           Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
@@ -79,6 +78,7 @@ test('HTML Preserve Text - Free range structures', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
+      preserveLine: 3,
       markup: {
         commentNewline: false,
         preserveText: true
@@ -92,57 +92,32 @@ test('HTML Preserve Text - Free range structures', t => {
 
 });
 
-test('HTML Preserve Text - Inside Tags with preserveLine: 0', t => {
+test('HTML Preserve Text - Nested within tags', t => {
 
   forAssert(
     [
       [
-        html`<!-- Text will not be touched -->
+        html`
         <div>
+        <section>
           Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        </div>`
-        ,
-        html`<!-- Text will not be touched -->
-        <div>
-          Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        </div>`
-      ],
-      [
-        html`<!-- Text will not be touched but preserveLine will be respected -->
-        <div>
-          <section>
-
-
-
-          Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-
-          <p>
-
-
+            <p>
           Lorem
                 ipsum       dolor         sit
                                                       amet      consectetur
                                                       adipiscing
                                                       elit
-                               incididunt             sed do
+                                incididunt             sed do
         eiusmod
                 tempor
                             incididunt ut
 
                                                 labore et dolore magna aliqua.
-
-
-          </p>
-
-
-                </section>
-        </div>`
-        ,
-        html`<!-- Text will not be touched but preserveLine will be respected -->
+            </p>
+        </section>
+        </div>`,
+        html`
         <div>
           <section>
           Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
@@ -153,7 +128,7 @@ test('HTML Preserve Text - Inside Tags with preserveLine: 0', t => {
                                                       amet      consectetur
                                                       adipiscing
                                                       elit
-                               incididunt             sed do
+                                incididunt             sed do
         eiusmod
                 tempor
                             incididunt ut
@@ -162,46 +137,63 @@ test('HTML Preserve Text - Inside Tags with preserveLine: 0', t => {
             </p>
           </section>
         </div>`
-      ]
-    ]
-  )(function (input, expect) {
-
-    const actual = esthetic.format(input, {
-      language: 'html',
-      preserveLine: 0,
-      markup: {
-        commentNewline: false,
-        preserveText: true
-
-      }
-    });
-
-    t.deepEqual(actual, expect);
-
-  });
-
-});
-
-test('HTML Preserve Text - Text Content Contains Tags', t => {
-
-  forAssert(
-    [
+      ],
       [
-        html`<!-- Text will not be touched -->
-          Lorem ipsum dolor sit amet,   <strong>consectetur</strong> adipiscing elit,   sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        `
-        ,
-        html`<!-- Text will not be touched -->
-          Lorem ipsum dolor sit amet,      consectetur adipiscing elit,   sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        html`
+        <main>
+        <div>
+        <nav id="menu">
+        <ul>
+          <li>
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+          Ipsum alias iste accusamus, culpa itaque nulla quisquam distinctio
+          eveniet odio, sit exercitationem perferendis! Beatae nostrum non a
+          labore impedit expedita hic?
+          </li>
+          <li>
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+          Ipsum alias iste accusamus, culpa itaque nulla quisquam distinctio
+          eveniet odio, sit exercitationem perferendis! Beatae nostrum non a
+          labore impedit expedita hic?
+          </li>
+        </ul>
+        </nav>
+        </div>
+        </main>
+        `,
+        html`
+        <main>
+          <div>
+            <nav id="menu">
+              <ul>
+                <li>
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+          Ipsum alias iste accusamus, culpa itaque nulla quisquam distinctio
+          eveniet odio, sit exercitationem perferendis! Beatae nostrum non a
+          labore impedit expedita hic?
+                </li>
+                <li>
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+          Ipsum alias iste accusamus, culpa itaque nulla quisquam distinctio
+          eveniet odio, sit exercitationem perferendis! Beatae nostrum non a
+          labore impedit expedita hic?
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </main>
         `
       ]
     ]
-  )(function (input, expect) {
+  )(function (input, expect, label) {
+
+    // t.log(this.size); // number of inputs
+    // t.log(this.indexinput); // the index reference of input running
+    // t.log(this.indexRule); // the index reference of ruleset
 
     const actual = esthetic.format(input, {
       language: 'html',
+      preserveLine: 3,
       markup: {
         commentNewline: false,
         preserveText: true

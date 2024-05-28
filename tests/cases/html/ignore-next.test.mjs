@@ -10,7 +10,8 @@ test('HTML Ignore Comment Next - Various structure tests', t => {
         html`
         <div>
         FORCING INLINE IGNORE
-        </div><!-- esthetic-ignore-next --><main>
+        </div>
+        <!-- esthetic-ignore-next --><main>
                     <h1>                   </h1>
         </main>
         `
@@ -78,7 +79,9 @@ test('HTML Ignore Comment Next - Various structure tests', t => {
 
         <section>
           <ul>
-            <li>TEST INDENTATION</li>
+            <li>
+              TEST INDENTATION
+            </li>
           </ul>
         </section>
         `
@@ -112,7 +115,7 @@ test('HTML Ignore Comment Next - Various structure tests', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentNewline: false
+        forceIndent: true
       }
     });
 
@@ -375,7 +378,10 @@ test('HTML Ignore Comment Next - Edge cases', t => {
     ]
   )(
     {
-      language: 'html'
+      language: 'html',
+      markup: {
+        forceIndent: true
+      }
     }
   )(function (source, rules, label) {
 

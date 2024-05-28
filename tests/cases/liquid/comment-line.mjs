@@ -1,8 +1,8 @@
 import test from 'ava';
-import { liquid, forAssert, forRule } from '@liquify/ava/esthetic';
+import { liquid, html, forAssert, forRule } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('Liquid inline line  Comments - commentIndent: true', t => {
+test('Liquid inline line Comments - commentIndent: true', t => {
 
   forAssert(
     [
@@ -24,7 +24,7 @@ test('Liquid inline line  Comments - commentIndent: true', t => {
         `
       ],
       [
-        liquid`
+        html`
         {%
           # forced comment %}
         `,
@@ -80,7 +80,7 @@ test('Liquid Multiline Line Comments - commentIndent: true', t => {
   forAssert(
     [
       [
-        liquid`
+        html`
         {%
           # inline comment %}
         `,
@@ -116,7 +116,7 @@ test('Liquid Multiline Line Comments - commentIndent: true', t => {
         `
       ],
       [
-        liquid`
+        html`
         {%- #
           # inline delimiters on multiline comments using trims
           # inline delimiters on multiline comments using trims
@@ -192,11 +192,11 @@ test('Liquid Multiline Line Comments - commentIndent: false', t => {
   forAssert(
     [
       [
-        liquid`
+        html`
         {%
           # inline comment %}
         `,
-        liquid`
+        html`
         {%
          # inline comment
         %}
@@ -308,7 +308,7 @@ test('Liquid Multiline Line Comments - Wrap newlines and hash prefix', t => {
 
   forRule(
     [
-      `
+      html`
       {%
         # Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Et leo duis ut diam quam nulla porttitor massa id. Nullam eget felis eget nunc lobortis mattis aliquam faucibus purus. In est ante in nibh. Dolor sed viverra ipsum nunc. A lacus vestibulum sed arcu non. Vitae semper quis lectus nulla at volutpat. Lorem mollis aliquam ut porttitor leo a. Enim ut sem viverra aliquet eget sit amet. Congue eu consequat ac felis donec et odio pellentesque.
 
@@ -317,7 +317,7 @@ test('Liquid Multiline Line Comments - Wrap newlines and hash prefix', t => {
         Tellus molestie nunc non blandit massa enim nec. Mauris rhoncus aenean vel elit scelerisque mauris pellentesque. Praesent elementum facilisis leo vel fringilla est ullamcorper.
        %}
       `,
-      `
+      html`
       {%
         # Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Et leo duis ut diam quam nulla porttitor massa id. Nullam eget felis eget nunc lobortis mattis aliquam faucibus purus. In est ante in nibh. Dolor sed viverra ipsum nunc. A lacus vestibulum sed arcu non. Vitae semper quis lectus nulla at volutpat. Lorem mollis aliquam ut porttitor leo a. Enim ut sem viverra aliquet eget sit amet. Congue eu consequat ac felis donec et odio pellentesque.
 

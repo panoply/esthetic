@@ -156,7 +156,10 @@ test('Ignore Region (Block Comment) - Newlines and indentation', async t => {
     ]
   )(
     {
-      language: 'liquid'
+      language: 'liquid',
+      markup: {
+        forceIndent: true
+      }
     }
   )(async function (source, rules, label) {
 

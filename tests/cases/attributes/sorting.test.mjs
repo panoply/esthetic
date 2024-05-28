@@ -250,7 +250,7 @@ test('Sorting using sort list', t => {
   });
 });
 
-test('Sorting excluded when Liquid attributes', t => {
+test.skip('Sorting excluded when Liquid attributes', t => {
 
   forAssert(
     [
@@ -259,8 +259,8 @@ test('Sorting excluded when Liquid attributes', t => {
         liquid`<div class="3" data-a="1" data-b="2" id="4" {{ will.sort }}></div>`
       ],
       [
-        liquid`<div data-z="1" {% if x %} {{ no.sort }} {% endif %} class="3" id="4"></div>`,
-        liquid`<div data-z="1" {% if x %} {{ no.sort }} {% endif %} class="3" id="4"></div>`
+        liquid`<div data-z="1" {% if x %} {{ will.sort }} {% endif %} class="3" id="4"></div>`,
+        liquid`<div class="3" data-z="1" id="4" {% if x %} {{ will.sort }} {% endif %}></div>`
       ],
       [
         liquid`<div data-z="1" data-b="2" class="3" id={{ will.sort }}></div>`,

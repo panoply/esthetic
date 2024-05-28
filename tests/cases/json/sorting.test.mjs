@@ -89,8 +89,9 @@ test('Sorting object properties alphabetically', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.json(source, {
+    const actual = esthetic.format(source, {
       preserveLine: 0,
+      language: 'json',
       json: {
         objectSort: true,
         arrayFormat: 'indent',

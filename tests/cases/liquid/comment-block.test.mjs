@@ -2,9 +2,148 @@ import test from 'ava';
 import { liquid, forAssert, forRule } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test.todo('HTML Comment with preserveComment set to true');
+test('Liquid Block Comment: Tag structures (using defaults)', t => {
 
-test('Liquid comment with preserveComment rule', t => {
+  forAssert(
+    [
+      [
+        liquid`
+        {% comment %}inline comment no leading or ending whitespace{% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %}inline comment no leading or ending whitespace{% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %} inline comment leading whitespace no ending whitespace{% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %} inline comment leading whitespace no ending whitespace{% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %}inline comment no leading whitespace but ending whitespace {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %}inline comment no leading whitespace but ending whitespace {% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %} inline comment leading whitespace ending whitespace {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %} inline comment leading whitespace ending whitespace {% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %}     extraneous leading whitespace converted to single whitespace {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %} extraneous leading whitespace converted to single whitespace {% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %} extraneous ending whitespace converted to single whitespace          {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %} extraneous ending whitespace converted to single whitespace {% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %}    extraneous ending and leading whitespace converted to single whitespace    {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %} extraneous ending and leading whitespace converted to single whitespace {% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %}
+        newline leading with no ending whitespace{% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %}
+        newline leading with no ending whitespace{% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %}
+        newline leading with ending whitespace {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %}
+        newline leading with ending whitespace {% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %}newline ending with no leading whitespace
+        {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %}newline ending with no leading whitespace
+        {% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %} newline ending with leading whitespace
+        {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %} newline ending with leading whitespace
+        {% endcomment %}
+        `
+      ],
+      [
+        liquid`
+        {% comment %}
+        newline leading and newline ending
+        {% endcomment %}
+        `
+        ,
+        liquid`
+        {% comment %}
+        newline leading and newline ending
+        {% endcomment %}
+        `
+      ]
+    ]
+  )(function (source, expect) {
+
+    const actual = esthetic.format(source, {
+      language: 'liquid',
+      liquid: {
+        commentIndent: false,
+        preserveComment: false
+      }
+    });
+
+    t.deepEqual(actual, expect);
+
+  });
+
+});
+
+test('Liquid Block Comment: Content preservation { preserveComment: true }', t => {
 
   forAssert(
     [
@@ -13,57 +152,131 @@ test('Liquid comment with preserveComment rule', t => {
         <div>
                   <section>
                                   {% comment %}
-                                  Lorem ipsum dolor sit amet {% endcomment %}
+                                  Lorem ipsum dolor sit amet
+                                {% endcomment %}
         </section>
         </div>
-        `,
+        `
+        ,
         liquid`
         <div>
           <section>
-                                  {% comment %}
-                                  Lorem ipsum dolor sit amet {% endcomment %}
+            {% comment %}
+                                  Lorem ipsum dolor sit amet
+            {% endcomment %}
           </section>
         </div>
-      `
+        `
       ],
       [
         liquid`
         <div>
-          <div id ="foo">
+                  <section>
+                                  {% comment %}      Lorem ipsum dolor sit amet
+                                {% endcomment %}
+        </section>
+        </div>
+        `
+        ,
+        liquid`
+        <div>
+          <section>
+            {% comment %}      Lorem ipsum dolor sit amet
+            {% endcomment %}
+          </section>
+        </div>
+        `
+      ],
+      [
+        liquid`
+        <div>
+                  <section>
+                                  {% comment %}
+                                  Lorem ipsum dolor sit amet{% endcomment %}
+        </section>
+        </div>
+        `
+        ,
+        liquid`
+        <div>
+          <section>
+            {% comment %}
+                                  Lorem ipsum dolor sit amet{% endcomment %}
+          </section>
+        </div>
+        `
+      ],
+      [
+        liquid`
+        <div>
+                             <div id ="foo">
                    {% comment %}
-            Lorem ipsum dolor sit amet, consectetur
+        Lorem ipsum dolor sit amet, consectetur
                         adipiscing elit, sed do eiusmod tempor
                                   incididunt ut labore et dolore magna aliqua.
                       {% endcomment %}
                     </div>
         </div>
-        `,
+        `
+        ,
         liquid`
         <div>
           <div id="foo">
-                   {% comment %}
-            Lorem ipsum dolor sit amet, consectetur
+            {% comment %}
+        Lorem ipsum dolor sit amet, consectetur
                         adipiscing elit, sed do eiusmod tempor
                                   incididunt ut labore et dolore magna aliqua.
-                      {% endcomment %}
+            {% endcomment %}
           </div>
         </div>
-      `
+        `
+      ],
+      [
+        liquid`
+        <div>
+                             <div id ="foo">
+                   {% comment %}
+
+
+
+
+        Lorem ipsum dolor sit amet, consectetur
+                        adipiscing elit, sed do eiusmod tempor
+                                  incididunt ut labore et dolore magna aliqua.
+
+
+
+
+
+                      {% endcomment %}
+                    </div>
+        </div>
+        `
+        ,
+        liquid`
+        <div>
+          <div id="foo">
+            {% comment %}
+
+
+        Lorem ipsum dolor sit amet, consectetur
+                        adipiscing elit, sed do eiusmod tempor
+                                  incididunt ut labore et dolore magna aliqua.
+
+
+            {% endcomment %}
+          </div>
+        </div>
+        `
       ]
     ]
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      crlf: false,
-      indentSize: 2,
+      preserveLine: 2,
       liquid: {
-        commentIndent: true,
-        commentNewline: false,
         preserveComment: true
-      },
-      markup: {
-
       }
     });
 
@@ -71,43 +284,38 @@ test('Liquid comment with preserveComment rule', t => {
 
   });
 
-  esthetic.rules({
-    liquid: {
-      preserveComment: false
-    }
-  });
-
 });
 
-test('Liquid comment indentation with commentNewline disabled', t => {
+test('Liquid Block Comment: Content indentation { commentIndent: true }', t => {
 
   forAssert(
     [
       [
         liquid`
-          <div>
+        <div>
           {% comment %}
           Lorem ipsum dolor sit amet {% endcomment %}
-          </div>
-        `,
+        </div>
+        `
+        ,
         liquid`
         <div>
           {% comment %}
-            Lorem ipsum dolor sit amet
-          {% endcomment %}
+            Lorem ipsum dolor sit amet {% endcomment %}
         </div>
-      `
+        `
       ],
       [
         liquid`
-          <div>
+        <div>
           {% comment %}
-        Lorem ipsum dolor sit amet, consectetur
-        adipiscing elit, sed do eiusmod tempor
-         incididunt ut labore et dolore magna aliqua.
+          Lorem ipsum dolor sit amet, consectetur
+          adipiscing elit, sed do eiusmod tempor
+          incididunt ut labore et dolore magna aliqua.
           {% endcomment %}
-          </div>
-        `,
+        </div>
+        `
+        ,
         liquid`
         <div>
           {% comment %}
@@ -116,7 +324,7 @@ test('Liquid comment indentation with commentNewline disabled', t => {
             incididunt ut labore et dolore magna aliqua.
           {% endcomment %}
         </div>
-      `
+        `
       ],
       [
         liquid`
@@ -133,24 +341,6 @@ test('Liquid comment indentation with commentNewline disabled', t => {
         </h1>
         <div>
           {% comment %} Lorem ipsum dolor sit amet, sed do eiusmod tempor {% endcomment %}
-        </div>
-      `
-      ],
-      [
-        liquid`
-          <div>
-            <ul>
-          <li>
-            {% # Lorem ipsum dolor sit amet, sed do eiusmod %}</li></ul>
-          </div>
-        `,
-        liquid`
-        <div>
-          <ul>
-            <li>
-              {% # Lorem ipsum dolor sit amet, sed do eiusmod %}
-            </li>
-          </ul>
         </div>
       `
       ]
@@ -159,16 +349,10 @@ test('Liquid comment indentation with commentNewline disabled', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      crlf: false,
       wrap: 0,
-      indentSize: 2,
       liquid: {
         commentIndent: true,
-        commentNewline: false,
         preserveComment: false
-      },
-      markup: {
-
       }
     });
 
@@ -178,7 +362,7 @@ test('Liquid comment indentation with commentNewline disabled', t => {
 
 });
 
-test('Liquid comment else tag alignment', t => {
+test('Liquid Block Comment: Alignment with logical tag token {% else %}', t => {
 
   forAssert(
     [
@@ -186,7 +370,8 @@ test('Liquid comment else tag alignment', t => {
         liquid`
           {% if condition %}
           <div>
-            <ul><li>
+            <ul>
+          <li>
             {% comment %}
                 Lorem ipsum dolor sit amet {% endcomment %}
             <h1>COMMENT WILL INDENT</h1>
@@ -194,7 +379,8 @@ test('Liquid comment else tag alignment', t => {
             </ul>
             </div>
 
-          {% # comment will align the else opening delimiter %}
+          {% comment %}
+            comment will align the else opening delimiter {% endcomment %}
           {% else %}
             <span>
             <!-- comment -->
@@ -207,14 +393,14 @@ test('Liquid comment else tag alignment', t => {
             <ul>
               <li>
                 {% comment %}
-                  Lorem ipsum dolor sit amet
-                {% endcomment %}
+                  Lorem ipsum dolor sit amet {% endcomment %}
                 <h1>COMMENT WILL INDENT</h1>
               </li>
             </ul>
           </div>
 
-        {% # comment will align the else opening delimiter %}
+        {% comment %}
+          comment will align the else opening delimiter {% endcomment %}
         {% else %}
           <span>
             <!-- comment -->
@@ -227,7 +413,8 @@ test('Liquid comment else tag alignment', t => {
           {% if condition %}
           <div>
             {% comment %}
-                Lorem ipsum dolor sit amet {% endcomment %}
+                Lorem ipsum dolor sit amet
+              {% endcomment %}
             <h1>COMMENT WILL INDENT</h1>
               </div>
 
@@ -278,9 +465,9 @@ test('Liquid comment else tag alignment', t => {
           <section>
           {% if condition %}
           <div>
-            <ul><li>
-            {% comment %}
-                Lorem ipsum dolor sit amet {% endcomment %}
+            <ul>
+              <li>
+            {% comment %} Lorem ipsum dolor sit amet {% endcomment %}
             <h1>COMMENT WILL INDENT</h1>
               </li>
             </ul>
@@ -303,9 +490,7 @@ test('Liquid comment else tag alignment', t => {
               <div>
                 <ul>
                   <li>
-                    {% comment %}
-                      Lorem ipsum dolor sit amet
-                    {% endcomment %}
+                    {% comment %} Lorem ipsum dolor sit amet {% endcomment %}
                     <h1>COMMENT WILL INDENT</h1>
                   </li>
                 </ul>
@@ -327,7 +512,6 @@ test('Liquid comment else tag alignment', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      crlf: false,
       indentSize: 2,
       liquid: {
         commentIndent: true,
@@ -344,13 +528,13 @@ test('Liquid comment else tag alignment', t => {
 
 });
 
-test('Liquid block comment wrapping', t => {
+test('Liquid Block Comment: Word wrap rule on inner contents { wrap }', t => {
 
   forRule(
     [
       liquid`
       {% comment %}
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Et leo duis ut diam quam nulla porttitor massa id. Nullam eget felis eget nunc lobortis mattis aliquam faucibus purus. In est ante in nibh. Dolor sed viverra ipsum nunc. A lacus vestibulum sed arcu non. Vitae semper quis lectus nulla at volutpat. Lorem mollis aliquam ut porttitor leo a. Enim ut sem viverra aliquet eget sit amet. Congue eu consequat ac felis donec et odio pellentesque.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Et leo duis ut diam quam nulla porttitor massa id. Nullam eget felis eget nunc lobortis mattis aliquam faucibus purus. In est ante in nibh. Dolor sed viverra ipsum nunc. A lacus vestibulum sed arcu non. Vitae semper quis lectus nulla at volutpat. Lorem mollis aliquam ut porttitor leo a. Enim ut sem viverra aliquet eget sit amet Congue eu consequat ac felis donec et odio pellentesque.
 
         Quisque egestas diam in arcu. Convallis convallis tellus id interdum velit laoreet id donec ultrices. Egestas sed sed risus pretium quam vulputate. Faucibus vitae aliquet nec ullamcorper sit amet risus. Gravida arcu ac tortor dignissim convallis aenean et tortor. Dui id ornare arcu odio ut. Ornare quam viverra orci sagittis eu volutpat.
 
@@ -358,69 +542,51 @@ test('Liquid block comment wrapping', t => {
 
         Molestie nunc non blandit massa enim nec dui nunc. Massa placerat duis ultricies lacus sed turpis tincidunt id aliquet. Magna sit amet purus gravida quis blandit turpis cursus. Purus viverra accumsan in nisl nisi scelerisque eu ultrices. Ut lectus arcu bibendum at varius vel pharetra vel. Amet nisl purus in mollis nunc sed id semper risus. Varius morbi enim nunc faucibus a pellentesque sit.
       {% endcomment %}
-      `,
-      liquid`
-      <div>
-        <main>
-          <section>
-          {% comment %}
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Et leo duis ut diam quam nulla porttitor massa id. Nullam eget felis eget nunc lobortis mattis aliquam faucibus purus. In est ante in nibh. Dolor sed viverra ipsum nunc. A lacus vestibulum sed arcu non. Vitae semper quis lectus nulla at volutpat. Lorem mollis aliquam ut porttitor leo a. Enim ut sem viverra aliquet eget sit amet. Congue eu consequat ac felis donec et odio pellentesque.
-
-            Quisque egestas diam in arcu. Convallis convallis tellus id interdum velit laoreet id donec ultrices. Egestas sed sed risus pretium quam vulputate. Faucibus vitae aliquet nec ullamcorper sit amet risus. Gravida arcu ac tortor dignissim convallis aenean et tortor. Dui id ornare arcu odio ut. Ornare quam viverra orci sagittis eu volutpat.
-
-            Tellus molestie nunc non blandit massa enim nec. Mauris rhoncus aenean vel elit scelerisque mauris pellentesque. Praesent elementum facilisis leo vel fringilla est ullamcorper.
-
-            Molestie nunc non blandit massa enim nec dui nunc. Massa placerat duis ultricies lacus sed turpis tincidunt id aliquet. Magna sit amet purus gravida quis blandit turpis cursus. Purus viverra accumsan in nisl nisi scelerisque eu ultrices. Ut lectus arcu bibendum at varius vel pharetra vel. Amet nisl purus in mollis nunc sed id semper risus. Varius morbi enim nunc faucibus a pellentesque sit.
-          {% endcomment %}
-          <div>
-          {% comment %} Lorem ipsum dolor sit amet, consectetur adipiscing elit {% endcomment%}
-          </div>
-          </section>
-        </main>
-      </div>
       `
     ]
   )(
     [
       {
         language: 'liquid',
-        wrap: 0,
-        liquid: {
-          commentIndent: true,
-          commentNewline: false
-        }
-      },
-      {
-        language: 'liquid',
         wrap: 50,
         liquid: {
-          commentIndent: true,
-          commentNewline: false
-        }
-      },
-      {
-        language: 'liquid',
-        wrap: 30,
-        liquid: {
-          commentIndent: true,
-          commentNewline: false
+          commentIndent: true
         }
       },
       {
         language: 'liquid',
         wrap: 80,
         liquid: {
-          commentIndent: true,
-          commentNewline: false
+          commentIndent: true
+        }
+      },
+      {
+        language: 'liquid',
+        wrap: 25,
+        liquid: {
+          commentIndent: true
+        }
+      },
+      {
+        language: 'liquid',
+        wrap: 100,
+        liquid: {
+          commentIndent: true
+        }
+      },
+      {
+        language: 'liquid',
+        wrap: 0,
+        liquid: {
+          commentIndent: true
         }
       }
-
     ]
   )(function (sample, rules, label) {
 
-    const result = esthetic.format(sample, rules);
+    const actual = esthetic.format(sample, rules);
 
-    t.snapshot(result, label);
+    t.snapshot(actual, label);
 
   });
 

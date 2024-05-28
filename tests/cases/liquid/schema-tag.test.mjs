@@ -52,12 +52,11 @@ test('Structure Test: Empty schema tags', t => {
 
 
           {%- schema %}
-          {% endschema%}
+          {% endschema %}
         `,
         liquid`{% # Multiple empty schema tag sequences %}
 
-          {% schema %}
-          {% endschema %}
+          {% schema %} {% endschema %}
 
           {% schema %}
 

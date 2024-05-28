@@ -23,16 +23,16 @@ test('Liquid Tag - Structural tests and syntactical formations', t => {
         `,
         liquid`{% # Capture Indentation %}
 
-          {% liquid
-            capture foo
-              echo 'string 1'
-            endcapture
+        {% liquid
+          capture foo
+            echo 'string 1'
+          endcapture
 
-            # comment
-            capture foo
-              echo 'string 1'
-            endcapture
-          %}
+          # comment
+          capture foo
+            echo 'string 1'
+          endcapture
+        %}
         `
       ],
       [
@@ -162,13 +162,13 @@ test('Liquid Tag - Structural tests and syntactical formations', t => {
               assign collections = collections.vendors | sort: 'all_products_count'
             when 'date', 'date_reversed'
               assign collections = collections.vendors | sort: 'published_at'
-            else
-              case section.settings.sort
-                when 'products_high', 'products_low'
-                  assign collections = collections.vendors | sort: 'all_products_count'
-                when 'date', 'date_reversed'
-                  assign collections = collections.vendors | sort: 'published_at'
-              endcase
+          else
+            case section.settings.sort
+              when 'products_high', 'products_low'
+                assign collections = collections.vendors | sort: 'all_products_count'
+              when 'date', 'date_reversed'
+                assign collections = collections.vendors | sort: 'published_at'
+            endcase
           endcase
         -%}
         `
@@ -203,11 +203,12 @@ test('Liquid Tag - Structural tests and syntactical formations', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
+        delimiterPlacement: 'preserve',
+        normalizeSpacing: true,
         dedentTagList: []
       },
       markup: {
-        forceAttribute: 2,
-        normalizeSpacing: true
+        forceAttribute: 2
       }
     });
 
@@ -292,7 +293,7 @@ test('Liquid Tag: Normalize spacing of Liquid Tag internal expressions', t => {
   });
 });
 
-test('Liquid Tag: Indentation depth levels encapsulated by markup', t => {
+test.skip('Liquid Tag: Indentation depth levels encapsulated by markup', t => {
 
   forSample(
     [

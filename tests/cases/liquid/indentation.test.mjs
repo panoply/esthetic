@@ -24,7 +24,7 @@ test('Single Depth block tag indentations', t => {
         liquid`
         {% if condition %}
         {{ 'Indentation of if tag' }}
-        {% endif%}
+        {%endif %}
         `,
         liquid`
         {% if condition %}
@@ -73,8 +73,8 @@ test('Single Depth block tag indentations', t => {
             first_expression
           {% when second_value %}
             second_expression
-          {% else %}
-            third_expression
+        {% else %}
+          third_expression
         {% endcase %}
         `
       ]
@@ -168,8 +168,8 @@ test('Nested block tag indentations', t => {
                     {{ 'Indentation Level 7' }}
                   {% when level[6] %}
                     {{ 'Indentation Level 7' }}
-                  {% else %}
-                    {{ 'Indentation Level 7' }}
+                {% else %}
+                  {{ 'Indentation Level 7' }}
                 {% endcase %}
               {% else %}
                 {{ 'Indentation Level 5' }}
@@ -179,8 +179,8 @@ test('Nested block tag indentations', t => {
             {%- endif -%}
           {% when 'Dedentation 1' %}
             {{ 'Indentation 2' }}
-          {% else %}
-            {{ 'Indentation 2' }}
+        {% else %}
+          {{ 'Indentation 2' }}
         {% endcase %}
         `
       ]
@@ -216,7 +216,7 @@ test('Unknown tag block indentation and dedentation', t => {
         {% foo %}
         {{ 'Indentation Level 4' }}
         {% endfoo %}
-        {% endif%}
+        {% endif     %}
         {% endsome_tag %}
         {% endsome_tag %}
         `,
@@ -377,6 +377,240 @@ test('Empty conditional chaining indentation', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       wrap: 0,
+      liquid: {
+        normalizeSpacing: true
+      }
+    });
+
+    t.deepEqual(actual, expect);
+
+  });
+
+});
+
+test('Complex indentation structure', t => {
+
+  forAssert(
+    [
+      [
+        liquid`
+        <div id="DEEP SAMPLE">
+                    <section id="LEVEL 1">
+                    <div id="LEVEL 2">
+                    <section id="LEVEL 3">
+                    <main id="LEVEL 4">
+        {% if chain == 0 %}
+        {% elsif chain == 1 %}
+        Hello {{ inline }}
+        {% elsif bar %}
+        World {% assign inline = 'will be inline' %}
+        {% if nested_1 == 'EMPTY' %}
+        {% elsif nested_2 == 'EMPTY' %}
+        {% elsif nested_3 == 'EMPTY' %}
+         {% if group1_1 == 'EMPTY' %}
+        {% case 'xxx' %}
+        {% when foo %}
+          {% if condition == assertion -%}
+            {{ 'Indentation Level 4' }}
+          {% elsif 'Dedentation 3' %}
+            {% for item in numbers -%}
+              {{ 'Indentation Level 5' }}
+              {% case 'Indentation Level 5' %}
+              {% when level['6'] %}
+                {{ 'Indentation Level 7' }}
+              {% when level[6] %}
+                {{ 'Indentation Level 7' }}
+              {% else %}
+                {{ 'Indentation Level 7' }}
+              {% endcase %}
+            {% else %}
+              {{ 'Indentation Level 5' }}
+            {%- endfor %}
+          {% else %}
+            {{ 'Indentation Level 5' }}
+          {%- endif -%}
+        {% when 'Dedentation 1' %}
+          {{ 'Indentation 2' }}
+        {% else %}
+          {{ 'Indentation 2' }}
+        {% endcase %}
+        {% elsif group1_3 == 'EMPTY' %}
+                                <div id="DEEP SAMPLE">
+          <section id="LEVEL 1">
+                  <div id="LEVEL 2">
+              <section id="LEVEL 3">
+                <main id="LEVEL 4">
+                  {% if chain == 0 %}
+                  {% elsif chain == 1 %}
+                    Hello {{ inline }}
+                  {% elsif bar %}
+                    World {% assign inline = 'will be inline' %}
+                   {% case 'xxx' %}
+        {% when foo %}
+          {% if condition == assertion -%}
+            {{ 'Indentation Level 4' }}
+          {% elsif 'Dedentation 3' %}
+            {% for item in numbers -%}
+              {{ 'Indentation Level 5' }}
+              {% case 'Indentation Level 5' %}
+              {% when level['6'] %}
+                {{ 'Indentation Level 7' }}
+              {% when level[6] %}
+                {{ 'Indentation Level 7' }}
+              {% else %}
+                {{ 'Indentation Level 7' }}
+              {% endcase %}
+            {% else %}
+              {{ 'Indentation Level 5' }}
+            {%- endfor %}
+          {% else %}
+            {{ 'Indentation Level 5' }}
+          {%- endif -%}
+        {% when 'Dedentation 1' %}
+          {{ 'Indentation 2' }}
+        {% else %}
+          {{ 'Indentation 2' }}
+        {% endcase %}
+                  {% elsif chain == 2 %}
+                  {% endif %}
+                </main>
+              </section>
+            </div>
+          </section>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% elsif chain == 2 %}
+       {% tag %}
+        {% if condition == assertion -%}
+        {{ 'Indentation 2' }}
+        {% elsif 'Dedentation 1' %}
+        {{ 'Indentation' }}
+        {% elsif 'Dedentation 1' %}
+        {{ 'Indentation 2' }}
+        {% else %}
+        {{ 'Indentation 2' }}
+        {% endif %}
+        {% endtag %}
+        {% endif %}
+        </main>
+        </section>
+        </div>
+        </section>
+        </div>
+        `,
+        liquid`
+        <div id="DEEP SAMPLE">
+          <section id="LEVEL 1">
+            <div id="LEVEL 2">
+              <section id="LEVEL 3">
+                <main id="LEVEL 4">
+                  {% if chain == 0 %}
+                  {% elsif chain == 1 %}
+                    Hello {{ inline }}
+                  {% elsif bar %}
+                    World {% assign inline = 'will be inline' %}
+                    {% if nested_1 == 'EMPTY' %}
+                    {% elsif nested_2 == 'EMPTY' %}
+                    {% elsif nested_3 == 'EMPTY' %}
+                      {% if group1_1 == 'EMPTY' %}
+                        {% case 'xxx' %}
+                          {% when foo %}
+                            {% if condition == assertion -%}
+                              {{ 'Indentation Level 4' }}
+                            {% elsif 'Dedentation 3' %}
+                              {% for item in numbers -%}
+                                {{ 'Indentation Level 5' }}
+                                {% case 'Indentation Level 5' %}
+                                  {% when level['6'] %}
+                                    {{ 'Indentation Level 7' }}
+                                  {% when level[6] %}
+                                    {{ 'Indentation Level 7' }}
+                                {% else %}
+                                  {{ 'Indentation Level 7' }}
+                                {% endcase %}
+                              {% else %}
+                                {{ 'Indentation Level 5' }}
+                              {%- endfor %}
+                            {% else %}
+                              {{ 'Indentation Level 5' }}
+                            {%- endif -%}
+                          {% when 'Dedentation 1' %}
+                            {{ 'Indentation 2' }}
+                        {% else %}
+                          {{ 'Indentation 2' }}
+                        {% endcase %}
+                      {% elsif group1_3 == 'EMPTY' %}
+                        <div id="DEEP SAMPLE">
+                          <section id="LEVEL 1">
+                            <div id="LEVEL 2">
+                              <section id="LEVEL 3">
+                                <main id="LEVEL 4">
+                                  {% if chain == 0 %}
+                                  {% elsif chain == 1 %}
+                                    Hello {{ inline }}
+                                  {% elsif bar %}
+                                    World {% assign inline = 'will be inline' %}
+                                    {% case 'xxx' %}
+                                      {% when foo %}
+                                        {% if condition == assertion -%}
+                                          {{ 'Indentation Level 4' }}
+                                        {% elsif 'Dedentation 3' %}
+                                          {% for item in numbers -%}
+                                            {{ 'Indentation Level 5' }}
+                                            {% case 'Indentation Level 5' %}
+                                              {% when level['6'] %}
+                                                {{ 'Indentation Level 7' }}
+                                              {% when level[6] %}
+                                                {{ 'Indentation Level 7' }}
+                                            {% else %}
+                                              {{ 'Indentation Level 7' }}
+                                            {% endcase %}
+                                          {% else %}
+                                            {{ 'Indentation Level 5' }}
+                                          {%- endfor %}
+                                        {% else %}
+                                          {{ 'Indentation Level 5' }}
+                                        {%- endif -%}
+                                      {% when 'Dedentation 1' %}
+                                        {{ 'Indentation 2' }}
+                                    {% else %}
+                                      {{ 'Indentation 2' }}
+                                    {% endcase %}
+                                    {% elsif chain == 2 %}
+                                  {% endif %}
+                                </main>
+                              </section>
+                            </div>
+                          </section>
+                        </div>
+                      {% endif %}
+                    {% endif %}
+                  {% elsif chain == 2 %}
+                    {% tag %}
+                      {% if condition == assertion -%}
+                        {{ 'Indentation 2' }}
+                      {% elsif 'Dedentation 1' %}
+                        {{ 'Indentation' }}
+                      {% elsif 'Dedentation 1' %}
+                        {{ 'Indentation 2' }}
+                      {% else %}
+                        {{ 'Indentation 2' }}
+                      {% endif %}
+                    {% endtag %}
+                  {% endif %}
+                </main>
+              </section>
+            </div>
+          </section>
+        </div>
+        `
+      ]
+    ]
+  )(function (source, expect) {
+
+    const actual = esthetic.format(source, {
+      language: 'liquid',
       liquid: {
         normalizeSpacing: true
       }

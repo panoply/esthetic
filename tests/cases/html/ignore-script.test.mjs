@@ -8,7 +8,7 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
     [
       [
         html`
-        <script>console . log (
+        <script>console.log (
 
         'block 1'
 
@@ -18,7 +18,7 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
         ,
         html`
         <script>
-          console . log (
+          console.log (
 
           'block 1'
 
@@ -30,7 +30,7 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
       [
         html`
         <script>
-        console . log (
+        console.log (
 
         'block 2'
         )</script>
@@ -38,7 +38,7 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
         ,
         html`
         <script>
-          console . log (
+          console.log (
 
           'block 2'
           )
@@ -47,12 +47,12 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
       ],
       [
         html`
-        <script>console . log (   'block 3' )</script>
+        <script>console.log( 'block 3' )</script>
         `
         ,
         html`
         <script>
-          console . log (   'block 3' )
+          console.log( 'block 3' )
         </script>
         `
       ],
@@ -60,12 +60,12 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
         html`
         <div>
         <main>
-          <script>console . log (
+          <script>console.log (
 
           'block 4'
 
 
-          )</script>
+        )</script>
         </main>
         </div>
         `
@@ -74,12 +74,12 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
         <div>
           <main>
             <script>
-              console . log (
+              console.log (
 
                 'block 4'
 
 
-                )
+              )
             </script>
           </main>
         </div>
@@ -93,6 +93,7 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
       indentSize: 2,
       markup: {
         forceAttribute: true,
+        forceIndent: true,
         ignoreJS: true
       }
     });
@@ -108,7 +109,7 @@ test('HTML <script> ignoreJS Rule - Forced when inline', t => {
     [
       html`<!-- Inline script ignore will be forced -->
       <script>
-        console.log(   'content is ignored 1'    );
+      console.log(   'content is ignored 1'    );
       </script>
       `
       ,
@@ -161,15 +162,12 @@ test('HTML <script> ignoreJS Rule - Forced when inline', t => {
         <!-- 2 LINES TOP AND BOTTOM -->
         <script>
 
-
           console.log(window.example);
-
 
         </script>
 
         <!-- 2 LINES TOP AND 0 LINES BOTTOM -->
         <script>
-
 
           console.log(window.example);
         </script>
@@ -177,7 +175,6 @@ test('HTML <script> ignoreJS Rule - Forced when inline', t => {
         <!-- 0 LINES TOP AND 2 LINES BOTTOM -->
         <script>
           console.log(window.example);
-
 
         </script>
       `
@@ -199,15 +196,12 @@ test('HTML <script> ignoreJS Rule - Forced when inline', t => {
         <!-- 2 LINES TOP AND BOTTOM -->
         <script>
 
-
           console.log(window.example);
-
 
         </script>
 
         <!-- 2 LINES TOP AND 0 LINES BOTTOM -->
         <script>
-
 
           console.log(window.example);
         </script>
@@ -215,7 +209,6 @@ test('HTML <script> ignoreJS Rule - Forced when inline', t => {
         <!-- 0 LINES TOP AND 2 LINES BOTTOM -->
         <script>
           console.log(window.example);
-
 
         </script>
       `
