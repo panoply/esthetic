@@ -48,7 +48,7 @@ export function SyntacticError (errorCode: ParseError, context: Syntactic, tname
     , error.details
     , NWL
     , ansi(`Language: ${getLanguageName(parse.language)}`)
-    , ansi(`Location: ${context.line}`)
+    , ansi(`Location: ${parse.lineNumber}:${parse.lineColumn}`)
     , ansi(`Æsthetic: Parse Failed (Code: ${errorCode})`)
   );
 
@@ -113,9 +113,7 @@ export function RuleError (error: {
 /* PRIVATES                                     */
 /* -------------------------------------------- */
 
-const point = (size: number) => config.logColors
-  ? `\x1b[93m${'^'.repeat(size)}\x1b[39m`
-  : `${'^'.repeat(size)}`;
+const point = (size: number) => config.logColors ? `\x1b[93m${'^'.repeat(size)}\x1b[39m` : `${'^'.repeat(size)}`;
 
 /**
  * Get Sample Token
@@ -305,10 +303,7 @@ function getSampleSnippet (line = parse.lineNumber) {
  */
 function ansi (...message: string[]) {
 
-  if (config.logColors) {
-
-    return `${message.join(NWL)}`.replace(/"(.*?)"/g, '\x1b[31m$1\x1b[39m');
-  }
+  if (config.logColors) return `${message.join(NWL)}`.replace(/"(.*?)"/g, '\x1b[31m$1\x1b[39m');
 
   return message.join(NWL);
 
@@ -396,6 +391,15 @@ function message (code: ParseError, token: string, lineNo: number = parse.lineNu
         'HTML comments are not allowed inside tags, start or end, at all.',
         'To resolve the issue, remove the comment or place it above the tag.',
         'For more information see: https://html.spec.whatwg.org/multipage/syntax.html#start-tags'
+      )
+    }),
+    [ParseError.InvalidHTMLPhrasingContent]: ({
+      code,
+      message: ansi(`Syntax Error (line ${lineNo}): Invalid HTML "${token}" tag placement`),
+      details: ansi(
+        `The "<${token}>" tag is improperly placed within an element which expects phrasing content text node tag/s.`,
+        'The parent element has an implied end tag, only a subset of HTML elements are permissible as descendants.',
+        'For more information see: https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags'
       )
     }),
     [ParseError.InvalidQuotation]: ({
