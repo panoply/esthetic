@@ -1,5 +1,6 @@
+import { cc } from 'lexical/codes';
 import type { Grammars, EmbeddedHTML, EmbeddedLiquid, LanguageName } from 'types';
-import { isArray, isObject, isRegex } from 'utils/helpers';
+import { is, isArray, isObject, isRegex } from 'utils/helpers';
 import { set } from 'utils/native';
 
 /* -------------------------------------------- */
@@ -326,203 +327,113 @@ class HTML {
         }
       ]
     },
-    types: {
-      dom: set([
-        'html',
-        'head',
-        'body'
-      ]),
-      flow: set([
-        'a',
-        'abbr',
-        'address',
-        'area',
-        'article',
-        'aside',
-        'audio',
-        'b',
-        'bdo',
-        'bdi',
-        'blockquote',
-        'br',
-        'button',
-        'canvas',
-        'cite',
-        'code',
-        'data',
-        'datalist',
-        'del',
-        'details',
-        'dfn',
-        'dialog',
-        'div',
-        'dl',
-        'em',
-        'embed',
-        'fieldset',
-        'figure',
-        'footer',
-        'form',
-        'h1',
-        'h2',
-        'h3',
-        'h4',
-        'h5',
-        'h6',
-        'header',
-        'hgroup',
-        'hr',
-        'i',
-        'iframe',
-        'img',
-        'input',
-        'ins',
-        'kbd',
-        'label',
-        'main',
-        'map',
-        'mark',
-        'math',
-        'menu',
-        'meter',
-        'nav',
-        'noscript',
-        'object',
-        'ol',
-        'output',
-        'p',
-        'picture',
-        'pre',
-        'progress',
-        'q',
-        'ruby',
-        's',
-        'samp',
-        'search',
-        'script',
-        'section',
-        'select',
-        'slot',
-        'small',
-        'span',
-        'strong',
-        'sub',
-        'sup',
-        'svg',
-        'table',
-        'template',
-        'textarea',
-        'time',
-        'u',
-        'ul',
-        'var',
-        'video',
-        'wbr'
-      ]),
-      form: set([
-        'button',
-        'fieldset',
-        'input',
-        'label',
-        'meter',
-        'object',
-        'output',
-        'progress',
-        'select',
-        'textarea'
-      ]),
-      phrasing: set([
-        'a',
-        'abbr',
-        'area',
-        'audio',
-        'b',
-        'bdi',
-        'bdo',
-        'br',
-        'button',
-        'canvas',
-        'cite',
-        'code',
-        'command',
-        'datalist',
-        'del',
-        'dfn',
-        'em',
-        'embed',
-        'i',
-        'iframe',
-        'img',
-        'input',
-        'ins',
-        'kbd',
-        'keygen',
-        'label',
-        'map',
-        'mark',
-        'math',
-        'meter',
-        'noscript',
-        'object',
-        'output',
-        'progress',
-        'q',
-        'ruby',
-        's',
-        'samp',
-        'script',
-        'select',
-        'small',
-        'span',
-        'strong',
-        'sub',
-        'sup',
-        'svg',
-        'textarea',
-        'time',
-        'u',
-        'var',
-        'video',
-        'wbr',
-        'text'
-      ]),
-      embedded: set([
-        'audio',
-        'canvas',
-        'embed',
-        'iframe',
-        'img',
-        'math',
-        'object',
-        'picture',
-        'svg',
-        'video'
-      ]),
-      heading: set([
-        'h1',
-        'h2',
-        'h3',
-        'h4',
-        'h5',
-        'h6',
-        'hgroup'
-      ]),
-      sectioning: set([
-        'article',
-        'aside',
-        'nav',
-        'section'
-      ]),
-      interactive: set([
-        'button',
-        'details',
-        'embed',
-        'iframe',
-        'label',
-        'select',
-        'textarea'
-      ])
-    },
+    phrasing: [
+      'a',
+      'abbr',
+      'area',
+      'audio',
+      'b',
+      'bdi',
+      'bdo',
+      'br',
+      'button',
+      'canvas',
+      'cite',
+      'code',
+      'command',
+      'datalist',
+      'del',
+      'dfn',
+      'em',
+      'embed',
+      'i',
+      'iframe',
+      'img',
+      'input',
+      'ins',
+      'kbd',
+      'keygen',
+      'label',
+      'map',
+      'mark',
+      'math',
+      'meter',
+      'noscript',
+      'object',
+      'output',
+      'progress',
+      'q',
+      'ruby',
+      's',
+      'samp',
+      // 'script',
+      'select',
+      'small',
+      'span',
+      'strong',
+      'sub',
+      'sup',
+      'svg',
+      'textarea',
+      'time',
+      'u',
+      'var',
+      'video',
+      'wbr'
+    ],
+    table: [
+      'td',
+      'th',
+      'tr',
+      'colgroup',
+      'tbody',
+      'thead',
+      'tfoot'
+    ],
+    textNodes: [
+      'a',
+      'abbr',
+      'b',
+      'bdi',
+      'bdo',
+      'cite',
+      'code',
+      'data',
+      'del',
+      'dfn',
+      'em',
+      'ins',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'kbd',
+      'li',
+      'mark',
+      'rb',
+      'rp',
+      'rt',
+      'rtc',
+      'ruby',
+      's',
+      'samp',
+      'small',
+      'span',
+      'strong',
+      'sub',
+      'sup',
+      'time',
+      'u',
+      'i',
+      'q',
+      'dd',
+      'dt',
+      'td',
+      'th',
+      'var'
+    ],
     voids: [
       'area',
       'base',
@@ -666,6 +577,7 @@ class HTML {
     ]
   };
 
+  public textNodes: Set<string> = new Set();
   public tags = set(this.grammar.tags);
   public voids = set(this.grammar.voids);
   public embed: {
@@ -685,9 +597,20 @@ class HTML {
     }
   } = {};
 
-  get types () { return this.grammar.types; }
-
   constructor () {
+
+    for (const phrase of this.grammar.textNodes) {
+
+      this.textNodes.add(phrase);
+      this.textNodes.add(`<${phrase}>`);
+
+      if (this.voids.has(phrase)) {
+        this.textNodes.add(`<${phrase}/>`);
+      } else {
+        this.textNodes.add(`</${phrase}>`);
+      }
+
+    }
 
     this.queries(this.grammar.embedded);
 
@@ -699,7 +622,16 @@ class HTML {
 
       if (isArray(rules[rule])) {
         for (const tag of rules[rule]) {
-          if (rule === 'tags' && this.tags.has(tag) === false) {
+
+          if (rule === 'textNodes') {
+            if (is(tag, cc.BNG)) {
+              const exclude = tag.slice(1);
+              if (this.textNodes.has(exclude)) this.textNodes.delete(exclude);
+            } else if (this.textNodes.has(tag) === false) {
+              this.textNodes.add(tag);
+            }
+
+          } else if (rule === 'tags' && this.tags.has(tag) === false) {
             this.grammar.tags.push(tag);
             this.tags.add(tag);
           } else if (rule === 'voids' && this.voids.has(tag) === false) {
