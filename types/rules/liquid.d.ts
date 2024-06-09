@@ -34,6 +34,44 @@ export interface LiquidRules {
   commentIndent?: boolean;
 
   /**
+   * **Default** `false`
+   *
+   * Prevent comment reformatting due to option wrap.
+   */
+  commentPreserve?: boolean;
+
+  /**
+   * **Default** `true`
+   *
+   * Allows bad liquid syntax to pass. Pleb liquid syntactics refers to problematic
+   * Liquid and markup structures, such as:
+   *
+   * ```liquid
+   * {% if x %}
+   * <div>
+   * {% endif %}
+   *
+   * {% if x %}
+   * </div>
+   * {% endif %}
+   * ```
+   */
+  allowPlebSyntactic?: boolean;
+
+  /**
+   * **Default** `true`
+   *
+   * Allows bad liquid syntax to pass. Pleb liquid syntactics refers to problematic
+   * Liquid and markup structures, such as:
+   *
+   * ```liquid
+   * <{{ tag }}>
+   * </{{ tag }}>
+   * ```
+   */
+  allowRubeSyntactic?: boolean;
+
+  /**
    * **Default** `true`
    *
    * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
@@ -119,7 +157,7 @@ export interface LiquidRules {
    * Forces arguments onto newlines. When this value is `0` then arguments will
    * be forced according to wrap limit.
    */
-  forceArgument?: number;
+  argumentLineBreak?: number;
 
   /**
    * **Default** `0`
@@ -131,7 +169,7 @@ export interface LiquidRules {
    * then the global `wrap` limit is used.
    *
    */
-  forceFilter?: number;
+  filterLineBreak?: number;
 
   /**
    * **Default** `false`
@@ -199,8 +237,7 @@ export interface LiquidRules {
    * {% assign 'foo ' = ' preserved ' | append: object.prop %}
    * ```
    */
-  normalizeSpacing?: boolean;
-
+  equipoiseSpacing?: boolean;
   /**
    * **Default** `none`
    *
@@ -228,13 +265,6 @@ export interface LiquidRules {
    * order of leading operator characters such as the parameter comma `,` separator.
    */
   lineBreakSeparator?: 'preserve' | 'after' | 'before';
-
-  /**
-   * **Default** `false`
-   *
-   * Prevent comment reformatting due to option wrap.
-   */
-  preserveComment?: boolean;
 
   /**
    * **NOT YET AVAILABLE**

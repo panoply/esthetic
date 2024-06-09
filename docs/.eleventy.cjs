@@ -1,4 +1,4 @@
-const { eleventy, markdown, sprite, terser } = require('e11ty');
+const { eleventy, markdown, sprite, terser, util } = require('e11ty');
 const markdownit = require('markdown-it');
 const mdcontainer = require('markdown-it-container')
 const anchor = require('markdown-it-anchor');
@@ -61,42 +61,48 @@ function getEstheticRules (ruleOptions) {
     wrap: 0,
     wrapFraction: 0,
     liquid: {
-      commentNewline: false,
+      allowPlebSyntactic: true,
+      allowRubeSyntactic: true,
+      argumentLineBreak: 0,
       commentIndent: true,
+      commentPreserve: false,
       delimiterTrims: 'preserve',
       delimiterPlacement: 'preserve',
-      forceFilter: 0,
-      forceArgument: 0,
-      ignoreTagList: [],
+      equipoiseSpacing: true,
+      filterLineBreak: 0,
+      forceIndent: false,
       indentAttribute: false,
       lineBreakSeparator: 'before',
-      normalizeSpacing: true,
-      preserveComment: false,
-      preserveInternal: false,
+      paddedTagList: [],
       dedentTagList: [],
+      ignoreTagList: [],
       quoteConvert: 'none'
     },
     markup: {
       attributeCasing: 'preserve',
       attributeSort: false,
-      commentDelimiters: 'preserve',
-      commentNewline: false,
+      attributeLineBreak: 3,
+      attributePreserve: false,
+      classListSort: false,
+      classListUnique: false,
+      commentDelimiter: 'preserve',
       commentIndent: true,
+      commentPreserve: false,
       delimiterTerminus: 'inline',
-      forceAttribute: 3,
-      forceAttributeValue: true,
       forceIndent: false,
+      forceInline: false,
       ignoreCSS: false,
       ignoreJS: true,
       ignoreJSON: false,
-      lineBreakValue: 'preserve',
-      preserveComment: false,
+      inlineTagList: [],
       preserveText: false,
-      preserveAttribute: false,
       selfCloseSpace: true,
       selfCloseSVG: true,
+      stripTextWrapLines: false,
       stripAttributeLines: false,
-      quoteConvert: 'none'
+      quoteConvert: 'none',
+      valueLineBreak: 'preserve',
+      valueSpacing: 'preserve'
     },
     json: {
       arrayFormat: 'default',
@@ -104,7 +110,6 @@ function getEstheticRules (ruleOptions) {
       bracePadding: false,
       objectIndent: 'default',
       objectSort: false,
-
       braceStyle: 'none',
       caseSpace: false,
       commentIndent: false,
@@ -120,7 +125,6 @@ function getEstheticRules (ruleOptions) {
       styleGuide: 'none',
       ternaryLine: false,
       variableList: 'none',
-
       quoteConvert: 'double',
       endComma: 'never',
       noSemicolon: true,
@@ -195,6 +199,19 @@ let input;
  * @type {esthetic.Rules}
  */
 let rules;
+
+/**
+ * Papyrus Settings
+ *
+ * Holds a reference to Papyrus editor options
+ *
+ * ```md
+ * json:rules
+ * ```
+ *
+ * @type {string}
+ */
+let height;
 
 /**
  * isRule
@@ -300,13 +317,16 @@ function highlightError (language, error) {
  *
  * @param {markdownit} md markdown-it
  * @param {string} str code input
- * @param {string} language code language
+ * @param {string} languageValue code language
  */
-function highlightCode(md, raw, language) {
+function highlightCode(md, raw, languageValue) {
 
   let code = '';
 
+  const language = getLanguage(languageValue)
+
   if (language) {
+
 
     if (language === 'json:rules') {
 
@@ -331,7 +351,7 @@ function highlightCode(md, raw, language) {
           showSpace: false,
           addAttrs: {
             pre: [
-              'spx-node="demo.input"'
+              'spx-node="showcase.input"',
             ]
           }
         });
@@ -417,7 +437,7 @@ function getWrapFractionRuleExample (estheticRules, papyrusValue, rawInput) {
     showSpace: true,
     addAttrs: {
       pre: [
-        'spx-node="demo.input"'
+        'spx-node="showcase.input"'
       ]
     }
   });
@@ -457,12 +477,12 @@ function getWrapFractionRuleExample (estheticRules, papyrusValue, rawInput) {
             step="1"
             value="80"
             disabled
-            spx-node="demo.wrapFractionRange"
+            spx-node="showcase.wrapFractionRange"
             data-action="demo#onWrapFraction">
         </div>
         <div
           class="col-auto fs fc-cyan pl-1"
-          spx-node="demo.wrapFractionCount"
+          spx-node="showcase.wrapFractionCount"
           aria-label="wrapFraction"
           data-tooltip="top">
           80
@@ -477,12 +497,12 @@ function getWrapFractionRuleExample (estheticRules, papyrusValue, rawInput) {
             max="100"
             step="1"
             value="100"
-            spx-node="demo.wrapRange"
+            spx-node="showcase.wrapRange"
             data-action="demo#onWrapFraction">
         </div>
         <div
           class="col-auto fs fc-salmon pl-1 pr-0"
-          spx-node="demo.wrapCount"
+          spx-node="showcase.wrapCount"
           aria-label="wrap"
           data-tooltip="top">
           100
@@ -493,12 +513,12 @@ function getWrapFractionRuleExample (estheticRules, papyrusValue, rawInput) {
       <div
         style="width: 80%"
         class="wrap-fraction-line"
-        spx-node="demo.wrapFractionLine">
+        spx-node="showcase.wrapFractionLine">
       </div>
       <div
         style="width: ${rules.esthetic.wrap}%"
         class="wrap-line"
-        spx-node="demo.wrapLine">
+        spx-node="showcase.wrapLine">
       </div>
       <div class="demo-input">
         ${output}
@@ -533,7 +553,7 @@ function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
     showSpace: false,
     addAttrs: {
       pre: [
-        'spx-node="demo.input"'
+        'spx-node="showcase.input"'
       ]
     }
   });
@@ -567,11 +587,11 @@ function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
           max="${rules.example.max}"
           step="${rules.example.step}"
           value="${rules.example.value}"
-          spx-node="demo.range"
+          spx-node="showcase.range"
           data-action="demo#onForm">
         <div
           class="col-auto fs-sm ml-4 pl-1"
-          spx-node="demo.wrapCount"
+          spx-node="showcase.wrapCount"
           aria-label="The wrap rule value"
           data-tooltip="top">
           ${rules.example.value}
@@ -582,7 +602,7 @@ function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
       <div
         style="width: ${rules.example.value}%"
         class="wrap-line"
-        spx-node="demo.wrapLine">
+        spx-node="showcase.wrapLine">
       </div>
       <div class="demo-input">
         ${output}
@@ -608,18 +628,22 @@ function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
  * @param {string} rawInput
  * The unescaped raw input of the codeblock
  *
+ * @param {string} demoHeight
+ * An optional height to apply to papayrus code block
+ *
  * @returns {string}
  */
 function getRuleDemo (estheticRules, papyrusValue, inputValue, rawInput) {
 
-  /** @type {papyrus.CreateOptions} */
+  /** @type {papyrus.St} */
   const papyrusOptions = merge(papyrusValue, {
     editor: false,
     showSpace: false,
     showTab: false,
+    showCRLF: estheticRules.crlf === true,
     addAttrs: {
       pre: [
-        'spx-node="demo.output"'
+        'spx-node="showcase.output"',
       ]
     }
   });
@@ -669,6 +693,7 @@ function getRuleDemo (estheticRules, papyrusValue, inputValue, rawInput) {
  * @param {markdownit} md
  * @param {string} inputValue
  * @param {string} language
+ * @param {string|null} demoHeight
  * @returns {{ template: string; rulesValue: string; papyrusValue: string; mode: string; }}
  */
 function getRuleShowcase (md, inputValue, language) {
@@ -679,7 +704,7 @@ function getRuleShowcase (md, inputValue, language) {
   /** @type {esthetic.Rules} */
   const rulesValue = has('esthetic') ? merge(rules.esthetic, { language }) : merge(rules, { language });
 
-  /** @type {papyrus.MountOptions} */
+  /** @type {papyrus.StaticOptions} */
   const papyrusValue = has('papyrus') ? merge(rules.papyrus, { language }) : { language };
 
   /** @type {string} */
@@ -735,8 +760,8 @@ function getRuleShowcase (md, inputValue, language) {
           <button
             type="button"
             class="tab is-active"
-            spx-node="demo.inputTab"
-            spx@click="demo.onClickInputTab"
+            spx-node="showcase.inputTab"
+            spx@click="showcase.onClickInputTab"
             aria-label="${tabs.input.tooltip}"
             data-tooltip="top">
             ${tabs.input.label}
@@ -744,45 +769,45 @@ function getRuleShowcase (md, inputValue, language) {
           <button
             type="button"
             class="tab pr-2"
-            spx-node="demo.rulesTab"
-            spx@click="demo.onClickRulesTab"
+            spx-node="showcase.rulesTab"
+            spx@click="showcase.onClickRulesTab"
             aria-label="${tabs.rules.tooltip}"
             data-tooltip="top">
             ${tabs.rules.label}
           </button>
           <div
-            data-controller="dropdown"
-            data-dropdown-selected-value="default"
-            data-dropdown-kind-value="preset"
+            spx-component="dropdown"
+            spx-dropdown:selected="default"
+            spx-dropdown:kind="preset"
             class="dropdown">
             <button
               type="button"
               class="tab"
-              data-dropdown-target="button"
               aria-label="Select different preset"
-              data-action="dropdown#toggle"
-              spx-node="demo.presetTab"
+              spx@click="dropdown.toggle"
+              spx-node="dropdown.button"
+              spx-bind="showcase.preset"
               data-tooltip="top">
               Preset (default)
               <span class="icon"></span>
             </button>
 
-            <ul data-dropdown-target="collapse">
+            <ul spx-node="dropdown.collapse">
               <li
                 id="default"
-                data-action="click->dropdown#option click->demo#onPresetChange"
+                spx@click="dropdown.option showcase.onPresetChange"
                 class="selected">default</li>
               <li
-                data-action="click->dropdown#option click->demo#onPresetChange"
+                spx@click="dropdown.option showcase.onPresetChange"
                 id="recommended">recommended</li>
               <li
-                data-action="click->dropdown#option click->demo#onPresetChange"
+                spx@click="dropdown.option showcase.onPresetChange"
                 id="warrington">warrington</li>
               <li
-                data-action="click->dropdown#option click->demo#onPresetChange"
+                spx@click="dropdown.option showcase.onPresetChange"
                 id="strict">strict</li>
               <li
-                data-action="click->dropdown#option click->demo#onPresetChange"
+                spx@click="dropdown.option showcase.onPresetChange"
                 id="prettier">prettier</li>
             </ul>
 
@@ -790,7 +815,7 @@ function getRuleShowcase (md, inputValue, language) {
           <button
             type="button"
             class="tab is-undo ml-auto"
-            spx@click="demo.onClickResetButton"
+            spx@click="showcase.onClickResetButton"
             aria-label="Reset Input"
             data-tooltip="top">
           </button>
@@ -815,6 +840,27 @@ function getRuleShowcase (md, inputValue, language) {
 
 }
 
+/**
+ * @param {string} annotation
+ */
+function getLanguage(annotation) {
+
+  const heightIndex = annotation.indexOf('@');
+
+  let language;
+
+  if(heightIndex > -1) {
+    language = annotation.slice(0, heightIndex);
+    height = annotation.slice(heightIndex + 1) + 'px'
+
+  } else {
+    language = annotation
+  }
+
+  return language;
+
+}
+
 
 /**
  * @param {markdownit} md
@@ -826,7 +872,7 @@ function codeblocks(md) {
   md.renderer.rules.fence = function(...args) {
 
     const [ tokens, index ] = args;
-    const language = tokens[index].info.trim();
+    const language = getLanguage(tokens[index].info.trim());
     const inputValue = fence(...args);
 
     if (language === 'json:rules') {
@@ -856,12 +902,7 @@ function codeblocks(md) {
 
     if (rules === undefined) return inputValue
 
-    const {
-      template,
-      mode,
-      papyrusValue,
-      rulesValue
-    } = getRuleShowcase(md, inputValue, language)
+    const { template, mode, papyrusValue, rulesValue} = getRuleShowcase(md, inputValue, language)
 
 
     rules = undefined
@@ -870,17 +911,16 @@ function codeblocks(md) {
       /* html */`
       <div
         class="rule-example"
-        spx-component="demo"
-        spx-demo:uuid="${Math.random().toString(36).slice(2)}"
-        spx-demo:mode="${mode}"
-        spx-demo:preset="default"
-        spx-demo:rules="${rulesValue}"
-        spx-demo:rules-original="${rulesValue}"
-        spx-demo:language="${language}"
-        spx-demo:input="${input.trim()}"
-        spx-demo:input-original="${input.trim()}"
-        spx-demo:papyrus="${papyrusValue}"
-        spx-morph="children">
+        spx-component="showcase"
+        spx-showcase:uuid="${Math.random().toString(36).slice(2)}"
+        spx-showcase:mode="${mode}"
+        spx-showcase:preset="default"
+        spx-showcase:rules="${rulesValue}"
+        spx-showcase:rules-original="${rulesValue}"
+        spx-showcase:language="${language}"
+        spx-showcase:input="${input.trim()}"
+        spx-showcase:input-original="${input.trim()}"
+        spx-showcase:papyrus="${papyrusValue}">
         ${template.trim()}
       </div>`
 
@@ -1009,6 +1049,14 @@ module.exports = eleventy(function (config) {
   .use(mdcontainer, 'rule', { render: (tokens, idx) => rule(md, tokens, idx) })
   .disable("code");
 
+
+
+  md.use(anchor, {
+    slugify: util.slug,
+    callback: token => token.attrs.push([ 'spx-node', 'scrollspy.anchor' ])
+  });
+
+  config.addFilter('anchor', (value) => `#${util.slug(value)}`);
   config.addLiquidShortcode('version', () => require('../package.json').version);
   config.addLiquidShortcode('versions', () => versions());
   config.setLibrary('md', md);

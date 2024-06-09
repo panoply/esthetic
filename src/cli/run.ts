@@ -3,16 +3,17 @@ import esthetic from './esthetic.cjs';
 
 import { writeFile, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { join, basename, extname } from 'node:path';
 import glob from 'fast-glob';
 import { merge } from './utils';
 import chokidar from 'chokidar';
-import * as log from './log.js';
-import * as tui from './tui.js';
+import * as log from './console/log';
+import * as tui from './console/tui';
 import type { Rules } from 'types/index';
 
 export interface CLI {
   _?: string[];
+  help?: boolean;
   watch?: boolean;
   output?: string;
   config?: string;
@@ -48,6 +49,20 @@ export interface IProject {
   configFilePath: string;
 }
 
+function useDefaults (paths: string[]) {
+
+  log.print(tui.yellow(`${tui.bold('WARNING')} Using default rules, no configuration file found`));
+
+  return {
+    rules: esthetic.rules(),
+    paths,
+    path: null,
+    base: null,
+    cache: new Map()
+  };
+
+}
+
 /**
  * Get .esthetic or .esthetic.json
  *
@@ -55,98 +70,117 @@ export interface IProject {
  */
 async function getConfigFile (cwd: string): Promise<{
   rules: Rules;
-  file: string;
+  paths: string[];
+  path: string;
+  base: string;
+  cache: Map<string, string>
 }> {
 
   const files = [
-    'Æ',
-    'Æ.json',
-    '.esthetic.json',
-    '.esthetic'
+    join(cwd, 'Æ'),
+    join(cwd, 'Æ.json'),
+    join(cwd, '.esthetic.json'),
+    join(cwd, '.esthetic')
   ];
 
   let path: string = null;
 
   for (const file of files) {
-    path = join(cwd, file);
-    if (existsSync(path)) {
+    if (existsSync(file)) {
+
+      path = file;
+
       break;
-    } else {
-      path = null;
+
     }
   }
 
   if (path !== null) {
-    try {
-      const json = await readFile(path);
-      return {
-        rules: JSON.parse(json.toString()),
-        file: path
-      };
-    } catch (e) {
-      throw log.error(`Failed to Parse ${tui.red(path)} file`);
-    }
+
+    const json = await readFile(path);
+
+    return {
+      rules: parseConfig(json.toString(), path),
+      paths: [],
+      path,
+      base: basename(path),
+      cache: new Map()
+    };
+
   }
 
   path = join(cwd, 'package.json');
 
+  files.push(path);
+
   if (!existsSync(path)) {
-    log.print(tui.yellow(`${tui.bold('WARNING')} Using default rules, no configuration file found`));
-    return {
-      rules: esthetic.rules(),
-      file: null
-    };
+
+    return useDefaults(files);
+
   } else {
-    try {
-      const json = await readFile(path);
-      const pkg = JSON.parse(json.toString());
-      if ('esthetic' in pkg) {
-        return {
-          rules: pkg.esthetic,
-          file: null
-        };
-      } else {
-        log.print(tui.yellow(`${tui.bold('WARNING')} Using default rules, no configuration file found`));
-        return {
-          rules: esthetic.rules(),
-          file: null
-        };
-      }
-    } catch (e) {
-      throw log.error(`Failed to Parse ${tui.red(path)} file`);
+
+    const json = await readFile(path);
+    const pkg = parseConfig(json.toString(), path);
+
+    if ('esthetic' in pkg) {
+
+      return {
+        rules: pkg.esthetic,
+        paths: null,
+        path,
+        base: basename(path),
+        cache: new Map()
+      };
+
+    } else {
+
+      return useDefaults(files);
+
     }
+
   }
 }
 
-function parseConfig (input: string, key = false) {
+function parseConfig (input: string, path: string) {
 
   try {
-    if (key) {
-      const pkg = JSON.parse(input);
-      return pkg.esthetic;
-    } else {
-      return JSON.parse(input);
-    }
+
+    return JSON.parse(input);
+
   } catch (e) {
-    throw log.error('Failed to Parse rule file');
+
+    throw log.error(`Failed to Parse ${tui.red(path)} file`);
   }
+
+}
+
+async function readConfigFile (config: {
+  rules: Rules;
+  paths: string[];
+  path: string;
+  base: string;
+  cache: Map<string, string>
+}) {
+
+  const readJSON = await readFile(config.path);
+  const changedRules = parseConfig(readJSON.toString(), config.path);
+
+  config.rules = esthetic.rules(changedRules);
+  config.cache.clear();
+
+  log.config(config.base + ' ~ ' + tui.gray('updated'));
 
 }
 
 export async function run (options: CLI) {
 
-  const changes: { [file: string]:string} = {};
   const cwd = process.cwd();
-  const path = join(cwd, options._.pop());
+  const path = options._.slice(1);
   const sync = glob.sync(path, {
     cwd,
     dot: true,
     absolute: true
   });
-
-  if (sync.length === 0) {
-    throw log.error(`No files could be matched at: ${tui.red(path)}`);
-  }
 
   const cli = merge<CLI>({
     watch: false,
@@ -165,47 +199,69 @@ export async function run (options: CLI) {
     tsx: false
   }, options);
 
-  const { rules, file } = await getConfigFile(cwd);
+  if (cli.help) {
+    log.output(tui.help);
+    return;
+  }
 
-  for (const language of [ 'liquid', 'css', 'html', 'javascript', 'typescript', 'json', 'jsx', 'xml' ]) {
+  const config = await getConfigFile(cwd);
+
+  if (config.path) {
+    sync.push(config.path);
+  } else {
+    sync.push(...config.paths);
+  }
+
+  for (const language of [
+    'liquid',
+    'css',
+    'html',
+    'javascript',
+    'typescript',
+    'json',
+    'jsx',
+    'xml'
+  ]) {
+
     if (cli[language] === true) {
-      rules.language = language;
+      config.rules.language = language;
+      config.rules = esthetic.rules(config.rules);
       break;
     }
   }
 
   if (cli.watch) {
 
-    log.start('watching', cli, path);
-
-    if (file !== null) sync.push(file);
+    log.start('watching', cli, path.length);
 
     chokidar.watch(sync).on('all', async (event, path) => {
 
       if (event === 'change') {
 
-        if (path === file) {
-          const base = basename(file);
-          const config = await readFile(path);
-          Object.assign(rules, parseConfig(config.toString(), base === 'package.json'));
-          log.config(base + ' ~ ' + tui.gray('updated'));
-          return;
-        }
-
-        if (!(path in changes)) changes[path] = null;
+        if (path === config.path) return readConfigFile(config);
 
         const read = await readFile(path);
+        const input = read.toString();
 
-        if (read.toString() === changes[path]) return;
+        if (config.cache.has(path) && config.cache.get(path) === input) return;
 
         try {
 
-          const result = esthetic.format(read.toString(), rules);
+          const language = extname(path).slice(1);
+
+          if (language in cli && cli[language] === true) {
+            if (language !== config.rules.language) {
+              config.rules = esthetic.rules({ language });
+              log.language(config.rules.language, language);
+            }
+          }
+
+          const result = esthetic.format(input, config.rules);
           const file = basename(path);
 
           log.change(file);
 
-          changes[path] = result as string;
+          config.cache.set(path, result);
 
           if (cli.format) {
 
@@ -230,20 +286,21 @@ export async function run (options: CLI) {
 
   } else {
 
-    log.start('formatting', cli, path);
+    log.start('formatting', cli, path.length);
 
     for (const path of sync) {
 
       const read = await readFile(path);
+      const input = read.toString();
 
-      if (read.toString() === changes[path]) return;
+      if (config.cache.has(path) && config.cache.get(path) === input) return;
 
       try {
 
-        const result = esthetic.format(read.toString(), rules);
+        const result = esthetic.format(read.toString(), config.rules);
         const file = basename(path);
 
-        changes[path] = result as string;
+        config.cache.set(path, result);
 
         if (cli.format) {
 

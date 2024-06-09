@@ -1,4 +1,4 @@
-import { Comments } from 'types';
+import { BlockComments, Comments } from 'types';
 import { parse } from 'parse/parser';
 import { cc as ch } from 'lexical/codes';
 import { CommentType } from 'lexical/enum';
@@ -21,16 +21,7 @@ import * as rx from 'lexical/regex';
  * An optional third ([2]) array value will be passed for certain comments.
  * This describes references to be inserted into the data-structure.
  */
-export function CommentBlock (chars: string[], config: Comments): [
-  comment: string,
-  advance: number,
-  records?: [
-    startToken: string,
-    startLines: number,
-    enderToken: string,
-    enderLines: number
-  ]
-] {
+export function CommentBlock (chars: string[], config: Comments): BlockComments {
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
@@ -371,16 +362,7 @@ export function CommentBlock (chars: string[], config: Comments): [
    * comments will use different type references.
    *
    */
-  function LiquidBlockComment (): [
-    comment: string,
-    advance: number,
-    records?: [
-      startToken: string,
-      startLines: number,
-      enderToken: string,
-      enderLines: number
-    ]
-  ] {
+  function LiquidBlockComment (): BlockComments {
 
     /** Record references will be returned for Liquid block type comments */
     const records: [

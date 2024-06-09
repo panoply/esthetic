@@ -1,138 +1,94 @@
-import { Controller } from '@hotwired/stimulus';
+import spx from 'spx';
 
-export class ScrollSpy extends Controller {
+export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
 
-  /**
-   * Stimulus: Targets
-   */
-  static targets = [
-    'anchor'
-  ];
-
-  /**
-   * Stimulus: Values
-   */
-  static values = {
-    rootMargin: {
-      type: String,
-      default: '0px'
+  static define = {
+    id: 'scrollspy',
+    state: {
+      threshold: Number,
+      rootMargin: {
+        typeof: String,
+        default: '0px'
+      }
     },
-    threshold: {
-      type: Number,
-      default: 0
-    }
-
+    nodes: <const>[
+      'href',
+      'anchor'
+    ]
   };
-
-  /**
-   * Stimulus: Classes
-   */
-  static classes = [
-    'active'
-  ];
 
   /**
    * Stimulus: Initialize
    */
-  initialize () {
+  connect () {
+
     this.anchors = [];
     this.options = {
-      rootMargin: this.rootMarginValue,
-      threshold: this.thresholdValue
+      rootMargin: this.state.rootMargin,
+      threshold: this.state.threshold
     };
+
   }
 
   /**
    * Stimulus: Connect
    */
-  connect () {
+  onmount () {
 
-    for (const a of this.anchorTargets) {
-      const anchor = a.href.slice(a.href.lastIndexOf('#'));
-      const element = this.element.querySelector(anchor) as HTMLHeadingElement;
-      if (this.element.contains(element)) {
-        this.anchors.push(element);
-        a.onclick = () => {
-          setTimeout(() => {
-            this.anchorTargets.forEach(j => j.classList.remove(this.activeClass));
-            a.classList.add(this.activeClass);
-          }, 300);
-        };
-      }
+    this.hrefNode.classList.add('fc-blue');
+
+    for (const a of this.hrefNodes) {
+      this.anchors.push(a.href.slice(a.href.lastIndexOf('#') + 1));
+      a.onclick = () => {
+        setTimeout(() => {
+          this.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
+          a.classList.add('fc-blue');
+        }, 300);
+      };
+
     }
 
-    if (window.scrollY < 10) {
-      this.anchorTargets[0]?.classList.add(this.activeClass);
-    } else {
-      this.onScroll();
-    }
+    this.onScroll();
 
     window.onscroll = this.onScroll;
   }
 
-  onScroll = () => {
-
-    this.anchors.forEach((v, i) => {
-
-      const next = v.getBoundingClientRect().y - 50;
-
-      if (next < window.screenY) {
-        this.anchorTargets.forEach(j => j.classList.remove(this.activeClass));
-        this.anchorTargets[i].classList.add(this.activeClass);
-      }
-    });
-  };
-
   /**
    * Stimulus: Disconnect
    */
-  disconnect (): void {
+  unmount (): void {
+
     this.anchors = [];
+
   }
+
+  onScroll = () => {
+
+    this.anchorNodes.filter(a => {
+      return this.anchors.includes(a.id);
+    }).forEach((v, i) => {
+
+      v.style.paddingTop = '50px';
+
+      const next = v.getBoundingClientRect().top;
+
+      if (next < window.screenY && this.hrefNodes[i]) {
+
+        this.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
+        this.hrefNodes[i].classList.add('fc-blue');
+
+      }
+    });
+  };
 
   /* -------------------------------------------- */
   /* TYPE VALUES                                  */
   /* -------------------------------------------- */
 
-  active: HTMLHeadingElement;
-  anchors: HTMLHeadingElement[];
-  /**
-   * Intersection Observer
-   */
+  anchors: string[];
   observer: IntersectionObserver;
-  /**
-   * Itersection Observer Options
-   */
   options: IntersectionObserverInit;
-  /**
-   * Stimulus: The Intersection Observer root margin value
-   */
-  rootMarginValue: string;
-  /**
-   * Stimulus: The intersection Observer threshold value
-   */
-  thresholdValue: number;
-
-  /* -------------------------------------------- */
-  /* TARGETS                                      */
-  /* -------------------------------------------- */
-
-  /**
-   * Stimulus: The first matching viewport target
-   */
-  headings: HTMLHeadingElement[];
-  /**
-   * Stimulus: All viewport targets
-   */
-  anchorTargets: HTMLLinkElement[];
-
-  /* -------------------------------------------- */
-  /* TYPE CLASSES                                 */
-  /* -------------------------------------------- */
-
-  /**
-   * Stimulus: The url anchor class to apply when intersecting
-   */
-  activeClass: string;
+  anchorNodes: HTMLLinkElement[];
+  hrefNodes: HTMLLinkElement[];
 
 }

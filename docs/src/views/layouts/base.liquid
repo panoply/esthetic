@@ -12,11 +12,13 @@
     assign active = 'drawer-active'
   endif
 
-  assign in_rules = false
+  assign content_group = 'main'
+  assign content_class = 'content-docs'
 
   if page.url contains '/rules'
     unless page.url contains '/usage'
-      assign in_rules = true
+      assign content_group = 'rules'
+      assign content_class = 'content-rules'
     endunless
   endif
 %}
@@ -58,67 +60,44 @@
       spx-eval="false"></script>
 
   </head>
-  <body class="{% if page.url contains '/playground/' %}no-font-smoothing{% endif %}">
+  <body>
 
     {% if page.url == '/' %}
 
       {% include 'landing' %}
 
+    {% elsif page.url == '/playground/' %}
+
+      {% include 'navbar' %}
+      {% include 'playground' %}
+
     {% else %}
 
       {% include 'navbar' %}
 
-      {% unless page.url == '/playground/' %}
+      <main
+        id="main"
+        class="container-fluid {{ content_class }}">
 
-        <main
-          id="main"
-          class="container-fluid {% if in_rules %}content-rules{% else %}content-docs{% endif %}">
+        {% include 'sidebar' %}
 
-          {% if in_rules %}
-            {% include 'sidebar', links: rules, type: 'rules' %}
-          {% else %}
-            {% include 'sidebar', links: main, type: 'main' %}
-          {% endif %}
+        <div class="row">
 
-          <div
-            class="row"
-            id="shift"
-            {% unless in_rules %}
-              data-controller="scrollspy"
-              data-scrollspy-active-class="fc-pink"
-            {% endunless %}>
-
-            <div class="col px-sm-5 content">
-
-              <div class="d-block">
-                {% include 'breadcrumbs' %}
-              </div>
-
-              {{ content }}
-
-              {% if page.url == '/usage/format/' %}
-                {% svg 'process', 'icon-process' %}
-              {% endif %}
-
-              {% include 'navigators' %}
-
-            </div>
-
-            {% unless in_rules and page.url != '/rules/' %}
-              <div class="col-auto px-4 d-none d-md-unset">
-                {% include 'anchors' %}
-              </div>
-            {% endunless %}
-
+          <div class="col px-sm-5 content">
+            {% include 'breadcrumbs' %}
+            {{ content }}
+            {% include 'paginate' %}
           </div>
 
-        </main>
-
-      {% else %}
-
-        {% include 'playground' %}
-
-      {% endunless %}
+          {% if anchors %}
+            <div
+              class="col-auto px-4 d-none d-md-unset"
+              spx-component="scrollspy">
+              {% include 'anchors', anchors: anchors %}
+            </div>
+          {% endif %}
+        </div>
+      </main>
 
     {% endif %}
 

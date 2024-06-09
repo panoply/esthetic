@@ -2,12 +2,6 @@
 title: 'Language Support'
 layout: base
 permalink: '/introduction/language-support/index.html'
-prev:
-  label: 'Motivation'
-  uri: '/introduction/motivation'
-next:
-  label: 'Installation'
-  uri: '/introduction/installation'
 anchors:
   - Language Support
   - Support List

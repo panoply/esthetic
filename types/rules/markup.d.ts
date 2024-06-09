@@ -5,14 +5,14 @@ export interface MarkupRules {
    *
    * >
    *
-   * ### [Comment Delimiters](https://aesthetic.js.org/rules/markup/commentDelimiters/)
+   * ### [Comment Delimiter](https://aesthetic.js.org/rules/markup/commentDelimiter/)
    *
    * This rule controls the formatting style of HTML and XML markup comment delimiters. Æsthetic
    * can produce 5 different output styles for markup comments, based on this ruleset as it will
    * augments delimiter (`<!--` and `-->`) placements.
    *
    */
-  commentDelimiters?: 'preserve' | 'consistent'| 'force' | 'inline' | 'inline-align';
+  commentDelimiter?: 'preserve' | 'consistent'| 'force' | 'inline' | 'inline-align';
 
   /**
    * #### Default: `false`
@@ -37,6 +37,13 @@ export interface MarkupRules {
   commentIndent?: boolean;
 
   /**
+   * **Default** `false`
+   *
+   * Prevent comment reformatting due to option wrap.
+   */
+  commentPreserve?: boolean;
+
+  /**
    * #### Default: `preserve`
    *
    * >
@@ -56,22 +63,39 @@ export interface MarkupRules {
   attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value';
 
   /**
-   * #### Default: `inline`
+   * **Default** `false`
    *
-   * >
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
    *
-   * ### [Delimiter Terminus](https://aesthetic.js.org/rules/markup/valueLineBreaks/)
+   * If markup tags should have their insides preserved.
+   * This option is only available to markup and does not support
+   * child tokens that require a different lexer. When enabled, this
+   * rule will override and run precedence for all attribute related rules.
    *
-   * Whether or not ending HTML tag delimiters should be forced onto a newline.
-   * This will emulate the style of Prettier's `singleAttributePerLine` formatting
-   * option, wherein the last `>` delimiter character breaks itself onto a new line.
    *
-   * > **NOTE**
-   * >
-   * > If you wish to emulate the behaviour of Prettier, then you will need to either
-   * > set this to `adapt` or `force`. The `adapt` option is generally preferred.
+   * ---
+   *
+   * #### Example
+   *
+   * *Below is an example of how this rule works if it's enabled, ie: `true`.
+   * There is no difference between the _before_ and _after_ version of the code
+   * when this option is enabled.*
+   *
+   * ```html
+   *
+   * <!-- Before Formatting -->
+   * <div
+   *  id="x"    data-x="foo"
+   * class="xx"></div>
+   *
+   * <!-- After Formatting -->
+   * <div
+   *  id="x"    data-x="foo"
+   * class="xx"></div>
+   *
+   * ```
    */
-  delimiterTerminus?: 'inline' | 'force' | 'adapt';
+  attributePreserve?: boolean;
 
   /**
    * #### Default: `preserve`
@@ -211,7 +235,69 @@ export interface MarkupRules {
    *
    * ```
    */
-  valueLineBreak?: 'preserve' | 'inline' | 'align' | 'indent';
+  valueLineBreak?:
+  | 'preserve'
+  | 'inline'
+  | 'force-align'
+  | 'force-indent';
+
+  /**
+   * Whitespace seperator control for occurances contained within attribute values.
+   *
+   * **equipoise**
+   *
+   * ```html
+   * <!-- Before Formatting -->
+   * <div class="a   b    c  d"></div>
+   *
+   * <!-- After Formatting -->
+   * <div class="a b c d"></div>
+   * ```
+   */
+  valueSpacing?:
+  | 'preserve'
+  | 'equipoise'
+  | 'wrap'
+  | 'wrap-fraction'
+
+  /**
+   * List of HTML tag names to appline inline formatting on. By default,
+   * Æsthetic treats applied inline formatting upon a cherry picked list
+   * of tags. This option can be used to override the default list or alternatively
+   * you can exclude certain tags by prefixing and exclimation mark `!`.
+   *
+   * **Example**
+   *
+   * ```js
+   * {
+   *  // will continue to use default but exclude <span> and <h1> tags
+   *   inlineTagList: ['!span', '!h1']
+   * }
+   *
+   * {
+   *  // overrides all defaults and treats only <div> and <p> as inline
+   *   inlineTagList: ['div', 'p']
+   * }
+   * ```
+   */
+  inlineTagList?: string[];
+  /**
+   * #### Default: `inline`
+   *
+   * >
+   *
+   * ### [Delimiter Terminus](https://aesthetic.js.org/rules/markup/valueLineBreaks/)
+   *
+   * Whether or not ending HTML tag delimiters should be forced onto a newline.
+   * This will emulate the style of Prettier's `singleAttributePerLine` formatting
+   * option, wherein the last `>` delimiter character breaks itself onto a new line.
+   *
+   * > **NOTE**
+   * >
+   * > If you wish to emulate the behaviour of Prettier, then you will need to either
+   * > set this to `adapt` or `force`. The `adapt` option is generally preferred.
+   */
+  delimiterTerminus?: 'inline' | 'force' | 'adapt';
 
   /**
    * #### Default: `false`
@@ -321,8 +407,24 @@ export interface MarkupRules {
 
   /**
    * Attribute class list sorting
+   *
+   * @default false
    */
-  classSort?: boolean | string[] | 'tailwind'
+  classListSort?: boolean | string[]
+
+  /**
+   * Whether or not to remove class names which are identical.
+   *
+   * **Example**
+   * ```html
+   * <!-- before formatting -->
+   * <div class="foo bar baz foo baz"></div>
+   *
+   * <!-- after formatting -->
+   * <div class="foo bar baz"></div>
+   * ```
+   */
+  classListUnique?: boolean;
 
   /**
    * <h5>Default</h5>
@@ -420,9 +522,6 @@ export interface MarkupRules {
 
   /**
    *
-   * |:-----|:-----:|-----:|
-   *
-   *
    * **Default Setting**:`false`
    *
    * **Recommended:** `3`
@@ -496,7 +595,7 @@ export interface MarkupRules {
    *
    * ```
    */
-  forceAttribute?: boolean | number;
+  attributeLineBreak?: boolean | number;
 
   /**
    * **Default** `false`
@@ -550,11 +649,8 @@ export interface MarkupRules {
    * - Passing a value of `0` will apply forcing in accordance with `forceAttribute`
    * - Passing a value of `1` or more will apply forcing when attribute count exeeds limit defined
    *
-   * If left `undefined`, text nodes will apply in accordance with `forceIndent` and
-   * `forceAttribute`, with `forceIndent` overriding `forceAttribute` if enabled.
-   *
    */
-  forceTextNode?: boolean | number;
+  forceInline?: boolean | number;
 
   /**
    * **Default** `none`
@@ -582,48 +678,6 @@ export interface MarkupRules {
    * This option eliminates beautification and wrapping of text content.
    */
   preserveText?: boolean;
-
-  /**
-   * **Default** `false`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
-   *
-   * If markup tags should have their insides preserved.
-   * This option is only available to markup and does not support
-   * child tokens that require a different lexer. When enabled, this
-   * rule will override and run precedence for all attribute related rules.
-   *
-   *
-   * ---
-   *
-   * #### Example
-   *
-   * *Below is an example of how this rule works if it's enabled, ie: `true`.
-   * There is no difference between the _before_ and _after_ version of the code
-   * when this option is enabled.*
-   *
-   * ```html
-   *
-   * <!-- Before Formatting -->
-   * <div
-   *  id="x"    data-x="foo"
-   * class="xx"></div>
-   *
-   * <!-- After Formatting -->
-   * <div
-   *  id="x"    data-x="foo"
-   * class="xx"></div>
-   *
-   * ```
-   */
-  preserveAttribute?: boolean;
-
-  /**
-   * **Default** `false`
-   *
-   * Prevent comment reformatting due to option wrap.
-   */
-  preserveComment?: boolean;
 
   /**
    * **Default** `false`

@@ -35,7 +35,16 @@ export const enum ParseError {
    * @example
    *  const x '
    */
-  UnterminateString = 101,
+  UnterminatedString = 101,
+
+  /**
+   * Unterminated JSON String
+   *
+   * @example
+   *  const x "
+   */
+  UnterminatedJSONString,
+
   /**
    * Invalid Quotation Character
    *
@@ -54,6 +63,16 @@ export const enum ParseError {
   /* -------------------------------------------- */
   /* HTML                                         */
   /* -------------------------------------------- */
+
+  /**
+   * Unterminated HTML Start Tag
+   *
+   * @example
+    * <div    // Unterminated > Tokens
+    *
+    * </div>
+    */
+  UnterminatedHTMLStartTag,
 
   /**
    * Invalid HTML End Tag Placement

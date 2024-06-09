@@ -24,18 +24,19 @@ export const recommended: Rules = merge(defaults, {
     delimiterPlacement: 'consistent'
   },
   markup: {
+    attributeLineBreak: 2,
     attributeCasing: 'lowercase-name',
-    commentDelimiters: 'preserve',
+    commentDelimiter: 'preserve',
     commentNewline: true,
     delimiterTerminus: 'adapt',
-    forceAttribute: 2,
     forceIndent: true,
     ignoreCSS: false,
     ignoreJSON: false,
-    lineBreakValue: 'indent',
     selfCloseSpace: true,
     selfCloseSVG: true,
-    quoteConvert: 'double'
+    quoteConvert: 'double',
+    valueLineBreak: 'inline',
+    valueSpacing: 'preserve'
   },
   json: {
     arrayFormat: 'indent',

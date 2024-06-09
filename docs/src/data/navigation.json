@@ -14,7 +14,7 @@
     "url": "https://discord.gg/shopify-developers-597504637167468564",
     "target": "_blank"
   },
-  "menu": [
+  "docs": [
     {
       "title": "Introduction",
       "links": [
@@ -233,12 +233,28 @@
       "title": "Liquid",
       "links": [
         {
+          "title": "argumentLineBreak",
+          "url": "/rules/liquid/argumentLineBreak/"
+        },
+        {
+          "title": "allowPlebSyntactic",
+          "url": "/rules/liquid/allowPlebSyntactic/"
+        },
+        {
+          "title": "allowRubeSyntactic",
+          "url": "/rules/liquid/allowRubeSyntactic/"
+        },
+        {
+          "title": "commentPreserve",
+          "url": "/rules/liquid/commentPreserve/"
+        },
+        {
           "title": "commentIndent",
           "url": "/rules/liquid/commentIndent/"
         },
         {
-          "title": "commentNewline",
-          "url": "/rules/liquid/commentNewline/"
+          "title": "commentPreserve",
+          "url": "/rules/liquid/commentPreserve/"
         },
         {
           "title": "dedentTagList",
@@ -253,12 +269,12 @@
           "url": "/rules/liquid/delimiterPlacement/"
         },
         {
-          "title": "forceArgument",
-          "url": "/rules/liquid/forceArgument/"
+          "title": "equipoiseSpacing",
+          "url": "/rules/liquid/equipoiseSpacing/"
         },
         {
-          "title": "forceFilter",
-          "url": "/rules/liquid/forceFilter/"
+          "title": "filterLineBreak",
+          "url": "/rules/liquid/filterLineBreak/"
         },
         {
           "title": "indentAttribute",
@@ -273,16 +289,8 @@
           "url": "/rules/liquid/lineBreakSeparator/"
         },
         {
-          "title": "normalizeSpacing",
-          "url": "/rules/liquid/normalizeSpacing/"
-        },
-        {
           "title": "paddedTagList",
           "url": "/rules/liquid/paddedTagList/"
-        },
-        {
-          "title": "preserveComment",
-          "url": "/rules/liquid/preserveComment/"
         },
         {
           "title": "quoteConvert",
@@ -298,36 +306,48 @@
           "url": "/rules/markup/attributeCasing/"
         },
         {
+          "title": "attributeLineBreak",
+          "url": "/rules/markup/attributeLineBreak/"
+        },
+        {
+          "title": "attributePreserve",
+          "url": "/rules/markup/attributePreserve/"
+        },
+        {
           "title": "attributeSort",
           "url": "/rules/markup/attributeSort/"
         },
         {
-          "title": "commentDelimiters",
-          "url": "/rules/markup/commentDelimiters/"
+          "title": "classListSort",
+          "url": "/rules/markup/classListSort/"
+        },
+        {
+          "title": "classListUnique",
+          "url": "/rules/markup/classListUnique/"
+        },
+        {
+          "title": "commentDelimiter",
+          "url": "/rules/markup/commentDelimiter/"
         },
         {
           "title": "commentIndent",
           "url": "/rules/markup/commentIndent/"
         },
         {
-          "title": "commentNewline",
-          "url": "/rules/markup/commentNewline/"
+          "title": "commentPreserve",
+          "url": "/rules/markup/commentPreserve/"
         },
         {
           "title": "delimiterTerminus",
           "url": "/rules/markup/delimiterTerminus/"
         },
         {
-          "title": "forceAttribute",
-          "url": "/rules/markup/forceAttribute/"
-        },
-        {
           "title": "forceIndent",
           "url": "/rules/markup/forceIndent/"
         },
         {
-          "title": "forceTextNode",
-          "url": "/rules/markup/forceTextNode/"
+          "title": "forceInline",
+          "url": "/rules/markup/forceInline/"
         },
         {
           "title": "ignoreCSS",
@@ -340,18 +360,6 @@
         {
           "title": "ignoreJSON",
           "url": "/rules/markup/ignoreJSON/"
-        },
-        {
-          "title": "lineBreakValue",
-          "url": "/rules/markup/lineBreakValue/"
-        },
-        {
-          "title": "preserveAttribute",
-          "url": "/rules/markup/preserveAttribute/"
-        },
-        {
-          "title": "preserveComment",
-          "url": "/rules/markup/preserveComment/"
         },
         {
           "title": "preserveText",
@@ -376,6 +384,14 @@
         {
           "title": "quoteConvert",
           "url": "/rules/markup/quoteConvert/"
+        },
+        {
+          "title": "valueLineBreak",
+          "url": "/rules/markup/valueLineBreak/"
+        },
+        {
+          "title": "valueSpacing",
+          "url": "/rules/markup/valueSpacing/"
         }
       ]
     },

@@ -31,34 +31,34 @@ declare namespace Æsthetic {
       (id: Æ.RulePresetNames, rules: Rules): Rules;
       /**
        *
-       * 👎 &nbsp;&nbsp;**default**
+       * 👎 **default**
        *
        * This is the default and the most unobtrusive. Formatting will use a preservational
        * based technique with this preset mode.
        */
       get default(): Rules;
       /*
-       * 👍 &nbsp;&nbsp;**recommended**
+       * 👍 **recommended**
        *
        * This style guide is typically suited for most cases, it will apply a base set of
        * rules aligned with the Æsthetic approach.
        */
       get recommended(): Rules;
       /*
-       * 👍 &nbsp;&nbsp;**strict**
+       * 👍 **strict**
        *
        * This is a strict ruleset curated by the projects author [Panoply](https://github.com/panoply).
        */
       get strict(): Rules;
       /*
-       * 👍 &nbsp;&nbsp;**warrington**
+       * 👍 **warrington**
        *
        * This style guide preset is best suited for developers and specifically teams working with
        * Shopify themes. The preset was curated by the talented [David Warrington](https://ellodave.dev/).
        */
       get warrington(): Rules;
       /*
-       * 🤡 &nbsp;&nbsp;**prettier**
+       * 🤡 **prettier**
        *
        * Replicates the Prettier style of formatting. If you've used the Shopify Liquid Prettier Plugin and
        * enjoy that beautification style using this preset will produce the same results.
@@ -207,19 +207,59 @@ declare namespace Æsthetic {
      *
      * import esthetic from 'esthetic';
      *
-     * const data = esthetic.parse('<div id="foo"> Hello World </div>');
+     * const æ = esthetic.parse('<div id="foo"> Hello World </div>');
      *
-     * // data.begin[]
-     * // data.ender[]
-     * // data.lexer[]
-     * // data.lines[]
-     * // data.stack[]
-     * // data.token[]
-     * // data.types[]
+     * // Parse Table
+     *
+     * æ.data.begin[]
+     * æ.data.ender[]
+     * æ.data.lexer[]
+     * æ.data.lines[]
+     * æ.data.stack[]
+     * æ.data.token[]
+     * æ.data.types[]
+     *
+     * // Traverse Table
+     *
+     * æ.traverse(function(record, index) {
+     *
+     *  this.getRange(index)    // => Range;
+     *  this.getPosition(index) // => Position;
+     *
+     * });
      *
      */
-    parse: (source: string | Buffer) => Æ.Data;
-
+    parse: (source: string | Buffer) => {
+      /**
+       * Returns the parse table data~structure
+       */
+      get data(): Æ.Data;
+      /**
+       * Returns the parse table data~structure
+       */
+      traverse(
+        callback: (
+          this: {
+            getRange(record: Æ.Record | number): {
+              start: {
+                col: number;
+                line: number;
+              },
+              end: {
+                col: number;
+                line: number;
+              }
+            },
+            getPosition(record: Æ.Record | number): {
+              col: number;
+              line: number;
+            }
+          },
+          record: Æ.Record,
+          index: number
+        ) => void
+      ): void;
+    }
     /**
      * #### _ÆSTHETIC_
      *
@@ -233,7 +273,7 @@ declare namespace Æsthetic {
      * // Take the following data structure
      * [
      *  { begin: -1, ender: 1, lexer: 'markup', }, // etc
-     *  { begin: -1, ender: 1, lexer: 'markup', } // etc
+     *  { begin: -1, ender: 1, lexer: 'markup', }, // etc
      * ]
      *
      * // The lines reference will be as followed, assuming
@@ -252,14 +292,7 @@ declare namespace Æsthetic {
      *
      * Event Listener which invokes on different operations.
      */
-    on: Events<
-    Pick<
-    Static,
-    | 'on'
-    | 'parse'
-    | 'format'
-    >
-    >;
+    on: Events<Pick<Static, | 'on'| 'parse'| 'format'>>;
 
     /**
      * #### _ÆSTHETIC_
@@ -269,14 +302,7 @@ declare namespace Æsthetic {
      * Hook into the parse and beatification operations. Hooks allow you to
      * refine output and control different logic during execution cycles.
      */
-    hook: Hooks<
-    Pick<
-    Static,
-    | 'on'
-    | 'parse'
-    | 'format'
-    >
-    >;
+    hook: Hooks<Pick<Static, | 'on'| 'parse'| 'format'>>;
 
     /**
      * #### _ÆSTHETIC_

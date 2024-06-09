@@ -90,7 +90,7 @@ export function setRules (opts: Rules, events: EventListeners) {
       if (rule === 'crlf') parse.crlf = options[rule] ? CNL : NWL;
       if (rule === 'wrap' && options[rule] > 0) {
         if (has('wrapFraction') === false || (has('wrapFraction') && options.wrapFraction <= 0)) {
-          options.wrapFraction = options[rule] - (options[rule] / 4);
+          options.wrapFraction = options[rule];
         }
       }
 
@@ -120,21 +120,21 @@ export function setRules (opts: Rules, events: EventListeners) {
     }
   }
 
-  if (isUndefined(parse.rules.markup.forceTextNode)) {
+  if (isUndefined(parse.rules.markup.forceIndent)) {
     if (parse.rules.markup.forceIndent === false) {
-      if (parse.rules.markup.forceAttribute === true) {
-        parse.rules.markup.forceTextNode = true;
-      } else if (isNumber(parse.rules.markup.forceAttribute)) {
-        parse.rules.markup.forceTextNode = parse.rules.markup.forceAttribute;
+      if (parse.rules.markup.attributeLineBreak === true) {
+        parse.rules.markup.forceInline = true;
+      } else if (isNumber(parse.rules.markup.attributeLineBreak)) {
+        parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
       }
-    } else if (isNumber(parse.rules.markup.forceAttribute)) {
-      parse.rules.markup.forceTextNode = parse.rules.markup.forceAttribute;
+    } else if (isNumber(parse.rules.markup.attributeLineBreak)) {
+      parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
     } else {
-      parse.rules.markup.forceTextNode = true;
+      parse.rules.markup.forceInline = true;
     }
-  } else if (isNumber(parse.rules.markup.forceTextNode)) {
-    if (parse.rules.markup.forceTextNode === 0) {
-      parse.rules.markup.forceTextNode = parse.rules.markup.forceAttribute;
+  } else if (isNumber(parse.rules.markup.forceInline)) {
+    if (parse.rules.markup.forceInline === 0) {
+      parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
     }
   }
 

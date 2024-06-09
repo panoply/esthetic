@@ -373,7 +373,7 @@ export function sortObject (data: Data) {
 
           parse.splice({
             data: store,
-            howmany: 0,
+            remove: 0,
             index: ee,
             record: {
               begin,
@@ -394,7 +394,7 @@ export function sortObject (data: Data) {
 
       } while (dd < keylen);
 
-      parse.splice({ data, howmany: ff, index: cc + 1 });
+      parse.splice({ data, remove: ff, index: cc + 1 });
       parse.lineOffset = lines;
       parse.concat(data, store);
 

@@ -112,85 +112,39 @@ dev(function (source) {
   // });
 
   const output = esthetic.format(source, {
-    wrap: 80,
     language: 'liquid',
-    crlf: false,
-    indentChar: ' ',
     indentSize: 2,
-    preserveLine: 2,
-    endNewline: false,
-    //  wrapFraction: 60,
+    preserveLine: 4,
+    wrap: 80,
     liquid: {
-      commentIndent: true,
-      commentNewline: true,
-      dedentTagList: [
-        'schema',
-        'case'
-      ],
-      delimiterPlacement: 'inline',
-      delimiterTrims: 'preserve',
-      lineBreakSeparator: 'after',
       indentAttribute: true,
-      normalizeSpacing: true,
-      preserveComment: false,
-      quoteConvert: 'single',
       forceFilter: 0,
-      forceArgument: 2
+      forceArgument: 0
     },
     markup: {
-      quoteConvert: 'double',
-      // lineBreakValue: 'preserve',
-      commentNewline: true,
-      commentIndent: true,
-      commentDelimiters: 'force',
-      // attributeSort: true,
-      forceAttribute: 3,
+      forceAttribute: 2,
+      delimiterTerminus: 'force',
       forceIndent: true,
-      // delimiterTerminus: 'inline',
-      // ignoreJS: false,
-      preserveText: false,
-      selfCloseSVG: false
-    },
-    json: {
-      braceAllman: true,
-      arrayFormat: 'indent',
-      objectIndent: 'indent'
-    },
-    style: {
-      correct: true,
-      commentNewline: true,
-      commentIndent: true,
-      noLeadZero: true,
-      quoteConvert: 'single',
-      classPadding: true
-    },
-    script: {
-      correct: true,
-      arrayFormat: 'indent',
-      objectIndent: 'indent',
-      methodChain: 3,
-      caseSpace: true,
-      quoteConvert: 'single',
-      elseNewline: true,
-      functionNameSpace: true,
-      functionSpace: true,
-      commentNewline: true,
-      noCaseIndent: true
+      ignoreJS: true,
+      ignoreJSON: false,
+      valueSpacing: 'equipoise',
+      valueLineBreak: 'force-indent'
     }
   });
 
   return {
     source: output,
-    repeat: 4,
+    repeat: 0,
     inspect: true,
     logger: false,
-    colors: false,
+    colors: true,
     finish: () => {
 
-      // console.log(JSON.stringify(output));
+      // console.log(JSON.stringify(output.split(/(\n+)/), null, 2));
       console.log(esthetic.stats);
       // console.log(esthetic.table);
       // console.log(esthetic.rules());
+
     }
   };
 

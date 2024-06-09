@@ -10,6 +10,11 @@ export const enum Modes {
   Format
 }
 
+export const enum Eq {
+  Truth = 1,
+  False = 0
+}
+
 export const enum Lexers {
   Markup = 1,
   Script,

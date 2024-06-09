@@ -210,7 +210,9 @@ export function delimiters (input: string, tname?: string, space = WSP) {
       open += /^\s*\n/.test(token) ? NWL : space;
       close = (/\s*\n\s*$/.test(token) ? NWL : space) + close;
 
-    } else if (tname === '#' && delimiterPlacement === 'force-multiline') {
+    } else if (
+      tname === '#' &&
+      delimiterPlacement === 'force-multiline') {
 
       if (/\n{2,}/g.test(token.trim())) {
 
@@ -266,6 +268,36 @@ export function delimiters (input: string, tname?: string, space = WSP) {
 
 };
 
+export function wrapLimit (wrap: number) {
+
+  const { data } = parse;
+
+  let w = 0;
+  let i: number = parse.count;
+
+  if (i > 0) {
+
+    if (data.stack[i] !== 'global') {
+
+      do {
+
+        if (data.types[i].indexOf('attribute') < 0) {
+
+          w += data.token[i].length;
+          if (w >= wrap) break;
+
+        }
+
+        --i;
+
+      } while (data.stack[i] !== 'global');
+
+    }
+  }
+
+  return wrap - w;
+}
+
 /**
  * Liquid Normalize
  *
@@ -275,11 +307,11 @@ export function delimiters (input: string, tname?: string, space = WSP) {
  * liquid filter, argument and linebreak forcing. In addition, this function is responsible
  * for setting delimiter trims and placements.
  */
-export function normalize (lexed: string[], tname: string, liquid: LiquidInternal, {
+export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal, {
   wrapFraction,
   liquid: {
-    forceFilter,
-    forceArgument,
+    filterLineBreak,
+    argumentLineBreak,
     lineBreakSeparator,
     delimiterTrims,
     delimiterPlacement
@@ -287,6 +319,11 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 }: Rules) {
 
   const [ o, c ] = delims(lexed);
+
+  /**
+   * Wrap Limit
+   */
+  const wrap: number = wrapLimit(wrapFraction);
 
   /**
    * Opening Delimiter
@@ -403,7 +440,7 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
   /* FORCE WRAP CONDITIONALS                      */
   /* -------------------------------------------- */
 
-  if (wrapFraction > 0 && lexed.length >= wrapFraction && liquid.logic.length > 0 && (
+  if (wrap > 0 && lexed.length > wrap && liquid.logic.length > 0 && (
     tname === 'if' ||
     tname === 'elsif' ||
     tname === 'unless' ||
@@ -416,15 +453,11 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
     }
 
     if (delimiterPlacement === 'force-multiline') {
-
       open = open.trimEnd() + NWL;
       close = NWL + close.trimStart();
-
     }
 
-    const s: number = liquid.logic.length;
-
-    for (let x = 0; x < s; x++) {
+    for (let x = 0, s = liquid.logic.length; x < s; x++) {
 
       const i = liquid.logic[x];
       lexed[i] = NWL + lexed[i];
@@ -447,12 +480,12 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 
     if ((
       (
-        forceFilter > 0 &&
-        pipes >= forceFilter
+        filterLineBreak > 0 &&
+        pipes >= filterLineBreak
       ) || (
-        forceFilter === 0 &&
-        wrapFraction > 0 &&
-        lexed.length > wrapFraction
+        filterLineBreak === 0 &&
+        wrap > 0 &&
+        lexed.length > wrap
       )
     )) {
 
@@ -492,21 +525,19 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
 
         if (liquid.fargs[i] && (
           (
-            forceArgument > 0 &&
-            liquid.fargs[i].length >= forceArgument
+            argumentLineBreak > 0 &&
+            liquid.fargs[i].length >= argumentLineBreak
           ) || (
-            forceArgument === 0 &&
-            wrapFraction > 0 &&
+            argumentLineBreak === 0 &&
+            wrap > 0 &&
             lexed.slice(
               liquid.fargs[i][0],
               liquid.fargs[i][liquid.fargs[i].length - 1]
-            ).length > wrapFraction
+            ).length > wrap
           )
         )) {
 
-          for (
-            let n: number = 0
-              , s = liquid.fargs[i].length; n < s; n++) {
+          for (let n: number = 0, s = liquid.fargs[i].length; n < s; n++) {
 
             const arg = liquid.fargs[i][n];
 
@@ -555,7 +586,7 @@ export function normalize (lexed: string[], tname: string, liquid: LiquidInterna
   /* FORCE WRAP ARGUMENTS                         */
   /* -------------------------------------------- */
 
-  if (liquid.targs.length >= forceArgument) {
+  if (liquid.targs.length >= argumentLineBreak) {
 
     if (delimiterTrims === 'multiline') {
 

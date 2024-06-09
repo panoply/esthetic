@@ -28,6 +28,11 @@ export const DQO = '"';
 export const COM = ',';
 
 /**
+ * `=` - Equals Character
+ */
+export const EQL = '=';
+
+/**
  * `'` –  Single quotation character
  */
 export const SQO = "'";

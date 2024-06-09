@@ -1,0 +1,42 @@
+{
+  "name": "esthetic-test-esm",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "format": "pnpm esthetic ./samples/* -f",
+    "watch": "pnpm esthetic ./samples/* -f -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esthetic": "link:../../.."
+  },
+  "esthetic": {
+    "wrap": 80,
+    "wrapFraction": 0,
+    "language": "liquid",
+    "liquid": {
+      "forceArgument": 0,
+      "forceFilter": 0,
+      "indentAttribute": true
+    },
+    "markup": {
+      "commentDelimiters": "force",
+      "forceIndent": true,
+      "forceAttribute": false,
+      "selfCloseSvg": true,
+      "forceTextNode": true
+    },
+    "json": {
+      "braceAllman": true
+    },
+    "script": {
+      "braceNewline": false
+    }
+  }
+}

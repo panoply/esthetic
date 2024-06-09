@@ -219,12 +219,33 @@ export interface Record {
  * used by the Parse Error logic.
  */
 export interface Syntactic {
+  /**
+   * The line number the start type pair exists
+   */
   line?: number;
+  /**
+   * The index of the token in the data~structure (same as the Map key)
+   */
   index?: number;
+  /**
+   * Whether or not to skip validation on this pair reference
+   */
   skip?: boolean;
+  /**
+   * The expected ender token value, e.g: `</tag>` or `{% endtag %}`
+   */
   expect?: string;
+  /**
+   * The token name value as per the data~structure record entry
+   */
   token?: string;
+  /**
+   * The token stack name reference as per the parse~stack
+   */
   stack?: string;
+  /**
+   * An enum value describing the pair language
+   */
   type?: Languages
 }
 
@@ -359,6 +380,38 @@ export interface Comments {
    */
   ender: string;
 }
+
+export type BlockComments = [
+  /**
+   * The processed comment
+   */
+  comment: string,
+  /**
+   * The advancement index
+   */
+  advance: number,
+  /**
+   * An optional records reference used to update data~structure
+   */
+  records?: [
+    /**
+     * The starting (opening token), e.g: `{% commment %}` etc
+     */
+    startToken: string,
+    /**
+     * The number of lines to pass to `lines`
+     */
+    startLines: number,
+    /**
+     * The ending (closing token), e.g: `{% endcommment %}` etc
+     */
+    enderToken: string,
+    /**
+     * The number of lines to pass to `lines`
+     */
+    enderLines: number
+  ]
+]
 
 export interface LiquidInternal {
   /**

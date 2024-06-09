@@ -58,13 +58,18 @@
     "default": "./dist/esthetic.js"
   },
   "scripts": {
-    "dev": "tsup --watch",
+    "dev": "conc -n \"ÆSTHETIC,DOCS\" -c \"#81D4FA,#FF69B\" \"tsup --watch\" \"pnpm run docs\"",
+    "docs": "pnpm -F esthetic-docs dev",
     "play": "ava tests/dev.test.mjs --watch",
     "build": "tsup --minify --env.NODE_ENV production && gzip-size dist/esthetic.js --include-original",
     "release": "pnpm build && cd docs; pnpm release && pnpm publish --dry",
     "test": "ava --serial",
-    "tests": "tests -t cases,rules,units",
+    "tests": "tests -t cases",
+    "samples": "tests -s",
+    "e2e:liquid": "tests -s liquid --e2e; cd tests; cd e2e; pnpm run watch; cd ..; cd ..; tests -s --e2e --clean;",
+    "e2e:svg": "tests -s svg --e2e; cd tests; cd e2e; pnpm run watch; cd ..; cd ..; tests -s --e2e --clean;",
     "test:cli": "cd tests; pnpm esthetic ./cli/*.liquid -w --liquid; cd ..;",
+    "test:e2e": "ava tests/e2e/esm/*.test.mjs ---",
     "test:attributes": "ava tests/cases/attributes/*.test.mjs ---",
     "test:html": "ava tests/cases/html/*.test.mjs ---",
     "test:liquid": "ava tests/cases/liquid/*.test.mjs ---",
@@ -80,7 +85,8 @@
       "tests/cases/html/*.test.mjs",
       "tests/cases/json/*.test.mjs",
       "tests/cases/css/*.test.mjs",
-      "tests/cases/attributes/*.test.mjs"
+      "tests/cases/attributes/*.test.mjs",
+      "tests/cases/rules/*.test.mjs"
     ],
     "extensions": [
       "mjs"
@@ -103,9 +109,6 @@
       "no-lone-blocks": "off",
       "no-unmodified-loop-condition": "off",
       "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": [
-        "error"
-      ],
       "operator-linebreak": [
         "error",
         "after",
@@ -130,21 +133,22 @@
   },
   "devDependencies": {
     "@liquify/ava": "workspace:^",
-    "@liquify/eslint-config": "^1.2.0",
-    "@liquify/prettier-config": "^1.2.1",
-    "@liquify/schema": "^0.8.4",
-    "@liquify/tsconfig": "^1.0.1",
-    "@types/benchmark": "^2.1.3",
-    "ansis": "^1.5.5",
-    "ava": "^5.3.1",
+    "@liquify/eslint-config": "workspace:^",
+    "@liquify/prettier-config": "workspace:^",
+    "@liquify/schema": "workspace:^",
+    "@liquify/tsconfig": "workspace:^",
+    "@types/benchmark": "^2.1.5",
+    "ansis": "^3.2.0",
+    "ava": "^6.1.3",
     "benchmark": "^2.1.4",
+    "concurrently": "^8.2.2",
     "minimist": "^1.2.8",
-    "terser": "^5.21.0",
-    "tsup": "^7.2.0",
-    "type-fest": "^4.4.0"
+    "terser": "^5.31.0",
+    "tsup": "^8.0.2",
+    "type-fest": "^4.18.3"
   },
   "dependencies": {
-    "chokidar": "^3.5.3",
-    "fast-glob": "^3.3.1"
+    "chokidar": "^3.6.0",
+    "fast-glob": "^3.3.2"
   }
 }

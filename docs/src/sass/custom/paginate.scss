@@ -1,0 +1,27 @@
+.paginate {
+  a {
+    font-family: $font-family-heading;
+    color: $link-color;
+    border: $border-width $border-color solid;
+    border-radius: 5px;
+    padding: 10px 5px;
+    text-align: center;
+    background-color: $code-bg;
+
+    &.prev {
+      padding: 5px 20px 5px 10px;
+    }
+
+    &.next {
+      padding: 5px 10px 5px 20px;
+    }
+    &:hover {
+      color: $white;
+    }
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+}

@@ -22,19 +22,19 @@ export const prettier = merge<Rules>(defaults, {
     quoteConvert: 'double'
   },
   markup: {
-    commentDelimiters: 'consistent',
+    attributeLineBreak: 1,
+    commentDelimiter: 'consistent',
     commentIndent: true,
     delimiterTerminus: 'force',
-    forceAttribute: 1,
     forceIndent: true,
     ignoreJS: true,
     ignoreCSS: true,
     ignoreJSON: false,
-    lineBreakValue: 'force-indent',
     selfCloseSpace: true,
     selfCloseSVG: true,
     stripAttributeLines: true,
-    quoteConvert: 'double'
+    quoteConvert: 'double',
+    valueLineBreak: 'force-indent'
   },
   json: {
     arrayFormat: 'indent',

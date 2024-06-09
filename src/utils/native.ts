@@ -34,6 +34,11 @@ export const defineProperties = Object.defineProperties;
 export const warn = console.warn;
 
 /**
+ * Native prototype `toString` for type checks
+ */
+export const toString = Object.prototype.toString;
+
+/**
  * Set Helper Storage
  */
 export const set = <T = any>(value?: any[]) => new Set<T>(value);

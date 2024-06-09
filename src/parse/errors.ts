@@ -7,6 +7,26 @@ import { ParseError } from 'lexical/errors';
 import { getTagName } from 'lexical/lexing';
 import { config } from 'config';
 
+function ErrorLocation (error: IParseError) {
+
+  if (parse.lexer === 'markup') {
+    if (error.code === ParseError.UnterminateJSONString) {
+      return join(
+        'Language: JSON',
+        `Embedded: ${getLanguageName(parse.language)}`,
+        `Location: ${parse.lineNumber}:${parse.lineColumn}`,
+        `Æsthetic: Parse Failed (Code: ${error.code})`
+      );
+    }
+  }
+
+  return join(
+    `Language: ${getLanguageName(parse.language)}`,
+    `Location: ${parse.lineNumber}:${parse.lineColumn}`,
+    `Æsthetic: Parse Failed (Code: ${error.code})`
+  );
+}
+
 /**
  * Markup Errors
  *
@@ -26,9 +46,7 @@ export function MarkupError (errorCode: ParseError, token: string, tname?: strin
     , NWL
     , error.details.replace(/\n/g, WSP)
     , NWL
-    , `Language: ${getLanguageName(parse.language)} `
-    , `Location: ${parse.lineNumber}:${parse.lineColumn}`
-    , `Æsthetic: Parse Failed (Code: ${error.code})`
+    , ErrorLocation(error)
   );
 
 }
@@ -393,6 +411,14 @@ function message (code: ParseError, token: string, lineNo: number = parse.lineNu
         'For more information see: https://html.spec.whatwg.org/multipage/syntax.html#start-tags'
       )
     }),
+    [ParseError.UnterminatedHTMLStartTag]: ({
+      code,
+      message: ansi(`Synax Error (line ${lineNo}): Unterminated HTML "${token}" start tag`),
+      details: ansi(
+        `The <${token}> tag has not been terminated resulting in an invalid structure.`,
+        'To resolve the issue, check the ending delimiter ">" of the start (opening) tag.'
+      )
+    }),
     [ParseError.InvalidHTMLPhrasingContent]: ({
       code,
       message: ansi(`Syntax Error (line ${lineNo}): Invalid HTML "${token}" tag placement`),
@@ -426,11 +452,18 @@ function message (code: ParseError, token: string, lineNo: number = parse.lineNu
         'An invalid sequence of characters defined'
       )
     }),
-    [ParseError.UnterminateString]: ({
+    [ParseError.UnterminatedString]: ({
       code,
       message: ansi(`Syntax Error (line ${lineNo}): Unterminated String`),
       details: ansi(
         'There is an unterminated string sequence resulting in a parse error.'
+      )
+    }),
+    [ParseError.UnterminatedJSONString]: ({
+      code,
+      message: ansi(`Syntax Error (line ${lineNo}): Unterminated JSON string in "${token}" tag`),
+      details: ansi(
+        'There is a newline occurance following an unterminated JSON quotation character resulting in a parse error.'
       )
     })
   }[code];

@@ -198,6 +198,17 @@ export const WhitespaceEnd = /[\t\v\f \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/
 export const WhitespaceGlob = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+/g;
 
 /**
+ * All Whitespaces
+ *
+ * Global capture of more than 1 whitespace character occurances but does not touch newlines.
+ *
+ * ---
+ *
+ * @example /^[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/g
+ */
+export const WhitespaceOnly = /^[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]+$/g;
+
+/**
  * Global Group Whitespace
  *
  * Group global capture of more than 1 whitespace character occurances but does not touch newlines.

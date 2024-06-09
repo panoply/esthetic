@@ -1,7 +1,7 @@
 /* eslint-disable no-mixed-operators */
 /* eslint-disable no-control-regex */
 
-import { Record, ScriptRules, Structure, Types, VariableDeclarations } from 'types';
+import { BlockComments, Record, ScriptRules, Structure, Types, VariableDeclarations } from 'types';
 import { CommentBlock, commentLine } from 'comments';
 import { parse } from 'parse/parser';
 import { sortCorrect, sortObject } from 'parse/sorting';
@@ -126,7 +126,7 @@ export function script () {
   /**
    * Comment stack
    */
-  let comment: [string, number];
+  let comment: BlockComments;
 
   /**
    * Name list tests (used within `tname()`)
@@ -1827,8 +1827,8 @@ export function script () {
 
           if ((/\{(#|\/|(%>)|(%\]))/).test(input) || (/\}%(>|\])/).test(input)) return input;
 
-          input = input.replace(/\{((\{+)|%-?)\s*/g, spaceStart);
-          input = input.replace(/\s*((\}\}+)|(-?%\}))/g, spaceEnd);
+          input = input.replace(/((\{\{-?)|(\{%-?))\s*/g, spaceStart);
+          input = input.replace(/\s*((-?\}\})|(-?%\}))/g, spaceEnd);
 
           return input;
 
@@ -1874,6 +1874,7 @@ export function script () {
       ) {
 
         ltoke = bracketSpace(ltoke);
+
       }
 
       if (starting === '{%' || starting === '{{') {
@@ -2013,7 +2014,9 @@ export function script () {
 
     // This insanity is for JSON where all the
     // required quote characters are escaped.
-    if (u.is(c[a - 1], cc.BWS) && esc(a - 1) === true && (u.is(c[a], cc.DQO) || u.is(c[a], cc.SQO))) {
+    if (u.is(c[a - 1], cc.BWS) && esc(a - 1) === true && (
+      u.is(c[a], cc.DQO) ||
+      u.is(c[a], cc.SQO))) {
 
       parse.pop(data);
 
@@ -2078,24 +2081,8 @@ export function script () {
 
         } else if (ee > start) {
 
-          ext = true;
-
-          if (u.is(c[ee], cc.LCB) && u.is(c[ee + 1], cc.PER) && c[ee + 2] !== starting) {
-
-            finish();
-            parseTokens('{%', '%}', 'liquid');
-            cleanUp();
-
-          } else if (u.is(c[ee], cc.LCB) && u.is(c[ee + 1], cc.LCB) && c[ee + 2] !== starting) {
-
-            finish();
-            parseTokens('{{', '}}', 'liquid');
-            cleanUp();
-
-          } else {
-            ext = false;
-            build.push(c[ee]);
-          }
+          ext = false;
+          build.push(c[ee]);
 
         } else {
 
@@ -2106,7 +2093,7 @@ export function script () {
           parse.language !== 'json' &&
           parse.language !== 'javascript' &&
           (u.is(starting, cc.DQO) || u.is(starting, cc.SQO)) &&
-          (ext === true || ee > start) &&
+          (ext || ee > start) &&
           u.not(c[ee - 1], cc.BWS) &&
           u.not(c[ee], cc.DQO) &&
           u.not(c[ee], cc.SQO) &&
@@ -4090,11 +4077,10 @@ export function script () {
     ) {
 
       pop();
+
     }
 
-    a = a + 1;
-
-  } while (a < b);
+  } while (++a < b);
 
   if (wtest > -1) word();
 
@@ -4103,7 +4089,7 @@ export function script () {
       u.not(data.token[parse.count], cc.RCB) &&
       u.is(data.token[0], cc.LCB)
     ) ||
-     u.not(data.token[0], cc.LCB)
+      u.not(data.token[0], cc.LCB)
   ) && (
     (
       u.not(data.token[parse.count], cc.RSB) &&

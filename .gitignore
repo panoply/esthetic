@@ -4,6 +4,7 @@ node_modules/
 tests/testa/node_modules
 tests/samples/
 tests/cases/todo
+tests/e2e/esm/*/*
 dist/
 bin/
 

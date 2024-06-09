@@ -3,49 +3,14 @@ import { NIL, NWL, WSP } from 'chars';
 import { LanguageName, LexerName } from 'types/shared';
 import { Stats, MultipleTopLevelPatch } from 'types/index';
 import { getLanguageName } from 'rules/language';
-import { parse } from 'parse/parser';
 import { cc } from 'lexical/codes';
-import { WhitespaceChar, WhitespaceGlob } from 'lexical/regex';
-import { assign } from './native';
+import { WhitespaceChar } from 'lexical/regex';
+import { assign, toString } from './native';
 
-/**
- * Blank Document
- *
- * Small function for dealing with blank or empty source strings.
- * Instead of Prettify passing an empty document to a lexer, we
- * quickly reason with the input.
- */
-// export function blank (language: LanguageName) {
-
-//   const crlf = prettify.rules.crlf === true ? '\r\n' : '\n';
-//   const input = prettify.source.match(/\n/g);
-//   const timer = stats(languageName);
-
-//   let output: string = NIL;
-
-//   if (input === null) {
-
-//     if (prettify.rules.endNewline) output = crlf;
-
-//     prettify.stats = timer(output.length);
-
-//   } else {
-
-//     output = input[0].length > prettify.rules.preserveLine
-//       ? repeatChar(prettify.rules.preserveLine, crlf)
-//       : repeatChar(input[0].length, crlf);
-
-//     if (prettify.rules.endNewline) output += crlf;
-
-//     prettify.stats = timer(output.length);
-
-//   }
-
-//   return output;
-
-// }
-
-export function merge <S extends object> (source: S, ...patches: Array<MultipleTopLevelPatch<S>>): S {
+export function merge <Merge extends object> (
+  source: Merge,
+  ...patches: Array<MultipleTopLevelPatch<Merge>>
+): Merge {
 
   const arr = isArray(source);
 
@@ -181,13 +146,11 @@ export function join (...message: string[]) {
  * When passing in a `current` number value, then the returning
  * number of lines will be calculated together.
  */
-export function cline (input: string | string[], current: number = NaN) {
+export function countLines (input: string | string[], current: number = NaN) {
 
   if (input.indexOf(NWL) < 0) return isNaN(current) ? 0 : current;
 
-  /**
-   * Newline Count
-   */
+  /** Newline Count */
   let c: number;
 
   if (isArray(input)) {
@@ -199,7 +162,6 @@ export function cline (input: string | string[], current: number = NaN) {
       i = input.indexOf(NWL, i);
 
       if (i === -1) break;
-
       c = c + 1;
       i = i + 1;
 
@@ -214,7 +176,7 @@ export function cline (input: string | string[], current: number = NaN) {
   if (isNaN(current)) return c === 1 ? 0 : c;
   if (c === 1) return current;
 
-  c = (c - 1) + current;
+  c = c - 1 + current;
 
   return c > current ? c : current;
 
@@ -482,6 +444,28 @@ export function ws (string: string) {
 }
 
 /**
+ * Is Even
+ *
+ * Check is the number is even.
+ */
+export function isEven (n: number) {
+
+  return n % 2 === 0;
+
+}
+
+/**
+ * Is Odd
+ *
+ * Check is the number is odd.
+ */
+export function isOdd (n: number) {
+
+  return Math.abs(n % 2) === 1;
+
+}
+
+/**
  * Digit (umeric)
  *
  * Check if provided string is a number (`0-9`) character
@@ -499,16 +483,18 @@ export function digit (string: string) {
  */
 export function esc (array: string[], size: number) {
 
-  return (code: string, i: number) => {
+  return function (code: string, i: number) {
 
     do {
 
-      if (is(array[i], cc.DQO) || is(array[i], cc.SQO)) {
-        if (not(array[i - 1], cc.BWS) && code === array[i]) return i + 1;
-      }
+      if ((
+        is(array[i], cc.DQO) ||
+        is(array[i], cc.SQO)
+      ) && (
+        not(array[i - 1], cc.BWS) &&
+        code === array[i])) return i + 1;
 
-      i = i + 1;
-    } while (i < size);
+    } while (++i < size);
 
   };
 
@@ -555,11 +541,6 @@ export function liquidEsc (char: string) {
   return is(char, cc.LCB) ? '{%-?\\s*' : '\\s*-?%}';
 
 }
-
-/**
- * Native prototype `toString` for type checks
- */
-const { toString } = Object.prototype;
 
 /**
  * Check if the object contains the property

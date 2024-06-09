@@ -27,9 +27,9 @@ The `commentIndent` rule applies single level indentation to the containing cont
 
 # Rule Override
 
-When the [`preserveComment`](/rules/liquid/preserveComment) (liquid) rule is enabled (i.e: `true`) it will take precedence and override `commentIndent` rule.
+When the [`commentPreserve`](/rules/liquid/commentPreserve) (liquid) rule is enabled (i.e: `true`) it will take precedence and override `commentIndent` rule.
 
-- [preserveComment](/rules/liquid/preserveComment)
+- [commentPreserve](/rules/liquid/commentPreserve)
 
 :::
 

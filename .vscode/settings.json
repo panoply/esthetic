@@ -76,7 +76,7 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "**/LICENSE": true,
-    //"**/node_modules": true
+    "**/node_modules": true
   },
   "workbench.colorCustomizations": {
     "window.inactiveBorder": "#00aeff",
@@ -112,10 +112,10 @@
         {
           "color": "#91EBC2",
           "isWholeLine": true
-        }
+        },
       ]
     },
-    "(```)(json)(\\:)(rules)(\\@)?(range)?(\\:)?(\\w+)?": {
+    "(```)(json)(\\:)(rules)(\\@)?(range|\\d+[a-z]{2})?(\\:)?(\\w+)?": {
       "regexFlags": "g",
       "decorations": [
         {

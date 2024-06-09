@@ -1,40 +1,23 @@
-{% liquid
-
-  if page.url == '/'
-    assign url = ''
-    assign opened = 'false'
-    assign hidden = 'false'
-    assign active = ''
-  else
-    assign opened = 'true'
-    assign hidden = 'true'
-    assign active = 'drawer-active'
-  endif
-
-  assign sidebar = navigation.menu
+{%
+  liquid
 
   if page.url contains '/rules/'
     assign sidebar = navigation.rules
+  else
+    assign sidebar = navigation.docs
   endif
 %}
 
+{{ sidebar | log }}
+
 <aside
   id="sidebar"
-  class="drawer-panel drawer-left {{ drawer }} sidebar"
-  data-controller="drawer"
-  data-drawer-direction-value="left"
-  data-drawer-mode-value="push"
-  data-drawer-shift-value="#main">
+  class="drawer-panel drawer-left sidebar drawer-panel"
+  spx-component="drawer"
+  spx-drawer:direction="left"
+  spx-drawer:width="280">
 
   <div class="container-fluid g-0">
-
-    <form class="p-4 d-none">
-      <input
-        type="search"
-        class="fm-input fm-sm bd bd-1 rd-2"
-        placeholder="Search...">
-    </form>
-
     <nav
       id="menu"
       class="sidebar-menu mt-0 mb-2 br-0 bt-0"

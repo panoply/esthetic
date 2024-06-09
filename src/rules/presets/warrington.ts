@@ -19,18 +19,18 @@ export const warrington: Rules = merge(defaults, {
     quoteConvert: 'double'
   },
   markup: {
+    attributeLineBreak: 1,
     commentNewline: true,
-    commentDelimiters: 'consistent',
+    commentDelimiter: 'consistent',
     delimiterTerminus: 'adapt',
-    forceAttribute: 1,
     forceIndent: true,
     ignoreCSS: true,
     ignoreJSON: false,
-    lineBreakValue: 'indent',
     selfCloseSpace: true,
     selfCloseSVG: true,
     stripAttributeLines: true,
-    quoteConvert: 'double'
+    quoteConvert: 'double',
+    valueLineBreak: 'preserve'
   },
   json: {
     arrayFormat: 'indent',

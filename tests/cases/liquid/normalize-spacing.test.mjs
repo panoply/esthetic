@@ -35,7 +35,7 @@ test('Spacing in object expressions', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -92,7 +92,7 @@ test('Spacing in control operators', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -132,7 +132,7 @@ test('Spacing in filter expressions', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -171,7 +171,7 @@ test('Spacing in assignment', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -201,7 +201,7 @@ test('Spacing in arguments', t => {
       language: 'liquid',
       wrap: 0,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         forceArgument: 10
       }
     });
@@ -235,7 +235,7 @@ test('Spacing in parameters', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -284,7 +284,7 @@ test('Spacing skipping strings', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 

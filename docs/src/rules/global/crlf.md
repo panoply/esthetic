@@ -20,7 +20,7 @@ If line termination should be Windows **CRLF** (CR = Carriage Return and LF = Li
 
 :::
 
-```json:rules
+```json:rules@250
 {
   "esthetic": {
     "language": "html",

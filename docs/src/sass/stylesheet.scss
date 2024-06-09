@@ -74,14 +74,15 @@
 @import '../../node_modules/papyrus/theme/languages/json';
 @import '../../node_modules/papyrus/theme/languages/treeview';
 
+@import 'custom/sidebar';
+@import 'custom/showcase';
+@import 'custom/svg';
+@import 'custom/navbar';
+
 @import 'styles/accordion';
-@import 'styles/svg';
-@import 'styles/demo';
 @import 'styles/overwrites';
 @import 'styles/parser';
-@import 'styles/navbar';
 @import 'styles/breadcrumb';
 @import 'styles/code';
-@import 'styles/sidebar';
 @import 'styles/landing';
 @import 'styles/playground';

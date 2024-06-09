@@ -10,22 +10,25 @@ import type {
   Splice,
   LexerName,
   Rules,
-  Hooks
+  Hooks,
+  Types,
+  LiquidInternal
 } from 'types';
 import { lexers } from 'lexers';
 import { format } from 'format';
-import { Languages, Lexers, Modes } from 'lexical/enum';
+import { Eq, Languages, Lexers, Modes } from 'lexical/enum';
 import * as lx from 'lexical/lexing';
 import * as rx from 'lexical/regex';
 import { NIL, NWL } from 'chars';
 import { getLexerName, getLexerType } from 'rules/language';
 import { defaults } from 'rules/presets/default';
-import { is, ns } from 'utils/helpers';
+import { is, isString, ns } from 'utils/helpers';
 import { SyntacticError } from 'parse/errors';
 import { ParseError } from 'lexical/errors';
 import { config } from 'config';
 import { cc } from 'lexical/codes';
 import { grammar } from './grammar';
+import { object } from 'utils/native';
 
 /**
  * Parse Stack
@@ -33,6 +36,12 @@ import { grammar } from './grammar';
  * An extended array implementation for working with the `parse.stack` stock.
  */
 export class Stack extends Array<StackItem> implements ParseStack {
+
+  /**
+   * Holds a store reference to markup start/end pairs. This is used for potential
+   * parse errors and keeps track of paired sequences for syntactic reporting.
+   */
+  public pairs: Map<number, Syntactic> = new Map();
 
   get entry () { return this[this.length - 1]; }
   get token () { return this[this.length - 1][0]; }
@@ -64,10 +73,26 @@ export class Stack extends Array<StackItem> implements ParseStack {
 
   }
 
+  delete (index: number) {
+
+    if (index > -1 || index > this.length) return;
+
+    const x = this[index];
+
+    if (this.pairs.has(x[1])) this.pairs.delete(x[1]);
+
+    this.splice(index, 1);
+
+    return x;
+
+  }
+
   pop () {
 
     const i = this.length - 1;
     const x = this[i];
+
+    if (this.pairs.has(x[1])) this.pairs.delete(x[1]);
 
     if (i > 0) this.splice(i, 1);
 
@@ -156,12 +181,6 @@ class Parser {
    * parse errors and keeps track of paired sequences for syntactic reporting.
    */
   public textNodes: Set<number> = new Set();
-
-  /**
-   * Holds a store reference to markup start/end pairs. This is used for potential
-   * parse errors and keeps track of paired sequences for syntactic reporting.
-   */
-  public pairs: Map<number, Syntactic> = new Map();
 
   /**
    * Parse Error reference. Defaults to `null` and will be assigned an object reference exception
@@ -315,6 +334,16 @@ class Parser {
   };
 
   /**
+   * Holds a store reference to markup start/end pairs. This is used for potential
+   * parse errors and keeps track of paired sequences for syntactic reporting.
+   */
+  get pairs () {
+
+    return this.stack.pairs;
+
+  }
+
+  /**
    * The document source `input` reference
    */
   get source (): string {
@@ -339,9 +368,10 @@ class Parser {
 
   }
 
-  get current () {
+  get record () {
 
     return {
+      index: this.count,
       begin: this.data.begin[this.count],
       ender: this.data.ender[this.count],
       lexer: this.data.lexer[this.count],
@@ -350,6 +380,12 @@ class Parser {
       token: this.data.token[this.count],
       types: this.data.types[this.count]
     };
+  }
+
+  get parent () {
+
+    return this.data.token[this.stack.index];
+
   }
 
   /**
@@ -481,10 +517,13 @@ class Parser {
    *
    * The final conclusion for the data strucuture uniform.
    */
-  private final (data: Data) {
+  private conclude (data: Data) {
 
-    let a = this.count;
-    const begin = data.begin[a];
+    /** The current index */
+    let a: number = this.count;
+
+    /** Cached reference of the begin index */
+    const begin: number = data.begin[a];
 
     if ((
       data.lexer[a] === 'style' && (
@@ -522,11 +561,13 @@ class Parser {
 
       }
 
-      a = a - 1;
+    } while (--a > begin);
 
-    } while (a > begin);
+    if (a > -1) {
 
-    if (a > -1) data.ender[a] = this.count;
+      data.ender[a] = this.count;
+
+    }
 
   };
 
@@ -538,18 +579,27 @@ class Parser {
    */
   public syntactic (record: Record, stack: string) {
 
+    if (record.lexer !== 'markup' || record.stack === 'liquid') return;
+
     if (
       record.types === 'liquid_start' ||
       record.types === 'start') {
 
-      const pair = {
-        index: this.count,
-        line: this.lineNumber,
-        token: record.token,
-        skip: false,
-        type: record.types === 'start' ? Languages.HTML : Languages.Liquid,
-        stack
-      };
+      const pair: Syntactic = object(null);
+
+      pair.index = this.count;
+      pair.line = this.lineNumber;
+      pair.token = record.token;
+      pair.stack = stack || this.stack.token;
+      pair.skip = false;
+
+      if (record.types === 'start') {
+        pair.expect = 'end';
+        pair.type = Languages.HTML;
+      } else {
+        pair.expect = 'liquid_end';
+        pair.type = Languages.Liquid;
+      }
 
       if (
         this.pairs.size > 0 &&
@@ -571,37 +621,47 @@ class Parser {
 
       const pair = this.pairs.get(this.stack.index);
 
-      if (pair.skip) this.pairs.delete(this.stack.index);
+      if (pair.skip) {
 
-      if (pair.type === Languages.Liquid) {
+        this.pairs.delete(this.stack.index);
 
-        if (record.token.indexOf(`end${pair.stack}`) > -1) {
+      } else {
 
-          this.pairs.delete(this.stack.index);
+        if (pair.type === Languages.Liquid && record.types === 'liquid_end') {
 
-        } else {
+          if (record.token.indexOf(`end${pair.stack}`) > -1) {
 
-          // TODO:
-          // IMPROVE LIQUID TAG HANDLING
-          //
-          if (record.stack === 'liquid' && (record.token === '%}' || record.token === '-%}')) {
+            this.pairs.delete(this.stack.index);
+
+          } else {
+
+            // TODO:
+            // IMPROVE LIQUID TAG HANDLING
+            //
+            if (record.stack === 'liquid' && (
+              record.token === '%}' ||
+              record.token === '-%}')) {
+
+              this.pairs.delete(this.stack.index);
+
+            } else {
+
+              SyntacticError(ParseError.MissingLiquidEndTag, pair);
+
+            }
+          }
+
+        } else if (pair.type === Languages.HTML && record.types === 'end') {
+
+          if (`</${pair.stack}>` === record.token) {
             this.pairs.delete(this.stack.index);
           } else {
-            SyntacticError(ParseError.MissingLiquidEndTag, pair);
+            SyntacticError(ParseError.MissingHTMLEndTag, pair);
           }
-        }
 
-      } else if (pair.type === Languages.HTML) {
-
-        if (`</${pair.stack}>` === record.token) {
-          this.pairs.delete(this.stack.index);
-        } else {
-
-          SyntacticError(ParseError.MissingHTMLEndTag, pair);
         }
 
       }
-
     }
 
   }
@@ -639,16 +699,13 @@ class Parser {
 
     this.count = this.count + 1;
 
-    if (record.lexer !== 'style' && token.replace(/[{}<>%]/g, NIL) === NIL) {
+    if (
+      record.lexer !== 'style' &&
+      token.replace(/[{}<>%]/g, NIL) === NIL) {
+
       token = record.types === 'else'
         ? 'else'
         : lx.getTagName(record.token);
-    }
-
-    if (record.lexer === 'markup' && record.stack !== 'liquid') {
-
-      this.syntactic(record, token);
-
     }
 
     this.lineOffset = 0;
@@ -658,22 +715,26 @@ class Parser {
       this.stack.push([ token, this.count ]);
       this.lineDepth = this.lineDepth + this.rules.indentSize;
 
+      if (
+        record.lexer === 'markup' &&
+        record.stack !== 'liquid') {
+
+        this.syntactic(record, token);
+
+      }
+
     } else if (record.types === 'end' || record.types.indexOf('_end') > 0) {
 
       // This big condition fixes language specific else blocks that
       // are children of start/end blocks not associated with the if/else chain
 
-      /**
-       * Holds reference to the data structures `ender` index
-       */
+      /** Holds reference to the data structures `ender` index */
       let ender: number = 0;
 
-      /**
-       * Cached reference of `this.stack` for minor optimisations
-       */
+      /** Cached reference of `this.stack` for minor optimisations */
       const length = this.stack.length;
 
-      if (length > 2 && data.types[this.stack[length - 1][1]] && (
+      if (length > 2 && isString(data.types[this.stack[length - 1][1]]) && (
         data.types[this.stack[length - 1][1]] === 'else' ||
         data.types[this.stack[length - 1][1]].indexOf('_else') > 0
       ) && (
@@ -681,8 +742,7 @@ class Parser {
         data.types[this.stack[length - 2][1]].indexOf('_start') > 0
       ) && (
         data.types[this.stack[length - 2][1] + 1] === 'else' ||
-        data.types[this.stack[length - 2][1] + 1].indexOf('_else') > 0
-      )) {
+        data.types[this.stack[length - 2][1] + 1].indexOf('_else') > 0)) {
 
         this.stack.pop();
 
@@ -694,25 +754,37 @@ class Parser {
 
       }
 
-      this.final(data);
+      this.conclude(data);
+      this.syntactic(record, token);
 
-      if (ender > 0) data.ender[data.begin[this.count] + 1] = ender;
+      if (ender > 0) {
+
+        data.ender[data.begin[this.count] + 1] = ender;
+
+      }
 
       this.stack.pop();
       this.lineDepth = this.lineDepth - this.rules.indentSize;
 
-    } else if (record.types && (record.types === 'else' || record.types.indexOf('_else') > 0)) {
+    } else if (record.types === 'else' || record.types.indexOf('_else') > 0) {
 
-      if (token === NIL) token = 'else';
+      if (token === NIL) {
+
+        token = 'else';
+
+      }
 
       if (this.count > 0 && (
         data.types[this.count - 1] === 'start' ||
-        data.types[this.count - 1].indexOf('_start') > 0
-      )) {
+        data.types[this.count - 1].indexOf('_start') > 0)) {
+
         this.stack.push([ token, this.count ]);
+
       } else {
-        this.final(data);
+
+        this.conclude(data);
         this.stack.update(token === NIL ? 'else' : token, this.count);
+
       }
     }
 
@@ -740,15 +812,17 @@ class Parser {
 
     this.numbers.pop();
 
-    return {
-      begin: data.begin.pop(),
-      ender: data.ender.pop(),
-      lexer: data.lexer.pop(),
-      lines: data.lines.pop(),
-      stack: data.stack.pop(),
-      token: data.token.pop(),
-      types: data.types.pop()
-    };
+    const record: Record = object(null);
+
+    record.begin = data.begin.pop();
+    record.ender = data.ender.pop();
+    record.lexer = data.lexer.pop();
+    record.lines = data.lines.pop();
+    record.stack = data.stack.pop();
+    record.token = data.token.pop();
+    record.types = data.types.pop();
+
+    return record;
 
   }
 
@@ -797,9 +871,14 @@ class Parser {
       if (splice.data === this.data) {
 
         this.count = (this.count - splice.remove) + 1;
-        if (begin !== this.data.begin[this.count] || token !== this.data.token[this.count]) {
+
+        if (
+          begin !== this.data.begin[this.count] ||
+          token !== this.data.token[this.count]) {
+
           this.lineOffset = 0;
         }
+
       }
 
     } else {
@@ -817,18 +896,6 @@ class Parser {
         this.lineOffset = 0;
       }
     }
-
-  }
-
-  /**
-   * Is Checksum
-   *
-   * Checks a record value on the last know entry in the
-   * parse table data strcuture
-   */
-  public is<T extends keyof Record> (prop: T, value: Record[T]) {
-
-    return this.count > 0 ? this.data[prop][this.count] === value : false;
 
   }
 

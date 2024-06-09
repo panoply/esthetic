@@ -19,11 +19,12 @@ export const strict: Rules = merge(defaults, {
     delimiterTrims: 'never',
     lineBreakSeparator: 'before',
     quoteConvert: 'double',
-    forceArgument: 3,
-    forceFilter: 4,
+    argumentLineBreak: 3,
+    filterLineBreak: 4,
     delimiterPlacement: 'consistent'
   },
   markup: {
+    attributeLineBreak: 2,
     attributeSort: [
       'id',
       'class',
@@ -34,19 +35,22 @@ export const strict: Rules = merge(defaults, {
       'src'
     ],
     attributeCasing: 'lowercase-name',
-    commentDelimiters: 'force',
+    commentDelimiter: 'force',
     commentNewline: true,
+    classListUnique: true,
     delimiterTerminus: 'adapt',
-    forceAttribute: 1,
     forceIndent: true,
+    forceInline: 3,
     ignoreCSS: false,
     ignoreJSON: false,
     ignoreJS: false,
-    lineBreakValue: 'force-indent',
     selfCloseSpace: true,
     selfCloseSVG: true,
     stripAttributeLines: true,
-    quoteConvert: 'double'
+    stripTextWrapLines: true,
+    quoteConvert: 'double',
+    valueLineBreak: 'force-indent',
+    valueSpacing: 'equipoise'
   },
   json: {
     arrayFormat: 'indent',
