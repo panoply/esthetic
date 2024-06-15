@@ -415,6 +415,12 @@ export type BlockComments = [
 
 export interface LiquidInternal {
   /**
+   * Tag Name
+   *
+   * Holds a copy of the tag name
+   */
+  tname: string;
+  /**
    * Pipes (Filters)
    *
    * A list of indexes which reference Liquid filter pipes:
@@ -473,6 +479,18 @@ export interface LiquidInternal {
    * // Indexes of the "and" and the "or" operators are stored
    */
   logic: number[];
+  /**
+   * Tag Parameters
+   *
+   * A list of indexes which reference parameter starting points
+   *
+   * @example
+   *
+   * {% for foo in array limit: 100 offset: 2 %}
+   *
+   * // Indexes before limit and before offset are stored
+   */
+  param: number[];
 }
 
 /**

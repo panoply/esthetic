@@ -235,14 +235,14 @@ export interface MarkupRules {
    *
    * ```
    */
-  valueLineBreak?:
-  | 'preserve'
-  | 'inline'
-  | 'force-align'
-  | 'force-indent';
+  // valueLineBreak?:
+  // | 'preserve'
+  // | 'inline'
+  // | 'force-align'
+  // | 'force-indent';
 
   /**
-   * Whitespace seperator control for occurances contained within attribute values.
+   * Whitespace separator control for occurances contained within attribute values.
    *
    * **equipoise**
    *
@@ -261,7 +261,7 @@ export interface MarkupRules {
   | 'wrap-fraction'
 
   /**
-   * List of HTML tag names to appline inline formatting on. By default,
+   * List of HTML tag names to which should respect inline formatting on. By default,
    * Æsthetic treats applied inline formatting upon a cherry picked list
    * of tags. This option can be used to override the default list or alternatively
    * you can exclude certain tags by prefixing and exclimation mark `!`.
@@ -280,7 +280,7 @@ export interface MarkupRules {
    * }
    * ```
    */
-  inlineTagList?: string[];
+  textNodeList?: string[];
   /**
    * #### Default: `inline`
    *
@@ -297,7 +297,7 @@ export interface MarkupRules {
    * > If you wish to emulate the behaviour of Prettier, then you will need to either
    * > set this to `adapt` or `force`. The `adapt` option is generally preferred.
    */
-  delimiterTerminus?: 'inline' | 'force' | 'adapt';
+  delimiterTerminus?: boolean | number;
 
   /**
    * #### Default: `false`

@@ -267,6 +267,17 @@ export interface LiquidRules {
   lineBreakSeparator?: 'preserve' | 'after' | 'before';
 
   /**
+   * **Default** `after`
+   *
+   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `before`
+   *
+   * Controls the placement of Liquid tag operator type characters in newline structures.
+   * In situations where you write a multiline tag expression this rule can augment the
+   * order of leading operator characters such as the parameter comma `,` separator.
+   */
+  lineBreakLogical?: 'preserve' | 'after' | 'before';
+
+  /**
    * **NOT YET AVAILABLE**
    *
    * _This rule is under consideration and is not yet available for usage_
