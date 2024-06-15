@@ -38,7 +38,7 @@ export const strict: Rules = merge(defaults, {
     commentDelimiter: 'force',
     commentNewline: true,
     classListUnique: true,
-    delimiterTerminus: 'adapt',
+    delimiterTerminus: false,
     forceIndent: true,
     forceInline: 3,
     ignoreCSS: false,
@@ -49,7 +49,6 @@ export const strict: Rules = merge(defaults, {
     stripAttributeLines: true,
     stripTextWrapLines: true,
     quoteConvert: 'double',
-    valueLineBreak: 'force-indent',
     valueSpacing: 'equipoise'
   },
   json: {

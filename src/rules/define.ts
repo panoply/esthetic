@@ -67,6 +67,9 @@ export function setRules (opts: Rules, events: EventListeners) {
    */
   const has = hasProp(opts);
 
+  /**
+   * Formatting Options - Applies preset if provided
+   */
   const options: Rules = has('preset') ? setPreset(opts) : opts;
 
   /**
@@ -76,8 +79,13 @@ export function setRules (opts: Rules, events: EventListeners) {
 
   if (events.rules.length > 0) change = {};
 
-  if (has('language') && isValid('global', 'language', options.language) && parse.language !== options.language) {
+  if (
+    has('language') &&
+    isValid('global', 'language', options.language) &&
+    parse.language !== options.language) {
+
     parse.language = parse.rules.language = options.language;
+
   }
 
   for (const rule of GLOB) {
@@ -121,23 +129,39 @@ export function setRules (opts: Rules, events: EventListeners) {
   }
 
   if (isUndefined(parse.rules.markup.forceIndent)) {
+
     if (parse.rules.markup.forceIndent === false) {
+
       if (parse.rules.markup.attributeLineBreak === true) {
         parse.rules.markup.forceInline = true;
       } else if (isNumber(parse.rules.markup.attributeLineBreak)) {
         parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
       }
+
     } else if (isNumber(parse.rules.markup.attributeLineBreak)) {
+
       parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
+
     } else {
+
       parse.rules.markup.forceInline = true;
+
     }
+
   } else if (isNumber(parse.rules.markup.forceInline)) {
+
     if (parse.rules.markup.forceInline === 0) {
+
       parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
+
     }
+
   }
 
-  if (events.rules.length > 0) for (const cb of events.rules) cb(change, parse.rules);
+  if (events.rules.length > 0) {
+    for (const cb of events.rules) {
+      cb(change, parse.rules);
+    }
+  }
 
 }

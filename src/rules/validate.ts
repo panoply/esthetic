@@ -70,6 +70,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
         return isValidArray(language, rule, value);
 
       case 'lineBreakSeparator':
+      case 'lineBreakLogical':
       case 'delimiterPlacement':
       case 'delimiterTrims':
       case 'quoteConvert':
@@ -82,6 +83,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 
     switch (rule as keyof MarkupRules) {
 
+      case 'delimiterTerminus':
       case 'attributeLineBreak':
 
         if (isNumber(value)) return isValidNumber(language, rule, value);
@@ -111,19 +113,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
             'undefined',
             'boolean',
             'number'
-          ]
-        });
-
-      case 'inlineTagList':
-
-        if (isArray(value)) return isValidArray(language, rule, value);
-
-        throw RuleError({
-          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-          option: `${language} → ${rule}`,
-          provided: value,
-          expected: [
-            'string[]'
           ]
         });
 
@@ -163,8 +152,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'attributeCasing':
       case 'valueSpacing':
       case 'commentDelimiter':
-      case 'delimiterTerminus':
-      case 'valueLineBreak':
       case 'quoteConvert':
 
         return isValidChoice(language, rule, value);
@@ -506,42 +493,20 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       });
     }
 
-  } else if (rule === 'delimiterTerminus') {
+  } else if (rule === 'lineBreakLogical') {
 
-    switch (value as MarkupRules['delimiterTerminus']) {
-      case 'force':
-      case 'inline':
-      case 'adapt': return true;
-      default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        expected: [
-          'force',
-          'inline',
-          'adapt'
-        ]
-      });
-    }
-
-  } else if (rule === 'valueLineBreak') {
-
-    switch (value as MarkupRules['valueLineBreak']) {
+    switch (value as LiquidRules['lineBreakLogical']) {
       case 'preserve':
-      case 'inline':
-      case 'force-align':
-      case 'force-indent': return true;
+      case 'before':
+      case 'after': return true;
       default: throw RuleError({
         message: `Invalid "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
         expected: [
           'preserve',
-          'align',
-          'indent',
-          'force-preserve',
-          'force-align',
-          'force-indent'
+          'before',
+          'after'
         ]
       });
     }

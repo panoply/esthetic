@@ -28,14 +28,13 @@ export const recommended: Rules = merge(defaults, {
     attributeCasing: 'lowercase-name',
     commentDelimiter: 'preserve',
     commentNewline: true,
-    delimiterTerminus: 'adapt',
+    delimiterTerminus: false,
     forceIndent: true,
     ignoreCSS: false,
     ignoreJSON: false,
     selfCloseSpace: true,
     selfCloseSVG: true,
     quoteConvert: 'double',
-    valueLineBreak: 'inline',
     valueSpacing: 'preserve'
   },
   json: {

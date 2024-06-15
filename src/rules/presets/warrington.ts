@@ -22,15 +22,14 @@ export const warrington: Rules = merge(defaults, {
     attributeLineBreak: 1,
     commentNewline: true,
     commentDelimiter: 'consistent',
-    delimiterTerminus: 'adapt',
+    delimiterTerminus: false,
     forceIndent: true,
     ignoreCSS: true,
     ignoreJSON: false,
     selfCloseSpace: true,
     selfCloseSVG: true,
     stripAttributeLines: true,
-    quoteConvert: 'double',
-    valueLineBreak: 'preserve'
+    quoteConvert: 'double'
   },
   json: {
     arrayFormat: 'indent',

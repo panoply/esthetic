@@ -25,7 +25,7 @@ export const prettier = merge<Rules>(defaults, {
     attributeLineBreak: 1,
     commentDelimiter: 'consistent',
     commentIndent: true,
-    delimiterTerminus: 'force',
+    delimiterTerminus: 2,
     forceIndent: true,
     ignoreJS: true,
     ignoreCSS: true,
@@ -34,7 +34,7 @@ export const prettier = merge<Rules>(defaults, {
     selfCloseSVG: true,
     stripAttributeLines: true,
     quoteConvert: 'double',
-    valueLineBreak: 'force-indent'
+
   },
   json: {
     arrayFormat: 'indent',
