@@ -1,9 +1,8 @@
 import type { Types } from 'types/index';
 import { cc } from 'lexical/codes';
-import { WSP, NIL, NWL, EQL } from 'chars';
+import { WSP, NIL, NWL } from 'chars';
 import { parse } from 'parse/parser';
 import { object } from 'utils/native';
-import { grammar } from 'parse/grammar';
 import * as rx from 'lexical/regex';
 import * as u from 'utils/helpers';
 import { Eq } from 'lexical/enum';
@@ -32,7 +31,7 @@ export function markup () {
   /* -------------------------------------------- */
 
   const { rules, data, ender, start } = parse;
-  const { textNodes } = grammar.html;
+  const { filterLineBreak, argumentLineBreak } = rules.liquid;
 
   /* -------------------------------------------- */
   /* LOCAL SCOPES                                 */
@@ -238,7 +237,10 @@ export function markup () {
     //
     if (n > 0) p = n - 1;
 
-    if (isType(a - 1, 'content') && textNodes.has(data.token[a]) && (
+    if ((
+      rules.markup.forceIndent === false &&
+      isType(a - 1, 'content')
+    ) && (
       isType(a, 'start') ||
       isType(a, 'singleton'))) {
 
@@ -319,7 +321,7 @@ export function markup () {
     let attrStart: boolean = false;
 
     /** Whether or not we should apply forcing */
-    let attrForce: boolean = u.isBoolean(rules.markup.attributeLineBreak);
+    let attrForce: boolean = u.isBoolean(rules.markup.attributeLineBreak) && rules.markup.attributeLineBreak === true;
 
     /** The amount of attributes allowed before forcing */
     let attrLimit: number = attrForce ? 0 : rules.markup.attributeLineBreak as number;
@@ -332,14 +334,6 @@ export function markup () {
 
     /** The number of attributes contained on the tag */
     const attrCount: number = AttributeCount();
-
-    if (
-      attrForce &&
-      rules.markup.attributeLineBreak === false) {
-
-      attrForce = false;
-
-    }
 
     if (inline.has(p)) {
       if (u.isNumber(rules.markup.forceInline) && rules.markup.forceInline > 0) {
@@ -367,14 +361,10 @@ export function markup () {
 
     function AttributeCount () {
 
-      if (attrForce === false) return Infinity;
-
       let attr: number = 0;
 
       do ++attr;
       while (isLike(a + attr, 'attribute'));
-
-      if (attr <= attrLimit) return Infinity;
 
       return attr;
 
@@ -678,7 +668,9 @@ export function markup () {
       cols = 0;
       levels[p] = attrLevel;
 
-      if (rules.markup.delimiterTerminus === 'force') {
+      if (rules.markup.delimiterTerminus === true || (
+        u.isNumber(rules.markup.delimiterTerminus) &&
+        rules.markup.delimiterTerminus >= attrCount)) {
 
         delims.add(p);
 
@@ -703,9 +695,9 @@ export function markup () {
 
         } while (--fa > p);
 
-        if (rules.markup.delimiterTerminus === 'force' || (
-          attrCount >= 2 &&
-          rules.markup.delimiterTerminus === 'adapt')) {
+        if (rules.markup.delimiterTerminus === true || (
+          u.isNumber(rules.markup.delimiterTerminus) &&
+          attrCount >= rules.markup.delimiterTerminus)) {
 
           delims.add(p);
 
@@ -788,11 +780,15 @@ export function markup () {
 
       AttributeWrap(a);
 
-    }
+      if ((attrWrap && rules.markup.delimiterTerminus === true) || (
+        attrWrap &&
+        u.isNumber(rules.markup.delimiterTerminus) &&
+        attrCount >= rules.markup.delimiterTerminus
+      )) {
 
-    if (attrWrap && rules.markup.delimiterTerminus === 'adapt') {
+        delims.add(p);
 
-      delims.add(p);
+      }
 
     }
 
@@ -1089,119 +1085,112 @@ export function markup () {
 
   };
 
+  /**
+   * Force Markup Delimiters
+   *
+   * Applies newline delimiter structures. Does some additional
+   * processing to ensure special structures produce correct
+   * output, like that we need to reason with when using `valueForce`
+   * rule on attributes.
+   */
   function TerminusForce () {
 
-    if (delims.has(data.begin[n]) && u.isLast(data.token[a], cc.RAN)) {
+    const offset = NWL + nl(levels[a], Eq.False).slice(rules.indentSize);
 
-      const offset = NWL + nl(levels[a], Eq.False).slice(rules.indentSize);
+    data.token[a] = data.token[a].replace(/(\/?>)$/, `${offset}$1`);
 
-      data.token[a] = data.token[a].replace(/(\/?>)$/, `${offset}$1`);
-
-      delims.delete(data.begin[n]);
-
-    }
-
+    delims.delete(data.begin[n]);
     output.push(data.token[a]);
 
   }
 
-  function AttributeValue () {
+  // function AttributeValue () {
 
-    const open: number = data.token[a].indexOf(EQL) + 2;
+  //   const open: number = data.token[a].indexOf(EQL) + 2;
 
-    if (open > 2) {
+  //   if (open > 2) {
 
-      const close = data.token[a].length - 1;
-      const value = data.token[a].slice(open, close);
+  //     const close = data.token[a].length - 1;
+  //     const value = data.token[a].slice(open, close);
 
-      if (rx.Newline.test(value)) {
+  //     if (rx.Newline.test(value)) {
 
-        const split = value
-          .replace(rx.NewlineLead, NIL)
-          .replace(rx.NewlineEnd, NIL)
-          .split(/(\n+)/g);
+  //       const split = value
+  //         .replace(rx.NewlineLead, NIL)
+  //         .replace(rx.NewlineEnd, NIL)
+  //         .split(/(\n+)/g);
 
-        /**
-         * The attribute token we will build, assign the attribute name first
-         */
-        const token: string[] = [ data.token[a].slice(0, open) ];
+  //       /**
+  //        * The attribute token we will build, assign the attribute name first
+  //        */
+  //       const token: string[] = [ data.token[a].slice(0, open) ];
 
-        /**
-         * The indentation offset to apply for each newline
-         */
-        let offset = nl(levels[a], Eq.False);
+  //       /**
+  //        * The indentation offset to apply for each newline
+  //        */
+  //       let offset = nl(levels[a], Eq.False);
 
-        if (rules.markup.valueLineBreak === 'force-indent') {
+  //       if (rules.markup.valueLineBreak === 'force-indent') {
 
-          offset += spaces;
+  //         offset += spaces;
 
-        }
+  //       }
 
-        token.push(NWL);
+  //       token.push(NWL);
 
-        for (let i = 0, s = split.length; i < s; i++) {
+  //       for (let i = 0, s = split.length; i < s; i++) {
 
-          if (split[i] === NIL || (i + 1 === s && rx.WhitespaceOnly.test(split[i]))) continue;
+  //         if (split[i] === NIL || (i + 1 === s && rx.WhitespaceOnly.test(split[i]))) continue;
 
-          if (u.isLast(token, cc.NWL)) {
+  //         if (u.isLast(token, cc.NWL)) {
 
-            const m = split[i].match(rx.WhitespaceLead);
+  //           const m = split[i].match(rx.WhitespaceLead);
 
-            if (m !== null) {
+  //           if (m !== null) {
 
-              const ws = m[0].slice(offset.length);
+  //             const ws = m[0].slice(offset.length);
 
-              if (ws.length === 0) {
+  //             if (ws.length === 0) {
 
-                token.push(offset + split[i]);
+  //               token.push(offset + split[i].replace(rx.WhitespaceLead, ''));
 
-              } else {
+  //             } else {
 
-                token.push(split[i]);
+  //               token.push(split[i]);
 
-              }
+  //             }
 
-            } else {
+  //           } else {
 
-              token.push(offset + split[i]);
+  //             token.push(offset + split[i]);
 
-            }
+  //           }
 
-          } else {
+  //         } else {
 
-            token.push(split[i]);
-          }
-        }
+  //           token.push(split[i]);
+  //         }
+  //       }
 
-        if (rules.markup.valueLineBreak === 'force-indent') {
+  //       token.push(NWL + offset);
 
-          if (rx.WhitespaceOnly.test(token[token.length - 1])) {
-            token.push(NWL + offset.slice(spaces.length));
-          } else {
-            token.push(offset.slice(spaces.length));
-          }
+  //       token.push(data.token[a].slice(close));
 
-        } else {
-          token.push(NWL + offset);
-        }
+  //       output.push(token.join(NIL));
 
-        token.push(data.token[a].slice(close));
+  //     } else {
 
-        output.push(token.join(NIL));
+  //       output.push(data.token[a]);
 
-      } else {
+  //     }
 
-        output.push(data.token[a]);
+  //   } else {
 
-      }
+  //     output.push(data.token[a]);
 
-    } else {
+  //   }
 
-      output.push(data.token[a]);
-
-    }
-
-  }
+  // }
   /**
    * Ignored Embedded
    *
@@ -1315,41 +1304,7 @@ export function markup () {
   }
 
   /**
-   * Force Markup Delimiters
-   *
-   * Applies newline delimiter structures. Does some additional
-   * processing to ensure special structures produce correct
-   * output, like that we need to reason with when using `valueForce`
-   * rule on attributes.
-   */
-  function MarkupDelimiters () {
-
-    if (
-      isType(a, 'end') === false &&
-      u.isLast(data.token[a], cc.RAN) &&
-      u.not(data.token[a], cc.LAN) &&
-      delims.get(data.begin[a]) >= 2) {
-
-      delims.delete(data.begin[a]);
-
-      const newline: string = nl(levels[a - 1] - 1).replace(/\n+/, NWL);
-      const replace = `${data.token[a].slice(0, -1)}${newline}>`;
-
-      if (isType(data.begin[a], 'singleton')) {
-        if (u.is(data.token[a][data.token[a].length - 2], cc.FWS)) {
-          data.token[a] = `${data.token[a].slice(0, -2)}${newline}/>`;
-        } else {
-          data.token[a] = replace;
-        }
-      } else {
-        data.token[a] = replace;
-      }
-
-    }
-  }
-
-  /**
-   * Force Liquid Delimiters
+   * Liquid Tokens
    *
    * Applies forcing on Liquid tokens. During the lexer operations, Liquid
    * tokens which apply delimiter forcing, relative to the define `delimiterPlacement`
@@ -1358,65 +1313,177 @@ export function markup () {
    * This function is responsible for ensuring all the containing token content is
    * aligned and correctly formatted when forcing has been determined.
    */
-  function LiquidDelimiters () {
+  function Liquid () {
+
+    const offset = nl(levels[a - 1], Eq.False);
+
+    const newline = NWL + offset + spaces;
+
+    /** Whether or not token exceed wrap limit */
+    const wordWrap = data.token[a].length > limit;
 
     /** Split the token for every newline */
     const lines = data.token[a].split(NWL);
 
-    /** Additional spacing characters */
-    const space = rules.indentChar.repeat(rules.indentSize);
-
     /** The amount of lines assigned for better perf */
     const length = lines.length;
 
-    /** Iterator reference */
-    let i: number = 0;
+    /** Filter pipe and argument reference **/
+    const pipes: [pipe: number, count: number, arguments: string[]][] = [];
 
-    /** The indentation levels */
-    let indent: string = NWL + nl(levels[a - 1], Eq.False) + space;
+    /** Filter arguments previous reference */
+    let pipe: [pipe: number, count: number, arguments: string[]];
+
+    /** Whether or not we apply filter line breaks */
+    let lnbr: boolean = false;
+
+    /** Indentation */
+    let indent = wordWrap ? newline : WSP;
+
+    /** Iterator reference */
+    let index: number = 0;
+
+    do {
+
+      lines[index] = lines[index]
+        .replace(rx.WhitespaceLead, NIL)
+        .replace(rx.WhitespaceEnd, NIL);
+
+      if (u.is(lines[index], cc.PIP)) {
+
+        pipe = pipes[pipes.push([ index, 0, [] ]) - 1];
+
+      } else if (pipe && (u.is(lines[index], cc.COM) || pipe[1] === 0)) {
+
+        pipe[1] += 1;
+        pipe[2].push(lines[index]);
+
+      }
+
+    } while (++index < length);
+
+    index = 0;
+    pipe = undefined;
+    lnbr = (filterLineBreak > 0 && pipes.length > 0 && pipes.length >= filterLineBreak) || wordWrap;
 
     // DETERMINE STRUCTURE
     //
     // We quickly determine the structure of the token which will
-    // indicate the delimiter placement imposed. We need to rent
-    // incorrect output when dealing with global levels tokens which
+    // indicate the delimiter placement imposed. We need to prevent
+    // incorrect output when dealing with global level tokens which
     // are contained within any nodes and also catch the correct spaces.
     //
     do {
 
-      if (i === 0) {
+      if (index === 0) {
 
-        if (i + 1 === length - 1 && (lines[i + 1].length === 2 || lines[i + 1].length === 3)) {
+        // Ending delimiter, e.g: }} -}} %} -%}
+        //
+        if (index + 1 === length - 1 && (
+          lines[index + 1].length === 2 ||
+          lines[index + 1].length === 3)) {
 
-          if (indent.length > 1) indent = indent.slice(0, -2);
-          output.push(lines[i], indent, lines[i + 1]);
+          output.push(lines[index], indent, lines[index + 1]);
+
           break;
 
         } else {
 
-          output.push(lines[i], indent);
+          output.push(lines[index], indent);
 
         }
 
-      } else if (i === length - 1) {
+      } else if (index === length - 1) {
 
-        output.push(lines[i]);
+        if (indent.length > 1) indent = NWL + offset.slice(spaces.length);
+
+        output.push(lines[index]);
 
       } else {
 
-        if (i + 1 === length - 1 && (
-          lines[i + 1].length === 2 ||
-          lines[i + 1].length === 3)) {
+        if (index + 1 === length - 1 && (
+          lines[index + 1].length === 2 ||
+          lines[index + 1].length === 3)) {
 
-          indent = indent.slice(0, -2);
+          if (indent.length > 1) {
+
+            indent = NWL + offset;
+
+          }
 
         }
 
-        output.push(lines[i], indent);
+        if (lnbr) {
+          if (pipes.length > 0 && pipes[0] && pipes[0][0] === index) {
+
+            pipe = pipes.shift();
+
+            output.push(lines[index]);
+
+          } else if (pipe && pipe[1] > 0) {
+
+            if (argumentLineBreak > 0 && pipe[1] > argumentLineBreak) {
+
+              output.push(newline, pipe[2].shift());
+
+            } else {
+
+              /** Filter argument expressions */
+              const args = pipe[2].join(WSP);
+
+              if (lines[pipe[0]].length + args.length > limit) {
+
+                if (pipe[1] > 1 && lines[pipe[0]].length + pipe[2][0].length < limit) {
+
+                  output.push(WSP, pipe[2].shift());
+
+                }
+
+                while (pipe[2].length > 0) {
+
+                  output.push(indent, spaces, pipe[2].shift());
+
+                }
+
+              } else {
+
+                output.push(WSP, args);
+
+              }
+
+              index = index + pipe[1] - 1;
+
+              if (index + 1 === length - 1) {
+
+                if (indent.length > 1) {
+
+                  indent = NWL + offset;
+
+                }
+
+                output.push(indent);
+
+              } else {
+
+                output.push(newline);
+
+              }
+            }
+
+          } else {
+
+            output.push(lines[index], indent);
+
+          }
+
+        } else {
+
+          output.push(lines[index], indent);
+        }
 
       }
 
-    } while (++i < length);
+    } while (++index < length);
 
   }
 
@@ -2356,20 +2423,18 @@ export function markup () {
 
           if (
             isLike(a, 'attribute') &&
-            isLike(n, 'attribute', Eq.False)) {
+            isLike(n, 'attribute', Eq.False) &&
+            u.isLast(data.token[a], cc.RAN) &&
+            delims.has(data.begin[n])) {
 
             TerminusForce();
-
-          } else if (isLike(a, 'attribute')) {
-
-            AttributeValue(a);
 
           } else if (
             isLike(a, 'liquid') &&
             isType(a, 'liquid_end', Eq.False) &&
             rx.Newline.test(data.token[a])) {
 
-            LiquidDelimiters();
+            Liquid();
 
           } else {
 
