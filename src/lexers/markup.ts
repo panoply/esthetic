@@ -1,4 +1,4 @@
-import type { Record, Types, LanguageName } from 'types/index';
+import type { Record, Types, LanguageName, LiquidInternal } from 'types/index';
 import { parse } from 'parse/parser';
 import { sortSafe } from 'parse/sorting';
 import { grammar } from 'parse/grammar';
@@ -821,12 +821,13 @@ export function markup (input?: string) {
       const lexed: string[] = [];
 
       /** Liquid store - Internal index references of Liquid tokens */
-      const liquid = object(null);
+      const liquid: LiquidInternal = object(null);
 
       liquid.pipes = [];
       liquid.fargs = [];
       liquid.targs = [];
       liquid.logic = [];
+      liquid.param = [];
 
       /* -------------------------------------------- */
       /* REFERENCES                                   */
@@ -936,11 +937,16 @@ export function markup (input?: string) {
           }
 
           if (type === cc.COM) {
+
             liquid.fargs[liquid.fargs.length - 1].push(array.length - 1);
+
           } else if (type === cc.COL) {
+
             liquid.fargs[liquid.fargs.length - 1][0] += 1;
             liquid.fargs[liquid.fargs.length - 1].push(array.length - 1);
+
             type = cc.COM;
+
           } else {
 
             liquid.targs.push(array.length - 1);
@@ -997,11 +1003,21 @@ export function markup (input?: string) {
               u.not(b[a], cc.COM) &&
               u.not(b[a], cc.RSB)) {
 
-              // array.splice(array.length - 1, 1, WSP, b[a]);
+              if ((
+                tname === 'render' ||
+                tname === 'include'
+              ) && (
+                b[a] === 'w' &&
+                source.startsWith('with', a)
+              )) {
 
-              /// console.log(array.join(NIL));
+                array.pop();
+                array.push(WSP, 'with');
 
-              if (
+                a = a + 3;
+                console.log(b[a]);
+
+              } else if (
                 u.isWS(b[a + 1]) === false &&
                 u.not(b[a + 1], cc.EQS) &&
                 u.not(b[a + 1], cc.RCB)) {
@@ -1155,7 +1171,22 @@ export function markup (input?: string) {
 
               array.push(WSP);
 
+            } else if (source.startsWith('contains', a + 1)) {
+
+              array.push('contains');
+
+              if (
+                u.is(b[a + 9], cc.SQO) ||
+                u.is(b[a + 9], cc.DQO)) array.push(WSP);
+
+              a = a + 8;
+
             }
+
+          } else if (tname === 'for' && u.is(b[a], cc.COL)) {
+
+            liquid.param.push(array.lastIndexOf(WSP));
+
           }
         }
 
@@ -1175,33 +1206,11 @@ export function markup (input?: string) {
 
             if (u.ws(b[a + 2]) && string.startsWith('or')) {
 
-              liquid.logic.push(array.length - 1);
-
-              array.pop();
-              array.push(string.slice(0, 2));
-
-              a = a + 2;
-              return true;
+              return LiquidLogical(2);
 
             } else if (u.ws(b[a + 3]) && string.startsWith('and')) {
 
-              liquid.logic.push(array.length - 1);
-
-              array.pop();
-              array.push(string.slice(0, 3));
-
-              a = a + 3;
-              return true;
-
-            } else if (u.ws(b[a + 8]) && string.startsWith('contains')) {
-
-              liquid.logic.push(array.length - 1);
-
-              array.pop();
-              array.push(string.slice(0, 8));
-
-              a = a + 8;
-              return true;
+              return LiquidLogical(3);
 
             }
 
@@ -1209,15 +1218,21 @@ export function markup (input?: string) {
 
             if (u.ws(b[a + 2]) && string.startsWith('or')) {
 
-              liquid.logic.push(array.length - 1);
-
-              array.pop();
-              array.push(string.slice(0, 2));
-
-              a = a + 2;
-              return true;
+              return LiquidLogical(2);
 
             }
+
+          } else if (tname === 'for') {
+
+            if (b[a] === 'i' && b[a + 1] === 'n' && u.ws(b[a + 2])) {
+
+              array.pop();
+              array.push('in', WSP);
+
+              a = a + 2;
+
+            }
+
           }
         }
 
@@ -1232,6 +1247,46 @@ export function markup (input?: string) {
         }
 
         ntest = false;
+
+        /**
+         * Logical Expressions
+         *
+         * The internal conditional structures such as `{% if x == y and a > b %}`,
+         * wherein the `liquidBreakLogical` rule is correctly handled and the
+         * `liquid.logic` data model adhere to the line breaks imposed.
+         */
+        function LiquidLogical (at: number): true {
+
+          if (rules.liquid.lineBreakLogical === 'preserve') {
+
+            if (b.slice(parse.lineIndex, a).join(NIL).trim() === NIL) {
+              liquid.logic.push(array.length - 1);
+            } else if (u.is(b[a + at], cc.NWL)) {
+              liquid.logic.push(array.length);
+            }
+
+          } else {
+
+            liquid.logic.push(array.length);
+
+          }
+
+          array.pop();
+          array.push(string.slice(0, at));
+
+          if (
+            !u.isLast(array, cc.WSP) &&
+            !u.isLast(array, cc.NWL)) {
+
+            array.push(WSP);
+
+          }
+
+          a = a + at;
+
+          return true;
+
+        }
 
       }
 
@@ -1310,7 +1365,6 @@ export function markup (input?: string) {
         if (rules.markup.stripAttributeLines === true && lines > 1) {
 
           lines = 1;
-
         }
 
         if (attrs.length > 0) {
@@ -2082,14 +2136,6 @@ export function markup (input?: string) {
                       u.is(store[qidx], cc.NWL) &&
                       u.not(b[a - 1], cc.BWS)) {
 
-                      // if (u.notLast(store, cc.NWL) && (
-                      //   rules.markup.valueLineBreak === 'force-align' ||
-                      //   rules.markup.valueLineBreak === 'force-indent')) {
-
-                      //   store.push(NWL);
-
-                      // }
-
                       qidx = -1;
 
                     } else if (qatt === true && qidx < 0) {
@@ -2104,8 +2150,6 @@ export function markup (input?: string) {
 
                       // Ensure no leading whitespace applies to values which have a newline inserted
                       //
-                      //  if (u.isLastAt(store, cc.NWL) && u.isLast(store, cc.WSP)) store.pop();
-
                       if (isliq) {
 
                         if (u.notLast(b[a - 1], cc.BWS) && (
@@ -2116,27 +2160,11 @@ export function markup (input?: string) {
 
                         }
 
-                        // console.log(JSON.stringify(store.join(NIL)));
                         LiquidEquipoise(store);
-                        // console.log(isliq, store.join(NIL));
 
-                        // console.log(JSON.stringify(store.join(NIL)));
                       }
 
                     }
-
-                    // if (
-                    //   isliq === false &&
-                    //   qatt === true &&
-                    //   qidx > -1 &&
-                    //   u.is(b[a], cc.NWL) &&
-                    //   u.not(store[qidx + 1], cc.NWL) && (
-                    //     rules.markup.valueLineBreak === 'force-align' ||
-                    //     rules.markup.valueLineBreak === 'force-indent')) {
-
-                    //   store.splice(qidx, 0, NWL);
-
-                    // }
 
                     // Success - Proceed to Attribute Tokenize
                     //
@@ -2359,24 +2387,6 @@ export function markup (input?: string) {
         if (ltype === 'liquid') {
 
           token = lq.tokenize(lexed, tname, liquid, rules);
-
-          // Normalize Patches
-          //
-          // A second pass-through to ensure no incorrect normalizations
-          // have been applied to the token. Normalization is not always
-          // perfect at the traverse level, this condition will quickly
-          // check the token and fix any potential issues
-          //
-          if (rules.liquid.equipoiseSpacing) {
-
-            //  token = token
-            //  .replace(/\] \[/g, '][') // Fixes object braces
-            // .replace(/(\])(\w+:)/, '$1 $2'); // Fixes argument spacing
-
-            // Fixes "as" spacing on rendeer tag
-            //   if (tname === 'render' && token.indexOf(']as') > -1) token = token.replace(/\]as(?=\s+)/, '] as');
-
-          }
 
           if (tname === 'liquid') return LiquidTagToken();
 
