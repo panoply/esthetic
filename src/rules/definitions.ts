@@ -297,7 +297,7 @@ export const definitions: Definitions = {
         warrington: []
       }
     },
-    preserveComment: {
+    commentPreserve: {
       default: false,
       description: 'Prevent comment reformatting due to option wrap.',
       type: 'boolean',
@@ -309,7 +309,7 @@ export const definitions: Definitions = {
         warrington: false
       }
     },
-    normalizeSpacing: {
+    equipoiseSpacing: {
       default: true,
       description: 'Whether or not to normalize the distributed spacing contained in Liquid tokens.',
       type: 'boolean',
@@ -359,7 +359,7 @@ export const definitions: Definitions = {
         warrington: []
       }
     },
-    forceArgument: {
+    argumentLineBreak: {
       default: 0,
       description: 'Forces arguments onto newlines. When this value is `0` then arguments will be forced according to wrap fraction limit.',
       type: 'number',
@@ -371,7 +371,7 @@ export const definitions: Definitions = {
         warrington: 0
       }
     },
-    forceFilter: {
+    filterLineBreak: {
       default: 0,
       description: 'Forces filter pipes onto newlines. When this value is `0` then filters will be forced according to wrap fraction limit.',
       type: 'number',
@@ -512,7 +512,7 @@ export const definitions: Definitions = {
         warrington: 'preserve'
       }
     },
-    commentDelimiters: {
+    commentDelimiter: {
       default: 'preserve',
       description: 'Controls the formatting style of HTML and XML comment delimiters.',
       type: 'choice',
@@ -596,7 +596,7 @@ export const definitions: Definitions = {
         warrington: 'adapt'
       }
     },
-    forceAttribute: {
+    attributeLineBreak: {
       default: false,
       description: 'If all markup attributes should be indented each onto their own line. This option accepts either a boolean or number value, depending on your preferences you can either force attributes based a count limit, disable forcing or always enable enforcing.',
       type: {
@@ -623,7 +623,7 @@ export const definitions: Definitions = {
         warrington: true
       }
     },
-    forceTextNode: {
+    forceInline: {
       default: undefined,
       description: 'Controls forcing behaviour on phrasing content (text node) intra paragraph elements.',
       type: 'boolean',
@@ -671,7 +671,7 @@ export const definitions: Definitions = {
         warrington: false
       }
     },
-    preserveAttribute: {
+    attributePreserve: {
       default: false,
       description: 'If markup tags should have their insides preserved. This option is only available to markup and does not support child tokens that require a different lexer.',
       type: 'boolean',
@@ -683,7 +683,7 @@ export const definitions: Definitions = {
         warrington: false
       }
     },
-    preserveComment: {
+    commentPreserve: {
       default: false,
       description: 'Prevent comment reformatting due to option wrap.',
       type: 'boolean',
