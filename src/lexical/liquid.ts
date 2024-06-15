@@ -268,62 +268,25 @@ export function delimiters (input: string, tname?: string, space = WSP) {
 
 };
 
-export function wrapLimit (wrap: number) {
-
-  const { data } = parse;
-
-  let w = 0;
-  let i: number = parse.count;
-
-  if (i > 0) {
-
-    if (data.stack[i] !== 'global') {
-
-      do {
-
-        if (data.types[i].indexOf('attribute') < 0) {
-
-          w += data.token[i].length;
-          if (w >= wrap) break;
-
-        }
-
-        --i;
-
-      } while (data.stack[i] !== 'global');
-
-    }
-  }
-
-  return wrap - w;
-}
-
 /**
- * Liquid Normalize
+ * Liquid Forcing
  *
- * This function is a post-processor which will analyze Liquid tokens which were
- * traversed during lexical token parsing operations. It's here where we will correct
- * and apply beautification to the internal markup of Liquid tokens, such as applying
- * liquid filter, argument and linebreak forcing. In addition, this function is responsible
- * for setting delimiter trims and placements.
+ * This function is a post-processor which will insert newline `\n` characters
+ * at all possible wrap points within a Liquid token. The beautification cycle
+ * will split tokens on `NWL` and determine whether or not the inserted characters
+ * should be replaced with single whitespace `WSP` or should preserve the newline
+ * injections. Consult the `Liquid()` function within `Markup()` format file.
  */
 export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal, {
-  wrapFraction,
   liquid: {
-    filterLineBreak,
-    argumentLineBreak,
     lineBreakSeparator,
+    lineBreakLogical,
     delimiterTrims,
     delimiterPlacement
   }
 }: Rules) {
 
   const [ o, c ] = delims(lexed);
-
-  /**
-   * Wrap Limit
-   */
-  const wrap: number = wrapLimit(wrapFraction);
 
   /**
    * Opening Delimiter
@@ -440,7 +403,7 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
   /* FORCE WRAP CONDITIONALS                      */
   /* -------------------------------------------- */
 
-  if (wrap > 0 && lexed.length > wrap && liquid.logic.length > 0 && (
+  if (liquid.logic.length > 0 && (
     tname === 'if' ||
     tname === 'elsif' ||
     tname === 'unless' ||
@@ -457,16 +420,65 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
       close = NWL + close.trimStart();
     }
 
-    for (let x = 0, s = liquid.logic.length; x < s; x++) {
+    for (
+      let x = 0
+        , b = 0
+        , e = 0
+        , s = liquid.logic.length; x < s; x++) {
 
-      const i = liquid.logic[x];
-      lexed[i] = NWL + lexed[i];
+      e = liquid.logic[x];
 
-      if (is(lexed[i - 1], cc.WSP)) lexed[i - 1] = NIL;
+      if (lineBreakLogical === 'before') {
+
+        b = lexed.lastIndexOf(WSP, e);
+
+        lexed[b] = NWL + lexed[b].trim();
+        lexed[e] = WSP + lexed[e];
+
+      } else if (lineBreakLogical === 'after') {
+
+        lexed[e] = NWL + lexed[e].trim();
+
+      } else {
+
+        lexed.splice(e, 1, NWL + lexed[e]);
+
+      }
 
     }
 
-    return open + lexed.slice(o, c).join(NIL).trim() + close;
+    return open + lexed
+      .slice(o, c)
+      .join(NIL)
+      .trim() + close;
+
+  }
+
+  if (liquid.param.length > 0 && (
+    tname === 'for' ||
+    tname === 'tablerow'
+  )) {
+
+    if (delimiterTrims === 'multiline') {
+      open = `{${lexed[1]}-` + open[open.length - 1];
+      close = close[0] + `-${lexed[lexed.length - 2]}}`;
+    }
+
+    if (delimiterPlacement === 'force-multiline') {
+      open = open.trimEnd() + NWL;
+      close = NWL + close.trimStart();
+    }
+
+    for (let x = 0, s = liquid.param.length; x < s; x++) {
+
+      lexed[liquid.param[x]] = NWL + lexed[liquid.param[x]].trim();
+
+    }
+
+    return open + lexed
+      .slice(o, c)
+      .join(NIL)
+      .trim() + close;
 
   }
 
@@ -478,107 +490,89 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
 
   if (pipes > 0) {
 
-    if ((
-      (
-        filterLineBreak > 0 &&
-        pipes >= filterLineBreak
-      ) || (
-        filterLineBreak === 0 &&
-        wrap > 0 &&
-        lexed.length > wrap
-      )
-    )) {
+    if (delimiterTrims === 'multiline') {
 
-      if (delimiterTrims === 'multiline') {
-
-        open = `{${lexed[1]}-` + open[open.length - 1];
-        close = close[0] + `-${lexed[lexed.length - 2]}}`;
-
-      }
-
-      if (delimiterPlacement === 'force-multiline') {
-
-        open = open.trimEnd() + NWL;
-        close = NWL + close.trimStart();
-
-      }
-
-      for (let i: number = 0; i < pipes; i++) {
-
-        const pipe = liquid.pipes[i];
-
-        if (isWS(lexed[pipe - 1])) lexed[pipe - 1] = NIL;
-
-        lexed[pipe] = NWL + lexed[pipe];
-
-        // First sequence pipe exclude extraneous whitespace
-        if (i === 0) {
-
-          let p: number = pipe - 1;
-
-          if (isWS(lexed[p - 1])) {
-            do lexed[p--] = NIL;
-            while (isWS(lexed[p]));
-          }
-
-        }
-
-        if (liquid.fargs[i] && (
-          (
-            argumentLineBreak > 0 &&
-            liquid.fargs[i].length >= argumentLineBreak
-          ) || (
-            argumentLineBreak === 0 &&
-            wrap > 0 &&
-            lexed.slice(
-              liquid.fargs[i][0],
-              liquid.fargs[i][liquid.fargs[i].length - 1]
-            ).length > wrap
-          )
-        )) {
-
-          for (let n: number = 0, s = liquid.fargs[i].length; n < s; n++) {
-
-            const arg = liquid.fargs[i][n];
-
-            if (lineBreakSeparator === 'after') {
-
-              if (isWS(lexed[arg + 1]) && isWS(lexed[arg + 2])) lexed[arg + 1] = NIL;
-
-              lexed[is(lexed[arg - 1], cc.COM) ? arg - 1 : arg] = n === 0
-                ? NWL + '  '
-                : COM + NWL + ' ';
-
-            } else if (lineBreakSeparator === 'before') {
-
-              if (isWS(lexed[arg + 1]) && isWS(lexed[arg + 2])) lexed[arg + 1] = NIL;
-
-              if (is(lexed[arg - 1], cc.COM)) {
-
-                lexed[arg - 1] = n === 0
-                  ? '  ' + NWL
-                  : NWL + '  ' + COM;
-
-              } else {
-
-                lexed[arg] = n === 0
-                  ? NWL + '  '
-                  : NWL + '  ' + COM;
-              }
-
-            } else {
-
-              lexed[arg] = NWL + '  ' + lexed[arg];
-
-            }
-          }
-
-        }
-      }
+      open = `{${lexed[1]}-` + open[open.length - 1];
+      close = close[0] + `-${lexed[lexed.length - 2]}}`;
 
     }
 
-    return open + lexed.slice(o, c).join(NIL).trim() + close;
+    if (delimiterPlacement === 'force-multiline') {
+
+      open = open.trimEnd() + NWL;
+      close = NWL + close.trimStart();
+
+    }
+
+    for (let i: number = 0; i < pipes; i++) {
+
+      const pipe = liquid.pipes[i];
+
+      if (isWS(lexed[pipe - 1])) lexed[pipe - 1] = NIL;
+
+      lexed[pipe] = NWL + lexed[pipe];
+
+      // First sequence pipe exclude extraneous whitespace
+      if (i === 0) {
+
+        let p: number = pipe - 1;
+
+        if (isWS(lexed[p - 1])) {
+          do lexed[p] = NIL;
+          while (isWS(lexed[p--]));
+        }
+
+      }
+
+      if (liquid.fargs[i] && liquid.fargs[i].length > 0) {
+
+        for (
+          let n: number = 0
+            , s = liquid.fargs[i].length; n < s; n++) {
+
+          const arg = liquid.fargs[i][n];
+
+          if (lineBreakSeparator === 'after') {
+
+            if (isWS(lexed[arg + 1])) lexed[arg + 1] = NIL;
+
+            lexed[is(lexed[arg - 1], cc.COM) ? arg - 1 : arg] = n === 0
+              ? lexed[arg] + NWL
+              : COM + NWL;
+
+          } else if (lineBreakSeparator === 'before') {
+
+            if (isWS(lexed[arg + 1]) && isWS(lexed[arg + 2])) {
+
+              lexed[arg + 1] = NIL;
+
+            }
+
+            if (is(lexed[arg - 1], cc.COM)) {
+
+              lexed[arg - 1] = n === 0
+                ? NWL
+                : NWL + COM;
+
+            } else {
+
+              if (isWS(lexed[arg + 1])) lexed[arg + 1] = NIL;
+
+              lexed[arg] = n === 0
+                ? lexed[arg] + NWL
+                : NWL + COM + WSP;
+
+            }
+
+          } else {
+
+            lexed[arg] = NWL + lexed[arg];
+
+          }
+        }
+
+      }
+    }
 
   }
 
@@ -586,7 +580,7 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
   /* FORCE WRAP ARGUMENTS                         */
   /* -------------------------------------------- */
 
-  if (liquid.targs.length >= argumentLineBreak) {
+  if (liquid.targs.length > 0) {
 
     if (delimiterTrims === 'multiline') {
 
@@ -596,7 +590,7 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
     }
 
     //
-    for (let x = 0; x < liquid.targs.length; x++) {
+    for (let x = 0, s = liquid.targs.length; x < s; x++) {
 
       const arg = liquid.targs[x];
 
@@ -604,6 +598,7 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
 
         // ADDED TO IN ATTEMPT TO PATCH TAB ANIMALS CC: WOLFGREY
         let b = arg;
+
         while (isWS(lexed[b--])) lexed[b] = NIL;
 
         if (isWS(lexed[arg + 1])) lexed[arg + 1] = NIL;
