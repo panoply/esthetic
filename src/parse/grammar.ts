@@ -390,7 +390,7 @@ class HTML {
       'thead',
       'tfoot'
     ],
-    textNodes: [
+    inline: [
       'a',
       'abbr',
       'b',
@@ -597,24 +597,7 @@ class HTML {
     }
   } = {};
 
-  constructor () {
-
-    for (const phrase of this.grammar.textNodes) {
-
-      this.textNodes.add(phrase);
-      this.textNodes.add(`<${phrase}>`);
-
-      if (this.voids.has(phrase)) {
-        this.textNodes.add(`<${phrase}/>`);
-      } else {
-        this.textNodes.add(`</${phrase}>`);
-      }
-
-    }
-
-    this.queries(this.grammar.embedded);
-
-  }
+  constructor () { this.queries(this.grammar.embedded); }
 
   extend (rules: Grammars['html']) {
 
@@ -623,15 +606,7 @@ class HTML {
       if (isArray(rules[rule])) {
         for (const tag of rules[rule]) {
 
-          if (rule === 'textNodes') {
-            if (is(tag, cc.BNG)) {
-              const exclude = tag.slice(1);
-              if (this.textNodes.has(exclude)) this.textNodes.delete(exclude);
-            } else if (this.textNodes.has(tag) === false) {
-              this.textNodes.add(tag);
-            }
-
-          } else if (rule === 'tags' && this.tags.has(tag) === false) {
+          if (rule === 'tags' && this.tags.has(tag) === false) {
             this.grammar.tags.push(tag);
             this.tags.add(tag);
           } else if (rule === 'voids' && this.voids.has(tag) === false) {
