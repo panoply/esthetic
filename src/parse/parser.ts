@@ -316,6 +316,11 @@ class Parser {
   public lexer: LexerName;
 
   /**
+   * The internal markup of Liquid tokens
+   */
+  public liquid: Map<number, LiquidInternal> = new Map();
+
+  /**
    * The formatting and parse rules
    */
   public rules: Rules = defaults;
@@ -360,11 +365,9 @@ class Parser {
    */
   set source (source: string | Buffer) {
 
-    Parser.input = config.env !== 'node'
+    Parser.input = config.env !== 'node' ? source : Buffer.isBuffer(source)
       ? source
-      : Buffer.isBuffer(source)
-        ? source
-        : Buffer.from(source);
+      : Buffer.from(source);
 
   }
 
@@ -416,6 +419,7 @@ class Parser {
     this.stack = new Stack([ 'global', -1 ]);
     this.mode = Modes.Parse;
 
+    if (this.liquid.size > 0) this.liquid.clear();
     if (this.pairs.size > 0) this.pairs.clear();
     if (this.attributes.size > 0) this.attributes.clear();
     if (this.regions.size > 0) this.regions.clear();
