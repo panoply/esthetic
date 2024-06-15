@@ -1,0 +1,28 @@
+.sidebar {
+  height: 100%;
+  position: fixed;
+  width: 280px;
+}
+
+.anchors {
+  height: 100%;
+  position: fixed;
+  right: 0;
+  top: 61px;
+  width: 300px;
+}
+
+.w-340 {
+  width: 340px;
+}
+.w-320 {
+  width: 320px;
+}
+
+.content {
+  @include media-breakpoint-up(md) {
+    // position: absolute;
+    // padding-left: 320px !important;
+    // padding-right: 340px !important;
+  }
+}

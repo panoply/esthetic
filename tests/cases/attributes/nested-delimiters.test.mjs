@@ -72,7 +72,7 @@ test('Liquid delimiter handling', t => {
         normalizeSpacing: true
       },
       markup: {
-        forceAttribute: true
+        attributeLineBreak: true
       }
     }
   )(function (source, rules, label) {

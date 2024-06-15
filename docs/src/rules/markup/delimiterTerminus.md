@@ -14,7 +14,9 @@ options:
 
 # Delimiter Terminus
 
-Whether or not ending HTML tag delimiters should be forced onto a newline. This will emulate the style of Prettier's `singleAttributePerLine` formatting option, wherein the last `>` delimiter character breaks itself onto a newline. Though this output style was popularized by Prettier, the resulting structures produced are far from elegant (aesthetically).
+Whether or not ending HTML tag delimiters should be forced onto a newline when tag attributes exist. This will emulate the style of Prettier's `bracketSameLine` formatting option, wherein the last `>` delimiter character breaks itself onto a newline.
+
+The rule accepts either a `boolean` or `number` type and defaults to `false`, which will prevent delimiters from newline breaks. When enabled, (i.e, `true`) forcing will be applied in accordance with the [attributeLineBreak](/rules/markup/attributeLineBreak/). The rule also accepts a `number` type, which will apply delimiter line breaks according to the number of attributes a tag contains.
 
 :::
 
@@ -22,19 +24,18 @@ Whether or not ending HTML tag delimiters should be forced onto a newline. This 
 
 ::: rule 🤌
 
-#### inline
+#### false
 
 :::
 
-The `delimiterTerminus` rule is set to use an `inline` terminus by default. The behavior of delimiter terminus using `inline` results in the last `>` delimiter character occurrence being inlined.
+The `delimiterTerminus` rule is disabled (i.e, `false`) by default. The behavior of delimiter terminus using `false` results in the last `>` delimiter character occurrence being inlined
 
 ```json:rules
 {
   "language": "html",
-  "preserveLine":0,
   "markup": {
-    "forceAttribute": 2,
-    "delimiterTerminus": "inline"
+    "attributeLineBreak": 2,
+    "delimiterTerminus": false
   }
 }
 ```
@@ -42,15 +43,17 @@ The `delimiterTerminus` rule is set to use an `inline` terminus by default. The 
 <!-- prettier-ignore -->
 ```html
 <div
-id="x"class="xx"
-data-attr="foo">
-
-  <div
   id="x"
-  class="xx" data-attr="foo">
+  class="xx"
+  data-attr="foo"
+>
+  <div
+    id="x"
+    class="xx"
+    data-attr="foo"
+  >
     <!--
-      Attributes will apply forcing but ending delimiter
-      character will remain inline.
+      Terminus will be inlined
     -->
   </div>
 </div>
@@ -60,18 +63,17 @@ data-attr="foo">
 
 ::: rule 🤡
 
-#### force
+#### true
 
 :::
 
-When the `delimiterTerminus` rule is set to use `force` then formatting behavior will replicate that of Prettier. Æsthetic will use forced terminus in accordance with the [`forceAttribute`](/rules/markup/forceAttribute) defined rule and only apply forcing when structures adhere. In the below code sample, toggle the **Rules** tab and inspect the ruleset.
+When the `delimiterTerminus` rule is set to `true`, Æsthetic will apply terminus in accordance with [`attributeLineBreak`](/rules/markup/attributeLineBreak/) or the [`wrap`](/rules/markup/wrap/) limit which triggers newline breaks. In te below code sample, we have set
 
 ```json:rules
 {
   "language": "html",
-  "preserveLine": 1,
   "markup": {
-    "forceAttribute": 3,
+    "attributeLineBreak": 3,
     "delimiterTerminus": "force"
   }
 }
@@ -79,6 +81,20 @@ When the `delimiterTerminus` rule is set to use `force` then formatting behavior
 
 <!-- prettier-ignore -->
 ```html
+<div
+  id="x"
+  class="xx"
+>
+  <div
+    id="x"
+    class="xx"
+    data-attr="foo"
+  >
+    <!--
+      Terminus will be inlined
+    -->
+  </div>
+</div>
 
 <!-- Forced terminus will not be applied -->
 <div
@@ -119,7 +135,7 @@ When the `delimiterTerminus` rule is set to use `adapt` delimiter terminus will 
   "language": "html",
   "preserveLine": 1,
   "markup": {
-    "forceAttribute": 3,
+    "attributeLineBreak": 3,
     "delimiterTerminus": "adapt"
   }
 }

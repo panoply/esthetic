@@ -98,10 +98,9 @@ test('Indenting attributes contained in Liquid block tags', t => {
           indentAttributes: true
         },
         markup: {
-          forceAttribute: true
+          attributeLineBreak: true
         }
       }
-
     ]
   )(function (source, rules, label) {
 

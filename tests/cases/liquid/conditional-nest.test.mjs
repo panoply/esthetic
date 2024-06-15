@@ -554,7 +554,7 @@ test('Nested Structures with attributes', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        forceAttribute: true
+        attributeLineBreak: true
       }
     });
 
@@ -564,7 +564,7 @@ test('Nested Structures with attributes', t => {
 
   esthetic.rules({
     markup: {
-      forceAttribute: false
+      attributeLineBreak: false
     }
   });
 });

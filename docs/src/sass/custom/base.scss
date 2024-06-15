@@ -1,0 +1,23 @@
+.anchors > ul {
+  // background-color: #20242c;
+  padding: 20px;
+  display: block;
+  border: 0.01rem #2d333a solid;
+  border-radius: 5px;
+  position: sticky;
+  top: $spacer-5 * 2;
+  width: 250px;
+  margin-top: 52px;
+
+  li {
+    font-size: $font-size-sm;
+
+    &.anchor-title {
+      color: $white;
+      font-weight: $font-weight-bolder;
+      font-size: 0.825rem;
+      font-family: $font-family-other;
+      text-transform: uppercase;
+    }
+  }
+}

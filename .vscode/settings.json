@@ -164,7 +164,7 @@
   "liquid.engine": "11ty",
   "liquid.config.method": "liquidrc",
   "[liquid]": {
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "editor.defaultFormatter": "sissel.shopify-liquid"
   }
 }

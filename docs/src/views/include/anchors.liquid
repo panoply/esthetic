@@ -1,13 +1,37 @@
-<div
-  class="col-auto px-5 anchors"
-  spx-component="scrollspy">
+<div class="anchor-block">
   <ul>
-    {% for name in anchors %}
-      <li>
-        <a
-          href="{{ name | anchor }}"
-          spx-node="scrollspy.href">{{ name }}</a>
+    {% if anchors.describe %}
+      <li class="anchor-title mb-3">
+        Description
       </li>
-    {% endfor %}
+      {% for name in anchors.describe %}
+        <li>
+          <a
+            href="{{ name | anchor }}"
+            spx-node="scrollspy.href">{{ name }}</a>
+        </li>
+      {% endfor %}
+    {% endif %}
+    {% if anchors.options %}
+      <li class="anchor-title my-3">
+        Options
+      </li>
+      {% for name in anchors.options %}
+        <li>
+          <a
+            href="{{ name | anchor }}"
+            spx-node="scrollspy.href">{{ name }}</a>
+        </li>
+      {% endfor %}
+    {% endif %}
+    {% if anchors.options == nil and anchors.describe == nil %}
+      {% for name in anchors %}
+        <li>
+          <a
+            href="{{ name | anchor }}"
+            spx-node="scrollspy.href">{{ name }}</a>
+        </li>
+      {% endfor %}
+    {% endif %}
   </ul>
 </div>

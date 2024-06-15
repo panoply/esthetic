@@ -239,13 +239,13 @@ test('Case tag dedentation (dedentTagList) - Structure and nesting expressions',
       wrap: 0,
       indentSize: 2,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: [
           'case'
         ]
       },
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         forceIndent: false
       }
     });
@@ -493,12 +493,12 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
       wrap: 0,
       indentSize: 2,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: []
       },
       markup: {
         forceIndent: false,
-        forceAttribute: false
+        attributeLineBreak: false
       }
     });
 
@@ -508,7 +508,7 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
 
 });
 
-test('Case tag with rules (dedentTagList) - forceIndent: false, forceAttribute: true', t => {
+test('Case tag with rules (dedentTagList) - forceIndent: false, attributeLineBreak: true', t => {
 
   forAssert([
     [
@@ -573,13 +573,13 @@ test('Case tag with rules (dedentTagList) - forceIndent: false, forceAttribute: 
       wrap: 0,
       indentSize: 2,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: [
           'case'
         ]
       },
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         forceIndent: false
       }
 
@@ -591,7 +591,7 @@ test('Case tag with rules (dedentTagList) - forceIndent: false, forceAttribute: 
 
 });
 
-test('Case tag with rules (dedentTagList) - forceIndent: true, forceAttribute: false', t => {
+test('Case tag with rules (dedentTagList) - forceIndent: true, attributeLineBreak: false', t => {
 
   forAssert([
     [
@@ -652,13 +652,13 @@ test('Case tag with rules (dedentTagList) - forceIndent: true, forceAttribute: f
       wrap: 0,
       indentSize: 2,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: [
           'case'
         ]
       },
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         forceIndent: true
       }
 
@@ -670,7 +670,7 @@ test('Case tag with rules (dedentTagList) - forceIndent: true, forceAttribute: f
 
 });
 
-test('Case tag with rules (default) - forceIndent: false, forceAttribute: true', t => {
+test('Case tag with rules (default) - forceIndent: false, attributeLineBreak: true', t => {
 
   forAssert([
     [
@@ -735,11 +735,11 @@ test('Case tag with rules (default) - forceIndent: false, forceAttribute: true',
       wrap: 0,
       indentSize: 2,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: []
       },
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         forceIndent: false
       }
 
@@ -751,7 +751,7 @@ test('Case tag with rules (default) - forceIndent: false, forceAttribute: true',
 
 });
 
-test('Case tag with rules (default) - forceIndent: true, forceAttribute: false', t => {
+test('Case tag with rules (default) - forceIndent: true, attributeLineBreak: false', t => {
 
   forAssert([
     [
@@ -812,11 +812,11 @@ test('Case tag with rules (default) - forceIndent: true, forceAttribute: false',
       wrap: 0,
       indentSize: 2,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: []
       },
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         forceIndent: true
       }
 
@@ -828,7 +828,7 @@ test('Case tag with rules (default) - forceIndent: true, forceAttribute: false',
 
 });
 
-test('Case tag with rules (dedentTagList) - forceIndent: true, forceAttribute: true', t => {
+test('Case tag with rules (dedentTagList) - forceIndent: true, attributeLineBreak: true', t => {
 
   forAssert([
     [
@@ -909,13 +909,13 @@ test('Case tag with rules (dedentTagList) - forceIndent: true, forceAttribute: t
       wrap: 0,
       indentSize: 2,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: [
           'case'
         ]
       },
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         forceIndent: true
       }
 
@@ -927,7 +927,7 @@ test('Case tag with rules (dedentTagList) - forceIndent: true, forceAttribute: t
 
 });
 
-test('Case tag with rules (default) - forceIndent: true, forceAttribute: true', t => {
+test('Case tag with rules (default) - forceIndent: true, attributeLineBreak: true', t => {
 
   forAssert([
     [
@@ -1024,11 +1024,11 @@ test('Case tag with rules (default) - forceIndent: true, forceAttribute: true', 
       wrap: 0,
       indentSize: 2,
       liquid: {
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: []
       },
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         forceIndent: true
       }
 

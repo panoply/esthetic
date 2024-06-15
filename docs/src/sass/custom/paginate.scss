@@ -1,12 +1,10 @@
 .paginate {
   a {
-    font-family: $font-family-heading;
+    font-family: $font-family-other;
     color: $link-color;
-    border: $border-width $border-color solid;
-    border-radius: 5px;
+    font-size: 0.75rem;
     padding: 10px 5px;
     text-align: center;
-    background-color: $code-bg;
 
     &.prev {
       padding: 5px 20px 5px 10px;
@@ -16,7 +14,7 @@
       padding: 5px 10px 5px 20px;
     }
     &:hover {
-      color: $white;
+      color: $pink;
     }
   }
 

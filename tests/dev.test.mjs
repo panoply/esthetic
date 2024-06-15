@@ -118,13 +118,15 @@ dev(function (source) {
     wrap: 80,
     liquid: {
       indentAttribute: true,
-      forceFilter: 0,
-      forceArgument: 0
+      filterLineBreak: 0,
+      argumentLineBreak: 0,
+      lineBreakSeparator: 'before',
+      lineBreakLogical: 'after'
     },
     markup: {
-      forceAttribute: 2,
-      delimiterTerminus: 'force',
-      forceIndent: true,
+      attributeLineBreak: 2,
+      delimiterTerminus: 2,
+      forceIndent: false,
       ignoreJS: true,
       ignoreJSON: false,
       valueSpacing: 'equipoise',
@@ -134,6 +136,7 @@ dev(function (source) {
 
   return {
     source: output,
+    wrap: 80,
     repeat: 0,
     inspect: true,
     logger: false,

@@ -58,7 +58,7 @@ export class Dropdown extends spx.Component<typeof Dropdown.define> {
   outsideClick (event: Event) {
 
     if (this.buttonNode !== event.target && this.collapseNode !== event.target) {
-      if (this.dom.classList.contains('is-open')) {
+      if (this.dom && this.dom.classList.contains('is-open')) {
         this.close();
       }
     }
@@ -141,8 +141,8 @@ export class Dropdown extends spx.Component<typeof Dropdown.define> {
 
       if (this.state.kind === 'preset') {
 
-        this.state.selected = `Preset (${event.target.textContent.trim()})`;
-        this.buttonNode.innerHTML = `Preset (${event.target.textContent.trim()})<span class="icon"></span>`;
+        this.state.selected = `${event.target.textContent.trim()}`;
+        this.buttonNode.innerHTML = `${event.target.textContent.trim()}<span class="icon"></span>`;
 
       } else {
         this.state.selected = event.target.textContent;

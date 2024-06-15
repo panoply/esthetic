@@ -2,16 +2,17 @@
 title: 'Markup - Strip Text Wrap Lines'
 layout: base
 permalink: '/rules/markup/stripTextWrapLines/index.html'
-describe:
-  - Strip Attribute Lines
-  - Related Rules
-  - Rule Options
-options:
-  - false
-  - true
+anchors:
+  describe:
+    - Strip Attribute Lines
+    - Related Rules
+    - Rule Options
+  options:
+    - false
+    - true
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 p-100
 
 # Strip Text Wrap Lines
 

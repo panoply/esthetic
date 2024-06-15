@@ -18,6 +18,7 @@ export class Drawer extends spx.Component<typeof Drawer.define> {
       shift: String,
       redraw: String,
       isOpen: Boolean,
+      loadListener: Boolean,
       bodyScroll: Boolean,
       backdrop: {
         typeof: Boolean,
@@ -90,8 +91,6 @@ export class Drawer extends spx.Component<typeof Drawer.define> {
 
   onmount () {
 
-    spx.on('load', () => this.close(), this);
-
     if (this.state.isOpen) {
       if (qvp.test([ 'lg', 'xl', 'xxl' ])) {
         this.close();
@@ -133,6 +132,15 @@ export class Drawer extends spx.Component<typeof Drawer.define> {
     this.html.classList.add('drawer-open');
     this.backdrop.addEventListener('click', this.toggle, { once: true });
     this.dom.ariaHidden = 'false';
+
+    if(this.state.loadListener === false) {
+
+      spx.on('load', () => {
+        this.close()
+        this.state.loadListener = true
+      }, this);
+
+    }
   }
 
   close () {

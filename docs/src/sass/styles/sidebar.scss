@@ -145,19 +145,3 @@
     }
   }
 }
-
-.content {
-  @include media-breakpoint-up(md) {
-    padding-left: 335px !important;
-  }
-}
-
-.anchors {
-  // background-color: #fff;
-
-  margin-top: 52px;
-  width: 350px;
-  height: 100vh;
-
-  //left: 0;
-}

@@ -71,8 +71,8 @@ test.skip('Structure Test: Forcing tag arguments', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        lineBreakSeparator: 'after',
-        forceArgument: 2
+        argumentLineBreak: 2,
+        lineBreakSeparator: 'after'
       }
     });
 
@@ -103,8 +103,8 @@ test.skip('Structure Test: Force filter tag arguments', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
+        argumentLineBreak: 2,
         lineBreakSeparator: 'before',
-        forceArgument: 2
       }
     });
 

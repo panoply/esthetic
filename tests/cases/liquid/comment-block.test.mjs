@@ -133,7 +133,7 @@ test('Liquid Block Comment: Tag structures (using defaults)', t => {
       language: 'liquid',
       liquid: {
         commentIndent: false,
-        preserveComment: false
+        commentPreserve: false
       }
     });
 
@@ -143,7 +143,7 @@ test('Liquid Block Comment: Tag structures (using defaults)', t => {
 
 });
 
-test('Liquid Block Comment: Content preservation { preserveComment: true }', t => {
+test('Liquid Block Comment: Content preservation { commentPreserve: true }', t => {
 
   forAssert(
     [
@@ -276,7 +276,7 @@ test('Liquid Block Comment: Content preservation { preserveComment: true }', t =
       language: 'liquid',
       preserveLine: 2,
       liquid: {
-        preserveComment: true
+        commentPreserve: true
       }
     });
 
@@ -352,7 +352,7 @@ test('Liquid Block Comment: Content indentation { commentIndent: true }', t => {
       wrap: 0,
       liquid: {
         commentIndent: true,
-        preserveComment: false
+        commentPreserve: false
       }
     });
 

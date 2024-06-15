@@ -102,7 +102,7 @@ test('Attribute Values: Preserving value contents', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
-        forceAttribute: true
+        attributeLineBreak: true
       }
     });
 
@@ -172,7 +172,7 @@ test('Limit Attribute Force: Forcing attributes onto newlines when limit is exce
         indentAttribute: true
       },
       markup: {
-        forceAttribute: 4
+        attributeLineBreak: 4
       }
     });
 
@@ -233,7 +233,7 @@ test('Wrap Attribute Force: Forcing attributes in accordance with wrap limit', t
     const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
-        forceAttribute: false
+        attributeLineBreak: false
       }
     });
 

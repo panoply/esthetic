@@ -65,7 +65,7 @@ test('Sorting alphabetically', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         attributeSort: true
       }
     });
@@ -155,7 +155,7 @@ test('Sorting with newline preservation', t => {
       language: 'liquid',
       preserveLine: 3,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         attributeSort: true,
         stripAttributeLines: false
 
@@ -234,7 +234,7 @@ test('Sorting using sort list', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         attributeSort: [
           'data-b',
           'id',
@@ -273,7 +273,7 @@ test.skip('Sorting excluded when Liquid attributes', t => {
       language: 'liquid',
       wrap: 0,
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         attributeSort: true
       }
     });

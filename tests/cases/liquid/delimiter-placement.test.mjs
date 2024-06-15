@@ -271,7 +271,7 @@ test('Preserve: Delimiters are preserved according to input', t => {
         lineBreakSeparator: 'after'
       },
       markup: {
-        forceAttribute: true
+        attributeLineBreak: true
       }
     }
   )(function (source, rules) {

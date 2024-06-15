@@ -1,61 +1,22 @@
-. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-2 4 6 8 11 14 17 20 23 26 29 32 35 38 41 44 47 50 53 56 59 62 65 68 71 74 77 80 83 86 89 92 95 98 100
-
-2 4 6 8 11 14 17 20 23 26 29 32 35 38 41 44 47 50
-{% assign x = settings.logo | image_url | font %}
-{{-'block.settings.alignment'}}
-<main>
-<section>
-  <div
-  class="footer-block__details-content footer-block-image
-  {{- 'block.settings.alignment' }}
-  {% if section.settings.image == blank and section.settings.image_2 == blank %}
-      placeholder
-{% endif %}
-{% if section.settings.image_2 != blank %}
-banner__media-half
-{% endif %}
-      "
-      id="indentation"
-
-      {% if level_1 %}
-      data-a="1"
-      data-b="2"
-      {% else %}
-
-      data-c="3"
-      data-d="4"
-
-      {% if level_2 %}
-      data-e="5"
-      data-f="6"
-
-      {% unless level_3 %}
-      data-g="7"
-                  data-h="
-                  banner__media media
-                  {% if section.settings.image == blank and section.settings.image_2 == blank %}
-                  placeholder
-                  {% endif %}
-                  {% if section.settings.image_2 != blank %}
-                  banner__media-half
-                  {% endif %}
-            "
-
-      {% for i in level_4 %}
-
-      data-i="{{ i }}"
-
-      {% endfor %}
-
-      {% endunless %}
-
-      {% endif %}
-
-      {% endif %}
-
-      >
-{% assign x = settings.logo | image_url | font %}
-</div>
-</section>
-</main>
+ {%- for product in recommendations.products
+                                    limit: block.settings.products_per_page
+                                    offset: continue
+                                  -%}
+                                    <li>
+                                      {%- if block.settings.enable_quick_add -%}
+                                        {% assign quick_add = 'standard' %}
+                                      {%- else -%}
+                                        {% assign quick_add = 'none' %}
+                                      {%- endif -%}
+                                      {% render 'card-product',
+                                        card_product: product,
+                                        media_aspect_ratio: block.settings.image_ratio,
+                                        show_secondary_image: false,
+                                        lazy_load: false,
+                                        quick_add: quick_add,
+                                        section_id: section.id,
+                                        horizontal_class: true,
+                                        horizontal_quick_add: true
+                                      %}
+                                    </li>
+                                  {%- endfor -%}

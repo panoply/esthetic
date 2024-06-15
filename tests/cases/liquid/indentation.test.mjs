@@ -84,7 +84,7 @@ test('Single Depth block tag indentations', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -191,7 +191,7 @@ test('Nested block tag indentations', t => {
       language: 'liquid',
       wrap: 0,
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -241,7 +241,7 @@ test('Unknown tag block indentation and dedentation', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -378,7 +378,7 @@ test('Empty conditional chaining indentation', t => {
       language: 'liquid',
       wrap: 0,
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -612,7 +612,7 @@ test('Complex indentation structure', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 

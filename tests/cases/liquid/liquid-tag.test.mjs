@@ -204,7 +204,7 @@ test('Liquid Tag - Structural tests and syntactical formations', t => {
       language: 'liquid',
       liquid: {
         delimiterPlacement: 'preserve',
-        normalizeSpacing: true,
+        equipoiseSpacing: true,
         dedentTagList: []
       },
       markup: {
@@ -283,7 +283,7 @@ test('Liquid Tag: Normalize spacing of Liquid Tag internal expressions', t => {
       language: 'liquid',
       markup: {
         forceAttribute: 2,
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 

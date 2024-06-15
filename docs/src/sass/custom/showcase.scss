@@ -24,6 +24,7 @@ $demo-output-font-color: #65696f;
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: $demo-border-radius;
   height: 100%;
 }
 
@@ -40,6 +41,11 @@ $demo-output-font-color: #65696f;
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
   border-left: none;
+
+  > pre.papyrus {
+    border-top-right-radius: $demo-border-radius;
+    border-bottom-right-radius: $demo-border-radius;
+  }
 }
 
 .gears {

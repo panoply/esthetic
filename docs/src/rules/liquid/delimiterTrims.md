@@ -2,10 +2,9 @@
 title: 'Liquid - Delimiter Trims'
 layout: base
 permalink: '/rules/liquid/delimiterTrims/index.html'
-describe:
+anchors:
   - Delimiter Trims
   - Rule Options
-options:
   - preserve
   - tags
   - outputs
@@ -14,7 +13,7 @@ options:
   - multiline
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 col-sm-12 p-100
 
 # Delimiter Trims
 

@@ -2,6 +2,10 @@
 title: 'Global Rules - CRLF'
 layout: base
 permalink: '/rules/global/crlf/index.html'
+anchors:
+  - 'CRLF'
+  - false
+  - true
 ---
 
 ::: grid col-12 col-sm-9 p-100
@@ -20,15 +24,10 @@ If line termination should be Windows **CRLF** (CR = Carriage Return and LF = Li
 
 :::
 
-```json:rules@250
+```json:rules
 {
-  "esthetic": {
-    "language": "html",
-    "crlf": false
-  },
-  "papyrus": {
-    "showCRLF": true
-  }
+  "language": "html",
+  "crlf": false
 }
 ```
 
@@ -55,13 +54,8 @@ When the rule is **enabled** carriage return and line feed termination is used.
 
 ```json:rules
 {
-  "esthetic": {
-    "language": "html",
-    "crlf": true
-  },
-  "papyrus": {
-    "showCRLF": true
-  }
+  "language": "html",
+  "crlf": true
 }
 ```
 

@@ -4,11 +4,14 @@ const mdcontainer = require('markdown-it-container')
 const anchor = require('markdown-it-anchor');
 const papyrus = require('papyrus');
 const merge = require('mergerino');
-const yaml = require('js-yaml');
-const fs = require('node:fs')
+const { marked } = require('marked');
+const matter = require('gray-matter');
 const esthetic = require('esthetic');
+const fs = require('node:fs')
+const { readFile, writeFile } = require('node:fs/promises');
 const { join } = require('node:path');
 const { cwd } = require('node:process');
+
 
 /* -------------------------------------------- */
 /* CONSTANTS                                    */
@@ -428,19 +431,20 @@ function highlightCode(md, raw, languageValue) {
  *
  * @returns {string}
  */
-function getWrapFractionRuleExample (estheticRules, papyrusValue, rawInput) {
+function getWrapFractionRuleExample (estheticRules, rawInput) {
 
 
   /** @type {papyrus.CreateOptions} */
-  const papyrusOptions = merge(papyrusValue, {
+  const papyrusOptions =  {
     editor: false,
+    language: estheticRules.language,
     showSpace: true,
     addAttrs: {
       pre: [
         'spx-node="showcase.input"'
       ]
     }
-  });
+  };
 
   let output = ''
 
@@ -544,11 +548,12 @@ function getWrapFractionRuleExample (estheticRules, papyrusValue, rawInput) {
  *
  * @returns {string}
  */
-function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
+function getWrapRuleExample (estheticRules, rawInput) {
 
 
   /** @type {papyrus.CreateOptions} */
-  const papyrusOptions = merge(papyrusValue, {
+  const papyrusOptions = {
+    language: estheticRules.language,
     editor: false,
     showSpace: false,
     addAttrs: {
@@ -556,7 +561,7 @@ function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
         'spx-node="showcase.input"'
       ]
     }
-  });
+  };
 
   let output = ''
 
@@ -633,51 +638,53 @@ function getWrapRuleExample (estheticRules, papyrusValue, rawInput) {
  *
  * @returns {string}
  */
-function getRuleDemo (estheticRules, papyrusValue, inputValue, rawInput) {
-
-  /** @type {papyrus.St} */
-  const papyrusOptions = merge(papyrusValue, {
-    editor: false,
-    showSpace: false,
-    showTab: false,
-    showCRLF: estheticRules.crlf === true,
-    addAttrs: {
-      pre: [
-        'spx-node="showcase.output"',
-      ]
-    }
-  });
+function getRuleDemo (estheticRules, inputValue, rawInput) {
 
 
   let output = ''
 
   try {
 
-    const format1 = esthetic.format(rawInput, estheticRules)
-    const format2 = esthetic.format(format1, estheticRules)
+    const format = esthetic.format(rawInput, estheticRules)
 
-    output = papyrus.static(format2, papyrusOptions)
+    output = papyrus.static(format, {
+      language: estheticRules.language,
+      trimEnd: estheticRules.endNewline !== false,
+      addAttrs: {
+        pre: [
+          'spx-node="showcase.output"',
+        ]
+      }
+    })
 
   } catch (error) {
+
     console.error(error)
-    output = papyrus.static(rawInput, papyrusOptions)
+
+    output = papyrus.static(rawInput, {
+      language: estheticRules.language,
+      addAttrs: {
+        pre: [
+          'spx-node="showcase.output"',
+        ]
+      }
+    })
+
   }
 
 
   return string([
     /* html */`
-
-      <!-- EMPTY IN DEMO SHOWCASE -->
-      <div class="col-6"></div>
-
-      <div class="col-12 col-lg-6">
-        <div class="demo-input">
-          ${inputValue}
+      <div class="row gx-0">
+        <div class="col-12 col-lg-6">
+          <div class="demo-input">
+            ${inputValue}
+          </div>
         </div>
-      </div>
-      <div class="col-12 col-lg-6">
-        <div class="demo-output">
-          ${output}
+        <div class="col-12 col-lg-6">
+          <div class="demo-output">
+            ${output}
+          </div>
         </div>
       </div>
     `
@@ -686,7 +693,6 @@ function getRuleDemo (estheticRules, papyrusValue, inputValue, rawInput) {
 }
 
 /**
- *
  * Generate the rule showcase type. Reads and digests `json:rules`, returning
  * the intended values and showcase demo/example.
  *
@@ -702,10 +708,7 @@ function getRuleShowcase (md, inputValue, language) {
   const mode = has('example') ? 'example' : 'editor'
 
   /** @type {esthetic.Rules} */
-  const rulesValue = has('esthetic') ? merge(rules.esthetic, { language }) : merge(rules, { language });
-
-  /** @type {papyrus.StaticOptions} */
-  const papyrusValue = has('papyrus') ? merge(rules.papyrus, { language }) : { language };
+  const rulesValue = has('esthetic') ? rules.esthetic : merge(rules, { language });
 
   /** @type {string} */
   const rawInput = md.utils.unescapeAll(input);
@@ -735,17 +738,17 @@ function getRuleShowcase (md, inputValue, language) {
 
     if(rules.example.rule === 'wrap') {
 
-      showcase = getWrapRuleExample(estheticOptions, papyrusValue, rawInput)
+      showcase = getWrapRuleExample(estheticOptions, rawInput)
 
     } else if(rules.example.rule === 'wrapFraction') {
 
-      showcase = getWrapFractionRuleExample(estheticOptions, papyrusValue, rawInput)
+      showcase = getWrapFractionRuleExample(estheticOptions, rawInput)
 
     }
 
   } else {
 
-    showcase = getRuleDemo(estheticOptions, papyrusValue, inputValue, rawInput)
+    showcase = getRuleDemo(estheticOptions, inputValue, rawInput)
 
   }
 
@@ -786,9 +789,8 @@ function getRuleShowcase (md, inputValue, language) {
               aria-label="Select different preset"
               spx@click="dropdown.toggle"
               spx-node="dropdown.button"
-              spx-bind="showcase.preset"
               data-tooltip="top">
-              Preset (default)
+              <span spx-bind="showcase.preset"> Preset (default)</span>
               <span class="icon"></span>
             </button>
 
@@ -810,7 +812,6 @@ function getRuleShowcase (md, inputValue, language) {
                 spx@click="dropdown.option showcase.onPresetChange"
                 id="prettier">prettier</li>
             </ul>
-
           </div>
           <button
             type="button"
@@ -821,12 +822,10 @@ function getRuleShowcase (md, inputValue, language) {
           </button>
         </div>
       </div>
-
-      <!-- SHOWCASE -->
-
-      ${showcase}
-
     </div>
+    <!-- SHOWCASE -->
+
+    ${showcase}
     `
   ]);
 
@@ -834,13 +833,14 @@ function getRuleShowcase (md, inputValue, language) {
   return {
     template,
     mode,
-    rulesValue: md.utils.escapeHtml(JSON.stringify(rulesValue)),
-    papyrusValue: md.utils.escapeHtml(JSON.stringify(papyrusValue))
+    rulesValue: md.utils.escapeHtml(JSON.stringify(rulesValue))
   }
 
 }
 
 /**
+ * Returns the current language name and assign height
+ *
  * @param {string} annotation
  */
 function getLanguage(annotation) {
@@ -919,8 +919,7 @@ function codeblocks(md) {
         spx-showcase:rules-original="${rulesValue}"
         spx-showcase:language="${language}"
         spx-showcase:input="${input.trim()}"
-        spx-showcase:input-original="${input.trim()}"
-        spx-showcase:papyrus="${papyrusValue}">
+        spx-showcase:input-original="${input.trim()}">
         ${template.trim()}
       </div>`
 
@@ -931,12 +930,13 @@ function codeblocks(md) {
 }
 
 /**
- * Generates HTML markup for various blocks
+ * Renders a `<blockquote>` semantic HTML tag
  *
- * @param {"note"|"tip"|"important"} type The type of alert to create.
- * @param {Array<markdownit>} tokens Array of MarkdownIt tokens to use.
- * @param {number} index The index of the current token in the tokens array.
- * @returns {string} The markup for the alert.
+ * @param {markdownit.Token[]} tokens
+ * Array of tokens to use.
+ *
+ * @param {number} index
+ * The index of the current token in the tokens array.
  */
 function notes(tokens, index) {
 
@@ -961,7 +961,7 @@ function rule(md, tokens, idx) {
           /* html */`
           <div class="rule-title d-flex ai-center">
           <div
-            class="h5 mr-2"
+            class="h4"
             aria-label="${TOOLTIPS[m[1]]}"
             data-tooltip="top">
             ${md.utils.escapeHtml(m[1])}
@@ -987,15 +987,17 @@ function rule(md, tokens, idx) {
 
 }
 
-
-
 /**
- * Generates HTML markup for various blocks
+ * Renders a grid from markdown container expressions.
  *
- * @param {"note"|"tip"|"important"} type The type of alert to create.
- * @param {Array<markdownit>} tokens Array of MarkdownIt tokens to use.
- * @param {number} index The index of the current token in the tokens array.
- * @returns {string} The markup for the alert.
+ * @param {markdownit} md
+ * Markdown Instance
+ *
+ * @param {markdownit.Token[]} tokens
+ * Markdown tokens
+ *
+ * @param {number} idx
+ * An index number reference
  */
 function grid(md, tokens, idx) {
 
@@ -1032,7 +1034,141 @@ function versions ()  {
 
 }
 
-module.exports = eleventy(function (config) {
+/**
+ * Generate JSON file to be used in search autocompletions
+ *
+ * @param {EleventyConfig}
+ * The eleventy configuration instance
+ */
+function search (config) {
+
+  const page = [];
+
+  config.on('eleventy.after', async () => {
+    if (page.length > 0) {
+      const content = JSON.stringify(page, null, 2);
+      await writeFile('./public/assets/esthetic.json', content);
+    }
+  });
+
+  return async function (content) {
+
+    let data;
+    let heading;
+    let anchor;
+
+    const records = new Map();
+    const read = await readFile(this.page.inputPath);
+    const parse = marked.lexer(read.toString());
+
+    const frontmatter = parse[0].type === 'hr'
+      ? parse.splice(0, 2).map(({ raw }) => raw).join('\n')
+      : null;
+
+    if (frontmatter !== null) {
+
+      data = matter(frontmatter).data;
+
+    }
+
+    parse.forEach(token => {
+
+      if (token.text && token.text.length > 0) {
+
+        if (token.type === 'heading') {
+
+          if (token.text.toLowerCase().includes('acknowledgements')) return;
+
+          heading = token.text.replace(/[`_*]/g, '');
+          anchor = util.slug(heading);
+
+          if (!records.has(heading)) records.set(heading, { anchor, content: '' });
+
+        } else if (token.type === 'paragraph') {
+
+          if (!/^({{|{%|<[a-z]|:::)/.test(token.text) && heading) {
+            records.get(heading).content = token.text
+              .replace(/[`_*]/g, '')
+              .replace(/\[([a-z].*?)\]\(.*?\)/g, '$1');
+          }
+
+        }
+      }
+
+    });
+
+    for (const [ heading, { anchor, content } ] of records) {
+      page.push({
+        title: data.title,
+        heading,
+        content,
+        url: heading ? `${this.page.url.slice(0, -1)}#${anchor}` : this.page.url
+      });
+    }
+
+  };
+
+}
+
+
+/**
+ * Used for the navbar current url `active` class.
+ *
+ * @param {string} value
+ * The current link.url passed
+ *
+ * @param {import('./src/data/navigation.json')} navigation
+ * The navigation data cascade file
+ */
+function active (value, navigation) {
+
+  if (value.startsWith('/rules/') && this.page.url.startsWith(value)) {
+
+    return 'active'
+
+  } else if (value.startsWith('/introduction/')) {
+
+    if (navigation.docs.some(({ links }) => links.some(({ url }) => url === this.page.url ))) {
+
+      return 'active'
+
+    }
+
+  } else if(value.startsWith('/playground/') && this.page.url.startsWith(value)) {
+
+    return 'active'
+
+  }
+
+  return ''
+
+}
+
+/**
+ * Returns the current navigation reference
+ *
+ * @param {import('./src/data/navigation.json')} value
+ * The navigation data cascade file
+ */
+function navigate (value) {
+
+
+  if (this.page.url.startsWith('/rules/')) {
+
+    return value.rules
+
+  } else if (value.docs.some(({ links }) => links.some(({ url }) => url === this.page.url ))) {
+
+    return value.docs
+
+  }
+
+  return value
+
+}
+
+
+module.exports = eleventy(function (eleventyConfig) {
 
 
   const md = markdownit({
@@ -1049,25 +1185,26 @@ module.exports = eleventy(function (config) {
   .use(mdcontainer, 'rule', { render: (tokens, idx) => rule(md, tokens, idx) })
   .disable("code");
 
-
-
   md.use(anchor, {
     slugify: util.slug,
-    callback: token => token.attrs.push([ 'spx-node', 'scrollspy.anchor' ])
-  });
-
-  config.addFilter('anchor', (value) => `#${util.slug(value)}`);
-  config.addLiquidShortcode('version', () => require('../package.json').version);
-  config.addLiquidShortcode('versions', () => versions());
-  config.setLibrary('md', md);
-  config.addPassthroughCopy({
-    'node_modules/moloko/dist': 'assets/moloko',
-    'node_modules/esthetic/dist/esthetic.js': 'assets/esthetic.min.js'
+    callback: ({ attrs }) => attrs.push([ 'spx-node', 'scrollspy.anchor' ])
   })
 
 
-  config.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
-  config.addPlugin(terser);
+  eleventyConfig.addFilter('active', active);
+  eleventyConfig.addFilter('navigate', navigate);
+  eleventyConfig.addFilter('anchor', (value) => `#${encodeURI(util.slug(value))}`);
+  eleventyConfig.addLiquidShortcode('search', search(eleventyConfig));
+  eleventyConfig.addLiquidShortcode('version', () => require('../package.json').version);
+  eleventyConfig.addLiquidShortcode('versions', () => versions());
+  eleventyConfig.setLibrary('md', md);
+  eleventyConfig.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
+  eleventyConfig.addPlugin(terser);
+
+  eleventyConfig.addPassthroughCopy({
+    'node_modules/moloko/dist': 'assets/moloko',
+    'node_modules/esthetic/dist/esthetic.js': 'assets/esthetic.min.js'
+  })
 
   return {
     htmlTemplateEngine: 'liquid',

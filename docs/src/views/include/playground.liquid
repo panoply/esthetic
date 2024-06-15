@@ -1,15 +1,14 @@
 <main id="main">
   <div
     class="playground"
-    data-controller="playground"
-    data-playground-loaded-value="false"
-    data-playground-esthetic-value="{{'/assets/esthetic.min.js' | url }}"
-    data-playground-module-value="{{'/assets/moloko/moloko.js' | url }}">
-
+    spx-component="playground"
+    spx-playground:esthetic="{{'/assets/esthetic.min.js' | url }}"
+    spx-playground:loaded="false"
+    spx-playground:module="{{'/assets/moloko/moloko.js' | url }}">
 
     <div
       class="abs-flex ai-center jc-center flex-col d-none"
-      data-playground-target="splash">
+      spx-node="playground.splash">
       <div class="py-2">
         {% svg 'moloko', 'icon icon-moloko' %}
       </div>
@@ -18,7 +17,6 @@
       </div>
     </div>
 
-    <div data-playground-target="mount"></div>
-
+    <div spx-node="playground.mount"></div>
   </div>
 </main>

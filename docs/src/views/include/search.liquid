@@ -1,15 +1,15 @@
 <div
-  class="navbar-search d-none d-md-unset"
+  class="search d-none d-md-unset"
   spx-component="search"
-  spx-search:source="{{ '/spx.json' | url }}">
+  spx-search:source="{{ '/assets/esthetic.json' | url }}">
 
   <input
     type="search"
     class="fm-input"
     placeholder="Search"
-    spx@input="search.onInput"
+    spx-node="search.input"
     spx@click="search.onFocus"
-    spx-node="search.input">
+    spx@input="search.onInput">
 
   <ul
     class="search-list d-none"

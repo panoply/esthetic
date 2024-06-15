@@ -1,7 +1,7 @@
 import type Moloko from 'moloko';
-import { Controller } from '@hotwired/stimulus';
+import spx from 'spx';
 
-export class Playground extends Controller {
+export class Playground extends spx.Component<typeof Playground.define>{
 
   static loaded: boolean = false;
   static moloko: typeof Moloko;
@@ -9,51 +9,47 @@ export class Playground extends Controller {
   /**
    * Stimulus: Targets
    */
-  static targets = [
-    'mount',
-    'splash'
-  ];
-
-  /**
-   * Stimulus: Values
-   */
-  static values = {
-    module: String,
-    loaded: Boolean
-  };
+  static define = {
+    nodes: [
+      'mount',
+      'splash'
+    ],
+    state: {
+      module: String,
+      loaded: Boolean
+    }
+  }
 
   get moloko () {
-
     return Playground.moloko;
   }
 
-  get hash () {
-    return localStorage.getItem('moloko');
-  }
 
   svg: Element;
   timer: NodeJS.Timeout
 
   async connect () {
 
+    await this.module();
+
+  }
 
 
-    if (this.hash) window.location.hash = this.hash;
+ async onmount() {
 
     if (Playground.loaded) return this.mount();
 
-    this.splashTarget.classList.remove('d-none');
+    this.splashNode.classList.remove('d-none');
 
     this.loading();
 
     await this.module();
     return this.mount();
-
   }
 
-  disconnect (): void {
+  unmount (): void {
 
-    localStorage.setItem('moloko', this.moloko.hash());
+
 
   }
 
@@ -61,7 +57,7 @@ export class Playground extends Controller {
 
     try {
 
-    const moloko = await import(this.moduleValue);
+    const moloko = await import(this.state.module);
 
     Playground.moloko = moloko.default;
 
@@ -72,8 +68,11 @@ export class Playground extends Controller {
 
   mount () {
 
-    Playground.moloko.mount(this.mountTarget, {
+    Playground.moloko.mount(this.mountNode, {
       offset: 0,
+      samples: false,
+      hash: false,
+      splash: false,
       resolve: {
         path: 'assets/moloko',
       }
@@ -92,11 +91,11 @@ export class Playground extends Controller {
 
         this.loading();
 
-      }, 1500);
+      }, 500);
 
     } else {
 
-      this.splashTarget.classList.add('d-none');
+      this.splashNode.classList.add('d-none');
 
       clearInterval(this.timer);
 

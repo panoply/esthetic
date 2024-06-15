@@ -14,6 +14,20 @@
     "url": "https://discord.gg/shopify-developers-597504637167468564",
     "target": "_blank"
   },
+  "navbar": [
+    {
+      "title": "Docs",
+      "url": "/introduction/what-is-esthetic/"
+    },
+    {
+      "title": "Rules",
+      "url": "/rules/"
+    },
+    {
+      "title": "Playground",
+      "url": "/playground/"
+    }
+  ],
   "docs": [
     {
       "title": "Introduction",
@@ -188,10 +202,6 @@
       "title": "Global",
       "links": [
         {
-          "title": "correct",
-          "url": "/rules/global/correct/"
-        },
-        {
           "title": "crlf",
           "url": "/rules/global/crlf/"
         },
@@ -245,10 +255,6 @@
           "url": "/rules/liquid/allowRubeSyntactic/"
         },
         {
-          "title": "commentPreserve",
-          "url": "/rules/liquid/commentPreserve/"
-        },
-        {
           "title": "commentIndent",
           "url": "/rules/liquid/commentIndent/"
         },
@@ -283,6 +289,10 @@
         {
           "title": "ignoreTagList",
           "url": "/rules/liquid/ignoreTagList/"
+        },
+        {
+          "title": "lineBreakLogical",
+          "url": "/rules/liquid/lineBreakLogical/"
         },
         {
           "title": "lineBreakSeparator",
@@ -344,10 +354,6 @@
         {
           "title": "forceIndent",
           "url": "/rules/markup/forceIndent/"
-        },
-        {
-          "title": "forceInline",
-          "url": "/rules/markup/forceInline/"
         },
         {
           "title": "ignoreCSS",

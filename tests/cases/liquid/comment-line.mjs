@@ -62,7 +62,7 @@ test('Liquid inline line Comments - commentIndent: true', t => {
       liquid: {
         commentIndent: true,
         commentNewline: false,
-        preserveComment: false
+        commentPreserve: false
       },
       markup: {
 
@@ -173,7 +173,7 @@ test('Liquid Multiline Line Comments - commentIndent: true', t => {
       liquid: {
         commentIndent: true,
         commentNewline: false,
-        preserveComment: false,
+        commentPreserve: false,
         delimiterPlacement: 'preserve'
       },
       markup: {
@@ -290,7 +290,7 @@ test('Liquid Multiline Line Comments - commentIndent: false', t => {
       liquid: {
         commentIndent: false,
         commentNewline: false,
-        preserveComment: false,
+        commentPreserve: false,
         delimiterPlacement: 'preserve'
       },
       markup: {

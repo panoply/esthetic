@@ -12,7 +12,7 @@ test('Structure Test: Empty schema tags', t => {
 
           {% schema %}
 
-          {% endschema%}
+          {% endschema %}
         `,
         liquid`{% # Empty schema tag %}
 

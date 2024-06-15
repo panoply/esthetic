@@ -12,7 +12,6 @@ h5,
 h6 {
   text-transform: none;
   margin-top: 20px;
-  margin-bottom: 20px;
 
   + p {
     margin-bottom: 20px;
@@ -162,10 +161,6 @@ p {
 
 .content-rules {
   p {
-    @include media-breakpoint-up(sm) {
-      width: 50%;
-    }
-
     a {
       color: #6eb2d3;
       font-weight: 500;
@@ -190,45 +185,6 @@ table {
   tr {
     border-bottom: $border-width solid #3d4956;
     line-height: 2.2;
-  }
-}
-
-.navigators {
-  padding-top: 10px;
-
-  .btn {
-    text-transform: none;
-    color: $white;
-    font-size: $font-size-md;
-    display: inline-flex;
-    align-items: center;
-
-    span {
-      color: $pink;
-
-      > .icon {
-        width: 24px;
-        height: 24px;
-        display: inline-flex;
-      }
-    }
-
-    &.next {
-      color: $pink;
-
-      &:hover {
-        span {
-          color: $pink;
-        }
-      }
-      span {
-        color: $white;
-      }
-    }
-
-    &:hover {
-      color: $pink;
-    }
   }
 }
 

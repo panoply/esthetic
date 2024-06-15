@@ -12,7 +12,7 @@ options:
 
 ::: grid col-12 col-sm-9 p-100
 
-# Comment PRreserve
+# Comment Preserve
 
 Preserve the inner contents of HTML comments. When this rule is enabled (i.e: `true`) it will ignore formatting HTML comments and override `commentIndent` and `commentNewline` rule definitions.
 

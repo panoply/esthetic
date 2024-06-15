@@ -66,42 +66,52 @@
 
       {% include 'landing' %}
 
-    {% elsif page.url == '/playground/' %}
-
-      {% include 'navbar' %}
-      {% include 'playground' %}
-
     {% else %}
 
-      {% include 'navbar' %}
+      {% if page.url contains '/playground/' %}
 
-      <main
-        id="main"
-        class="container-fluid {{ content_class }}">
+        {% include 'navbar' %}
+        {% include 'search' %}
+        {% include 'playground' %}
 
-        {% include 'sidebar' %}
+      {% else %}
+        <main
+          id="main"
+          class="container-fluid mb-5 pb-5">
 
-        <div class="row">
-
-          <div class="col px-sm-5 content">
-            {% include 'breadcrumbs' %}
-            {{ content }}
-            {% include 'paginate' %}
-          </div>
-
-          {% if anchors %}
-            <div
-              class="col-auto px-4 d-none d-md-unset"
-              spx-component="scrollspy">
-              {% include 'anchors', anchors: anchors %}
+          <div class="row jc-center">
+            <div class="col-auto w-320 h-100">
+              <aside
+                class="px-0 vh-100 bt br d-none d-sm-block sidebar drawer-left drawer-panel"
+                spx-component="drawer"
+                spx-drawer:direction="left"
+                spx-drawer:width="280">
+                {% include 'sidebar-header' %}
+                {% include 'sidebar-menu' %}
+              </aside>
             </div>
-          {% endif %}
-        </div>
-      </main>
+            <div class="col">
+              {% include 'navbar' %}
+              {% include 'search' %}
+              {% include 'breadcrumbs' %}
+              {{ content }}
+              {% include 'paginate' %}
 
+            </div>
+            <div class="col-auto w-340">
+              <aside
+                class="anchors"
+                spx-component="scrollspy">
+                {% include 'anchors', anchors: anchors %}
+              </aside>
+            </div>
+          </div>
+        </main>
+      {% endif %}
     {% endif %}
 
     {% sprite %}
+    {% search %}
 
   </body>
 </html>

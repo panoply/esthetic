@@ -62,7 +62,8 @@
 
 @import '../../node_modules/papyrus/theme/vars';
 @import '../../node_modules/papyrus/theme/root';
-@import '../../node_modules/papyrus/theme/base';
+// @import '../../node_modules/papyrus/theme/base';
+@import 'styles/code';
 @import '../../node_modules/papyrus/theme/languages/bash';
 @import '../../node_modules/papyrus/theme/languages/html';
 @import '../../node_modules/papyrus/theme/languages/liquid';
@@ -74,15 +75,19 @@
 @import '../../node_modules/papyrus/theme/languages/json';
 @import '../../node_modules/papyrus/theme/languages/treeview';
 
-@import 'custom/sidebar';
-@import 'custom/showcase';
 @import 'custom/svg';
+@import 'custom/layout';
+@import 'custom/base';
+@import 'custom/sidebar';
+@import 'custom/search';
 @import 'custom/navbar';
+@import 'custom/anchors';
+@import 'custom/showcase';
+@import 'custom/paginate';
 
 @import 'styles/accordion';
 @import 'styles/overwrites';
 @import 'styles/parser';
 @import 'styles/breadcrumb';
-@import 'styles/code';
 @import 'styles/landing';
 @import 'styles/playground';

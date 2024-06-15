@@ -85,14 +85,8 @@ When the global `endNewline` rule is enabled (i.e: `true`) then documents/files 
 
 ```json:rules
 {
- "esthetic": {
-    "language": "html",
-    "endNewline": true
-  },
-  "papyrus": {
-    "trimEnd": false,
-    "showLF": true
-  }
+  "language": "html",
+  "endNewline": true
 }
 ```
 

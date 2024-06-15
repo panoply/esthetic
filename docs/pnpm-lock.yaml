@@ -17,6 +17,9 @@ importers:
       esthetic:
         specifier: link:..
         version: link:..
+      fuse.js:
+        specifier: ^7.0.0
+        version: 7.0.0
       json-parse-better-errors:
         specifier: ^1.0.2
         version: 1.0.2
@@ -69,9 +72,6 @@ importers:
       '@netlify/plugin-sitemap':
         specifier: ^0.8.1
         version: 0.8.1
-      '@panoply/11ty':
-        specifier: ^0.3.0
-        version: 0.3.0(@11ty/eleventy@2.0.1)
       '@sardine/eleventy-plugin-tinyhtml':
         specifier: ^0.2.0
         version: 0.2.0
@@ -108,6 +108,9 @@ importers:
       eslint:
         specifier: ^9.4.0
         version: 9.4.0
+      gray-matter:
+        specifier: ^4.0.3
+        version: 4.0.3
       language-literals:
         specifier: ^0.0.2
         version: 0.0.2
@@ -120,6 +123,9 @@ importers:
       markdown-it-container:
         specifier: ^4.0.0
         version: 4.0.0
+      marked:
+        specifier: ^12.0.2
+        version: 12.0.2
       netlify-cli:
         specifier: ^17.26.1
         version: 17.26.1(@types/node@20.14.2)(picomatch@4.0.2)
@@ -1197,12 +1203,6 @@ packages:
   '@opentelemetry/semantic-conventions@1.25.0':
     resolution: {integrity: sha512-M+kkXKRAIAiAP6qYyesfrC5TOmDpDVtsxuGfPcqd9B/iBrac+E14jYwrgm0yZBUIbIP2OnqC3j+UgkXLm1vxUQ==}
     engines: {node: '>=14'}
-
-  '@panoply/11ty@0.3.0':
-    resolution: {integrity: sha512-TlbU0ai4CfVqtVYjMo0TNgrVuGyVIM27LYhgS08XhdGPI++htM2bpR7oO1x3aCvZD9HaoWMfmhsGqgReTRzKbQ==}
-    deprecated: Project is now available at 11ty.ts (https://www.npmjs.com/package/11ty.ts)
-    peerDependencies:
-      '@11ty/eleventy': ^2.0.1
 
   '@parcel/watcher-android-arm64@2.4.1':
     resolution: {integrity: sha512-LOi/WTbbh3aTn2RYddrO8pnapixAziFl6SMxHM69r3tvdSm94JtCenaKgk1GRg5FJ5wpMCpHeW+7yqPlvZv7kg==}
@@ -3159,6 +3159,10 @@ packages:
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
 
+  fuse.js@7.0.0:
+    resolution: {integrity: sha512-14F4hBIxqKvD4Zz/XjDc3y94mNZN6pRv3U13Udo0lNLCWRBUsrMv2xwcF/y/Z5sV6+FQW+/ow68cHpm4sunt8Q==}
+    engines: {node: '>=10'}
+
   fuzzy@0.1.3:
     resolution: {integrity: sha512-/gZffu4ykarLrCiP3Ygsa86UAo1E5vEVlvTrpkKywXSbP9Xhln3oSp9QSV57gEq3JFFpGJ4GZ+5zdEp3FcUh4w==}
     engines: {node: '>= 0.6.0'}
@@ -4051,6 +4055,11 @@ packages:
 
   markdown-it@14.1.0:
     resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
+    hasBin: true
+
+  marked@12.0.2:
+    resolution: {integrity: sha512-qXUm7e/YKFoqFPYPa3Ukg9xlI5cyAtGmyEIzMfW//m6kXwCy2Ps9DYf5ioijFKQ8qyuscrHoY04iJGctu2Kg0Q==}
+    engines: {node: '>= 18'}
     hasBin: true
 
   maximatch@0.1.0:
@@ -7386,11 +7395,6 @@ snapshots:
 
   '@opentelemetry/semantic-conventions@1.25.0': {}
 
-  '@panoply/11ty@0.3.0(@11ty/eleventy@2.0.1)':
-    dependencies:
-      '@11ty/eleventy': 2.0.1
-      '@types/browser-sync': 2.29.0
-
   '@parcel/watcher-android-arm64@2.4.1':
     optional: true
 
@@ -9475,6 +9479,8 @@ snapshots:
 
   function-bind@1.1.2: {}
 
+  fuse.js@7.0.0: {}
+
   fuzzy@0.1.3: {}
 
   gauge@3.0.2:
@@ -10413,6 +10419,8 @@ snapshots:
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
+
+  marked@12.0.2: {}
 
   maximatch@0.1.0:
     dependencies:

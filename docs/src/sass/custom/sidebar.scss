@@ -1,17 +1,54 @@
 .sidebar {
   background-color: $code-bg;
-  margin-top: 75px;
   border-top-right-radius: 10px;
 
+  &-header {
+    position: absolute;
+    top: -61px;
+    display: flex;
+    align-items: center;
+    width: 280px;
+    height: 60px;
+    padding-left: $spacer-3;
+    background-color: $body-bg;
+
+    .icon-logo {
+      width: 140px;
+      height: 17px;
+    }
+
+    .icon-github {
+      width: 22px;
+      height: 22px;
+      color: #42434e;
+
+      &:hover {
+        color: $white;
+      }
+    }
+  }
+
   @include media-breakpoint-up(md) {
-    position: fixed;
-    margin-top: 75px;
-    width: 270px;
-    height: 100vh;
-    display: block !important;
+    top: 60px;
+    width: 280px;
+    border-top-right-radius: 10px;
+    transform: translateX(0);
     visibility: visible;
     opacity: 1;
-    transform: translateX(0);
+  }
+
+  &-footer {
+    position: absolute;
+    bottom: 20px;
+    z-index: 100;
+    display: block;
+    height: 90px;
+    font-family: $headings-font-family;
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    opacity: 1;
+    font-weight: 100;
+    color: #424e67;
   }
 
   ul > li {
@@ -145,14 +182,4 @@
   @include media-breakpoint-up(md) {
     padding-left: 335px !important;
   }
-}
-
-.anchors {
-  // background-color: #fff;
-
-  margin-top: 52px;
-  width: 350px;
-  height: 100vh;
-
-  //left: 0;
 }

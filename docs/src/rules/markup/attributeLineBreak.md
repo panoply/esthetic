@@ -1,39 +1,38 @@
 ---
 title: 'Markup - Attribute Line Break'
 layout: base
-permalink: '/rules/markup/forceAttribute/index.html'
-describe:
-  - Attribute Line Break
-  - Related Rules
-  - Mirrored Rules
-options:
-  - Enable
-  - Disable
-  - Limit
-examples:
-  - Wrap Forcing
+permalink: '/rules/markup/attributeLineBreak/index.html'
+anchors:
+  describe:
+    - Attribute Line Break
+    - Related Rules
+    - Mirrored Rule
+  options:
+    - false
+    - true
+    - limit
+    - wrap
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 p-100
 
 # Attribute Line Break
 
-Whether or not markup attributes should be forced indented onto newlines. This rule accepts a `boolean` or `integer` type, both of which allow you to refine how attributes are to be formatted independent of Æsthetic's default behavior of using the global [`wrap`](/rules/global/wrap) limit. When you provide `forceAttribute` an integer value of **`1` or more** Æsthetic will apply forcing when the number of attributes contained within a tag exceeds the supplied value limit.
+Controls attribute newline break behavior. This rule accepts a `boolean` or `number` type. The rule allow you to refine how attributes are to be formatted independent of the Æsthetic's default behavior of using the global [`wrap`](/rules/global/wrap) limit. When you provide `attributeLineBreak` an integer value of **1 or more** Æsthetic will apply newline breaks when the number of attributes contained within a tag exceeds the limit.
 
-> Attribute forcing is disabled by default as the global [`wrap`](/rules/global/wrap) limit is set to `0`. If you want wrap based forcing, you will need to set a word wrap character width.
-
-### Related Rules
+#### Related Rules
 
 If you are using the global defined [`wrap`](/rules/global/wrap) then Æsthetic will inline the leading (first) attribute. For developers who have become accustomed to the Prettier formatting style which forces ending `>` markup tag delimiters onto newlines can replicate this output using the `delimiterTerminus` rule.
 
-- [`wrap`](/rules/global/wrap)
-- [`delimiterTerminus`](/rules/markup/forceLeadAttribute)
+- [wrap](/rules/global/wrap/)
+- [delimiterTerminus](/rules/markup/delimiterTerminus/)
+- [valueLineBreak](/rules/markup/valueLineBreak/)
 
-### Mirrored Rule
+#### Mirrored Rule
 
-The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule uses `forceAttribute` as disablement mirror. When attribute forcing is disabled then the Liquid `indentAttributes` rule reflects the disablement. In order to leverage the Liquid `indentAttributes` rule you will need to define an occurrence limit or enable this rule.
+The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule uses `attributeLineBreak` as disablement mirror. When attribute forcing is disabled then the Liquid `indentAttributes` rule reflects the disablement. In order to leverage the Liquid `indentAttributes` rule you will need to define an occurrence limit or enable this rule.
 
-- [`indentAttributes`](/rules/liquid/indentAttributes)
+- [indentAttributes](/rules/liquid/indentAttributes)
 
 :::
 
@@ -45,13 +44,13 @@ The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule uses `force
 
 :::
 
-Below is the default, wherein attributes are not forced or indented.
+The default behavior for Æsthetic is to disable attribute newline breaks and only apply forcing when word wrap limit has been exceeded (see [wrap](#wrap) example below). If you are formatting with wrap disabled (i.e, `wrap` is set to `0`) then attributes will be formatted inline and any newline occurrences will be stripped.
 
 ```json:rules
 {
-  "language": "liquid",
+  "language": "html",
   "markup": {
-    "forceAttribute": false
+    "attributeLineBreak": false
   }
 }
 ```
@@ -59,9 +58,9 @@ Below is the default, wherein attributes are not forced or indented.
 <!-- prettier-ignore -->
 ```html
 <div
-  class="x"
-  id="{{ foo }}"
-  data-x="xx">
+  class="foo"
+  id="bar"
+  data-x="baz">
 
   Attributes will be inlined
 
@@ -76,21 +75,21 @@ Below is the default, wherein attributes are not forced or indented.
 
 :::
 
-Below is an example of how this rule works if it's enabled, ie: `true`. When working with Liquid this is typically going to be the better option to use opposed when you desire a clear uniform across all your project.
+Below is an example of how this rule works if it's enabled, ie: `true`. When working with html this is typically going to be the better option to use opposed when you desire a clear uniform across all your project.
 
 ```json:rules
 {
-  "language": "liquid",
+  "language": "html",
   "markup": {
-    "forceAttribute": true
+    "attributeLineBreak": true
   }
 }
 ```
 
 <!-- prettier-ignore -->
 ```html
-<div class="x" id="{{ foo }}" data-x="xx">
-  <div class="x" id="{{ foo }}" data-x="xx">
+<div class="foo" id="bar" data-x="baz">
+  <div class="foo" id="bar" data-x="baz">
 
     Attributes will be forced onto newlines
 
@@ -102,7 +101,7 @@ Below is an example of how this rule works if it's enabled, ie: `true`. When wor
 
 ::: rule 🙌
 
-#### 3
+#### limit
 
 :::
 
@@ -110,30 +109,30 @@ Below is an example of forced attributes when an integer value of `3` was provid
 
 ```json:rules
 {
-  "language": "liquid",
+  "language": "html",
   "markup": {
-    "forceAttribute": 3
+    "attributeLineBreak": 3
   }
 }
 ```
 
 <!-- prettier-ignore -->
 ```html
-<div class="x" id="{{ foo }}">
+<div class="foo" id="bar">
 
 Attributes will not be forced as only 2 exist on tag
 
 </div>
 
-<div class="x" id="{{ foo }}" data-x="xx">
+<div class="foo" id="bar" data-x="baz">
 
   Attributes will be forced as tag contains 3
 
-  <div class="x">
+  <div class="foo">
     Tag contains 1 attribute, it will not be forced
   </div>
 
-  <div class="x" id="{{ foo }}" data-x="xx" data-xx="xxx">
+  <div class="foo" id="bar" data-x="baz" data-xx="xxx">
     Tag contains 4 attributes, they will be forced
   </div>
 
@@ -142,37 +141,41 @@ Attributes will not be forced as only 2 exist on tag
 
 ---
 
-# Wrap Forcing
+::: rule 🧐
 
-The below example is using [`wrap`](/rules/global/wrap) forcing. If you wish to apply wrap based forcing to attributes then the `forceAttribute` rule should be set to `false` and the global `wrap` rules must contain a value.
+#### wrap
+
+:::
+
+The below example is using [`wrap`](/rules/global/wrap) to apply attribute newline breaks. If you wish to apply wrap based forcing to attributes then the `attributeLineBreak` rule should be set to `false` and the global `wrap` rules must contain a value.
 
 ```json:rules
 {
-  "language": "liquid",
+  "language": "html",
   "wrap": 50,
   "markup": {
-    "forceAttribute": false
+    "attributeLineBreak": false
   }
 }
 ```
 
 <!-- prettier-ignore -->
 ```html
-<div class="x" id="{{ foo }}">
+<div class="foo" id="bar">
 
  Attributes will not be forced as only 2 exist on tag
 
 </div>
 
-<div class="x" id="{{ foo }}" data-x="xx">
+<div class="foo" id="bar" data-x="baz">
 
    Attributes will be forced as tag contains 3
 
-  <div class="x">
+  <div class="foo">
     Tag contains 1 attribute, it will not be forced
   </div>
 
-  <div class="x" id="{{ foo }}" data-x="xx" data-xx="xxx">
+  <div class="foo" id="bar" data-x="baz" data-xx="xxx">
     Tag contains 4 attributes, they will be forced
   </div>
 

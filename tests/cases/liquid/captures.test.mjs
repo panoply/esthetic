@@ -33,7 +33,7 @@ test('Capture nested within capature occurances', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 
@@ -102,7 +102,7 @@ test('Capture start tag indentation and preservation', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        normalizeSpacing: true
+        equipoiseSpacing: true
       }
     });
 

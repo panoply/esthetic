@@ -11,8 +11,13 @@ next:
 anchors:
   - Installation
   - PNPM
-  - CDN
+  - NPM
+  - Yarn
+  - CDN Usage
   - Schema Store
+  - JSON Schema Store
+  - VSCode Usage
+  - Direct Usage
 ---
 
 # Installation

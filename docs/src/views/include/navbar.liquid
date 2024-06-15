@@ -1,71 +1,43 @@
-<header
-  id="navbar"
-  class="container-fluid navbar">
+<header class="container-fluid navbar pl-0 pb-1">
   <div class="row jc-between jc-sm-start ai-center bg-white w-100 pr-0">
 
     <input
       type="button"
       class="d-unset d-sm-none col-auto btn drawer-toggle ml-4"
-      data-drawer="sidebar">
+      spx@click="drawer.toggle">
 
-    <a
-      href="/"
-      class="col-auto italic fc-white fs-lg pl-2 pr-0 logo">
-      {% svg 'esthetic', 'icon icon-logo d-none d-sm-unset' %}
-      {% svg 'æsthetic', 'icon icon-logo d-unset d-sm-none' %}
-    </a>
-
-    <div class="d-none d-sm-flex col-auto pr-5">
+    {% comment %}
+      <div class="d-none d-sm-flex col-auto pr-5">
       <dropdown
-        class="dropdown  bc-gray rd"
-        data-controller="dropdown">
-        <button
-          type="button"
-          class="btn fc-white"
-          data-action="dropdown#toggle"
-          data-dropdown-target="button">{% version %}</button>
-        <ul data-dropdown-target="collapse">
-          {% versions %}
-        </ul>
+      class="dropdown bc-gray rd"
+      spx-component="dropdown">
+      <button
+      type="button"
+      class="btn fc-white"
+      spx-node="dropdown.button"
+      spx@click="dropdown.toggle">{% version %}</button>
+      <ul spx-node="dropdown.collapse">
+      {% versions %}
+      </ul>
       </dropdown>
-    </div>
-
-    {%
-      liquid
-
-      assign active = NIL
-      assign navs = main.urls | map: 'url'
-      assign rule = rules.urls | map: 'url',
-
-      if navs contains page.url
-        assign active = 1
-      elsif rule contains page.url or page.url == '/rules/'
-        assign active = 2
-      else
-        assign active = 3
-      endif
-    %}
-
-    {% for link in navbar %}
-      <a
-        href="{{ link.url }}"
-        title="{{ link.title }}"
-        class="d-none d-sm-unset col-auto fw-bolder nav-link
-        {% unless forloop.index == active %} off{% endunless %}
-      ">
-        {{ link.title }}
-      </a>
-    {% endfor %}
-
-    <div class="col-auto ml-sm-auto pr-0">
-      <div class="d-block mr-5">
-        {% include 'search' %}
       </div>
-      <a
-        href="https://github.com/panoply/esthetic"
-        class="ml-5 pr-0">
-        {% svg 'github-2', 'icon icon-github' %}
-      </a>
+    {% endcomment %}
+
+    <div
+      id="navbar"
+      class="col-auto">
+      {% for link in navigation.navbar %}
+        <a
+          href="{{ link.url }}"
+          title="{{ link.title }}"
+          {% if link.title == "Playground" or page.url == "/playground/" %}
+            spx-disable
+          {% endif %}
+          class="d-none d-sm-unset col-auto fw-bolder mr-4 nav-link {{ link.url | active: navigation }}">
+          {{ link.title }}
+        </a>
+      {% endfor %}
     </div>
+
   </div>
 </header>

@@ -1,6 +1,7 @@
-{% assign links = page.url | split: '/' %}
-
-<div class="row gx-2 breadcrumb mb-5">
+{% liquid
+  assign links = page.url | split: '/'
+%}
+<div class="row mt-1 gx-2 breadcrumb {% if page.url contains '/rules/' %} mb-5{% endif %}">
 
   <div class="col-auto">
     {% svg 'home', 'icon icon-home' %}
@@ -10,7 +11,7 @@
     {% svg 'chevron-right', 'icon icon-right' %}
   </div>
 
-  <div class="col-auto">
+  <div class="col-auto fc-gray">
     {{ links[1] | replace: '-', ' ' | capitalize }}
   </div>
 
@@ -28,7 +29,12 @@
       {% svg 'chevron-right', 'icon icon-right' %}
     </div>
     <div class="col-auto fc-gray">
-      {{ links[3] | replace: '-', ' ' | capitalize }}
+      {% if page.url contains '/rules/' %}
+        {{ links[3] | replace: '-', ' ' }}
+      {% else %}
+        {{ links[3] | replace: '-', ' ' | capitalize }}
+      {% endif %}
+
     </div>
   {% endif %}
 

@@ -21,8 +21,8 @@
     "wrapFraction": 0,
     "language": "liquid",
     "liquid": {
-      "forceArgument": 0,
-      "forceFilter": 0,
+      "filterLineBreak": 0,
+      "argumentLineBreak": 0,
       "indentAttribute": true
     },
     "markup": {

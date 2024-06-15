@@ -1,5 +1,11 @@
+{%
+  liquid
+
+  assign navigate = navigation | navigate
+%}
+
 <section class="pt-4">
-  {% for item in navigation.menu %}
+  {% for item in navigate %}
 
     {% assign menu_index = forloop.index %}
     {% assign menu_last = forloop.last %}
@@ -22,7 +28,7 @@
           #
           if forloop.first
             assign prev_index = menu_index | minus: 2
-            assign prev = navigation.menu[prev_index].links | last
+            assign prev = navigate[prev_index].links | last
           else
             assign prev_link = forloop.index0 | minus: 1
             assign prev = item.links[prev_link]
@@ -31,9 +37,9 @@
           # NEXT LINK
           #
           if menu_last and forloop.last
-            assign next = navigation.menu[0].links | first
+            assign next = navigate[0].links | first
           elsif forloop.last
-            assign next = navigation.menu[menu_index].links | first
+            assign next = navigate[menu_index].links | first
           else
             assign next_index = forloop.index0 | plus: 1
             assign next = item.links[next_index]
@@ -46,7 +52,7 @@
         {% unless menu_index == 1 and forloop.index == 1 %}
           <a
             href="{{ prev.url | url }}"
-            class="col-auto btn prev"
+            class="col-auto prev"
             spx-scroll="0">
             {% svg 'chevron-left', 'icon icon-left mr-2' %}
             {{ prev.title }}
@@ -55,7 +61,7 @@
 
         <a
           href="{{ next.url | url }}"
-          class="col-auto btn next ml-auto"
+          class="col-auto next ml-auto"
           spx-scroll="0">
           {{ next.title }}
           {% svg 'chevron-right', 'icon icon-right ml-2' %}

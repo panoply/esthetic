@@ -39,9 +39,11 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
       input: String,
       inputOriginal: String,
       language: String,
-      papyrus: Object,
       tab: Number,
-      preset: String
+      preset: {
+        typeof: String,
+        persist: true
+      }
     }
   }
 
@@ -84,17 +86,19 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
     let height = ih;
 
-    if (this.hasoutputNode) {
+    if (this.outputNode) {
 
       const oh = this.output.pre.getBoundingClientRect().height;
       const sh = this.output.code.scrollHeight;
 
       if (oh > ih) height = oh;
-      if (height < sh) height = sh + 5;
+      if (height < sh) height = sh + 12;
 
       this.input.pre.style.minHeight = height + 'px';
+      this.input.pre.style.height = height + 'px';
       this.input.pre.style.maxHeight = height + 'px';
       this.output.pre.style.maxHeight = height + 'px';
+      this.output.pre.style.height = height + 'px';
       this.output.pre.style.minHeight = height + 'px';
 
     } else {
@@ -104,6 +108,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
       if (height < sh) height = sh + 5;
 
       this.input.pre.style.minHeight = height + 'px';
+      this.input.pre.style.height = height + 'px';
       this.input.pre.style.maxHeight = height + 'px';
 
     }
@@ -175,43 +180,38 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
   onmount () {
 
-    console.log(this.scope)
-
     this.state.preset = localStorage.getItem('preset') || 'default';
 
-    this.input = papyrus.mount(this.inputNode, merge<papyrus.Options>(this.state.papyrus, {
+    this.input = papyrus.mount(this.inputNode, {
       id: `input:${this.state.uuid}`,
-      showSpace: false,
       input: this.state.input,
-      showTab: false,
-      showCR: false,
-      showCRLF: false,
-      showLF: false,
+      language: this.state.rules.language,
       editor: true
-    }));
+    });
 
     this.input.onupdate(this.onInputEdit, this);
     this.input.onsave(this.onInputSave, this);
 
     if (this.outputNode) {
 
-      this.output = papyrus.mount(this.outputNode, merge<papyrus.Options>({
+      this.output = papyrus.mount(this.outputNode, {
         id: `output:${this.state.uuid}`,
+        language: this.state.rules.language,
         editor: false,
-        showSpace: false,
-        showTab: false,
-        showCR: false,
-        showCRLF: false,
-        showLF: false
-      }, this.state.papyrus));
+        trimStart: this.state.rules.indentLevel === 0,
+        trimEnd: this.state.rules.endNewline === false,
+        showTab: this.state.rules.indentChar === '\t'
+      });
+
+
+      if(this.state.rules.endNewline) {
+        this.getEditorRect()
+      }
+
 
     }
 
-    Showcase.rules.set(this.state.uuid, esthetic.preset(this.state.preset, this.state.rules));
-    Showcase.source.set(this.state.uuid, this.state.input);
-
-    // this.getEditorRect();
-    this.setPreset();
+   // this.setPreset();
 
   }
 
@@ -225,12 +225,16 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
     try {
 
-      const output = esthetic.format(input || this.state.input, Showcase.rules.get(this.state.uuid));
+      const output = esthetic.format(input || this.state.input, this.state.rules);
 
       if (input) {
+
         this.output.update(output);
+
       } else {
+
         this.formatCode(output);
+
       }
 
      // this.getEditorRect();
@@ -253,8 +257,10 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
   onInputSave (value: string) {
 
     if (!isNaN(this.timer)) {
+
       window.clearTimeout(this.timer);
       this.timer = NaN;
+
     }
 
     try {
@@ -268,7 +274,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
           bracePadding: false,
           objectSort: false
         }
-      } : Showcase.rules.get(this.state.uuid));
+      } : this.state.rules);
 
       return output;
 
@@ -280,12 +286,9 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
   onInputEdit (value: string) {
 
-    console.log(this)
-
     if (this.state.mode === 'rules') {
 
       this.formatCode();
-     // this.getEditorRect();
 
       if (!isNaN(this.timer)) {
         window.clearTimeout(this.timer);
@@ -297,7 +300,6 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
         try {
 
           this.state.rules = parseJSON(value);
-
           this.formatCode();
           this.timer = NaN;
 
@@ -321,9 +323,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
     } else {
 
       this.state.input = value;
-
       this.formatCode();
-    //  this.getEditorRect();
 
     }
 
@@ -333,10 +333,9 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
     if (rule === null) {
 
-      const rules = Showcase.rules.get(this.state.uuid);
-      rules.wrap = value;
+      this.state.rules.wrap = value;
 
-      const input = esthetic.format(this.input.raw, rules);
+      const input = esthetic.format(this.input.raw, this.state.rules);
 
       this.wrapCountNode.innerHTML = `${value}`;
       this.wrapLineNode.style.width = `${value}%`;
@@ -418,9 +417,6 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
    * Clicked `rules` button tab in the example
    */
   onClickRulesTab () {
-
-    console.log(this)
-
 
     if (this.inputTabNode.classList.contains('is-active')) {
       this.inputTabNode.classList.remove('is-active');

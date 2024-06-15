@@ -71,7 +71,7 @@ test.skip('Structure Test: Force Tag Arguments (Line Break - After)', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        forceArgument: 2
+        argumentLineBreak: 2
       }
     });
 
