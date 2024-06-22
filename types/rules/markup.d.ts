@@ -11,35 +11,59 @@ export interface MarkupRules {
    * can produce 5 different output styles for markup comments, based on this ruleset as it will
    * augments delimiter (`<!--` and `-->`) placements.
    *
-   */
-  commentDelimiter?: 'preserve' | 'consistent'| 'force' | 'inline' | 'inline-align';
-
-  /**
-   * #### Default: `false`
+   * > **NOTE**
+   * >
+   * > **If `commentPreserve` is set to `true` then this rule will have no effect.**
+   *
+   * ---
    *
    * >
    *
-   * If a blank new line should be inserted above comments.
+   * #### Options:
+   *
+   * This rule accepts the one of the following options:
+   *
+   * - `preserve`
+   * - `consistent`
+   * - `force`
+   * - `inline`
+   * - `inline-align`
+   *
    */
-  commentNewline?: boolean;
+  commentDelimiter?: 'preserve' | 'consistent'| 'force' | 'inline' | 'inline-align';
 
   /**
    * #### Default: `true`
    *
    * >
    *
+   * ### [Comment Indent](https://aesthetic.js.org/rules/markup/commentIndent/)
+   *
    * This will determine whether comments should always start at position
    * `0` of each line or if comments should be indented according to the code.
-   * It is unlikely you will ever want to set this to `false` so generally, just
-   * leave it to `true`
+   *
+   * > **NOTE**
+   * >
+   * > **If `commentPreserve` is set to `true` then this rule will have no effect.**
    *
    */
   commentIndent?: boolean;
 
   /**
-   * **Default** `false`
+   * #### Default: `false`
    *
-   * Prevent comment reformatting due to option wrap.
+   * >
+   *
+   * ### [Comment Preserve](https://aesthetic.js.org/rules/markup/commentPreserve/)
+   *
+   * Prevent Æsthetic from carrying out formatting on comments. When enabled (i.e, `true`),
+   * comment formatting will be ignored.
+   *
+   * > **NOTE**
+   * >
+   * > **This rule will override and run precedence on the `commentDelimiter` and `commentIndent`**
+   * > **rules, and when enabled (i.e, `true`) they will have no effect**
+   *
    */
   commentPreserve?: boolean;
 
@@ -51,8 +75,16 @@ export interface MarkupRules {
    * ### [Attribute Casing](https://aesthetic.js.org/rules/markup/attributeCasing/)
    *
    * How attribute keys and value casing should be processed. This defaults to `preserve`
-   * which will leave casing intact and _typically_ the best option to use. Accepts one
+   * which will leave casing intact is _typically_ the best option to use. Accepts one
    * of the following options:
+   *
+   * ---
+   *
+   * >
+   *
+   * #### Options:
+   *
+   * This rule accepts the one of the following options:
    *
    * - `preserve`
    * - `lowercase`
@@ -63,239 +95,72 @@ export interface MarkupRules {
   attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value';
 
   /**
-   * **Default** `false`
+   * #### Default: `false`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * >
    *
-   * If markup tags should have their insides preserved.
-   * This option is only available to markup and does not support
-   * child tokens that require a different lexer. When enabled, this
-   * rule will override and run precedence for all attribute related rules.
+   * ### [Attribute Line Break](https://aesthetic.js.org/rules/attributeLineBreak/)
    *
+   * Controls the formatting tactic to apply on tag attributes. The rule accepts either
+   * a boolean (i.e, `true` or `false`), or alternatively an integer (limit). By default,
+   * Æsthetic will keep tag attributes inline and only apply linebreaks when (or if) the
+   * global `wrap` limit has been exceeded.
+   *
+   * > **NOTE**
+   * >
+   * > **Attribute linebreaks respect word `wrap` and unless `attribute` is `true`, forcing**
+   * > **will apply. Please note, that unless the `textBoundTag` is set `default` or `phrasing`**
+   * > **attributes of tags encapsulated by text content not adhere to this rule.**
    *
    * ---
    *
-   * #### Example
+   * > `true`
    *
-   * *Below is an example of how this rule works if it's enabled, ie: `true`.
-   * There is no difference between the _before_ and _after_ version of the code
-   * when this option is enabled.*
+   * > If you prefer to control attribute forcing on a per-tag basis, set this to `true` and
+   * > signal to Æsthetic linebreaks should apply by inserting a newline character before the
+   * > first attribute occurance within a tag.
    *
-   * ```html
+   * > `number`
    *
-   * <!-- Before Formatting -->
-   * <div
-   *  id="x"    data-x="foo"
-   * class="xx"></div>
+   * > Using an `integer` value will instruct Æsthetic to apply linebreaks on attributes only
+   * > when the number of attributes is either **equal to** or **more than** the value provided.
    *
-   * <!-- After Formatting -->
-   * <div
-   *  id="x"    data-x="foo"
-   * class="xx"></div>
+   */
+  attributeLineBreak?: boolean | number;
+
+  /**
+   * #### Default: `false`
    *
-   * ```
+   * >
+   *
+   * ### [Attribute Preserve](https://aesthetic.js.org/rules/markup/attributePreserve/)
+   *
+   * Whether or not markup tags should have their insides preserved. This option is only
+   * available to markup and does not support child tokens that require a different lexer.
+   * When enabled (i.e, `true`), attributes contained within tags will be excluded from
+   * formatting.
+   *
+   * > **NOTE**
+   * >
+   * > **This rule will override and run precedence on all attribute related rules.**
+   *
    */
   attributePreserve?: boolean;
 
   /**
-   * #### Default: `preserve`
-   *
-   * ### [Value Line Breaks](https://aesthetic.js.org/rules/markup/valueLineBreaks/)
-   *
-   * Controls how Æsthetic should handle attribute values which exceed wrap or span
-   * multiple lines. This rule is helpful for developers using Tailwind.
+   * #### Default: `false`
    *
    * >
    *
-   * ---
-   *
-   * ### Preserve
-   *
-   * _Instructs Æsthetic to preserve attribute values as they have been provided.
-   * The example below, where the `class` value contains a newline will be preserved._
-   *
-   * ```html
-   *
-   * <!-- Before formatting -->
-   * <div
-   *   class="
-   *    a1-2 b1-2 c1-2 d1-2 e1-2 f1-2
-   *    g1-2 h1-2 i1-2 j1-2
-   *   "
-   *   id="x"></div>
-   *
-   * <!-- After formatting -->
-   * <div
-   *   class="
-   *    a1-2 b1-2 c1-2 d1-2 e1-2 f1-2
-   *    g1-2 h1-2 i1-2 j1-2
-   *   "
-   *   id="x"></div>
-   *
-   *
-   * ```
-   *
-   * >
-   *
-   * ---
-   *
-   * >
-   *
-   * ### Inline
-   *
-   * _Instructs Æsthetic ensure the value of an attribute which spans multiple lines
-   * is always inlined, with quotation starting and ending on the same line._
-   *
-   * ```html
-   *
-   * <!-- Before formatting -->
-   * <div
-   *   id="x"
-   *   class="
-   *    a1-2 b1-2 c1-2 d1-2 e1-2 f1-2
-   *    g1-2 h1-2 i1-2 j1-2
-   *   ">
-   * </div>
-   *
-   * <!-- After formatting -->
-   * <div
-   *   id="x"
-   *   class="a1-2 b1-2 c1-2 d1-2 e1-2 f1-2
-   *   g1-2 h1-2 i1-2 j1-2">
-   * </div>
-   *
-   *
-   * ```
-   *
-   *
-   * >
-   *
-   * ---
-   *
-   * >
-   *
-   *
-   * ### Align
-   *
-   * _Whenever values span multiple lines or exceed word wrap, the entries will be forced onto
-   * a newline, and will align to the attributes starting point each line. In the below example
-   * lets assume the class value has exceeded wrap length._
-   *
-   * ```html
-   *
-   * <!-- Before formatting -->
-   * <div
-   *   class="a1-2 b1-2 c1-2 d1-2 e1-2 f1-2 g1-2 h1-2 i1-2 j1-2"
-   *   id="x">
-   * </div>
-   *
-   * <!-- After formatting -->
-   * <div
-   *   class="
-   *   a1-2 b1-2 c1-2 d1-2 e1-2
-   *   f1-2 g1-2 h1-2 i1-2 j1-2
-   *   "
-   *   id="x">
-   * </div>
-   *
-   *
-   * ```
-   *
-   *
-   * >
-   *
-   * ---
-   *
-   * >
-   *
-   *
-   * ### Indent
-   *
-   * _Whenever values span multiple lines or exceed word wrap, the entries will be forced onto
-   * a newline and be indented at the starting point of each line. In the below example
-   * lets assume the class value has exceeded wrap length._
-   *
-   * ```html
-   *
-   * <!-- Before formatting -->
-   * <div
-   *   class="a1-2 b1-2 c1-2 d1-2 e1-2 f1-2 g1-2 h1-2 i1-2 j1-2"
-   *   id="x">
-   * </div>
-   *
-   * <!-- After formatting -->
-   * <div
-   *   class="
-   *    a1-2 b1-2 c1-2 d1-2 e1-2
-   *    f1-2 g1-2 h1-2 i1-2 j1-2
-   *   "
-   *   id="x">
-   * </div>
-   *
-   *
-   * ```
-   */
-  // valueLineBreak?:
-  // | 'preserve'
-  // | 'inline'
-  // | 'force-align'
-  // | 'force-indent';
-
-  /**
-   * Whitespace separator control for occurances contained within attribute values.
-   *
-   * **equipoise**
-   *
-   * ```html
-   * <!-- Before Formatting -->
-   * <div class="a   b    c  d"></div>
-   *
-   * <!-- After Formatting -->
-   * <div class="a b c d"></div>
-   * ```
-   */
-  valueSpacing?:
-  | 'preserve'
-  | 'equipoise'
-  | 'wrap'
-  | 'wrap-fraction'
-
-  /**
-   * List of HTML tag names to which should respect inline formatting on. By default,
-   * Æsthetic treats applied inline formatting upon a cherry picked list
-   * of tags. This option can be used to override the default list or alternatively
-   * you can exclude certain tags by prefixing and exclimation mark `!`.
-   *
-   * **Example**
-   *
-   * ```js
-   * {
-   *  // will continue to use default but exclude <span> and <h1> tags
-   *   inlineTagList: ['!span', '!h1']
-   * }
-   *
-   * {
-   *  // overrides all defaults and treats only <div> and <p> as inline
-   *   inlineTagList: ['div', 'p']
-   * }
-   * ```
-   */
-  textNodeList?: string[];
-  /**
-   * #### Default: `inline`
-   *
-   * >
-   *
-   * ### [Delimiter Terminus](https://aesthetic.js.org/rules/markup/valueLineBreaks/)
+   * ### [Delimiter Terminus](https://aesthetic.js.org/rules/markup/delimiterTerminus/)
    *
    * Whether or not ending HTML tag delimiters should be forced onto a newline.
-   * This will emulate the style of Prettier's `singleAttributePerLine` formatting
-   * option, wherein the last `>` delimiter character breaks itself onto a new line.
+   * This will emulate the style of Prettier's `bracketSameLine` formatting
+   * option, wherein the last `>` delimiter character is forced onto a newline.
    *
    * > **NOTE**
    * >
-   * > If you wish to emulate the behaviour of Prettier, then you will need to either
-   * > set this to `adapt` or `force`. The `adapt` option is generally preferred.
+   * > If you wish to emulate the behaviour of Prettier, then set this to `2`
    */
   delimiterTerminus?: boolean | number;
 
@@ -306,116 +171,50 @@ export interface MarkupRules {
    *
    * ### [Attribute Sort](https://aesthetic.js.org/rules/markup/attributeSort/)
    *
-   * The rule will alphanumerically sort attributes annotated on markup tags. The rules
+   * This rule will alphanumerically sort attributes annotated on markup tags. The rule
    * accepts either a `boolean` or a `string[]` type. When a boolean value of `true` is
    * provided, Æsthetic will sort attributes alphanumerically. Passing a list of attribute
-   * names allows you to customize the ordering of attributes names, wherein sorting applies
+   * names allows you to customize the ordering of attribute names, wherein sorting applies
    * according to the provided list and then alphanumerically thereafter.
    *
    * > **NOTE**
    * >
-   * > **Sorting will be skipped on elements which containg Liquid expressions or conditional**
-   * > **rendering logic. The rule will only work on markup safe elements.**
+   * > **Sorting will be skipped on elements which contain Liquid expressions or conditional**
+   * > **rendering logic. The rule will only work on markup-safe elements.**
    *
-   * >
-   * >
-   *
-   * ---
-   *
-   * >
-   *
-   * #### Enable: `true`
-   *
-   * _Below is an example of how this rule works if it's enabled, ie: `true`. Notice
-   * how the attributes are not alphabetically sorted before formatting is applied
-   * whereas after formatting they are sorted alphabetically._
-   *
-   * ```html
-   *
-   * <!-- Before formatting -->
-   * <div
-   *   id="x"
-   *   data-b="100"
-   *   data-a="foo"
-   *   data-c="x"
-   *   class="xx">
-   *
-   * </div>
-   *
-   * <!-- After formatting -->
-   * <div
-   *   class="xx"
-   *   data-a="foo"
-   *   data-b="100"
-   *   data-c="x"
-   *   id="x">
-   *
-   * </div>
-   *
-   * ```
-   *
-   * >
-   *
-   * ---
-   *
-   * >
-   *
-   * #### Enable: `string[]`
-   *
-   * _Below is an example of how this rule works if it's enabled and you've defined
-   * the following attribute sorting structure:_
-   *
-   * ```js
-   *
-   * {
-   *   attributeSort: ['id', 'class', 'data-b']
-   * }
-   *
-   *
-   * ```
-   *
-   * _Using the above options, notice how how `data-a`, `data-c` and `data-d` are sorted
-   * alphabetically in order following the sort list we provided_
-   *
-   * ```html
-   *
-   * <!-- Before formatting -->
-   * <div
-   *   data-a
-   *   id="x"
-   *   data-d
-   *   data-c
-   *   data-b
-   *   class="xx">
-   *
-   * </div>
-   *
-   * <!-- After formatting -->
-   * <div
-   *   id="x"
-   *   class="xx"
-   *   data-b
-   *   data-a
-   *   data-c
-   *   data-d>
-   *
-   * </div>
-   *
-   * ```
    */
   attributeSort?: boolean | string[];
 
   /**
-   * Attribute class list sorting
+   * #### Default: `false`
    *
-   * @default false
+   * >
+   *
+   * ### [Class List Sort](https://aesthetic.js.org/rules/markup/classListSort/)
+   *
+   * The rule will alphanumerically sort attributes classes contained in the `class=""` attribute.
+   * The rule accepts either a `boolean` or a `string[]` type. When a boolean value of `true` is
+   * provided, Æsthetic will classes alphanumerically. Passing a string list of class names will apply
+   * according to the provided list and then alphanumerically thereafter.
+   *
+   * > **NOTE**
+   * >
+   * > **Sorting will be skipped when class values contain Liquid expressions**
+   *
    */
   classListSort?: boolean | string[]
 
   /**
-   * Whether or not to remove class names which are identical.
+   * #### Default: `false`
+   *
+   * >
+   *
+   * ### [Class List Unique](https://aesthetic.js.org/rules/markup/classListUnique/)
+   *
+   * Whether or not identical occurences of class names should be removed.
    *
    * **Example**
+   *
    * ```html
    * <!-- before formatting -->
    * <div class="foo bar baz foo baz"></div>
@@ -427,271 +226,189 @@ export interface MarkupRules {
   classListUnique?: boolean;
 
   /**
-   * <h5>Default</h5>
+   * #### Default: `true`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   * >
+   *
+   * ### [Self Close Space](https://aesthetic.js.org/rules/selfCloseSpace/)
    *
    * Markup self-closing tags will end with `' />'` instead of `'/>'`
    *
-   * ---
-   *
-   * #### Example
-   *
-   * *Below is an example of how this rule works if it's enabled, ie: `true`*
-   *
-   *
-   * ```html
-   *
-   * <!-- Before formatting -->
-   * <picture>
-   *   <path srcset="."/>
-   * </picture>
-   *
-   * <!-- After formatting - Notice the the space insertion applied -->
-   * <picture>
-   *   <path srcset="." />
-   * </picture>
-   *
-   * ```
    */
   selfCloseSpace?: boolean;
+
+  /**
+   * #### Default: `false`
+   *
+   * >
+   *
+   * ### [Self Close SVG](https://aesthetic.js.org/rules/selfCloseSVG/)
+   *
+   * Whether or not SVG type tags should be converted to self-closing void
+   * types, or vice versa. When enabled (`true`), tags contained within an `<svg>`
+   * element that use an end tag will be transformed to a
+   * void, self-closing tag, i.e: `</path>` → `<path />`.
+   */
+  selfCloseSVG?: boolean;
+
+  /**
+   * #### Default: `[]`
+   *
+   * >
+   *
+   * ### [Text Node List](https://aesthetic.js.org/rules/textNodeList/)
+   *
+   * > **Refer to [text nodes documentation](https://aesthetic.js.org/languages/html/#text-nodes)
+   * for the default list used by Æsthetic**
+   *
+   * List of HTML tag names to apply inline formatting upon when their child type is text content.
+   * By default, Æsthetic will format tags containing text content according to a special cherry-picked
+   * list of phrasing-content type tags. You can override the default list, add to the default list by
+   * prefixing entries with a `+` character, or alternatively, you can exclude certain tags from the default
+   * list using an `!` prefix (see below example).
+   *
+   * ```js
+   * // Excluding: Continue to use the default list but exclude <span> and <h1> tags.
+   * { textNodes: ['!span', '!h1'] }
+   *
+   * // Extending: Continue to use the default list and include <label> and <p> tags.
+   * { textNodes: ['+label', '+p'] }
+   *
+   * // Overrides: Do not use defaults, only treat <div> and <p> as text nodes.
+   * { textNodes: ['div', 'p'] }
+   * ```
+   *
+   * > **NOTE**
+   * >
+   * > **Text nodes defined here will be excluded from forced indentation if `forceIndent` is `true` and**
+   * > **the child token is text content. Entries here will be used by the `textBoundTag` rule when it**
+   * > **is set to the `default` option.**
+   */
+  textNodeList?: string[];
 
   /**
    * #### Default: `true`
    *
    * >
    *
-   * ### [Self Close SVG](https://aesthetic.js.org/rules/selfCloseSVG/)
+   * ### [Text Bound Inline](https://aesthetic.js.org/rules/textBoundInline/)
    *
-   * Whether or not SVG type tags should be converted to self closing void
-   * types, or vice-versa. When enabled (`true`), tags contained within an `<svg>`
-   * element and are determined to use an ender type will be transformed to a
-   * void, self-closing tag, i.e: `</path>` → `<path />`.
+   * Controls how text bound tags (i.e, tags surrounded by text content) should be formatted. By default,
+   * Æsthetic will respect input intent, and format tags in accordance with the implied structures.
    *
-   * >
+   * > `true`
    *
-   * ---
+   * > Tags which are encapsulated by text content will remain inline and not adhere to atrribute
+   * > line breaks for forced indentation. Instead, Æsthetic will format in accordance with structure.
    *
-   * >
+   * > `false`
    *
-   * ### Enable: `true`
+   * > Setting this option to `false` will apply formatting in accordance with current rulesets and
+   * > tags which are encapsulated by text content will format without regard for placement.
    *
-   * _Below is an example of the `selfCloseSVG` rules when it is set to `true`.
-   * Notice how the `</path>` tag transformed to a void type with self closing delimiter `/>`_
-   *
-   * ```html
-   *
-   * <!-- Before Formatting -->
-   * <svg>
-   *   <path d="M.865 15.978a.5.5"></path>
-   * </svg>
-   *
-   * <!-- After Formatting -->
-   * <svg>
-   *   <path d="M.865 15.978a.5.5" />
-   * </svg>
-   *
-   *
-   * ```
-   *
-   * ---
-   *
-   * >
-   *
-   * ### Disable: `true`
-   *
-   * _Below is an example of the `selfCloseSVG` rules when it is set to `false`.
-   * Notice how the self closing delimiter `/>` is replaced with an `</path>` end tag._
-   *
-   * ```html
-   *
-   * <!-- Before Formatting -->
-   * <svg>
-   *   <path d="M.865 15.978a.5.5" />
-   * </svg>
-   *
-   * <!-- After Formatting -->
-   * <svg>
-   *   <path d="M.865 15.978a.5.5"></path>
-   * </svg>
-   *
-   *
-   * ```
    */
-  selfCloseSVG?: boolean;
+  textBoundInline?: boolean
 
   /**
+   * #### Default: `false`
    *
-   * **Default Setting**:`false`
+   * >
    *
-   * **Recommended:** `3`
+   * ### [Text Preserve](https://aesthetic.js.org/rules/textPreserve/)
    *
-   * ----
+   * If text in the provided markup code should be preserved exactly as provided.
+   * This option eliminates beautification and wrapping of text content.
    *
-   * If all markup attributes should be indented each onto their own line. You
-   * can optionally provide an integer value of `1` or more. When an integer value
-   * is passed, attributes will be forced only if the number of attributes contained
-   * on the tag exceeds the supplied value limit. When you define a `wrap` level then
-   * attributes will be automatically forced. This is typically a better solution than
-   * forcing all attributes onto newlines or an even better solution would be to set
-   * a limit level.
    *
-   * ---
+   * > **NOTE**
+   * >
+   * > **Text bound tags will be formatted according to the `textBoundInline` rule.**
+   * > **Enabling this rule will only apply preservation of text content, not bound tags**
    *
-   * #### Disabled Example
-   *
-   * *Below is the default, wherein attributes are only forced when wrap is exceeded.*
-   *
-   * ```html
-   *
-   * <div class="x" id="{{ foo }}" data-x="xx">
-   *
-   * </div>
-   *
-   * ```
-   *
-   * ---
-   *
-   * #### Enabled Example
-   *
-   * *Below is an example of how this rule works if it's enabled, ie: `true`*
-   *
-   * ```html
-   *
-   * <div
-   *   class="x"
-   *   id="{{ foo }}"
-   *   data-x="xx">
-   *
-   * </div>
-   *
-   * ```
-   *
-   * ---
-   *
-   * #### Limit Example
-   *
-   * *Below we provide a value of `2` so formatting will be applied as such:*
-   *
-   * ```html
-   *
-   * <!-- Tag contains 2 attributes, they will not be forced-->
-   * <div class="x" id="{{ foo }}">
-   *
-   * </div>
-   *
-   * <!-- Tag contains 3 attributes, thus they will be forced -->
-   * <div
-   *   class="x"
-   *   id="{{ foo }}"
-   *   data-x="xx">
-   *
-   * </div>
-   *
-   * <!-- Tag contains 1 attribute, it will not be forced-->
-   * <div class="x">
-   *
-   * </div>
-   *
-   * ```
    */
-  attributeLineBreak?: boolean | number;
+  textPreserve?: boolean;
 
   /**
-   * **Default** `false`
+   * #### Default: `true`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
+   * >
    *
-   * Will force indentation upon all content and tags without regard for the
-   * text nodes.
+   * ### [Force Indent](https://aesthetic.js.org/rules/forceIndent/)
    *
-   * ---
-   *
-   * #### Example
-   *
-   * *Below is an example of how this rule works if it's enabled, ie: `true`*
-   *
+   * Will force indentation linebreaks upon all content contained within tags. By default,
+   * Æsthetic will force indent if the global `wrap` limit was exceeded, or when a newline
+   * follows the start token ending delimiter. For example:
    *
    * ```html
+   * <!-- BEFORE FORMATTING -->
+   * <div>a
+   * </div>
+   * <div>
+   * b</div>
    *
-   * <!-- Before Formatting -->
-   * <ul>
-   *  <li>Hello</li>
-   *  <li>World</li>
-   * </ul>
-   *
-   * <!-- After formatting -->
-   * <ul>
-   *   <li>
-   *     Hello
-   *   </li>
-   *   <li>
-   *     World
-   *   </li>
-   * </ul>
+   * <!-- AFTER FORMATTING -->
+   * <div>a</div>
+   * <div>
+   *   b
+   * </div>
    * ```
+   *
+   * Notice how the second node (`<div>b</div>`) applied linebreak, whereas the first was
+   * inlined. The second nodes ending (start tag) delimiter `>` was proceeding with a newline.
+   * When `forceIndent` is disabled (i.e, `false`) which is the default, linebreak indentation
+   * will behave according to the above. When enabled `true` then Æsthetic will produce apply
+   * that output for all tags.
    */
   forceIndent?: boolean;
 
   /**
-   * **Default** `false`
+   * #### Default: `none`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * >
    *
-   * Controls the forcing behaviour of text node (phrasing content) intra-paragraph elements.
-   * Tags like `<strong>`, `<i>`, `<label>` etc etc are categorized as "Phrasing Content".
-   * This rule will apply to only those elements.
-   *
-   * The rule accepts either a `boolean` or `number` value.
-   *
-   * - Passing a value of `false` will preventing forcing from being applied.
-   * - Passing a value of `true` will force text node content.
-   * - Passing a value of `0` will apply forcing in accordance with `forceAttribute`
-   * - Passing a value of `1` or more will apply forcing when attribute count exeeds limit defined
-   *
-   */
-  forceInline?: boolean | number;
-
-  /**
-   * **Default** `none`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `double`
+   * ### [Quote Convert](https://aesthetic.js.org/rules/quoteConvert/)
    *
    * If the quotes of markup attributes should be converted to single quotes
-   * or double quotes. Don't be a hero with this option. Markup content
-   * should use double quotations, it's the standard.
+   * or double quotes. It's highly discouraged to use single quotation characters
+   * in markup languages for attribute values. Please use double quotations.
    *
-   * **Options**
+   * > `double`
    *
-   * - `double` Converts single quotes to double quotes
-   * - `none` Ignores this option (default)
-   * - `single` Converts double quotes to single quotes
+   * > Converts single quotes to double quotes
+   *
+   * > `single`
+   *
+   * > Converts double quotes to single quotes
+   *
+   * > `none`
+   *
+   * > Quote conversion is excluded. Please note, that nested quotes (i.e, quotes within quotes),
+   * will be automatically handled according to nesting order, for example:
+   *
+   * > ```js
+   * > ""x"" → "'x'"
+   * > ''x'' → '"x"'
+   * > ```
+   *
    */
   quoteConvert?: 'double' | 'single' | 'none';
 
   /**
-   * **Default** `false`
+   * #### Default: `false`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * >
    *
-   * If text in the provided markup code should be preserved exactly as provided.
-   * This option eliminates beautification and wrapping of text content.
-   */
-  preserveText?: boolean;
-
-  /**
-   * **Default** `false`
+   * ### [Strip Attribute Lines](https://aesthetic.js.org/rules/stripAttributeLines/)
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `true`
-   *
-   * Whether or not newlines contained within tag attributes should be removed
-   * or preserved. This rule will be used along side `forceAttribute` and when
-   * enabled (`true`) will remove any newlines. When disabled (`false`) then the
-   * newline limits will respect the **global** value defined in `preserveLine`.
+   * Whether or not newlines contained existing between tag attributes should be removed
+   * or preserved. This rule will be used along side `attributeLineBreak` and when
+   * enabled (i.e, `true`) Æsthetic will remove any newlines. When disabled (i.e, `false`)
+   * then Æsthetic will preserve newlines in accordance with the **global** value
+   * defined in `preserveLine`.
    *
    * > **NOTE**
    * >
-   * > This rule only applies to attributes names not values.
+   * > **This rule only applies to attributes names not values.**
    */
   stripAttributeLines?: boolean;
 
@@ -712,18 +429,19 @@ export interface MarkupRules {
    * Setting this to `true` will override `preserveLine` within text specific content and instead refer to the `wrap`
    * limitation.
    *
-   *
    * > **NOTE**
    * >
-   * > If you have set `preserveText` to `true` this rule will be ignored, as `preserveText` take precedence and
-   * > will override all text content related formatting options.
+   * > **If you have set `preserveText` to `true` this rule will be ignored, as the `preserveText` rule**
+   * > **takes precedence and will override**.
    */
   stripTextWrapLines?: boolean;
 
   /**
-   * **Default** `false`
+   * #### Default: `false`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * >
+   *
+   * ### [Ignore CSS](https://aesthetic.js.org/rules/markup/ignoreCSS/)
    *
    * Whether HTML and Liquid tags identified to be containing CSS or SCSS
    * should be ignored from beautification.
@@ -731,25 +449,31 @@ export interface MarkupRules {
   ignoreCSS?: boolean;
 
   /**
-   * **Default** `true`
+   * #### Default: `true`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * >
+   *
+   * ### [Ignore CSS](https://aesthetic.js.org/rules/markup/ignoreJS/)
    *
    * Whether HTML and Liquid tags identified to be containing JavaScript
    * should be ignored from beautification. When disabled, formatting will
    * be applied in accordance with rules defined in the `script` lexer.
    *
-   * _This rules is currently set to `true` by default as JavaScript formatting
-   * is not yet production ready, but still operational to an extent. Enable at
-   * your on discretion_
+   * > **NOTE**
+   *
+   * > **This rules is currently set to `true` by default as JavaScript formatting**
+   * > **is not yet production ready, but still operational to an extent. Enable at**
+   * > **your on discretion**
    *
    */
   ignoreJS?: boolean;
 
   /**
-   * **Default** `false`
+   * #### Default: `false`
    *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is: `false`
+   * >
+   *
+   * ### [Ignore JSON](https://aesthetic.js.org/rules/markup/ignoreCSS/)
    *
    * Whether HTML `<script type="application/json>` tags or those annotated with a
    * JSON identifiable attribute should be ignored from beautification. When disabled,
@@ -757,5 +481,38 @@ export interface MarkupRules {
    *
    */
   ignoreJSON?: boolean;
+
+  /**
+   * #### Default: `preserve`
+   *
+   * >
+   *
+   * ### [Value Spacing](https://aesthetic.js.org/rules/markup/valueSpacing/)
+   *
+   * Allows Æsthetic to carry-out formatting on attribute values. By default, Æsthetic
+   * will preserve attribute values, but you may prefer to have values processed for consistency.
+   * This should be used with consideration, especially if your project is leveraging a library
+   * that require unique structures.
+   *
+   *
+   * > `preserve`
+   *
+   * > This is the default. When set to `preserve`, values are left intact and the global `wrap`
+   * > limit can be exceeded. This is the safest option to use.
+   *
+   * > `equipoise`
+   *
+   * > Setting this rule to `equipoise` will apply whitespace equalisation and format values in
+   * > accordance with the implied structure. The Equipoise option performs predictive analysis
+   * > in the safest way possible. It's important to note that newline occurences will be aligned
+   * > when using equipoise.
+   *
+   * > `wrap`
+   *
+   * > You may prefer to linebreak values when the global `wrap` limit is exceeded. When using `wrap`
+   * > option, values will insert a `\n` character on wrap edge.
+   *
+   */
+  valueSpacing?: 'preserve' | 'equipoise' | 'wrap'
 
 }
