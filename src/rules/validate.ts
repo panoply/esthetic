@@ -50,7 +50,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'allowPlebSyntactic':
       case 'allowRubeSyntactic':
       case 'commentPreserve':
-      case 'commentNewline':
       case 'commentIndent':
       case 'indentAttribute':
       case 'equipoiseSpacing':
@@ -99,23 +98,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
           ]
         });
 
-      case 'forceInline':
-
-        if (isNumber(value)) return isValidNumber(language, rule, value);
-        if (isBoolean(value)) return isValidBoolean(language, rule, value);
-        if (isUndefined(value)) return true;
-
-        throw RuleError({
-          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-          option: `${language} → ${rule}`,
-          provided: value,
-          expected: [
-            'undefined',
-            'boolean',
-            'number'
-          ]
-        });
-
       case 'attributeSort':
       case 'classListSort':
 
@@ -133,7 +115,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
         });
 
       case 'attributePreserve':
-      case 'commentNewline':
       case 'commentIndent':
       case 'commentPreserve':
       case 'classListUnique':
@@ -141,7 +122,8 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'ignoreCSS':
       case 'ignoreJS':
       case 'ignoreJSON':
-      case 'preserveText':
+      case 'textBoundInline':
+      case 'textPreserve':
       case 'selfCloseSpace':
       case 'selfCloseSVG':
       case 'stripTextWrapLines':
@@ -404,7 +386,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       });
     }
 
-  } else if (rule === 'commentDelimiters') {
+  } else if (rule === 'commentDelimiter') {
 
     switch (value as MarkupRules['commentDelimiter']) {
       case 'preserve':
@@ -516,8 +498,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
     switch (value as MarkupRules['valueSpacing']) {
       case 'preserve':
       case 'equipoise':
-      case 'wrap':
-      case 'wrap-fraction': return true;
+      case 'wrap': return true;
       default: throw RuleError({
         message: `Invalid "${rule}" option provided`,
         option: `${language} → ${rule}`,
