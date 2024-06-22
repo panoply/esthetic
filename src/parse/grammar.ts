@@ -327,60 +327,6 @@ class HTML {
         }
       ]
     },
-    phrasing: [
-      'a',
-      'abbr',
-      'area',
-      'audio',
-      'b',
-      'bdi',
-      'bdo',
-      'br',
-      'button',
-      'canvas',
-      'cite',
-      'code',
-      'command',
-      'datalist',
-      'del',
-      'dfn',
-      'em',
-      'embed',
-      'i',
-      'iframe',
-      'img',
-      'input',
-      'ins',
-      'kbd',
-      'keygen',
-      'label',
-      'map',
-      'mark',
-      'math',
-      'meter',
-      'noscript',
-      'object',
-      'output',
-      'progress',
-      'q',
-      'ruby',
-      's',
-      'samp',
-      // 'script',
-      'select',
-      'small',
-      'span',
-      'strong',
-      'sub',
-      'sup',
-      'svg',
-      'textarea',
-      'time',
-      'u',
-      'var',
-      'video',
-      'wbr'
-    ],
     table: [
       'td',
       'th',
@@ -390,7 +336,7 @@ class HTML {
       'thead',
       'tfoot'
     ],
-    inline: [
+    textNodes: [
       'a',
       'abbr',
       'b',
@@ -577,7 +523,7 @@ class HTML {
     ]
   };
 
-  public textNodes: Set<string> = new Set();
+  public textNodes: Set<string> = set(this.grammar.textNodes);
   public tags = set(this.grammar.tags);
   public voids = set(this.grammar.voids);
   public embed: {
