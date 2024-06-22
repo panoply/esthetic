@@ -15,120 +15,61 @@ import * as lx from 'lexical/lexing';
 import * as lq from 'lexical/liquid';
 import * as u from 'utils/helpers';
 
-/**
- * Markup Lexer
- *
- * Used to parse markup languages. This used to be used for multiple
- * template languages in options but has been refactored to solely
- * focus and support the following language only:
- *
- * - Liquid
- * - HTML
- * - XML
- * - JSX
- * - TSX
- */
 export function markup (input?: string) {
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
   /* -------------------------------------------- */
 
-  /**
-   * Deconstructed parser references
-   */
+  /** Deconstructed parser references */
   const { data, rules } = parse;
 
-  /**
-   * Source string, typically called from `parse.source` but can also be `input` parameter
-   */
+  /** Source string, typically {@link parse.source}, unless {@link input} parameter was passed */
   const source = input || parse.source;
 
-  /**
-   * Whether or not language mode is TSX / JSX
-   */
+  /** Whether or not language mode is TSX / JSX as per {@link parse.language} */
   const jsx = parse.language === 'jsx' || parse.language === 'tsx';
 
-  /**
-   * Ignored Liquid Tags
-   */
+  /** Set reference of ignored liquid tags as per {@link rules.liquid.ignoreTagList} */
   const ignored = new Set(rules.liquid.ignoreTagList);
 
-  /**
-   * Attribute sorting list length
-   */
+  /** Attribute sorting list length */
   const asl = u.isArray(rules.markup.attributeSort) ? rules.markup.attributeSort.length : -1;
 
-  /**
-   * The document source as an array list
-   */
-  const b: string[] = u.isArray(source) ? source : source.split(NIL);
+  /** The document source split into a `string[]` array of characters */
+  const b: readonly string[] = u.isArray(source) ? source : source.split(NIL);
 
-  /**
-   * The length of the document source, ie: number of characters
-   */
+  /** The length of the document source, i.e, the total number of characters in {@link b} */
   const c = b.length;
 
   /* -------------------------------------------- */
   /* TEMP STORES                                  */
   /* -------------------------------------------- */
 
-  /**
-   * SVG Store reference for tracking singletons and blocks
-   */
-  const svg: {
-    start: number;
-    tname: string[];
-    index: number[];
-  } = assign(object(null), {
-    start: -1,
-    tname: [],
-    index: []
-  });
+  /** SVG Store reference for tracking singletons and blocks */
+  const svg: { start: number; tname: string[]; index: number[]; } = object(null);
 
-  /**
-   * Text Nodes Stores reference for tracking phrasing content
-   */
-  const txt: {
-    start: number;
-    attrs: number;
-    index: number;
-    content: number[];
-  } = assign(object(null), {
-    start: -1,
-    attrs: -1,
-    index: -1,
-    child: []
-  });
+  svg.start = -1;
+  svg.tname = [];
+  svg.index = [];
 
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
   /* -------------------------------------------- */
 
-  /**
-   * Advancement reference
-   */
+  /** Advancement reference, this represents a character index in {@link b} */
   let a: number = 0;
 
-  /**
-   * External tag language
-   */
+  /** Language name reference, typically an external tag language */
   let language: LanguageName;
 
-  /**
-   * embed Tag, eg: <script> or {% schema %} etc
-   */
+  /** Whether or not we handling an embedded type tag, e.g, `<script>` or `{% schema %}` etc */
   let embed: boolean = false;
 
-  /**
-   * HTML String
-   */
+  /** Represents the parse language as per {@link parse.language} - no definitive, value will change */
   let html = parse.language;
 
-  /**
-   * Stack nesting reference for Liquid tokens, increments by 1
-   * for each opener and decrements for each ender.
-   */
+  /** Stack nesting of Liquid tokens - incremented by `1` for each opener and decrements for each ender. */
   let within: number = 0;
 
   /* -------------------------------------------- */
@@ -313,45 +254,45 @@ export function markup (input?: string) {
   /**
    * ### Parse Token
    *
-   * Parses tags, attrs, comments and liquid elements. This is the initial cycle responsible for
-   * constructing records and performing analysis. The markup operations are 2 different
+   * Parses tags, attributes, comments, and liquid templates. This is the initial cycle responsible for
+   * constructing records and performing analysis. The markup operations use 2 different
    * mini lexers, as per the original Sparser algorithm:
    *
    * 1. {@link ParseToken}
    * 2. {@link ParseContent}
    *
-   * We will forward embedded (external) language occurrances such as those within `<script>`
-   * to the `ParseContent` lexer, this will include raw text content, or occurances which are
+   * We will forward embedded (external) language occurrences, such as those within `<script>`,
+   * to the `ParseContent` lexer. This will include raw text content or occurrences that are
    * not encapsulated with delimiter matches. At the conclusion of tokenization, the iteration
    * cycle continues until we have reached the end of the provided string.
    *
    * It's important to note that we will also use isolated controllers, such as those found within
-   * the {@link CommentBlock} and of course any external languages are passed to their respective
+   * the {@link CommentBlock}. Any external languages are passed to their respective
    * lexer, but this will occur within {@link ParseContent} lexing.
    *
    * ---
    *
    * ### Order of Execution
    *
-   * The order of execution applied will run in the following sequences. Items with `|`
+   * The order of execution runs in the following sequences. Items listen below with `|`
    * infer determination, meaning the previous function may return any one of those.
    * Advancements might apply depending on the operations occurring within functions,
-   * but for the most part the {@link TokenLexer} will be responsible for moving over
+   * but for the most part, the {@link TokenLexer} will be responsible for moving over
    * characters.
    *
-   * 1. {@link Delimiters}
-   * 2. {@link TokenLexer} | {@link CommentToken} | {@link ExternalToken}
-   * 3. {@link ExternalToken} | {@link LiquidTagToken}
-   * 4. {@link DetermineIgnore}
-   * 5. {@link SingletonToken} | {@link IgnoreToken} | {@link IgnoreNext}
-   * 6. {@link SVGToken}
-   * 7. {@link LiquidToken}
-   * 8. {@link PhrasingToken} | {@link LiquidTokenCapture} | {@link CDATA}
-   * 9. {@link AttributeToken}
+   * 1.  {@link Delimiters}
+   * 2.  {@link TokenLexer} | {@link CommentToken} | {@link ExternalToken}
+   * 3.  {@link ExternalToken} | {@link LiquidTagToken}
+   * 4.  {@link DetermineIgnore}
+   * 5.  {@link SingletonToken} | {@link IgnoreToken} | {@link IgnoreNext}
+   * 6.  {@link SVGToken}
+   * 7.  {@link LiquidToken}
+   * 8.  {@link LiquidTokenCapture} | {@link CDATA}
+   * 9.  {@link AttributeToken}
    * 10. {@link JSXToken}
    *
-   * There is no conclusion value to functions, meaning there are no values returned, with each
-   * runner resolving to a `void` fall-through. Functions which do return a value are considered
+   * Functions do not have conclusion values, meaning no values are returned. Each
+   * runner resolves to a `void` fall-through. Functions that do return a value are considered
    * helper or utility functions. This fall-through tactic allows lexing to continue and interchange
    * when required.
    *
@@ -359,10 +300,10 @@ export function markup (input?: string) {
    *
    * ### Token Definitions
    *
-   * This function will look the following delimiter tag patterns and handle them accordingly.
+   * This function will look at the following delimiter tag patterns and handle them accordingly.
    * Unlike the original tactic of Sparser, Æsthetic will augment some entries before adding them
-   * into the data structure. Though this is not ideal, and likely to be reverted in future version
-   * so as to offer a pure form parser, given Æsthetic aims to provide only formatting capabilities
+   * into the data structure. Though this is not ideal and is likely to be reverted in a future version
+   * to offer a pure form parser, given Æsthetic aims to provide only formatting capabilities
    * for now, tokens will apply edits so the formatting cycle is less extraneous.
    *
    * ```none
@@ -383,21 +324,20 @@ export function markup (input?: string) {
    * {{          }}      liquid
    * {%          %}      liquid_start/liquid_end
    * <?xml       ?>      xml
-   *
    * ```
    *
    * ---
    *
    * ### Additional Note!
    *
-   * Each function is heavily documented in an attempt to give clear and informative reference, but please keep
-   * in mind, that until Æsthetic has reached (full) stability, some comment descriptives may not be totally clear.
-   * It is up to you to conclude upon inaccuracies. Not many developers are likely to be getting deep in this
-   * code base or reading this, however... if you do so happen to find yourself here, I've made your life easier.
+   * Each function is heavily documented to provide clear and informative reference. However, please keep
+   * in mind that until Æsthetic reaches full stability, some comment descriptions may not be entirely clear.
+   * It is up to you to identify inaccuracies. Not many developers are likely to delve deeply into this
+   * codebase or read this documentation. However, if you do find yourself here, I've made your life easier.
    *
-   * Those devs who are more well versed, you may be scratching your head at the overall algorithm, when I first,
-   * got into this code, I felt the same, but be rest assured, the sparser lexing algorithm is poetically beautiful
-   * and if you can grasp the tactic, you'll be suprised at how easy it is to reason about with.
+   * Developers who are more well-versed may be puzzled by the overall algorithm. When I first
+   * encountered this code, I felt the same. But rest assured, the Sparser lexing algorithm is poetically
+   * beautiful, and if you can grasp the tactic, you'll be surprised at how easy it is to reason about.
    *
    * Happy Hacking.
    */
@@ -817,10 +757,10 @@ export function markup (input?: string) {
       typeof LiquidTagToken
     > {
 
-      /** Lexing store - Character in the lex will reside here */
+      /** Lexing store - Characters lexed from {@link b} used to compose token entries */
       const lexed: string[] = [];
 
-      /** Liquid store - Internal index references of Liquid tokens */
+      /** Liquid store - Internal index references of Liquid tokens, see: {@link LiquidInternal} */
       const liquid: LiquidInternal = object(null);
 
       liquid.pipes = [];
@@ -842,7 +782,7 @@ export function markup (input?: string) {
       /** A slice reference string to match sequences */
       let string: string = NIL;
 
-      /**  Angle bracket count, e.g: `<` and `>` */
+      /** Angle bracket count, e.g: `<` and `>` */
       let acount: number = 0;
 
       /** Brace count, e.g: `{` and `}` */
@@ -881,10 +821,10 @@ export function markup (input?: string) {
       /** Whether or not we should invoke a quotation test */
       let qtest: boolean = false;
 
-      /** Quotation index within the `strong[]` model */
+      /** Quotation index within the {@link store} array model */
       let qidx: number = -1;
 
-      /** Attribute store entries */
+      /** Attribute store, populated with characters being lexed from {@link b} */
       let store: string[] = [];
 
       /**
@@ -899,22 +839,25 @@ export function markup (input?: string) {
       /* -------------------------------------------- */
 
       /**
-       * Liquid Normalizer
+       * Liquid Equipoise
        *
        * This function is responsible for normalizing the inner contents of Liquid tokens.
-       * Spacing corrections and composing a workable store reference as per the {@link liquid}
-       * object is the responsibility of this function. There are various complex checks based
+       * Spacing corrections and composing a workable reference as per the {@link liquid}
+       * store is the responsibility of this function. There are various complex checks based
        * on surrounding character sequences. The current {@link lexed} store is used to help
-       * determine the imposed results and apply normalization.
+       * determine the assumed results for equipoised normalization.
+       *
+       * The function expects a parameter value be provided. This will either an existing
+       * store model of either {@link store} or {@link lexed} character array. The function
+       * will augment those stores if necessary.
        *
        * When the function returns a boolean `true` then the traversal will call `continue`
        * otherwise will proceed as normal.
        *
        * > **NOTE**
        * >
-       * > This is pre-processor operation, wherein Liquid tokens will also be passed through
-       * > to {@link lq.tokenize} for additional beautification processing, however this will
-       * > apply only after tokenization has concluded.
+       * > This is pre-process operation, wherein Liquid tokens will also be passed through to
+       * > {@link lq.tokenize} for additional formatting which applies after token lexing completes.
        */
       function LiquidEquipoise (array: string[]): true | void {
 
@@ -1015,7 +958,6 @@ export function markup (input?: string) {
                 array.push(WSP, 'with');
 
                 a = a + 3;
-                console.log(b[a]);
 
               } else if (
                 u.isWS(b[a + 1]) === false &&
@@ -1307,14 +1249,10 @@ export function markup (input?: string) {
         /* LEXICAL SCOPES                               */
         /* -------------------------------------------- */
 
-        /**
-         * The attribute name (index `0`) and value (index `0`)
-         */
+        /** The attribute name (index `0`) and value (index `0`) */
         let each: [ name: string, value: string ];
 
-        /**
-         * The attribute token, eg: `id="foo"`
-         */
+        /** The attribute token, eg: `id="foo"` */
         let attr: string = NIL;
 
         /* -------------------------------------------- */
@@ -1335,13 +1273,26 @@ export function markup (input?: string) {
 
           attr = store.join(NIL);
 
-          if (jsx === false || (jsx && u.notLast(attr, cc.RCB))) attr = attr.replace(rx.SpacesGlob, WSP);
+          if (jsx === false || (jsx && u.notLast(attr, cc.RCB))) {
+
+            attr = attr.replace(rx.SpacesGlob, WSP);
+
+          }
 
           each = attrname(attr);
 
-          if (each[0] === 'data-esthetic-ignore') ignore = true;
+          if (each[0] === 'data-esthetic-ignore') {
 
-          if (jsx && u.is(store[0], cc.LCB) && u.is(store[store.length - 1], cc.RCB)) jsxpc = 0;
+            ignore = true;
+
+          }
+
+          if (jsx && u.is(store[0], cc.LCB) && u.is(store[store.length - 1], cc.RCB)) {
+
+            jsxpc = 0;
+
+          }
+
         }
 
         // Prevent sorting of attributes when tags contain Liquid tokens
@@ -1357,7 +1308,9 @@ export function markup (input?: string) {
           .split(NWL);
 
         if (store.length < 1) {
+
           store[0] = store[0].replace(rx.SpaceEnd, NIL);
+
         }
 
         attr = inner(store.join(parse.crlf), tname);
@@ -1446,8 +1399,11 @@ export function markup (input?: string) {
           lexed.push(b[a]);
 
           if (a > 3 && u.is(b[a], cc.DSH) && u.is(b[a - 1], cc.DSH) && u.is(b[a - 2], cc.DSH)) break;
+
           ++a;
-          continue;
+
+          continue; // continue lexing
+
         }
 
         // Liquid Tokens
@@ -1711,21 +1667,15 @@ export function markup (input?: string) {
 
                   // if (u.not(quote, cc.DQO) || u.not(quote, cc.SQO)) {
 
-                  if (
-                    u.is(b[a - 1], cc.LCB) && (
-                      u.is(b[a], cc.PER) ||
-                      u.is(b[a], cc.LCB)
-                    )
-                  ) {
+                  if (u.is(b[a - 1], cc.LCB) && (
+                    u.is(b[a], cc.PER) ||
+                    u.is(b[a], cc.LCB))) {
 
                     isliq = true;
 
-                  } else if (
-                    u.is(b[a], cc.RCB) && (
-                      u.is(b[a - 1], cc.RCB) ||
-                      u.is(b[a - 1], cc.PER)
-                    )
-                  ) {
+                  } else if (u.is(b[a], cc.RCB) && (
+                    u.is(b[a - 1], cc.RCB) ||
+                    u.is(b[a - 1], cc.PER))) {
 
                     isliq = false;
 
@@ -1734,9 +1684,9 @@ export function markup (input?: string) {
                   // }
 
                   if (
+                    isliq === true &&
                     jsx === false &&
                     qatt === false &&
-                    isliq === true &&
                     rules.markup.attributePreserve === false && (
                       u.not(quote, cc.DQO) ||
                       u.not(quote, cc.SQO)
@@ -1758,8 +1708,7 @@ export function markup (input?: string) {
                         u.is(store[store.length - 2], cc.RCB) ||
                         u.is(store[store.length - 2], cc.PER)
                       ) && (
-                        u.is(store[store.length - 1], cc.RCB)
-                      )) {
+                        u.is(store[store.length - 1], cc.RCB))) {
 
                         isliq = false;
                         quote = NIL;
@@ -1800,6 +1749,7 @@ export function markup (input?: string) {
 
                         isliq = false;
                         quote = NIL;
+
                         AttributeTokenize(false);
 
                         break;
@@ -1813,7 +1763,10 @@ export function markup (input?: string) {
                   if (jsx === false && (
                     u.is(b[a], cc.LAN) ||
                     u.is(b[a], cc.RAN)
-                  ) && (quote === NIL || u.is(quote, cc.RAN))) {
+                  ) && (
+                    quote === NIL ||
+                    u.is(quote, cc.RAN)
+                  )) {
 
                     if (quote === NIL && u.is(b[a], cc.LAN)) {
 
@@ -1831,9 +1784,12 @@ export function markup (input?: string) {
                         acount = acount - 1;
 
                         if (acount === 0) {
+
                           quote = NIL;
                           icount = 0;
+
                           AttributeTokenize(false);
+
                           break;
                         }
                       }
@@ -1849,11 +1805,16 @@ export function markup (input?: string) {
 
                         store.pop();
                         preserve === false || lexed.pop();
+
                         --a;
 
                       }
 
-                      if (store.length > 0) AttributeTokenize(false);
+                      if (store.length > 0) {
+
+                        AttributeTokenize(false);
+
+                      }
 
                       break;
 
@@ -1868,6 +1829,11 @@ export function markup (input?: string) {
                       quote = b[a];
                       qatt = qatt === false && isliq === false;
 
+                      // Ignore Count
+                      //
+                      // =<
+                      // ={%
+                      //
                       if (u.is(b[a - 1], cc.EQS) && (u.is(b[a + 1], cc.LAN) || (
                         u.is(b[a + 1], cc.LCB) &&
                         u.is(b[a + 2], cc.PER)
@@ -1889,6 +1855,9 @@ export function markup (input?: string) {
 
                       // JSX Variable attribute
                       //
+                      // ={
+                      //  {
+                      //
                       if ((u.is(b[a - 1], cc.EQS) || u.ws(b[a - 1])) && u.is(b[a], cc.LCB)) {
 
                         quote = '}';
@@ -1898,9 +1867,13 @@ export function markup (input?: string) {
 
                         // JSX Comments
                         if (u.is(b[a + 1], cc.ARS)) {
+
                           quote = '\u002a/';
+
                         } else if (u.is(b[a + 1], cc.FWS)) {
+
                           quote = NWL;
+
                         }
 
                       }
@@ -1910,7 +1883,9 @@ export function markup (input?: string) {
                       u.is(b[a + 1], cc.PER)
                     )) {
 
-                      // Opening ExternalToken template expression
+                      // Liquid token expression
+                      //
+                      // If lexed[0] is `{` and next character in either { or %
                       //
                       quote = u.is(b[a + 1], cc.LCB) ? '}}' : b[a + 1] + '}';
 
@@ -1931,9 +1906,11 @@ export function markup (input?: string) {
                             if (u.ns(b[e])) {
 
                               if (u.is(b[e], cc.DQO) || u.is(b[e], cc.SQO)) {
+
                                 a = e - 1;
                                 qtest = true;
                                 store.pop();
+
                               }
 
                               break;
@@ -1953,23 +1930,30 @@ export function markup (input?: string) {
                         //
                         store.pop();
 
-                        if (store.length > 0) AttributeTokenize(false);
+                        if (store.length > 0) {
+
+                          AttributeTokenize(false);
+
+                        }
 
                         stest = true;
+
                         break;
                       }
                     }
 
-                  } else if (
-                    u.is(b[a], cc.LPR) &&
-                    u.is(quote, cc.RPR)) {
+                  } else if (u.is(b[a], cc.LPR) && u.is(quote, cc.RPR)) {
 
+                    // Nested Parenthesis count
+                    //
+                    // If quote is ) and next character is `(`
+                    //
                     pcount = pcount + 1;
 
-                  } else if (
-                    u.is(b[a], cc.RPR) &&
-                    u.is(quote, cc.RPR)) {
+                  } else if (u.is(b[a], cc.RPR) && u.is(quote, cc.RPR)) {
 
+                    // Decrement Parenthesis count
+                    //
                     pcount = pcount - 1;
 
                     if (pcount === 0) {
@@ -1979,6 +1963,7 @@ export function markup (input?: string) {
                       if (u.is(b[a + 1], end.charCodeAt(0))) {
 
                         AttributeTokenize(false);
+
                         break;
 
                       }
@@ -2027,10 +2012,22 @@ export function markup (input?: string) {
 
                           if (rules.markup.attributePreserve === false) {
                             if (jsx) {
-                              if (!/^\s*$/.test(token)) attrs.push([ token, lines ]);
+
+                              if (!/^\s*$/.test(token)) {
+
+                                attrs.push([ token, lines ]);
+
+                              }
+
                             } else {
+
                               token = token.replace(rx.SpacesGlob, WSP);
-                              if (token !== WSP) attrs.push([ token, lines ]);
+
+                              if (token !== WSP) {
+
+                                attrs.push([ token, lines ]);
+
+                              }
                             }
                           }
 
@@ -2046,7 +2043,11 @@ export function markup (input?: string) {
                       jscomm = true;
                       token = store.join(NIL);
 
-                      if (token !== WSP) attrs.push([ token, lines ]);
+                      if (token !== WSP) {
+
+                        attrs.push([ token, lines ]);
+
+                      }
 
                       store = [];
                       lines = u.is(quote, cc.NWL) ? 2 : 1;
@@ -2125,13 +2126,13 @@ export function markup (input?: string) {
 
                     // Apply Value Forcing
                     //
-                    // Inserts a \n character following the first known
+                    // Inserts a newline `\n` character following the first known
                     // quotation character of the attribute value, e.g: class=" TO class="\n
                     //
                     if (
-                      isliq === false &&
                       qatt === true &&
                       qidx > -1 &&
+                      isliq === false &&
                       b[a + 1] === quote &&
                       u.is(store[qidx], cc.NWL) &&
                       u.not(b[a - 1], cc.BWS)) {
@@ -2326,19 +2327,20 @@ export function markup (input?: string) {
 
               if (e < 0) {
 
-                // This condition will fix incorrect line spaces applied
-                // on template attrs that are contained in the attribute store
-                //
-                if (
-                  u.is(lexed[q], cc.RAN) &&
-                  u.is(b[a], cc.RAN) &&
-                  u.is(b[a - 1], cc.RCB) &&
-                  u.ws(b[a + 1]) &&
-                  attrs.length > 0 &&
-                  attrs[attrs.length - 1][1] === 0
-                ) {
+                if (u.is(lexed[q], cc.RAN) && u.is(b[a], cc.RAN)) {
 
-                  attrs[attrs.length - 1][1] = u.is(b[a + 1], cc.WSP) ? 1 : 2;
+                  // This condition will fix incorrect line spaces applied
+                  // on template attrs that are contained in the attribute store
+                  //
+                  if (
+                    u.is(b[a - 1], cc.RCB) &&
+                    u.ws(b[a + 1]) &&
+                    attrs.length > 0 &&
+                    attrs[attrs.length - 1][1] === 0) {
+
+                    attrs[attrs.length - 1][1] = u.is(b[a + 1], cc.WSP) ? 1 : 2;
+
+                  }
 
                 }
 
@@ -2411,7 +2413,11 @@ export function markup (input?: string) {
       record.token = token;
       record.types = ltype;
 
-      if (preserve === false && jsx === false) token = token.replace(rx.SpacesGlob, WSP);
+      if (preserve === false && jsx === false) {
+
+        // token = token.replace(rx.SpacesGlob, WSP);
+
+      }
 
       // console.log(record);
 
@@ -2441,11 +2447,16 @@ export function markup (input?: string) {
 
       //  cheat = correct();
 
-      if (ignore || (u.is(token, cc.LAN) && u.is(token[1], cc.FWS))) return DetermineIgnore();
+      if (ignore || (u.is(token, cc.LAN) && u.is(token[1], cc.FWS))) {
 
-      /**
-       * Length of the `attrs` store reference
-       */
+        return DetermineIgnore();
+
+      }
+
+      /** Token query return value - references the {@link attrs} store */
+      let q: ReturnType<typeof external.determine>;
+
+      /** Length of the {@link attrs} store reference */
       let i: number = attrs.length - 1;
 
       if (u.is(token, cc.LAN)) {
@@ -2454,13 +2465,15 @@ export function markup (input?: string) {
 
           do {
 
-            const q = external.determine(tname, 'html', attrname(attrs[i][0], false));
+            /** Query HTML type token and its attributes, i.e: {@link attrs} */
+            q = external.determine(tname, 'html', attrname(attrs[i][0], false));
 
             if (q !== false) {
               if (q.language === 'json' && rules.markup.ignoreJSON) {
 
                 ltype = 'json_preserve';
                 ignore = true;
+
                 break;
 
               } else if (q.language === 'javascript' && rules.markup.ignoreJS) {
@@ -2474,6 +2487,7 @@ export function markup (input?: string) {
 
                 ltype = 'style_preserve';
                 ignore = true;
+
                 break;
 
               } else {
@@ -2482,6 +2496,7 @@ export function markup (input?: string) {
                 ltype = 'start';
                 embed = true;
                 ignore = false;
+
                 break;
 
               }
@@ -2493,9 +2508,10 @@ export function markup (input?: string) {
 
         } else {
 
-          const q = external.determine(tname, 'html');
+          q = external.determine(tname, 'html');
 
           if (q !== false) {
+
             if (q.language === 'json' && rules.markup.ignoreJSON) {
 
               ltype = 'json_preserve';
@@ -2519,23 +2535,29 @@ export function markup (input?: string) {
               ignore = false;
 
             }
+
           }
         }
 
       } else if (lq.isStart(token, true)) {
 
-        const q = external.determine(tname, 'liquid', token);
+        q = external.determine(tname, 'liquid', token);
 
         if (q !== false) {
           if (ignored.has(tname)) {
+
             ignore = true;
             preserve = false;
+
           } else {
+
             ltype = 'liquid_start';
             language = q.language;
             embed = true;
+
           }
         }
+
       }
 
       return DetermineIgnore();
@@ -2584,10 +2606,14 @@ export function markup (input?: string) {
         record.types = 'start';
         record.stack = ltype === 'style_preserve' ? 'style' : 'script';
 
+        // External regions of code that are preserved will still
+        // have attributes formatted, so before ignoring the inner
+        // content we will first process attributes.
+        //
         AttributeToken();
 
-        a = a + 1;
-        attrs = [];
+        a = a + 1; // Increment advancement by one
+        attrs = []; // Reset attributes and proceed
 
         return IgnoreToken(`</${tname}>`, Languages.HTML);
 
@@ -2626,6 +2652,7 @@ export function markup (input?: string) {
         }
 
         // TODO: PARSE WARNINGS
+        //
         // We will add a parse warning here in the future
 
         ignore = false;
@@ -2659,7 +2686,7 @@ export function markup (input?: string) {
      *
      * Prev: {@link DetermineIgnore()}
      *
-     * Next: {@link PhrasingToken()}
+     * Next: {@link AttributeToken()}
      */
     function IgnoreToken (ender: string, type: Languages): ReturnType<
       typeof AttributeToken
@@ -3276,19 +3303,19 @@ export function markup (input?: string) {
      *
      * Prev: {@link SVGToken()}
      *
-     * Next: {@link PhrasingToken()} _see below note as next call is not definitive_
+     * Next: {@link AttributeToken()} _see below note as next call is not definitive_
      *
      * > **NOTE**
      * >
-     * > This function applies determination logic. `PhrasingToken()` might not be next.
+     * > This function applies determination logic. `AttributeToken()` _might_ not be next.
      * > If the token is a Liquid `{% capture %}`, then {@link LiquidTokenCapture()} will be next.
      * > If the token is not of Liquid type, or then {@link CDATA()} will be next.
-     * > If the function falls through, similar to non-liquid types, {@link CDATA()} runs next.
+     * > If the function falls through, same as non-liquid types {@link CDATA()} will be run.
      */
     function LiquidToken (): ReturnType<
       typeof LiquidEncapsulate |
       typeof LiquidTokenCapture |
-      typeof PhrasingToken
+      typeof AttributeToken
     > {
 
       /* -------------------------------------------- */
@@ -3319,13 +3346,16 @@ export function markup (input?: string) {
             record.types = ltype = 'liquid_start';
 
           } else if (tname === 'capture') {
+
             a = a + 1;
+
             return LiquidTokenCapture();
+
           }
 
           record.types = ltype = tname === 'case' ? 'liquid_case_start' : 'liquid_start';
 
-          return PhrasingToken();
+          return AttributeToken();
 
         } else if (tname.startsWith('end')) {
 
@@ -3374,9 +3404,13 @@ export function markup (input?: string) {
       }
 
       if (rules.liquid.quoteConvert === 'double') {
+
         record.token = token = record.token.replace(/'[^"]*?'/g, lx.qc(DQO));
+
       } else if (rules.liquid.quoteConvert === 'single') {
+
         record.token = token = record.token.replace(/"[^']*?"/g, lx.qc(SQO));
+
       }
 
       return CDATA();
@@ -3391,6 +3425,7 @@ export function markup (input?: string) {
      * a liquid conditional, for example:
      *
      * ```liquid
+     *
      * {% if x %}
      *   <div>
      * {% endif %}
@@ -3399,13 +3434,13 @@ export function markup (input?: string) {
      *   </div>
      * {% endif %}
      *
-     *
      * ```
      * ---
      *
      * **CALL STACK**
      *
-     * Prev: {@link LiquidToken}
+     * Prev: {@link LiquidToken()}
+     *
      */
     function LiquidEncapsulate (): void {
 
@@ -3448,7 +3483,7 @@ export function markup (input?: string) {
      *
      * **CALL STACK**
      *
-     * Prev: {@link LiquidToken}
+     * Prev: {@link LiquidToken()}
      *
      * Next: {@link ParseSpace()} - **BACK TO LEXING**
      */
@@ -3701,13 +3736,13 @@ export function markup (input?: string) {
      *
      * Prev: {@link LiquidToken()}
      *
-     * Next: {@link PhrasingToken()}
+     * Next: {@link AttributeToken()}
      */
     function CDATA (): ReturnType<
       typeof AttributeToken
     > {
 
-      if (ltype !== 'cdata') return PhrasingToken();
+      if (ltype !== 'cdata') return AttributeToken();
 
       // const { stack } = record;
 
@@ -3737,39 +3772,6 @@ export function markup (input?: string) {
 
       //   parse.stack.pop();
       // }
-
-      return PhrasingToken();
-
-    }
-
-    /**
-     * Phrasing Content Text Nodes
-     *
-     * Handling determination for phrasing content text element nodes. The
-     * {@link txt} store will be consulted and used here to track and compose
-     * phrasing tag structures.
-     *
-     * ---
-     *
-     * **CALL STACK**
-     *
-     * Prev: {@link CDATA()} OR {@link LiquidToken}
-     *
-     * Next: {@link AttributeToken()}
-     */
-    function PhrasingToken (): ReturnType<
-      typeof AttributeToken
-    > {
-
-      if (ltype === 'start') {
-        if (grammar.html.textNodes.has(tname)) {
-          parse.textNodes.add(parse.count + 1);
-        }
-      } else if (ltype === 'end') {
-        if (grammar.html.textNodes.has(tname) && parse.record.types === 'content') {
-          parse.textNodes.add(parse.count);
-        }
-      }
 
       return AttributeToken();
 
@@ -3806,58 +3808,40 @@ export function markup (input?: string) {
       /* CONSTANTS                                    */
       /* -------------------------------------------- */
 
-      /**
-       * The index of data record in the tree
-       */
+      /** The index of data record in the tree, references {@link parse.count} */
       const begin: number = parse.count;
 
-      /**
-       * The tag name, ie: `tname`
-       */
+      /** The tag name as per stack, i.e, `tname` */
       const stack = tname.replace(/\/$/, NIL);
 
-      /**
-       * Type of quotation character to convert
-       */
+      /** Type of quotation character to convert, reference {@link rules.markup.quoteConvert} */
       const qc = rules.markup.quoteConvert;
 
       /* -------------------------------------------- */
       /* LOCAL SCOPES                                 */
       /* -------------------------------------------- */
 
-      /**
-       * The current index of the attribute
-       */
-      let idx = 0;
+      /** The current index of the attribute */
+      let idx: number = 0;
 
-      /**
-       * Equals `=` operator index in the token
-       */
-      let eq = 0;
+      /** Equals `=` operator index in the token */
+      let eq: number = 0;
 
-      /**
-       * Double quotation `"` index in the token
-       */
-      let dq = 0;
+      /** Double quotation `"` index in the token */
+      let dq: number = 0;
 
       /**
        * Single quotation `'` index in the token
        */
       // let sq = 0;
 
-      /**
-       * The attribute name
-       */
-      let name = NIL;
+      /** The attribute name, e.g: `id` in `id="foo"` */
+      let name: string = NIL;
 
-      /**
-       * The attribute value
-       */
+      /** The attribute value, e.g: `foo` in `id="foo" ` */
       let value = NIL;
 
-      /**
-       * The amount of attrs in the store
-       */
+      /** The amount of attributes in the {@link attrs} store, i.e: `attrs.length` */
       let len = attrs.length;
 
       /* -------------------------------------------- */
@@ -3871,30 +3855,24 @@ export function markup (input?: string) {
        */
       function quoteConvert () {
 
-        if (
-          parse.attributes.has(begin) &&
-          u.notLast(record.token, cc.RAN) &&
-          idx + 1 === len) {
+        if (parse.attributes.has(begin) && u.notLast(record.token, cc.RAN) && idx + 1 === len) {
 
           record.token = record.token + '>';
 
         }
 
+        /** Whether or not our record type is liquid */
         let liq = record.types.indexOf('liquid_attribute') > -1;
 
-        if (
-          ignore === true ||
-          qc === 'none' ||
+        if (ignore === true || qc === 'none' ||
           record.types.indexOf('attribute') < 0 || (
-            liq === false &&
-            qc === 'single' &&
-            record.token.indexOf(DQO) < 0
-          ) || (
-            liq === false &&
-            qc === 'double' &&
-            record.token.indexOf(SQO) < 0
-          )
-        ) {
+          liq === false &&
+          qc === 'single' &&
+          record.token.indexOf(DQO) < 0
+        ) || (
+          liq === false &&
+          qc === 'double' &&
+          record.token.indexOf(SQO) < 0)) {
 
           push(record);
 
@@ -4128,8 +4106,9 @@ export function markup (input?: string) {
       /* -------------------------------------------- */
 
       if (attrs.length < 1) {
-        if (advance !== true) return;
-        return JSXToken();
+
+        return advance !== true ? undefined : JSXToken();
+
       }
 
       // Fixes Singleton Tags
@@ -4159,8 +4138,7 @@ export function markup (input?: string) {
             dq = dq - 1;
           }
 
-          dq = dq + 1;
-        } while (dq < eq);
+        } while (++dq < eq);
       }
 
       // Attribute Sorting
@@ -4320,12 +4298,6 @@ export function markup (input?: string) {
             }
           }
 
-          if (parse.textNodes.has(begin)) {
-
-            parse.textNodes.add(parse.count);
-
-          }
-
           idx = idx + 1;
 
         } while (idx < len);
@@ -4440,10 +4412,14 @@ export function markup (input?: string) {
       types: 'content'
     });
 
-    /** The current lexed character references */
+    /* -------------------------------------------- */
+    /* CONSTANTS                                    */
+    /* -------------------------------------------- */
+
+    /** The lexed store that will be populated string characters */
     const lexed: string[] = [];
 
-    /** The current index content parse has began, ie: `a` number */
+    /** The current index of which the parse began, references {@link a} */
     const now = a;
 
     /** Whether or not content is JSX brace token */
@@ -4459,20 +4435,24 @@ export function markup (input?: string) {
     /** The last known token */
     let ltoke: string = NIL;
 
-    /** The number of line spaces incurred, e.g: `parse.lineOffset` */
+    /** The number of line spaces incurred, see: {@link parse.lineOffset} */
     let lines: number = parse.lineOffset;
 
-    /** The current language reference enum */
+    /** The current language enumerable, defaults to {@link Languages.HTML} */
     let type: Languages = Languages.HTML;
 
-    /** The tag name or known name reference */
+    /** The tag name or a known name reference */
     let name: string = NIL;
 
     /* -------------------------------------------- */
     /* BEGIN                                        */
     /* -------------------------------------------- */
 
-    if (!u.ws(b[a - 1])) record.lines = 0;
+    if (!u.ws(b[a - 1])) {
+
+      record.lines = 0;
+
+    }
 
     if (jsxbrace === true) {
 
@@ -4483,15 +4463,21 @@ export function markup (input?: string) {
       name = lx.getTagName(data.token[parse.stack.index]);
 
       if (data.types[parse.stack.index].startsWith('liquid_')) {
+
         type = Languages.Liquid;
+
       }
 
     } else {
 
       name = lx.getTagName(data.token[data.begin[parse.count]]);
 
-      if (data.begin[parse.count] > -1 && data.types[data.begin[parse.count]].startsWith('liquid_')) {
+      if (
+        data.begin[parse.count] > -1 &&
+        data.types[data.begin[parse.count]].startsWith('liquid_')) {
+
         type = Languages.Liquid;
+
       }
     }
 
@@ -4503,22 +4489,28 @@ export function markup (input?: string) {
       //
       //
       if (type === Languages.Liquid) {
+
         if (source.slice(a, source.lastIndexOf('{', source.indexOf(`end${name}`, a))).trim() === NIL) {
+
           embed = false;
           record.types = 'liquid_end';
+
         }
+
       } else {
 
-        if (type === Languages.HTML && (
-          name === 'script' ||
-          name === 'style')) {
+        if (type === Languages.HTML && (name === 'script' || name === 'style')) {
 
           if (source.slice(a, source.indexOf('</script>', a)).trim() === NIL) {
+
             embed = false;
             record.types = 'end';
+
           } else if (source.slice(a, source.indexOf('</style>', a)).trim() === NIL) {
+
             embed = false;
             record.types = 'end';
+
           }
 
         }
@@ -4573,7 +4565,21 @@ export function markup (input?: string) {
     /**
      * Content Test
      *
-     * Checks to ensure we are dealing with text content sequence
+     * Checks to ensure we are dealing with text content sequence.
+     * The function will perform analysis on the current character
+     * being lexed and if it encounters a sequence of characters which
+     * represent a tag expression a boolean `false` will be returned.
+     *
+     * Determination looks for the following sequences:
+     *
+     * > - `<\S` Left bracket followed by non-whitespace
+     * > - `{%` Liquid tag delimiter
+     * > - `{{` Liquid object tag delimiter
+     *
+     * It is important to not that content determination will also use
+     * existing reference such as {@link embed} being `false` and {@link lexed}
+     * length being **more than** `0` If the advancement index ({@link a}) is
+     * equal to source length {@link c} then `true` will be returned.
      */
     function content () {
 
@@ -4589,9 +4595,7 @@ export function markup (input?: string) {
           u.is(b[a + 1], cc.LCB) ||
           u.is(b[a + 1], cc.PER)
         )
-      ) || (
-        a === c
-      )));
+      ) || (a === c)));
 
     }
 
@@ -4601,43 +4605,54 @@ export function markup (input?: string) {
 
     if (a < c) {
 
-      /**
-       * Ending token/character value
-       */
+      /** Ending token/character value, e.g: `{% endtag %}` or `</end>` etc */
       let end: string = NIL;
 
-      /**
-       * Character reference
-       */
-      let quote: string = NIL;
-
-      /**
-       * External output string capture
-       */
+      /** External output string capture */
       let output: string = NIL;
 
-      /**
-       * Quotation character quotes
-       */
+      /** Character reference */
+      let quote: string = NIL;
+
+      /** Quotation character quotes */
       let quotes: number = 0;
+
+      /* -------------------------------------------- */
+      /* TRAVERSE                                     */
+      /* -------------------------------------------- */
 
       do {
 
-        if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
+        // Increment the newline references
+        //
+        if (u.is(b[a], cc.NWL)) {
+
+          lines = parse.lines(a, lines);
+
+        }
 
         // Embed code requires additional parsing to look for the appropriate end
-        // tag, but that end tag cannot be quoted or commented
+        // tag, but that end tag cannot be quoted or commented. This condition will
+        // perform handling of embedded (external) code regions and pass content to
+        // different lexers for processing. Varying operations are had in this cycle
+        // it is somewhat expensive and may not always be perfect, but suffices.
         //
         if (embed === true) {
 
           if (type === Languages.Liquid) {
 
+            /** Liquid ending tag name, e.g: `endtag` */
             const ename = `end${name}`;
+
+            /** The index location of the {@link ename} in {@link source} */
             const ender = source.indexOf(ename, a);
 
             if (ender > -1) {
 
+              /** Index position of the starting `{` delimiter of `{% endtag %}` */
               const from = b.lastIndexOf('{', ender);
+
+              /** Index position of the ending `}` delimiter of `{% endtag %}` */
               const next = b.indexOf('}', ender + ename.length) + 1;
 
               end = source.slice(from, next);
@@ -4645,7 +4660,7 @@ export function markup (input?: string) {
               if (lq.exp(ename).test(end)) {
 
                 lines = 1;
-                output = source.slice(a, from);
+                output = b.slice(a, from).join(NIL); // originally source.slice()
 
                 parse.external(language, output);
 
@@ -4672,11 +4687,21 @@ export function markup (input?: string) {
             if (u.is(b[a], cc.FWS)) {
 
               if (u.is(b[a + 1], cc.ARS)) {
+
                 quote = '*';
+
               } else if (u.is(b[a + 1], cc.FWS)) {
+
                 quote = '/';
-              } else if (!jsx && name === 'script' && u.not(b[a - 1], cc.LAN) && regex.indexOf(b[a - 1]) > -1) {
+
+              } else if (
+                jsx === false &&
+                name === 'script' &&
+                u.not(b[a - 1], cc.LAN) &&
+                regex.indexOf(b[a - 1]) > -1) {
+
                 quote = 'r';
+
               }
 
             } else if (
@@ -4689,11 +4714,11 @@ export function markup (input?: string) {
 
               quote = b[a];
 
-            } else if (u.is(b[a], cc.LCB) && jsxbrace === true) {
+            } else if (jsxbrace && u.is(b[a], cc.LCB)) {
 
               quotes = quotes + 1;
 
-            } else if (u.is(b[a], cc.RCB) && jsxbrace === true) {
+            } else if (jsxbrace && u.is(b[a], cc.RCB)) {
 
               if (quotes === 0) {
 
@@ -4703,9 +4728,11 @@ export function markup (input?: string) {
                   .replace(rx.SpaceEnd, NIL);
 
                 parse.external(language, output);
-                parse.stack.update(parse.stack.index + 1); // Added incremental
+                parse.stack.update(parse.stack.index + 1); // Added increment by 1
 
-                if (data.types[parse.count] === 'end' && data.lexer[data.begin[parse.count] - 1] === 'script') {
+                if (
+                  data.types[parse.count] === 'end' &&
+                  data.lexer[data.begin[parse.count] - 1] === 'script') {
 
                   push(record, {
                     lexer: 'script',
@@ -4731,7 +4758,10 @@ export function markup (input?: string) {
 
             }
 
-            if (name === 'script' && u.is(b[a], cc.LAN) && u.is(b[a + 1], cc.FWS)) {
+            if (
+              name === 'script' &&
+              u.is(b[a], cc.LAN) &&
+              u.is(b[a + 1], cc.FWS)) {
 
               end = source.slice(a, a + 9).toLowerCase();
 
@@ -4768,7 +4798,10 @@ export function markup (input?: string) {
 
               }
 
-            } else if (name === 'style' && u.is(b[a], cc.LAN) && u.is(b[a + 1], cc.FWS)) {
+            } else if (
+              name === 'style' &&
+              u.is(b[a], cc.LAN) &&
+              u.is(b[a + 1], cc.FWS)) {
 
               end = source.slice(a, a + 8).toLowerCase();
 
@@ -4820,8 +4853,11 @@ export function markup (input?: string) {
           ) {
 
             if (u.is(b[a], cc.DQO) && language === 'json') {
+
               quotes = quotes === 1 ? 0 : 1;
+
             }
+
             quote = NIL;
 
           } else if (
@@ -4868,13 +4904,25 @@ export function markup (input?: string) {
             end = source.slice(a + 1, a + 11).toLowerCase();
             end = end.slice(0, end.length - 2);
 
-            if (name === 'script' && end === '</') quote = NIL;
+            if (name === 'script' && end === '</') {
+
+              quote = NIL;
+
+            }
 
             end = end.slice(0, end.length - 1);
 
-            if (name === 'style' && end === '</style') quote = NIL;
+            if (name === 'style' && end === '</style') {
 
-          } else if (language === 'json' && quotes === 1 && u.is(b[a], cc.NWL) && esctest() === false) {
+              quote = NIL;
+
+            }
+
+          } else if (
+            language === 'json' &&
+            quotes === 1 &&
+            u.is(b[a], cc.NWL) &&
+            esctest() === false) {
 
             MarkupError(ParseError.UnterminatedJSONString, 'script');
 
@@ -4883,7 +4931,7 @@ export function markup (input?: string) {
 
         // Typically this logic is for artifacts nested within an SGML tag
         //
-        if (sgml() === true) {
+        if (sgml()) {
 
           a = a - 1;
 
@@ -4893,6 +4941,7 @@ export function markup (input?: string) {
           push(record, { token: ltoke });
 
           break;
+
         }
 
         // General Content Processing
@@ -4900,45 +4949,44 @@ export function markup (input?: string) {
         // It is here where we detect markup or Liquid delimiter structures
         // and break out of the traversal cycle.
         //
-        if (content() === true) {
+        if (content()) {
 
-          // Plaintext sructures or in occurances where there is only text content
-          // the content() function will return true before the last no character
-          // is reached within the advancement "a" reference. We can determine the
-          // this is the case by looking at parse.count and peeking forward to see
-          // if next character in advancement is the last.
+          // Plaintext sructures or occurances where there is only text content
+          // the content() function will return true before the last known character
+          // is reached within the advancement "a" reference.
+          //
+          // We need determine the this is the case by looking at the parse.count value
+          // and peek forward to see if next character in advancement is (infact) the last.
           //
           if (a + 1 === c && parse.count === -1) {
+
             lexed.push(b[a]);
+
           } else {
+
             a = a - 1;
+
           }
 
-          lines = 0;
-          ltoke = record.token = parse.stack.token === 'comment'
+          // lines = 0;
+          ltoke = parse.stack.token === 'comment'
             ? lexed.join(NIL)
             : lexed.join(NIL).replace(rx.SpaceEnd, NIL);
 
-          if (rules.markup.preserveText === true) {
+          if (rules.markup.textPreserve === true) {
 
             ltoke = wsbefore(now, ltoke);
+            lines = 0;
 
-            push(record, {
-              token: ltoke
-            });
+            push(record, { token: ltoke });
 
           } else {
 
-            u.nline(ltoke, function (token, { index, count }) {
+            push(record, { token: ltoke });
 
-              push(record, index === 0 ? {
-                token
-              } : {
-                token,
-                lines: count
-              });
+            record.lines = lines;
 
-            });
+            lines = 0;
 
           }
 
@@ -4955,9 +5003,10 @@ export function markup (input?: string) {
     }
 
     if (a > now && a < c) {
+
       if (u.ws(b[a])) {
 
-        let x = a;
+        let x: number = a;
 
         parse.lineOffset = parse.lineOffset + 1;
 
@@ -4980,23 +5029,32 @@ export function markup (input?: string) {
 
     } else if (a !== now || (a === now && embed === false)) {
 
-      // regular content at the end of the supplied source
+      // Regular content at the end of the supplied source
+      //
       if (type === Languages.Liquid && record.types === 'liquid_end') {
+
         ltoke = inner(lexed.join(NIL).trimEnd());
+
       } else {
+
         ltoke = lexed.join(NIL).trimEnd();
+
       }
 
       lines = 0;
 
-      // this condition prevents adding content that was just added in the loop above
+      // This condition prevents adding content that was
+      // just added in the loop above.
+      //
       if (record.token !== ltoke) {
 
-        if (type === Languages.Liquid && record.types === 'liquid_end') ltoke = inner(ltoke);
+        if (type === Languages.Liquid && record.types === 'liquid_end') {
 
-        record.token = ltoke;
+          ltoke = inner(ltoke);
 
-        push(record);
+        }
+
+        push(record, { token: ltoke });
 
         parse.lineOffset = 0;
 
