@@ -1,5 +1,6 @@
-export interface MarkupRules {
+import { LiteralUnion } from 'type-fest';
 
+export interface MarkupRules {
   /**
    * #### Default: `preserve`
    *
@@ -30,7 +31,12 @@ export interface MarkupRules {
    * - `inline-align`
    *
    */
-  commentDelimiter?: 'preserve' | 'consistent'| 'force' | 'inline' | 'inline-align';
+  commentDelimiter?: LiteralUnion<
+  | 'preserve'
+  | 'consistent'
+  | 'newline'
+  | 'inline'
+  | 'inline-align', string>;
 
   /**
    * #### Default: `true`
@@ -66,7 +72,6 @@ export interface MarkupRules {
    *
    */
   commentPreserve?: boolean;
-
   /**
    * #### Default: `preserve`
    *
@@ -92,7 +97,11 @@ export interface MarkupRules {
    * - `lowercase-value`
    *
    */
-  attributeCasing?: 'preserve' | 'lowercase' | 'lowercase-name' | 'lowercase-value';
+  attributeCasing?: LiteralUnion<
+  | 'preserve'
+  | 'lowercase'
+  | 'lowercase-name'
+  | 'lowercase-value', string>;
 
   /**
    * #### Default: `false`
@@ -224,7 +233,6 @@ export interface MarkupRules {
    * ```
    */
   classListUnique?: boolean;
-
   /**
    * #### Default: `true`
    *
@@ -236,7 +244,6 @@ export interface MarkupRules {
    *
    */
   selfCloseSpace?: boolean;
-
   /**
    * #### Default: `false`
    *
@@ -250,7 +257,6 @@ export interface MarkupRules {
    * void, self-closing tag, i.e: `</path>` → `<path />`.
    */
   selfCloseSVG?: boolean;
-
   /**
    * #### Default: `[]`
    *
@@ -285,7 +291,6 @@ export interface MarkupRules {
    * > **is set to the `default` option.**
    */
   textNodeList?: string[];
-
   /**
    * #### Default: `true`
    *
@@ -308,7 +313,6 @@ export interface MarkupRules {
    *
    */
   textBoundInline?: boolean
-
   /**
    * #### Default: `false`
    *
@@ -327,7 +331,6 @@ export interface MarkupRules {
    *
    */
   textPreserve?: boolean;
-
   /**
    * #### Default: `true`
    *
@@ -391,8 +394,10 @@ export interface MarkupRules {
    * > ```
    *
    */
-  quoteConvert?: 'double' | 'single' | 'none';
-
+  quoteConvert?: LiteralUnion<
+  | 'double'
+  | 'single'
+  | 'none', string>;
   /**
    * #### Default: `false`
    *
@@ -467,7 +472,6 @@ export interface MarkupRules {
    *
    */
   ignoreJS?: boolean;
-
   /**
    * #### Default: `false`
    *
@@ -481,7 +485,6 @@ export interface MarkupRules {
    *
    */
   ignoreJSON?: boolean;
-
   /**
    * #### Default: `preserve`
    *
@@ -513,6 +516,9 @@ export interface MarkupRules {
    * > option, values will insert a `\n` character on wrap edge.
    *
    */
-  valueSpacing?: 'preserve' | 'equipoise' | 'wrap'
+  valueSpacing?: LiteralUnion<
+  | 'preserve'
+  | 'equipoise'
+  | 'wrap', string>
 
 }
