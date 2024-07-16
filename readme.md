@@ -57,7 +57,7 @@ https://unpkg.com/esthetic
 
 ## Usage
 
-Consult the [documentation](https://æsthetic.dev) for a better understanding.
+Consult the [documentation](https://aesthetic.js.org).
 
 ###### CLI
 
