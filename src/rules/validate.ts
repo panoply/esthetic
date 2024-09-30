@@ -1,5 +1,5 @@
 import type { GlobalRules, LanguageRuleNames, LiquidRules, MarkupRules, LanguageName } from 'types';
-import { isArray, isBoolean, isNumber, isString, isUndefined } from 'utils/helpers';
+import { isArray, isBoolean, isNumber, isString } from 'utils/helpers';
 import { RuleError } from 'parse/errors';
 
 /**
@@ -34,21 +34,34 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
       case 'indentSize':
       case 'preserveLine':
       case 'wrap':
-      case 'wrapFraction':
 
         return isValidNumber(language, rule, value);
 
       default:
-
         return false;
-
     }
 
   } else if (language === 'liquid') {
 
     switch (rule as keyof LiquidRules) {
-      case 'allowPlebSyntactic':
-      case 'allowRubeSyntactic':
+
+      case 'argumentLineBreak':
+      case 'filterLineBreak':
+
+        if (isNumber(value)) return isValidNumber(language, rule, value);
+        if (isBoolean(value)) return isValidBoolean(language, rule, value);
+
+        throw RuleError({
+          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
+          option: `${language} → ${rule}`,
+          provided: value,
+          reference: `/rules/liquid/${rule}/`,
+          expected: [
+            'boolean',
+            'number'
+          ]
+        });
+
       case 'commentPreserve':
       case 'commentIndent':
       case 'indentAttribute':
@@ -57,17 +70,13 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 
         return isValidBoolean(language, rule, value);
 
-      case 'argumentLineBreak':
-      case 'filterLineBreak':
-
-        return isValidNumber(language, rule, value);
-
       case 'ignoreTagList':
       case 'dedentTagList':
       case 'paddedTagList':
 
         return isValidArray(language, rule, value);
 
+      case 'argumentFormat':
       case 'lineBreakSeparator':
       case 'lineBreakLogical':
       case 'delimiterPlacement':
@@ -92,6 +101,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
           message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
           option: `${language} → ${rule}`,
           provided: value,
+          reference: `/rules/${language}/${rule}/`,
           expected: [
             'boolean',
             'number'
@@ -108,6 +118,7 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
           message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
           option: `${language} → ${rule}`,
           provided: value,
+          reference: `/rules/${language}/${rule}/`,
           expected: [
             'boolean',
             'string[]'
@@ -196,6 +207,7 @@ export function isValidArray (language: LanguageRuleNames, rule: string, value: 
           message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
           option: `${language} → ${rule} (index: ${index})`,
           provided: value,
+          reference: `/rules/${language}/${rule}/`,
           expected: [
             'string'
           ]
@@ -212,6 +224,7 @@ export function isValidArray (language: LanguageRuleNames, rule: string, value: 
     message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
     option: language === 'global' ? rule : `${language} → ${rule}`,
     provided: value,
+    reference: `/rules/${language}/${rule}/`,
     expected: [
       'string[]'
     ]
@@ -232,6 +245,7 @@ export function isValidString (language: LanguageRuleNames, rule: string, value:
     message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
     option: language === 'global' ? rule : `${language} → ${rule}`,
     provided: value,
+    reference: `/rules/${language}/${rule}/`,
     expected: [
       'string'
     ]
@@ -252,6 +266,7 @@ export function isValidNumber (language: LanguageRuleNames, rule: string, value:
     message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
     option: language === 'global' ? rule : `${language} → ${rule}`,
     provided: value,
+    reference: `/rules/${language}/${rule}/`,
     expected: [
       'number'
     ]
@@ -273,6 +288,7 @@ export function isValidBoolean (language: LanguageRuleNames, rule: string, value
     message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
     option: language === 'global' ? rule : `${language} → ${rule}`,
     provided: value,
+    reference: `/rules/${language}/${rule}/`,
     expected: [
       'boolean'
     ]
@@ -294,6 +310,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
       option: `${language} → ${rule}`,
       provided: value,
+      reference: `/rules/${language}/${rule}/`,
       expected: [
         'string'
       ]
@@ -324,6 +341,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       message: `Unsupported "${rule}" identifier provided`,
       option: language === `${rule} (global)` ? rule : `${language} → ${rule}`,
       provided: value,
+      reference: `/rules/global/${rule}/`,
       expected: [
         'text',
         'auto',
@@ -357,6 +375,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       message: `Unsupported "${rule}" provided`,
       option: language === `${rule} (global)` ? rule : `${language} → ${rule}`,
       provided: value,
+      reference: `/rules/global/${rule}/`,
       expected: [
         'default',
         'strict',
@@ -374,9 +393,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'lowercase-name':
       case 'lowercase-value': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'preserve',
           'lowercase',
@@ -393,15 +413,16 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'consistent':
       case 'inline':
       case 'inline-align':
-      case 'force': return true;
+      case 'newline': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'preserve',
           'consistent',
-          'force',
+          'newline',
           'inline',
           'inline-align'
         ]
@@ -418,17 +439,17 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'outputs':
       case 'multiline': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'preserve',
           'never',
           'always',
           'tags',
           'outputs',
-          'multiline',
-          'linebreak'
+          'multiline'
         ]
       });
     }
@@ -436,23 +457,41 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
   } else if (rule === 'delimiterPlacement') {
 
     switch (value as LiquidRules['delimiterPlacement']) {
-      case 'default':
       case 'inline':
       case 'preserve':
       case 'consistent':
-      case 'force':
-      case 'force-multiline': return true;
+      case 'newline-multiline': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
-          'default',
           'inline',
           'preserve',
           'consistent',
-          'force',
-          'force-multiline'
+          'newline-multiline'
+        ]
+      });
+    }
+
+  } else if (rule === 'argumentFormat') {
+
+    switch (value as LiquidRules['argumentFormat']) {
+      case 'preserve':
+      case 'newline':
+      case 'inline':
+      case 'inline-newline': return true;
+      default: throw RuleError({
+        message: `Invalid ${language} "${rule}" option provided`,
+        option: `${language} → ${rule}`,
+        provided: value,
+        reference: `/rules/${language}/${rule}/`,
+        expected: [
+          'preserve',
+          'newline',
+          'inline',
+          'inline-newline'
         ]
       });
     }
@@ -464,9 +503,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'before':
       case 'after': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'preserve',
           'before',
@@ -482,9 +522,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'before':
       case 'after': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'preserve',
           'before',
@@ -500,9 +541,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'equipoise':
       case 'wrap': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'preserve',
           'equipoise',
@@ -520,9 +562,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'double':
       case 'single': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'none',
           'double',
@@ -538,9 +581,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'indent':
       case 'inline': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'default',
           'indent',
@@ -556,9 +600,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'always':
       case 'never': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'none',
           'always',
@@ -574,9 +619,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'each':
       case 'list': return true;
       default: throw RuleError({
-        message: `Invalid "${rule}" option provided`,
+        message: `Invalid ${language} "${rule}" option provided`,
         option: `${language} → ${rule}`,
         provided: value,
+        reference: `/rules/${language}/${rule}/`,
         expected: [
           'none',
           'each',
