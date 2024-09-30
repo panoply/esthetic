@@ -10,19 +10,16 @@ import type {
   Splice,
   LexerName,
   Rules,
-  Hooks,
-  Types,
-  LiquidInternal
+  Hooks
 } from 'types';
 import { lexers } from 'lexers';
 import { format } from 'format';
-import { Eq, Languages, Lexers, Modes } from 'lexical/enum';
-import * as lx from 'lexical/lexing';
+import { Languages, Lexers, Modes, Action } from 'lexical/enum';
 import * as rx from 'lexical/regex';
 import { NIL, NWL } from 'chars';
 import { getLexerName, getLexerType } from 'rules/language';
 import { defaults } from 'rules/presets/default';
-import { is, isString, ns } from 'utils/helpers';
+import { is, isString, ns, getTagName, merge } from 'utils/helpers';
 import { SyntacticError } from 'parse/errors';
 import { ParseError } from 'lexical/errors';
 import { config } from 'config';
@@ -193,9 +190,16 @@ class Parser {
   public crlf = NWL;
 
   /**
-   * The current operation mode running
+   * The execution mode called. This will either be `1` or `3` as per {@link Modes} and
+   * references the method used (i.e, `esthetic.parse()` or `esthetic.format()`). By default,
+   * this is set to `3` with `Mode.Format` being assumed.
    */
   public mode: Modes;
+
+  /**
+   * The current operation mode running, see {@link Action}
+   */
+  public action: Action;
 
   /**
    * The language name indentifiable
@@ -316,14 +320,9 @@ class Parser {
   public lexer: LexerName;
 
   /**
-   * The internal markup of Liquid tokens
-   */
-  public liquid: Map<number, LiquidInternal> = new Map();
-
-  /**
    * The formatting and parse rules
    */
-  public rules: Rules = defaults;
+  public rules: Rules = merge(defaults);
 
   /**
    * The parse table data structure
@@ -353,7 +352,7 @@ class Parser {
    */
   get source (): string {
 
-    if (this.mode === Modes.Embed) return Parser.region as string;
+    if (this.action === Action.Embed) return Parser.region as string;
 
     return config.env === 'node' && Buffer.isBuffer(Parser.input)
       ? Parser.input.toString()
@@ -417,9 +416,9 @@ class Parser {
     this.data.types = [];
     this.references = [ [] ];
     this.stack = new Stack([ 'global', -1 ]);
-    this.mode = Modes.Parse;
+    this.action = Action.Parse;
+    this.mode = Modes.Format;
 
-    if (this.liquid.size > 0) this.liquid.clear();
     if (this.pairs.size > 0) this.pairs.clear();
     if (this.attributes.size > 0) this.attributes.clear();
     if (this.regions.size > 0) this.regions.clear();
@@ -451,17 +450,18 @@ class Parser {
    *
    * Executes a full parse - top to bottom.
    */
-  public document (lexer: Lexers, mode: Modes = Modes.Format) {
+  public document (lexer: Lexers, mode: Modes) {
 
     if (rx.CommIgnoreFile.test(this.source)) return this.source;
 
     this.reset();
+    this.mode = mode;
 
     lexers(lexer);
 
     if (mode === Modes.Parse) return this.data;
 
-    this.mode = Modes.Format;
+    this.action = Action.Format;
 
     return format(lexer);
 
@@ -475,9 +475,9 @@ class Parser {
    */
   public external (ref: LanguageName | number, input?: string | string[]) {
 
-    if (this.mode === Modes.Parse) {
+    if (this.action === Action.Parse) {
 
-      this.mode = Modes.Embed;
+      this.action = Action.Embed;
 
       const lexer = getLexerType(ref as LanguageName);
 
@@ -489,7 +489,7 @@ class Parser {
 
       lexers(lexer);
 
-      this.mode = Modes.Parse;
+      this.action = Action.Parse;
       this.lexer = getLexerName(this.rules.language);
       this.language = this.rules.language;
 
@@ -499,18 +499,18 @@ class Parser {
 
       const { id, lexer } = this.regions.get(this.start);
 
-      this.mode = Modes.Embed;
+      this.action = Action.Embed;
       this.language = id;
       this.rules.indentLevel = ref as number;
 
-      const beautify = format(lexer);
+      const output = format(lexer);
 
-      this.mode = Modes.Format;
+      this.action = Action.Format;
       this.rules.indentLevel = 0;
       this.language = this.rules.language;
       this.lexer = getLexerName(this.language);
 
-      return beautify;
+      return output;
 
     }
 
@@ -610,7 +610,7 @@ class Parser {
         this.pairs.has(this.stack.index) &&
         this.pairs.get(this.stack.index).stack === 'p') {
 
-        if (!grammar.html.textNodes.has(lx.getTagName(record.token))) {
+        if (!grammar.html.textNodes.has(getTagName(record.token))) {
           SyntacticError(ParseError.InvalidHTMLPhrasingContent, pair);
         }
 
@@ -709,7 +709,7 @@ class Parser {
 
       token = record.types === 'else'
         ? 'else'
-        : lx.getTagName(record.token);
+        : getTagName(record.token);
     }
 
     this.lineOffset = 0;
@@ -910,7 +910,7 @@ class Parser {
    * matches the current iteration point and an optional `lines` parameter
    * which will be incremented by `1` and the returning value.
    */
-  public lines (index: number, lines?: number) {
+  public lines (index: number, lines: number = 0) {
 
     this.lineNumber = this.lineNumber + 1;
     this.lineIndex = index;
