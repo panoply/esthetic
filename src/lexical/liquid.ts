@@ -2,9 +2,9 @@
 
 import type { LiquidInternal, LiquidRules, Rules } from 'types';
 import { grammar } from 'parse/grammar';
-import { is, isWS } from 'utils/helpers';
+import { glue, is, isLast, isLastAt, isWS, not, ns } from 'utils/helpers';
 import { cc } from 'lexical/codes';
-import { LT } from 'lexical/enum';
+import { LqT, Modes } from 'lexical/enum';
 import { COM, NIL, NWL, WSP } from 'lexical/chars';
 import { parse } from 'parse/parser';
 
@@ -14,7 +14,7 @@ import { parse } from 'parse/parser';
  * Applies `delimiterTrims` applied formatting to the opening
  * delimiter sequences of Liquid tokens.
  */
-export function openDelims (input: string, rules: LiquidRules) {
+export function openDelims (input: string, rules: LiquidRules, delimOnly = false) {
 
   const o = is(input[2], cc.DSH) ? 3 : 2;
   const token = input.slice(o);
@@ -39,12 +39,11 @@ export function openDelims (input: string, rules: LiquidRules) {
 
   if (rules.delimiterPlacement === 'preserve') {
     open += /^\s*\n/.test(token) ? NWL : WSP;
-  } else if (rules.delimiterPlacement === 'force') {
+  } else if (rules.delimiterPlacement === 'newline') {
     open += NWL;
   } else if (
     rules.delimiterPlacement === 'inline' ||
-    rules.delimiterPlacement === 'default' ||
-    rules.delimiterPlacement === 'force-multiline'
+    rules.delimiterPlacement === 'newline-multiline'
   ) {
 
     open += WSP;
@@ -57,7 +56,7 @@ export function openDelims (input: string, rules: LiquidRules) {
     }
   }
 
-  return open + token.trim();
+  return delimOnly ? open : open + token.trim();
 
 }
 
@@ -67,7 +66,7 @@ export function openDelims (input: string, rules: LiquidRules) {
  * Applies `delimiterTrims` applied formatting to the closing
  * delimiter sequences of Liquid tokens.
  */
-export function closeDelims (input: string, rules: LiquidRules) {
+export function closeDelims (input: string, rules: LiquidRules, delimOnly = false) {
 
   const c = is(input[input.length - 3], cc.DSH) ? input.length - 3 : input.length - 2;
   const token = input.slice(0, c) || NIL;
@@ -100,14 +99,13 @@ export function closeDelims (input: string, rules: LiquidRules) {
 
     close = (/\s*\n\s*$/.test(token) ? NWL : WSP) + close;
 
-  } else if (rules.delimiterPlacement === 'force') {
+  } else if (rules.delimiterPlacement === 'newline') {
 
     close = NWL + close;
 
   } else if (
     rules.delimiterPlacement === 'inline' ||
-    rules.delimiterPlacement === 'default' ||
-    rules.delimiterPlacement === 'force-multiline'
+    rules.delimiterPlacement === 'newline-multiline'
   ) {
 
     close = WSP + close;
@@ -120,7 +118,7 @@ export function closeDelims (input: string, rules: LiquidRules) {
     }
   }
 
-  return token.trim() + close;
+  return delimOnly ? close : token.trim() + close;
 
 }
 
@@ -212,7 +210,7 @@ export function delimiters (input: string, tname?: string, space = WSP) {
 
     } else if (
       tname === '#' &&
-      delimiterPlacement === 'force-multiline') {
+      delimiterPlacement === 'newline-multiline') {
 
       if (/\n{2,}/g.test(token.trim())) {
 
@@ -224,15 +222,14 @@ export function delimiters (input: string, tname?: string, space = WSP) {
         close = space + close;
       }
 
-    } else if (delimiterPlacement === 'force') {
+    } else if (delimiterPlacement === 'newline') {
 
       open += NWL;
       close = NWL + close;
 
     } else if (
       delimiterPlacement === 'inline' ||
-      delimiterPlacement === 'default' ||
-      delimiterPlacement === 'force-multiline') {
+      delimiterPlacement === 'newline-multiline') {
 
       open += space;
       close = space + close;
@@ -279,6 +276,8 @@ export function delimiters (input: string, tname?: string, space = WSP) {
  */
 export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal, {
   liquid: {
+    argumentFormat,
+    filterLineBreak,
     lineBreakSeparator,
     lineBreakLogical,
     delimiterTrims,
@@ -286,17 +285,23 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
   }
 }: Rules) {
 
-  const [ o, c ] = delims(lexed);
+  // console.log(
 
-  /**
-   * Opening Delimiter
-   */
-  let open: string;
+  //   JSON.stringify(lexed.join(NIL))
 
-  /**
-   * Closing Delimiter
-   */
-  let close: string;
+  // );
+
+  /** When Æsthetic execution is parse we use whitespace, if format is   */
+  const CRLF = parse.mode === Modes.Parse ? WSP : NWL;
+
+  /** Extract delimiters, where `o` represents open and `c` represents close */
+  const [ O, C ] = delims(lexed);
+
+  /** Opening Delimiter, e.g: `{{` or `{%` */
+  let OPEN: string;
+
+  /** Closing Delimiter, e.g: `}}` or `%}` */
+  let CLOSE: string;
 
   /* -------------------------------------------- */
   /* TRIMS                                        */
@@ -309,8 +314,8 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
   // tag expressions with delimiters
   if (delimiterTrims === 'never') {
 
-    open = `{${lexed[1]}`;
-    close = `${lexed[lexed.length - 2]}}`;
+    OPEN = '{' + lexed[1];
+    CLOSE = lexed[lexed.length - 2] + '}';
 
   } else if ((
     delimiterTrims === 'always'
@@ -322,36 +327,29 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
     is(lexed[1], cc.PER)
   )) {
 
-    open = `{${lexed[1]}-`;
-    close = `-${lexed[lexed.length - 2]}}`;
+    OPEN = '{' + lexed[1] + '-';
+    CLOSE = '-' + lexed[lexed.length - 2] + '}';
 
   } else if (delimiterTrims === 'preserve') {
 
-    open = lexed.slice(0, o).join(NIL);
-    close = lexed.slice(c).join(NIL);
+    OPEN = lexed.slice(0, O).join(NIL);
+    CLOSE = lexed.slice(C).join(NIL);
 
   } else {
 
-    open = `{${lexed[1]}`;
-    close = `${lexed[lexed.length - 2]}}`;
+    OPEN = '{' + lexed[1];
+    CLOSE = lexed[lexed.length - 2] + '}';
 
   }
 
-  /* -------------------------------------------- */
-  /* SINGLETONS                                   */
-  /* -------------------------------------------- */
+  // Void liquid types do not apply any additional processing
+  //
+  if (grammar.liquid.void.has(tname) || tname.startsWith('end')) {
 
-  if (
-    tname === 'else' ||
-    tname === 'break' ||
-    tname === 'continue' ||
-    tname === 'increment' ||
-    tname === 'decrement' || tname.startsWith('end')) {
+    OPEN += WSP;
+    CLOSE = WSP + CLOSE;
 
-    open += WSP;
-    close = WSP + close;
-
-    return open + lexed.slice(o, c).join(NIL).trim() + close;
+    return OPEN + lexed.slice(O, C).join(NIL).trim() + CLOSE;
 
   }
 
@@ -361,274 +359,294 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
 
   if (delimiterPlacement === 'preserve') {
 
-    open += is(lexed[o], cc.NWL) ? NWL : WSP;
-    close = is(lexed[c - 1], cc.NWL) ? NWL + close : WSP + close;
+    OPEN += is(lexed[O], cc.NWL) ? CRLF : WSP;
+    CLOSE = is(lexed[C - 1], cc.NWL) ? CRLF + CLOSE : WSP + CLOSE;
 
-  } else if (delimiterPlacement === 'force') {
+  } else if (delimiterPlacement === 'newline') {
 
-    open += NWL;
-    close = NWL + close;
+    OPEN += CRLF;
+    CLOSE = CRLF + CLOSE;
 
-  } else if (delimiterPlacement === 'inline' || delimiterPlacement === 'default') {
+  } else if (delimiterPlacement === 'inline') {
 
-    open += WSP;
-    close = WSP + close;
+    OPEN += WSP;
+    CLOSE = WSP + CLOSE;
 
   } else if (delimiterPlacement === 'consistent') {
 
-    if (is(lexed[o], cc.NWL)) {
-      open += NWL;
-      close = NWL + close;
+    if (is(lexed[O], cc.NWL)) {
+
+      OPEN += CRLF;
+      CLOSE = CRLF + CLOSE;
+
     } else {
-      open += WSP;
-      close = WSP + close;
+
+      OPEN += WSP;
+      CLOSE = WSP + CLOSE;
+
     }
 
   } else {
 
-    open += WSP;
-    close = WSP + close;
+    OPEN += WSP;
+    CLOSE = WSP + CLOSE;
 
   }
 
-  /* -------------------------------------------- */
-  /* PRESERVE INTERNAL                            */
-  /* -------------------------------------------- */
-
   // Exclude processing of {% liquid %} multiline tags
   //
-  if (tname === 'liquid') return open + lexed.slice(o, c).join(NIL).trim() + close;
+  if (tname === 'liquid') {
+
+    return OPEN + lexed.slice(O, C).join(NIL).trim() + CLOSE;
+
+  }
 
   /* -------------------------------------------- */
   /* FORCE WRAP CONDITIONALS                      */
   /* -------------------------------------------- */
 
-  if (liquid.logic.length > 0 && (
-    tname === 'if' ||
-    tname === 'elsif' ||
-    tname === 'unless' ||
-    tname === 'when'
-  )) {
+  if (liquid.logic.length > 0 && grammar.liquid.control.has(tname)) return Logic();
+
+  if (liquid.param.length > 0 && grammar.liquid.iterator.has(tname)) return Param();
+
+  if (liquid.pipes.length > 0) Pipes();
+
+  if (liquid.targs.length > 0) Targs();
+
+  /**
+   * Delimiter Trims and Placement
+   */
+  function Delim () {
 
     if (delimiterTrims === 'multiline') {
-      open = `{${lexed[1]}-` + open[open.length - 1];
-      close = close[0] + `-${lexed[lexed.length - 2]}}`;
+
+      OPEN = '{' + lexed[1] + '-' + OPEN[OPEN.length - 1];
+      CLOSE = CLOSE[0] + '-' + lexed[lexed.length - 2] + '}';
+
     }
 
-    if (delimiterPlacement === 'force-multiline') {
-      open = open.trimEnd() + NWL;
-      close = NWL + close.trimStart();
+    if (delimiterPlacement === 'newline-multiline') {
+      OPEN = OPEN.trimEnd() + CRLF;
+      CLOSE = CRLF + CLOSE.trimStart();
     }
+
+  }
+
+  /**
+   * Parameters
+   */
+  function Param () {
+
+    Delim();
 
     for (
-      let x = 0
-        , b = 0
-        , e = 0
-        , s = liquid.logic.length; x < s; x++) {
+      let i = 0
+        , s = liquid.param.length; i < s; i++) {
 
-      e = liquid.logic[x];
+      lexed[liquid.param[i]] = CRLF + lexed[liquid.param[i]].trim();
+
+    }
+
+    return OPEN + glue(lexed.slice(O, C)).trim() + CLOSE;
+
+  }
+
+  /**
+   * Logical Expressions
+   */
+  function Logic () {
+
+    Delim();
+
+    return OPEN + glue(lexed.slice(O, C)).trim() + CLOSE;
+    for (
+      let i = 0
+        , b = 0 // before
+        , e = 0 // ending
+        , s = liquid.logic.length; i < s; i++) {
+
+      e = liquid.logic[i];
 
       if (lineBreakLogical === 'before') {
 
         b = lexed.lastIndexOf(WSP, e);
 
-        lexed[b] = NWL + lexed[b].trim();
+        lexed[b] = CRLF + lexed[b];
         lexed[e] = WSP + lexed[e];
 
       } else if (lineBreakLogical === 'after') {
 
-        lexed[e] = NWL + lexed[e].trim();
+        lexed[e] = CRLF + lexed[e].trim();
 
       } else {
 
-        lexed.splice(e, 1, NWL + lexed[e]);
+        lexed.splice(e, 1, CRLF + lexed[e]);
 
       }
 
     }
 
-    return open + lexed
-      .slice(o, c)
-      .join(NIL)
-      .trim() + close;
+    return OPEN + glue(lexed.slice(O, C)).trim() + CLOSE;
 
   }
 
-  if (liquid.param.length > 0 && (
-    tname === 'for' ||
-    tname === 'tablerow'
-  )) {
+  /**
+   * Tag Arguments
+   */
+  function Targs () {
 
-    if (delimiterTrims === 'multiline') {
-      open = `{${lexed[1]}-` + open[open.length - 1];
-      close = close[0] + `-${lexed[lexed.length - 2]}}`;
+    Delim();
+
+    for (
+      let a: number
+        , i = 0
+        , s = liquid.targs.length; i < s; i++) {
+
+      a = liquid.targs[i];
+
+      if (lineBreakSeparator === 'after') {
+
+        // ADDED TO IN ATTEMPT TO PATCH TAB ANIMALS CC: WOLFGREY
+        let b: number = a;
+
+        while (isWS(lexed[b--])) lexed[b] = NIL;
+
+        if (isWS(lexed[a + 1])) lexed[a + 1] = NIL;
+        if (isWS(lexed[a - 1])) lexed[a - 1] = NIL;
+
+        lexed[a] = is(lexed[a], cc.COM)
+          ? COM + CRLF
+          : CRLF;
+
+      } else if (lineBreakSeparator === 'before') {
+
+        if (is(lexed[a - 1], cc.COM)) {
+
+          lexed[a - 1] = i === 0
+            ? CRLF + COM
+            : CRLF + COM;
+
+        } else {
+
+          lexed[a] = i === 0
+            ? CRLF + COM
+            : CRLF + COM;
+        }
+
+      }
     }
-
-    if (delimiterPlacement === 'force-multiline') {
-      open = open.trimEnd() + NWL;
-      close = NWL + close.trimStart();
-    }
-
-    for (let x = 0, s = liquid.param.length; x < s; x++) {
-
-      lexed[liquid.param[x]] = NWL + lexed[liquid.param[x]].trim();
-
-    }
-
-    return open + lexed
-      .slice(o, c)
-      .join(NIL)
-      .trim() + close;
-
   }
 
-  /* -------------------------------------------- */
-  /* FORCE WRAP FILTERS                           */
-  /* -------------------------------------------- */
+  /**
+   * Filter Pipes
+   */
+  function Pipes () {
 
-  const pipes: number = liquid.pipes.length;
+    Delim();
 
-  if (pipes > 0) {
+    return;
+    /** Whether or not {@link filterArgument} is set to preserve */
+    const preserve = filterArgument === 'preserve';
 
-    if (delimiterTrims === 'multiline') {
+    for (
+      let a: number
+        , i = 0
+        , s = liquid.pipes.length; i < s; i++) {
 
-      open = `{${lexed[1]}-` + open[open.length - 1];
-      close = close[0] + `-${lexed[lexed.length - 2]}}`;
+      a = liquid.pipes[i];
 
-    }
+      if (isWS(lexed[a - 1])) lexed[a - 1] = NIL;
 
-    if (delimiterPlacement === 'force-multiline') {
+      if (filterLineBreak === false) {
 
-      open = open.trimEnd() + NWL;
-      close = NWL + close.trimStart();
+        // Applies preservation tactic, only newlines apply
+        if (is(lexed[a], cc.NWL)) lexed[a] = CRLF;
 
-    }
+      } else {
 
-    for (let i: number = 0; i < pipes; i++) {
+        lexed[a] = CRLF + lexed[a];
 
-      const pipe = liquid.pipes[i];
+      }
 
-      if (isWS(lexed[pipe - 1])) lexed[pipe - 1] = NIL;
-
-      lexed[pipe] = NWL + lexed[pipe];
-
-      // First sequence pipe exclude extraneous whitespace
+      // First sequence argument excludes extraneous whitespace
       if (i === 0) {
 
-        let p: number = pipe - 1;
+        // let p: number = a - 1;
 
-        if (isWS(lexed[p - 1])) {
-          do lexed[p] = NIL;
-          while (isWS(lexed[p--]));
-        }
+        // if (isWS(lexed[p - 1])) {
+        //   do lexed[p] = NIL;
+        //   while (isWS(lexed[p--]));
+        // }
 
       }
 
       if (liquid.fargs[i] && liquid.fargs[i].length > 0) {
 
-        for (
-          let n: number = 0
-            , s = liquid.fargs[i].length; n < s; n++) {
-
-          const arg = liquid.fargs[i][n];
-
-          if (lineBreakSeparator === 'after') {
-
-            if (isWS(lexed[arg + 1])) lexed[arg + 1] = NIL;
-
-            lexed[is(lexed[arg - 1], cc.COM) ? arg - 1 : arg] = n === 0
-              ? lexed[arg] + NWL
-              : COM + NWL;
-
-          } else if (lineBreakSeparator === 'before') {
-
-            if (isWS(lexed[arg + 1]) && isWS(lexed[arg + 2])) {
-
-              lexed[arg + 1] = NIL;
-
-            }
-
-            if (is(lexed[arg - 1], cc.COM)) {
-
-              lexed[arg - 1] = n === 0
-                ? NWL
-                : NWL + COM;
-
-            } else {
-
-              if (isWS(lexed[arg + 1])) lexed[arg + 1] = NIL;
-
-              lexed[arg] = n === 0
-                ? lexed[arg] + NWL
-                : NWL + COM + WSP;
-
-            }
-
-          } else {
-
-            lexed[arg] = NWL + lexed[arg];
-
-          }
-        }
+        //  Fargs(liquid.fargs[i], preserve);
 
       }
     }
-
   }
 
-  /* -------------------------------------------- */
-  /* FORCE WRAP ARGUMENTS                         */
-  /* -------------------------------------------- */
+  /**
+   * Filter Arguments
+   */
+  function Fargs (fargs: number[], preserve: boolean) {
 
-  if (liquid.targs.length > 0) {
+    for (
+      let a: number
+        , i = 0
+        , s = fargs.length; i < s; i++) {
 
-    if (delimiterTrims === 'multiline') {
-
-      open = `{${lexed[1]}-` + open[open.length - 1];
-      close = close[0] + `-${lexed[lexed.length - 2]}}`;
-
-    }
-
-    //
-    for (let x = 0, s = liquid.targs.length; x < s; x++) {
-
-      const arg = liquid.targs[x];
+      a = fargs[i];
 
       if (lineBreakSeparator === 'after') {
 
-        // ADDED TO IN ATTEMPT TO PATCH TAB ANIMALS CC: WOLFGREY
-        let b = arg;
+        if (preserve) {
 
-        while (isWS(lexed[b--])) lexed[b] = NIL;
-
-        if (isWS(lexed[arg + 1])) lexed[arg + 1] = NIL;
-        if (isWS(lexed[arg - 1])) lexed[arg - 1] = NIL;
-
-        lexed[arg] = is(lexed[arg], cc.COM)
-          ? COM + NWL
-          : NWL;
-
-      } else if (lineBreakSeparator === 'before') {
-
-        if (is(lexed[arg - 1], cc.COM)) {
-
-          lexed[arg - 1] = x === 0
-            ? NWL + COM
-            : NWL + COM;
+          // console.log(lexed.slice(a, fargs[i + 1]).join(NIL));
 
         } else {
 
-          lexed[arg] = x === 0
-            ? NWL + COM
-            : NWL + COM;
+          // if (isWS(lexed[a + 1])) lexed[a + 1] = NIL;
+
+          console.log(lexed.slice(a, a + 1), JSON.stringify(lexed[a + 1]), is(lexed[a], cc.COM), i);
+
+          if (is(lexed[a], cc.COM)) {
+
+            lexed[a + 1] = CRLF;
+
+          }
+
+          lexed[is(lexed[a - 1], cc.COM) ? a - 1 : a] = i === 0
+            ? lexed[a] + CRLF
+            : COM + CRLF;
+
         }
+      } else if (lineBreakSeparator === 'before') {
+
+        // console.log(JSON.stringify(lexed[a + 1]), i);
+
+        if (preserve && i !== 0 && is(lexed[a + 1], cc.NWL)) {
+
+          //  lexed[a] = i === 0 ? CRLF : CRLF + COM;
+
+        } else {
+
+          lexed[a] = i === 0 ? CRLF : CRLF + COM;
+        }
+      } else {
+
+        //  if (preserve) LNBR = is(lexed[a], cc.NWL) ? CRLF : WSP;
+
+        lexed[a] = CRLF + lexed[a];
 
       }
-
     }
+
   }
 
-  return open + lexed.slice(o, c).join(NIL).trim() + close;
+  return OPEN + glue(lexed.slice(O, C)).trim() + CLOSE;
 
 }
 
@@ -640,9 +658,11 @@ export function tokenize (lexed: string[], tname: string, liquid: LiquidInternal
  */
 export function delims (input: string | string[]): [ open: number, close: number ] {
 
+  const length = input.length;
+
   return [
     is(input[2], cc.DSH) ? 3 : 2,
-    is(input[input.length - 3], cc.DSH) ? input.length - 3 : input.length - 2
+    is(input[length - 3], cc.DSH) ? length - 3 : length - 2
   ];
 
 }
@@ -654,11 +674,11 @@ export function delims (input: string | string[]): [ open: number, close: number
  * name. The `fuse` parameter will return an expression with closing
  * delimiters, which defaults to `true`
  */
-export function exp (input: string, fuse = true) {
+export function exp (tagName: string, fuse = true) {
 
   return fuse
-    ? new RegExp(`{%-?\\s*${input}\\s*-?%}`)
-    : new RegExp(`{%-?\\s*${input}`);
+    ? new RegExp(`{%-?\\s*${tagName}\\s*-?%}`)
+    : new RegExp(`{%-?\\s*${tagName}`);
 }
 
 /**
@@ -685,7 +705,7 @@ export function isOutput (input: string) {
 
   const begin = input.indexOf('{');
 
-  return is(input[begin + 1], cc.LCB);
+  return begin > -1 ? is(input[begin + 1], cc.LCB) : false;
 
 }
 
@@ -730,9 +750,7 @@ export function isElse (input: string) {
     token = input.slice(begin + (is(input[begin + 2], cc.DSH) ? 3 : 2)).trimStart();
     token = token.slice(0, token.search(/[\s=|!<>,.[]|-?[%}]}/));
 
-    return token.startsWith('end')
-      ? false
-      : grammar.liquid.else.has(token);
+    return token.startsWith('end') ? false : grammar.liquid.else.has(token);
 
   }
 
@@ -800,8 +818,8 @@ export function isStart (input: string, strict = false) {
     if (
       is(input[0], cc.LCB) &&
       is(input[1], cc.PER) &&
-      is(input[input.length - 2], cc.PER) &&
-      is(input[input.length - 1], cc.RCB)) {
+      isLastAt(input, cc.PER) &&
+      isLast(input, cc.RCB)) {
 
       token = input.slice(is(input[2], cc.DSH) ? 3 : 2).trimStart();
 
@@ -837,6 +855,7 @@ export function isStart (input: string, strict = false) {
   } while (begin > -1);
 
   return false;
+
 }
 
 /**
@@ -874,57 +893,30 @@ export function isEnd (input: string | string[]) {
  * - `8` Check close tag delimiter from end, eg: `%}`
  * - `9` Check close output delimiter from end, eg: `}}`
  */
-export function isType (input: string, type: LT): boolean {
+export function getTokenType (input: string, type: LqT): boolean {
 
-  if (type === LT.Open) {
-
-    return is(input[0], cc.LCB) && (is(input[1], cc.PER) || is(input[1], cc.LCB));
-
-  } else if (type === LT.OpenTag) {
-
-    return is(input[0], cc.LCB) && is(input[1], cc.PER);
-
-  } else if (type === LT.OpenOutput) {
-
-    return is(input[0], cc.LCB) && is(input[1], cc.LCB);
-
-  } else if (type === LT.CloseTag) {
-
-    return is(input[input.length - 2], cc.PER) && is(input[input.length - 1], cc.RCB);
-
-  } else if (type === LT.CloseOutput) {
-
-    return is(input[input.length - 2], cc.RCB) && is(input[input.length - 1], cc.RCB);
-
-  } else if (type === LT.HasOpen) {
-
-    return /{[{%]/.test(input);
-
-  } else if (type === LT.HasOpenAndClose) {
-
-    return (/{[{%]/.test(input) && /[%}]}/.test(input));
-
-  } else if (type === LT.Close) {
-
-    const size = input.length;
-
-    return is(input[size - 1], cc.RCB) && (is(input[size - 2], cc.PER) || is(input[size - 2], cc.RCB));
-
-  } else if (type === LT.OpenAndClose) {
-
-    const size = input.length;
-
-    return (
-      is(input[0], cc.LCB) && (
-        is(input[1], cc.PER) ||
-        is(input[1], cc.LCB)
-      )
-    ) && (
-      is(input[size - 1], cc.RCB) && (
-        is(input[size - 2], cc.PER) ||
-        is(input[size - 2], cc.RCB)
-      )
-    );
+  switch (type) {
+    case LqT.Open:
+      return is(input[0], cc.LCB) && (is(input[1], cc.PER) || is(input[1], cc.LCB));
+    case LqT.OpenTag:
+      return is(input[0], cc.LCB) && is(input[1], cc.PER);
+    case LqT.OpenOutput:
+      return is(input[0], cc.LCB) && is(input[1], cc.LCB);
+    case LqT.CloseTag:
+      return isLastAt(input, cc.PER) && is(input[input.length - 1], cc.RCB);
+    case LqT.CloseOutput:
+      return isLastAt(input, cc.RCB) && is(input[input.length - 1], cc.RCB);
+    case LqT.HasOpen:
+      return /{[{%]/.test(input);
+    case LqT.HasOpenAndClose:
+      return /{[{%]/.test(input) && /[%}]}/.test(input);
+    case LqT.Close:
+      return isLast(input, cc.RCB) && (isLastAt(input, cc.PER) || isLastAt(input, cc.RCB));
+    case LqT.OpenAndClose:
+      return (
+        is(input[0], cc.LCB) && (is(input[1], cc.PER) || is(input[1], cc.LCB)) &&
+        isLast(input, cc.RCB) && (isLastAt(input, cc.PER) || isLastAt(input, cc.RCB))
+      );
 
   }
 
