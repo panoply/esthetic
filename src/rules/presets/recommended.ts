@@ -1,5 +1,5 @@
+import type { Rules } from 'types';
 import { merge } from 'utils/helpers';
-import { Rules } from 'types';
 import { defaults } from './default';
 
 /**
@@ -13,11 +13,9 @@ export const recommended: Rules = merge(defaults, {
   language: 'auto',
   preserveLine: 2,
   wrap: 120,
-  wrapFraction: 90,
   liquid: {
     ignoreTagList: [ 'javascript' ],
     indentAttribute: true,
-    commentNewline: true,
     delimiterTrims: 'preserve',
     lineBreakSeparator: 'after',
     quoteConvert: 'double',
@@ -27,7 +25,6 @@ export const recommended: Rules = merge(defaults, {
     attributeLineBreak: 2,
     attributeCasing: 'lowercase-name',
     commentDelimiter: 'preserve',
-    commentNewline: true,
     delimiterTerminus: false,
     forceIndent: true,
     ignoreCSS: false,
