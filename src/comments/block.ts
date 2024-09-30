@@ -21,7 +21,7 @@ import * as rx from 'lexical/regex';
  * An optional third ([2]) array value will be passed for certain comments.
  * This describes references to be inserted into the data-structure.
  */
-export function CommentBlock (chars: string[], config: Comments): BlockComments {
+export function CommentBlock (chars: readonly string[], config: Comments): BlockComments {
 
   /* -------------------------------------------- */
   /* CONSTANTS                                    */
@@ -166,23 +166,23 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
 
     if (type !== CommentType.Markup) return false;
 
-    if (rules.markup.commentDelimiters === 'consistent') {
+    if (rules.markup.commentDelimiter === 'consistent') {
 
       return is(output.slice(4).replace(rx.WhitespaceLead, NIL), ch.NWL)
         ? [ Delimiters.Force, Delimiters.Force ]
         : [ Delimiters.Inline, Delimiters.Inline ];
 
-    } else if (rules.markup.commentDelimiters === 'force') {
+    } else if (rules.markup.commentDelimiter === 'newline') {
 
       return [ Delimiters.Force, Delimiters.Force ];
 
     } else if (
-      rules.markup.commentDelimiters === 'inline' ||
-      rules.markup.commentDelimiters === 'inline-align') {
+      rules.markup.commentDelimiter === 'inline' ||
+      rules.markup.commentDelimiter === 'inline-align') {
 
       return [ Delimiters.Inline, Delimiters.Inline ];
 
-    } else if (rules.markup.commentDelimiters === 'preserve') {
+    } else if (rules.markup.commentDelimiter === 'preserve') {
 
       const delim: Delimiters[] = [];
 
@@ -216,9 +216,9 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
    */
   function HTMLDelimetersInline (): [string, number] {
 
-    if (type === CommentType.Markup && rules.markup.preserveComment === false) {
+    if (type === CommentType.Markup && rules.markup.commentPreserve === false) {
 
-      if (rules.markup.commentDelimiters === 'consistent') {
+      if (rules.markup.commentDelimiter === 'consistent') {
 
         const token = chars.slice(start + 4).join(NIL);
 
@@ -235,7 +235,7 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
           output = output.replace(rx.HTMLCommDelimCloseWhitespace, ' -->');
         }
 
-      } else if (rules.markup.commentDelimiters === 'force') {
+      } else if (rules.markup.commentDelimiter === 'newline') {
 
         if (rules.markup.commentIndent) {
           output = output.replace(rx.HTMLCommDelimOpenWhitespace, `<!--${NWL}  `);
@@ -246,8 +246,8 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
         }
 
       } else if (
-        rules.markup.commentDelimiters === 'inline' ||
-        rules.markup.commentDelimiters === 'inline-align') {
+        rules.markup.commentDelimiter === 'inline' ||
+        rules.markup.commentDelimiter === 'inline-align') {
 
         output = output.replace(rx.HTMLCommDelimOpenWhitespace, '<!-- ');
         output = output.replace(rx.HTMLCommDelimCloseWhitespace, ' -->');
@@ -440,7 +440,7 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
     // any starting or ending newlines as records[1] and records[3]
     // will take care of that logic.
     //
-    if (rules.liquid.preserveComment) {
+    if (rules.liquid.commentPreserve) {
 
       content = output
         .slice(config.begin.length, output.length - config.ender.length)
@@ -656,9 +656,9 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
     // Preserve comments based on rules
     //
     if (
-      (type === CommentType.LiquidBlock && rules.liquid.preserveComment) ||
-      (type === CommentType.LiquidLine && rules.liquid.preserveComment) ||
-      (type === CommentType.Markup && rules.markup.preserveComment)) {
+      (type === CommentType.LiquidBlock && rules.liquid.commentPreserve) ||
+      (type === CommentType.LiquidLine && rules.liquid.commentPreserve) ||
+      (type === CommentType.Markup && rules.markup.commentPreserve)) {
 
       b = chars.lastIndexOf(NWL, parse.iterator) + 1;
 
@@ -878,7 +878,7 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
     let lineCount: number = 0;
     let lineWrap: number = 0;
 
-    if (rules.markup.commentDelimiters === 'inline-align') {
+    if (rules.markup.commentDelimiter === 'inline-align') {
       indent = '     ';
     } else if (rules.markup.commentIndent) {
       indent = '  ';
@@ -1235,7 +1235,7 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
 
         if (delims[0] === Delimiters.Inline) {
           if (rules.markup.commentIndent) {
-            if (rules.markup.commentDelimiters === 'inline-align') {
+            if (rules.markup.commentDelimiter === 'inline-align') {
               output = `${lexed[0]} ${lexed.slice(1).join(parse.crlf + '     ')}`;
             } else {
               output = `${lexed[0]} ${lexed.slice(1).join(parse.crlf + '  ')}`;
@@ -1291,7 +1291,7 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
         if (delims[0] === Delimiters.Inline) {
 
           if (rules.markup.commentIndent) {
-            if (rules.markup.commentDelimiters === 'inline-align') {
+            if (rules.markup.commentDelimiter === 'inline-align') {
 
               output = `${lines[0]} ${lines.slice(1).join(parse.crlf + '     ')}`;
             } else {
@@ -1345,7 +1345,7 @@ export function CommentBlock (chars: string[], config: Comments): BlockComments 
     if (
       type === CommentType.LiquidLine &&
       is(chars[a], ch.HSH) &&
-      rules.liquid.preserveComment === false &&
+      rules.liquid.commentPreserve === false &&
       rules.wrap > 0 &&
       build.slice(build.lastIndexOf(NWL)).join(NIL).trim() === NIL) {
 
