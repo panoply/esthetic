@@ -16,7 +16,7 @@ A new generation code beautification tool for formatting HTML, Liquid, CSS/SCSS,
 
 ### Documentation
 
-Documentation lives on **[aesthetic.js.org](aesthetic.js.org)**
+Documentation lives on **[aesthetic.js.org](https://aesthetic.js.org)**
 
 ### Features
 
@@ -57,7 +57,7 @@ https://unpkg.com/esthetic
 
 ## Usage
 
-Consult the [documentation](https://æsthetic.dev) for a better understanding.
+Consult the [documentation](https://aesthetic.js.org).
 
 ###### CLI
 
