@@ -2,20 +2,26 @@ import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test.skip('Structure Test: Forcing tag arguments', t => {
+test.skip('Filter Argument Preserve with linebreak after', t => {
 
   forAssert(
     [
       [
         liquid`
-          {% render 'snippet', param_1: true, param_2: 1000, param_3: 'string', param_4: nil %}
+          {{ object.prop
+             | filter: arg_1:
+              foo
+              , bar ,
+              bar, qux
+          }}
         `,
         liquid`
-          {% render 'snippet',
-            param_1: true,
-            param_2: 1000,
-            param_3: 'string',
-            param_4: nil %}
+          {{ object.prop
+            | filter: arg_1:
+              foo
+              , bar
+              , bar, qux
+          }}
         `
       ],
       [
@@ -54,7 +60,7 @@ test.skip('Structure Test: Forcing tag arguments', t => {
           param_1: true    , param_2: 1000
           ,
            param_3: 'string'
-          , param_4: nil %}
+          , param_4: nil, %}
         `,
         liquid`
           {% render 'snippet',
@@ -71,40 +77,7 @@ test.skip('Structure Test: Forcing tag arguments', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       liquid: {
-        argumentLineBreak: 2,
-        lineBreakSeparator: 'after'
-      }
-    });
-
-    t.is(actual, expect);
-
-  });
-});
-
-test.skip('Structure Test: Force filter tag arguments', t => {
-
-  forAssert(
-    [
-      [
-        liquid`
-          {% render 'snippet', param_1: true, param_2: 1000, param_3: 'string', param_4: nil %}
-        `,
-        liquid`
-         {% render 'snippet'
-            , param_1: true
-            , param_2: 1000
-            , param_3: 'string'
-            , param_4: nil %}
-        `
-      ]
-    ]
-  )(function (source, expect) {
-
-    const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        argumentLineBreak: 2,
-        lineBreakSeparator: 'before',
+        argumentLineBreak: 2
       }
     });
 
