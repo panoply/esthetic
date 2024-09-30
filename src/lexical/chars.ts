@@ -28,6 +28,26 @@ export const DQO = '"';
 export const COM = ',';
 
 /**
+ * `%` –  Percentage Character
+ */
+export const PER = '%';
+
+/**
+ * `{` –  Left Cury Brace
+ */
+export const LCB = '{';
+
+/**
+ * `}` –  Right Cury Brace
+ */
+export const RCB = '}';
+
+/**
+ * `|` –  Pipe Character
+ */
+export const PIP = '|';
+
+/**
  * `=` - Equals Character
  */
 export const EQL = '=';
