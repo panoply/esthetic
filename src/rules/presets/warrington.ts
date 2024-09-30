@@ -19,8 +19,7 @@ export const warrington: Rules = merge(defaults, {
     quoteConvert: 'double'
   },
   markup: {
-    attributeLineBreak: 1,
-    commentNewline: true,
+    attributeLineBreak: 2,
     commentDelimiter: 'consistent',
     delimiterTerminus: false,
     forceIndent: true,
