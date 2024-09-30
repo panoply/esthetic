@@ -8,7 +8,8 @@ import { warrington } from 'rules/presets/warrington';
 import { prettier } from 'rules/presets/prettier';
 import { object } from 'utils/native';
 import { CNL, NWL } from 'lexical/chars';
-import { hasProp, isNumber, isUndefined, merge } from 'utils/helpers';
+import { hasProp, merge } from 'utils/helpers';
+import { config } from 'config';
 
 const GLOB = [
   'correct',
@@ -18,8 +19,7 @@ const GLOB = [
   'indentLevel',
   'indentSize',
   'preserveLine',
-  'wrap',
-  'wrapFraction'
+  'wrap'
 ];
 
 const LANG: LanguageRuleNames[] = [
@@ -38,9 +38,8 @@ const LANG: LanguageRuleNames[] = [
  */
 export function setPreset (options: Rules) {
 
-  if (options.preset === parse.rules.preset) return options;
-
   if (isValidChoice('global', 'preset', options.preset)) {
+
     switch (options.preset) {
       case 'default': return merge(defaults, options);
       case 'strict': return merge(strict, options);
@@ -66,6 +65,8 @@ export function setRules (opts: Rules, events: EventListeners) {
    * Properties Existence
    */
   const has = hasProp(opts);
+
+  if (config.persistRules === false) parse.rules = merge(defaults);
 
   /**
    * Formatting Options - Applies preset if provided
@@ -93,17 +94,9 @@ export function setRules (opts: Rules, events: EventListeners) {
     if (has(rule) === false) continue;
     if (parse.rules[rule] === options[rule]) continue;
     if (isValid('global', rule, options[rule])) {
-
       if (change) change[rule] = { from: parse.rules[rule], to: options[rule] };
       if (rule === 'crlf') parse.crlf = options[rule] ? CNL : NWL;
-      if (rule === 'wrap' && options[rule] > 0) {
-        if (has('wrapFraction') === false || (has('wrapFraction') && options.wrapFraction <= 0)) {
-          options.wrapFraction = options[rule];
-        }
-      }
-
       parse.rules[rule] = options[rule];
-
     }
   }
 
@@ -126,36 +119,6 @@ export function setRules (opts: Rules, events: EventListeners) {
 
       }
     }
-  }
-
-  if (isUndefined(parse.rules.markup.forceIndent)) {
-
-    if (parse.rules.markup.forceIndent === false) {
-
-      if (parse.rules.markup.attributeLineBreak === true) {
-        parse.rules.markup.forceInline = true;
-      } else if (isNumber(parse.rules.markup.attributeLineBreak)) {
-        parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
-      }
-
-    } else if (isNumber(parse.rules.markup.attributeLineBreak)) {
-
-      parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
-
-    } else {
-
-      parse.rules.markup.forceInline = true;
-
-    }
-
-  } else if (isNumber(parse.rules.markup.forceInline)) {
-
-    if (parse.rules.markup.forceInline === 0) {
-
-      parse.rules.markup.forceInline = parse.rules.markup.attributeLineBreak;
-
-    }
-
   }
 
   if (events.rules.length > 0) {
