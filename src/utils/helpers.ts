@@ -5,16 +5,21 @@ import { Stats, MultipleTopLevelPatch } from 'types/index';
 import { getLanguageName } from 'rules/language';
 import { cc } from 'lexical/codes';
 import { WhitespaceChar } from 'lexical/regex';
-import { assign, toString } from './native';
+import { assign, keys, toString } from './native';
 
-export function merge <Merge extends object> (
-  source: Merge,
-  ...patches: Array<MultipleTopLevelPatch<Merge>>
-): Merge {
+/**
+ * Merge
+ *
+ * Immutable merge assignment utility. Accepts deep structures
+ * and merges `source` parameter with `patch` parameter
+ */
+export function merge <Merge extends object> (source: Merge, ...patches: Array<MultipleTopLevelPatch<Merge>>): Merge {
 
-  const arr = isArray(source);
+  const isArr = isArray(source);
 
-  return (function apply (isArr, copy: any, patch: any) {
+  return apply(isArr, isArr ? source.slice() : assign({}, source), patches);
+
+  function apply (arrayType: boolean, copy: any, patch: any) {
 
     const type = typeof patch;
 
@@ -22,47 +27,25 @@ export function merge <Merge extends object> (
 
       if (isArray(patch)) {
 
-        for (const p of patch) copy = apply(isArr, copy, p);
+        for (const p of patch) copy = apply(arrayType, copy, p);
 
       } else {
 
-        for (const k in patch) {
-
+        for (const k of keys(patch)) {
           const val = patch[k];
-
-          if (isFunction(val)) {
-            copy[k] = val(copy[k], merge);
-          } else if (val === undefined) {
-            if (isArr) {
-              copy.splice(k, 1);
-            } else {
-              delete copy[k];
-            }
-          } else if (val === null || isObject(val) === false || isArray(val)) {
-
-            copy[k] = val;
-
-          } else if (typeof copy[k] === 'object') {
-
-            copy[k] = val === copy[k] ? val : merge(copy[k], val);
-
-          } else {
-
-            copy[k] = apply(false, {}, val);
-
-          }
+          if (isFunction(val)) copy[k] = val(copy[k], merge);
+          else if (val === undefined) arrayType ? copy.splice(k, 1) : delete copy[k];
+          else if (val === null || isObject(val) === false || isArray(val))copy[k] = val;
+          else if (isObject(copy[k])) copy[k] = val === copy[k] ? val : merge(copy[k], val);
+          else copy[k] = apply(false, {}, val);
         }
 
       }
-    } else if (type === 'function') {
-
-      copy = patch(copy, merge);
-
-    }
+    } else if (type === 'function') copy = patch(copy, merge);
 
     return copy;
 
-  })(arr, arr ? source.slice() : assign({}, source), patches);
+  };
 
 };
 
@@ -126,6 +109,78 @@ export function glue (string: string[]) {
 export function join (...message: string[]) {
 
   return message.join(NWL);
+
+}
+
+/**
+ * Get Tag Name
+ *
+ * Returns the tag name of the provided token. Looks for HTML and Liquid tag names,
+ * includes Liquid output objects too. Will convert tag names to lowercase.
+ *
+ * Optionally provide a slice offset index to slice the tag name. Helpful in situations
+ * when we need to exclude `end` from `endtag`
+ */
+export function getTagName (tag: string, slice: number = NaN, fallback?: string) {
+
+  if (isString(tag) === false) return NIL;
+
+  if (not(tag, cc.LAN) && not(tag, cc.LCB)) return fallback || tag;
+
+  if (is(tag, cc.LAN)) {
+
+    const next = tag.search(/[\s>]/);
+    const name = tag.slice(is(tag[1], cc.FWS) ? 2 : 1, next);
+
+    // Handles XML tag name (ie: <?xml?>)
+    return is(name, cc.QWS) && isLast(name, cc.QWS) ? 'xml' : isNaN(slice)
+      ? name
+      : name.slice(slice);
+
+  }
+
+  // Returns the Liquid tag or output token name
+  const name = is(tag[2], cc.DSH) ? tag.slice(3).trimStart() : tag.slice(2).trimStart();
+  const tname = name.split(/\s|-?[%}]}/).shift();
+
+  return isNaN(slice) ? tname : tname.slice(slice);
+
+};
+
+/**
+ * Quote Conversion
+ *
+ * Converts quotes while excluding escaped instances.
+ * Returns a function and is intended to be used within a `replace`.
+ *
+ * @example
+ *
+ * string.replace(/"/g, lx.qc("'"))
+ */
+export function qc (to: string) {
+
+  return (m: string, i: number, input: string) => {
+
+    let o = to;
+    let c = to;
+
+    if (is(input[i - 1], cc.BWS)) o = m[0];
+    if (is(m[m.length - 2], cc.BWS)) c = m[m.length - 1];
+
+    return o + m.slice(1, -1) + c;
+
+  };
+}
+
+/**
+ * Count Characters
+ *
+ * Counts the number of `char` (characters) in the provided
+ * `string` and returns the total number (minus 1).
+ */
+export function countChars (string: string, char: string) {
+
+  return string.split(char).length - 1;
 
 }
 
@@ -203,6 +258,20 @@ export function repeatChar (count: number, character: string = WSP) {
 }
 
 /**
+ * Next Non-Space
+ *
+ * Returns the next index of a non-whitespace character
+ */
+export function nsNext (index: number, input: readonly string[], length: number) {
+
+  do if (ns(input[index])) break;
+  while (++index < length);
+
+  return index - 1;
+
+}
+
+/**
  * Newline Iterator
  *
  * Accepts a string input and will returns a callback function for every newline
@@ -246,7 +315,7 @@ export function nline (
           isEnd: index === lines.length - 1
         });
 
-        count = 0;
+        count = 1;
       }
     }
 
@@ -300,13 +369,62 @@ export function wordWrap (text: string, width: number, lexed: string[] = []) {
 }
 
 /**
- * First (equal)
+ * Is Whitespace (equal)
  *
  * If first character code is whitespace or tab
  */
 export function isWS (string: string) {
 
   return string ? WhitespaceChar.test(string) : false;
+
+}
+
+/**
+ * Is NOT Whitespace
+ *
+ * If first character code is not a whitespace or tab
+ */
+export function notWS (string: string) {
+
+  return !isWS(string);
+
+}
+
+/**
+ * Next Newline or Character
+ *
+ * Returns the next index of a newline or character which is not whitespace
+ */
+export function nextNWL (index: number, input: readonly string[], length: number) {
+
+  do {
+    if (is(input[index], cc.NWL)) return index - 1;
+    if (notWS(input[index])) return index - 1;
+  } while (++index < length);
+
+  return index - 1;
+
+}
+
+/**
+ * Is Next (equal)
+ *
+ * If the next character is equal to the provided code. This function
+ * will move through whitespace and/or newlines. It can be used to peek
+ * forward in the structure, for example:
+ *
+ * We pass a structure which begins **after** `a`. We are seeking if
+ * the next character is `b` but do not care about whitespace or newlines.
+ *
+ * ```js
+ * // input provided
+ * a
+ *       b
+ * ```
+ */
+export function isNext (string: string | string[], code: number) {
+
+  return (isArray(string) ? string.join(NIL) : string).trimStart().charCodeAt(0) === code;
 
 }
 
@@ -333,13 +451,29 @@ export function lastChar (string: string | string[]): string {
 }
 
 /**
+ * Last Item
+ *
+ * Returns the last item in the provided array. Optionally accepts
+ * an `at` parameter value which defaults to `1`
+ */
+export function last <T extends any> (input: T[], at = 1): T {
+
+  return input[input.length - at];
+
+}
+
+/**
  * Starting Characters (equal)
  *
- * If the characters codes match the starting string sequence
+ * If the character codes match the starting string sequence
  */
-export function isOf (string: string | string[], ...codes: number[]) {
+export function isOf (string: string, ...codes: number[]) {
 
-  return string ? codes.some(code => string[0].charCodeAt(0) === code) : false;
+  for (
+    let i = codes.length
+      , c = string.charCodeAt(0); i > 0; i--) if (c === codes[i]) return true;
+
+  return false;
 
 }
 
@@ -359,15 +493,16 @@ export function isLast (string: string | string[], code: number) {
 /**
  * Last (equal)
  *
- * If last character code of the string is equal to the provided code.
- * Accepts a spread list of codes to match. When more than 1 code is passed
- * it will use `some` to determine match
+ * If last character code of the `string` is equal to any of the provided `codes`.
+ * in the spread parameter. Use this for multiple comparison.
  */
 export function isLastOf (string: string | string[], ...codes: number[]) {
 
-  const s = string.length;
+  for (
+    let i = codes.length
+      , c = lastChar(string).charCodeAt(0); i > 0; i--) if (c === codes[i]) return true;
 
-  return codes.some(c => is(string[s - 1], c));
+  return false;
 
 };
 
@@ -433,6 +568,18 @@ export function ns (string: string) {
 }
 
 /**
+ * Non Whitespace Last
+ *
+ * Check if the last character in string or array does NOT end with
+ * a whitespace (`\s`,`\t`,`\n` etc) character.
+ */
+export function nsLast (string: string | string[]) {
+
+  return /\S/.test(lastChar(string));
+
+}
+
+/**
  * Whitespace
  *
  * Check if provided string is a whitespace (`\s`,`\t`,`\n` etc) character
@@ -440,6 +587,17 @@ export function ns (string: string) {
 export function ws (string: string) {
 
   return /\s/.test(string);
+
+}
+
+/**
+ * Whitespace Last
+ *
+ * Check if provided string or array is a whitespace (`\s`,`\t`,`\n` etc) character
+ */
+export function wsLast (string: string | string[]) {
+
+  return /\s/.test(lastChar(string));
 
 }
 
@@ -611,10 +769,11 @@ export function isFunction <T extends Function> (param: any): param is T {
 export function isBoolean <T extends Function> (param: any): param is T {
 
   return toString.call(param).slice(8, -1) === 'Boolean';
+}
 
 /**
  * Check is param is a number type
- */ }
+ */
 export function isNumber <T extends number> (param: any): param is T {
 
   return toString.call(param).slice(8, -1) === 'Number';
