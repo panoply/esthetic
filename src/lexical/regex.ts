@@ -247,6 +247,16 @@ export const WhitespaceChar = /[\t\v\r \u00a0\u2000-\u200b\u2028-\u2029\u3000]/;
 export const NewlineLead = /^\n+/;
 
 /**
+ * Lead Newline followed by whitespace
+ *
+ * ---
+ *
+ * @example /^\n\s*$/
+ *
+ */
+export const NewlineLeadWS = /^\n\s*$/;
+
+/**
  * Ending Newlines
  *
  * 1 or more ending newline characters
