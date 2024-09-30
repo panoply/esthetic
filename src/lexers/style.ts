@@ -1,15 +1,14 @@
 /* eslint-disable no-use-before-define */
-import type { Types } from 'types';
+import type { BlockComments, Types } from 'types';
 import { CommentBlock, commentLine } from 'comments';
 import { parse } from 'parse/parser';
 import { grammar } from 'parse/grammar';
 import { sortCorrect, sortObject } from 'parse/sorting';
-import { digit, is, not, ws } from 'utils/helpers';
+import { digit, getTagName, is, not, ws } from 'utils/helpers';
 import { DQO, NIL, NWL, SQO, WSP } from 'chars';
 import * as rx from 'lexical/regex';
 import * as lq from 'lexical/liquid';
 import { cc } from 'lexical/codes';
-import { getTagName } from 'lexical/lexing';
 
 /* -------------------------------------------- */
 /* LEXER                                        */
@@ -1369,7 +1368,7 @@ export function style () {
    */
   function parseComment (isLineComment: boolean) {
 
-    let comm: [string, number];
+    let comm: BlockComments;
 
     if (isLineComment) {
 
