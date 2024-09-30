@@ -21,3 +21,5 @@ export const config: IConfigInternal = {
   logColors: true,
   resolveConfig: 'package.json'
 };
+
+
