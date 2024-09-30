@@ -1,32 +1,144 @@
 /**
- * Parser Modes
+ * Parser Action
  *
  * Informs on the current operation in execution.
- * Helpful when switching between lexers in external regions
+ * Helpful when switching between lexers in external regions.
  */
-export const enum Modes {
-  Parse = 1,
+export const enum Action {
+  /**
+   * Running language detection mode
+   */
+  Detect = 1,
+  /**
+   * Parse indicates lexer operation
+   */
+  Parse,
+  /**
+   * Embed indicates external lexer operation
+   */
   Embed,
+  /**
+   * Format indicates beautification operation cycle
+   */
   Format
 }
 
-export const enum Eq {
-  Truth = 1,
-  False = 0
+/**
+ * Parser Modes
+ *
+ * Informs on the execution mode.
+ */
+export const enum Modes {
+  /**
+   * Parse indicates lexer operation
+   */
+  Parse = 1,
+  /**
+   * Format indicates beautification operation cycle
+   */
+  Format
+}
+
+/**
+ * Line (Level) Feed Control
+ *
+ * Level indentation control.
+ */
+export const enum LF {
+  /**
+   * Newlines only
+   */
+  NL = 1,
+  /**
+   * Whitespace and Newlines
+   */
+  WSNL = 2,
+  /**
+   * Whitespace only
+   */
+  WS = 3
+}
+
+/**
+ * Line Breaks
+ *
+ * - `1` no linebreak
+ * - `2` limit based linebreak
+ * - `3` preservation linebreaks
+ * - `4` wrap linebreak
+ */
+export const enum Lnbr {
+  /**
+   * No linebreak should apply
+   */
+  None = 1,
+  /**
+   * Limit based linebreak
+   */
+  Limit,
+  /**
+   * Preservation linebreak
+   */
+  Preserve,
+  /**
+   * Wrap based linebreak
+   */
+  Wrap,
+}
+/**
+ * Parser Action
+ *
+ * Informs on the current operation in execution.
+ * Helpful when switching between lexers in external regions.
+ */
+export const enum Equipoise {
+  /**
+   * Filter Pipe
+   */
+  FilterPipe = 1,
+  /**
+   * Filter Arguments
+   */
+  FilterArg,
+  /**
+   * Filter Arguments
+   */
+  FilterParam,
+  /**
+   * Tag Arguments
+   */
+  TagParam,
+  /**
+   * Tag Arguments
+   */
+  TagArg,
+  /**
+   * Logic Expression
+   */
+  Logic,
 }
 
 export const enum Lexers {
+  /**
+   * Markup Lexer ~ XML, HTML, Liquid (Sometimes JSX and TSX)
+   */
   Markup = 1,
+  /**
+   * Script Lexer ~ JSON, JavaScript, TypeScript (Sometimes JSX and TSX)
+   */
   Script,
+  /**
+   * Style Lexer ~ CSS, SCSS
+   */
   Style,
+  /**
+   * Ignore Lexing
+   */
   Ignore,
+  /**
+   * Automatic Detection (see: `./src/parse/detection.ts`)
+   */
   Auto
-}
-
-export const enum Beautifiers {
-  Markup = 1,
-  Script,
-  Style,
 }
 
 export const enum CommentType {
@@ -79,7 +191,7 @@ export enum LogLevel {
   Detailed
 }
 
-export const enum TokenType {
+export enum Token {
   /**
    * Liquid output token
    *
@@ -260,7 +372,7 @@ export const enum TagBlocks {
 /**
  * Liquid Tag enum reference which is use by the `isLiquid` utility.
  */
-export const enum LT {
+export const enum LqT {
   /**
    * Check from index `0` opening delimiters,
    *
