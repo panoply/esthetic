@@ -35,6 +35,9 @@
     "emitDeclarationOnly": true,
     "baseUrl": ".",
     "paths": {
+      "types": [
+        "./types/index.d.ts"
+      ],
       "types/*": [
         "./types/*"
       ],
@@ -48,7 +51,7 @@
         "./src/cli/*"
       ],
       "format": [
-        "src/format/index.ts"
+        "./src/format/index.ts"
       ],
       "lexers": [
         "./src/lexers/index.ts"
@@ -66,10 +69,10 @@
         "./src/utils/*"
       ],
       "parse/*": [
-        "src/parse/*"
+        "./src/parse/*"
       ],
       "rules/*": [
-        "src/rules/*"
+        "./src/rules/*"
       ],
       "@liquify/ava/esthetic": [
         "./node_modules/@liquify/ava/package/esthetic.d.ts"
