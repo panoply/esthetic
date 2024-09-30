@@ -189,6 +189,13 @@ export const enum ParseError {
    */
   MissingLiquidFilter,
   /**
+   * Invalid Liquid Operator
+   *
+   * @example
+   * {% if a !== b %} // invalid operator
+   */
+  InvalidLiquidOperator,
+  /**
    * Invalid Liquid Character Sequence
    *
    * @example
