@@ -1,5 +1,5 @@
+import type { Rules } from 'types';
 import { merge } from 'utils/helpers';
-import { Rules } from 'types';
 import { defaults } from './default';
 
 /**
@@ -8,12 +8,11 @@ import { defaults } from './default';
  * Rules which replicates the Prettier formatting style.
  * These also reflect the prettier-liquid plugin.
  */
-export const prettier = merge<Rules>(defaults, {
+export const prettier: Rules = merge(defaults, {
   preset: 'prettier',
   language: 'auto',
   preserveLine: 1,
   wrap: 80,
-  wrapFraction: 60,
   liquid: {
     ignoreTagList: [ 'javascript' ],
     indentAttribute: true,
@@ -22,7 +21,7 @@ export const prettier = merge<Rules>(defaults, {
     quoteConvert: 'double'
   },
   markup: {
-    attributeLineBreak: 1,
+    attributeLineBreak: 2,
     commentDelimiter: 'consistent',
     commentIndent: true,
     delimiterTerminus: 2,
@@ -33,8 +32,7 @@ export const prettier = merge<Rules>(defaults, {
     selfCloseSpace: true,
     selfCloseSVG: true,
     stripAttributeLines: true,
-    quoteConvert: 'double',
-
+    quoteConvert: 'double'
   },
   json: {
     arrayFormat: 'indent',
