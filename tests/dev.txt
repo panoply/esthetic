@@ -1,22 +1,8 @@
- {%- for product in recommendations.products
-                                    limit: block.settings.products_per_page
-                                    offset: continue
-                                  -%}
-                                    <li>
-                                      {%- if block.settings.enable_quick_add -%}
-                                        {% assign quick_add = 'standard' %}
-                                      {%- else -%}
-                                        {% assign quick_add = 'none' %}
-                                      {%- endif -%}
-                                      {% render 'card-product',
-                                        card_product: product,
-                                        media_aspect_ratio: block.settings.image_ratio,
-                                        show_secondary_image: false,
-                                        lazy_load: false,
-                                        quick_add: quick_add,
-                                        section_id: section.id,
-                                        horizontal_class: true,
-                                        horizontal_quick_add: true
-                                      %}
-                                    </li>
-                                  {%- endfor -%}
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag:
+    class: 'x', width: w
+    , height: h
+    , alt: alt,size: size,
+    preload: true
+}}

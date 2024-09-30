@@ -1,5 +1,5 @@
 import { dev } from '@liquify/ava/esthetic';
-import esthetic from 'esthetic';
+import sin from 'esthetic';
 
 dev(function (source) {
 
@@ -111,41 +111,29 @@ dev(function (source) {
   //   }
   // });
 
+
   const output = esthetic.format(source, {
     language: 'liquid',
-    indentSize: 2,
-    preserveLine: 4,
-    wrap: 80,
+    wrap: 70,
     liquid: {
-      indentAttribute: true,
-      filterLineBreak: 0,
-      argumentLineBreak: 0,
-      lineBreakSeparator: 'before',
-      lineBreakLogical: 'after'
-    },
-    markup: {
-      attributeLineBreak: 2,
-      delimiterTerminus: 2,
-      forceIndent: false,
-      ignoreJS: true,
-      ignoreJSON: false,
-      valueSpacing: 'equipoise',
-      valueLineBreak: 'force-indent'
+      argumentFormat: 'preserve',
+      delimiterPlacement: 'preserve',
+      delimiterTrims: 'tags'
     }
   });
 
   return {
     source: output,
-    wrap: 80,
-    repeat: 0,
+    wrap: 70,
+    repeat: 1,
     inspect: true,
     logger: false,
-    colors: true,
+    colors: false,
     finish: () => {
 
       // console.log(JSON.stringify(output.split(/(\n+)/), null, 2));
       console.log(esthetic.stats);
-      // console.log(esthetic.table);
+       //console.log(esthetic.table);
       // console.log(esthetic.rules());
 
     }
