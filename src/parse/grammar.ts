@@ -58,15 +58,29 @@ class Liquid {
       'stylesheet',
       'javascript'
     ],
+    iterator: [
+      'for',
+      'tablerow'
+    ],
     control: [
       'if',
       'unless',
-      'case'
+      'case',
+      'elsif',
+      'when'
     ],
     else: [
       'else',
       'elsif',
       'when'
+    ],
+    void: [
+      'echo',
+      'else',
+      'break',
+      'continue',
+      'increment',
+      'decrement'
     ],
     singletons: [
       'include',
@@ -84,6 +98,8 @@ class Liquid {
     ]
   };
 
+  public iterator = set(this.grammar.iterator);
+  public void = set(this.grammar.void);
   public else = set(this.grammar.else);
   public control = set(this.grammar.control);
   public tags = set(this.grammar.tags);
@@ -122,6 +138,12 @@ class Liquid {
           } else if (rule === 'singletons' && this.singleton.has(tag) === false) {
             this.grammar.singletons.push(tag);
             this.singleton.add(tag);
+          } else if (rule === 'void' && this.void.has(tag) === false) {
+            this.grammar.void.push(tag);
+            this.void.add(tag);
+          } else if (rule === 'iterator' && this.iterator.has(tag) === false) {
+            this.grammar.iterator.push(tag);
+            this.iterator.add(tag);
           }
         }
       } else if (rule === 'embedded') {
