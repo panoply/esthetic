@@ -2,16 +2,17 @@
 title: 'Liquid - Filter Line Break'
 layout: base
 permalink: '/rules/liquid/filterLineBreak/index.html'
-describe:
-  - Filter Wrap
-  - Related Rules
-  - Defaults
-  - Rule Options
-options:
-  - 0
-  - 1
-  - 2
-  - 3
+anchors:
+  describe:
+    - Filter Line Break
+    - Related Rules
+    - Defaults
+    - Rule Options
+  options:
+    - 0
+    - 1
+    - 2
+    - 3
 ---
 
 ::: grid col-12 col-sm-9 p-100
@@ -59,15 +60,24 @@ By default, this rule uses a value of `0` which infers forcing to apply at a len
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 80,
-  "liquid": {
-    "forceFilter": 0
-  }
+  "wrap": 50
 }
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
+
+{{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
+
+{{ object.prop
+| filter_1: 'value'
+| filter_2: 'xxx' | filter_3: 'foo' }}
+
+{{ object.prop | filter_1: 'value' }}
+
+```
+
+```liquid:after
 
 {{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
 
@@ -87,30 +97,37 @@ By default, this rule uses a value of `0` which infers forcing to apply at a len
 
 :::
 
-This is an example of the `forceFilter` using a value of `3` which will result in forcing only if the tag contains `3` or more filters. A tag with less than this number of filters will not have forcing applied (unless `wrap` is exceeded).
+This is an example of the `filterLineBreak` using a value of `3` which will result in forcing only if the tag contains `3` or more filters. A tag with less than this number of filters will not have forcing applied (unless `wrap` is exceeded).
 
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 0,
   "liquid": {
-    "forceFilter": 3
+    "filterLineBreak": 3
   }
 }
 ```
 
 <!-- prettier-ignore -->
-```liquid
-
-{% # No forcing will be applied as only 2 filters exist %}
+```liquid:before
 {{ object.prop
 | filter_1: 'value'
 | filter_2: 'xxx' }}
 
-{% # Forcing is applied because there are 3 filters %}
 {{ object.prop | filter_1: 'value' | filter_2: 'x' | filter_3: 'foo' }}
 
-{% # No forcing will be applied as only 1 filter exists %}
+{{ object.prop
+| filter_1: 'value' }}
+```
+
+```liquid:after
+
+{{ object.prop
+| filter_1: 'value'
+| filter_2: 'xxx' }}
+
+{{ object.prop | filter_1: 'value' | filter_2: 'x' | filter_3: 'foo' }}
+
 {{ object.prop
 | filter_1: 'value' }}
 ```

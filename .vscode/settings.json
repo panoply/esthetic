@@ -32,6 +32,7 @@
     "occaecat",
     "officia",
     "pariatur",
+    "POSIX",
     "proident",
     "quis",
     "reprehenderit",
@@ -82,7 +83,7 @@
     "window.inactiveBorder": "#00aeff",
   },
   "highlight.regexes": {
-    "(\\L\\T)(?=\\.)": {
+    "(\\L\\T|\\L\\F|\\L\\N\\B\\R)(?=\\.)": {
       "regexFlags": "g",
       "decorations": [
         {
@@ -90,7 +91,7 @@
         }
       ]
     },
-    "(:{3,4})": {
+    "(:{3,5})": {
       "regexFlags": "g",
       "decorations": [
         {
@@ -144,6 +145,39 @@
         }
       ]
     },
+    "(?<=`)(\\{)(\\w*)(\\}) ": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#F48FB1",
+          "fontWeight": "900"
+        },
+        {
+          "color": "#81D4FA",
+        },
+        {
+          "color": "#F48FB1",
+          "fontWeight": "900"
+        },
+      ]
+    },
+    "(```)(\\w+)(\\:)(before|after)": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#FAFAFA",
+        },
+        {
+          "color": "#9EE34F",
+        },
+        {
+          "color": "#FAFAFA",
+        },
+        {
+          "color": "#E91E63",
+        },
+      ]
+    },
     "^(-{3})([\\s\\S]*)(-{3})": {
       "regexFlags": "g",
       "filterFileRegex": "tests/.*\\.(html|liquid|css|scss|js|ts|xml)",
@@ -164,7 +198,7 @@
   "liquid.engine": "11ty",
   "liquid.config.method": "liquidrc",
   "[liquid]": {
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
     "editor.defaultFormatter": "sissel.shopify-liquid"
   }
 }

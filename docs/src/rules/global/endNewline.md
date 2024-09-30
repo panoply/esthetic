@@ -2,19 +2,21 @@
 title: 'Global Rules - End Newline'
 layout: base
 permalink: '/rules/global/endNewline/index.html'
-describe:
-  - End Newline
-  - Rule Options
-options:
-  - false
-  - true
+anchors:
+  describe:
+    - End Newline
+  options:
+    - false
+    - true
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 col-lg-8
 
 # End Newline
 
-Whether or not files should end with an empty newline. This is a global rule definition and will be used for all languages. The **Recommended** option to use is `true` which will insert a newline at the end of documents.
+Whether or not formatted content should conclude with an empty newline character. It functions as a global setting, applying uniformly across all supported languages in your project. The recommended configuration is to set this option to `true`, which instructs the formatter to automatically append a newline at the end of each file. Ending files with a newline is widely considered a best practice in software development. This approach enhances compatibility with various tools and systems that expect files to terminate with a newline.
+
+> It is recommend to keep this set to `true` to align with the POSIX standard, which defines a line as a sequence of characters followed by a newline and prevent certain issues that may arise in version control systems.
 
 :::
 
@@ -62,15 +64,21 @@ The global `endNewline` rule is disabled (i.e: `false`) by default. This will re
 }
 ```
 
-<!-- prettier-ignore -->
-```html
-<header>
-<h1>Hello World</h1>
-<p>
-  The newline at the end of this sample will be stripped.
-</p>
-</header>
+```html:before
+Lorem ipsum dolor sit amet consectetur,
+adipisicing elit. Officia eius neque autem
+molestias, doloribus corrupti nulla totam
+atque libero, iusto est asperiores, culpa
+blanditiis provident!
 
+```
+
+```html:after
+Lorem ipsum dolor sit amet consectetur,
+adipisicing elit. Officia eius neque autem
+molestias, doloribus corrupti nulla totam
+atque libero, iusto est asperiores, culpa
+blanditiis provident!
 ```
 
 ---
@@ -90,12 +98,19 @@ When the global `endNewline` rule is enabled (i.e: `true`) then documents/files 
 }
 ```
 
-<!-- prettier-ignore -->
-```html
-<header>
-<h1>Hello World</h1>
-<p>
-  A newline will be inserted at the bottom of this sample
-</p>
-</header>
+```html:before
+Lorem ipsum dolor sit amet consectetur,
+adipisicing elit. Officia eius neque autem
+molestias, doloribus corrupti nulla totam
+atque libero, iusto est asperiores, culpa
+blanditiis provident!
+```
+
+```html:after
+Lorem ipsum dolor sit amet consectetur,
+adipisicing elit. Officia eius neque autem
+molestias, doloribus corrupti nulla totam
+atque libero, iusto est asperiores, culpa
+blanditiis provident!
+
 ```

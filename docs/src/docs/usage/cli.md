@@ -2,12 +2,6 @@
 title: 'CLI'
 layout: base
 permalink: '/usage/cli/index.html'
-prev:
-  label: 'Installation'
-  uri: '/introduction/installation'
-next:
-  label: 'Config Files'
-  uri: '/usage/config-files'
 anchors:
   - CLI
   - Configuration Files
@@ -19,16 +13,13 @@ anchors:
 
 # CLI
 
-Æsthetic provides basic CLI support via the `esthetic` command and assumes configuration is defined within a projects `package.json` file via an `esthetic` key property. CLI usage requires a path/pattern match be passed and will resolve files from the location provided. By default, Æsthetic will print formatted code to **stdout** and requires an `-f` or `--format` flag for file overwrites.
+Æsthetic provides basic CLI support via the `esthetic` command and assumes configuration is defined within a projects `package.json` file via an `esthetic` key property. CLI usage requires a path/pattern match be passed and will resolve files from the location provided. By default, Æsthetic will print formatted code to **stdout** and requires an `{bash} -f` or `{bash} --format` flag for file overwrites.
 
-> The `-f` (or `--format`) flag will overwrite files matching the path pattern passed from command line. If you'd like to have Æsthetic output files to a different location then use the `-o` (or `--output`) flag.
+> The `{bash} -f` (or `{bash} --format`) flag will overwrite files matching the path pattern passed from command line. If you'd like to have Æsthetic output files to a different location then use the `{bash} -o` (or `{bash} --output`) flag.
 
 # Configuration Files
 
-When using the CLI you can define configuration using an external file. By default, Æsthetic will assume rules/settings are defined in the projects `package.json` file via the `esthetic` property. Æsthetic also supports external config files for settings and defining beautification rules. The following files will take precedence if contained in root of your project:
-
-- `.esthetic`
-- `.esthetic.json`
+When using the CLI you can define configuration using an external file. By default, Æsthetic will assume rules/settings are defined in the projects `package.json` file via the `esthetic` property. Æsthetic also supports external config files for settings and defining beautification rules.
 
 Refer to [Config File](/usage/config-file/) for more information
 
@@ -92,6 +83,8 @@ src/
 │   └── file-2.json
 └── package.json
 ```
+
+---
 
 The CLI uses the file extensions suffixes to determine formatting languages but also accepts language identifier flags. Using the example project above, let's leverage the language identifier flags to target certain files within a glob `*` pattern match:
 

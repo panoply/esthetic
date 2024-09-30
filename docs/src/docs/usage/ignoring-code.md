@@ -22,6 +22,8 @@ Excluding regions of code, entire documents and token specific occurrences can b
 
 The `esthetic-ignore` comment can be used to exclude formatting on the entire document.
 
+::: grid comments
+
 ```liquid
 
 // esthetic-ignore
@@ -36,7 +38,11 @@ The `esthetic-ignore` comment can be used to exclude formatting on the entire do
 
 ```
 
+:::
+
 ##### esthetic-ignore-next
+
+::: grid comments
 
 <!-- prettier-ignore -->
 ```liquid
@@ -51,7 +57,11 @@ The `esthetic-ignore` comment can be used to exclude formatting on the entire do
 {% comment %} esthetic-ignore-next {% endcomment %}
 ```
 
+:::
+
 ##### esthetic-ignore-start → esthetic-ignore-end
+
+::: grid comments
 
 ```liquid
 
@@ -71,3 +81,5 @@ The `esthetic-ignore` comment can be used to exclude formatting on the entire do
 {% comment %} esthetic-ignore-end {% endcomment %}
 
 ```
+
+:::

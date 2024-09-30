@@ -1,0 +1,41 @@
+.rule {
+  &-showcase {
+    margin-top: 35px;
+  }
+
+  &-description {
+    p {
+      width: 100% !important;
+    }
+
+    blockquote {
+      width: 100% !important;
+    }
+  }
+
+  &-sidebar {
+    p {
+      width: 100% !important;
+    }
+
+    blockquote {
+      width: 100% !important;
+    }
+  }
+
+  &-title {
+    h4 {
+      font-family: $font-family-other;
+      font-size: 1.2rem;
+      text-transform: lowercase;
+      padding: 5px 10px 5px 0;
+      width: fit-content;
+      font-weight: 600;
+      margin-top: 0;
+    }
+
+    h5 {
+      margin-top: 0;
+    }
+  }
+}

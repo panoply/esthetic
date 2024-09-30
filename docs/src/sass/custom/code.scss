@@ -1,0 +1,53 @@
+.papyrus-editor {
+  &::-webkit-scrollbar-thumb:horizontal {
+    height: 0 !important;
+  }
+}
+
+.prism-code-editor {
+  border: none;
+}
+
+:not(pre) > code {
+  word-wrap: break-word;
+  padding: 0.12rem 0.45rem 0.21rem 0.45rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.0225rem;
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: $white;
+  font-family: $font-family-code;
+  text-shadow: 0px 0px 5px black;
+  border: 0.01rem solid #5d5d70;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+:not(pre) {
+  > a > code {
+    color: $papyrus-js-object;
+  }
+
+  > a:hover > code {
+    color: $salmon;
+  }
+}
+
+:not(pre) > code[class*='language-js'] {
+  color: $papyrus-js-object;
+}
+
+table :not(pre) > code[class*='language-'] {
+  font-size: 0.8rem !important;
+  border: none !important;
+  text-shadow: none !important;
+}
+
+blockquote > p {
+  > a > code {
+    color: $papyrus-js-object;
+  }
+
+  > code {
+    color: $body-color;
+  }
+}

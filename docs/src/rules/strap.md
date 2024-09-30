@@ -60,3 +60,94 @@ Lorem Ipsum
 ```
 
 ---
+
+<!-- prettier-ignore -->
+```liquid
+
+LINE BREAK SEPARATOR AFTER
+
+USING DEFAULT WITH WRAP
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag: class: 'x', width: w,
+    height: h,
+    alt: alt,
+    size: size,
+    preload: true
+}}
+
+USING DEFAULT WITH ARGUMENT LINE BREAK LIMIT
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag: class: 'x', width: w,
+    height: h,
+    alt: alt,
+    size: size,
+    preload: true
+}}
+
+
+LINE BREAK SEPARATOR BEFORE
+
+USING DEFAULT WITH WRAP
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag: class: 'x', width: w
+    , height: h
+    , alt: alt
+    , size: size
+    , preload: true
+}}
+
+USING DEFAULT WITH ARGUMENT LINE BREAK LIMIT
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag: class: 'x', width: w,
+    height: h,
+    alt: alt,
+    size: size,
+    preload: true
+}}
+
+USING INLINE
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag: class: 'x', width: w,
+    height: h, alt: alt, size: size,
+    preload: true
+}}
+
+USING NEWLINE
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag:
+    class: 'x',
+    width: w,
+    height: h,
+    alt: alt,
+    size: size,
+    preload: true
+}}
+
+USING NEWLINE
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag:
+    , class: 'x'
+    , width: w
+    , height: h
+    , alt: alt
+    , size: size
+    , preload: true
+}}
+
+USING PRESERVE
+{{ settings.logo
+  | image_url: width: 600
+  | image_tag: class: 'x',
+    width: w,
+    height: h, alt: alt,
+    size: size, preload: true
+}}
+
+```

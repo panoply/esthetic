@@ -2,6 +2,7 @@ const { eleventy, markdown, sprite, terser, util } = require('e11ty');
 const markdownit = require('markdown-it');
 const mdcontainer = require('markdown-it-container')
 const anchor = require('markdown-it-anchor');
+const iterator = require('markdown-it-for-inline')
 const papyrus = require('papyrus');
 const merge = require('mergerino');
 const { marked } = require('marked');
@@ -11,6 +12,10 @@ const fs = require('node:fs')
 const { readFile, writeFile } = require('node:fs/promises');
 const { join } = require('node:path');
 const { cwd } = require('node:process');
+
+esthetic.settings({
+  persistRules: false
+})
 
 
 /* -------------------------------------------- */
@@ -23,6 +28,15 @@ const INPUT = 'Input';
 /** Examples input code rules tag */
 const RULES = 'Rules';
 
+/** The pixel width of papyrus font */
+const FONT_PIXEL = 8.1
+
+/** The default word wrap for papyrus showcase */
+const WRAP = 70
+
+/** The pixel width for papyrus code block padding  */
+const PADDING = 22.95
+
 /** Tooltips aria labels for tooltip blocks */
 const TOOLTIPS = {
   '🤡': 'The choice of a clown.',
@@ -32,7 +46,8 @@ const TOOLTIPS = {
   '🤌': 'Delightful. Your mother is proud of you',
   '😳': 'We live in a society, we\'re not animals',
   '💡': 'Showing an example of the rule',
-  '🧐': 'You gotta do, what you gotta do'
+  '🧐': 'You gotta do, what you gotta do',
+  '🫡': 'Alright, alright alright...'
 };
 
 /* -------------------------------------------- */
@@ -51,133 +66,24 @@ const TOOLTIPS = {
  */
 function getEstheticRules (ruleOptions) {
 
-  return merge({
-    crlf: false,
-    correct: false,
-    preset: 'default',
-    language: 'auto',
-    endNewline: false,
-    indentChar: ' ',
-    indentLevel: 0,
-    indentSize: 2,
-    preserveLine: 2,
-    wrap: 0,
-    wrapFraction: 0,
-    liquid: {
-      allowPlebSyntactic: true,
-      allowRubeSyntactic: true,
-      argumentLineBreak: 0,
-      commentIndent: true,
-      commentPreserve: false,
-      delimiterTrims: 'preserve',
-      delimiterPlacement: 'preserve',
-      equipoiseSpacing: true,
-      filterLineBreak: 0,
-      forceIndent: false,
-      indentAttribute: false,
-      lineBreakSeparator: 'before',
-      paddedTagList: [],
-      dedentTagList: [],
-      ignoreTagList: [],
-      quoteConvert: 'none'
-    },
-    markup: {
-      attributeCasing: 'preserve',
-      attributeSort: false,
-      attributeLineBreak: 3,
-      attributePreserve: false,
-      classListSort: false,
-      classListUnique: false,
-      commentDelimiter: 'preserve',
-      commentIndent: true,
-      commentPreserve: false,
-      delimiterTerminus: 'inline',
-      forceIndent: false,
-      forceInline: false,
-      ignoreCSS: false,
-      ignoreJS: true,
-      ignoreJSON: false,
-      inlineTagList: [],
-      preserveText: false,
-      selfCloseSpace: true,
-      selfCloseSVG: true,
-      stripTextWrapLines: false,
-      stripAttributeLines: false,
-      quoteConvert: 'none',
-      valueLineBreak: 'preserve',
-      valueSpacing: 'preserve'
-    },
-    json: {
-      arrayFormat: 'default',
-      braceAllman: false,
-      bracePadding: false,
-      objectIndent: 'default',
-      objectSort: false,
-      braceStyle: 'none',
-      caseSpace: false,
-      commentIndent: false,
-      commentNewline: false,
-      correct: false,
-      elseNewline: false,
-      functionNameSpace: false,
-      functionSpace: false,
-      methodChain: 4,
-      neverFlatten: false,
-      noCaseIndent: false,
-      preserveComment: false,
-      styleGuide: 'none',
-      ternaryLine: false,
-      variableList: 'none',
-      quoteConvert: 'double',
-      endComma: 'never',
-      noSemicolon: true,
-      vertical: false
-    },
-    style: {
-      commentIndent: false,
-      commentNewline: false,
-      atRuleSpace: true,
-      classPadding: false,
-      noLeadZero: false,
-      preserveComment: false,
-      sortSelectors: false,
-      sortProperties: false,
-      quoteConvert: 'none'
-    },
-    script: {
-      arrayFormat: 'default',
-      braceNewline: false,
-      bracePadding: false,
-      braceStyle: 'none',
-      braceAllman: false,
-      caseSpace: false,
-      commentIndent: false,
-      commentNewline: false,
-      elseNewline: false,
-      endComma: 'never',
-      functionNameSpace: false,
-      functionSpace: false,
-      inlineReturn: true,
-      methodChain: 4,
-      neverFlatten: false,
-      noCaseIndent: false,
-      noSemicolon: false,
-      objectSort: false,
-      objectIndent: 'default',
-      preserveComment: false,
-      quoteConvert: 'none',
-      styleGuide: 'none',
-      ternaryLine: false,
-      variableList: 'none',
-      vertical: false
-    }
-  }, ruleOptions);
+
+
+  return esthetic.preset('default', ruleOptions)
 
 }
 
 /* -------------------------------------------- */
 /* STATES                                       */
 /* -------------------------------------------- */
+
+/**
+ * Code Before and After Snippets
+ *
+ * Holds the raw input of before and after code blocks
+ *
+ * @type {{ rules: esthetic.Rules; before: string; after: string; }}
+ */
+const template = { rules: null, before: null, after: null }
 
 /**
  * Code Block Input
@@ -283,10 +189,39 @@ function has (prop) {
 
 }
 
-/* -------------------------------------------- */
-/* MARKDOWN-IT PLUGINS                          */
-/* -------------------------------------------- */
 
+/**
+ * Return Papyrus height based on the before and after code snippets
+ *
+ * @param {string} before
+ * @param {string} after
+ * @param {boolean} isNL
+ */
+function getPapyrusHeight (before, after, isNL = false) {
+
+  const b = 24 + PADDING * before.split('\n').length
+  const a = 24 + PADDING * after.trim().split('\n').length
+
+  return {
+    longest: b >= a ? `${b}` : `${a}`,
+    after: isNL ? a + PADDING : a,
+    before: b
+  }
+
+}
+
+/**
+ * Returns the current language name and assign height
+ *
+ * @param {string} annotation
+ */
+function getLanguage(annotation) {
+
+  const index = annotation.indexOf(':');
+
+  return index > -1 ? annotation.slice(0, index) : annotation
+
+}
 
 /**
  * Prints an error to the console when an issue occurs during the
@@ -310,6 +245,11 @@ function highlightError (language, error) {
 }
 
 
+/* -------------------------------------------- */
+/* MARKDOWN-IT PLUGINS                          */
+/* -------------------------------------------- */
+
+
 /**
  * Highlights code blocks contained within markdown files. Some contained
  * code blocks may use a language identifier separated by colon `:` character.
@@ -331,13 +271,13 @@ function highlightCode(md, raw, languageValue) {
   if (language) {
 
 
-    if (language === 'json:rules') {
+    if (languageValue === 'json:rules') {
 
       if(isRule) {
-        throw new Error('Repeated "```json:rules" block. Only 1 can exist above a code block')
+        throw new Error('Repeated "```json:rules" block. Only 1 can exist above a code block');
+      } else {
+        isRule = true;
       }
-
-      isRule = true;
 
       return raw;
     }
@@ -346,43 +286,61 @@ function highlightCode(md, raw, languageValue) {
 
       if(isRule) {
 
-        isRule = false;
+        if (
+          template.before === null &&
+          template.after === null &&
+          languageValue.endsWith(':before')) {
 
-        code = papyrus.static(raw, {
+
+          code = raw.trim()
+
+          template.before = code
+          template.after = ''
+
+        } else if (
+          template.before !== null &&
+          template.after === '' &&
+          languageValue.endsWith(':after')) {
+
+          isRule = false;
+          code = raw.trim()
+
+          template.language = language
+          template.after = code
+
+
+
+        } else {
+
+          input = raw
+          isRule = false;
+          code = papyrus.static(raw, {
+            language,
+            addAttrs: {
+              pre: [
+                'spx-node="showcase.input"',
+              ]
+            }
+          });
+
+        }
+
+      } else if (
+        language === 'bash' ||
+        language === 'cli' ||
+        language === 'shell' ||
+        language === 'treeview') {
+
+
+        code = papyrus.highlight(raw, {
           language,
-          editor: true,
-          showSpace: false,
-          addAttrs: {
-            pre: [
-              'spx-node="showcase.input"',
-            ]
-          }
-        });
-
-      } else if (language === 'bash' || language === 'cli' || language === 'shell') {
-
-
-        code = papyrus.static(raw, {
-          language,
-          editor: false,
-          showSpace: false,
-          showTab: false,
-          showCR: false,
-          showLF: false,
-          showCRLF: false,
           lineNumbers: false
         })
 
       } else {
 
-        code = papyrus.static(raw, {
+        code = papyrus.highlight(raw, {
           language,
-          editor: false,
-          showSpace: false,
-          showTab: false,
-          showCR: false,
-          showLF: false,
-          showCRLF: false,
           trimEnd: true,
           trimStart: true
         });
@@ -411,310 +369,34 @@ function highlightCode(md, raw, languageValue) {
 };
 
 
-
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
 /* -------------------------------------------- */
-
-
-/**
- * Generates the `wrapFraction` rules example showcase
- *
- * @param {esthetic.Rules} estheticRules
- * Esthetic formatting rules
- *
- * @param {papyrus.CreateOptions} papyrusValue
- * Papyrus editor options
- *
- * @param {string} rawInput
- * The unescaped raw input of the codeblock
- *
- * @returns {string}
- */
-function getWrapFractionRuleExample (estheticRules, rawInput) {
-
-
-  /** @type {papyrus.CreateOptions} */
-  const papyrusOptions =  {
-    editor: false,
-    language: estheticRules.language,
-    showSpace: true,
-    addAttrs: {
-      pre: [
-        'spx-node="showcase.input"'
-      ]
-    }
-  };
-
-  let output = ''
-
-  try {
-
-    const format = esthetic.format(rawInput, estheticRules)
-
-    output = papyrus.static(format, papyrusOptions)
-
-  } catch (error) {
-
-    console.error(error)
-
-    output = papyrus.static(rawInput, papyrusOptions)
-
-  }
-
-
-  return string([
-    /* html */`
-    <div class="col-6">
-      <div class="row jc-center ai-center px-2">
-        <div class="col-5">
-          <legend
-            class="fs-xs mb-0"
-            aria-label="Adjustments are disabled as we showcasing the default behaviour"
-            data-tooltip="top">Wrap Fraction</legend>
-          <input
-            type="range"
-            class="fm-range wrap-fraction"
-            name="wrapFraction"
-            min="0"
-            max="100"
-            step="1"
-            value="80"
-            disabled
-            spx-node="showcase.wrapFractionRange"
-            data-action="demo#onWrapFraction">
-        </div>
-        <div
-          class="col-auto fs fc-cyan pl-1"
-          spx-node="showcase.wrapFractionCount"
-          aria-label="wrapFraction"
-          data-tooltip="top">
-          80
-        </div>
-        <div class="col-5">
-          <legend class="fs-xs mb-0">Wrap</legend>
-          <input
-            type="range"
-            class="fm-range"
-            name="wrap"
-            min="0"
-            max="100"
-            step="1"
-            value="100"
-            spx-node="showcase.wrapRange"
-            data-action="demo#onWrapFraction">
-        </div>
-        <div
-          class="col-auto fs fc-salmon pl-1 pr-0"
-          spx-node="showcase.wrapCount"
-          aria-label="wrap"
-          data-tooltip="top">
-          100
-        </div>
-      </div>
-    </div>
-    <div class="col-12 rel">
-      <div
-        style="width: 80%"
-        class="wrap-fraction-line"
-        spx-node="showcase.wrapFractionLine">
-      </div>
-      <div
-        style="width: ${rules.esthetic.wrap}%"
-        class="wrap-line"
-        spx-node="showcase.wrapLine">
-      </div>
-      <div class="demo-input">
-        ${output}
-      </div>
-    </div>
-    `
-  ])
-
-}
-
-
-/**
- * Generates the `wrap` rules example showcase
- *
- * @param {esthetic.Rules} estheticRules
- * Esthetic formatting rules
- *
- * @param {papyrus.CreateOptions} papyrusValue
- * Papyrus editor options
- *
- * @param {string} rawInput
- * The unescaped raw input of the codeblock
- *
- * @returns {string}
- */
-function getWrapRuleExample (estheticRules, rawInput) {
-
-
-  /** @type {papyrus.CreateOptions} */
-  const papyrusOptions = {
-    language: estheticRules.language,
-    editor: false,
-    showSpace: false,
-    addAttrs: {
-      pre: [
-        'spx-node="showcase.input"'
-      ]
-    }
-  };
-
-  let output = ''
-
-  try {
-
-    const format = esthetic.format(rawInput, estheticRules)
-
-    output = papyrus.static(format, papyrusOptions)
-
-  } catch (error) {
-
-    console.error(error)
-
-    output = papyrus.static(rawInput, papyrusOptions)
-
-  }
-
-
-  return string([
-    /* html */`
-    <div class="col-6">
-      <div class="row jc-center ai-center px-4 pt-1">
-        <input
-          type="range"
-          class="col fm-range"
-          name="${rules.example.rule}"
-          min="${rules.example.min}"
-          max="${rules.example.max}"
-          step="${rules.example.step}"
-          value="${rules.example.value}"
-          spx-node="showcase.range"
-          data-action="demo#onForm">
-        <div
-          class="col-auto fs-sm ml-4 pl-1"
-          spx-node="showcase.wrapCount"
-          aria-label="The wrap rule value"
-          data-tooltip="top">
-          ${rules.example.value}
-        </div>
-      </div>
-    </div>
-    <div class="col-12 rel">
-      <div
-        style="width: ${rules.example.value}%"
-        class="wrap-line"
-        spx-node="showcase.wrapLine">
-      </div>
-      <div class="demo-input">
-        ${output}
-      </div>
-    </div>
-    `
-  ])
-
-}
-
-/**
- * Builds side-by-side comparisons for rules based on the Markdown structure
- *
- * @param {esthetic.Rules} estheticRules
- * Esthetic formatting rules
- *
- * @param {papyrus.StaticOptions} papyrusValue
- * Papyrus editor options
- *
- * @param {string} inputValue
- * The Papyrus input codeblock generated in `highlightCode`
- *
- * @param {string} rawInput
- * The unescaped raw input of the codeblock
- *
- * @param {string} demoHeight
- * An optional height to apply to papayrus code block
- *
- * @returns {string}
- */
-function getRuleDemo (estheticRules, inputValue, rawInput) {
-
-
-  let output = ''
-
-  try {
-
-    const format = esthetic.format(rawInput, estheticRules)
-
-    output = papyrus.static(format, {
-      language: estheticRules.language,
-      trimEnd: estheticRules.endNewline !== false,
-      addAttrs: {
-        pre: [
-          'spx-node="showcase.output"',
-        ]
-      }
-    })
-
-  } catch (error) {
-
-    console.error(error)
-
-    output = papyrus.static(rawInput, {
-      language: estheticRules.language,
-      addAttrs: {
-        pre: [
-          'spx-node="showcase.output"',
-        ]
-      }
-    })
-
-  }
-
-
-  return string([
-    /* html */`
-      <div class="row gx-0">
-        <div class="col-12 col-lg-6">
-          <div class="demo-input">
-            ${inputValue}
-          </div>
-        </div>
-        <div class="col-12 col-lg-6">
-          <div class="demo-output">
-            ${output}
-          </div>
-        </div>
-      </div>
-    `
-  ])
-
-}
 
 /**
  * Generate the rule showcase type. Reads and digests `json:rules`, returning
  * the intended values and showcase demo/example.
  *
  * @param {markdownit} md
- * @param {string} inputValue
  * @param {string} language
- * @param {string|null} demoHeight
- * @returns {{ template: string; rulesValue: string; papyrusValue: string; mode: string; }}
+ * @param {string} uuid
+ * @returns {{ showcase: string; rules: string; mode: string; }}
  */
-function getRuleShowcase (md, inputValue, language) {
+function getRuleShowcase (md, language, uuid) {
 
   /** @type {'example'|'editor'} */
   const mode = has('example') ? 'example' : 'editor'
 
   /** @type {esthetic.Rules} */
-  const rulesValue = has('esthetic') ? rules.esthetic : merge(rules, { language });
+  const rulesValue = has('esthetic') ? rules.esthetic : Object.assign({}, template.rules, { language });
+
+  if(!('wrap' in template.rules)) rulesValue.wrap = WRAP
+
+  /** Default wrap for line reference */
+  const wrap = FONT_PIXEL * (rulesValue.wrap || WRAP);
 
   /** @type {string} */
   const rawInput = md.utils.unescapeAll(input);
-
-  /** @type {esthetic.Rules} */
-  const estheticOptions = getEstheticRules(rulesValue);
 
    /** @type {{ [name: string]: {label: string; tooltip: string; }}} */
   const tabs = has('tabs') ? rules.tabs : {
@@ -731,35 +413,85 @@ function getRuleShowcase (md, inputValue, language) {
   /* SHOWCASE ----------------------------------- */
 
   /** @type {string} */
-  let showcase = ''
+  let output = ''
 
 
   if(has('example')) {
-
     if(rules.example.rule === 'wrap') {
-
-      showcase = getWrapRuleExample(estheticOptions, rawInput)
-
+      output = getWrapRuleExample(rulesValue, rawInput)
     } else if(rules.example.rule === 'wrapFraction') {
-
-      showcase = getWrapFractionRuleExample(estheticOptions, rawInput)
-
+      output = getWrapFractionRuleExample(rulesValue, rawInput)
     }
-
   } else {
 
-    showcase = getRuleDemo(estheticOptions, inputValue, rawInput)
+    if(template.before !== null && template.after !== null) {
+
+      const height = getPapyrusHeight(template.before, template.after, rulesValue.endNewline)
+
+      const unformatted = papyrus.static(template.before, {
+        language,
+        id: `input:${uuid}`,
+        useTabs: rulesValue.indentChar !== '\t',
+        copyButton: false,
+        addAttrs: {
+          pre: [
+            'spx-node="showcase.input"',
+          ]
+        }
+      });
+
+      const after = rulesValue.endNewline
+        ? template.after + '\n'
+        : rulesValue.indentChar === '\t'
+          ? esthetic.format(template.after, rulesValue)
+          : template.after
+
+      const formatted = papyrus.static(after, {
+        language,
+        id: `output:${uuid}`,
+        trimEnd: rulesValue.endNewline === false,
+        readOnly: true,
+        copyButton: true,
+        addAttrs: {
+          pre: [
+            'spx-node="showcase.output"',
+          ]
+        }
+      });
+
+      output = string([
+        /* html */`
+        <div class="row gx-0">
+          <div class="col-12 col-lg-6">
+            <div class="showcase-before">
+              ${unformatted}
+            </div>
+          </div>
+          <div class="col-12 col-lg-6 rel">
+            <div class="showcase-after">
+            <div
+              class="wrap-line"
+              spx-node="showcase.wrapLine"
+              style="width: ${wrap}px; display: none;"></div>
+              ${formatted}
+            </div>
+          </div>
+        </div>
+        `
+      ])
+
+    }
 
   }
 
   /**
    * The rule showcase template
    */
-  const template = string([
+  const showcase = string([
     /* html */`
     <div class="row gx-0">
-      <div class="col-6">
-        <div class="demo-tabs">
+      <div class="col-12 col-lg-6">
+        <div class="showcase-tabs">
           <button
             type="button"
             class="tab is-active"
@@ -822,42 +554,33 @@ function getRuleShowcase (md, inputValue, language) {
           </button>
         </div>
       </div>
+      <div class="col-12 col-lg-2 rel wrap-offset">
+        <div
+          class="wrap-number pl-3 py-2 fc-gray ff-code fs-sm"
+          spx-node="showcase.wrapCount">
+          ${rulesValue.wrap || WRAP}
+        </div>
+        <input
+          type="range"
+          class="fm-range"
+          min="0"
+          data-tooltip="right"
+          aria-label="Word Wrap"
+          step="1"
+          spx@input="showcase.onWrap">
+      </div>
     </div>
     <!-- SHOWCASE -->
-
-    ${showcase}
+    ${output}
     `
   ]);
 
 
   return {
-    template,
     mode,
-    rulesValue: md.utils.escapeHtml(JSON.stringify(rulesValue))
+    showcase,
+    rules: md.utils.escapeHtml(JSON.stringify(rulesValue))
   }
-
-}
-
-/**
- * Returns the current language name and assign height
- *
- * @param {string} annotation
- */
-function getLanguage(annotation) {
-
-  const heightIndex = annotation.indexOf('@');
-
-  let language;
-
-  if(heightIndex > -1) {
-    language = annotation.slice(0, heightIndex);
-    height = annotation.slice(heightIndex + 1) + 'px'
-
-  } else {
-    language = annotation
-  }
-
-  return language;
 
 }
 
@@ -867,60 +590,72 @@ function getLanguage(annotation) {
  */
 function codeblocks(md) {
 
-  const { fence } =  md.renderer.rules
+  const { fence } = md.renderer.rules
 
   md.renderer.rules.fence = function(...args) {
 
     const [ tokens, index ] = args;
-    const language = getLanguage(tokens[index].info.trim());
+    const languageValue = tokens[index].info.trim()
+    const language = getLanguage(languageValue);
     const inputValue = fence(...args);
 
-    if (language === 'json:rules') {
+    if (languageValue === 'json:rules') {
 
       const json = getCodeBlockInput(inputValue)
 
       try {
-
-        rules = JSON.parse(json.trim());
-
+        template.rules = JSON.parse(json.trim());
         return ''
-
       } catch (e) {
-
-
-        throw new Error(
-          'Invalid JSON in in the json:rules code block\n\n' + json
-        )
-
+        throw new Error('Invalid JSON in in the json:rules code block\n\n' + json)
       }
 
-    } else if (language === 'bash' || language === 'cli' || language === 'shell') {
+    } else if (
+      language === 'bash' ||
+      language === 'cli' ||
+      language === 'shell' ||
+      language === 'treeview') {
 
       return inputValue
 
     }
 
-    if (rules === undefined) return inputValue
+    if (template.rules === null) {
 
-    const { template, mode, papyrusValue, rulesValue} = getRuleShowcase(md, inputValue, language)
+      return inputValue
 
+    } else if (languageValue.endsWith(':before')) {
 
-    rules = undefined
+      return ''
+
+    }
+
+    const uuid = Math.random().toString(36).slice(2)
+    const { rules, mode, showcase } = getRuleShowcase(md, language, uuid)
+
+    template.rules = null
+    template.before = null
+    template.after = null
 
     return string([
       /* html */`
+      <!-- END DESRCIPTION -->
+      </section>
+
+      <!-- RULE SHOWCASE COMPONENT -->
       <div
-        class="rule-example"
+        class="rule-showcase"
         spx-component="showcase"
-        spx-showcase:uuid="${Math.random().toString(36).slice(2)}"
+        spx-showcase:uuid="${uuid}"
         spx-showcase:mode="${mode}"
         spx-showcase:preset="default"
-        spx-showcase:rules="${rulesValue}"
-        spx-showcase:rules-original="${rulesValue}"
+        spx-showcase:rules="${rules}"
+        spx-showcase:rules-original="${rules}"
         spx-showcase:language="${language}"
         spx-showcase:input="${input.trim()}"
-        spx-showcase:input-original="${input.trim()}">
-        ${template.trim()}
+        spx-showcase:input-original="${input.trim()}"
+        spx@window:mousedown="showcase.onWrapMove">
+        ${showcase}
       </div>`
 
     ])
@@ -928,6 +663,7 @@ function codeblocks(md) {
   }
 
 }
+
 
 /**
  * Renders a `<blockquote>` semantic HTML tag
@@ -983,7 +719,11 @@ function rule(md, tokens, idx) {
     }
   }
 
-  return '</div>'
+  return [
+    /* html */`
+    </div>
+    <section class="col-12 col-md-9">
+  `].join('')
 
 }
 
@@ -1001,9 +741,9 @@ function rule(md, tokens, idx) {
  */
 function grid(md, tokens, idx) {
 
- if(tokens[idx].nesting === 1) {
+ if (tokens[idx].nesting === 1) {
 
-  var col = tokens[idx].info.trim().match(/^grid\s+(.*)$/);
+  const col = tokens[idx].info.trim().match(/^grid\s+(.*)$/);
 
   if (col !== null) {
 
@@ -1011,7 +751,7 @@ function grid(md, tokens, idx) {
     return [
 
       /* html */`
-      <div class="${md.utils.escapeHtml(col[1])}">
+      <div class="${col[1]}">
       `
     ].join('')
   }
@@ -1023,16 +763,7 @@ function grid(md, tokens, idx) {
 
 }
 
-function versions ()  {
 
-  return fs.readdirSync(join(cwd(), 'version'))
-  .filter(v => v !== '.DS_Store')
-  .map(version => {
-   const v = version.replace(/\.zip/, '')
-   return `<li><a href="/v/${v}/">${v.replace(/-beta/, ' (beta)')}</a></li>`
-  }).join('')
-
-}
 
 /**
  * Generate JSON file to be used in search autocompletions
@@ -1168,6 +899,74 @@ function navigate (value) {
 }
 
 
+/**
+ * Renders inline code blocks
+ *
+ * @param {markdownit} md
+ * Markdown Instance
+ *
+ * @param {markdownit.Token[]} tokens
+ * Markdown tokens
+ *
+ * @param {number} idx
+ * An index number reference
+ */
+function codeinline (md) {
+
+  const regexp = /^{\w+} /
+
+  /**
+   * Renders inline code blocks
+   *
+   * @param {markdownit} md
+   * Markdown Instance
+   *
+   * @param {markdownit.Token[]} tokens
+   * Markdown tokens
+   *
+   * @param {number} idx
+   * An index number reference
+   */
+  function render (token) {
+
+
+      // console.log('=====================================================')
+      const pull = token.indexOf('} ')
+      const raw = token.slice(pull + 1).trimStart()
+      const language = token.slice(1, pull)
+
+      // console.log(raw)
+      // console.log('=====================================================')
+
+
+      return papyrus.inline(raw, { language  })
+
+  }
+
+  function scan (state) {
+
+    for (let x = state.tokens.length - 1; x >= 0; x--) {
+      if (state.tokens[x].type !== 'inline') continue
+      const token = state.tokens[x].children
+      for (let i = token.length - 1; i >= 0; i--) {
+        if (token[i].type !== 'code_inline') continue;
+        if(!/^{\w+} /.test(token[i].content)) continue
+        token[i].tag = ''
+        token[i].type = 'html_block',
+        token[i].markup = ''
+        token[i].block = true,
+        token[i].content = render(token[i].content);
+      }
+    }
+  }
+
+
+  md.core.ruler.push('inline_papyrus', scan)
+
+}
+
+
+
 module.exports = eleventy(function (eleventyConfig) {
 
 
@@ -1180,14 +979,16 @@ module.exports = eleventy(function (eleventyConfig) {
   })
   .use(anchor)
   .use(codeblocks)
+  .use(codeinline)
   .use(mdcontainer, 'grid', { render: (tokens, idx) => grid(md, tokens, idx) })
   .use(mdcontainer, 'note', { render: (tokens, idx) => notes(tokens, idx) })
   .use(mdcontainer, 'rule', { render: (tokens, idx) => rule(md, tokens, idx) })
   .disable("code");
 
+
   md.use(anchor, {
     slugify: util.slug,
-    callback: ({ attrs }) => attrs.push([ 'spx-node', 'scrollspy.anchor' ])
+    callback: ({ attrs }) => attrs.push([ 'spx-node', 'anchor.anchor' ])
   })
 
 
@@ -1202,6 +1003,8 @@ module.exports = eleventy(function (eleventyConfig) {
   eleventyConfig.addPlugin(terser);
 
   eleventyConfig.addPassthroughCopy({
+    'src/assets/img/*': 'assets',
+    'src/assets/font/*': 'assets/font',
     'node_modules/moloko/dist': 'assets/moloko',
     'node_modules/esthetic/dist/esthetic.js': 'assets/esthetic.min.js'
   })

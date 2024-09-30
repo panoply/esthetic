@@ -11,34 +11,61 @@
         </a>
       </div>
 
-      <div class="d-flex flex-column as-center jc-center">
+      <div class="d-flex flex-column as-center jc-center logo">
         <a
           href="/introduction/what-is-esthetic/"
-          class="hero-logo d-block"
-          aria-label="Documentation"
-          data-spx-target="['body']"
-          data-tooltip="right">
-          ÆSTHETIC
+          aria-label="Æsthetic Documentation"
+          data-tooltip="right"
+          spx-target="body">
+          {% svg 'æsthetic', 'icon' %}
         </a>
       </div>
 
-      <div class="d-flex flex-column m-auto tc">
-        <h5
-          class="d-block italic ff-base light uncase mt-2 tc px-sm-4"
+      <div class="d-flex flex-column m-auto tc mb-2">
+        <h3
+          class="d-block caption ff-base light uncase tc px-sm-5"
           style="font-weight: 200;">
           {{ content | remove: '<p>' | remove: '</p>' }}
-        </h5>
+        </h3>
       </div>
 
-      <div class="d-flex flex-column m-auto cli mt-3">
-        <code class="px-4 py-2 fs-sm">
-          pnpm add esthetic
-        </code>
+      <div class="row my-3 mx-5 jc-center ai-center pb-5 bb mb-5">
+        <a
+          href="/introduction/what-is-esthetic/"
+          class="col-5 col-md-auto goto-link tc"
+          aria-label="Documentation"
+          data-tooltip="left"
+          spx-target="body">
+          Usage
+        </a>
+        <span class="col-12 col-md-auto fs-sm fc-gray ff-heading tc px-3 my-3 my-sm-0">OR</span>
+        <a
+          href="/rules/"
+          class="col-5 col-md-auto goto-link"
+          aria-label="Formatting Rules"
+          data-tooltip="right"
+          spx-target="body">
+          Rules
+        </a>
+      </div>
+
+      <div class="row ai-center jc-center m-auto tc mb-2">
+
+        <div class="col-12 fs-sm ff-code upper fc-gray">
+          {% version %}
+        </div>
+
       </div>
 
     </div>
-    <div class="version fs-xs">
-      {% version %}
+
+    <div class="version fs-xs d-none">
+      <a
+        href="https://www.npmjs.com/package/esthetic"
+        target="_blank">
+        {% svg 'npm', 'icon npm-icon' %}
+      </a>
     </div>
+
   </div>
 </main>

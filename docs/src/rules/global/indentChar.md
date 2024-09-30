@@ -62,8 +62,7 @@ The default `indentChar` is a single whitespace value.
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <header>
 <nav>
 <ul class="foo">
@@ -71,6 +70,17 @@ The default `indentChar` is a single whitespace value.
 <li>baz</li>
 </ul>
 </nav>
+</header>
+```
+
+```html:after
+<header>
+  <nav>
+    <ul>
+      <li>foo</li>
+      <li>bar</li>
+    </ul>
+  </nav>
 </header>
 ```
 
@@ -91,43 +101,24 @@ Below we are using tab `\t` character for indentation.
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <header>
-<nav>
-<ul class="foo">
-<li>bar</li>
-<li>baz</li>
-</ul>
-</nav>
+  <nav>
+    <ul>
+      <li>foo</li>
+      <li>bar</li>
+    </ul>
+  </nav>
 </header>
 ```
 
----
-
-::: rule 💡
-
-#### `-`
-
-:::
-
-The below example is purely for demonstration purposes.
-
-```json:rules
-{
-  "language": "html",
-  "indentChar": "-"
-}
-```
-
-<!-- prettier-ignore -->
-```html
+```html:after
 <header>
-<nav>
-<ul class="foo">
-<li>bar</li>
-<li>baz</li>
-</ul>
-</nav>
+  <nav>
+    <ul>
+      <li>foo</li>
+      <li>bar</li>
+    </ul>
+  </nav>
 </header>
 ```

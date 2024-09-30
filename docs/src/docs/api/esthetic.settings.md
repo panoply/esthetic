@@ -1,7 +1,7 @@
 ---
-title: 'Usage - Settings'
+title: 'Settings'
 layout: base
-permalink: '/usage/settings/index.html'
+permalink: '/api/esthetic.settings/index.html'
 prev:
   label: 'Parse'
   uri: '/usage/parse'
@@ -23,9 +23,9 @@ anchors:
 
 # Settings
 
-Æsthetic exposes core configuration control via the `esthetic.settings()` method. The settings method can be used to configure the execution preferences of Æsthetic in Node and Browser environments. Calling the `esthetic.settings` method with parameters omitted will return the current setting configurations being used by Æsthetic, plus some additional information such as the version number, environment and current working directory.
+Æsthetic exposes core configuration control via the `{js} esthetic.settings()` method. The settings method can be used to configure the execution preferences of Æsthetic in Node and Browser environments. Calling the method with parameters omitted will return the current setting configurations being used by Æsthetic, plus some additional information such as the version number, environment and current working directory.
 
-#### Basic Usage
+### Basic Usage
 
 <!-- prettier-ignore-->
 ```js
@@ -44,7 +44,9 @@ esthetic.settings({
 
 ```
 
-#### Read Usage
+---
+
+### Read Usage
 
 <!-- prettier-ignore-->
 ```js
@@ -59,41 +61,53 @@ console.log(settings)
 
 ---
 
-# Available Options
+# Options
 
 All settings are **optional** and changes will be persisted, similar to [rules](/usage/rules). The settings method returns `this` scope and can be chained. It's generally recommended that you provide setting customizations before invocation.
 
-##### editorConfig
+---
+
+## editorConfig
 
 Whether or not Æsthetic should inherit and use options defined in `.editorconfig` files. When an `.editorconfig` file is detected in your projects root directory, Æsthetic will keep track and use inheritable options.
 
 **Default:**&nbsp;&nbsp; `false`
 
-##### globalThis
+---
+
+## globalThis
 
 Whether of not Æsthetic should be made available to global scope when used in Browser environments. This defaults to `true` resulting in Æsthetic being accessible via `window`.
 
 **Default:**&nbsp;&nbsp; `true`
 
-##### reportStats
+---
+
+## reportStats
 
 Whether or not Æsthetic should track execution statistics. When disabled, Æsthetic will skip reporting on formatting execution timing of beautification / parse operations.
 
 **Default:**&nbsp;&nbsp; `true`
 
-##### throwErrors
+---
 
-Whether or not Æsthetic should throw exceptions when encountering a parse error. When disabled (`false`) then errors will fail quietly. Use the `esthetic.on('error', (e) => {})` event or check the `esthetic.error` to take control of parse errors when this is disabled.
+## throwErrors
 
-**Default:**&nbsp;&nbsp; `true`
-
-##### persistRules
-
-Whether or not Æsthetic should persist defined rules. By default, Æsthetic maintains a persisted reference of formatting rules. Setting this to `false` will result in Æsthetic merging rules with defaults (or `preset`) each time the `esthetic.format()`, `esthetic.parse()` or `esthetic.rules()` is invoked.
+Whether or not Æsthetic should throw exceptions when encountering a parse error. When disabled (`false`) then errors will fail quietly. Use the `{js} esthetic.on('error', function(){})` event or check the `{js} esthetic.error` to take control of parse errors when this is disabled.
 
 **Default:**&nbsp;&nbsp; `true`
 
-##### logLevel
+---
+
+## persistRules
+
+Whether or not Æsthetic should persist defined rules. By default, Æsthetic maintains a persisted reference of formatting rules. Setting this to `false` will result in Æsthetic merging rules with defaults (or `preset`) each time the `{js} esthetic.format()`, `{js} esthetic.parse()` or `{js} esthetic.rules()` is invoked.
+
+**Default:**&nbsp;&nbsp; `true`
+
+---
+
+## logLevel
 
 Control the log level when using the CLI. The following levels are available:
 
@@ -103,13 +117,17 @@ Control the log level when using the CLI. The following levels are available:
 
 **Default:**&nbsp;&nbsp; `2`
 
-##### logColors
+---
+
+## logColors
 
 By default, operations which involve printing to console, as such, errors will apply ansi coloring. Set this to `false` to prevent highlights being applied.
 
 **Default:**&nbsp;&nbsp; `true`
 
-##### resolveConfig
+---
+
+## resolveConfig
 
 Use an external configuration approach for defined rules. Æsthetic supports `package.json` files containing an `esthetic` key, an `.esthetic` or `.esthetic.json` files. You can provide a uri reference to a specific file containing rules.
 

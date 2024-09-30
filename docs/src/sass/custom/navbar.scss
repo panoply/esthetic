@@ -3,7 +3,8 @@ header {
   //background-color: $white;
   z-index: 999999;
   display: flex;
-  //background-color: $body-bg;
+  background: rgba(22, 24, 28, 0.75);
+  backdrop-filter: blur(10px);
   right: 0;
   height: 65px;
   font-size: 1.075rem;
@@ -23,6 +24,14 @@ header {
 
 .navbar {
   width: 100%;
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+  //background: rgba(22, 24, 28, 0.65);
+  // backdrop-filter: blur(10px);
+
+  //backdrop-filter: blur(15px);
+
   // margin-right:  33.3%;
 
   .drawer-toggle {
@@ -93,7 +102,7 @@ header {
   a {
     font-weight: 400;
     color: $gray-300;
-    margin-right: 15px;
+    // margin-left: 15px;
     margin-bottom: 5px;
 
     &.active {

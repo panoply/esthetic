@@ -15,336 +15,117 @@ options:
 
 # Preset
 
-The `preset` rule is a global option that will set a different **default** rule set style guide. Using the `preset` rule will assign formatting rules from which Æsthetic will default.
+Æsthetic comes equipped with a useful feature called **Rule Presets**. These pre-defined style guides serve as default ruleset's and have been carefully curated to assist users in achieving polished output without having to understand how each rule works. Using the [global](/rules#global) → [preset](/rules/global/preset) option, you can conveniently apply one of the available presets as the runtime rule default. This simplifies the creative process and ensures consistent, aesthetically pleasing results without introducing any unnecessary complexities or learning curves.
 
-# Rule Options
+Currently, there are **5** different presets available, each offering unique beautified output, with some presets being more extensive than others. These options provide users with a range of stylistic choices that can be used a starting point from which, you can progressively tailor and customizing to your specific tastes.
 
-Æsthetic provides 3 different preset options. When the rule is `undefined` it will default to using `none` which is least obtrusive formatting style.
+> Below is list of available style guide preset options. Refer to the [preset](/rules/global/preset) page for comparison samples and applied definitions. In cases where the `preset` rule is `undefined`, Æsthetic will automatically default to using `default` as the base ruleset.
 
-#### `none`
+<!--
 
-This is the default style guide rulset. It is most unobtrusive preset option.
+🤡 => The choice of a clown
+🙌 => Authors choice
+👍 => Good choice.
+🤌 => Delightful. Your mother is proud of you.
+👎 => Not recommended
+🫡 => Alright
+😳 => We live in a society, we\'re not animals
+💡 => Showing an example of the rule
+🧐 => You gotta do, what you gotta do
 
-<!-- prettier-ignore -->
-```js
+-->
+
+---
+
+::: rule 👍
+
+#### default
+
+:::
+
+By default, Æsthetic will use the `default` preset, which features the least obtrusive ruleset. The formatting employs a preservation-based technique, ensuring a subtle and non-intrusive approach to enhancing the output.
+
+- [Example](#)
+- [Ruleset](#)
+
+```json
 {
-  "preset": "none",
-  "language": "auto",
-  "indentSize": 2,
-  "indentChar": " ",
-  "wrap": 0,
-  "crlf": false,
-  "endNewline": false,
-  "preserveLine": 3,
-  "liquid": {
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": true,
-    "delimiterPlacement": "preserve",
-    "delimiterTrims": "preserve",
-    "forceFilerWrap": 0,
-    "ignoreTagList": [],
-    "indentAttributes": false,
-    "lineBreakSeparator": "default",
-    "normalizeSpacing": true,
-    "preserveComment": true,
-    "quoteConvert": "double"
-  },
-  "xml": {
-    "attributeSort": false,
-    "attributeSortList": [],
-    "commentIndent": false,
-    "commentNewline": false,
-    "namingConvention": "lowercase",
-    "forceAttribute": false,
-    "forceLeadAttribute": false,
-    "forceIndent": false,
-    "preserveAttributes": false,
-    "preserveComment": true,
-    "preserveText": true,
-    "stripAttributeLines": false,
-  },
-  "html": {
-    "attributeCasing": "preserve",
-    "attributeSort": false,
-    "attributeSortList": [],
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": true,
-    "delimiterForce": false,
-    "forceAttribute": false,
-    "forceLeadAttribute": false,
-    "forceIndent": false,
-    "ignoreCSS": false,
-    "ignoreJS": false,
-    "ignoreJSON": false,
-    "preserveAttributes": false,
-    "preserveComment": true,
-    "preserveText": true,
-    "selfCloseSpace": false,
-    "selfCloseSVG": true,
-    "stripAttributeLines": false,
-    "quoteConvert": "double",
-  },
-  "css": {
-    "atRuleSpace": false,
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": false,
-    "classPadding": false,
-    "noLeadZero": false,
-    "preserveComment": true,
-    "sortProperties": false,
-    "sortSelectors": false,
-    "quoteConvert": "none",
-  },
-  "sass": {
-    "atRuleSpace": false,
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": false,
-    "classPadding": false,
-    "forceMaps": true,
-    "noLeadZero": false,
-    "preserveComment": true,
-    "sortProperties": false,
-    "sortSelectors": false,
-    "quoteConvert": "none",
-    "vertical": false,
-  },
-  "json": {
-    "allowComments": false,
-    "arrayFormat": "default",
-    "braceAllman": true,
-    "bracePadding": false,
-    "objectIndent": "indent",
-    "objectSort": false
-  },
-  "javascript": {
-    "commentIndent": false,
-    "commentNewline": false,
-    "arrayFormat": "default",
-    "braceAllman": false,
-    "bracePadding": false,
-    "braceStyle": "none",
-    "endComma": "never",
-    "braceNewline": true,
-    "correct": false,
-    "caseSpace": false,
-    "elseNewline": true,
-    "functionNameSpace": true,
-    "functionSpace": false,
-    "methodChain": 0,
-    "neverFlatten": false,
-    "noCaseIndent": false,
-    "noSemicolon": false,
-    "objectIndent": "indent",
-    "objectSort": false,
-    "preserveComment": true,
-    "preserveText": true,
-    "quoteConvert": "single",
-    "ternaryLine": false,
-    "variableList": "none",
-    "vertical": false,
-    "styleGuide": "none"
-  }
+  "preset": "default"
 }
 ```
 
-#### `recommended`
+---
 
-This style guide is typically suited for most cases.
+::: rule 👍
 
-<!-- prettier-ignore -->
-```js
+#### recommended
+
+:::
+
+The `recommended` style guide preset is well-suited for most projects. Formatting will adhere to common standards and generate exceptional-based output. It shares some similarities with Prettier but takes a less aggressive approach, providing a balanced and refined way to beautify the code.
+
+- [Example](#)
+- [Ruleset](#)
+
+```json
 {
-  "language": "auto",
-  "indentSize": 2,
-  "indentChar": " ",
-  "wrap": 0,
-  "crlf": false,
-  "endNewline": false,
-  "preserveLine": 3,
-  "liquid": {
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": true,
-    "delimiterTrims": "preserve",
-    "ignoreTagList": [],
-    "indentAttributes": false,
-    "lineBreakSeparator": "default",
-    "normalizeSpacing": true,
-    "preserveComment": true,
-    "quoteConvert": "double"
-  },
-  "markup": {
-    "attributeCasing": "preserve",
-    "attributeSort": false,
-    "attributeSortList": [],
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": true,
-    "delimiterForce": false,
-    "forceAttribute": false,
-    "forceLeadAttribute": false,
-    "forceIndent": false,
-    "ignoreCSS": false,
-    "ignoreJS": false,
-    "ignoreJSON": false,
-    "preserveAttributes": false,
-    "preserveComment": true,
-    "preserveText": true,
-    "selfCloseSpace": false,
-    "selfCloseSVG": true,
-    "stripAttributeLines": false,
-    "quoteConvert": "double",
-  },
-  "style": {
-    "atRuleSpace": false,
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": false,
-    "classPadding": false,
-    "noLeadZero": false,
-    "preserveComment": true,
-    "sortProperties": false,
-    "sortSelectors": false,
-    "quoteConvert": "none",
-  },
-  "json": {
-    "allowComments": false,
-    "arrayFormat": "default",
-    "braceAllman": true,
-    "bracePadding": false,
-    "objectIndent": "indent",
-    "objectSort": false
-  },
-  "script": {
-    "commentIndent": false,
-    "commentNewline": false,
-    "arrayFormat": "default",
-    "braceAllman": false,
-    "bracePadding": false,
-    "braceStyle": "none",
-    "endComma": "never",
-    "braceNewline": true,
-    "correct": false,
-    "caseSpace": false,
-    "elseNewline": true,
-    "functionNameSpace": true,
-    "functionSpace": false,
-    "methodChain": 0,
-    "neverFlatten": false,
-    "noCaseIndent": false,
-    "noSemicolon": false,
-    "objectIndent": "indent",
-    "objectSort": false,
-    "preserveComment": true,
-    "preserveText": true,
-    "quoteConvert": "single",
-    "ternaryLine": false,
-    "variableList": "none",
-    "vertical": false,
-    "styleGuide": "none"
-  }
+  "preset": "recommended"
 }
 ```
 
-#### `strict`
+---
 
-This is a strict ruleset for developers who think highly of themselves.
+::: rule 🤌
 
-<!-- prettier-ignore -->
-```js
+#### warrington
+
+:::
+
+The `warrington` style guide preset is specifically tailored for developers, particularly teams working with Shopify themes and markup. This carefully curated preset was crafted by [David Warrington](https://ellodave.dev/), making it an excellent choice for those in the Shopify ecosystem.
+
+- [Example](#)
+- [Ruleset](#)
+
+```json
 {
-  "language": "auto",
-  "indentSize": 2,
-  "indentChar": " ",
-  "wrap": 0,
-  "crlf": false,
-  "endNewline": false,
-  "preserveLine": 3,
-  "liquid": {
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": true,
-    "delimiterTrims": "preserve",
-    "ignoreTagList": [],
-    "indentAttributes": false,
-    "lineBreakSeparator": "default",
-    "normalizeSpacing": true,
-    "preserveComment": true,
-    "quoteConvert": "double"
-  },
-  "markup": {
-    "attributeCasing": "preserve",
-    "attributeSort": false,
-    "attributeSortList": [],
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": true,
-    "delimiterForce": false,
-    "forceAttribute": false,
-    "forceLeadAttribute": false,
-    "forceIndent": false,
-    "ignoreCSS": false,
-    "ignoreJS": false,
-    "ignoreJSON": false,
-    "preserveAttributes": false,
-    "preserveComment": true,
-    "preserveText": true,
-    "selfCloseSpace": false,
-    "selfCloseSVG": true,
-    "stripAttributeLines": false,
-    "quoteConvert": "double",
-  },
-  "style": {
-    "atRuleSpace": false,
-    "commentIndent": false,
-    "commentNewline": false,
-    "correct": false,
-    "classPadding": false,
-    "noLeadZero": false,
-    "preserveComment": true,
-    "sortProperties": false,
-    "sortSelectors": false,
-    "quoteConvert": "none",
-  },
-  "json": {
-    "allowComments": false,
-    "arrayFormat": "default",
-    "braceAllman": true,
-    "bracePadding": false,
-    "objectIndent": "indent",
-    "objectSort": false
-  },
-  "script": {
-    "commentIndent": false,
-    "commentNewline": false,
-    "arrayFormat": "default",
-    "braceAllman": false,
-    "bracePadding": false,
-    "braceStyle": "none",
-    "endComma": "never",
-    "braceNewline": true,
-    "correct": false,
-    "caseSpace": false,
-    "elseNewline": true,
-    "functionNameSpace": true,
-    "functionSpace": false,
-    "methodChain": 0,
-    "neverFlatten": false,
-    "noCaseIndent": false,
-    "noSemicolon": false,
-    "objectIndent": "indent",
-    "objectSort": false,
-    "preserveComment": true,
-    "preserveText": true,
-    "quoteConvert": "single",
-    "ternaryLine": false,
-    "variableList": "none",
-    "vertical": false,
-    "styleGuide": "none"
-  }
+  "preset": "warrington"
+}
+```
+
+---
+
+::: rule 🙌
+
+#### strict
+
+:::
+
+The `strict` style guide preset is curated by the author of Æsthetic, [Panoply](https://github.com/panoply). This choice embodies a refined and acquired taste. Based on existing feedback, the generated output is not for everybody as it has a focus on expressionism. However, for those who embrace it, the output when using `strict` perfectly exemplifies the very essence of why Æsthetic was created.
+
+- [Example](#)
+- [Ruleset](#)
+
+```json
+{
+  "preset": "strict"
+}
+```
+
+---
+
+::: rule 🤡
+
+#### prettier
+
+:::
+
+The `prettier` style guide preset offers a replication of the Prettier style of formatting. For those working with Æsthetic in Liquid (Shopify) projects and who have grown accustomed to the Shopify Liquid Prettier Plugin, using this preset will result in a familiar output.
+
+- [Example](#)
+- [Ruleset](#)
+
+```json
+{
+  "preset": "prettier"
 }
 ```

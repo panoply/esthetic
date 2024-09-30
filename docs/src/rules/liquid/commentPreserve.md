@@ -10,13 +10,13 @@ options:
   - true
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 col-md-9
 
 # Comment Preserve
 
-Preserve the inner contents of Liquid block comments. When this rule is enabled (i.e: `true`) it will ignore formatting Liquid comments and will override `commentIndent` and `commentNewline` rule definitions. The `commentPreserve` rule is disabled (`false`) by default. The **recommended** setting to use is `false` unless you have extensive context contained within comments.
+The Comment Preserve rule is designed to maintain the original formatting within Liquid block comments. When enabled by setting it to `true`, this rule prevents any automatic formatting of the content inside Liquid comments. It takes precedence over both the `commentIndent` and `commentNewline` rules, effectively overriding their definitions. By default, the Comment Preserve rule is disabled, with its value set to `false`. The recommended setting for most cases is to keep this rule disabled (`false`). This allows other formatting rules to apply to comment content, potentially improving overall code consistency.
 
-> Comment blocks which appear on the same line, e.g: `{% comment %} xxx {% endcomment %}` are always preserved. The rule only take effect on comments which span multiple lines.
+> There are scenarios where preserving comment formatting might be preferable. If your codebase contains comments with extensive context, complex formatting, or pre-formatted text that shouldn't be altered, you may want to consider enabling this rule.
 
 :::
 
@@ -33,38 +33,34 @@ This `commentPreserve` rule is set to `false` by default. In the example below, 
 ```json:rules
 {
   "language": "liquid",
-  "preserveLine": 2,
   "liquid": {
     "commentPreserve": false
   }
 }
 ```
 
-<!--prettier-ignore-->
-```liquid
-<main>
-  {% comment %}
+```liquid:before
+{% comment %}
+Lorem ipsum dolor sit amet consectetur,
+adipisicing elit.
+              Officia eius neque autem
+  molestias, doloribus corrupti
+    nulla totam
+      atque libero, iusto est asperiores, culpa
+blanditiis provident!
+{% endcomment %}
+```
 
-  This comment will be indented and a newline
-  will be inserted above. We have set both the
-  "commentNewline" and "commentIndent" rules
-  to true.
-
-        These lines however will be aligned to
-        the starting point of the comment blocks.
-
-                  In the next example where we set
-                  this rule the true, you will notice
-                  how preservation is respected.
-
-  {% endcomment %}
-  <aside>
-    Hello World!
-  </aside>
-  {% comment %}
-                  Same as above, the comment will be formatted!
-                  {% endcomment %}
-</main>
+```liquid:after
+{% comment %}
+  Lorem ipsum dolor sit amet consectetur,
+  adipisicing elit.
+  Officia eius neque autem
+  molestias, doloribus corrupti
+  nulla totam
+  atque libero, iusto est asperiores, culpa
+  blanditiis provident!
+{% endcomment %}
 ```
 
 ---
@@ -86,31 +82,26 @@ When the `commentPreserve` rule is enabled (`true`) then the contents of block c
 }
 ```
 
-<!--prettier-ignore-->
-```liquid
-<ul>
-  <li>Hello</li>
-
-    {% comment %}
-
-  This comment will be preserved
-  Even though we have set both the
-  "commentNewline" and "commentIndent"
-  rules to true.
-
-        The comment tag will will align
-        itself to the li node above
-        but the content will not be touched.
-
-              This is nice when you need to provide detailed
-              descriptions or code examples within comments.
-
-    {% endcomment %}
-
-  <li>World</li>
+```liquid:before
 {% comment %}
-              Same as above, the comment is preserved!
+    Lorem ipsum dolor sit amet consectetur,
+            adipisicing elit.
+                  Officia eius neque autem
+  molestias, doloribus corrupti
+    nulla totam
+      atque libero, iusto est asperiores, culpa
+blanditiis provident!
+{% endcomment %}
+```
 
-              {% endcomment %}
-</ul>
+```liquid:after
+{% comment %}
+    Lorem ipsum dolor sit amet consectetur,
+            adipisicing elit.
+                  Officia eius neque autem
+  molestias, doloribus corrupti
+    nulla totam
+      atque libero, iusto est asperiores, culpa
+blanditiis provident!
+{% endcomment %}
 ```

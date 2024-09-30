@@ -52,13 +52,19 @@ strong {
 .hero {
   // background: rgb(14 14 14); /* fallback for old browsers */
 
-  &-logo {
-    @include transition(color 0.25s ease-in-out);
+  .logo {
+    height: 100px;
 
-    &:hover {
-      text-decoration: none;
-      color: $salmon;
-      opacity: 0.7;
+    .icon {
+      width: 320px;
+      height: 100px;
+      color: #ffffffe6;
+      opacity: 1;
+
+      @include transition(color 0.25s ease-in-out);
+      &:hover {
+        color: #cf6f92;
+      }
     }
   }
 
@@ -83,8 +89,6 @@ strong {
   a {
     color: #282a36;
     text-decoration: none;
-    font-size: 3.5rem;
-    font-style: italic;
     font-weight: 900;
 
     &:hover {
@@ -92,12 +96,52 @@ strong {
     }
   }
 
-  &__caption {
-    position: absolute;
-    bottom: 20px;
-    color: #282a36;
-    font-size: 15px;
+  .caption {
+    font-size: 1.3rem;
+  }
+
+  .papyrus {
+    background-color: #20242c;
+  }
+
+  .goto-link {
+    font-family: $font-family-other;
+    font-size: 0.9rem;
     text-transform: uppercase;
+    color: $link-color;
+    border: $border-width $border-color solid;
+    // background-color: $code-bg;
+    border-radius: 4px;
+    padding: 10px 50px;
+    text-align: center;
+    @include transition(all 0.25s ease-in-out);
+
+    &:hover {
+      color: $pink;
+      background-color: $code-bg;
+    }
+  }
+
+  .language-bash {
+    display: block;
+    font-size: 1rem !important;
+    padding-top: 10px;
+    color: #d6d6d6;
+  }
+}
+
+.npm-icon {
+  height: 50px;
+  width: 50px;
+  margin-top: -5px;
+  color: #891e1f;
+}
+
+.slideshow {
+  .slide {
+    flex: 0 0 auto;
+    width: 12%;
+    filter: opacity(50%);
   }
 }
 
@@ -109,6 +153,8 @@ strong {
   right: 0;
   padding-right: 3px;
   text-align: center;
+  font-family: $font-family-other;
+  text-transform: uppercase;
 }
 
 .find {

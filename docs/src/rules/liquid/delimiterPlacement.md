@@ -2,33 +2,27 @@
 title: 'Liquid - Delimiter Placement'
 layout: base
 permalink: '/rules/liquid/delimiterPlacement/index.html'
-describe:
-  - Delimiter Placement
-  - Related Rules
-  - Rule Options
-options:
-  - preserve
-  - default
-  - inline
-  - consistent
-  - force
-  - force-multiline
+anchors:
+  describe:
+    - Delimiter Placement
+    - Related Rules
+    - Rule Options
+  options:
+    - preserve
+    - inline
+    - consistent
+    - newline-multiline
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 col-md-9
 
 # Delimiter Placement
 
-Controls the placement of opening and closing Liquid delimiters `{%`, `{{`, `}}` and `%}`. The rule will take effect in accordance with the internal structure of output and tag tokens. This is a Liquid specific formatting rule which defaults to using `preserve` when no option has been specified. The **recommended** option to use is `consistent` or `force-multiline`.
+Controls the placement of opening and closing Liquid delimiters `{%`, `{{`, `}}` and `%}`. The rule will take effect in accordance with the internal structure of output and tag tokens. This is a Liquid specific formatting rule which defaults to using `preserve` when no option has been specified. The **recommended** option to use is `consistent` or `newline-multiline`.
 
-> This rule will only be applied to start, singleton and output tag types. Delimiters of end `{% end %}` type tags and those which encapsulate Liquid comments will always be formatted inline.
+The `delimiterPlacement` can be used together with the Liquid [delimiterTrims](/rules/liquid/delimiterTrims/) and [equipoiseSpacing](/rules/liquid/equipoiseSpacing/) rules, both of which pertain to Liquid contained character sequences within tokens.
 
-# Related Rules
-
-The `delimiterPlacement` can be used together with the Liquid `delimiterTrims` and `normalizeSpacing` rules, both of which pertain to Liquid contained character sequences within tags.
-
-- [delimiterTrims](/rules/liquid/delimiterTrims/)
-- [normalizeSpacing](/rules/liquid/normalizeSpacing/)
+> This rule will only be applied to start, singleton and output tag types. Delimiters of end `{liquid} {% end %}` type tags and those which encapsulate Liquid comments will always be formatted inline.
 
 :::
 
@@ -45,63 +39,39 @@ The `preserve` option is what Æsthetic will **default** to using. The option wi
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 70,
   "liquid": {
-    "delimiterPlacement": "preserve",
-    "forceFilter": 2
+    "delimiterPlacement": "preserve"
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
-{% # Inline open and close delimiters are preserved %}
-{{ object.prop | filter: 'value' }}
+```liquid:before
+{%
+  if condition and expectation %}
 
-{% # Forced open and close delimiters are preserved %}
-{{
-  object.prop | filter: 'value'
-}}
+  {{
+    object.prop | filter: 'foo'
+  }}
 
-{% # Forced open and inline close delimiters are preserved %}
-{{
-  object.prop | filter: 'value' }}
+  {{
+    object.prop | filter: 'bar' }}
 
-{% # Inline open and forced close delimiters are preserved %}
-{{ object.prop
-  | filter: 'value'
-  | append: 'sample'
-}}
+{% endif %}
 ```
 
----
+```liquid:after
+{%
+  if condition and expectation %}
 
-::: rule 🤡
+  {{
+    object.prop | filter: 'foo'
+  }}
 
-#### default
+  {{
+    object.prop | filter: 'bar' }}
 
-:::
-
-The `default` option uses the standard style approach as per Liquid and Shopify documentation examples. All delimiters in the sample will be formatted in accordance with most common applied structures. This option will replicates the Liquid Prettier plugin style applied to delimiters.
-
-```json:rules
-{
-  "language": "liquid",
-  "liquid": {
-    "delimiterPlacement": "default"
-  }
-}
-```
-
-<!-- prettier-ignore -->
-```liquid
-{{ object.prop | filter: 'value' }}
-
-{{
-  object.prop | filter: 'value'
-}}
-
-{{
-  object.prop | filter: 'value' }}
+{% endif %}
 ```
 
 ---
@@ -117,36 +87,45 @@ The `inline` option will ensure that delimiters always start and end on the same
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 70,
   "liquid": {
     "delimiterPlacement": "inline"
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
-{% # Delimiters will be inlined %}
+```liquid:before
 {%
   liquid
   if condition == assertion
-    echo 'hello world!'
+    echo object.prop
   endif
 %}
 
-{% # Delimiters will be inlined %}
 {%
  if condition == assertion
- or something == condition
 %}
 
-  {% # Delimiters are already inlined, no changes will apply here %}
-  {{ object.prop | filter: 'value' }}
+  {{
+    foo | filter: 'hello' }}
 
-  {% # Open delimiter extraneous whitespace is stripped and close delimiter will be inlined %}
-  {{   object.prop
-    | filter: 'value'
-    | filter: 'value'
+  {{ bar
+    | filter: 'world'
   }}
+
+{% endif %}
+```
+
+```liquid:after
+{% liquid
+  if condition == assertion
+    echo object.prop
+  endif %}
+
+{% if condition == assertion %}
+
+  {{ foo | filter: 'hello' }}
+  {{ bar | filter: 'world' }}
 
 {% endif %}
 ```
@@ -164,39 +143,41 @@ The `consistent` option will use the opening (`{%` or `{{`) delimiter placement 
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 70,
   "liquid": {
-    "delimiterPlacement": "consistent",
-    "forceFilter": 2,
-    "lineBreakSeparator": "after"
+    "delimiterPlacement": "consistent"
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
-{% # The tags ending delimiter will be inlined %}
-{{ object.prop
-  | filter_1: 'ones'
-  | filter_2: 'two'
-  | filter_3: 'three'
+```liquid:before
+{{ object.prop | filter: 'one'
 }}
 
-{% # The tags ending delimiter will be inlined %}
 {%- render 'snippet',
   param_1: 'one',
   param_2: 'two'
 %}
 
-{% # The starting delimiter will be inlined %}
 {{
 object.prop | filter: t: 'xxx' }}
 ```
 
+```liquid:after
+{{ object.prop | filter: 'one' }}
+
+{%- render 'snippet',
+  param_1: 'one',
+  param_2: 'two' %}
+
+{{ object.prop | filter: t: 'xxx' }}
+```
+
 ---
 
-::: rule 😳
+::: rule 🙌
 
-#### force
+#### newline-multiline
 
 :::
 
@@ -205,14 +186,15 @@ The `forced` option will force delimiters onto newlines. You should avoid using 
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 70,
   "liquid": {
-    "delimiterPlacement": "force"
+    "delimiterPlacement": "newline-multiline"
   }
 }
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
 {%
   if condition == assertion %}
 
@@ -223,8 +205,7 @@ The `forced` option will force delimiters onto newlines. You should avoid using 
 
 {% section 'xxx' %}
 
-{{
-  object.prop
+{{ object.prop
   | filter_1: 'ones'
   | filter_2: 'two'
   | filter_3: 'three' }}
@@ -232,43 +213,23 @@ The `forced` option will force delimiters onto newlines. You should avoid using 
 {% endif %}
 ```
 
----
-
-::: rule 🙌
-
-#### force-multiline
-
-:::
-
-The `forced` option will force delimiters onto newlines. You should avoid using this option as there a very few use cases where it would be applicable. All delimiters in the sample will be forced onto newlines when formatting.
-
-```json:rules
-{
-  "language": "liquid",
-  "wrap": 50,
-  "liquid": {
-    "delimiterPlacement": "force-multiline"
-  }
-}
-```
-
-<!-- prettier-ignore -->
-```liquid
+```liquid:after
 {%
   if condition == assertion %}
 
-{% # All delimiters will be forced %}
+  {% # All delimiters will be forced %}
 
-{{ object.prop | filter_1: 'one' }}
-{{ object.prop | filter_1: 'one' | filter_2: 'two' }}
+  {{ object.prop | filter_1: 'one' }}
+  {{ object.prop | filter_1: 'one' | filter_2: 'two' }}
 
-{% section 'xxx' %}
+  {% section 'xxx' %}
 
-{{
-  object.prop
-  | filter_1: 'ones'
-  | filter_2: 'two'
-  | filter_3: 'three' }}
+  {{
+     object.prop
+     | filter_1: 'ones'
+     | filter_2: 'two'
+     | filter_3: 'three'
+  }}
 
 {% endif %}
 ```

@@ -14,13 +14,13 @@ anchors:
     - wrap
 ---
 
-::: grid col-12 p-100
+::: grid col-12 col-md-9
 
 # Line Break Logical
 
 The `lineBreakLogical` rule controls the placement of logical joins found within Liquid conditional tags. Logical expressions are used to join multiple conditions together, in Liquid this accounts for `or` and `and` keyword names. The rule takes effect when conditional tags exceed word wrap and will align the logical keywords either to the right, left or leave them intact.
 
-# Related Rules
+### Related Rules
 
 - [wrap](/rules/global/wrap/)
 - [lineBreakSeparator](/rules/liquid/lineBreakSeparator/)
@@ -42,6 +42,7 @@ Below is an example of how this rule works if set to `before` which is recommend
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 70,
   "liquid": {
     "lineBreakLogical": "after"
   }
@@ -49,7 +50,26 @@ Below is an example of how this rule works if set to `before` which is recommend
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
+{% # All argument comma separators will be placed at the end %}
+{% render 'snippet'
+  , param_1: true
+  , param_2: 1000
+  , param_3: 'string'
+  , param_4: nil %}
+
+{% if condition == assertion %}
+
+  {{ object.prop
+    | param_1: true
+    | param_2: 1000
+    | param_3: arg_1: 'value', arg_2: 2000, arg_3: false, arg_4: nil
+    | param_4: 'xxxx' }}
+
+{% endif %}
+```
+
+```liquid:after
 {% # All argument comma separators will be placed at the end %}
 {% render 'snippet'
   , param_1: true
@@ -81,7 +101,7 @@ Below is an example of how this rule works if set to `default` which is the **de
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 0,
+  "wrap": 70,
   "liquid": {
     "lineBreakLogical": "before"
   }
@@ -89,7 +109,7 @@ Below is an example of how this rule works if set to `default` which is the **de
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
 {% # Comma separated args will be placed before expression %}
 {% render 'snippet',
   param_1: true,
@@ -109,6 +129,25 @@ Below is an example of how this rule works if set to `default` which is the **de
     arg_4: nil
     | append: 'xxx'
     }}
+
+{% endif %}
+```
+
+```liquid:after
+{% # All argument comma separators will be placed at the end %}
+{% render 'snippet'
+  , param_1: true
+  , param_2: 1000
+  , param_3: 'string'
+  , param_4: nil %}
+
+{% if condition == assertion %}
+
+  {{ object.prop
+    | param_1: true
+    | param_2: 1000
+    | param_3: arg_1: 'value', arg_2: 2000, arg_3: false, arg_4: nil
+    | param_4: 'xxxx' }}
 
 {% endif %}
 ```

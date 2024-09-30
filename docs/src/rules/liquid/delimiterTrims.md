@@ -3,23 +3,24 @@ title: 'Liquid - Delimiter Trims'
 layout: base
 permalink: '/rules/liquid/delimiterTrims/index.html'
 anchors:
-  - Delimiter Trims
-  - Rule Options
-  - preserve
-  - tags
-  - outputs
-  - never
-  - always
-  - multiline
+  describe:
+    - Delimiter Trims
+  options:
+    - preserve
+    - tags
+    - outputs
+    - never
+    - always
+    - multiline
 ---
 
-::: grid col-12 col-sm-12 p-100
+::: grid col-12 col-md-9
 
 # Delimiter Trims
 
 Delimiter whitespace trim dashes `{%-`, `-%}`, `{{-` and `-}}` control. This rule can be used for handling trim `-` application of delimiter expressions in Liquid tag and output type tokens. This is a Liquid specific formatting rule which defaults to using `preserve` when no option has been specified. The **recommended** option to use is `tags` or `never`.
 
-> This rule will not touch Liquid tokens encapsulated within strings, e.g: `"{{ foo }}"`. Tags which exist in string values or those contained between quotation characters are left intact.
+> This rule will not touch Liquid tokens encapsulated within strings. Tags which exist in string values or those contained between quotation characters are left intact.
 
 :::
 
@@ -52,8 +53,14 @@ The `delimiterTrims` rule is set to `preserve` by default and delimiter trims ap
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
+```liquid:before
+{% if condition -%}
+  {{- foo }}
+  {{ bar -}}
+{%- endif -%}
+```
+
+```liquid:after
 {% if condition -%}
   {{- foo }}
   {{ bar -}}
@@ -79,18 +86,32 @@ When the `delimiterTrims` rule is set to `tags` then Liquid tokens using `{%` an
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
+```liquid:before
 {% if condition -%}
 
-  {% # Trims will be inserted here %}
+  {% # Trims inserted %}
   {% render 'snippet' %}
 
-  {% # These output tag type delimiter trims are preserved %}
+  {% # Trims stripped %}
   {{- foo }}
   {{ bar -}}
+  {{- baz -}}
 
 {% endif %}
+```
+
+```liquid:after
+{%- if condition -%}
+
+  {% # Trims inserted %}
+  {%- render 'snippet' -%}
+
+  {% # Trims stripped %}
+  {{ foo }}
+  {{ bar }}
+  {{ baz }}
+
+{%- endif -%}
 ```
 
 ---
@@ -112,18 +133,32 @@ When the `delimiterTrims` rule is set to `outputs` then Liquid tokens using `{{`
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
-{%- if condition -%}
+```liquid:before
+{% if condition %}
 
-  {% # Trim application will be preserved %}
+  {% # Trims preserve %}
   {% render 'snippet' -%}
 
-  {% # The output tags will have trims applied %}
+  {% # Trims inserted %}
   {{ foo }}
   {{ bar }}
+  {{ baz }}
 
-{%- endif %}
+{% endif %}
+```
+
+```liquid:after
+{% if condition -%}
+
+  {% # Trims preserve %}
+  {% render 'snippet' -%}
+
+  {% # Trims inserted %}
+  {{- foo -}}
+  {{- bar -}}
+  {{- baz -}}
+
+{% endif %}
 ```
 
 ---
@@ -146,16 +181,26 @@ When the `delimiterTrims` rule is set to `never` then all occurrence's trim dash
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
 {%- if condition -%}
-
-  {% # All trims will be stripped %}
 
   {%- render 'snippet' -%}
 
   {{- foo -}}
   {{- bar -}}
   {{- baz -}}
+
+{%- endif %}
+```
+
+```liquid:after
+{% if condition %}
+
+  {% render 'snippet' %}
+
+  {{ foo }}
+  {{ bar }}
+  {{ baz }}
 
 {%- endif %}
 ```
@@ -179,11 +224,10 @@ When the `delimiterTrims` rule is set to `always` then all Liquid delimiters wil
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
+```liquid:before
 {% if condition %}
 
-  {% # Trims will be applied to all tokens %}
+  {% # Trims inserted %}
 
   {% render 'snippet' %}
 
@@ -192,6 +236,20 @@ When the `delimiterTrims` rule is set to `always` then all Liquid delimiters wil
   {{ baz }}
 
 {% endif %}
+```
+
+```liquid:after
+{%- if condition -%}
+
+  {% # Trims inserted %}
+
+  {%- render 'snippet' -%}
+
+  {{- foo -}}
+  {{- bar -}}
+  {{- baz -}}
+
+{%- endif -%}
 ```
 
 ---
@@ -207,37 +265,36 @@ When the `delimiterTrims` rule is set to `multiline` trims will be applied to ta
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 0,
-  "wrapFraction": 30,
   "liquid": {
-    "lineBreakSeparator": "after",
     "delimiterTrims": "multiline"
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
+```liquid:before
 {%
   if condition == assertion
   or condition == expectation
-  or something == comparison
-%}
+  or something == comparison %}
 
-  {{
-    object.prop
-    | param_1: true
-    | param_2: 1000
-    | param_3:
-      arg_1: 'value',
-      arg_2: 2000,
-      arg_3: false,
-      arg_4: true,
-      arg_5: 2000,
-      arg_6: nil
-    | param_4: true
-    | param_5: 1000
-  }}
+  {{ object.prop
+    | filter_1: true
+    | filter_2: 'value'
+    | filter_3: 1000  }}
+
+{% endif %}
+```
+
+```liquid:after
+{%-
+  if condition == assertion
+  or condition == expectation
+  or something == comparison -%}
+
+  {{- object.prop
+    | filter_1: true
+    | filter_2: 'value'
+    | filter_3: 1000 -}}
 
 {% endif %}
 ```

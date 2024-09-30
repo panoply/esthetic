@@ -2,15 +2,16 @@
 title: 'Markup - Comment Delimiter'
 layout: base
 permalink: '/rules/markup/commentDelimiter/index.html'
-describe:
-  - Comment Delimiter
-  - Rule Options
-options:
-  - preserve
-  - consistent
-  - inline
-  - inline-align
-  - force
+anchors:
+  describe:
+    - Comment Delimiter
+    - Rule Options
+  options:
+    - preserve
+    - consistent
+    - inline
+    - inline-align
+    - newline
 ---
 
 ::: grid col-12 col-sm-9 p-100
@@ -196,18 +197,17 @@ When the `commentDelimiter` rule is set to `inline-align`, markup comment delimi
 
 ::: rule 🙌
 
-#### force
+#### newline
 
 :::
 
-When the `commentDelimiter` rule is set to `force` delimiters will be forced onto newlines.
+When the `commentDelimiter` rule is set to `newline` delimiters will be forced onto newlines.
 
 ```json:rules
 {
   "language": "html",
   "markup": {
-    "commentIndent": true,
-    "commentDelimiter": "force"
+    "commentDelimiter": "newline"
   }
 }
 ```

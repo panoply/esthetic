@@ -1,64 +1,13 @@
 ---
-title: 'Rules'
+title: 'Preset'
 layout: base
-permalink: '/usage/rules/index.html'
-prev:
-  label: 'Config Files'
-  uri: '/usage/config-files'
-next:
-  label: 'Inline Control'
-  uri: '/usage/inline-control'
+permalink: '/api/esthetic.preset/index.html'
 anchors:
   - Rules
-  - Basic Usage
-  - Read Usage
-  - Using Preset Style Guides
-  - Presets
-  - Options
+  - Example
 ---
 
-# Rules
-
-The `rules` method within Æsthetic can be used to perform immutable merges to formatting options and define customized rules for code beautification or parsing. Once applied, these formatting options are persisted, ensuring that the defined rules are consistently used for all subsequent beautification processes, until changed or the execution session ends.
-
-> You can enable/disable rule persistence behavior using the [settings](/usage/settings/) method. When **disabled** Æsthetic will use defaults for each beautification execution.
-
-Utilizing the `rules` method will preset the configuration logic, allowing seamless and consistent code formatting across multiple calls.
-
-#### Basic Usage
-
-<!-- prettier-ignore -->
-```js
-import esthetic from 'esthetic';
-
-esthetic.rules({
-  language: 'html',
-  indentSize: 4,
-  markup: {
-    attributeSort: true,
-    forceAttribute: true
-    // etc etc
-  },
-  style: {
-    noLeadZero: true
-    // etc etc
-  }
-});
-```
-
-#### Read Usage
-
-<!-- prettier-ignore -->
-```js
-import esthetic from 'esthetic';
-
-esthetic.rules() // Returns the current ruleset
-
-```
-
----
-
-# Using Preset Style Guides
+# Preset
 
 Æsthetic comes equipped with a useful feature called **Rule Presets**. These pre-defined style guides serve as default ruleset's and have been carefully curated to assist users in achieving polished output without having to understand how each rule works. Using the [global](/rules#global) → [preset](/rules/global/preset) option, you can conveniently apply one of the available presets as the runtime rule default. This simplifies the creative process and ensures consistent, aesthetically pleasing results without introducing any unnecessary complexities or learning curves.
 

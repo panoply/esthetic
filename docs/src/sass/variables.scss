@@ -1,9 +1,10 @@
 :root {
-  --papyrus-font-size: 0.9em;
+  --papyrus-font-size: 0.875em;
   --papyrus-code-padding-y: 0.9em;
   --papyrus-code-padding-x: 0.8em;
-  --papyrus-code-border-radius: none;
-  //--papyrus-line-fence-width: 0;
+  --papyrus-code-border-radius: 0.4em !important;
+  --papyrus-line-number-width: 3.4rem;
+  //--papyrus-code-bg: #181b21;
   // --papyrus-line-fence-color: transparent;
 }
 
@@ -13,6 +14,7 @@
 
 $variable-prefix: null;
 $enable-font-smoothing: true;
+
 /* -------------------------------------------- */
 /* EDITABLE OPTIONS                             */
 /* -------------------------------------------- */
@@ -132,7 +134,7 @@ $container-max-widths: (
 /* -------------------------------------------- */
 
 $body-bg: #16181c; // $black; //#282a36; // $gray-100;
-$body-color: $white; //$gray-900;
+$body-color: #ebeaea; //$gray-900;
 $code-bg: #20242c;
 $code-inline-bg: $code-bg;
 $link-color: $gray-400;
@@ -140,7 +142,7 @@ $link-color: $gray-400;
 $letter-spacing-base: 1rem;
 $letter-spacing-heading: 0.04rem;
 
-$font-weight-normal: 100;
+$font-weight-normal: 300;
 $font-weight-lighter: 200;
 $font-weight-light: 100;
 $font-weight-bold: 500;
@@ -161,6 +163,7 @@ $accordion-border-width: $border-width;
 // stylelint-disable
 
 $font-family-base:
+  Proxima Nova,
   system-ui,
   -apple-system,
   Segoe UI,
@@ -178,8 +181,7 @@ $font-family-base:
   'Segoe UI Emoji',
   'Segoe UI Symbol';
 
-$font-family-heading: $font-family-base;
-
+$font-family-heading: 'JetBrains Mono', monospace;
 $font-family-other: 'JetBrains Mono', monospace;
 $font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
   monospace;
@@ -190,7 +192,7 @@ $font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
 /* FONT SIZES                                   */
 /* -------------------------------------------- */
 
-$font-size-base: 0.995rem;
+$font-size-base: 1rem;
 
 $font-size-xs: $font-size-base * 0.595;
 $font-size-sm: $font-size-base * 0.825;
@@ -202,26 +204,32 @@ $font-size-xl: $font-size-base * 1.75;
 /* FONT HEADINGS                                */
 /* -------------------------------------------- */
 
-$line-height-base: 1.5;
+$line-height-base: 1.4;
 $line-height-sm: 1.25;
 $line-height-lg: 2;
 $line-height-xl: 2.4;
 
 $headings-letter-spacing: $headings-letter-spacing;
 $headings-font-family: $font-family-other;
-$headings-margin-bottom: $spacer * 0.5;
+$headings-margin-bottom: $spacer-3;
 $headings-font-style: null;
-$headings-font-weight: 600;
+$headings-font-weight: 900;
 $headings-line-height: 1.2;
 $headings-color: null;
 $headings-uppercase: true;
 
-$h1-font-size: $font-size-base * 2;
-$h2-font-size: $font-size-base * 1.8;
-$h3-font-size: $font-size-base * 1.6;
-$h4-font-size: $font-size-base * 1.4;
-$h5-font-size: $font-size-base * 1.25;
+$h1-font-size: $font-size-base * 1.4;
+$h2-font-size: $font-size-base * 1.3;
+$h3-font-size: $font-size-base * 1.1;
+$h4-font-size: $font-size-base * 1;
+$h5-font-size: $font-size-base * 1;
 $h6-font-size: $font-size-base;
+
+$hr-color: $border-color;
+$hr-margin-y: $spacer;
+$hr-border-width: $border-width;
+$hr-border-color: null; // Allows for inherited colors
+$hr-opacity: 1;
 
 /* -------------------------------------------- */
 /* PARAGRAPH                                    */
@@ -251,19 +259,20 @@ $tooltip-use-outline: false;
 /* -------------------------------------------- */
 
 $form-range-track-width: 100%;
-$form-range-track-height: 0.25rem;
+$form-range-track-height: 0.05rem;
 $form-range-track-cursor: pointer;
-$form-range-track-bg: #23252b;
+$form-range-track-bg: #363d49;
 $form-range-track-border-radius: 0;
 $form-range-track-box-shadow: $box-shadow-inset;
 $form-range-thumb-size: 0.8rem;
-$form-range-thumb-width: $form-range-thumb-size;
-$form-range-thumb-height: $form-range-thumb-size;
-$form-range-thumb-bg: $pink;
+$form-range-thumb-width: 0.9rem;
+$form-range-thumb-height: 0.9rem;
+$form-range-thumb-bg: $code-bg-color;
 $form-range-thumb-border: 0;
-$form-range-thumb-border-radius: 0;
-$form-range-thumb-focus-box-shadow-width: $input-focus-width;
-$form-range-thumb-active-bg: $salmon;
+$form-range-thumb-border-radius: 50%;
+$form-range-thumb-focus-box-shadow: transparent;
+$form-range-thumb-focus-box-shadow-width: 0;
+$form-range-thumb-active-bg: $pink;
 $form-range-thumb-disabled-bg: $gray-500;
 
 /* stylelint-disable scss/dollar-variable-colon-space-after */
@@ -275,12 +284,13 @@ $form-range-thumb-disabled-bg: $gray-500;
 // FONT FAMILY
 $papyrus-font-family: consolas, monaco, 'Andale Mono', 'Ubuntu Mono',
   monospace;
-$papyrus-font-size: 1rem;
+$papyrus-font-size: 0.895rem;
 $papyrus-line-height: 1.7;
+$papyrus-scrollbar-width: 0;
 
 // EDITOR SIZING
 // $papyrus-height: auto;
-$papyrus-width: 100%;
+//$papyrus-width: 100%;
 
 // SELECTION
 $papyrus-selection-bg: 255, 255, 255;

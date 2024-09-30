@@ -1,8 +1,8 @@
 import { parseJSON } from '../utilities/common';
 import { Rules } from 'esthetic';
-import papyrus, { Model } from 'papyrus';
+import papyrus, { Papyrus } from 'papyrus';
 import merge from 'mergerino';
-import spx from 'spx'
+import spx, { SPX } from 'spx'
 
 export class Showcase extends spx.Component<typeof Showcase.define> {
 
@@ -14,6 +14,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
       /* EDITOR RELATED ----------------------------- */
 
+      'range',
       'rules',
       'rulesTab',
       'input',
@@ -35,11 +36,14 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
       mode: String,
       uuid: String,
       rules: Object,
+      height: Number,
+      step: Number,
       rulesOriginal: Object,
       input: String,
       inputOriginal: String,
       language: String,
       tab: Number,
+      boundWrap: Number,
       preset: {
         typeof: String,
         persist: true
@@ -59,61 +63,43 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
   }
 
-  getOutputReact (input: Model, output: Model) {
-
-    const ih = input.pre.getBoundingClientRect().height;
-
-    let height = ih;
-
-    const oh = output.pre.getBoundingClientRect().height;
-    const sh = output.code.scrollHeight;
-
-    if (oh > ih) height = oh;
-    if (height < sh) height = sh + 5;
-
-    input.pre.style.minHeight = height + 'px';
-    input.pre.style.maxHeight = height + 'px';
-    output.pre.style.maxHeight = height + 'px';
-    output.pre.style.minHeight = height + 'px';
-  }
-
   /**
    * Set max-height and min-height based on output bounding height
    */
-  getEditorRect () {
+  // getEditorRect () {
 
-    const ih = this.inputNode.getBoundingClientRect().height;
+  //   const ih = this.inputNode.getBoundingClientRect().height;
 
-    let height = ih;
+  //   let height = ih;
 
-    if (this.outputNode) {
+  //   if (this.outputNode) {
 
-      const oh = this.output.pre.getBoundingClientRect().height;
-      const sh = this.output.code.scrollHeight;
+  //     const oh = this.output.pre.getBoundingClientRect().height;
+  //     const sh = this.output.code.scrollHeight;
 
-      if (oh > ih) height = oh;
-      if (height < sh) height = sh + 12;
+  //     if (oh > ih) height = oh;
+  //     if (height < sh) height = sh + 12;
 
-      this.input.pre.style.minHeight = height + 'px';
-      this.input.pre.style.height = height + 'px';
-      this.input.pre.style.maxHeight = height + 'px';
-      this.output.pre.style.maxHeight = height + 'px';
-      this.output.pre.style.height = height + 'px';
-      this.output.pre.style.minHeight = height + 'px';
+  //     this.input.pre.style.minHeight = height + 'px';
+  //     this.input.pre.style.height = height + 'px';
+  //     this.input.pre.style.maxHeight = height + 'px';
+  //     this.output.pre.style.maxHeight = height + 'px';
+  //     this.output.pre.style.height = height + 'px';
+  //     this.output.pre.style.minHeight = height + 'px';
 
-    } else {
+  //   } else {
 
-      const sh = this.input.code.scrollHeight;
+  //     const sh = this.input.code.scrollHeight  ;
 
-      if (height < sh) height = sh + 5;
+  //     if (height < sh) height = sh + 5;
 
-      this.input.pre.style.minHeight = height + 'px';
-      this.input.pre.style.height = height + 'px';
-      this.input.pre.style.maxHeight = height + 'px';
+  //     this.input.pre.style.minHeight = height + 'px';
+  //     this.input.pre.style.height = height + 'px';
+  //     this.input.pre.style.maxHeight = height + 'px';
 
-    }
+  //   }
 
-  }
+  // }
 
   setPreset () {
 
@@ -149,28 +135,12 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
       const format = esthetic.format(string, rules);
       output.update(format, output.language);
 
-      // const ih = input.code.getBoundingClientRect().height;
-
-      // let height = ih;
-
-      // const oh = output.code.getBoundingClientRect().height;
-      // const sh = output.code.scrollHeight;
-
-      // if (oh > ih) height = oh;
-      // if (height < sh) height = sh + 5;
-
-      // input.pre.style.minHeight = height + 'px';
-      // input.pre.style.maxHeight = height + 'px';
-      // output.pre.style.maxHeight = height + 'px';
-      // output.pre.style.minHeight = height + 'px';
     }
-
   }
 
   onPresetChange (event: { target: HTMLLIElement }) {
 
     if (this.state.preset !== event.target.id) {
-
       this.state.preset = event.target.id;
       localStorage.setItem('preset', this.state.preset);
       Showcase.rules.set(this.state.uuid, esthetic.preset(this.state.preset, this.state.rules));
@@ -178,38 +148,22 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
     }
   }
 
+  connect() {
+
+    papyrus();
+
+  }
+
   onmount () {
 
-    this.state.preset = localStorage.getItem('preset') || 'default';
-
-    this.input = papyrus.mount(this.inputNode, {
-      id: `input:${this.state.uuid}`,
-      input: this.state.input,
-      language: this.state.rules.language,
-      editor: true
-    });
+   // this.state.preset = localStorage.getItem('preset') || 'default';
+    this.input = papyrus.get(`input:${this.state.uuid}`);
+    this.output = papyrus.get(`output:${this.state.uuid}`);
 
     this.input.onupdate(this.onInputEdit, this);
     this.input.onsave(this.onInputSave, this);
 
-    if (this.outputNode) {
-
-      this.output = papyrus.mount(this.outputNode, {
-        id: `output:${this.state.uuid}`,
-        language: this.state.rules.language,
-        editor: false,
-        trimStart: this.state.rules.indentLevel === 0,
-        trimEnd: this.state.rules.endNewline === false,
-        showTab: this.state.rules.indentChar === '\t'
-      });
-
-
-      if(this.state.rules.endNewline) {
-        this.getEditorRect()
-      }
-
-
-    }
+    this.onHeight()
 
    // this.setPreset();
 
@@ -221,21 +175,30 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
   }
 
-  formatCode (input?: string) {
+
+  onHeight () {
+
+    const i = this.input.height()
+    const o = this.output.height()
+
+    if (i > o) {
+      this.output.height(i)
+    } else {
+      this.input.height(o)
+    }
+
+
+  }
+
+
+  formatCode (input: string = this.state.input) {
 
     try {
 
-      const output = esthetic.format(input || this.state.input, this.state.rules);
+      const output = esthetic.format(input, this.state.rules);
 
-      if (input) {
-
-        this.output.update(output);
-
-      } else {
-
-        this.formatCode(output);
-
-      }
+      this.output.update(output);
+      this.onHeight()
 
      // this.getEditorRect();
      // this.getOutputReact(this.input, this.output);
@@ -245,14 +208,17 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
       // eslint-disable-next-line no-control-regex
       const clean = /\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/mg;
 
-      this.output.showError(e.replace(clean, ''), { heading: 'Error thrown by Æsthetic' });
-      this.getOutputReact(this.input, this.output);
+      this.output.error.show(e.replace(clean, ''), {
+         heading: 'Error thrown by Æsthetic'
+       });
+
 
     }
 
   }
 
   timer: number = NaN;
+
 
   onInputSave (value: string) {
 
@@ -276,7 +242,10 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
         }
       } : this.state.rules);
 
-      return output;
+      this.input.update(output);
+      this.output.update(output);
+
+      this.onHeight()
 
     } catch (e) {
 
@@ -286,65 +255,90 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
   onInputEdit (value: string) {
 
+
     if (this.state.mode === 'rules') {
 
-      this.formatCode();
+      this.formatCode(this.state.input);
 
-      if (!isNaN(this.timer)) {
-        window.clearTimeout(this.timer);
+      try {
+
+        this.state.rules = parseJSON(value);
+        this.formatCode(this.state.input);
         this.timer = NaN;
+
+        return value;
+
+      } catch (error) {
+
+        this.output.error.show(error, {
+          title: 'JSON ERROR',
+          heading: 'Invalid JSON Syntax',
+        });
+
       }
 
-      this.timer = window.setTimeout(() => {
-
-        try {
-
-          this.state.rules = parseJSON(value);
-          this.formatCode();
-          this.timer = NaN;
-
-          return value;
-
-        } catch (error) {
-
-          this.output.showError(error, {
-            title: 'JSON ERROR',
-            heading: 'Invalid JSON Syntax',
-            stack: error.stack
-          });
-
-          this.getOutputReact(this.input, this.output);
-          this.timer = NaN;
-
-        }
-
-      }, 500);
 
     } else {
 
       this.state.input = value;
-      this.formatCode();
+      this.formatCode(this.state.input);
 
     }
+
+
+    this.onHeight()
 
   }
 
-  doWrap (value: number, [ lexer, rule = null ]: string[]) {
 
-    if (rule === null) {
+  onWrap ({ target }: SPX.InputEvent) {
 
-      this.state.rules.wrap = value;
+    // @ts-ignore
+    let wrap = Number(target.value)
 
-      const input = esthetic.format(this.input.raw, this.state.rules);
+    if(wrap < 1) {
 
-      this.wrapCountNode.innerHTML = `${value}`;
-      this.wrapLineNode.style.width = `${value}%`;
-      this.wrapLineNode.style.transition = 'width 50ms ease-in-out';
-      this.wrapLineNode.style.willChange = 'auto';
+      target.ariaLabel = 'Wrap Disabled'
+      this.wrapLineNode.style.display = 'none'
 
-      this.input.update(input);
+    } else {
+
+      target.ariaLabel = 'Word Wrap'
+      this.wrapLineNode.style.display = ''
 
     }
+
+    this.updateRules({ wrap })
+
+
+
+    this.wrapCountNode.innerHTML = `${this.state.rules.wrap}`;
+    this.wrapLineNode.style.borderColor = 'hotpink'
+    this.wrapLineNode.style.transition = 'width linear';
+    this.wrapLineNode.style.willChange = 'auto';
+
+
+    this.wrapLineNode.style.width = `${this.state.step * wrap}px`;
+
+    this.state.input = esthetic.format(this.state.input, this.state.rules);
+
+    this.output.update(this.state.input);
+    this.output.height(this.input.height())
+    this.onHeight()
+
+    target.onmouseup = () => this.wrapLineNode.style.removeProperty('borderColor')
+
+
+    //this.updateRules({ wrap: +target.value })
+
+
+  }
+
+  wrapFormat() {
+
+    const input = esthetic.format(this.state.input, this.state.rules);
+
+    this.formatCode(input)
 
   }
 
@@ -406,7 +400,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
     } else if (this.state.mode === 'rules') {
 
       this.state.rules = this.state.rulesOriginal;
-      this.input.update(this.rulesInput, 'json');
+      this.input.update(this.rulesInput, 'json', true);
 
       this.formatCode();
     }
@@ -418,6 +412,8 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
    */
   onClickRulesTab () {
 
+    if(this.state.mode === 'rules') return;
+
     if (this.inputTabNode.classList.contains('is-active')) {
       this.inputTabNode.classList.remove('is-active');
     }
@@ -428,7 +424,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
     this.state.mode = 'rules';
     // this.input.editor.disable();
-    this.input.update(this.rulesInput, 'json', true);
+    this.input.update(this.rulesInput, 'json');
 
   }
 
@@ -437,7 +433,9 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
    */
   onClickInputTab () {
 
-    if (this.output) this.output.hideError();
+    if(this.state.mode === 'editor') return;
+
+    this.output.error.hide();
 
     if (this.rulesTabNode.classList.contains('is-active')) {
       this.rulesTabNode.classList.remove('is-active');
@@ -447,18 +445,9 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
       this.inputTabNode.classList.add('is-active');
     }
 
-    if (this.outputNode) {
-
-      // this.input.editor.enable();
-      this.input.update(this.state.input, this.state.language, true);
-      this.output.hideError();
-
-    } else {
-
-      this.formatCode();
-    }
-
     this.state.mode = 'editor';
+    this.input.update(this.state.input, this.state.language, true)
+
 
   }
 
@@ -466,8 +455,8 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
   /* TYPES                                        */
   /* -------------------------------------------- */
 
-  input: papyrus.Model;
-  output: papyrus.Model;
+  input: Papyrus.Model;
+  output: Papyrus.Model;
 
   /* TABS --------------------------------------- */
 

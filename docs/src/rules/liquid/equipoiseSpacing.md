@@ -2,23 +2,22 @@
 title: 'Liquid - Equipoise Spacing'
 layout: base
 permalink: '/rules/liquid/equipoiseSpacing/index.html'
-describe:
-  - Normalize Spacing
-  - Rule Options
-options:
-  - true
-  - false
+anchors:
+  describe:
+    - Normalize Spacing
+    - Rule Options
+  options:
+    - true
+    - false
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 col-md-9
 
 # Equipoise Spacing
 
-Whether or not to normalize and correct the inner spacing of Liquid tokens. The `equipoiseSpacing` rule will equally distribute whitespace sequences contained within Liquid tags and output type tokens.
+Whether or not to normalize and correct the inner spacing of Liquid tokens. The `equipoiseSpacing` rule will equally distribute whitespace sequences contained within Liquid tags and output type tokens. This is a Liquid specific formatting rule which will **default** to `true` when no option has been specified. The **recommended** option to use is `true`.
 
-> Equipoise does not strip newline characters and does not process code encapsulated in quotation characters, such as `"string"` or `'string'` expressions. Æsthetic considers these preservation sequences.
-
-This is a Liquid specific formatting rule which will **default** to `true` when no option has been specified. The **recommended** option to use is `true`.
+> Equipoise does not strip newline characters and does not process code encapsulated in quotation characters, such as "string" or 'string' expressions. Æsthetic considers these preservation sequences.
 
 :::
 
@@ -36,31 +35,41 @@ When the `equipoiseSpacing` rule is set to `true` which is the **default** appli
 {
   "language": "liquid",
   "liquid": {
-    "equipoiseSpacing": true,
-    "forceFilter": 2
+    "equipoiseSpacing": true
   }
 }
 ```
 
-<!--prettier-ignore-->
-```liquid
+```liquid:before
 {{  object.prop
  |args:'x'  , 'xx'
  | filter  :  ' preserve string ' }}
 
-{% assign  foo=   ' preserved ' |  append : object . prop |foo|bar%}
+{% assign  foo=   ' preserve ' |  append : object . prop %}
 
 {%  for    x   in   (10 . . 200)
- parameter  :  2000 param  limit :1  %}
+ %}
 
-{{
-   object   .property  [  "string"  ]   .foo
- |  append : object . prop  |args:'x'  , 'xx'
- }}
+{{ object   .property  [  "string"  ]   .foo
+ |  append : object . prop  |args:'x'  , 'xx' }}
 
 {%   endfor  %}
+```
 
+```liquid:after
+{{ object.prop
+  | args: 'x', 'xx'
+  | filter: ' preserve string ' }}
 
+{% assign foo = ' preserve ' | append: object.prop %}
+
+{% for x in (10..200) %}
+
+  {{ object.property["string"].foo
+    | append: object.prop
+    | args: 'x', 'xx' }}
+
+{% endfor %}
 ```
 
 ---
@@ -81,16 +90,34 @@ When the `equipoiseSpacing` rule is set to `true` which is the **default** appli
 }
 ```
 
-<!--prettier-ignore-->
-```liquid
+```liquid:before
 {{  object.prop
  |args:'x'  , 'xx'
  | filter  :  ' preserve string ' }}
 
-{% assign  foo=   ' preserved ' |  append : object . prop |foo|bar%}
+{% assign  foo=   ' preserve ' |  append : object . prop %}
 
+{%  for    x   in   (10 . . 200)
+ %}
 
-{%  for    x   in   (10 . . 200) parameter  :  2000 param  limit :1  %}
-{{ object.property[foo][0][100].prop[object.prop[0]] }}
+{{ object   .property  [  "string"  ]   .foo
+ |  append : object . prop  |args:'x'  , 'xx' }}
+
+{%   endfor  %}
+```
+
+```liquid:after
+{{  object.prop
+ |args:'x'  , 'xx'
+ | filter  :  ' preserve string ' }}
+
+{% assign  foo=   ' preserve ' |  append : object . prop %}
+
+{%  for    x   in   (10 . . 200)
+ %}
+
+{{ object   .property  [  "string"  ]   .foo
+ |  append : object . prop  |args:'x'  , 'xx' }}
+
 {%   endfor  %}
 ```

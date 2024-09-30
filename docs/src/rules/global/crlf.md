@@ -33,8 +33,15 @@ If line termination should be Windows **CRLF** (CR = Carriage Return and LF = Li
 
 This rule is **disabled** by default and line feed termination is used.
 
-<!-- prettier-ignore -->
-```liquid
+```html:before
+<ul>
+  <li>Foo</li>
+  <li>Bar</li>
+  <li>Baz</li>
+</ul>
+```
+
+```html:after
 <ul>
   <li>Foo</li>
   <li>Bar</li>
@@ -59,8 +66,15 @@ When the rule is **enabled** carriage return and line feed termination is used.
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
+```html:before
+<ul>
+  <li>Foo</li>
+  <li>Bar</li>
+  <li>Baz</li>
+</ul>
+```
+
+```html:after
 <ul>
   <li>Foo</li>
   <li>Bar</li>

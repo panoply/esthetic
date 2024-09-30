@@ -1,11 +1,15 @@
-import spx from 'spx';
+import spx, { SPX } from 'spx';
 
-export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
+export class Anchor extends spx.Component<typeof Anchor.define> {
 
   static define = {
-    id: 'scrollspy',
+    id: 'anchor',
     state: {
       threshold: Number,
+      open: {
+        typeof: Boolean,
+        default: true
+      },
       rootMargin: {
         typeof: String,
         default: '0px'
@@ -13,13 +17,13 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
     },
     nodes: <const>[
       'href',
-      'anchor'
+      'anchor',
+      'toggle',
+      'toggler',
+      'describe'
     ]
   };
 
-  /**
-   * Stimulus: Initialize
-   */
   connect () {
 
     this.anchors = [];
@@ -50,9 +54,35 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
     }
 
     if (this.anchors.length === 0) return
+
     this.onScroll();
 
     window.onscroll = this.onScroll;
+
+    this.describeNodes.forEach(node => {
+
+      node.style.width = `${node.offsetWidth}px`
+
+    })
+
+  }
+
+
+
+  onToggle ({ currentTarget }: SPX.Event) {
+
+    if(this.state.open) {
+      this.toggleNode.classList.add('close-anchors')
+      this.togglerNode.classList.add('active')
+      this.state.open = false
+    } else {
+      setTimeout(() => this.toggleNode.classList.remove('open-anchors'), 190)
+      this.toggleNode.classList.remove('close-anchors')
+      this.toggleNode.classList.add('open-anchors')
+      this.togglerNode.classList.remove('active')
+      this.state.open = true
+    }
+
   }
 
   /**

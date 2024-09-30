@@ -2,14 +2,15 @@
 title: 'Liquid - Ignore Tag List'
 layout: base
 permalink: '/rules/liquid/ignoreTagList/index.html'
-describe:
-  - Ignore Tag List
-  - Example Options
-  - Rule Options
-  - Examples
+anchors:
+  describe:
+    - Ignore Tag List
+    - Example Options
+    - Rule Options
+    - Example
 ---
 
-::: grid col-9 p-100
+::: grid col-12 col-md-9
 
 # Ignore Tag List
 
@@ -29,13 +30,17 @@ A list of Liquid tags that should excluded from formatting. Only tags which cont
 
 ---
 
-# Example
+::: rule 💡
+
+#### Example
+
+:::
+
+Below we are ignoring `{liquid} {% for %}` and `{liquid} {% unless %}` tag regions. Æsthetic will be skipped formatting these tag blocks. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied.
 
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 0,
-  "preserveLine": 2,
   "liquid": {
     "ignoreTagList": [
       "for",
@@ -45,19 +50,14 @@ A list of Liquid tags that should excluded from formatting. Only tags which cont
 }
 ```
 
-Below we are ignoring `{% for %}` and `{% unless %}` tag regions. Æsthetic will be skipped formatting these tag blocks. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied.
-
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
 <div>
 {% if x == true %}
 
-{% for i in array %}
 {% # This region will not be formatted %}
-    {% for x in i.ignored %}
-{{ i.xxx }} {% # Nested tags are also ignored %}
-  {% endfor %}
-          {% # Notice how no indentation is applied %}
+{% for i in array %}
+                              {{ i.xxx }}
 {% endfor %}
 
 {% if xx == true %}
@@ -65,18 +65,44 @@ Below we are ignoring `{% for %}` and `{% unless %}` tag regions. Æsthetic will
 <li>
 This tag will format but below will not
 </li>
-  {% unless bar %}
 
-      <li>
-{% # This region will not be formatted %}
-      </li>
+{% unless bar %}
+<li> {% # This region is ignored %} </li>
+{% endunless %}
 
-  {% endunless %}
 <li>
 This tag will format but above will not
 </li>
 </ul>
 {% endif %}
 {% endif %}
+</div>
+```
+
+```liquid:after
+<div>
+  {% if x == true %}
+
+{% # This region will not be formatted %}
+{% for i in array %}
+                              {{ i.xxx }}
+{% endfor %}
+
+    {% if xx == true %}
+      <ul>
+        <li>
+          This tag will format but below will not
+        </li>
+
+{% unless bar %}
+<li> {% # This region is ignored %} </li>
+{% endunless %}
+
+        <li>
+          This tag will format but above will not
+        </li>
+      </ul>
+    {% endif %}
+  {% endif %}
 </div>
 ```

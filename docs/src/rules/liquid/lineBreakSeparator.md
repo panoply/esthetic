@@ -12,7 +12,7 @@ options:
   - before
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 col-md-9
 
 # Line Break Separator
 
@@ -22,7 +22,7 @@ The `lineBreakSeparator` rule controls the placement of separator type character
 
 This is a Liquid specific formatting rule which will **default** to `after` when no option has been specified. The **recommended** option to use is `before`.
 
-# Related Rules
+### Related Rules
 
 The `lineBreakSeparator` rule is typically used together with the Liquid `argumentWrap` rule defined the wrap strategy to use when Liquid output or tag type tokens contain **multiple** filters and/or arguments. By default, Æsthetic will applying forcing when structures exceed `¾` (or 75%) of the global [wrap](/rules/global/wrap) limit.
 
@@ -45,16 +45,34 @@ Below is an example of how this rule works if set to `before` which is recommend
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 70,
   "liquid": {
-    "lineBreakSeparator": "after",
-    "forceFilter": 2,
-    "forceArgument": 2
+    "lineBreakSeparator": "after"
   }
 }
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
+{% # All argument comma separators will be placed at the end %}
+{% render 'snippet'
+  , param_1: true
+  , param_2: 1000
+  , param_3: 'string'
+  , param_4: nil %}
+
+{% if condition == assertion %}
+
+  {{ object.prop
+    | param_1: true
+    | param_2: 1000
+    | param_3: arg_1: 'value', arg_2: 2000, arg_3: false, arg_4: nil
+    | param_4: 'xxxx' }}
+
+{% endif %}
+```
+
+```liquid:after
 {% # All argument comma separators will be placed at the end %}
 {% render 'snippet'
   , param_1: true
@@ -86,17 +104,110 @@ Below is an example of how this rule works if set to `default` which is the **de
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 0,
+  "wrap": 70,
   "liquid": {
-    "lineBreakSeparator": "before",
-    "forceFilter": 2,
-    "forceArgument": 2
+    "lineBreakSeparator": "before"
   }
 }
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
+{% # Comma separated args will be placed before expression %}
+{% render 'snippet',
+  param_1: true,
+  param_2: 1000,
+  param_3: 'string',
+  param_4: nil %}
+
+{% if condition == assertion %}
+
+{% # Comma separated args will be placed before expression %}
+  {{
+    object.prop
+    | filter:
+     arg_1: 'foo',
+     arg_2: 2000,
+    arg_3: false,
+    arg_4: nil
+    | append: 'xxx'
+    }}
+
+{% endif %}
+```
+
+<!-- prettier-ignore -->
+```liquid:after
+{% # Comma separated args will be placed before expression %}
+{% render 'snippet',
+  param_1: true,
+  param_2: 1000,
+  param_3: 'string',
+  param_4: nil %}
+
+{% if condition == assertion %}
+
+{% # Comma separated args will be placed before expression %}
+  {{
+    object.prop
+    | filter:
+     arg_1: 'foo',
+     arg_2: 2000,
+    arg_3: false,
+    arg_4: nil
+    | append: 'xxx'
+    }}
+
+{% endif %}
+```
+
+---
+
+::: rule 🫡
+
+#### preserve
+
+:::
+
+Preserve the placement of separators.
+
+```json:rules
+{
+  "language": "liquid",
+  "wrap": 70,
+  "liquid": {
+    "lineBreakSeparator": "preserve"
+  }
+}
+```
+
+<!-- prettier-ignore -->
+```liquid:before
+{% # Comma separated args will be placed before expression %}
+{% render 'snippet',
+  param_1: true,
+  param_2: 1000,
+  param_3: 'string',
+  param_4: nil %}
+
+{% if condition == assertion %}
+
+{% # Comma separated args will be placed before expression %}
+  {{
+    object.prop
+    | filter:
+     arg_1: 'foo',
+     arg_2: 2000,
+    arg_3: false,
+    arg_4: nil
+    | append: 'xxx'
+    }}
+
+{% endif %}
+```
+
+<!-- prettier-ignore -->
+```liquid:after
 {% # Comma separated args will be placed before expression %}
 {% render 'snippet',
   param_1: true,

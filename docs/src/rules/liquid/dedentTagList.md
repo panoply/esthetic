@@ -2,21 +2,24 @@
 title: 'Liquid - Dedent Tag List'
 layout: base
 permalink: '/rules/liquid/dedentTagList/index.html'
-describe:
-  - Dedent Tag List
-  - Rule Options
-examples:
-  - case
-  - schema
+anchors:
+  describe:
+    - Dedent Tag List
+    - Rule Options
+  examples:
+    - case
+    - schema
 ---
 
-::: grid col-8 p-100
+::: grid col-12 col-md-9
 
 # Dedent Tag List
 
-Omit applied indentation within Liquid tag blocks. By default, Æsthetic will indent content encapsulated within Liquid tags blocks. Tag blocks are Liquid tokens which require ender type be passed. This is a Liquid specific formatting rule which defaults to using `[]` when no option has been specified. You should avoid applying de-dentation to common used Liquid tags. The **recommended** entry to provide the rule is the `case` tag name.
+The Dedent Tag List rule is a Liquid-specific formatting feature that allows you to omit applied indentation within certain Liquid tag blocks. By default, Æsthetic applies indentation to content encapsulated within Liquid tag blocks. These tag blocks are Liquid tokens that require an ender type to be passed. When no option is specified, this rule defaults to an empty list, represented as `{js} []`.
 
-> The rules behavior will differ depending on the tag structure. Passing in singleton type tag names such as `"assign"` or `"render"` will have no effect on output.
+It's generally advisable to avoid applying de-dentation to commonly used Liquid tags, as this could negatively impact code readability. The recommended approach is to provide the rule with specific tag names that would benefit from de-dentation. For instance, the control conditional `{liquid} {% case %}` tag is often a good candidate for this rule. However, it should be used judiciously to maintain overall code consistency and readability.
+
+> It's important to note that the rule's behavior varies depending on the tag structure. Singleton-type tag names, such as assign or render, will not be affected by this rule and will have no impact on the output.
 
 :::
 
@@ -41,17 +44,25 @@ The below sample will result in the `{% when %}` tokens of the expression to ded
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
-{% case 'dedent-example' -%}
+```liquid:before
+{% case 'dedent' %}
   {% when foo %}
     {{ object.prop }}
   {% when bar %}
-    {{ object.prop | filter: 'xxx' }}
-  {% when baz %}
     Hello World!
   {% else %}
     Lorem Ipsum
+{% endcase %}
+```
+
+```liquid:after
+{% case 'dedent' %}
+{% when foo %}
+  {{ object.prop }}
+{% when bar %}
+  Hello World!
+{% else %}
+  Lorem Ipsum
 {% endcase %}
 ```
 
@@ -74,21 +85,23 @@ The below sample will result in the `{% when %}` tokens of the expression to ded
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
+```liquid:before
 {% schema %}
   {
     "name": "Section",
     "tag": "main",
-    "class": "some-class",
-    "settings": [
-      {
-        "type": "header",
-        "content": "Example",
-        "info": "The braces {} will dedent"
-      }
-    ]
+    "settings": []
   }
+{% endschema %}
+```
+
+```liquid:after
+{% schema %}
+{
+  "name": "Section",
+  "tag": "main",
+  "settings": []
+}
 {% endschema %}
 ```
 

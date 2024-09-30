@@ -4,19 +4,11 @@
   width: 280px;
 }
 
-.anchors {
-  height: 100%;
-  position: fixed;
-  right: 0;
-  top: 61px;
+.w-300 {
   width: 300px;
 }
-
-.w-340 {
-  width: 340px;
-}
 .w-320 {
-  width: 320px;
+  width: 280px;
 }
 
 .content {
@@ -24,5 +16,34 @@
     // position: absolute;
     // padding-left: 320px !important;
     // padding-right: 340px !important;
+  }
+}
+
+.breadcrumb {
+  font-size: 0.7rem;
+
+  @include media-breakpoint-down(sm) {
+    margin-top: 50px !important;
+    font-size: $font-size-sm;
+    margin: 0 auto;
+  }
+  .icon-right,
+  .icon-home {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+h2 {
+  font-size: $h3-font-size;
+  font-family: $font-family-code;
+  text-transform: none;
+}
+
+.comments pre.papyrus > code {
+  color: $papyrus-bash-comment !important;
+
+  .token {
+    color: $papyrus-bash-comment !important;
   }
 }

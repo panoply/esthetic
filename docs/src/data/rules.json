@@ -117,6 +117,11 @@
     },
     {
       "group": "liquid",
+      "title": "lineBreakSeparator",
+      "url": "/rules/liquid/lineBreakSeparator/"
+    },
+    {
+      "group": "liquid",
       "title": "normalizeSpacing",
       "url": "/rules/liquid/normalizeSpacing/"
     },

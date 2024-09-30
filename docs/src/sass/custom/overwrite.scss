@@ -1,0 +1,73 @@
+p + h1,
+ul + h1,
+pre + h1 {
+  margin-top: 40px !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  + p {
+    margin-bottom: 20px;
+  }
+}
+
+pre + h4 {
+  margin-top: 40px;
+}
+
+h5 {
+  margin-top: 40px;
+  margin-bottom: 20px;
+  font-family: $font-family-other;
+}
+
+hr {
+  margin: 40px 0 !important;
+  padding: 0 20px;
+}
+
+ul {
+  margin-bottom: 20px;
+}
+
+p {
+  a {
+    color: $sea;
+    font-weight: 500;
+
+    &:hover {
+      color: $salmon;
+    }
+  }
+}
+
+table {
+  width: 100%;
+  margin: 30px 0;
+
+  tr {
+    border-bottom: $border-width solid #3d4956;
+    line-height: 2.8;
+
+    th {
+      font-weight: $font-weight-bolder;
+      font-size: 0.9rem;
+      font-family: $font-family-other;
+      text-transform: uppercase;
+    }
+  }
+}
+
+[data-tooltip] {
+  &:after {
+    text-transform: none;
+  }
+}
+
+.content {
+  margin-top: 75px;
+}

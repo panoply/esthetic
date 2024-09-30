@@ -8,6 +8,7 @@ describe:
 options:
   - false
   - true
+  - 3
 ---
 
 ::: grid col-12 col-sm-9 p-100
@@ -74,7 +75,7 @@ When the `delimiterTerminus` rule is set to `true`, Æsthetic will apply terminu
   "language": "html",
   "markup": {
     "attributeLineBreak": 3,
-    "delimiterTerminus": "force"
+    "delimiterTerminus": true
   }
 }
 ```
@@ -124,7 +125,7 @@ data-attr="foo">
 
 ::: rule 👍
 
-#### adapt
+#### 3
 
 :::
 
@@ -136,7 +137,7 @@ When the `delimiterTerminus` rule is set to use `adapt` delimiter terminus will 
   "preserveLine": 1,
   "markup": {
     "attributeLineBreak": 3,
-    "delimiterTerminus": "adapt"
+    "delimiterTerminus": 3
   }
 }
 ```

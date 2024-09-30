@@ -18,7 +18,7 @@ anchors:
 
 # Attribute Line Break
 
-Controls attribute newline break behavior. This rule accepts a `boolean` or `number` type. The rule allow you to refine how attributes are to be formatted independent of the Æsthetic's default behavior of using the global [`wrap`](/rules/global/wrap) limit. When you provide `attributeLineBreak` an integer value of **1 or more** Æsthetic will apply newline breaks when the number of attributes contained within a tag exceeds the limit.
+Controls newline behavior of tag attributes. This rule accepts a `boolean` or `number` type and will allow you to refine how attributes are to be formatted independent of the Æsthetic's default behavior which applies newline breaks in accordance with the global [`wrap`](/rules/global/wrap) limit or when a newline character exists before the first attribute sequence. When you provide `attributeLineBreak` an integer value of **1 or more** Æsthetic will apply newline breaks when the number of attributes contained within a tag exceeds the limit.
 
 #### Related Rules
 
@@ -38,7 +38,7 @@ The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule uses `attri
 
 ---
 
-::: rule 👎
+::: rule 🫡
 
 #### false
 
@@ -55,12 +55,30 @@ The default behavior for Æsthetic is to disable attribute newline breaks and on
 }
 ```
 
-<!-- prettier-ignore -->
-```html
-<div
-  class="foo"
+```html:before
+<div class="foo"
   id="bar"
   data-x="baz">
+
+  Attributes will be inlined
+
+</div>
+<div
+  class="foo" id="bar"
+  data-x="baz">
+
+  Attributes will be indented
+
+</div>
+```
+
+```html:after
+<div class="foo" id="bar" data-x="baz">
+
+  Attributes will be inlined
+
+</div>
+<div class="foo" id="bar" data-x="baz">
 
   Attributes will be inlined
 
@@ -87,9 +105,25 @@ Below is an example of how this rule works if it's enabled, ie: `true`. When wor
 ```
 
 <!-- prettier-ignore -->
-```html
+```html:before
 <div class="foo" id="bar" data-x="baz">
   <div class="foo" id="bar" data-x="baz">
+
+    Attributes will be forced onto newlines
+
+  </div>
+</div>
+```
+
+```html:after
+<div
+ class="foo"
+ id="bar"
+ data-x="baz">
+  <div
+   class="foo"
+   id="bar"
+   data-x="baz">
 
     Attributes will be forced onto newlines
 
@@ -117,14 +151,18 @@ Below is an example of forced attributes when an integer value of `3` was provid
 ```
 
 <!-- prettier-ignore -->
-```html
-<div class="foo" id="bar">
+```html:before
+<div
+ class="foo"
+ id="bar">
 
 Attributes will not be forced as only 2 exist on tag
 
 </div>
 
-<div class="foo" id="bar" data-x="baz">
+<div
+ class="foo"
+ id="bar" data-x="baz">
 
   Attributes will be forced as tag contains 3
 
@@ -132,7 +170,35 @@ Attributes will not be forced as only 2 exist on tag
     Tag contains 1 attribute, it will not be forced
   </div>
 
-  <div class="foo" id="bar" data-x="baz" data-xx="xxx">
+  <div
+   class="foo" id="bar" data-x="baz" data-xx="xxx">
+    Tag contains 4 attributes, they will be forced
+  </div>
+
+</div>
+```
+
+```html:after
+<div
+ class="foo"
+ id="bar">
+
+Attributes will not be forced as only 2 exist on tag
+
+</div>
+
+<div
+ class="foo"
+ id="bar" data-x="baz">
+
+  Attributes will be forced as tag contains 3
+
+  <div class="foo">
+    Tag contains 1 attribute, it will not be forced
+  </div>
+
+  <div
+   class="foo" id="bar" data-x="baz" data-xx="xxx">
     Tag contains 4 attributes, they will be forced
   </div>
 

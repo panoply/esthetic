@@ -1,9 +1,9 @@
 ---
-title: 'Integrate - Text Editor'
+title: 'Usage - Text Editors'
 layout: base
-permalink: '/integrate/text-editor/index.html'
+permalink: '/usage/text-editors/index.html'
 ---
 
-# Text Editor
+# Text Editors
 
 Æsthetic is not yet available within text editors, but support is on the he roadmap. Though an official Æsthetic text editor extension/plugin is planned, Æsthetic is leverages within the [VSCode Liquid](#) extension.

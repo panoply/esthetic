@@ -2,26 +2,25 @@
 title: 'Liquid - Indent Attribute'
 layout: base
 permalink: '/rules/liquid/indentAttribute/index.html'
-describe:
-  - Indent Attributes
-  - Mirrored Rule
-  - Rule Options
-options:
-  - false
-  - true
+anchors:
+  describe:
+    - Indent Attributes
+    - Mirrored Rule
+    - Rule Options
+  options:
+    - false
+    - true
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12 col-md-9
 
 # Indent Attribute
 
 Whether indentation should be applied to HTML (markup) attributes that are encapsulated by Liquid identified tag blocks contained within HTML Tags. This rule emulates the Liquid Prettier Plugin style of attribute formatting and will use depth indentation (each nested Liquid expression will increase indent level by factor of **1**).
 
-> Liquid tags blocks contained within attribute values (e.g: `attr="{% if x %} xxx {% endif %}"`) will be excluded and remain untouched during the beautification cycle.
+> Liquid tags blocks contained within attribute values (e.g: `{liquid} <div class="a {% if x %} c {% endif %} b">`) will be excluded and remain untouched during the beautification cycle.
 
-This is a Liquid specific formatting rule which will **default** to `false` when no option has been specified. The **recommended** option to use is `false`.
-
-# Mirrored Rule
+### Mirrored Rule
 
 The `indentAttributes` rule will mirror disablement of the [`forceAttribute`](/rules/markup/forceAttribute) (markup) rule. When `forceAttribute` is set to `false` then this rule will be disabled. The `forceAttribute` markup rule **must** be set to `true` or (alternatively) use a force limit value (e.g: `2`). If the attribute forcing is disabled (i.e: `false`) then indentation will not be applied to Liquid contained structures and this rule will have no effect.
 
@@ -49,8 +48,7 @@ When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attribu
 }
 ```
 
-<!--prettier-ignore-->
-```liquid
+```liquid:before
 <div
   class="foo"
   {% if condition %}
@@ -68,7 +66,28 @@ When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attribu
   {% endif %}
   data-id="bar">
 
-  {% # All attributes will have indentation removed %}
+
+</div>
+```
+
+```liquid:after
+<div
+  class="foo"
+  {% if condition %}
+  data-attr-1="hello"
+  data-attr-2="world"
+  {% if xx %}
+  data-attr-3="bar"
+  {% else %}
+  id="xxxxx"
+  data-baz="100"
+  {% unless xxxx %}
+  data-foo="bar"
+  {% endunless %}
+  {% endif %}
+  {% endif %}
+  data-id="bar">
+
 
 </div>
 ```
@@ -96,22 +115,44 @@ When the `indentAttributes` rule is **enabled** (i.e: `true`) all HTML attribute
 ```
 
 <!--prettier-ignore-->
-```liquid
+```liquid:before
 <div
   class="foo"
   {% if condition %}
   data-attr-1="hello"
-  data-attr-2="world"
   {% if xx %}
-  data-attr-3="bar"
+  data-attr-2="world"
   {% else %}
-  id="xxxxx"
+  data-attr-3="bar"
   data-baz="100"
+  {% unless xxxx %}
+  data-foo="bar"
+  {% endunless %}
   {% endif %}
   {% endif %}
   data-id="bar">
 
-  {% # All attributes will have indentation applied %}
+
+</div>
+```
+
+```liquid:after
+<div
+  class="foo"
+  {% if condition %}
+    data-attr-1="hello"
+    {% if xx %}
+      data-attr-2="world"
+    {% else %}
+      data-attr-3="bar"
+      data-baz="100"
+      {% unless xxxx %}
+        data-foo="bar"
+      {% endunless %}
+    {% endif %}
+  {% endif %}
+  data-id="bar">
+
 
 </div>
 ```

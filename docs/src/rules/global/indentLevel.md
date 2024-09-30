@@ -58,15 +58,25 @@ The default `indentLevel` is set to `0`
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
+    <header>
+      <nav>
+        <ul>
+          <li>foo</li>
+          <li>bar</li>
+        </ul>
+      </nav>
+    </header>
+```
+
+```html:after
 <header>
-<nav>
-<ul class="foo">
-<li>bar</li>
-<li>baz</li>
-</ul>
-</nav>
+  <nav>
+    <ul>
+      <li>foo</li>
+      <li>bar</li>
+    </ul>
+  </nav>
 </header>
 ```
 
@@ -89,15 +99,27 @@ Below we are using an `indentLevel` value of `2`
 
 <!-- prettier-ignore -->
 ```html
-<!-- Notice the left side padding applied -->
+<!--  2x Left Increment -->
 <header>
-<nav>
-<ul class="foo">
-<li>bar</li>
-<li>baz</li>
-</ul>
-</nav>
+  <nav>
+    <ul>
+      <li>foo</li>
+      <li>bar</li>
+    </ul>
+  </nav>
 </header>
+```
+
+```html:after
+    <!-- 2x Left Increment  -->
+    <header>
+      <nav>
+        <ul>
+          <li>foo</li>
+          <li>bar</li>
+        </ul>
+      </nav>
+    </header>
 ```
 
 ---
@@ -113,19 +135,31 @@ Below we are using an `indentLevel` value of `5`
 ```json:rules
 {
   "language": "html",
-  "indentLevel": 5
+  "indentLevel": 4
 }
 ```
 
 <!-- prettier-ignore -->
 ```html
-<!-- Notice the left side padding applied -->
+<!-- 4x Left Increment -->
 <header>
-<nav>
-<ul class="foo">
-<li>bar</li>
-<li>baz</li>
-</ul>
-</nav>
+  <nav>
+    <ul>
+      <li>foo</li>
+      <li>bar</li>
+    </ul>
+  </nav>
 </header>
+```
+
+```html:after
+        <!-- 4x Left Increment -->
+        <header>
+          <nav>
+            <ul>
+              <li>foo</li>
+              <li>bar</li>
+            </ul>
+          </nav>
+        </header>
 ```

@@ -2,34 +2,29 @@
 title: 'Liquid - Comment Indent'
 layout: base
 permalink: '/rules/liquid/commentIndent/index.html'
-prev:
-  label: 'Wrap Fraction'
-  uri: '/rules/global/wrapFraction/'
-next:
-  label: 'Comment Newline'
-  uri: '/rules/liquid/commentNewline/'
-describe:
-  - Comment Indent
-  - Rule Override
-  - Rule Options
-options:
-  - false
-  - true
+anchors:
+  describe:
+    - Comment Indent
+    - Rule Override
+    - Rule Options
+  options:
+    - true
+    - false
 ---
 
-::: grid col-8 p-100
+::: grid col-12 col-md-9
 
 # Comment Indent
 
-The `commentIndent` rule applies single level indentation to the containing content of Liquid **block** type comments. This is a Liquid specific formatting rule which defaults to using `false` when no option is defined. The **Recommended** setting to use is `true`.
+The `commentIndent` rule is a Liquid-specific formatting rule that applies single-level indentation to the content within Liquid block comments. By default, when no option is defined, this rule is set to `false`. However, the recommended setting is `true`, which enables the indentation feature for better readability of comment blocks.
 
-> Liquid line type comments `{% # example %}` are currently not supported by this rule. Only block type Liquid tokens will be handled.
+> It's important to note that this rule currently only supports Liquid block type comments. Line type comments are not affected by this rule. The `commentIndent` rule exclusively handles block type Liquid tokens.
 
 # Rule Override
 
-When the [`commentPreserve`](/rules/liquid/commentPreserve) (liquid) rule is enabled (i.e: `true`) it will take precedence and override `commentIndent` rule.
+The `commentIndent` rule interacts with another Liquid-specific rule called `commentPreserve`. When `commentPreserve` is enabled (set to `true`), it takes precedence and overrides the `commentIndent` rule. This override ensures that the original formatting within comments is maintained when preservation is deemed more important than enforcing a specific indentation style. Developers should be aware of this interaction when configuring their Liquid formatting rules, as it can impact the final appearance of their commented code.
 
-- [commentPreserve](/rules/liquid/commentPreserve)
+- [Comment Preserve](/rules/liquid/commentPreserve/)
 
 :::
 
@@ -52,11 +47,20 @@ Below is an example of how this rule works if it's enabled (`true`). Notice how 
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
+```liquid:before
 {% comment %}
-Example
-The contents of this comment will have indentation applied
+Lorem ipsum dolor sit amet consectetur,
+adipisicing elit. Officia eius neque autem
+molestias, doloribus.
+{% endcomment %}
+```
+
+<!-- prettier-ignore -->
+```liquid:after
+{% comment %}
+  Lorem ipsum dolor sit amet consectetur,
+  adipisicing elit. Officia eius neque autem
+  molestias, doloribus.
 {% endcomment %}
 ```
 
@@ -70,8 +74,6 @@ The contents of this comment will have indentation applied
 
 The `commentIndent` rule is **disabled** by default, so Liquid comments do not apply indentation. Liquid block comment contents will have indentation removed in the sample when formatting.
 
-<!-- RULES ARE REQUIRED -->
-
 ```json:rules
 {
   "language": "liquid",
@@ -82,9 +84,18 @@ The `commentIndent` rule is **disabled** by default, so Liquid comments do not a
 ```
 
 <!-- prettier-ignore -->
-```liquid
+```liquid:before
 {% comment %}
-  Example
-  The contents of this comment will have indentation stripped.
+  Lorem ipsum dolor sit amet consectetur,
+  adipisicing elit. Officia eius neque autem
+  molestias, doloribus.
+{% endcomment %}
+```
+
+```liquid:after
+{% comment %}
+Lorem ipsum dolor sit amet consectetur,
+adipisicing elit. Officia eius neque autem
+molestias, doloribus.
 {% endcomment %}
 ```

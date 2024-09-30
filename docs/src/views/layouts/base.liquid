@@ -37,6 +37,16 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0">
     <link
+      type="image/png"
+      href="{{'/assets/favicon-32x32.png' | url }}"
+      rel="icon"
+      sizes="32x32">
+    <link
+      type="image/png"
+      href="{{'/assets/favicon-16x16.png' | url }}"
+      rel="icon"
+      sizes="16x16">
+    <link
       href="https://fonts.googleapis.com"
       rel="preconnect">
     <link
@@ -47,11 +57,57 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
       rel="stylesheet"
       spx-eval="false">
+
+    <link
+      type="font/woff2"
+      href="{{ '/assets/font/proxima-nova-regular.woff2' | url }}"
+      as="font"
+      crossorigin
+      rel="stylesheet preload" />
+
+    <link
+      type="font/woff2"
+      href="{{ '/assets/font/proxima-nova-bold.woff2' | url }}"
+      as="font"
+      crossorigin
+      rel="stylesheet preload" />
+
+    <link
+      type="font/woff2"
+      href="{{ '/assets/font/proxima-nova-light.woff2' | url }}"
+      as="font"
+      crossorigin
+      rel="stylesheet preload" />
+
+    <style spx-eval="false">
+      @font-face {
+        font-family: 'Proxima Nova';
+        src: url('{{ '/assets/font/proxima-nova-regular.woff2' | url }}') format('woff2');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Proxima Nova';
+        src: url('{{ '/assets/font/proxima-nova-bold.woff2' | url }}') format('woff2');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Proxima Nova';
+        src: url('{{ '/assets/font/proxima-nova-light.woff2' | url }}') format('woff2');
+        font-weight: 100;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
     <link
       href="{{'/style.css' | url }}"
       rel="stylesheet"
       spx-eval="false">
-
     <script
       src="{{'/assets/esthetic.min.js' | url }}"
       spx-eval="false"></script>
@@ -78,8 +134,9 @@
         <main
           id="main"
           class="container-fluid mb-5 pb-5">
+          {% include 'search' %}
 
-          <div class="row jc-center">
+          <div class="row gx-0 jc-center">
             <div class="col-auto w-320 h-100">
               <aside
                 class="px-0 vh-100 bt br d-none d-sm-block sidebar drawer-left drawer-panel"
@@ -90,21 +147,30 @@
                 {% include 'sidebar-menu' %}
               </aside>
             </div>
-            <div class="col">
+            <div class="col {% unless page.url contains '/rules/' %}mr-5 {% else %} mr-3{% endunless %}">
               {% include 'navbar' %}
-              {% include 'search' %}
-              {% include 'breadcrumbs' %}
-              {{ content }}
-              {% include 'paginate' %}
+              <div
+                {% unless page.url contains '/rules/' %}
+                  class="px-5 mr-2"
+                {% else %}
+                  class="px-5"
+                {% endunless %}>
+                {{ content }}
+                {% include 'paginate' %}
+              </div>
+            </div>
 
-            </div>
-            <div class="col-auto w-340">
-              <aside
-                class="anchors"
-                spx-component="scrollspy">
-                {% include 'anchors', anchors: anchors %}
-              </aside>
-            </div>
+            {% unless page.url contains '/rules/' %}
+              <div
+                class="col-auto w-300"
+                spx-node="anchor.toggle">
+                <aside
+                  class="anchors mt-5"
+                  spx-component="anchor">
+                  {% include 'anchors', anchors: anchors %}
+                </aside>
+              </div>
+            {% endunless %}
           </div>
         </main>
       {% endif %}

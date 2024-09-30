@@ -22,7 +22,7 @@
       "node_modules/@types"
     ],
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "emitDeclarationOnly": true,
     "isolatedModules": true,
     "baseUrl": ".",

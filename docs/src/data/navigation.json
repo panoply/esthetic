@@ -41,12 +41,12 @@
           "url": "/introduction/motivation/"
         },
         {
-          "title": "Language Support",
+          "title": "Supported Languages",
           "url": "/introduction/language-support/"
         },
         {
-          "title": "Installation",
-          "url": "/introduction/installation/"
+          "title": "Language Parser",
+          "url": "/introduction/language-support/"
         }
       ]
     },
@@ -54,20 +54,12 @@
       "title": "Usage",
       "links": [
         {
+          "title": "Installation",
+          "url": "/introduction/installation/"
+        },
+        {
           "title": "Config Files",
           "url": "/usage/config-files/"
-        },
-        {
-          "title": "CLI",
-          "url": "/usage/cli/"
-        },
-        {
-          "title": "Rules",
-          "url": "/usage/rules/"
-        },
-        {
-          "title": "Format",
-          "url": "/usage/format/"
         },
         {
           "title": "Ignoring Code",
@@ -78,61 +70,69 @@
           "url": "/usage/inline-control/"
         },
         {
-          "title": "Parse",
-          "url": "/usage/parse/"
+          "title": "Text Editors",
+          "url": "/usage/text-editors/"
         },
         {
-          "title": "Settings",
-          "url": "/usage/settings/"
-        },
-        {
-          "title": "Events",
-          "url": "/usage/events/"
-        },
-        {
-          "title": "Utilities",
-          "url": "/usage/utilities/"
+          "title": "CLI",
+          "url": "/usage/cli/"
         }
       ]
     },
     {
-      "title": "Languages",
+      "title": "API",
       "links": [
         {
-          "title": "XML",
-          "url": "/languages/xml/"
+          "title": "esthetic.rules",
+          "url": "/api/esthetic.rules/"
         },
         {
-          "title": "HTML",
-          "url": "/languages/html/"
+          "title": "esthetic.preset",
+          "url": "/api/esthetic.preset/"
         },
         {
-          "title": "Liquid",
-          "url": "/languages/liquid/"
+          "title": "esthetic.format",
+          "url": "/api/esthetic.format/"
         },
         {
-          "title": "CSS",
-          "url": "/languages/css/"
+          "title": "esthetic.parse",
+          "url": "/api/esthetic.parse/"
         },
         {
-          "title": "JSON",
-          "url": "/languages/json/"
+          "title": "esthetic.settings",
+          "url": "/api/esthetic.settings/"
         },
         {
-          "title": "JavaScript",
-          "url": "/languages/javascript/"
+          "title": "esthetic.on",
+          "url": "/api/esthetic.events/"
         },
         {
-          "title": "JSX",
-          "url": "/languages/jsx/"
+          "title": "esthetic.hook",
+          "url": "/api/esthetic.events/"
         },
         {
-          "title": "TypeScript",
-          "url": "/languages/typescript/"
+          "title": "esthetic.grammar",
+          "url": "/api/esthetic.rules/"
         },
         {
-          "title": "TSX",
-          "url": "/languages/tsx/"
+          "title": "esthetic.detect",
+          "url": "/api/esthetic.rules/"
+        },
+        {
+          "title": "esthetic.table",
+          "url": "/api/esthetic.rules/"
+        },
+        {
+          "title": "esthetic.stats",
+          "url": "/api/esthetic.rules/"
+        },
+        {
+          "title": "esthetic.error",
+          "url": "/api/esthetic.rules/"
+        },
+        {
+          "title": "esthetic.definitions",
+          "url": "/api/esthetic.rules/"
         }
       ]
     },
@@ -156,7 +156,6 @@
           "url": "/parser/error-handling/"
         },
         {
-          "group": "parser",
           "title": "Terminology",
           "url": "/parser/terminology/"
         }
@@ -202,6 +201,10 @@
       "title": "Global",
       "links": [
         {
+          "title": "preset",
+          "url": "/rules/global/preset/"
+        },
+        {
           "title": "crlf",
           "url": "/rules/global/crlf/"
         },
@@ -243,16 +246,12 @@
       "title": "Liquid",
       "links": [
         {
+          "title": "argumentFormat",
+          "url": "/rules/liquid/argumentFormat/"
+        },
+        {
           "title": "argumentLineBreak",
           "url": "/rules/liquid/argumentLineBreak/"
-        },
-        {
-          "title": "allowPlebSyntactic",
-          "url": "/rules/liquid/allowPlebSyntactic/"
-        },
-        {
-          "title": "allowRubeSyntactic",
-          "url": "/rules/liquid/allowRubeSyntactic/"
         },
         {
           "title": "commentIndent",

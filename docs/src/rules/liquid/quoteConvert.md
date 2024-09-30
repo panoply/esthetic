@@ -2,22 +2,21 @@
 title: 'Liquid - Quote Convert'
 layout: base
 permalink: '/rules/liquid/quoteConvert/index.html'
-describe:
-  - Quote Convert
-  - Rule Options
-options:
-  - none
-  - double
-  - single
+anchors:
+  describe:
+    - Quote Convert
+    - Rule Options
+  options:
+    - none
+    - double
+    - single
 ---
 
-::: grid col-12 col-sm-9 p-100
+::: grid col-12
 
 # Quote Convert
 
 How quotation characters of markup attributes and Liquid tokens should be handled. Allows for conversion to single quotes or double quotes. Markup tag attributes should always use double quotations, it's the standard in languages like HTML.
-
-> When working with Liquid, use `single` quotes for strings and always infer `double` in the markup.
 
 :::
 
@@ -34,28 +33,29 @@ Below is an example of how this rule works if set to `none` which is the **defau
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 0,
-  "wrapFraction": 0,
   "liquid": {
-    "quoteConvert": "none",
-    "forceArgument": 5
-  },
-  "markup": {
-    "forceAttribute": true
+    "quoteConvert": "none"
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
+```liquid:before
 
-{% if 'some-string' %}
 
-  {{ "string" | filter: 'string' }}
+{{ "string" | filter: 'string' }}
 
-  {% cycle 'one', 'two', "three", "four", 'five' %}
+{% cycle 'one', 'two', "three", "four", 'five' %}
 
-{% endif %}
+
+```
+
+```liquid:after
+
+
+{{ "string" | filter: 'string' }}
+
+{% cycle 'one', 'two', "three", "four", 'five' %}
+
 
 ```
 
@@ -72,27 +72,30 @@ Below is an example of how this rule works if set to `double` which will go abou
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 0,
-  "wrapFraction": 0,
   "liquid": {
-    "quoteConvert": "double",
-    "forceArgument": 5
-  },
-  "markup": {
-    "forceAttribute": true
+    "quoteConvert": "double"
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
-{% if 'some-string' %}
+```liquid:before
 
-  {{ 'string' | filter: 'string' }}
 
-  {% cycle 'one', 'two', 'three', 'four', 'five' %}
+{{ 'string' | filter: 'string' }}
 
-{% endif %}
+{% cycle 'one', 'two', 'three', 'four', 'five' %}
+
+
+```
+
+```liquid:after
+
+
+{{ "string" | filter: "string" }}
+
+{% cycle "one", "two", "three", "four", "five" %}
+
+
 ```
 
 ---
@@ -108,25 +111,27 @@ Below is an example of how this rule works if set to `single` which will go abou
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 0,
-  "wrapFraction": 0,
   "liquid": {
-    "quoteConvert": "single",
-    "forceArgument": 5
-  },
-  "markup": {
-    "forceAttribute": true
+    "quoteConvert": "single"
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```liquid
-{% if "some-string" %}
+```liquid:before
 
-  {{ "string" | filter: "string" }}
+{{ "string" | filter: "string" }}
 
-  {% cycle "one", "two", "three", "four", "five" %}
+{% cycle "one", "two", "three", "four", "five" %}
 
-{% endif %}
+
+```
+
+```liquid:after
+
+
+{{ 'string' | filter: 'string' }}
+
+{% cycle 'one', 'two', 'three', 'four', 'five' %}
+
+
 ```

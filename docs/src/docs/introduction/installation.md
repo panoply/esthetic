@@ -22,23 +22,25 @@ anchors:
 
 # Installation
 
-Æsthetic is available for consumption via the NPM registry and supports both ESM and CJS environments. For the best practice, it is recommended to install Æsthetic on a per-project basis rather than globally. While tree-shaking is not feasible with Æsthetic, the module remains relatively small, with a gzipped size of 57.5kb distributed as a single file.
+Æsthetic is available for consumption via the NPM registry and supports both ESM (ECMAScript Modules) and CJS (CommonJS) environments. Best practice recommends installing Æsthetic on a per-project basis rather than globally. This approach ensures version consistency across different projects and avoids potential conflicts with global installations. While Æsthetic does not support tree-shaking due to its architecture, the module remains relatively compact. It's distributed as a single file with a gzipped size of approximately 57.5kb.
 
-###### PNPM
+> Æsthetic recommends developers use [pnpm](https://pnpm.js.org/en/cli/install) as their package manager. pnpm offers several advantages over traditional package managers like npm or Yarn, including improved performance and stricter dependency resolution.
 
-Æsthetic recommends developers choose [pnpm](https://pnpm.js.org/en/cli/install) as their package manager.
+---
+
+#### PNPM
 
 ```bash
 $ pnpm add esthetic --save-dev
 ```
 
-###### NPM
+#### NPM
 
 ```bash
 $ npm install esthetic --save-dev
 ```
 
-###### Yarn
+#### Yarn
 
 ```bash
 $ yarn add esthetic
@@ -54,7 +56,7 @@ You may optionally prefer to use the [unpkg](https://unpkg.com/estheitc) CDN for
 https://unpkg.com/esthetic
 ```
 
-> You can disable `globalThis` assignment from being applied via `esthetic.settings()` method. See the usage → [settings](/usage/settings) page for more information.
+> You can disable `globalThis` assignment from being applied via `{ts} esthetic.settings()` method. See the usage → [settings](/usage/settings) page for more information.
 
 ---
 
