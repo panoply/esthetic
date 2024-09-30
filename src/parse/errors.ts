@@ -1,16 +1,15 @@
 import type { IParseError, Syntactic } from 'types';
 import { parse } from 'parse/parser';
-import { NWL, WSP } from 'lexical/chars';
-import { isUndefined, join } from 'utils/helpers';
+import { NIL, NWL, WSP } from 'lexical/chars';
+import { isUndefined, join, getTagName, glue } from 'utils/helpers';
 import { getLanguageName } from 'rules/language';
 import { ParseError } from 'lexical/errors';
-import { getTagName } from 'lexical/lexing';
 import { config } from 'config';
 
 function ErrorLocation (error: IParseError) {
 
   if (parse.lexer === 'markup') {
-    if (error.code === ParseError.UnterminateJSONString) {
+    if (error.code === ParseError.UnterminatedJSONString) {
       return join(
         'Language: JSON',
         `Embedded: ${getLanguageName(parse.language)}`,
@@ -39,15 +38,18 @@ export function MarkupError (errorCode: ParseError, token: string, tname?: strin
   const error: IParseError = message(errorCode, tname, parse.lineNumber);
   error.language = getLanguageName(parse.language);
 
-  parse.error = join(
+  parse.error = [
     error.message
+    , NWL
     , NWL
     , getSampleSnippet()
     , NWL
-    , error.details.replace(/\n/g, WSP)
+    , NWL
+    , error.details
+    , NWL
     , NWL
     , ErrorLocation(error)
-  );
+  ].join(NIL);
 
 }
 
@@ -114,15 +116,18 @@ export function RuleError (error: {
   option: string;
   message: string;
   provided: any;
-  expected: string[]
+  expected: string[];
+  reference: string;
 }) {
 
   return join(
     `Rule Error: ${error.message}`
     , NWL
     , `Definition: ${error.option}`
-    , `Provided: ${error.provided} `
-    , `Expected: ${error.expected.join(', ')} `
+    , `Provided: ${error.provided}`
+    , `Expected: ${error.expected.join(', ')}`
+    , NWL
+    , `https://aesthetic.js.org${error.reference}`
   );
 
 }
@@ -321,8 +326,15 @@ function getSampleSnippet (line = parse.lineNumber) {
  */
 function ansi (...message: string[]) {
 
-  if (config.logColors) return `${message.join(NWL)}`.replace(/"(.*?)"/g, '\x1b[31m$1\x1b[39m');
+  if (config.logColors) {
 
+    return `${message
+      .join(NWL)}`
+      .replace(/"(.*?)"/g, '\x1b[31m$1\x1b[39m')
+      .replace(/(`{%\s)(.*?)(\s%}`)/g, '$1\x1b[96m$2\x1b[39m$3')
+      .replace(/(`)/g, '\x1b[37m$1\x1b[39m');
+
+  }
   return message.join(NWL);
 
 }
@@ -362,6 +374,14 @@ function message (code: ParseError, token: string, lineNo: number = parse.lineNu
       details: ansi(
         'There is an incorrect placement or an incomplete structure resulting in a parse error.',
         `To resolve the issue, you may need to provide a start \`<${token}>\` tag type or correct the placement. `
+      )
+    }),
+    [ParseError.InvalidLiquidOperator]: ({
+      code,
+      message: ansi(`Syntax Error (line ${lineNo}): Invalid operator expression`),
+      details: ansi(
+        `The \`{% ${token} %}\` tags condition operator is invalid, malformed or incorrectly placed.`,
+        'For more information, see: https://shopify.dev/docs/api/liquid/basics#operators '
       )
     }),
     [ParseError.MissingLiquidStartTag]: ({
