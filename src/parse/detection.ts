@@ -7,7 +7,7 @@ interface ReturnValue {
   language: LanguageName,
   lexer: LexerName
 }
-export function detect (sample: string): ReturnValue {
+export function detection (sample: string): ReturnValue {
 
   let b:string[] = [];
   let c: number = 0;
