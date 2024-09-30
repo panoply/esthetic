@@ -4,7 +4,7 @@ import { NIL, NWL, WSP } from 'chars';
 import { cc as ch } from 'lexical/codes';
 import { parse } from 'parse/parser';
 import { grammar } from 'parse/grammar';
-import { Modes } from 'lexical/enum';
+import { Action } from 'lexical/enum';
 import { Newline } from 'lexical/regex';
 import { object } from 'utils/native';
 
@@ -3836,7 +3836,7 @@ export function script () {
 
           }
 
-          if (parse.mode === Modes.Embed) {
+          if (parse.action === Action.Embed) {
             if (parse.ender !== a) {
               output.push(nl(levels[a]));
             }
