@@ -1,15 +1,16 @@
-import type { Rules, EventListeners, LanguageRuleNames, RulesChanges } from 'types';
+import type { EventListeners, LanguageRuleNames, Rules, RulesChanges } from 'types';
+
+import { config } from 'config';
+import { CNL, NWL } from 'lexical/chars';
 import { parse } from 'parse/parser';
-import { isValid, isValidChoice } from 'rules/validate';
 import { defaults } from 'rules/presets/default';
+import { prettier } from 'rules/presets/prettier';
 import { recommended } from 'rules/presets/recommended';
 import { strict } from 'rules/presets/strict';
 import { warrington } from 'rules/presets/warrington';
-import { prettier } from 'rules/presets/prettier';
-import { object } from 'utils/native';
-import { CNL, NWL } from 'lexical/chars';
+import { isValid, isValidChoice } from 'rules/validate';
 import { hasProp, merge } from 'utils/helpers';
-import { config } from 'config';
+import { object } from 'utils/native';
 
 const GLOB = [
   'correct',
