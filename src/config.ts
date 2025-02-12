@@ -1,5 +1,5 @@
-import { IConfigInternal } from 'types';
 import { LogLevel } from 'lexical/enum';
+import { IConfigInternal } from 'types';
 
 /**
  * Global Settings
@@ -21,5 +21,3 @@ export const config: IConfigInternal = {
   logColors: true,
   resolveConfig: 'package.json'
 };
-
-
