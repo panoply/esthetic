@@ -196,6 +196,13 @@ export const enum ParseError {
    */
   InvalidLiquidOperator,
   /**
+   * Liquid Comment Delimiter Mismatch
+   *
+   * @example
+   * {% # {% foo %} // foo in missing closing delimiter
+   */
+  LiquidCommentDelimiterMismatch,
+  /**
    * Invalid Liquid Character Sequence
    *
    * @example
