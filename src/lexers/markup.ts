@@ -1,18 +1,19 @@
-import type { Record, Types, LanguageName, LiquidInternal } from 'types/index';
+import type { LanguageName, LiquidInternal, Record, Types } from 'types/index';
+
+import { COM, DQO, NIL, NWL, SQO, WSP } from 'chars';
+import { CommentBlock } from 'comments';
+import { cc } from 'lexical/codes';
+import { Equipoise, Languages, LqT, Token } from 'lexical/enum';
+import { ParseError } from 'lexical/errors';
+import * as lq from 'lexical/liquid';
+import * as rx from 'lexical/regex';
+import { MarkupError, SyntacticError } from 'parse/errors';
+import * as external from 'parse/external';
+import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
 import { sortSafe } from 'parse/sorting';
-import { grammar } from 'parse/grammar';
-import { MarkupError, SyntacticError } from 'parse/errors';
-import { CommentBlock } from 'comments';
-import { COM, DQO, NIL, NWL, PIP, SQO, WSP } from 'chars';
-import { ParseError } from 'lexical/errors';
-import { cc } from 'lexical/codes';
-import { assign, object } from 'utils/native';
-import { Equipoise, Languages, LqT, Token } from 'lexical/enum';
-import * as external from 'parse/external';
-import * as rx from 'lexical/regex';
-import * as lq from 'lexical/liquid';
 import * as u from 'utils/helpers';
+import { assign, object } from 'utils/native';
 import { LiquidStore, SVGStore } from 'utils/stores';
 
 export function markup (input?: string) {
@@ -98,31 +99,15 @@ export function markup (input?: string) {
   function push <T extends Partial<Record>> (record: Record, structure: Types | T | T[] = NIL, param?: T) {
 
     if (structure === NIL && param === undefined) {
-
       parse.push(data, record, NIL);
-
     } else if (u.isObject(structure)) {
-
-      assign(record, structure);
-
-      parse.push(data, record, NIL);
-
+      parse.push(data, assign(record, structure), NIL);
     } else if (u.isArray(structure)) {
-
-      for (const entry of structure as T[]) {
-        assign(record, entry);
-        parse.push(data, record, NIL);
-      }
-
+      while (structure.length > 0) parse.push(data, assign(record, structure.shift()), NIL);
     } else if (param) {
-
-      assign(record, param);
-      parse.push(data, record, structure as Types);
-
+      parse.push(data, assign(record, param), structure as Types);
     } else {
-
-      console.log('isssue');
-
+      console.log('issue');
     }
 
   };
@@ -363,6 +348,9 @@ export function markup (input?: string) {
     /** Ignore count used to determine lexing logic */
     let icount: number = 0;
 
+    /** Angle bracket count, e.g: `<` and `>` */
+    let acount: number = 0;
+
     /** embed Tag, e.g: <script> or {% schema %} etc */
     let ignore: boolean = false;
 
@@ -406,11 +394,7 @@ export function markup (input?: string) {
      *
      * Next: {@link TokenLexer()} OR {@link CommentToken()} OR {@link ExternalToken()}
      */
-    function Delimiters (): ReturnType<
-      typeof CommentToken |
-      typeof ExternalToken |
-      typeof TokenLexer
-    > {
+    function Delimiters (): ReturnType<typeof CommentToken | typeof ExternalToken | typeof TokenLexer> {
 
       if (ender === '---') {
 
@@ -420,7 +404,9 @@ export function markup (input?: string) {
 
       } else if (u.is(b[a], cc.LAN)) {
 
-        if (u.is(b[a + 1], cc.LCB) && (u.is(b[a + 2], cc.LCB) || u.is(b[a + 2], cc.PER))) {
+        if (
+          u.is(b[a + 1], cc.LCB) &&
+          u.or(b[a + 2], cc.LCB, cc.PER)) {
 
           record.token = BadLiquidToken(3);
           record.types = 'liquid_bad_start';
@@ -430,7 +416,9 @@ export function markup (input?: string) {
 
         } else if (u.is(b[a + 1], cc.FWS)) {
 
-          if (u.is(b[a + 2], cc.LCB) && (u.is(b[a + 3], cc.LCB) || u.is(b[a + 3], cc.PER))) {
+          if (
+            u.is(b[a + 2], cc.LCB) &&
+            u.or(b[a + 3], cc.LCB, cc.PER)) {
 
             record.token = BadLiquidToken(3);
             record.types = 'liquid_bad_end';
@@ -442,30 +430,25 @@ export function markup (input?: string) {
 
             ltype = 'end';
             ender = '>';
+            acount = 1;
 
           }
 
         } else if (u.is(b[a + 1], cc.BNG)) {
 
-          if ((
-            u.is(b[a + 2], 100) || u.is(b[a + 2], 68) // d D
-          ) && (
-            u.is(b[a + 3], 111) || u.is(b[a + 3], 79) // o O
-          ) && (
-            u.is(b[a + 4], 99) || u.is(b[a + 4], 67) //  c C
-          ) && (
-            u.is(b[a + 5], 116) || u.is(b[a + 5], 84) // t T
-          ) && (
-            u.is(b[a + 6], 121) || u.is(b[a + 6], 89) // y Y
-          ) && (
-            u.is(b[a + 7], 112) || u.is(b[a + 7], 80) // p P
-          ) && (
-            u.is(b[a + 8], 101) || u.is(b[a + 8], 69) // e E
-          )) {
+          if (
+            u.or(b[a + 2], 100, 68) && // d D
+            u.or(b[a + 3], 111, 79) && // o O
+            u.or(b[a + 4], 99, 67) && //  c C
+            u.or(b[a + 5], 116, 84) && // t T
+            u.or(b[a + 6], 121, 89) && // y Y
+            u.or(b[a + 7], 112, 80) && // p P
+            u.or(b[a + 8], 101, 69)) { // e E
 
             ender = '>';
             ltype = 'doctype';
             preserve = true;
+            acount = 1;
 
           } else if (u.is(b[a + 2], cc.DSH)) {
 
@@ -534,6 +517,7 @@ export function markup (input?: string) {
 
           basic = true;
           ender = '>';
+          acount = 1;
 
         }
 
@@ -555,6 +539,7 @@ export function markup (input?: string) {
           preserve = true;
           ender = '}}';
           ltype = 'liquid';
+          lchar = '}';
 
         } else if (u.is(b[a + 1], cc.PER)) {
 
@@ -569,12 +554,20 @@ export function markup (input?: string) {
             return MarkupError(ParseError.MissingLiquidCloseDelimiter, source.slice(a));
           }
 
-          if (u.is(b[a + 2], cc.DSH)) {
-            start = '{%-';
-            tname = rx.LiquidTagName.exec(source.slice(a + 3, next).trimStart())[0];
+          const slice = u.is(b[a + 2], cc.DSH) ? 3 : 2;
+
+          if (/^\s*-?%}/.test(source.slice(a + slice))) {
+
+            push(record, { token: source.slice(a, next + 2), types: 'liquid_empty' });
+            a = next + 1;
+
+            return;
+
           } else {
-            start = '{%';
-            tname = rx.LiquidTagName.exec(source.slice(a + 2, next).trimStart())[0];
+
+            start = slice === 3 ? '{%-' : '{%';
+            tname = rx.LiquidTagName.exec(source.slice(a + slice, next).trimStart())[0];
+
           }
 
           if (tname === 'comment') {
@@ -585,11 +578,7 @@ export function markup (input?: string) {
             //
             const i = source.indexOf('endcomment', next + 2);
 
-            if (i === -1) {
-
-              return MarkupError(ParseError.MissingLiquidEndTag, source.slice(a, next + 2), 'comment');
-
-            }
+            if (i < 0) return MarkupError(ParseError.MissingLiquidEndTag, source.slice(a, next + 2), 'comment');
 
             start = source.slice(a, next + 2);
             ender = source.slice(source.lastIndexOf('{', i), source.indexOf('}', i + 10) + 1);
@@ -604,8 +593,11 @@ export function markup (input?: string) {
             }
 
             if (u.is(tname, cc.HSH)) {
+
               ltype = 'comment';
+
               return CommentToken();
+
             }
 
           }
@@ -615,6 +607,7 @@ export function markup (input?: string) {
           preserve = true;
           ender = b[a + 1] + '}';
           ltype = 'liquid';
+          lchar = '}';
 
         }
       }
@@ -632,24 +625,12 @@ export function markup (input?: string) {
       }
 
       if (!lchar) lchar = ender.charAt(ender.length - 1);
+      if (nowalk) return ExternalToken();
+      if (ltype === 'comment') return CommentToken();
+      if (a < c) return TokenLexer();
 
-      if (nowalk) {
+      return ExternalToken();
 
-        return ExternalToken();
-
-      } if (ltype === 'comment') {
-
-        return CommentToken();
-
-      } else if (a < c) {
-
-        return TokenLexer();
-
-      } else {
-
-        return ExternalToken();
-
-      }
     }
 
     /**
@@ -667,9 +648,7 @@ export function markup (input?: string) {
      *
      * Next: {@link ExternalToken()}
      */
-    function CommentToken (): ReturnType<
-      typeof ExternalToken
-    > {
+    function CommentToken (): ReturnType<typeof ExternalToken> {
 
       parse.iterator = a;
 
@@ -682,6 +661,8 @@ export function markup (input?: string) {
       });
 
       if (comm[0] === NIL) {
+
+        if (comm[1] === -1) return;
 
         return MarkupError(
           ParseError.MissingHTMLEndingCommentDelimiter,
@@ -749,10 +730,7 @@ export function markup (input?: string) {
      *
      * Next: {@link ExternalToken()} OR {@link LiquidTagToken()}
      */
-    function TokenLexer (): ReturnType<
-      typeof ExternalToken |
-      typeof LiquidTagToken
-    > {
+    function TokenLexer (): ReturnType< typeof ExternalToken | typeof LiquidTagToken> {
 
       /** Lexing store - Characters lexed from {@link b} used to compose token entries */
       const lexed: string[] = [];
@@ -772,9 +750,6 @@ export function markup (input?: string) {
 
       /** A slice reference string to match sequences */
       let string: string = NIL;
-
-      /** Angle bracket count, e.g: `<` and `>` */
-      let acount: number = 0;
 
       /** Brace count, e.g: `{` and `}` */
       let bcount: number = 0;
@@ -838,7 +813,7 @@ export function markup (input?: string) {
        * on surrounding character sequences. The current {@link lexed} store is used to help
        * determine the assumed results for equipoised normalization.
        *
-       * The function expects a parameter value be provided. This will either an existing
+       * The function expects a parameter value be provided. This will either be an existing
        * store model reference of {@link store} or the {@link lexed} character array. The
        * function will augment those stores if necessary. The current index of `b[a]` is
        * equal to `array[array.length - 1]` as `b[a]` was already pushed onto the stack
@@ -854,14 +829,14 @@ export function markup (input?: string) {
        * > This is pre-process operation, wherein Liquid tokens will also be passed through to
        * > {@link lq.tokenize} for additional formatting which applies after token lexing completes.
        */
-      function LiquidEquipoise (array: string[]): true | void {
+      function LiquidEquipoise (store: string[]): true | void {
 
-        if (u.isLast(array, cc.COM)) {
+        if (u.isLast(store, cc.COM)) {
 
           // Correct for hanging commas
           //
           // if (/^,\s*-?[%}]}/.test(source.slice(a))) {
-          //   array.pop();
+          //   store.pop();
           //   a = a + 1;
           //   return true;
           // }
@@ -870,7 +845,7 @@ export function markup (input?: string) {
           //
           if (tname === 'when') {
 
-            liquid.logic.push(array.length - 1);
+            liquid.logic.push(store.length - 1);
 
           }
 
@@ -878,7 +853,10 @@ export function markup (input?: string) {
 
         if (rules.liquid.equipoiseSpacing === true) {
 
-          if (u.isEven(qcount) && u.notWS(b[a]) && u.isLastOf(u.last(array, 2), cc.SQO, cc.DQO)) {
+          if (
+            u.isEven(qcount) &&
+            u.notWS(b[a]) &&
+            u.isLastOf(u.last(store, 2), cc.SQO, cc.DQO)) {
 
             // Following a quotation character
             //
@@ -887,119 +865,56 @@ export function markup (input?: string) {
             // '^
             // "^
             //
-            if (u.not(b[a], cc.COM) && u.not(b[a], cc.RSB)) {
+            if (u.no(b[a], cc.COM, cc.RSB)) {
 
               if (source.startsWith('with', a) && (tname === 'render' || tname === 'include')) {
 
-                array.pop();
-                array.push(WSP, 'with');
+                store.pop();
+                store.push(WSP, 'with');
 
                 a = a + 3;
 
-              } else if (u.notWS(b[a + 1]) && u.not(b[a + 1], cc.EQS) && u.not(b[a + 1], cc.RCB)) {
+              } else if (u.notWS(b[a + 1]) && u.no(b[a + 1], cc.EQS, cc.RCB)) {
 
-                array.push(WSP);
+                store.push(WSP);
 
               }
 
             } else if (
               u.ns(b[a + 1]) &&
-              u.not(b[a + 1], cc.LSB) &&
-              u.not(b[a + 1], cc.DOT)) {
+              u.no(b[a + 1], cc.LSB, cc.DOT)) {
 
               // Missing whitespace character (where > is the updated token)
               //
               // 'æ > ' æ
               // 'æ > ' æ
               //
-              array.push(WSP);
+              store.push(WSP);
 
             }
-
-          } else if (u.notLast(array, cc.NWL) && u.ws(b[a]) && u.ws(b[a + 1])) {
-
-            /* -------------------------------------------- */
-            /* EXTRANEOUS WHITESPACE                        */
-            /* -------------------------------------------- */
-
-          //  console.log(JSON.stringify(array.join('')))
-
-
-            /** Remove the known token in the array which will whitespace or newline */
-            const pop = array.pop();
-
-
-            if (u.ns(pop)) {
-
-              // Non Whitespace character will be reverted
-              // This is merely a safety check to ensure we did not pop
-              // a non-whitespace character
-              //
-              array.push(pop);
-
-            } else if (rules.liquid.argumentFormat === 'preserve' && (
-              u.isLastOf(array, cc.COM, cc.COL) ||
-              u.isNext(b.slice(a + 1), cc.COM))) {
-
-              array.push(pop);
-
-            } else if (u.is(pop, cc.NWL) && (((
-              (
-                rules.liquid.delimiterPlacement === 'consistent' ||
-                rules.liquid.delimiterPlacement === 'preserve'
-              )
-            ) && (
-              array.length === 2 ||
-              array.length === 3
-            )) || (
-              rules.liquid.delimiterPlacement === 'preserve' && (
-              (
-                u.is(b[a + 1], cc.DSH) ||
-                u.is(b[a + 2], cc.PER) ||
-                u.is(b[a + 3], cc.RCB)
-              ) || (
-                u.is(b[a + 1], cc.DSH) ||
-                u.is(b[a + 2], cc.RCB) ||
-                u.is(b[a + 3], cc.RCB)
-              ) || (
-                u.is(b[a + 2], cc.RCB) ||
-                u.is(b[a + 3], cc.RCB)
-              ) || (
-                u.is(b[a + 2], cc.PER) ||
-                u.is(b[a + 3], cc.RCB)
-              )
-            )))) {
-
-              array.push(pop);
-
-            }
-
 
           } else if (
-            u.isLastAt(array, cc.RSB) &&
+            u.isLastAt(store, cc.RSB) &&
             u.isWS(b[a]) &&
-            u.not(b[a], cc.WSP) &&
-            u.not(b[a], cc.COM) &&
-            u.not(b[a], cc.DOT)
+            u.no(b[a], cc.WSP, cc.COM, cc.DOT)
           ) {
 
-            array.splice(array.length - 1, 1, WSP, b[a]);
+            store.splice(store.length - 1, 1, WSP, b[a]);
 
           } else if (
             type === Equipoise.FilterParam &&
-            rules.liquid.argumentFormat === 'preserve' &&
             u.is(b[a], cc.WSP) &&
-            u.isLastSeq(array, cc.COL, cc.NWL, cc.WSP)) {
+            u.isLastSeq(store, cc.COL, cc.NWL, cc.WSP)) {
 
-            array.pop();
+            store.pop();
 
-          } else if (u.is(b[a], cc.WSP) && u.isLastAt(array, cc.DOT)) {
+          } else if (u.is(b[a], cc.WSP) && u.isLastAt(store, cc.DOT)) {
 
-            array.pop();
+            store.pop();
 
-          } else if (u.isLastSeq(array, cc.LSB, cc.WSP)) {
+          } else if (u.isLastSeq(store, cc.LSB, cc.WSP)) {
 
-            array.pop();
+            store.pop();
 
           } else if (u.is(b[a], cc.COM)) {
 
@@ -1020,91 +935,65 @@ export function markup (input?: string) {
                 // the structure provided and when arguments are placed inline
                 // comma characters will apply 'after' placement structures.
                 //
-                if (rules.liquid.argumentFormat === 'preserve') {
+                if (u.isLastAt(store, cc.WSP)) {
 
-                  if (u.isLastAt(array, cc.WSP)) {
-
-                    if (u.is(b[a + 1], cc.NWL)) {
-                      array.push(NWL, array.pop(), array.pop());
-                    } else {
-                      array.push(array.pop(), array.pop());
-                    }
-
-                  } else if (u.is(b[a + 1], cc.NWL)) {
-
-                    if (u.isLastAt(array, cc.NWL)) {
-                      array.push(array.pop(), WSP);
-                    } else {
-                      array.push(NWL, array.pop(), WSP);
-                    }
-
-                  } else if (u.ns(b[a + 1])) {
-
-                    array.push(WSP);
-
-                  }
-
-                } else {
-
-                  if (u.isLastAt(array, cc.NWL)) {
-                    array.push(WSP);
+                  if (u.is(b[a + 1], cc.NWL)) {
+                    store.push(NWL, store.pop(), store.pop());
                   } else {
-                    array.push(NWL, array.pop(), WSP);
+                    store.splice(-2, 2, NWL, COM, WSP);
                   }
+
+                } else if (u.is(b[a + 1], cc.NWL)) {
+
+                  if (u.isLastAt(store, cc.NWL)) {
+                    store.push(store.pop(), WSP);
+                  } else {
+                    store.push(NWL, store.pop(), WSP);
+                  }
+
+                } else if (type !== Equipoise.FilterParam && !u.isLastAt(store, cc.NWL)) {
+
+                  store.push(NWL, store.pop(), WSP);
+
+                } else if (u.ns(b[a + 1])) {
+
+                  store.push(WSP);
 
                 }
 
               } else {
 
-                if (rules.liquid.argumentFormat === 'preserve') {
+                if (u.isLastAt(store, cc.WSP)) {
 
-                  if (u.isLastAt(array, cc.WSP)) {
-
-                    if (u.is(b[a + 1], cc.NWL)) {
-                      array.push(array.pop(), array.pop(), NWL);
-                    } else {
-                      array.push(array.pop(), array.pop());
-                    }
-
-                  } else if (u.is(b[a + 1], cc.NWL)) {
-
-                    if (u.isLastAt(array, cc.NWL)) {
-                      array.splice(array.length - 2, 2, COM, NWL);
-                    } else {
-                      array.push(array.pop(), NWL);
-                    }
-
-                  } else if (u.ns(b[a + 1])) {
-
-                    array.push(WSP);
-
-                  }
-
-                } else {
-
-                  if (u.isLastAt(array, cc.WSP)) {
-                    array.splice(array.length - 2, 2, COM, NWL);
-                  } else if (u.isLastAt(array, cc.NWL)) {
-                    array.push(array.pop(), array.pop());
+                  if (u.is(b[a + 1], cc.NWL)) {
+                    store.splice(-2, 2, COM);
                   } else {
-                    array.push(NWL);
+                    store.splice(-2, 2, COM, NWL);
                   }
+
+                } else if (u.isLastAt(store, cc.NWL)) {
+
+                  store.splice(-2, 2, COM, NWL);
+
+                } else if (type !== Equipoise.FilterParam) {
+
+                  store.push(store.pop(), NWL);
+
+                } else if (u.ns(b[a + 1])) {
+
+                  store.push(WSP);
 
                 }
+
               }
-
-              // if (type === Equipoise.FilterParam) {
-              //   u.last(liquid.fargs).push(array.length - 2);
-              // } else {
-              //   liquid.targs.push(array.length - 1);
-              //   type = Equipoise.TagArg;
-              // }
-
-              // // if (u.isWS(b[a + 1])) a = a + 1;
 
             } else {
 
-              if (u.ns(b[a + 1])) array.push(WSP);
+              if (u.isLastAt(store, cc.WSP)) {
+                store.splice(-2, 1);
+              } else if (u.ns(b[a + 1])) {
+                store.push(WSP);
+              }
 
             }
 
@@ -1112,13 +1001,13 @@ export function markup (input?: string) {
 
             if (type === Equipoise.FilterPipe) {
 
-              liquid.fargs.push([ array.length - 1 ]);
+              liquid.fargs.push([ store.length - 1 ]);
 
               type = Equipoise.FilterParam;
 
             } else if (type === Equipoise.FilterParam) {
 
-              u.last(liquid.fargs).push(array.length - 1);
+              u.last(liquid.fargs).push(store.length - 1);
 
             } else {
 
@@ -1126,14 +1015,13 @@ export function markup (input?: string) {
 
             }
 
-            if (u.isLastAt(array, cc.WSP)) {
+            if (u.isLastAt(store, cc.WSP)) {
 
-
-              array.push(array.pop(), array.pop());
+              store.push(store.pop(), store.pop());
 
             }
 
-            console.log(JSON.stringify([array.join(''), b.slice(a, a + 50).join('')]))
+            // console.log(JSON.stringify([store.join(''), b.slice(a, a + 50).join('')]))
 
             // Missing whitespace character (where > is the updated token)
             //
@@ -1141,11 +1029,11 @@ export function markup (input?: string) {
             //
             if (u.ns(b[a + 1])) {
 
-              array.push(WSP);
+              store.push(WSP);
 
-            } else if (u.is(b[a + 1], cc.NWL) && rules.liquid.argumentFormat !== 'preserve') {
+            } else if (u.is(b[a + 1], cc.NWL)) {
 
-              array.push(WSP);
+              store.push(WSP);
 
             }
 
@@ -1153,40 +1041,36 @@ export function markup (input?: string) {
 
             if (u.ns(b[a - 1])) {
 
-              array.push(NWL, array.pop());
+              store.push(tname === 'liquid' ? WSP : NWL, store.pop());
 
-            } else if (u.isLastAt(array, cc.WSP)) {
+            } else if (u.isLastAt(store, cc.WSP)) {
 
-              array[array.length - 2] = NWL;
+              store[store.length - 2] = tname === 'liquid' ? WSP : NWL;
 
             }
 
             type = Equipoise.FilterPipe;
 
-            liquid.pipes.push(array.length - 1);
+            liquid.pipes.push(store.length - 1);
 
             // Missing whitespace character (where > is the updated token)
             //
             // |æ > | æ
             //
-            if (u.ns(b[a + 1])) array.push(WSP);
+            if (u.ns(b[a + 1])) store.push(WSP);
 
-          } else if (u.is(b[a], cc.WSP) && (
-            u.is(b[a + 1], cc.DOT) ||
-            u.is(b[a + 1], cc.RSB) ||
-            u.is(b[a + 1], cc.LSB)
-          )) {
+          } else if (u.is(b[a], cc.WSP) && u.or(b[a + 1], cc.DOT, cc.RSB, cc.LSB)) {
 
-            array.pop();
+            store.pop();
 
           } else if (
             u.isEven(qcount) &&
             u.not(b[a], cc.LSB) &&
             u.ns(b[a]) &&
-            u.ns(u.lastChar(array)) &&
+            u.ns(u.lastChar(store)) &&
             u.isOf(b[a + 1], cc.DQO, cc.SQO)) {
 
-            array.push(WSP);
+            store.push(WSP);
 
           } else if (tname === 'assign' && ((
             u.ns(b[a]) &&
@@ -1201,7 +1085,7 @@ export function markup (input?: string) {
             // æ= > æ =
             // =æ > = æ
             //
-            array.push(WSP);
+            store.push(WSP);
 
           } else if (
             tname === 'if' ||
@@ -1209,15 +1093,10 @@ export function markup (input?: string) {
             tname === 'elsif' ||
             tname === 'liquid') {
 
-            if ((
-              u.not(b[a], cc.WSP) ||
-              u.is(b[a], cc.NWL)
-            ) && (
-              u.isOf(b[a + 1], cc.BNG, cc.LAN, cc.RAN) || (
-                u.is(b[a + 1], cc.EQS) &&
-                u.is(b[a + 2], cc.EQS)
-              )
-            )) {
+            if ((u.not(b[a], cc.WSP) || u.is(b[a], cc.NWL)) && (u.isOf(b[a + 1], cc.BNG, cc.LAN, cc.RAN) || (
+              u.is(b[a + 1], cc.EQS) &&
+              u.is(b[a + 2], cc.EQS)
+            ))) {
 
               // Spacing before logical sequence (where ^ represents current point)
               //
@@ -1225,7 +1104,7 @@ export function markup (input?: string) {
               // ^ <=
               // ^ >=
               // ^ ==
-              array.push(WSP);
+              store.push(WSP);
 
             } else if (
               u.is(b[a], cc.EQS) &&
@@ -1234,13 +1113,9 @@ export function markup (input?: string) {
                 u.is(b[a + 1], cc.NWL)
               )) {
 
-              if (u.isOf(array[array.length - 5], cc.EQS, cc.RAN, cc.LAN)) {
+              if (u.isOf(store[store.length - 5], cc.EQS, cc.RAN, cc.LAN)) {
 
-                return MarkupError(
-                  ParseError.InvalidLiquidOperator,
-                  array.join(NIL),
-                  tname
-                );
+                return MarkupError(ParseError.InvalidLiquidOperator, store.join(NIL), tname);
 
               }
 
@@ -1250,24 +1125,21 @@ export function markup (input?: string) {
               // <= ^
               // >= ^
               // == ^
-              array.push(WSP);
+              store.push(WSP);
 
-            } else if (
-              u.not(b[a + 1], cc.WSP) &&
-              u.not(b[a + 1], cc.EQS) &&
-              u.isOf(b[a], cc.LAN, cc.RAN)) {
+            } else if (u.no(b[a + 1], cc.WSP, cc.EQS) && u.isOf(b[a], cc.LAN, cc.RAN)) {
 
               // Before logical more or less than characters (where ^ represents current point)
               //
               // ^<
               // ^>
-              array.push(WSP);
+              store.push(WSP);
 
             } else if (source.startsWith('contains', a + 1)) {
 
-              array.push('contains');
+              store.push('contains');
 
-              if (u.isOf(b[a + 9], cc.DQO, cc.SQO)) array.push(WSP);
+              u.isOf(b[a + 9], cc.DQO, cc.SQO) && store.push(WSP);
 
               a = a + 8;
 
@@ -1277,18 +1149,17 @@ export function markup (input?: string) {
 
             // {% for %} tag parameter
             //
-            liquid.param.push(array.lastIndexOf(WSP));
+            liquid.param.push(store.lastIndexOf(WSP));
 
           }
         }
 
         if (
-          u.isLastSeq(array, cc.WSP, cc.WSP) ||
-          u.isLastSeq(array, cc.NWL, cc.WSP) ||
-          u.isLastSeq(array, cc.NWL, cc.NWL) ||
-          u.isLastSeq(array, cc.WSP, cc.NWL)) {
+          u.isLastSeq(store, cc.WSP, cc.WSP) ||
+          u.isLastSeq(store, cc.NWL, cc.WSP) ||
+          u.isLastSeq(store, cc.WSP, cc.NWL) || (u.isLastSeq(store, cc.NWL, cc.NWL) && tname !== 'liquid')) {
 
-          array.pop();
+          store.pop();
 
         }
 
@@ -1324,8 +1195,8 @@ export function markup (input?: string) {
 
             if (b[a] === 'i' && b[a + 1] === 'n' && u.ws(b[a + 2])) {
 
-              array.pop();
-              array.push('in', WSP);
+              store.pop();
+              store.push('in', WSP);
 
               a = a + 2;
 
@@ -1336,11 +1207,11 @@ export function markup (input?: string) {
 
         // Detect Invalid Characters
         //
-        if (u.isLast(array, cc.COM) && u.isLastAt(array, cc.COM)) {
+        if (u.isLast(store, cc.COM) && u.isLastAt(store, cc.COM)) {
           return MarkupError(
             ParseError.InvalidLiquidCharacterSequence,
-            array.join(NIL),
-            u.getTagName(array.join(NIL))
+            store.join(NIL),
+            u.getTagName(store.join(NIL))
           );
         }
 
@@ -1352,38 +1223,43 @@ export function markup (input?: string) {
          * The internal conditional structures such as `{% if x == y and a > b %}`,
          * wherein the `lineBreakLogical` rule is correctly handled and the
          * `liquid.logic` data model adhere to the line breaks imposed.
+         *
+         * The starting point of {@link store} here will be the first character
+         * of the the logical expression, for example:
+         *
+         * ```js
+         * '{% if condition o^' // representing an "or" logical
+         * '{% if condition a^' // representing an "and" logical
+         * '{% if condition c^' // representing an "contains" logical
+         * ```
          */
         function LiquidLogical (at: number): true {
 
           if (rules.liquid.lineBreakLogical === 'preserve') {
 
-            // if (b.slice(parse.lineIndex, a).join(NIL).trim() === NIL) {
-            //   liquid.logic.push(array.length - 1);
-            // } else if (u.is(b[a + at], cc.NWL)) {
-            //   liquid.logic.push(array.length);
-            // }
+            if (u.isLastAt(store, cc.WSP)) {
+              store.splice(store.length - 2, 2, WSP, string.slice(0, at), NWL);
+            } else if (u.isLastAt(store, cc.NWL)) {
+              store.splice(store.length - 2, 2, NWL, string.slice(0, at), WSP);
+            }
 
           } else if (rules.liquid.lineBreakLogical === 'before') {
 
-            if (u.isLastAt(array, cc.WSP)) {
-
-              array.splice(array.length - 2, 2, NWL, string.slice(0, at), WSP);
-
+            if (u.isLastAt(store, cc.WSP)) {
+              store.splice(store.length - 2, 2, NWL, string.slice(0, at), WSP);
+            } else if (u.isLastAt(store, cc.NWL)) {
+              store.splice(store.length - 1, 2, string.slice(0, at), WSP);
             }
 
           } else if (rules.liquid.lineBreakLogical === 'after') {
 
-            if (u.isLastAt(array, cc.WSP)) {
-
-              array.splice(array.length - 2, 2, WSP, string.slice(0, at), NWL);
-
+            if (u.isLastAt(store, cc.WSP)) {
+              store.splice(store.length - 1, 1, string.slice(0, at), NWL);
+            } else if (u.isLastAt(store, cc.NWL)) {
+              store.splice(store.length - 2, 2, WSP, string.slice(0, at), NWL);
             }
 
-            // console.log(array.slice(-4), u.isLastAt(array, cc.WSP));
-
           }
-
-          // if (u.notWS(u.lastChar(array))) array.push(WSP);
 
           a = a + at;
 
@@ -1425,8 +1301,6 @@ export function markup (input?: string) {
           attr = store.join(NIL);
           each = attrname(attr);
           quote = NIL;
-
-          // console.log(each);
 
           if (each[0] === 'data-esthetic-ignore') ignore = true;
 
@@ -1508,7 +1382,7 @@ export function markup (input?: string) {
           if (lq.isEnd(attr)) within = within - 1;
         }
 
-        // Populates the "attrs[]" array which will be used
+        // Populates the "attrs[]" store which will be used
         // when adding the records to the data structures
         //
         if (attr !== NIL && attr !== WSP) attrs.push([ attr, lines ]);
@@ -1557,6 +1431,7 @@ export function markup (input?: string) {
           start === '---' &&
           ender === '---' &&
           ltype === 'ignore') {
+
           lexed.push(b[a]);
 
           if (a > 3 && u.is(b[a], cc.DSH) && u.is(b[a - 1], cc.DSH) && u.is(b[a - 2], cc.DSH)) break;
@@ -1575,7 +1450,10 @@ export function markup (input?: string) {
 
           // Liquid Token Types, eg: {% OR {{
           //
-          if (isliq === false && u.is(b[a - 1], cc.LCB) && (u.is(b[a], cc.LCB) || u.is(b[a], cc.PER))) {
+          if (
+            isliq === false &&
+            u.is(b[a - 1], cc.LCB) &&
+            u.or(b[a], cc.LCB, cc.PER)) {
 
             isliq = true;
 
@@ -1583,11 +1461,11 @@ export function markup (input?: string) {
 
             // Liquid Token Closed, } OR %
             //
-            if (u.is(b[a - 1], cc.RCB) || u.is(b[a - 1], cc.PER)) {
+            if (u.or(b[a - 1], cc.RCB, cc.PER)) {
 
               isliq = false;
 
-            } else if (u.ws(b[a - 1]) && (u.is(b[a - 2], cc.RCB) || u.is(b[a - 2], cc.PER))) {
+            } else if (u.ws(b[a - 1]) && u.or(b[a - 2], cc.RCB, cc.PER)) {
 
               return MarkupError(ParseError.MissingLiquidCloseDelimiter, lexed.join(NIL));
 
@@ -1601,15 +1479,11 @@ export function markup (input?: string) {
             //
             if ((
               u.is(b[a - 1], cc.DSH) &&
-              u.is(b[a - 3], cc.LCB) && (
-                u.is(b[a - 2], cc.LCB) ||
-                u.is(b[a - 2], cc.PER)
-              )
+              u.is(b[a - 3], cc.LCB) &&
+              u.or(b[a - 2], cc.LCB, cc.PER)
             ) || (
-              u.is(b[a - 2], cc.LCB) && (
-                u.is(b[a - 1], cc.LCB) ||
-                u.is(b[a - 1], cc.PER)
-              )
+              u.is(b[a - 2], cc.LCB) &&
+              u.or(b[a - 1], cc.LCB, cc.PER)
             )) {
 
               ntest = true;
@@ -1621,14 +1495,8 @@ export function markup (input?: string) {
               // whitespace or newline occurances, as per the the do/while loop
               //
               while (u.ws(b[a])) {
-
                 ++a;
-
-                if (u.is(b[a], cc.NWL)) {
-
-                  lines = parse.lines(a, lines);
-
-                }
+                if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
               }
 
               lexed.push(b[a]);
@@ -1644,10 +1512,8 @@ export function markup (input?: string) {
             ltype === 'end' &&
             lexed.length > 2 &&
             u.is(lexed[0], cc.LAN) &&
-            u.is(lexed[1], cc.FWS) && (
-              u.is(lexed[lexed.length - 1], cc.FWS) ||
-              u.is(lexed[lexed.length - 1], cc.LAN)
-            )
+            u.is(lexed[1], cc.FWS) &&
+            u.or(lexed[lexed.length - 1], cc.FWS, cc.LAN)
           ) {
 
             if (rules.correct) {
@@ -1735,7 +1601,11 @@ export function markup (input?: string) {
 
             // HTML Bang Sequence, eg: <!
             //
-            if (u.is(lexed[0], cc.LAN) && u.is(lexed[1], cc.BNG) && ltype !== 'cdata') {
+            if (
+              ltype !== 'cdata' &&
+              u.is(lexed[0], cc.LAN) &&
+              u.is(lexed[1], cc.BNG)
+            ) {
 
               // HTML Doctype
               //
@@ -1778,14 +1648,13 @@ export function markup (input?: string) {
             //
             //
             if (
-              u.is(b[a], cc.LAN) &&
-              basic === true &&
+              basic &&
               preserve === false &&
+              u.is(b[a], cc.LAN) &&
               lexed.length > 1 &&
-              />{2,3}/.test(ender) === false) {
+              !/>{2,3}/.test(ender)) {
 
               parse.lineNumber -= 1;
-
               MarkupError(ParseError.UnterminatedHTMLStartTag, lexed.join(NIL), start);
 
               break;
@@ -1796,7 +1665,7 @@ export function markup (input?: string) {
             // The traversal operations contained within this condition
             // pertain directly to attributes and innner markup <tag> content
             //
-            if (u.ws(b[a]) === false && stest === true && b[a] !== lchar) {
+            if (u.ws(b[a]) === false && stest && b[a] !== lchar) {
 
               // Attribute start
               //
@@ -1813,35 +1682,37 @@ export function markup (input?: string) {
 
                   // Newline Increments
                   //
-                  if (qatt === false && u.is(b[a], cc.NWL)) {
-
-                    lines = parse.lines(a, lines);
-
-                  }
+                  if (qatt === false && u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
 
                   if (rules.markup.attributePreserve === true) {
-
                     lexed.push(b[a]);
-
                   } else {
-
                     store.push(b[a]);
-
                   }
 
                   // if (u.not(quote, cc.DQO) || u.not(quote, cc.SQO)) {
 
-                  if (u.is(b[a - 1], cc.LCB) && (
-                    u.is(b[a], cc.PER) ||
-                    u.is(b[a], cc.LCB))) {
+                  if (
+                    u.is(b[a - 1], cc.LCB) &&
+                    u.or(b[a], cc.PER, cc.LCB)) {
 
                     isliq = true;
 
-                  } else if (u.is(b[a], cc.RCB) && (
-                    u.is(b[a - 1], cc.RCB) ||
-                    u.is(b[a - 1], cc.PER))) {
+                  } else if (
+                    u.is(b[a], cc.RCB) &&
+                    u.or(b[a - 1], cc.RCB, cc.PER)) {
 
                     isliq = false;
+
+                  }
+
+                  if (
+                    qatt &&
+                    u.isOdd(qcount) &&
+                    u.is(b[a - 1], cc.LAN) &&
+                    u.is(b[a], cc.FWS)) {
+
+                    MarkupError(ParseError.UnterminatedString, source.slice(a));
 
                   }
 
@@ -1851,10 +1722,8 @@ export function markup (input?: string) {
                     isliq === true &&
                     jsx === false &&
                     qatt === false &&
-                    rules.markup.attributePreserve === false && (
-                      u.not(quote, cc.DQO) ||
-                      u.not(quote, cc.SQO)
-                    )
+                    rules.markup.attributePreserve === false &&
+                    u.no(quote, cc.DQO, cc.SQO)
                   ) {
 
                     while (a < c) {
@@ -1865,14 +1734,11 @@ export function markup (input?: string) {
                       //
                       if (u.is(b[a], cc.NWL)) lines = parse.lines(a, lines);
 
-                      if (u.is(store[0], cc.EQS) && (
-                        u.is(store[1], cc.LCB) ||
-                        u.is(store[1], cc.PER)
-                      ) && (
-                        u.is(store[store.length - 2], cc.RCB) ||
-                        u.is(store[store.length - 2], cc.PER)
-                      ) && (
-                        u.is(store[store.length - 1], cc.RCB))) {
+                      if (
+                        u.is(store[0], cc.EQS) &&
+                        u.or(store[1], cc.LCB, cc.PER) &&
+                        u.is(store[store.length - 1], cc.RCB) &&
+                        u.or(store[store.length - 2], cc.RCB, cc.PER)) {
 
                         isliq = false;
                         quote = NIL;
@@ -1906,10 +1772,11 @@ export function markup (input?: string) {
 
                       // Liquid Token as HTML Attribute
                       //
-                      if (u.not(store[0], cc.EQS) && u.is(b[a], cc.RCB) && (
-                        u.is(b[a - 1], cc.RCB) ||
-                        u.is(b[a - 1], cc.PER)
-                      )) {
+                      if (
+                        u.not(store[0], cc.EQS) &&
+                        u.is(b[a], cc.RCB) &&
+                        u.or(b[a - 1], cc.RCB, cc.PER)
+                      ) {
 
                         isliq = false;
                         quote = NIL;
@@ -1924,39 +1791,25 @@ export function markup (input?: string) {
 
                   }
 
-                  if (jsx === false && (
-                    u.is(b[a], cc.LAN) ||
-                    u.is(b[a], cc.RAN)
-                  ) && (
-                    quote === NIL ||
-                    u.is(quote, cc.RAN)
-                  )) {
+                  if (jsx === false && quote === NIL && u.or(b[a], cc.LAN, cc.RAN)) {
 
                     if (quote === NIL && u.is(b[a], cc.LAN)) {
 
                       quote = '>';
-                      acount = 1;
+                      ++acount;
 
                     } else if (u.is(quote, cc.RAN)) {
 
-                      if (u.is(b[a], cc.LAN)) {
+                      if (u.is(b[a], cc.LAN)) ++acount;
+                      if (u.is(b[a], cc.RAN)) --acount;
 
-                        acount = acount + 1;
-
-                      } else if (u.is(b[a], cc.RAN)) {
-
-                        acount = acount - 1;
-
-                        if (acount === 0) {
-
-                          quote = NIL;
-                          icount = 0;
-
-                          Attributes(false);
-
-                          break;
-                        }
+                      if (acount === 0) {
+                        quote = NIL;
+                        icount = 0;
+                        Attributes(false);
+                        break;
                       }
+
                     }
 
                   } else if (quote === NIL) {
@@ -1966,19 +1819,12 @@ export function markup (input?: string) {
                       // If we are at end of a tag, we exit the traversal.
                       //
                       if (u.isLast(store, cc.FWS) || (u.isLast(store, cc.QWS) && ltype === 'xml')) {
-
                         store.pop();
                         preserve === false || lexed.pop();
-
                         --a;
-
                       }
 
-                      if (store.length > 0) {
-
-                        Attributes(false);
-
-                      }
+                      if (store.length > 0) Attributes(false);
 
                       break;
 
@@ -1988,10 +1834,12 @@ export function markup (input?: string) {
 
                       quote = '}';
 
-                    } else if (u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO)) {
+                    } else if (u.or(b[a], cc.DQO, cc.SQO)) {
 
                       quote = b[a];
                       qatt = qatt === false && isliq === false;
+
+                      ++qcount;
 
                       // Ignore Count
                       //
@@ -2030,28 +1878,21 @@ export function markup (input?: string) {
                       } else if (u.is(b[a], cc.FWS)) {
 
                         // JSX Comments
-                        if (u.is(b[a + 1], cc.ARS)) {
-
-                          quote = '\u002a/';
-
-                        } else if (u.is(b[a + 1], cc.FWS)) {
-
-                          quote = NWL;
-
-                        }
+                        if (u.is(b[a + 1], cc.ARS)) quote = '\u002a/';
+                        if (u.is(b[a + 1], cc.FWS)) quote = NWL;
 
                       }
 
-                    } else if (u.is(lexed[0], cc.LCB) && u.is(b[a], cc.LCB) && (
-                      u.is(b[a + 1], cc.LCB) ||
-                      u.is(b[a + 1], cc.PER)
-                    )) {
+                    } else if (
+                      u.is(lexed[0], cc.LCB) &&
+                      u.is(b[a], cc.LCB) &&
+                      u.or(b[a + 1], cc.LCB, cc.PER)) {
 
                       // Liquid token expression
                       //
                       // If lexed[0] is `{` and next character in either { or %
                       //
-                      quote = u.is(b[a + 1], cc.LCB) ? '}}' : b[a + 1] + '}';
+                      quote = u.is(b[a + 1], cc.LCB) ? '}}' : '%}';
 
                     }
 
@@ -2066,15 +1907,12 @@ export function markup (input?: string) {
 
                         if (e < c) {
                           do {
-
                             if (u.ns(b[e])) {
 
-                              if (u.is(b[e], cc.DQO) || u.is(b[e], cc.SQO)) {
-
+                              if (u.or(b[e], cc.DQO, cc.SQO)) {
                                 a = e - 1;
                                 qtest = true;
                                 store.pop();
-
                               }
 
                               break;
@@ -2093,16 +1931,10 @@ export function markup (input?: string) {
                         // If there is an unquoted space attribute is complete
                         //
                         store.pop();
-
-                        if (store.length > 0) {
-
-                          Attributes(false);
-
-                        }
-
+                        store.length > 0 && Attributes(false);
                         stest = true;
-
                         break;
+
                       }
                     }
 
@@ -2112,13 +1944,13 @@ export function markup (input?: string) {
                     //
                     // If quote is ) and next character is `(`
                     //
-                    pcount = pcount + 1;
+                    ++pcount;
 
                   } else if (u.is(b[a], cc.RPR) && u.is(quote, cc.RPR)) {
 
                     // Decrement Parenthesis count
                     //
-                    pcount = pcount - 1;
+                    --pcount;
 
                     if (pcount === 0) {
 
@@ -2148,7 +1980,7 @@ export function markup (input?: string) {
 
                     if (u.is(b[a], cc.TQO)) {
 
-                      a = a + 1;
+                      ++a;
 
                       do {
                         store.push(b[a]);
@@ -2224,10 +2056,8 @@ export function markup (input?: string) {
                   } else if (
                     u.is(b[icount - 1], cc.EQS) &&
                     u.is(b[a], cc.LCB) &&
-                    u.is(b[a + 1], cc.PER) && (
-                      u.is(quote, cc.DQO) ||
-                      u.is(quote, cc.SQO)
-                    )
+                    u.is(b[a + 1], cc.PER) &&
+                    u.or(quote, cc.DQO, cc.SQO)
                   ) {
 
                     quote = quote + '{%';
@@ -2247,10 +2077,8 @@ export function markup (input?: string) {
                   } else if ((
                     u.is(b[a], cc.LAN) &&
                     u.is(ender, cc.RAN) &&
-                    u.is(b[icount - 1], cc.EQS) && (
-                      u.is(quote, cc.DQO) ||
-                      u.is(quote, cc.SQO)
-                    )
+                    u.is(b[icount - 1], cc.EQS) &&
+                    u.or(quote, cc.DQO, cc.SQO)
                   )) {
 
                     quote = quote + '<';
@@ -2266,15 +2094,10 @@ export function markup (input?: string) {
                     quote = quote.charAt(0);
                     icount = 0;
 
-                  } else if (
-                    icount === 0 &&
+                  } else if (icount === 0 && (u.not(b[a - 1], cc.BWS) && u.or(b[a], cc.SQO, cc.DQO)) &&
                     u.not(quote, cc.RAN) && (
-                      quote.length < 2 || (
-                        u.not(quote, cc.DQO) &&
-                        u.not(quote, cc.SQO)
-                      )
-                    )
-                  ) {
+                    quote.length < 2 ||
+                    u.no(quote, cc.DQO, cc.SQO))) {
 
                     // Terminate attribute at the conclusion of a quote pair
                     q = 0;
@@ -2287,6 +2110,8 @@ export function markup (input?: string) {
                         ++q;
                       } while (--e > -1);
 
+                      if (u.is(b[a], quote.charCodeAt(0))) --qcount;
+
                     }
 
                     // Apply Value Forcing
@@ -2295,7 +2120,7 @@ export function markup (input?: string) {
                     // quotation character of the attribute value, e.g: class=" TO class="\n
                     //
                     if (
-                      qatt === true &&
+                      qatt &&
                       qidx > -1 &&
                       isliq === false &&
                       b[a + 1] === quote &&
@@ -2318,12 +2143,8 @@ export function markup (input?: string) {
                       //
                       if (isliq) {
 
-                        if (u.notLast(b[a - 1], cc.BWS) && (
-                          u.is(b[a], cc.SQO) ||
-                          u.is(b[a], cc.DQO))) {
-
-                          qcount = u.isEven(qcount) ? qcount + 1 : qcount - 1;
-
+                        if (u.not(b[a - 1], cc.BWS) && u.or(b[a], cc.SQO, cc.DQO)) {
+                          u.isEven(qcount) ? ++qcount : --qcount;
                         }
 
                         LiquidEquipoise(store);
@@ -2337,19 +2158,18 @@ export function markup (input?: string) {
                     if (e < 0 && isliq === false && qatt === true) {
 
                       qatt = false;
-
                       Attributes(true);
 
                       if (b[a + 1] === lchar) break;
+
                     }
 
-                    // Markup Error - Attribute value is untermined
-                    //
                     if (
                       isliq === false &&
                       qidx > -1 &&
                       qatt === true &&
                       e === 0 &&
+                      u.isEven(qcount) &&
                       u.is(b[a], cc.RAN)) {
 
                       MarkupError(ParseError.UnterminatedString, source.slice(a));
@@ -2365,29 +2185,24 @@ export function markup (input?: string) {
                 } while (++a < c);
               }
 
-            } else if (
-              u.is(ender, cc.NWL) === false && (
-                u.is(b[a], cc.DQO) ||
-                u.is(b[a], cc.SQO)
-              )
-            ) {
+            } else if (u.not(ender, cc.NWL) && u.or(b[a], cc.DQO, cc.SQO)) {
 
               // Opening quote
               //
               quote = b[a];
 
-            } else if (a > 0 && isliq && u.not(quote, cc.DQO) && u.not(quote, cc.SQO)) {
+            } else if (a > 0 && isliq && u.no(quote, cc.DQO, cc.SQO)) {
 
               if (LiquidEquipoise(lexed) === true) continue;
 
             } else if (
               ltype !== 'comment' &&
+              parse.record.types !== 'conditional' &&
               u.not(ender, cc.NWL) &&
               u.is(b[a], cc.LAN) &&
               u.is(b[a + 1], cc.BNG) &&
               u.is(b[a + 2], cc.DSH) &&
-              u.is(b[a + 3], cc.DSH) &&
-              parse.record.types !== 'conditional'
+              u.is(b[a + 3], cc.DSH)
             ) {
 
               quote = '-->';
@@ -2395,10 +2210,8 @@ export function markup (input?: string) {
             } else if (
               u.is(b[a], cc.LCB) &&
               u.not(lexed[0], cc.LCB) &&
-              u.not(ender, cc.NWL) && (
-                u.is(b[a + 1], cc.LCB) ||
-                u.is(b[a + 1], cc.PER)
-              )
+              u.not(ender, cc.NWL) &&
+              u.or(b[a + 1], cc.LCB, cc.PER)
             ) {
 
               if (u.is(b[a + 1], cc.LCB)) {
@@ -2445,10 +2258,8 @@ export function markup (input?: string) {
             } else if (
               basic &&
               jsx &&
-              u.is(b[a], cc.FWS) && (
-                u.is(b[a + 1], cc.ARS) ||
-                u.is(b[a + 1], cc.FWS)
-              )
+              u.is(b[a], cc.FWS) &&
+              u.or(b[a + 1], cc.ARS, cc.FWS)
             ) {
 
               // JSX Comment immediately following tag each
@@ -2559,21 +2370,17 @@ export function markup (input?: string) {
 
       if (ignore === false) {
         if (ltype === 'liquid') {
-
-          token = lexed.join(NIL);
-
-          if (tname === 'liquid') return LiquidTagToken();
-
+          if (tname === 'liquid') {
+            token = lexed.join(NIL);
+            return LiquidTagToken();
+          } else {
+            token = lq.delimiters(lexed.join(NIL), tname);
+          }
         } else {
-
           token = lexed.join(NIL);
-
         }
-
       } else {
-
         token = lexed.join(NIL);
-
       }
 
       if (tname === 'xml') {
@@ -2613,17 +2420,11 @@ export function markup (input?: string) {
      *
      * Next: {@link IgnoreDetect()}
      */
-    function ExternalToken (): ReturnType<
-      typeof IgnoreDetect
-    > {
+    function ExternalToken (): ReturnType<typeof IgnoreDetect> {
 
       //  cheat = correct();
 
-      if (ignore || (u.is(token, cc.LAN) && u.is(token[1], cc.FWS))) {
-
-        return IgnoreDetect();
-
-      }
+      if (ignore || (u.is(token, cc.LAN) && u.is(token[1], cc.FWS))) return IgnoreDetect();
 
       /** Token query return value - references the {@link attrs} store */
       let q: ReturnType<typeof external.determine>;
@@ -2759,11 +2560,7 @@ export function markup (input?: string) {
      * > If the token is ignore next type {@link IgnoreNext()} will be next to run.
      * > Both ignore function calls are typically rare, expected next call is `SingletonToken`
      */
-    function IgnoreDetect (): ReturnType<
-      typeof SingletonToken |
-      typeof IgnoreToken |
-      typeof IgnoreNext
-    > {
+    function IgnoreDetect (): ReturnType<typeof SingletonToken | typeof IgnoreToken | typeof IgnoreNext> {
 
       // Parse Preserve
       //
@@ -2865,9 +2662,7 @@ export function markup (input?: string) {
      *
      * Next: {@link AttributeToken()}
      */
-    function IgnoreToken (ender: string, type: Languages): ReturnType<
-      typeof AttributeToken
-    > {
+    function IgnoreToken (ender: string, type: Languages): ReturnType<typeof AttributeToken> {
 
       /** The starting index */
       const now = a;
@@ -2906,7 +2701,7 @@ export function markup (input?: string) {
         // contain enders or starters.
         //
         //
-        if (u.is(b[a], cc.DQO) || u.is(b[a], cc.SQO) || u.is(b[a], cc.TQO)) {
+        if (u.or(b[a], cc.DQO, cc.SQO, cc.TQO)) {
 
           i = a + 1;
           t = b[a];
@@ -2936,7 +2731,7 @@ export function markup (input?: string) {
 
             // Proceed to first known character
             while (u.ws(b[i])) {
-              i = i + 1;
+              ++i;
               if (u.ns(b[i])) break;
             }
 
@@ -3038,9 +2833,7 @@ export function markup (input?: string) {
      *
      * Next: {@link ParseSpace()} - **BACK TO LEXING**
      */
-    function IgnoreNext (ender: string, type: Token): ReturnType<
-      typeof ParseSpace
-    > {
+    function IgnoreNext (ender: string, type: Token): ReturnType<typeof ParseSpace> {
 
       /**
        * Index from which we will generate a `record.token` for the parse table.
@@ -3153,7 +2946,7 @@ export function markup (input?: string) {
               u.is(b[a - 1], cc.LAN) &&
               source.slice(a, a + tname.length) === tname) {
 
-              n = n + 1;
+              ++n;
 
             } else if (
               u.is(b[a], cc.LAN) &&
@@ -3232,9 +3025,7 @@ export function markup (input?: string) {
      *
      * Next: {@link SVGToken()}
      */
-    function SingletonToken (): ReturnType<
-      typeof SVGToken
-    > {
+    function SingletonToken (): ReturnType<typeof SVGToken> {
 
       if (basic && ignore === false && ltype !== 'xml') {
 
@@ -3276,9 +3067,7 @@ export function markup (input?: string) {
      *
      * Next: {@link LiquidToken()}
      */
-    function SVGToken (): ReturnType<
-      typeof LiquidToken
-    > {
+    function SVGToken (): ReturnType<typeof LiquidToken> {
 
       if (tname === 'svg') {
         svg.start = parse.count + 1;
@@ -3489,11 +3278,7 @@ export function markup (input?: string) {
      * > If the token is not of Liquid type, or then {@link CDATA()} will be next.
      * > If the function falls through, same as non-liquid types {@link CDATA()} will be run.
      */
-    function LiquidToken (): ReturnType<
-      typeof LiquidEncapsulate |
-      typeof LiquidTokenCapture |
-      typeof AttributeToken
-    > {
+    function LiquidToken (): ReturnType<typeof LiquidEncapsulate | typeof LiquidTokenCapture | typeof AttributeToken> {
 
       /* -------------------------------------------- */
       /* LIQUID TOKEN                                 */
@@ -3526,8 +3311,6 @@ export function markup (input?: string) {
             record.types = ltype = 'liquid_start';
 
           } else if (tname === 'capture') {
-
-            a = a + 1;
 
             return LiquidTokenCapture();
 
@@ -3669,54 +3452,58 @@ export function markup (input?: string) {
      *
      * Next: {@link ParseSpace()} - **BACK TO LEXING**
      */
-    function LiquidTokenCapture (): ReturnType<
-      typeof ParseSpace
-    > {
+    function LiquidTokenCapture (): ReturnType<typeof ParseSpace> {
 
-      let i = source.indexOf('capture', a);
+      let i = a;
+      let d = 1;
+      let n = -1;
 
-      if (
-        b[i - 3] === 'e' &&
-        b[i - 2] === 'n' &&
-        b[i - 1] === 'd') {
+      while (i < c) {
 
-        i = b.indexOf('}', i) + 1;
+        const start = source.slice(i).match(/{%-?\s*(?:end)?capture/);
+        if (!start) break;
 
-        record.types = ltype = 'liquid_capture';
-        record.token = token + source.slice(a, i);
-        parse.lineNumber = u.countLines(token, parse.lineNumber);
-
-        push(record);
-
-        a = i;
-
-      } else {
-
-        const x = source.indexOf('endcapture', i + 7) + 9;
-
-        if (x > -1 && /[a-z]/.test(b[x + 1]) === false) {
-
-          i = b.indexOf('}', x) + 1;
-
-          // Consume an ending newline
-          //
-          // In some cases the next character might be a newline
-          // if the occurs, we need to to ensure to include it when
-          // applying the slice.
-          //
-          //
-          token = token + source.slice(a, i);
-          parse.lineNumber = u.countLines(token, parse.lineNumber);
-
-          a = i;
-
-          return LiquidTokenCapture();
-
+        if (/endcapture/.test(start[0])) {
+          n = start.index + start[0].length;
+          i = i + n;
+          break;
         }
 
-        MarkupError(ParseError.MissingLiquidEndTag, token, tname);
+        i = i + start.index + start[0].length;
+        d = 1;
 
+        while (d > 0 && i < c) {
+          n = source.indexOf('{%', i);
+          if (n === -1) break;
+          d += rx.CaptureBegin.test(source.slice(n)) ? 1 : rx.EndCaptureBegin.test(source.slice(n)) ? -1 : 0;
+          i = n + 2;
+        }
+
+        i += 10;
       }
+
+      i = b.indexOf('}', i) + 1;
+
+      // Consume an ending newline
+      //
+      // In some cases the next character might be a newline
+      // if the occurs, we need to to ensure to include it when
+      // applying the slice.
+      //
+      //
+      token += source.slice(a + 1, i);
+
+      if (n < 0) return MarkupError(ParseError.MissingLiquidEndTag, token, tname);
+
+      parse.lineNumber = u.countLines(token, parse.lineNumber);
+
+      push(record, { token, types: 'liquid_capture' });
+
+      a = i;
+
+      ParseSpace();
+
+      // MarkupError(ParseError.MissingLiquidEndTag, token, tname);
 
     }
 
@@ -3739,9 +3526,7 @@ export function markup (input?: string) {
      * > The previous call may not come from `TokenLexer()` but instead, depending
      * > on analysis, the {@link IgnoreDetect()} function might be the previous caller.
      */
-    function LiquidTagToken (): ReturnType<
-      typeof ParseSpace
-    > {
+    function LiquidTagToken (): ReturnType<typeof ParseSpace> {
 
       /** Iterator reference */
       let i = token.indexOf('liquid') + 6;
@@ -3881,7 +3666,7 @@ export function markup (input?: string) {
       } while (++i < nl.length);
 
       if ((
-        rules.liquid.delimiterPlacement === 'newline'
+        rules.liquid.delimiterPlacement === 'newline-multiline'
       ) || (
         rules.liquid.delimiterPlacement === 'preserve' && /\n-?%}$/.test(token)
       ) || (
@@ -3891,7 +3676,8 @@ export function markup (input?: string) {
         push(record, {
           token: delim,
           types: 'liquid_end',
-          lines: 2
+          lines: 2,
+          stack: 'liquid'
         });
 
       } else {
@@ -3899,7 +3685,8 @@ export function markup (input?: string) {
         push(record, {
           token: delim,
           types: 'liquid_end',
-          lines: 0
+          lines: 0,
+          stack: 'liquid'
         });
 
       }
@@ -3920,9 +3707,7 @@ export function markup (input?: string) {
      *
      * Next: {@link AttributeToken()}
      */
-    function CDATA (): ReturnType<
-      typeof AttributeToken
-    > {
+    function CDATA (): ReturnType<typeof AttributeToken> {
 
       if (ltype !== 'cdata') return AttributeToken();
 
@@ -3974,9 +3759,7 @@ export function markup (input?: string) {
      *
      * Next: {@link JSXToken()}
      */
-    function AttributeToken (advance = false): ReturnType<
-      typeof JSXToken
-    > {
+    function AttributeToken (advance = false): ReturnType<typeof JSXToken> {
 
       /* PUSH RECORD -------------------------------- */
 
@@ -4439,6 +4222,7 @@ export function markup (input?: string) {
               case 'lowercase':
                 name = name.toLowerCase();
                 value = value.toLowerCase();
+                attrs[idx][0] = name + '=' + value;
                 break;
               default:
                 attrs[idx][0] = name + '=' + value;
@@ -4508,9 +4292,7 @@ export function markup (input?: string) {
      *
      * Next: {@link ParseSpace()} - **BACK TO LEXING**
      */
-    function JSXToken (): ReturnType<
-      typeof ParseSpace
-    > {
+    function JSXToken (): ReturnType<typeof ParseSpace> {
 
       if (rules.wrap > 0 && jsx === true) {
 
