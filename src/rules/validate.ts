@@ -1,6 +1,7 @@
-import type { GlobalRules, LanguageRuleNames, LiquidRules, MarkupRules, LanguageName } from 'types';
-import { isArray, isBoolean, isNumber, isString } from 'utils/helpers';
+import type { GlobalRules, LanguageName, LanguageRuleNames, LiquidRules, MarkupRules } from 'types';
+
 import { RuleError } from 'parse/errors';
+import { isArray, isBoolean, isNumber, isString } from 'utils/helpers';
 
 /**
  * Is Valid
@@ -76,7 +77,6 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
 
         return isValidArray(language, rule, value);
 
-      case 'argumentFormat':
       case 'lineBreakSeparator':
       case 'lineBreakLogical':
       case 'delimiterPlacement':
@@ -471,27 +471,6 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
           'preserve',
           'consistent',
           'newline-multiline'
-        ]
-      });
-    }
-
-  } else if (rule === 'argumentFormat') {
-
-    switch (value as LiquidRules['argumentFormat']) {
-      case 'preserve':
-      case 'newline':
-      case 'inline':
-      case 'inline-newline': return true;
-      default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
-        provided: value,
-        reference: `/rules/${language}/${rule}/`,
-        expected: [
-          'preserve',
-          'newline',
-          'inline',
-          'inline-newline'
         ]
       });
     }

@@ -1,4 +1,5 @@
 import type { LiquidInternal } from 'types';
+
 import { object } from './native';
 
 /**

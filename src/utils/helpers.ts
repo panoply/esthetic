@@ -1,10 +1,10 @@
-/* eslint-disable no-extend-native */
 import { NIL, NWL, WSP } from 'chars';
-import { LanguageName, LexerName } from 'types/shared';
-import { Stats, MultipleTopLevelPatch } from 'types/index';
-import { getLanguageName } from 'rules/language';
 import { cc } from 'lexical/codes';
 import { WhitespaceChar } from 'lexical/regex';
+import { getLanguageName } from 'rules/language';
+import { MultipleTopLevelPatch, Stats } from 'types/index';
+import { LanguageName, LexerName } from 'types/shared';
+
 import { assign, keys, toString } from './native';
 
 /**
@@ -333,6 +333,23 @@ export function nline (
 }
 
 /**
+ * For Newline
+ *
+ * Iterates over newlines
+ */
+export function forNL (from: number, input: readonly string[]): [count: number, index: number ] {
+
+  let count: number = 0;
+
+  while (is(input[from++], cc.NWL)) {
+    count++;
+  }
+
+  return [ count, from ];
+
+}
+
+/**
  * Word Wrap
  *
  * If first character code is whitespace or tab
@@ -436,6 +453,28 @@ export function isNext (string: string | string[], code: number) {
 export function is (string: string, code: number) {
 
   return string ? string.charCodeAt(0) === code : false;
+
+}
+
+/**
+ * Spread Equal
+ *
+ * If first character code of the string is equal to any of the provided codes.
+ */
+export function or (string: string, ...codes: number[]) {
+
+  return codes.indexOf(string.charCodeAt(0)) > -1;
+
+}
+
+/**
+ * Spread NOT Equal
+ *
+ * If first character code of the string is not equal to any of the provided codes.
+ */
+export function no (string: string, ...codes: number[]) {
+
+  return codes.indexOf(string.charCodeAt(0)) < 0;
 
 }
 
@@ -706,6 +745,15 @@ export function liquidEsc (char: string) {
 export function hasProp (object: object): (prop: string) => boolean {
 
   return (prop: string) => prop in object;
+
+}
+
+/**
+ * Check is input is an empty
+ */
+export function isNil (input: string) {
+
+  return input === NIL;
 
 }
 
