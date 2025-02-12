@@ -1,30 +1,31 @@
 import type {
-  Rules,
+  EventListeners,
+  Grammars,
+  ISettings,
   LanguageName,
   LexerName,
-  Stats,
   ParseHook,
-  EventListeners,
-  ISettings,
-  Grammars,
-  RulePresetNames
+  RulePresetNames,
+  Rules,
+  Stats
 } from 'types';
+
+import { config } from 'config';
+import { Action, Modes } from 'lexical/enum';
+import { detection } from 'parse/detection';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
-import { definitions } from 'rules/definitions';
-import { detection } from 'parse/detection';
 import { setRules } from 'rules/define';
-import { Action, Modes } from 'lexical/enum';
-import { isObject, isUndefined, stats, merge } from 'utils/helpers';
+import { definitions } from 'rules/definitions';
 import { getLexerName, getLexerType } from 'rules/language';
-import { isValidChoice } from 'rules/validate';
-import { config } from 'config';
-import { defineProperties, defineProperty } from 'utils/native';
 import { defaults } from 'rules/presets/default';
-import { warrington } from 'rules/presets/warrington';
-import { strict } from 'rules/presets/strict';
-import { recommended } from 'rules/presets/recommended';
 import { prettier } from 'rules/presets/prettier';
+import { recommended } from 'rules/presets/recommended';
+import { strict } from 'rules/presets/strict';
+import { warrington } from 'rules/presets/warrington';
+import { isValidChoice } from 'rules/validate';
+import { isObject, isUndefined, merge, stats } from 'utils/helpers';
+import { defineProperties, defineProperty } from 'utils/native';
 
 export const esthetic = new class Esthetic {
 
