@@ -184,33 +184,9 @@ export const definitions: Definitions = {
         strict: 0,
         warrington: 100
       }
-    },
-    wrapFraction: {
-      default: 0,
-      description: 'Wrap fraction is used on internal structures as a secondary point of control. By default, it will use a 75% metric according to `wrap` defined values.',
-      type: 'number',
-      preset: {
-        default: 0,
-        prettier: 80,
-        recommended: 80,
-        strict: 80,
-        warrington: 0
-      }
     }
   },
   liquid: {
-    commentNewline: {
-      default: false,
-      description: 'If a blank new line should be forced above comments.',
-      type: 'boolean',
-      preset: {
-        default: false,
-        prettier: true,
-        recommended: true,
-        strict: true,
-        warrington: true
-      }
-    },
     commentIndent: {
       default: false,
       description: 'This will determine whether comments should always start at position 0 of each line or if comments should be indented according to the code.',
@@ -544,18 +520,6 @@ export const definitions: Definitions = {
         recommended: 'preserve',
         strict: 'force',
         warrington: 'consistent'
-      }
-    },
-    commentNewline: {
-      default: false,
-      description: 'If a blank new line should be forced above comments.',
-      type: 'boolean',
-      preset: {
-        default: false,
-        prettier: false,
-        recommended: true,
-        strict: true,
-        warrington: false
       }
     },
     commentIndent: {
