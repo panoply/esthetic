@@ -1,5 +1,5 @@
+import { css, forAssert, forSample, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forAssert, forSample, css, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test: CSS variable expressions with Liquid infusion', t => {

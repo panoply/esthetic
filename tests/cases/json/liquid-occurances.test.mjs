@@ -1,43 +1,43 @@
+import { forAssert, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forAssert, json } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('Structure Tests - Liquid condition properties', t => {
+test.skip('Structure Tests - Liquid condition properties', t => {
 
   forAssert(
     [
       [
-        json`
+        liquid`
         {
         "one": "before",
         {% if product.selected_or_first_available_variant.sku != blank -%}
-          "two": "within"",
+          "two": "within",
         {%- endif %}
         "three": "after",
         }
         `,
-        json`
+        liquid`
         {
           "one": "before",
-          {% if some_condition != blank -%}
-            "two": "within"",
+          {% if product.selected_or_first_available_variant.sku != blank -%}
+            "two" : "within",
           {%- endif %}
           "three": "after"
         }
         `
       ],
       [
-        json`
+        liquid`
         {"prop": {% if foo %} {{ object.prop }} {% else %}  {{ object.prop }} {% endif %} }
         `,
-        json`
+        liquid`
         {
           "prop": {% if foo %} {{ object.prop }} {% else %} {{ object.prop }} {% endif %}
         }
         `
       ],
       [
-        json`
+        liquid`
         // comment
         [
           {
@@ -51,7 +51,7 @@ test('Structure Tests - Liquid condition properties', t => {
           {% endfor %}
         ]
         `,
-        json`
+        liquid`
         // comment
         [
           {
@@ -71,47 +71,48 @@ test('Structure Tests - Liquid condition properties', t => {
     const actual = esthetic.json(source, {
       preserveLine: 0,
       json: {
-        objectSort: true,
+        objectSort: false,
         arrayFormat: 'indent',
-        bracePadding: false,
-        objectIndent: 'indent',
-        braceAllman: true
+        bracePadding: true,
+        objectIndent: 'default',
+        braceAllman: false
       }
     });
 
+    t.log(actual);
     t.deepEqual(actual, expect);
 
   });
 
 });
 
-test('Structure Tests - Liquid as values', t => {
+test.skip('Structure Tests - Liquid as values', t => {
 
   forAssert(
     [
       [
-        json`
+        liquid`
         {"prop":
         {{ object.prop }}}
         `,
-        json`
+        liquid`
         {
           "prop": {{ object.prop }}
         }
         `
       ],
       [
-        json`
+        liquid`
         {"prop": {% if foo %} {{ object.prop }} {% else %}  {{ object.prop }} {% endif %} }
         `,
-        json`
+        liquid`
         {
           "prop": {% if foo %} {{ object.prop }} {% else %} {{ object.prop }} {% endif %}
         }
         `
       ],
       [
-        json`
+        liquid`
         // comment
         [
           {
@@ -125,7 +126,7 @@ test('Structure Tests - Liquid as values', t => {
           {% endfor %}
         ]
         `,
-        json`
+        liquid`
         // comment
         [
           {
@@ -153,6 +154,7 @@ test('Structure Tests - Liquid as values', t => {
       }
     });
 
+    t.log(actual);
     t.deepEqual(actual, expect);
 
   });

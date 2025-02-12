@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, json } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Structure Tests - Liquid in JSON string occurances', t => {
