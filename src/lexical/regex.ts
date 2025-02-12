@@ -516,6 +516,36 @@ export const CommIgnoreEnd = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!-{2}|#)\s*es
 export const CommIgnoreNext = /(\/[*/]|{%-?\s*(?:comment\s*-?%}|#)|<!--)\s*esthetic-ignore-next\b/;
 
 /**
+ * Liquid endcapture tag
+ *
+ * ---
+ *
+ * @example /{%-?\s*endcapture/
+ *
+ */
+export const Capture = /{%-?\s*capture/;
+
+/**
+ * Liquid capture tag
+ *
+ * ---
+ *
+ * @example /^{%-?\s*capture\s+/
+ *
+ */
+export const CaptureBegin = /^{%-?\s*capture\s+/;
+
+/**
+ * Liquid endcapture tag begin ^
+ *
+ * ---
+ *
+ * @example /^{%-?\s*endcapture/
+ *
+ */
+export const EndCaptureBegin = /^{%-?\s*endcapture/;
+
+/**
  * Captures list item occurance of a bullet point character
  *
  * ---
