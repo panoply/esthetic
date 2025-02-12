@@ -1,5 +1,6 @@
 import { LiteralUnion } from 'type-fest';
 import { EmbeddedLiquid } from 'types/misc/grammar';
+
 import { JSONRules } from './json';
 
 export interface LiquidRules {
@@ -23,61 +24,6 @@ export interface LiquidRules {
    *
    */
   argumentLineBreak?: number;
-  /**
-   * #### Default: `default`
-   *
-   * >
-   *
-   * #### [Argument Format](https://aesthetic.js.org/rules/liquid/argumentFormat)
-   *
-   * Controls the formatting tactic applied to argument expression. Arguments refer to value
-   * expressions passed to tag parameters and/or filters. The rule takes effect in accordance with
-   * `argumentLineBreak` and/or word `wrap` settings. By default, Æsthetic will use the `argumentLineBreak`
-   * value as a determination reference.
-   *
-   * #### What are arguments?
-   *
-   * > ```liquid
-   * > {% # 'foo' and 'bar' are arguments %}
-   * > {{ x | filter: 'foo', 'bar' }}
-   * >
-   * > {% # foo is the argument %}
-   * > {% render 'file', param: foo %}
-   * > ```
-   *
-   * ---
-   *
-   * >
-   *
-   * #### Options
-   *
-   * The rule accepts one of the following options be provided and defaults to using `default`.
-   *
-   * > `inline-newline`
-   *
-   * > Applies a horizontal inline stacking style. Arguments will remain inline until wrap limit
-   * > and then apply line break.
-   *
-   * > `preserve`
-   *
-   * > Line arguments are preserved. This option will not resepect wrap limit.
-   *
-   * > `newline`
-   *
-   * > All arguments are applied on a newline. This option will replicate the Shopify liquid-prettier plugin
-   * > behaviour. Æsthetic urges developers to choose a different option opposed to using the prettier style.
-   *
-   * > `inline`
-   *
-   * > All arguments are applied inline, line breaks occurs at wrap limit or according to
-   * > argument linebreak.
-   */
-  argumentFormat?: LiteralUnion<
-  | 'preserve'
-  | 'newline'
-  | 'inline'
-  | 'inline-newline', string>;
-
   /**
    * #### Default: `true`
    *
@@ -215,11 +161,6 @@ export interface LiquidRules {
    * > Ensures that opening and closing delimiters are placed on the same line as the token internal
    * > expression and will strip any newline occurances before (or after) delimiters.
    *
-   * > `newline`
-   *
-   * > Both opening and closing delimiters will be forced onto newlines. This option is made avaiable for
-   * > very unique and specific use cases. It is **highly unlikely** you'd want to use this option.
-   *
    * > `newline-multiline`
    *
    * > Forces both the opening and closing delimiters onto newlines when the internal structure of the
@@ -242,7 +183,7 @@ export interface LiquidRules {
    * (i.e, pipe prefixed `|` expressions). By default, this is set to `0` which signals to Æsthetic
    * to apply newline breaks based on the global word `wrap` limit. If you prefer to determine line
    * breaks on a per-token occurance, provide a boolean `true` value. A value of `true` tells Æsthetic
-   * to use a preservational handling approach and format in according to the input structure.
+   * to use a preservational handling approach and format according to the input structure.
    *
    * >
    *

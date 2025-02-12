@@ -646,6 +646,34 @@ export enum LiquidTypes {
    * {% endcomment %}
    */
   liquid_comment_end = 'liquid_comment_end',
+  /**
+   * Represent a Liquid {% liquid tag
+   *
+   * ---
+   * @example
+   *
+   * {% liquid
+   */
+  liquid_liquid_start = 'liquid_tag',
+  /**
+   * Liquid tag which is empty (no name)
+   *
+   * ---
+   * @example
+   *
+   * {% %}
+   * {%- -%}
+   */
+  liquid_empty = 'liquid_empty',
+  /**
+   * Represent a Liquid (liquid) tag ending delimiter
+   *
+   * ---
+   * @example
+   *
+   * %}
+   */
+  liquid_liquid_end= 'liquid_tag',
 }
 
 /**

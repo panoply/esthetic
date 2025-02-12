@@ -26,7 +26,7 @@ export interface MarkupRules {
    *
    * - `preserve`
    * - `consistent`
-   * - `force`
+   * - `newline`
    * - `inline`
    * - `inline-align`
    *
