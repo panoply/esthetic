@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Hard Attribute Force: Forcing all attributes onto newlines', t => {
@@ -44,7 +44,7 @@ test('Hard Attribute Force: Forcing all attributes onto newlines', t => {
         <div
           id="foo"
           {% if condition %}
-          data-id="xx"
+            data-id="xx"
           {% endif %}
           class="foo bar baz"></div>
         `
@@ -66,7 +66,7 @@ test('Hard Attribute Force: Forcing all attributes onto newlines', t => {
           <div
             id="foo"
             {% if condition %}
-            data-id="xx"
+              data-id="xx"
             {% endif %}
             class="foo bar baz"></div>
         </div>
@@ -119,8 +119,9 @@ test('Limit Attribute Force: Forcing attributes onto newlines when limit is exce
         <div
           id="foo"
           {% if condition %}
-          data-id="xx"
-          {% endif %} class="foo bar baz"></div>
+            data-id="xx"
+          {% endif %}
+          class="foo bar baz"></div>
         `
       ],
       [
@@ -134,8 +135,9 @@ test('Limit Attribute Force: Forcing attributes onto newlines when limit is exce
           <div
             id="foo"
             {% if condition %}
-            data-id="xx"
-            {% endif %} class="foo bar baz"></div>
+              data-id="xx"
+            {% endif %}
+            class="foo bar baz"></div>
         </div>
         `
       ]

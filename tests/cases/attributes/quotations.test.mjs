@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forRule, liquid } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Quote conversion within values', t => {

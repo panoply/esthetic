@@ -1,114 +1,172 @@
+import { forAssert, forRule, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forRule, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Indenting attributes contained in Liquid block tags', t => {
 
-  forRule(
+  forAssert(
     [
-      liquid`
+      [
+        liquid`
+          {% # Indenting controls %}
 
-      {% # Indenting controls %}
+          <div>
 
-      <div>
+          <main
 
-      <main
+          class="x"
+          id="indentation"
 
-      class="x"
-      id="indentation"
+          {% if condition_1 %}
+          data-a="1"
+          data-b="2"
+          {% else %}
+          data-c="3"
+          data-d="4"
+          {% endif %}
+          data-e="5"
+          data-f="6"
 
-      {% if condition_1 %}
-      data-a="1"
-      data-b="2"
-      {% else %}
-      data-c="3"
-      data-d="4"
-      {% endif %}
-      data-e="5"
-      data-f="6"
+          {% unless xxx %}
+          data-g="7"
+          data-h="8"
+          {% endunless %}
 
-      {% unless xxx %}
-      data-g="7"
-      data-h="8"
-      {% endunless %}
+          >
 
-      >
+          Hello World
 
-      Hello World
+          </main>
 
-      </main>
+          </div>
+        `
+        ,
+        liquid`
+        {% # Indenting controls %}
 
-      </div>`
-      ,
+        <div>
 
-      liquid`
+          <main
+            class="x"
+            id="indentation"
+            {% if condition_1 %}
+              data-a="1"
+              data-b="2"
+            {% else %}
+              data-c="3"
+              data-d="4"
+            {% endif %}
+            data-e="5"
+            data-f="6"
+            {% unless xxx %}
+              data-g="7"
+              data-h="8"
+            {% endunless %}>
 
-      {% # Deeply nested indentations %}
+            Hello World
 
-      <div>
+          </main>
 
-      <main
+        </div>
+        `
+      ],
+      [
+        liquid`
+          {% # Deeply nested indentations %}
 
-      class="x"
-      id="indentation"
+          <div>
 
-      {% if level_1 %}
-      data-a="1"
-      data-b="2"
-      {% else %}
+          <main
 
-      data-c="3"
-      data-d="4"
+          class="x"
+          id="indentation"
 
-      {% if level_2 %}
-      data-e="5"
-      data-f="6"
+          {% if level_1 %}
+          data-a="1"
+          data-b="2"
+          {% else %}
 
-      {% unless level_3 %}
-      data-g="7"
-      data-h="8"
+          data-c="3"
+          data-d="4"
 
-      {% for i in level_4 %}
+          {% if level_2 %}
+          data-e="5"
+          data-f="6"
 
-      data-i="{{ i }}"
+          {% unless level_3 %}
+          data-g="7"
+          data-h="8"
 
-      {% endfor %}
+          {% for i in level_4 %}
 
-      {% endunless %}
+          data-i="{{ i }}"
 
-      {% endif %}
+          {% endfor %}
 
-      {% endif %}
+          {% endunless %}
+
+          {% endif %}
+
+          {% endif %}
 
 
 
-      >
+          >
 
-      Hello World
+          Hello World
 
-      </main>
+          </main>
 
-      </div>`
+          </div>
+        `,
+        liquid`
+        {% # Deeply nested indentations %}
+
+        <div>
+
+          <main
+            class="x"
+            id="indentation"
+            {% if level_1 %}
+              data-a="1"
+              data-b="2"
+            {% else %}
+              data-c="3"
+              data-d="4"
+              {% if level_2 %}
+                data-e="5"
+                data-f="6"
+                {% unless level_3 %}
+                  data-g="7"
+                  data-h="8"
+                  {% for i in level_4 %}
+                    data-i="{{ i }}"
+                  {% endfor %}
+                {% endunless %}
+              {% endif %}
+            {% endif %}>
+
+            Hello World
+
+          </main>
+
+        </div>
+        `
+      ]
     ]
-  )(
-    [
-      {
-        language: 'liquid',
-        liquid: {
-          indentAttributes: true
-        },
-        markup: {
-          attributeLineBreak: true
-        }
+  )(function (source, expect) {
+
+    const actual = esthetic.format(source, {
+      language: 'liquid',
+      liquid: {
+        indentAttribute: true
+      },
+      markup: {
+        attributeLineBreak: true
       }
-    ]
-  )(function (source, rules, label) {
+    });
 
-    const snapshot = esthetic.format(source, rules);
-
-    // t.log(snapshot);
-
-    t.snapshot(snapshot, label);
+    t.deepEqual(actual, expect);
 
   });
 });
