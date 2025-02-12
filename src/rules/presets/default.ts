@@ -19,7 +19,6 @@ export const defaults: Rules = {
   wrap: 0,
   liquid: {
     argumentLineBreak: 0,
-    argumentFormat: 'inline-newline',
     commentIndent: true,
     commentPreserve: false,
     delimiterTrims: 'preserve',
@@ -27,7 +26,7 @@ export const defaults: Rules = {
     equipoiseSpacing: true,
     filterLineBreak: 0,
     forceIndent: false,
-    indentAttribute: false,
+    indentAttribute: true,
     lineBreakSeparator: 'before',
     lineBreakLogical: 'before',
     paddedTagList: [],

@@ -1,5 +1,6 @@
-import { merge } from 'utils/helpers';
 import { Rules } from 'types';
+import { merge } from 'utils/helpers';
+
 import { defaults } from './default';
 
 /**
