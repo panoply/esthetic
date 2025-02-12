@@ -1,11 +1,12 @@
 import type { Types } from 'types/index';
-import { is, isLast, not } from 'utils/helpers';
+
 import { NIL, WSP } from 'chars';
 import { cc } from 'lexical/codes';
+import { Action } from 'lexical/enum';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
+import { is, isLast, not } from 'utils/helpers';
 import { object } from 'utils/native';
-import { Action } from 'lexical/enum';
 
 export function style () {
 
