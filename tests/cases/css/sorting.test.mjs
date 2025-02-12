@@ -1,5 +1,5 @@
-import test from 'ava';
 import { css, forAssert } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Sorting selector names', t => {

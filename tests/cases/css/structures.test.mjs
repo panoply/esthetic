@@ -1,5 +1,5 @@
+import { css, forAssert, forSample } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forAssert, forSample, css } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test: Attribute selectors expressions', t => {
