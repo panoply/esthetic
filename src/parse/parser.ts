@@ -1,31 +1,33 @@
 /* eslint no-unmodified-loop-condition: "off" */
 import type {
-  LanguageName,
-  Syntactic,
-  ParseStack,
-  StackItem,
   Data,
+  Hooks,
+  LanguageName,
+  LexerName,
+  ParseStack,
   Record,
+  Rules,
   Spacer,
   Splice,
-  LexerName,
-  Rules,
-  Hooks
+  StackItem,
+  Syntactic
 } from 'types';
-import { lexers } from 'lexers';
-import { format } from 'format';
-import { Languages, Lexers, Modes, Action } from 'lexical/enum';
-import * as rx from 'lexical/regex';
+
 import { NIL, NWL } from 'chars';
+import { config } from 'config';
+import { format } from 'format';
+import { lexers } from 'lexers';
+import { cc } from 'lexical/codes';
+import { Action, Languages, Lexers, Modes } from 'lexical/enum';
+import { ParseError } from 'lexical/errors';
+import * as rx from 'lexical/regex';
+import { SyntacticError } from 'parse/errors';
 import { getLexerName, getLexerType } from 'rules/language';
 import { defaults } from 'rules/presets/default';
-import { is, isString, ns, getTagName, merge } from 'utils/helpers';
-import { SyntacticError } from 'parse/errors';
-import { ParseError } from 'lexical/errors';
-import { config } from 'config';
-import { cc } from 'lexical/codes';
-import { grammar } from './grammar';
+import { getTagName, is, isString, merge, ns } from 'utils/helpers';
 import { object } from 'utils/native';
+
+import { grammar } from './grammar';
 
 /**
  * Parse Stack
@@ -290,7 +292,7 @@ class Parser {
    *
    * Where `foo` is `0` as it exists on line `1` but `bar` is `2` because
    * it counts line `1` as a single line and given it exists on line `2`
-   * another line offset increment is applies. The word `baz` is similar to
+   * another line offset increment is applied. The word `baz` is similar to
    * `bar` but has a count of `3` given a newline exists above it and this
    * pattern follows as we progress to `qux` which has 2 newlines, equating
    * to a value line offset of `4` whereas `xxx` only has `2` so on and so forth.
