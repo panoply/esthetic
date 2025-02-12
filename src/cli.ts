@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import mm from 'minimist';
 import { run } from 'cli/run';
+import mm from 'minimist';
 
 (async () => await run(
   mm(process.argv.slice(1), {
