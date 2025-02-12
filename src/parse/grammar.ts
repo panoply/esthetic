@@ -1,6 +1,6 @@
-import { cc } from 'lexical/codes';
-import type { Grammars, EmbeddedHTML, EmbeddedLiquid, LanguageName } from 'types';
-import { is, isArray, isObject, isRegex } from 'utils/helpers';
+import type { EmbeddedHTML, EmbeddedLiquid, Grammars, LanguageName } from 'types';
+
+import { isArray, isObject, isRegex } from 'utils/helpers';
 import { set } from 'utils/native';
 
 /* -------------------------------------------- */
