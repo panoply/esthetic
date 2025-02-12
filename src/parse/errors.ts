@@ -1,10 +1,11 @@
 import type { IParseError, Syntactic } from 'types';
-import { parse } from 'parse/parser';
-import { NIL, NWL, WSP } from 'lexical/chars';
-import { isUndefined, join, getTagName, glue } from 'utils/helpers';
-import { getLanguageName } from 'rules/language';
-import { ParseError } from 'lexical/errors';
+
 import { config } from 'config';
+import { NIL, NWL, WSP } from 'lexical/chars';
+import { ParseError } from 'lexical/errors';
+import { parse } from 'parse/parser';
+import { getLanguageName } from 'rules/language';
+import { getTagName, glue, isUndefined, join } from 'utils/helpers';
 
 function ErrorLocation (error: IParseError) {
 
@@ -261,8 +262,8 @@ function getSampleSnippet (line = parse.lineNumber) {
   let no: number = ender - 1;
   let prev: string = '';
 
-  if (input.length > 2) no = ender - 3;
-  if (input.length === 2) no = ender - 2;
+  if (input.length > 3) no = ender - 3;
+  if (input.length > 2) no = ender - 2;
 
   do {
 
@@ -271,7 +272,7 @@ function getSampleSnippet (line = parse.lineNumber) {
       ? config.logColors ? ` \x1b[90m${num} |` : ` ${num} |`
       : config.logColors ? `\x1b[90m${num} |` : `${num} |`;
 
-    const token = input[no].trim();
+    const token = (input[no] || '').trim();
 
     if (no > ender) break;
 
@@ -470,6 +471,14 @@ function message (code: ParseError, token: string, lineNo: number = parse.lineNu
       message: ansi(`Syntax Error (line ${lineNo}): Invalid character sequence in "${token}" token`),
       details: ansi(
         'An invalid sequence of characters defined'
+      )
+    }),
+    [ParseError.LiquidCommentDelimiterMismatch]: ({
+      code,
+      message: ansi(`Syntax Error (line ${lineNo}): Liquid comment delimiter mismatch determined`),
+      details: ansi(
+        'There is an unterminated Liquid tag contained in the Liquid comment resulting in delimiter mismatch.',
+        'The Liquid comment cannot be terminated because due to missing "%}" delimiter sequence.'
       )
     }),
     [ParseError.UnterminatedString]: ({
