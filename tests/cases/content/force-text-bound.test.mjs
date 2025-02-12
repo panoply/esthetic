@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, html } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Text content force structure rulesets', t => {
@@ -26,19 +26,19 @@ test('Text content force structure rulesets', t => {
       `,
       html`
       hello world lorem ipsum
-      <div id="r"class="v">
+      <div id="r" class="v">
         bar
-        <span id="c"class="d">
+        <span id="c" class="d">
           baz hello world
         </span>
         lorem ipsum
-        <div id="a"class="b">
+        <div id="a" class="b">
           yoo
         </div>
         qux
       </div>
       qux
-      <div id="r"class="v">
+      <div id="r" class="v">
         hello
       </div>
 

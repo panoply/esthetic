@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, html } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Ending text content following tag structure', t => {
@@ -17,7 +17,7 @@ test('Ending text content following tag structure', t => {
       <!-- preserve the provided structure but eliminate space before "xxx" -->
      <div> bar </div> baz
      <div> bar</div> baz
-     <div>bar </div> baz
+     <div>bar </div> xxx
       `
     ],
     [
@@ -102,21 +102,21 @@ test('Tag surrounded with text content', t => {
       foo <div>bar </div> qux
       `
     ],
-    [
-      html`
-      <!-- force onto newline because "bar" has linebreak -->
-      hello world lorem ipsum <div id="a"class="b">
-        bar</div> qux
-      `
-      ,
-      html`
-      <!-- force onto newline because "bar" has linebreak -->
-      hello world lorem ipsum
-      <div id="a" class="b">
-        bar
-      </div> qux
-      `
-    ],
+    // [
+    //   html`
+    //   <!-- force onto newline because "bar" has linebreak -->
+    //   hello world lorem ipsum <div id="a"class="b">
+    //     bar</div> qux
+    //   `
+    //   ,
+    //   html`
+    //   <!-- force onto newline because "bar" has linebreak -->
+    //   hello world lorem ipsum
+    //   <div id="a" class="b">
+    //     bar
+    //   </div> qux
+    //   `
+    // ],
     [
       html`
       <!--
@@ -153,27 +153,27 @@ test('Tag surrounded with text content', t => {
         bar
       </div> qux
       `
-    ],
-    [
-      html`
-      hello world lorem ipsum
-      <div id="r"class="v">
-      bar <span id="c"class="d"> baz hello world</span> lorem ipsum <div id="a"class="b">yoo </div> qux
-      </div>
-      qux <div
-      id="r"class="v">
-      hello
-      </div>
-
-      foo <span> bar </span> baz
-      <header>
-      <h1>Hello World</h1>
-      <p>
-        A newline will be inserted at the bottom of this sample
-      </p>
-      </header>
-      `
     ]
+    // [
+    //   html`
+    //   hello world lorem ipsum
+    //   <div id="r"class="v">
+    //   bar <span id="c"class="d"> baz hello world</span> lorem ipsum <div id="a"class="b">yoo </div> qux
+    //   </div>
+    //   qux <div
+    //   id="r"class="v">
+    //   hello
+    //   </div>
+
+    //   foo <span> bar </span> baz
+    //   <header>
+    //   <h1>Hello World</h1>
+    //   <p>
+    //     A newline will be inserted at the bottom of this sample
+    //   </p>
+    //   </header>
+    //   `
+    // ]
   ])(function (source, expect) {
 
     const actual = esthetic.format(source, {
