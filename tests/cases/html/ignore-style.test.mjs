@@ -1,5 +1,5 @@
+import { forAssert, html } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { html, forAssert } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('HTML <style> ignoreCSS Rule - Forced Structures', t => {
@@ -102,7 +102,7 @@ test('HTML <style> ignoreCSS Rule - Forced Structures', t => {
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         ignoreJS: true,
         ignoreCSS: true
       }
@@ -224,7 +224,7 @@ test('HTML <style> ignoreCSS Rule - Forced when inline', t => {
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         ignoreCSS: true
       }
     });
@@ -275,7 +275,7 @@ test('HTML <style> ignoreCSS Rule - Handle attributes, forcing when inline', t =
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         ignoreCSS: true
       }
     });
@@ -388,7 +388,7 @@ test('HTML <style> ignoreCSS Rule - Different structures, newlines and nesting',
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         ignoreCSS: true
       }
     });

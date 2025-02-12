@@ -1,5 +1,5 @@
+import { forAssert, html } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { html, forAssert } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('HTML Comment Delimiters (no newlines) - Preserve option', t => {
@@ -56,8 +56,7 @@ test('HTML Comment Delimiters (no newlines) - Preserve option', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentDelimiters: 'preserve',
-        commentNewline: false
+        commentDelimiter: 'preserve'
       }
     });
 
@@ -125,8 +124,7 @@ test('HTML Comment Delimiters (no newlines) - Force option', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentDelimiters: 'force',
-        commentNewline: false
+        commentDelimiter: 'newline'
       }
     });
 
@@ -182,8 +180,7 @@ test('HTML Comment Delimiters (no newlines) - Inline option', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentDelimiters: 'inline',
-        commentNewline: false
+        commentDelimiter: 'inline'
       }
     });
 
@@ -243,8 +240,7 @@ test('HTML Comment Delimiters (no newlines) - Consistent option', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentDelimiters: 'consistent',
-        commentNewline: false
+        commentDelimiter: 'consistent'
       }
     });
 
@@ -328,8 +324,7 @@ test('HTML Comment Delimiters (multiline) - Consistent option', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentDelimiters: 'consistent',
-        commentNewline: false
+        commentDelimiter: 'consistent'
       }
     });
 
@@ -339,7 +334,7 @@ test('HTML Comment Delimiters (multiline) - Consistent option', t => {
 
 });
 
-test('HTML Comment Delimiters (multiline) - Force option', t => {
+test('HTML Comment Delimiters (multiline) - Newline option', t => {
 
   forAssert(
     [
@@ -417,8 +412,8 @@ test('HTML Comment Delimiters (multiline) - Force option', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentDelimiters: 'force',
-        commentNewline: false
+        commentDelimiter: 'newline'
+
       }
     });
 
@@ -472,8 +467,7 @@ test('HTML Comment Delimiters (multiline) - Inline Align option', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       markup: {
-        commentDelimiters: 'inline-align',
-        commentNewline: false
+        commentDelimiter: 'inline-align'
       }
     });
 

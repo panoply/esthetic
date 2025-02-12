@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, forSample, liquid } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Structure Test: singleton <path>', t => {
@@ -81,7 +81,7 @@ test('Structure Test: singleton <path>', t => {
     {
       language: 'liquid',
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: false
       }
     }
@@ -136,7 +136,7 @@ test('Structure Test: singleton <circle>', t => {
     {
       language: 'liquid',
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: false
       }
     }
@@ -174,7 +174,7 @@ test('Structure Test: singleton <use>', t => {
     {
       language: 'liquid',
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: false
       }
     }
@@ -220,7 +220,7 @@ test('Structure Test: singleton <polygon>', t => {
     {
       language: 'liquid',
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: false
       }
     }
@@ -280,7 +280,7 @@ test('Structure Test: singleton <polyline>', t => {
     {
       language: 'liquid',
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: false
       }
     }
@@ -336,7 +336,7 @@ test('Structure Test: singleton <rect>', t => {
     {
       language: 'liquid',
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: false
       }
     }
@@ -392,7 +392,7 @@ test('Structure Test: singleton <ellipse>', t => {
     {
       language: 'liquid',
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: false
       }
     }
@@ -438,7 +438,7 @@ test('Structure Test: singleton <stop>', t => {
     {
       language: 'liquid',
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: false
       }
     }
@@ -486,7 +486,7 @@ test('Convert and correct singletons to self closing tokens', t => {
       language: 'liquid',
       correct: true,
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         selfCloseSVG: true
       }
     });

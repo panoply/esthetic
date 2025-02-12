@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, html } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('HTML Force Indent: Nested ul > li structures', t => {

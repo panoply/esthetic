@@ -1,5 +1,5 @@
+import { forAssert, html } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { html, forAssert } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('HTML <script> ignoreJS Rule - Forced Structures', t => {
@@ -92,7 +92,7 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         forceIndent: true,
         ignoreJS: true
       }
@@ -219,7 +219,7 @@ test('HTML <script> ignoreJS Rule - Forced when inline', t => {
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         ignoreJS: true
       }
     });
@@ -270,7 +270,7 @@ test('HTML <script> ignoreJS Rule - Handle attributes, forcing when inline', t =
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         ignoreJS: true
       }
     });
@@ -409,7 +409,7 @@ test('HTML <script> ignoreJS Rule - Different structures, newlines and nesting',
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         ignoreJS: true
       }
     });
@@ -496,7 +496,7 @@ test('HTML <script> ignoreJSON Rule - Preserve JSON but format JavaScript', t =>
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: true,
+        attributeLineBreak: true,
         ignoreJS: false,
         ignoreJSON: true
       }
@@ -579,7 +579,7 @@ test('HTML <script> ignoreJSON Rule - Preserve JS but format JSON', t => {
       language: 'html',
       indentSize: 2,
       markup: {
-        forceAttribute: false,
+        attributeLineBreak: false,
         ignoreJS: true,
         ignoreJSON: false
       }

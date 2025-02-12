@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, html } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('HTML Indentation: Implied basic structures', t => {
@@ -244,9 +244,7 @@ test('HTML Indentation: Implied complex structures', t => {
         <section>
         <div>
         <p id="foo bar baz qux xxx foo bar baz xxx qux" class="xxx">
-        Lorem ipsum, dolor sit amet consectet adipisicing elit. Facilis quasi corrupti ipsam impedit nostrum odio, nulla accusantium repellat officiis voluptate similique aut sint reiciendis totam, aliquid, voluptatum qui consequuntur placeat!
-
-        repellat officiis voluptate similique aut sint reiciendis totam, aliquid, voluptatum qui consequuntur placeat!
+        Lorem ipsum, dolor sit amet consectet adipisicing elit. Facilis quasi corrupti ipsam impedit nostrum odio, nulla accusantium repellat officiis voluptate similique aut sint reiciendis totam, aliquid, voluptatum qui consequuntur placeat! repellat officiis voluptate similique aut sint reiciendis totam, aliquid, voluptatum qui consequuntur placeat!
         </p>
         <main>
         <ul>
@@ -287,9 +285,7 @@ test('HTML Indentation: Implied complex structures', t => {
         <section>
           <div>
             <p id="foo bar baz qux xxx foo bar baz xxx qux" class="xxx">
-              Lorem ipsum, dolor sit amet consectet adipisicing elit. Facilis quasi corrupti ipsam impedit nostrum odio, nulla accusantium repellat officiis voluptate similique aut sint reiciendis totam, aliquid, voluptatum qui consequuntur placeat!
-
-              repellat officiis voluptate similique aut sint reiciendis totam, aliquid, voluptatum qui consequuntur placeat!
+              Lorem ipsum, dolor sit amet consectet adipisicing elit. Facilis quasi corrupti ipsam impedit nostrum odio, nulla accusantium repellat officiis voluptate similique aut sint reiciendis totam, aliquid, voluptatum qui consequuntur placeat! repellat officiis voluptate similique aut sint reiciendis totam, aliquid, voluptatum qui consequuntur placeat!
             </p>
             <main>
               <ul>
@@ -328,7 +324,9 @@ test('HTML Indentation: Implied complex structures', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format(source, { language: 'html' });
+    const actual = esthetic.format(source, {
+      language: 'html'
+    });
 
     t.deepEqual(actual, expect);
 

@@ -1,5 +1,5 @@
+import { forAssert, forSample, html } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forSample, forAssert, html } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('HTML Ignore Comment Region - Various structure tests', t => {

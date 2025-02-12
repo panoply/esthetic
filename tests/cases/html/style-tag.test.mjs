@@ -1,5 +1,5 @@
+import { forAssert, forSample, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forAssert, liquid, forSample } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test: Empty <style> tags', t => {
@@ -145,7 +145,7 @@ test('Structure Test: Empty <style> tags', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       markup: {
-        forceAttribute: 2,
+        attributeLineBreak: 2,
         ignoreJS: false,
         ignoreJSON: false
       }
@@ -290,7 +290,7 @@ test('Structure Test: Newline Preservation and indentation levels', t => {
       classPadding: true
     },
     markup: {
-      forceAttribute: 2,
+      attributeLineBreak: 2,
       ignoreCSS: false
     }
   })(function (source, rules) {

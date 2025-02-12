@@ -1,5 +1,5 @@
+import { forAssert, forRule, html } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forRule, forAssert, html } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('HTML Preserve Text - Free range structures', t => {
@@ -195,9 +195,7 @@ test('HTML Preserve Text - Nested within tags', t => {
       language: 'html',
       preserveLine: 3,
       markup: {
-        commentNewline: false,
-        preserveText: true
-
+        textPreserve: true
       }
     });
 
