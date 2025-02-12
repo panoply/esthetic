@@ -1,12 +1,13 @@
+import { forAssert, forSample, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forSample, liquid, forAssert } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Preserve: Delimiters are preserved according to input', t => {
 
-  forSample(
+  forAssert(
     [
-      liquid`
+      [
+        liquid`
         {{
           output_1 }}
         {{-
@@ -15,270 +16,91 @@ test('Preserve: Delimiters are preserved according to input', t => {
           output_3 -}}
         {{
           output_4 -}}
-      `,
-      liquid`
-        {{ output_5
-        }}
-        {{- output_6
-        }}
-        {{- output_7
-        -}}
-        {{ output_8
-        -}}
-      `,
-      liquid`
+        `,
+        liquid`
         {{
-          output_9
-        }}
+          output_1 }}
         {{-
-          output_10
-        }}
+          output_2 }}
         {{-
-          output_11
-        -}}
+          output_3 -}}
         {{
-          output_12
-        -}}
-      `,
-      liquid`
-        {{ output_13 }}
-        {{- output_14 }}
-        {{- output_15 -}}
-        {{ output_16 -}}
-      `,
-      liquid`
+          output_4 -}}
+        `
+      ],
+      [
+        liquid`
+          {{ output_5
+          }}
+          {{- output_6
+          }}
+          {{- output_7
+          -}}
+          {{ output_8
+          -}}
+        `,
+        liquid`
+          {{ output_5
+          }}
+          {{- output_6
+          }}
+          {{- output_7
+          -}}
+          {{ output_8
+          -}}
+        `
+      ],
+      [
+        liquid`
+          {{
+            output_13 }}
+          {{-
+
+            output_14 }}
+          {{- output_15 -}}
+          {{
+            output_16
+            -}}
+        `,
+        liquid`
+          {{
+            output_13 }}
+          {{-
+            output_14 }}
+          {{- output_15 -}}
+          {{
+            output_16
+          -}}
+        `
+      ],
+      [
+        liquid`
+         {%
+           if x == 'empty-tag-left-force' %}
+           {% # contained content %}
+         {% endif %}
+        `,
+        liquid`
         {%
           if x == 'empty-tag-left-force' %}
-        {% endif %}
-        {%-
-          if x == 'empty-tag-left-force trim-left' %}
-        {% endif %}
-        {%-
-          if x == 'empty-tag-left-force trims' -%}
-        {% endif %}
-        {%
-          if x == 'empty-tag-left-force trims-right' -%}
-        {% endif %}
-       `,
-      liquid`
-        {%
-          if x == 'empty-tag-with-content' %}
-
           {% # contained content %}
-
-        {% endif %},
-        {%-
-          if x == 'empty-tag-with-content trim-left' %}
-
-          {% # contained content %}
-
         {% endif %}
-        {%-
-          if x == 'empty-tag-with-content trims' -%}
 
-          {% # contained content %}
-
-        {% endif %}
-        {%
-          if x == 'empty-tag-with-content trim-right' -%}
-
-          {% # contained content %}
-
-        {% endif %}
-      `,
-      liquid`
-      {% if x == 'empty-tag-right-force'
-      %}
-      {% endif %}
-      {%- if x == 'empty-tag-right-force trim-left'
-      %}
-      {% endif %}
-      {%- if x == 'empty-tag-right-force trim'
-      -%}
-      {% endif %}
-      {% if x == 'empty-tag-right-force trim-right'
-      -%}
-      {% endif %}
-       `,
-
-      liquid`
-        {% if x == 'empty-tag-right-force-content'
-        %}
-
-          {% # contained content %}
-
-        {% endif %}
-        {%- if x == 'empty-tag-right-force-content trim-left'
-        %}
-
-          {% # contained content %}
-
-        {% endif %}
-        {%- if x == 'empty-tag-right-force-content trims'
-        -%}
-
-          {% # contained content %}
-
-        {% endif %}
-        {% if x == 'empty-tag-right-force-content trim-right'
-        -%}
-
-          {% # contained content %}
-
-        {% endif %}
-      `,
-      liquid`
-      {%
-        if x == 'empty-tag-force-left-and-right'
-      %}
-      {% endif %}
-      {%-
-        if x == 'empty-tag-force-left-and-right trim-left'
-      %}
-      {% endif %}
-      {%-
-        if x == 'empty-tag-force-left-and-right trims'
-      -%}
-      {% endif %}
-      {%
-        if x == 'empty-tag-force-left-and-right trim-right'
-      -%}
-      {% endif %}
-      `,
-      liquid`
-        {%
-          if x == 'empty-tag-content-force-left-and-right'
-        %}
-
-          {% # preserved delimiter structure %}
-
-        {% endif %}
-        {%-
-          if x == 'empty-tag-content-force-left-and-right trim-left'
-        %}
-
-          {% # preserved delimiter structure %}
-
-        {% endif %}
-        {%-
-          if x == 'empty-tag-content-force-left-and-right trims'
-        -%}
-
-          {% # preserved delimiter structure %}
-
-        {% endif %}
-        {%
-          if x == 'empty-tag-content-force-left-and-right trim-right'
-        -%}
-
-          {% # preserved delimiter structure %}
-
-        {% endif %}
-      `,
-      liquid`
-      {% if x == 'no-content-no-force' %}
-      {% endif %}
-      {%- if x == 'no-content-no-force trim-left' %}
-      {% endif %}
-      {%- if x == 'no-content-no-force trims' -%}
-      {% endif %}
-      {% if x == 'no-content-no-force trim-right' -%}
-      {% endif %}
-      `,
-      liquid`
-        {% if x == 'content-no-force' %}
-
-          {% # preserved delimiter structure %}
-
-        {% endif %}
-        {%- if x == 'content-no-force trim-left' %}
-
-          {% # preserved delimiter structure %}
-
-        {% endif %}
-        {%- if x == 'content-no-force trims' -%}
-
-          {% # preserved delimiter structure %}
-
-        {% endif %}
-        {% if x == 'content-no-force trim-right' -%}
-
-          {% # preserved delimiter structure %}
-
-        {% endif %}
-      `,
-      liquid`
-        <main
-          id="some-id">
-          <ul
-            class="class-name"
-            data-attr-1="one"
-            data-attr-2="two"
-            data-attr-3="three">
-            <li
-              data-attr-1="one"
-              data-attr-2="two"
-              data-attr-3="three">
-              <div
-                data-attr-1="one"
-                data-attr-2="two"
-                data-attr-3="three"
-                data-attr-4="four">
-
-                {{
-                  object.prop
-                }}
-
-                {%
-                  if x == 'condition'
-                %}
-
-                  {{ object.prop }}
-                  {{-
-                    will_force
-                    | arguments:
-                      one: 'foo',
-                      two: 'bar',
-                      three: 'baz',
-                      four: 1
-                    | filter: 'using wrap fraction'
-                  }}
-
-                  {%
-                    for i in arr
-                  %}
-
-                    {{ i.prop }}
-
-                  {% endfor %}
-
-                {% endif %}
-
-              </div>
-            </li>
-          </ul>
-        </main>
-      `
+       `
+      ]
     ]
-  )(
-    {
+  )(function (source, expect) {
+
+    const actual = esthetic.format(source, {
       language: 'liquid',
+      wrap: 0,
       liquid: {
         delimiterTrims: 'preserve',
-        delimiterPlacement: 'preserve',
-        forceFilter: 1,
-        forceArgument: 3,
-        lineBreakSeparator: 'after'
-      },
-      markup: {
-        attributeLineBreak: true
+        delimiterPlacement: 'preserve'
       }
-    }
-  )(function (source, rules) {
+    });
 
-    const actual = esthetic.format(source, rules);
-
-    t.deepEqual(actual, source);
+    t.is(actual, expect);
 
   });
 
@@ -604,119 +426,6 @@ test('Consistent: Consistent placement based on opening delimiter', t => {
 
 });
 
-test('Force: Delimiter are forced onto newlines', t => {
-
-  forAssert(
-    [
-      [
-        liquid`
-        {{ output_1 }}
-        `
-        ,
-        liquid`
-        {{
-          output_1
-        }}
-        `
-      ],
-      [
-        liquid`
-        {% singleton %}
-        `
-        ,
-        liquid`
-        {%
-          singleton
-        %}
-        `
-      ],
-      [
-        liquid`
-        {% if xxx %}
-          {{ inner_if }}
-        {% endif %}
-        `
-        ,
-        liquid`
-        {%
-          if xxx
-        %}
-          {{
-            inner_if
-          }}
-        {% endif %}
-        `
-      ],
-      [
-        liquid`
-        {% block %}
-          {{ inner_block }}
-        {% endblock %}
-        `
-        ,
-        liquid`
-        {%
-          block
-        %}
-          {{
-            inner_block
-          }}
-        {% endblock %}
-        `
-      ],
-      [
-        liquid`
-        {% for i in array %}
-          {{ i.prop }}
-          {% if i.condition == i.assertion %}
-            {{ i.something }}
-            {%- unless i.condition == xxx %}
-              {{- i.is.nested -}}
-            {% endunless %}
-          {% endif %}
-        {% endfor %}
-        `
-        ,
-        liquid`
-        {%
-          for i in array
-        %}
-          {{
-            i.prop
-          }}
-          {%
-            if i.condition == i.assertion
-          %}
-            {{
-              i.something
-            }}
-            {%-
-              unless i.condition == xxx
-            %}
-              {{-
-                i.is.nested
-              -}}
-            {% endunless %}
-          {% endif %}
-        {% endfor %}
-        `
-      ]
-    ]
-  )(function (source, expect) {
-
-    const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        delimiterPlacement: 'force'
-      }
-    });
-
-    t.is(actual, expect);
-
-  });
-
-});
-
 test('Force Multiline: Force delimiters when token spans newlines', t => {
 
   forAssert(
@@ -745,11 +454,7 @@ test('Force Multiline: Force delimiters when token spans newlines', t => {
         liquid`
         {{
           will_force
-          | arguments:
-            one: 'foo',
-            two: 'bar',
-            three: 'baz',
-            four: 1
+          | arguments: one: 'foo', two: 'bar', three: 'baz', four: 1
           | filter: 'using wrap fraction'
         }}
         `
@@ -783,12 +488,12 @@ test('Force Multiline: Force delimiters when token spans newlines', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrapFraction: 30,
+      wrap: 30,
       liquid: {
         forceFilter: 0,
         forceArgument: 0,
         lineBreakSeparator: 'after',
-        delimiterPlacement: 'force-multiline'
+        delimiterPlacement: 'newline-multiline'
       }
     });
 

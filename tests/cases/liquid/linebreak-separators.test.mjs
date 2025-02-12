@@ -1,10 +1,10 @@
+import { forAssert, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forSample, liquid } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test.skip('Line Break Separator (after): ', t => {
 
-  forSample(
+  forAssert(
     [
 
       liquid`{{- output -}}`

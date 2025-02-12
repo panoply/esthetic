@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Liquid Delimiter Trims: Output token insertion', t => {

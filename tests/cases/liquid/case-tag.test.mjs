@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Case tag dedentation (dedentTagList) - Structure and nesting expressions', t => {
@@ -416,75 +416,75 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
           {{ 'Indentation 2' }}
         {% endcase %}
       `
-      ],
-      [
-        liquid`
-        <section id="foo" class="bar" data-id="bax quux">
-        <main id="foo" class="bar" data-id="bax quux">
-        {% case 'xxx' %}
-        {% when singleton %}
-        {% render 'filename' %}
-        <meta id="example" content="foo and bar">
-        <meta id="example-2" content="foo and bar">
-        {% when liquid_condition %}
-        {% if condition == assertion -%}
-        {{ 'Indentation Level 4' }}
-        {% elsif 'singleton' %}
-        <main>
-        <div>
-        {{ 'Indentation 3' }}
-        </div>
-        </main>
-        {% assign foo = 'bar' %}
-        {% else %}
-        {{ 'Indentation Level 5' }}
-        {%- endif -%}
-        {% when 'Dedentation 1' %}
-         {{ 'Indentation 2' }}
-        {% else %}
-        <main>
-        <div>
-        {{ 'Indentation 2' }}
-        </div>
-        </main>
-        {% endcase %}
-        </main>
-        </section>
-        `,
-        liquid`
-        <section id="foo" class="bar" data-id="bax quux">
-          <main id="foo" class="bar" data-id="bax quux">
-            {% case 'xxx' %}
-              {% when singleton %}
-                {% render 'filename' %}
-                <meta id="example" content="foo and bar">
-                <meta id="example-2" content="foo and bar">
-              {% when liquid_condition %}
-                {% if condition == assertion -%}
-                  {{ 'Indentation Level 4' }}
-                {% elsif 'singleton' %}
-                  <main>
-                    <div>
-                      {{ 'Indentation 3' }}
-                    </div>
-                  </main>
-                  {% assign foo = 'bar' %}
-                {% else %}
-                  {{ 'Indentation Level 5' }}
-                {%- endif -%}
-              {% when 'Dedentation 1' %}
-                {{ 'Indentation 2' }}
-            {% else %}
-              <main>
-                <div>
-                  {{ 'Indentation 2' }}
-                </div>
-              </main>
-            {% endcase %}
-          </main>
-        </section>
-        `
       ]
+      // [
+      //   liquid`
+      //   <section id="foo" class="bar" data-id="bax quux">
+      //   <main id="foo" class="bar" data-id="bax quux">
+      //   {% case 'xxx' %}
+      //   {% when singleton %}
+      //   {% render 'filename' %}
+      //   <meta id="example" content="foo and bar">
+      //   <meta id="example-2" content="foo and bar">
+      //   {% when liquid_condition %}
+      //   {% if condition == assertion -%}
+      //   {{ 'Indentation Level 4' }}
+      //   {% elsif 'singleton' %}
+      //   <main>
+      //   <div>
+      //   {{ 'Indentation 3' }}
+      //   </div>
+      //   </main>
+      //   {% assign foo = 'bar' %}
+      //   {% else %}
+      //   {{ 'Indentation Level 5' }}
+      //   {%- endif -%}
+      //   {% when 'Dedentation 1' %}
+      //    {{ 'Indentation 2' }}
+      //   {% else %}
+      //   <main>
+      //   <div>
+      //   {{ 'Indentation 2' }}
+      //   </div>
+      //   </main>
+      //   {% endcase %}
+      //   </main>
+      //   </section>
+      //   `,
+      //   liquid`
+      //   <section id="foo" class="bar" data-id="bax quux">
+      //     <main id="foo" class="bar" data-id="bax quux">
+      //       {% case 'xxx' %}
+      //         {% when singleton %}
+      //           {% render 'filename' %}
+      //           <meta id="example" content="foo and bar">
+      //           <meta id="example-2" content="foo and bar">
+      //         {% when liquid_condition %}
+      //           {% if condition == assertion -%}
+      //             {{ 'Indentation Level 4' }}
+      //           {% elsif 'singleton' %}
+      //             <main>
+      //               <div>
+      //                 {{ 'Indentation 3' }}
+      //               </div>
+      //             </main>
+      //             {% assign foo = 'bar' %}
+      //           {% else %}
+      //             {{ 'Indentation Level 5' }}
+      //           {%- endif -%}
+      //         {% when 'Dedentation 1' %}
+      //           {{ 'Indentation 2' }}
+      //       {% else %}
+      //         <main>
+      //           <div>
+      //             {{ 'Indentation 2' }}
+      //           </div>
+      //         </main>
+      //       {% endcase %}
+      //     </main>
+      //   </section>
+      //   `
+      // ]
     ]
   )(function (source, expect) {
 

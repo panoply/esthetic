@@ -1,5 +1,5 @@
+import { forAssert, forRule, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { liquid, forAssert, forRule } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Liquid Block Comment: Tag structures (using defaults)', t => {

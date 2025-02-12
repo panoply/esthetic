@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Capture nested within capature occurances', t => {
@@ -62,10 +62,9 @@ test('Capture start tag indentation and preservation', t => {
             <div class="xxx">
         {% capture test %}something{% endcapture %}
 
-        {% capture test %}
-        something
-
-        {% endcapture %}
+                      {% capture test %}
+                      something
+                      {% endcapture %}
             </div>
           </div>
         </section>
@@ -80,14 +79,15 @@ test('Capture start tag indentation and preservation', t => {
 
               {% capture sizes %}(max-width: {{ settings.logo_width | times: 2 }}px){% endcapture %}
               {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
+
               <section>
                 <div>
                   <div class="xxx">
                     {% capture test %}something{% endcapture %}
-                    {% capture test %}
-        something
 
-        {% endcapture %}
+                    {% capture test %}
+                      something
+                      {% endcapture %}
                   </div>
                 </div>
               </section>

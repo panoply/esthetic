@@ -1,5 +1,5 @@
+import { forAssert, forSample, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forAssert, liquid, forSample } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test: Empty schema tags', t => {
@@ -537,7 +537,7 @@ test('Structure Test: Newline Preservation and indentation levels', t => {
       arrayFormat: 'indent'
     },
     markup: {
-      forceAttribute: 2,
+      attributeLineBreak: 2,
       ignoreJSON: false
     }
   })(function (source, rules) {

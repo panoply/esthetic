@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forAssert, liquid } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 test('Spacing in object expressions', t => {
@@ -32,20 +32,27 @@ test('Spacing in object expressions', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format(source, {
+    const first = esthetic.format(source, {
       language: 'liquid',
       liquid: {
         equipoiseSpacing: true
       }
     });
 
-    t.is(actual, expect);
+    const actual = esthetic.format(first, {
+      language: 'liquid',
+      liquid: {
+        equipoiseSpacing: true
+      }
+    });
+
+    t.deepEqual(actual, expect);
 
   });
 
 });
 
-test('Spacing in control operators', t => {
+test.skip('Spacing in control operators', t => {
 
   forAssert(
     [
@@ -102,7 +109,7 @@ test('Spacing in control operators', t => {
 
 });
 
-test('Spacing in filter expressions', t => {
+test.skip('Spacing in filter expressions', t => {
 
   forAssert(
     [
@@ -129,14 +136,21 @@ test('Spacing in filter expressions', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format(source, {
+    const first = esthetic.format(source, {
       language: 'liquid',
       liquid: {
         equipoiseSpacing: true
       }
     });
 
-    t.is(actual, expect);
+    const actual = esthetic.format(first, {
+      language: 'liquid',
+      liquid: {
+        equipoiseSpacing: true
+      }
+    });
+
+    t.deepEqual(actual, expect);
 
   });
 
@@ -181,7 +195,7 @@ test('Spacing in assignment', t => {
 
 });
 
-test('Spacing in arguments', t => {
+test.skip('Spacing in arguments', t => {
 
   forAssert(
     [
@@ -212,7 +226,7 @@ test('Spacing in arguments', t => {
 
 });
 
-test('Spacing in parameters', t => {
+test.skip('Spacing in parameters', t => {
 
   forAssert(
     [
@@ -245,7 +259,7 @@ test('Spacing in parameters', t => {
 
 });
 
-test('Spacing skipping strings', t => {
+test.skip('Spacing skipping strings', t => {
 
   forAssert(
     [

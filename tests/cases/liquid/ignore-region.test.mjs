@@ -1,5 +1,5 @@
-import test from 'ava';
 import { forSample, liquid } from '@liquify/ava/esthetic';
+import test from 'ava';
 import esthetic from 'esthetic';
 
 /* -------------------------------------------- */

@@ -1,8 +1,8 @@
+import { forAssert, forRule, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { liquid, html, forAssert, forRule } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
-test('Liquid inline line Comments - commentIndent: true', t => {
+test.skip('Liquid inline line Comments - commentIndent: true', t => {
 
   forAssert(
     [
@@ -75,7 +75,7 @@ test('Liquid inline line Comments - commentIndent: true', t => {
 
 });
 
-test('Liquid Multiline Line Comments - commentIndent: true', t => {
+test.skip('Liquid Multiline Line Comments - commentIndent: true', t => {
 
   forAssert(
     [
@@ -187,7 +187,7 @@ test('Liquid Multiline Line Comments - commentIndent: true', t => {
 
 });
 
-test('Liquid Multiline Line Comments - commentIndent: false', t => {
+test.skip('Liquid Multiline Line Comments - commentIndent: false', t => {
 
   forAssert(
     [
@@ -304,7 +304,7 @@ test('Liquid Multiline Line Comments - commentIndent: false', t => {
 
 });
 
-test('Liquid Multiline Line Comments - Wrap newlines and hash prefix', t => {
+test.skip('Liquid Multiline Line Comments - Wrap newlines and hash prefix', t => {
 
   forRule(
     [

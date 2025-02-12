@@ -1,5 +1,5 @@
+import { forAssert, forSample, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
-import { forAssert, liquid, forSample } from '@liquify/ava/esthetic';
 import esthetic from 'esthetic';
 
 test('Structure Test: Empty style tags', t => {
