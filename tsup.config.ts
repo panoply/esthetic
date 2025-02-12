@@ -1,7 +1,9 @@
-import { defineConfig } from 'tsup';
-import * as pkg from './package.json';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { writeFileSync, readFileSync } from 'node:fs';
+
+import { defineConfig } from 'tsup';
+
+import * as pkg from './package.json';
 
 const cwd = process.cwd();
 const pkjson = readFileSync('./node_modules/@liquify/schema/esthetic.json').toString();
@@ -20,11 +22,11 @@ export default defineConfig([
     name: 'Æsthetic',
     minify: false,
     noExternal: [],
-    terserOptions: {
-      compress: {
-        passes: 10
-      }
-    },
+    // terserOptions: {
+    //   compress: {
+    //     passes: 10
+    //   }
+    // },
     globalName: 'esthetic',
     splitting: false,
     platform: 'neutral',
