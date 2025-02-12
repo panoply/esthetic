@@ -1,4 +1,5 @@
 import { Lexers } from 'lexical/enum';
+
 import { markup } from './markup';
 import { script } from './script';
 import { style } from './style';
