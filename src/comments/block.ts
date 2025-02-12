@@ -1,10 +1,12 @@
-import { BlockComments, Comments } from 'types';
-import { parse } from 'parse/parser';
-import { cc as ch } from 'lexical/codes';
+import { BIG, MID, NIL, NWL, WSP } from 'chars';
+import { cc, cc as ch } from 'lexical/codes';
 import { CommentType } from 'lexical/enum';
-import { NWL, NIL, WSP, BIG, MID } from 'chars';
-import { charEsc, ws, is, not, liquidEsc, isLast } from 'utils/helpers';
+import { ParseError } from 'lexical/errors';
 import * as rx from 'lexical/regex';
+import { MarkupError } from 'parse/errors';
+import { parse } from 'parse/parser';
+import { BlockComments, Comments } from 'types';
+import { charEsc, countLines, is, isLast, last, liquidEsc, not, or, ws } from 'utils/helpers';
 
 /**
  * Comment Block Parser
@@ -35,7 +37,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
   /**
    * Deconstructed Config
    */
-  const { start, lexer, end, ender } = config;
+  const { start, lexer, end, ender, begin } = config;
 
   /**
    * Deconstructed  Parse
@@ -298,56 +300,18 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
     /* LEXICAL SCOPE                                */
     /* -------------------------------------------- */
 
-    b = 0;
+    const lines: string[] = [];
 
-    if (rules.wrap > 0) {
-
-      lexed.splice(0, 1, config.begin, lexed[0].replace(regexStart, NIL).trim());
-
-      c = 1;
-      b = 1;
-
-      while (lexed[c] === NIL) lexed.splice(c, 1);
-
-    } else {
-
-      c = -1;
-
-      do c = c + 1;
-      while ((lexed[c] === NIL) || (is(lexed[c], ch.HSH) && lexed[c].length === 1));
-
-      lexed.splice(0, c);
-
-    }
-
-    for (let s = lexed.length; b < s; b++) {
-      if (not(lexed[b], ch.HSH) && lexed[b] !== NIL) {
-        lexed[b] = `# ${lexed[b].trimEnd()}`;
+    for (let i = 0, s = lexed.length; i < s; i++) {
+      const line = lexed[i].trim();
+      if (line !== NIL) {
+        lines.push(`${rules.indentChar.repeat(rules.indentSize)} ${lexed[i].trimStart() + parse.crlf}`);
+      } else {
+        lines.push(NWL);
       }
     }
 
-    if (rules.wrap > 0) {
-
-      lexed.push(`#${lexed.pop().trim().slice(1)}`, config.ender);
-
-    } else {
-
-      lexed.splice(0, 0, config.begin);
-
-      c = lexed.length;
-      do c = c - 1;
-      while ((lexed[c] === NIL) || (is(lexed[c], ch.HSH) && lexed[c].length === 1));
-
-      lexed.splice(c + 1, lexed.length - c);
-      lexed.push(`#${lexed.pop().trim().slice(1)}`, config.ender);
-
-    }
-
-    output = lexed.join(parse.crlf);
-
-    if (rules.liquid.commentIndent === false) {
-      output = output.replace(/^#/gm, ' #');
-    }
+    output = begin + lines.join(NIL) + ender;
 
     return [ output, a ];
 
@@ -537,10 +501,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    * This function is handles `esthetic-ignore-start` and
    * `esthetic-ignore-end` comment blocks.
    */
-  function IgnoreCommentBlock (): [
-    comment: string,
-    advance: number
-  ] {
+  function IgnoreCommentBlock (): [ comment: string, advance: number ] {
 
     /* -------------------------------------------- */
     /* LEXICAL SCOPES                                */
@@ -843,9 +804,10 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
     lines[0] = lines[0].replace(regexStart, NIL);
     lines[lsize - 1] = lines[lsize - 1].replace(regexEnder, NIL);
 
-    if (type === CommentType.LiquidLine && rules.wrap < 1) {
-      lines = lines.map((line) => line.replace(/^#\s*/m, NIL).trimStart());
+    if (type === CommentType.LiquidLine) {
+
       return LiquidLineComment(lines);
+
     }
 
     // When less than 2 the comment is comprised of a single
@@ -1113,7 +1075,6 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
               if (lines[b].length > rules.wrap) {
                 lines[b + 1] = `${lines[b].slice(c + 1)}${parse.crlf}${lines[b + 1]}`;
-
               } else {
                 lines[b + 1] = `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
               }
@@ -1336,20 +1297,13 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
   do {
 
-    if (is(chars[a], ch.NWL)) {
-      parse.lineOffset = parse.lines(a, parse.lineOffset);
-    }
+    if (is(chars[a], ch.NWL)) parse.lineOffset = parse.lines(a, parse.lineOffset);
 
     // Liquid Line
     //
-    if (
-      type === CommentType.LiquidLine &&
-      is(chars[a], ch.HSH) &&
-      rules.liquid.commentPreserve === false &&
-      rules.wrap > 0 &&
-      build.slice(build.lastIndexOf(NWL)).join(NIL).trim() === NIL) {
+    if (type === CommentType.LiquidLine && or(chars[a], ch.NWL) && rules.liquid.commentPreserve === false) {
 
-      build.push(WSP);
+      build.push(NWL);
 
     } else {
 
@@ -1367,8 +1321,8 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
       }
 
       output = build.join(NIL);
-
       break;
+
     }
 
   } while (++a < end);
