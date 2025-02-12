@@ -1,4 +1,5 @@
 import type { LanguageName, LanguageOfficialName, LexerName } from 'types';
+
 import { Lexers } from 'lexical/enum';
 
 /**
