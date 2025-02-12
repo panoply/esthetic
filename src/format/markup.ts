@@ -1,13 +1,14 @@
 import type { Types } from 'types/index';
+
+import { NIL, NWL, PER, RCB, WSP } from 'chars';
 import { cc } from 'lexical/codes';
-import { WSP, NIL, NWL, PER, RCB } from 'chars';
-import { parse } from 'parse/parser';
-import { object } from 'utils/native';
-import * as rx from 'lexical/regex';
-import * as u from 'utils/helpers';
-import * as lq from 'lexical/liquid';
-import { grammar } from 'parse/grammar';
 import { LF, Lnbr } from 'lexical/enum';
+import * as lq from 'lexical/liquid';
+import * as rx from 'lexical/regex';
+import { grammar } from 'parse/grammar';
+import { parse } from 'parse/parser';
+import * as u from 'utils/helpers';
+import { object } from 'utils/native';
 
 /* -------------------------------------------- */
 /* MARKUP BEAUTIFICATION                        */
@@ -33,14 +34,17 @@ export function markup () {
 
   const { textNodes } = grammar.html;
   const { rules, data, ender, start, crlf } = parse;
-  const { forceIndent, attributeLineBreak, delimiterTerminus, textBoundInline } = rules.markup;
   const {
-    argumentFormat,
+    forceIndent,
+    attributeLineBreak,
+    delimiterTerminus,
+    textBoundInline
+  } = rules.markup;
+  const {
     delimiterTrims,
     delimiterPlacement,
     argumentLineBreak,
-    filterLineBreak,
-    lineBreakSeparator
+    filterLineBreak
   } = rules.liquid;
 
   /* -------------------------------------------- */
@@ -374,14 +378,18 @@ export function markup () {
     // while the else block does not.
     //
     if (nwl === true) {
+
       // Ensure newline when template singleton tag is followed
       // by a comment tag, eg:
       //
       // {% section 'foo' %} {% comment %}
       //
       if (isType(data.begin[x] - 1, 'liquid')) {
+
         levels[data.begin[x] - 1] = indent;
+
       }
+
       // Patch fix 10/06/2023 - See the levels[a] = indent variable below
       // as it related
       //
@@ -390,6 +398,7 @@ export function markup () {
         levels.push(indent);
         x = x - 1;
       } while (x > comms);
+
       // Indent correction so that a following end tag
       // is not indented 1 too much, levels `a` is the end token, eg: </div>
       //
@@ -595,7 +604,11 @@ export function markup () {
    */
   function TerminusForce () {
 
-    const offset = NWL + nl(levels[a], LF.WS).slice(rules.indentSize);
+    // Ensure that the tag is not empty
+    // if next type is end, then we need to reference that last
+    // level reference otherwise the ">" will be -20
+    //
+    const offset = NWL + nl(isType(n, 'end') ? levels[a - 1] : levels[a], LF.WS).slice(rules.indentSize);
 
     data.token[a] = data.token[a].replace(/(\/?>)$/, `${offset}$1`);
 
@@ -776,18 +789,14 @@ export function markup () {
 
       const lines = data.token[a].split(NWL);
       const length = lines.length;
-      const indent = nl(levels[a], LF.WS, 1);
+      const indent = nl(levels[a - 1], LF.WS, 1);
 
       let i: number = 0;
 
       do {
 
         if (lines[i] === NIL) {
-          if (i + 1 !== length && lines[i + 1] !== NIL) {
-            output.push(indent);
-          } else {
-            output.push(NWL);
-          }
+          lines[i + 1] !== NIL ? output.push(indent) : output.push(NWL);
         } else if (i + 1 === length) {
           output.push(lines[i], indent);
         } else {
@@ -816,524 +825,164 @@ export function markup () {
    */
   function Liquid () {
 
-    /** Opening Delimiter, e.g: `{{` or `{%` */
-    let OPEN: string;
+    /** Current wrap limit starting from left hand side */
+    const width: number = data.token[a].length;
 
-    /** Closing Delimiter, e.g: `}}` or `%}` */
-    let CLOSE: string;
+    if (isStack(a, 'liquid')) {
 
-    if (rx.Newline.test(data.token[a])) {
+      do {
 
-      output.push(LineBreaks());
+        if (delimiterPlacement === 'newline-multiline') {
 
-    } else if (isType(a, 'liquid_end')) {
+          if (isType(a, 'liquid_start') && data.token[a].startsWith('{%')) {
 
-      output.push(lq.delimiters(data.token[a]));
+            const o = u.is(data.token[a][2], cc.DSH) ? 3 : 2;
+            const open = data.token[a].slice(0, o) + nl(levels[a - 1], LF.WS, 1) + spaces;
+            output.push(open + data.token[a].slice(o).trim());
+
+          } else if (isType(a, 'liquid_end') && data.token[a].endsWith('%}')) {
+
+            output.push(data.token[a].trim());
+
+          } else {
+
+            output.push(data.token[a]);
+
+          }
+
+        } else {
+
+          output.push(data.token[a]);
+
+        }
+
+        output.push(nl(levels[a]));
+
+        if (isType(a, 'liquid_end') && data.token[a].endsWith('%}')) break;
+
+      } while (++a < c);
 
     } else {
 
-      output.push(Delimiters().join(WSP));
+      const [ [ open, lines, close ], [ O, C ] ] = lq.DelimiterGlue(
+        data.token[a],
+        nl(levels[a - 1], LF.WS),
+        spaces,
+        delimiterPlacement === 'newline-multiline',
+        delimiterTrims === 'multiline'
+      );
 
-    }
+      if (lines.length > 1) {
 
-    /* -------------------------------------------- */
-    /* BEGIN                                        */
-    /* -------------------------------------------- */
-
-    /**
-     * Line Breaks
-     *
-     * Determination for line break processing. Function will pass
-     * token to appropriate handler for augmentation.
-     */
-    function LineBreaks () {
-
-      /** Holds an ending delimiter token value */
-      const token: string[] = [];
-
-      if (isType(a, 'liquid_start') || isType(a, 'liquid_else')) {
-
-        /** Tag name */
         const tname = u.getTagName(data.token[a]);
 
-        if (
-          tname === 'if' ||
-          tname === 'unless' ||
-          tname === 'elsif') {
+        if (tname === 'if' || tname === 'elsif' || tname === 'unless') {
 
-          if (Logicals(token) === true) return;
-
-        }
-
-      } else {
-
-        Arguments(token);
-
-      }
-
-      OPEN = token.shift();
-      CLOSE = token.pop();
-
-      if (delimiterPlacement !== 'newline-multiline') {
-
-        token[0] = OPEN + token[0];
-        token[token.length - 1] += CLOSE;
-
-      } else {
-
-        token.unshift(OPEN);
-        token.push(CLOSE);
-
-      }
-
-      if (delimiterTrims === 'multiline') {
-
-        return token
-          .join(NIL)
-          .trim()
-          .replace(/^({[%{])(?!-)/, '$1-')
-          .replace(/(?!-)([%}]})$/, '-$1');
-
-      }
-
-      return token.join(NIL).trim();
-
-    }
-
-    /**
-     * Delimiters
-     *
-     * Applies delimiter trims and sets up delimiter placementsö
-     */
-    function Delimiters () {
-
-      /** Extract delimiters, where `o` represents open and `c` represents close */
-      const [ O, C ] = lq.delims(data.token[a]);
-
-      /** Either percent character or LCB */
-      const S = data.token[a][1];
-
-      /** Either percent character or RCB */
-      const E = u.is(S, cc.PER) ? PER : RCB;
-
-      /** Items */
-      const L = data.token[a].slice(O, C).trim().split(NWL);
-
-      /* -------------------------------------------- */
-      /* TRIMS                                        */
-      /* -------------------------------------------- */
-
-      if (delimiterTrims === 'never') {
-
-        OPEN = '{' + S;
-        CLOSE = E + '}';
-
-      } else if (delimiterTrims === 'always' || (
-        delimiterTrims === 'outputs' &&
-        u.is(S, cc.LCB) &&
-        u.is(E, cc.RCB)
-      ) || (
-        delimiterTrims === 'tags' &&
-        u.is(S, cc.PER) &&
-        u.is(E, cc.PER)
-      )) {
-
-        OPEN = '{' + S + '-';
-        CLOSE = '-' + E + '}';
-
-      } else if (delimiterTrims === 'preserve' || (
-        delimiterTrims === 'tags' &&
-        u.is(S, cc.LCB) &&
-        u.is(E, cc.RCB)
-      ) || (
-        delimiterTrims === 'outputs' &&
-        u.is(S, cc.PER) &&
-        u.is(E, cc.PER)
-      )) {
-
-        OPEN = data.token[a].slice(0, O);
-        CLOSE = data.token[a].slice(C);
-
-      } else {
-
-        OPEN = '{' + S;
-        CLOSE = E + '}';
-
-      }
-
-      /* -------------------------------------------- */
-      /* DELIMITER PLACEMENTS                         */
-      /* -------------------------------------------- */
-
-      if (delimiterPlacement === 'preserve') {
-
-        if (u.is(data.token[a][O], cc.NWL)) {
-          L.unshift(OPEN);
-        } else {
-          L[0] = OPEN + WSP + L[0];
-        }
-
-        if (u.is(data.token[a][C - 1], cc.NWL)) {
-          L.push(CLOSE);
-        } else {
-          L[L.length - 1] = L[L.length - 1] + WSP + CLOSE;
-        }
-
-      } else if (delimiterPlacement === 'inline') {
-
-        L[0] = OPEN + WSP + L[0];
-        L[L.length - 1] = L[L.length - 1] + WSP + CLOSE;
-
-      } else if (delimiterPlacement === 'consistent') {
-
-        if (u.is(data.token[a][O], cc.NWL)) {
-
-          L.unshift(OPEN);
-          L.push(CLOSE);
+          output.push(Logicals());
 
         } else {
 
-          L[0] = OPEN + WSP + L[0];
-          L[L.length - 1] = L[L.length - 1] + WSP + CLOSE;
+          output.push(Arguments());
 
         }
 
+      } else if (isType(a, 'liquid_end')) {
+
+        output.push(open + lines.join(WSP) + close);
+
       } else {
 
-        L.unshift(OPEN);
-        L.push(CLOSE);
+        output.push(open + lines.join(WSP) + close);
 
       }
 
-      return L;
+      /* -------------------------------------------- */
+      /* BEGIN                                        */
+      /* -------------------------------------------- */
 
-    }
+      function Logicals () {
 
-    /**
-     * Logical Handling
-     *
-     * This function is responsible for formatting logical occurences within
-     * conditional (control) type tags. When wrap is exceeded in the tag, we
-     * will write each conditional on a newline.
-     */
-    function Logicals (token: string[]) {
+        /** Whether or not token exceed wrap limit */
+        const exceed = limit > -1 ? width > limit : false;
 
-      /** Whether or not token exceed wrap limit */
-      const exceed = limit > -1 ? data.token[a].length > limit : false;
+        /** Newlines plus indentation */
+        const offset = nl(levels[a - 1], LF.WS, 1) + spaces;
 
-      /** Split the token for every newline */
-      const lines = Delimiters();
+        if (exceed) {
 
-      /** Newlines plus indentation */
-      const offset = nl(levels[a - 1], LF.WS, 1) + spaces;
+          if (O) return O + lines.join(offset).trim() + C;
 
-      /** Iterator reference */
-      let i: number = 0;
+          return open + lines.join(offset).trim() + close;
 
-      if (exceed) {
+        } else {
+
+          return open + lines.join(WSP) + close;
+
+        }
+
+      }
+
+      function Arguments () {
+
+        const token: string[] = [];
+
+        /** Whether or not token exceed wrap limit */
+        const exceed = limit > -1 ? width > limit : false;
+
+        /** Filter pipe and argument reference */
+        const input: number[] = [];
 
         /** The amount of lines assigned for better perf */
         const length = lines.length;
 
+        /** Newlines plus indentation */
+        let offset: string = WSP;
+
+        /** The type of line break reference */
+        let lnbr: Lnbr = Lnbr.None;
+
+        /** Iterator reference */
+        let i: number = 0;
+
+        /** The token type reference */
+        let t: cc = NaN;
+
         do {
 
-          if (i === 0) {
+          input.push(i);
 
-            token.push(lines[i], offset);
-
-            // Ending delimiter, e.g: }} -}} %} -%}
-            //
-            if (i + 1 === length - 1 && (
-              lines[i + 1].length === 2 ||
-              lines[i + 1].length === 3)) {
-
-              token.push(lines[i + 1]);
-              break;
-
-            }
-
-          } else {
-
-            token.push(lines[i], lines[i + 1] === CLOSE
-              ? offset.slice(0, offset.length - spaces.length)
-              : offset);
-
-          }
+          if (isNaN(t) && u.is(lines[i], cc.PIP)) t = cc.PIP;
 
         } while (++i < length);
 
-      } else {
+        /** Determine the rule to reference */
+        const lineBreak = t === cc.PIP ? filterLineBreak : argumentLineBreak;
 
-        OPEN = lines.shift();
-        CLOSE = lines.pop();
-
-        if (OPEN.length <= 3) {
-          output.push(OPEN, offset, lines.join(WSP));
-        } else {
-          output.push(OPEN, WSP + lines.join(WSP));
+        if (u.isNumber(lineBreak) && lineBreak > 0 && input.length > 0 && input.length >= lineBreak) {
+          lnbr = Lnbr.Limit;
+        } else if (lineBreak === true) {
+          lnbr = Lnbr.Preserve;
+        } else if (exceed && lineBreak === 0) {
+          lnbr = Lnbr.Wrap;
         }
 
-        if (CLOSE.length <= 3) {
-          output.push(offset.slice(0, offset.length - spaces.length), CLOSE);
-        } else {
-          output.push(WSP + CLOSE);
+        i = 0;
+
+        if (exceed === false && lnbr === Lnbr.None) {
+
+          return open + lines.join(WSP).trim() + close;
+
         }
 
-        return true;
+        if (lnbr > Lnbr.None) offset = nl(levels[a - 1], LF.WS, 1) + spaces;
+
+        do token.push(lines[i], lnbr === Lnbr.None ? WSP : offset); while (++i < length);
+
+        if (O) return O + token.join(NIL).trim() + C;
+
+        return open + token.join(NIL).trim() + close;
 
       }
-
-    }
-
-    /**
-     * Argument Handling
-     *
-     * This function is responsible for both Liquid filters and Liquid tag arguments.
-     */
-    function Arguments (token: string[]) {
-
-      /** Whether or not token exceed wrap limit */
-      const exceed = limit > -1 ? data.token[a].length > limit : false;
-
-      /** Filter pipe and argument reference */
-      const input: [ index: number, arguments?: string[] ][] = [];
-
-      /** Split the token for every newline */
-      const lines = Delimiters();
-
-      /** The amount of lines assigned for better perf */
-      const length = lines.length;
-
-      /** Newlines plus indentation */
-      let offset: string = WSP;
-
-      /** Current wrap limit starting from left hand side */
-      let width: number = 0;
-
-      /** The type of line break reference */
-      let lnbr: Lnbr = Lnbr.None;
-
-      /** Iterator reference */
-      let i: number = 0;
-
-      /** Filter arguments previous reference */
-      let x: [ index: number, arguments?: string[] ];
-
-      /** The token type reference */
-      let t: cc;
-
-
-
-
-      do {
-
-        if (u.is(lines[i], cc.PIP) && t !== cc.COM) {
-
-          if (input.length === 0 && i > 1) for (let p = 1; p < i; p++) input.push([ p, [] ]);
-
-          x = input[input.push([ i, [] ]) - 1];
-          t = cc.PIP;
-
-        } else if (u.is(lines[i], cc.COM) && t !== cc.PIP) {
-
-          x = input[input.push([ i, [] ]) - 1];
-          t = cc.COM;
-
-        } else if (x) {
-
-          x[1].push(lines[i]);
-
-        }
-
-      } while (++i < length);
-
-      /** Determine the rule to reference */
-      const lineBreak = t === cc.PIP ? filterLineBreak : argumentLineBreak;
-
-      if ((
-        u.isNumber(lineBreak) &&
-         lineBreak > 0 &&
-         input.length > 0 &&
-         input.length >= lineBreak)) {
-
-        lnbr = Lnbr.Limit;
-
-      } else if (lineBreak === true) {
-
-        lnbr = Lnbr.Preserve;
-
-      } else if (exceed && lineBreak === 0) {
-
-        lnbr = Lnbr.Wrap;
-
-      }
-
-      if (lnbr > Lnbr.None) {
-
-        offset = nl(levels[a - 1], LF.WS, 1) + spaces;
-
-      }
-
-
-      x = undefined;
-      i = 0;
-
-      do {
-
-        if (i === 0) {
-
-          token.push(lines[i], offset);
-
-          // Ending delimiter, e.g: }} -}} %} -%}
-          //
-          if (i + 1 === length - 1 && (
-            lines[i + 1].length === 2 ||
-            lines[i + 1].length === 3)) {
-
-            token.push(lines[i + 1]);
-            break;
-
-          }
-
-        } else if (lnbr > Lnbr.None) {
-
-          // First argument will be a filter, logical keyword or argument
-          //
-          // structure:
-          // [ [1, [ a,b,c ] ], [2, [ e,f,g ] ] ]
-          //
-          // x value:
-          // [1, [ a,b,c ] ]
-          //
-          if (input.length > 0 && input[0][0] === i) {
-
-            x = input.shift();
-
-            // if no arguments we will insert offset
-            //
-            if ((x.length > 1 && x[1].length === 0)) {
-              token.push(lines[i].trimEnd(), offset);
-            } else {
-              token.push(lines[i]);
-            }
-
-
-
-          } else if (x && x.length > 0) {
-
-            // Determine if the argument count exceed an argument linebreak
-            // defined limit in the ruleset
-            //
-            if (argumentLineBreak > 0 && x[1].length >= argumentLineBreak) {
-
-              while (x[1].length > 0) {
-
-                token.push(offset + spaces, x[1].shift());
-
-              }
-
-            } else {
-
-              width = lines[x[0]].length;
-
-              // Lets see if the arguments happen to exceed word wrap
-              // We reference the line entry and combine the length with
-              // the arguments length.
-              //
-              if (limit > -1 && width + x[1].join(WSP).length > limit) {
-
-                token.push(WSP);
-
-                width = argumentFormat === 'newline' ? -1 : width + 1;
-
-                // Arguments have exceeded word wrap, we no incrementally
-                // apply line breaks by checking the each argument until we
-                // are within wrap bounds
-                //
-                do {
-
-                  const ind = x[1][0] === CLOSE
-                    ? offset.slice(0, offset.length - spaces.length)
-                    : offset + spaces;
-
-                  if (argumentFormat === 'preserve') {
-
-
-                    token.push(ind + x[1].shift());
-
-                  } else {
-
-                    if (width > -1) width += x[1][0].length + 1;
-
-                    if (width < limit) {
-
-                      if (argumentFormat === 'inline-newline' || argumentFormat === 'inline') {
-
-                        if (lineBreakSeparator === 'before' && u.isLast(token, cc.WSP)) token.pop();
-
-                        token.push(x[1].shift());
-
-                      } else if (argumentFormat === 'newline') {
-
-                        token.push(ind, x[1].shift());
-
-                        if (width > -1) width = 0;
-
-                      }
-
-                    } else {
-
-                      if (argumentFormat === 'inline-newline') {
-
-                        token.push(ind + x[1].shift());
-
-                      } else if (argumentFormat === 'inline' || argumentFormat === 'newline') {
-
-                        width = token[token.push(ind + x[1].shift()) - 1].length;
-
-                      }
-                    }
-                  }
-
-                  if (lineBreakSeparator === 'after') token.push(WSP);
-
-                } while (x[1].length > 0);
-
-              } else {
-
-                while (x[1].length > 0) {
-
-                  token.push(WSP, x[1].shift());
-
-                }
-              }
-
-            }
-
-            if (u.last(token).endsWith(CLOSE)) break;
-
-            token.push(offset);
-
-            continue;
-
-          } else {
-
-            // Structure is using lineBreakSeparator after
-            //
-            token.push(lines[i], offset);
-
-          }
-
-        } else {
-
-          token.push(lines[i], offset);
-
-        }
-
-        if (u.last(token).endsWith(CLOSE)) break;
-
-      } while (++i < length);
-
     }
 
   }
@@ -1418,7 +1067,9 @@ export function markup () {
     const doWrap = rules.wrap > 0;
 
     /** Newline indentation */
-    const newline = nl(levels[a > 0 ? a - 1 : a], LF.WS, 1);
+    const newline = data.types[a] === 'liquid_comment'
+      ? nl(levels[a], LF.WS, 1)
+      : nl(levels[a > 0 ? a - 1 : a], LF.WS, 1);
 
     /** Spacing indentation */
     let offset = newline.slice(crlf.length);
@@ -1439,6 +1090,10 @@ export function markup () {
     if (isType(a, 'liquid_comment_start')) {
 
       LiquidComment();
+
+    } else if (isType(a, 'liquid_start') && isStack(a, 'if')) {
+
+      console.log(data.token[a]);
 
     } else {
 
@@ -1579,7 +1234,7 @@ export function markup () {
               if (wrap > limit) {
 
                 input += words[index];
-                output.push(input.trim(), newline);
+                output.push(input.trim() + newline);
 
                 input = NIL;
                 wrap = 0;
@@ -1594,7 +1249,7 @@ export function markup () {
 
               input += words[index];
 
-              output.push(input.trim(), newline);
+              output.push(input.trim() + newline);
 
               input = NIL;
               wrap = 0;
@@ -1914,7 +1569,6 @@ export function markup () {
             data.begin[i] === a &&
             isType(i, 'end') &&
             isLike(i + 1, 'attribute')) {
-
             plural = true;
             break;
           }
@@ -1930,15 +1584,12 @@ export function markup () {
       if (
         isType(n, 'end') ||
         isType(n, 'liquid_end') ||
-        isType(n, 'liquid_when')) {
+        isType(n, 'liquid_markup_end') ||
+        isType(n, 'liquid_when')) return indent + 1;
 
-        return (indent === 0 || levels[p] === indent) && (
-          isType(p, 'singleton') ||
-          isType(p, 'liquid_markup_start')) ? indent + 2 : indent + 1;
-
-      }
-
-      return (isType(p, 'singleton') || isType(p, 'liquid_markup_start')) ? indent + 1 : indent;
+      return (
+        isType(p, 'singleton') ||
+        isType(p, 'liquid_markup_start')) ? indent + 1 : indent;
 
     }
 
@@ -2008,12 +1659,8 @@ export function markup () {
       // Applies delimiter terminus if rules determine it to be so
       // The delims Set will be populated with the start token index
       //
-      if (delimiterTerminus === true || (
-        u.isNumber(delimiterTerminus) &&
-        attrCount >= delimiterTerminus)) {
-
+      if (delimiterTerminus === true || (u.isNumber(delimiterTerminus) && attrCount >= delimiterTerminus)) {
         delims.add(p);
-
       }
 
       // Applies force indentation when attributeLineBreak applies
@@ -2025,11 +1672,15 @@ export function markup () {
         isType(n, 'liquid')
       )) {
 
-        levels[a] = indent;
+        if (!(isType(a, 'attribute') && isType(a + 1, 'end'))) {
 
-        if (data.lines[data.ender[p]] < 2) {
+          levels[a] = indent;
 
-          data.lines[data.ender[p]] = 2;
+          if (data.lines[data.ender[p]] < 2) {
+
+            data.lines[data.ender[p]] = 2;
+
+          }
 
         }
 
@@ -2119,6 +1770,7 @@ export function markup () {
             if (isType(a, 'liquid_attribute_start')) {
 
               levels.push(liquidLevel > 0 ? attrLevel : attrLevel + liquidLevel);
+              levels[a - 1] = attrLevel + liquidLevel;
               liquidLevel = liquidLevel + 1;
 
             } else if (isType(a, 'liquid_attribute_else')) {
@@ -2243,11 +1895,11 @@ export function markup () {
           levels[p] = attrLevel;
 
           /** Force Attribute index reference */
-          let i: number = a - 1;
+          let i: number = a;
 
           do {
 
-            if (levels[i] === -10 && (isType(i, 'attribute') || isType(i, 'liquid'))) {
+            if ((levels[i] === -10) && (isType(i, 'attribute') || isType(i, 'liquid'))) {
 
               levels[i] = attrLevel;
 
@@ -2389,17 +2041,11 @@ export function markup () {
     const update = rules.markup.forceIndent === false && bound < 0 && isType(a, 'start');
 
     if (linebreak || data.lines[n] > 1 || isStack(n, 'script') || isStack(n, 'style')) {
-
       if (update && data.lines[data.ender[a]] < 2) data.lines[data.ender[a]] = 2;
-
       levels.push(indent);
-
     } else {
-
       if (update && data.lines[data.ender[a]] > 1) data.lines[data.ender[a]] = data.lines[n];
-
       levels.push(data.lines[n] === 1 ? -10 : -20);
-
     }
   }
 
@@ -2514,8 +2160,16 @@ export function markup () {
 
         if (isLike(a, 'attribute')) {
 
-          Attribute();
+          if (isType(a - 1, 'liquid_markup_start')) {
 
+            indent = indent + 1;
+            Attribute();
+
+            indent = indent - 1;
+          } else {
+
+            Attribute();
+          }
         } else if (isType(a, 'comment')) {
 
           Comment();
@@ -2530,10 +2184,11 @@ export function markup () {
           // {% endtag %}
           // {% endcase %}
           //
-          if (
+          if ((
             isType(n, 'end') ||
             isType(n, 'liquid_case_end') ||
-            isType(n, 'liquid_end')) {
+            isType(n, 'liquid_liquid_end') ||
+            isType(n, 'liquid_end'))) {
 
             indent = indent - 1;
 
@@ -2550,7 +2205,8 @@ export function markup () {
             isType(a, 'liquid_start') ||
             isType(a, 'liquid_case_start') ||
             isType(a, 'liquid_when') ||
-            isType(a, 'liquid_markup_start')) {
+            isType(a, 'liquid_markup_start') ||
+            isType(a, 'liquid_liquid_start')) {
 
             indent = indent + 1;
 
@@ -2579,15 +2235,40 @@ export function markup () {
 
               levels.push(-10);
 
-            } else if (isType(a, 'liquid')) {
+            } else if (isType(a, 'liquid') || isType(a, 'content')) {
 
-              if (isType(n, 'liquid_case_end') && dedent.has('case') === false) {
+              if (isType(n, 'liquid_case_end')) {
 
-                indent = indent - 1;
+                if (dedent.has('case')) {
+
+                  isType(a, 'content') ? IndentMarkup() : IndentLiquid();
+
+                } else {
+
+                  if (levels[a - 1] === indent) {
+
+                    levels[a - 1] = indent - 1;
+
+                  } else {
+
+                    levels[a - 1] = indent;
+                    indent = indent - 1;
+
+                  }
+
+                  isType(a, 'content') ? IndentMarkup() : IndentLiquid();
+
+                }
+
+              } else if (isType(a, 'liquid')) {
+
+                IndentLiquid();
+
+              } else {
+
+                IndentMarkup();
 
               }
-
-              IndentLiquid();
 
             } else if (textBoundInline && (isType(p, 'start') || isType(n, 'start'))) {
 
@@ -2626,7 +2307,7 @@ export function markup () {
 
             if (isType(n, 'liquid_case_end')) {
 
-              indent = indent - 1;
+              // indent = indent - 1;
 
             }
 
@@ -2641,6 +2322,14 @@ export function markup () {
               IndentMarkup();
 
             }
+
+          } else if (
+            isType(p, 'liquid_markup_start') &&
+            isType(a - 1, 'attribute') &&
+            isType(a, 'liquid_end')) {
+
+            levels[a - 1] = indent;
+            IndentLiquid();
 
           } else if (
             isType(a, 'liquid_start') ||
@@ -2698,7 +2387,11 @@ export function markup () {
 
             IndentLiquid();
 
-            if (isType(n, 'liquid_when')) indent = indent + 1;
+            if (isType(n, 'liquid_when') && !dedent.has('case')) {
+
+              indent = indent + 1;
+
+            }
 
           } else if (isType(a, 'liquid_case_end')) {
 
@@ -2713,7 +2406,7 @@ export function markup () {
 
           } else if (isType(a, 'liquid_case_else')) {
 
-            levels[a - 1] = indent - 1;
+            levels[a - 1] = dedent.has('case') ? indent - 1 : indent - 2;
 
             IndentLiquid();
 
@@ -2804,7 +2497,6 @@ export function markup () {
     //
     if (output.length === 0 && l > 0) output.push(nl(levels[a], LF.WS));
 
-
     do {
 
       n = a + 1 < c ? a + 1 : a;
@@ -2848,7 +2540,7 @@ export function markup () {
               }
             } else {
 
-              nl(levels[a], LF.NL);
+              // nl(levels[a], LF.NL);
 
             }
           }
@@ -2897,6 +2589,7 @@ export function markup () {
 
             }
           } else {
+
             output.push(data.token[a], nl(levels[a]));
           }
 
@@ -2918,7 +2611,10 @@ export function markup () {
 
             TerminusForce();
 
-          } else if (isLike(a, 'liquid')) {
+          } else if (
+            isLike(a, 'liquid') &&
+            isLike(a, 'liquid_attribute', 0) &&
+            isLike(a, 'liquid_markup', 0)) {
 
             Liquid();
 
