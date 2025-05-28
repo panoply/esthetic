@@ -1,7 +1,7 @@
 import type { EmbeddedHTML, EmbeddedLiquid, Grammars, LanguageName } from 'types';
 
 import { isArray, isObject, isRegex } from 'utils/helpers';
-import { set } from 'utils/native';
+import { object, set } from 'utils/native';
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -43,6 +43,7 @@ class Liquid {
     },
     tags: [
       'form',
+      'doc',
       'paginate',
       'capture',
       'case',
@@ -650,344 +651,6 @@ class HTML {
 
 }
 
-/**
- * CSS Grammar
- *
- * Builds the grammar module for CSS (style) languages.
- */
-
-class CSS {
-
-  public grammar = {
-    units: [
-      '%',
-      'cap',
-      'ch',
-      'cm',
-      'deg',
-      'dpcm',
-      'dpi',
-      'dppx',
-      'em',
-      'ex',
-      'fr',
-      'grad',
-      'Hz',
-      'ic',
-      'in',
-      'kHz',
-      'lh',
-      'mm',
-      'ms',
-      'mS',
-      'pc',
-      'pt',
-      'px',
-      'Q',
-      'rad',
-      'rem',
-      'rlh',
-      's',
-      'turn',
-      'vb',
-      'vh',
-      'vi',
-      'vmax',
-      'vmin',
-      'vw'
-    ],
-    atrules: [
-      '@charset',
-      '@color-profile',
-      '@counter-style',
-      '@font-face',
-      '@font-feature-values',
-      '@font-palette-values',
-      '@import',
-      '@keyframes',
-      '@layer',
-      '@media',
-      '@namespace',
-      '@page',
-      '@supports'
-    ],
-    webkit: {
-      classes: [
-        'webkit-any',
-        'webkit-any-link*',
-        'webkit-autofill'
-      ],
-      elements: [
-        'webkit-file-upload-button',
-        'webkit-inner-spin-button',
-        'webkit-input-placeholder',
-        'webkit-meter-bar',
-        'webkit-meter-even-less-good-value',
-        'webkit-meter-inner-element',
-        'webkit-meter-optimum-value',
-        'webkit-meter-suboptimum-value',
-        'webkit-outer-spin-button',
-        'webkit-progress-bar',
-        'webkit-progress-inner-element',
-        'webkit-progress-value',
-        'webkit-search-cancel-button',
-        'webkit-search-results-button',
-        'webkit-slider-runnable-track',
-        'webkit-slider-thumb'
-      ]
-    },
-    pseudo: {
-      classes: [
-        'active',
-        'any-link',
-        'checked',
-        'default',
-        'defined',
-        'disabled',
-        'empty',
-        'enabled',
-        'first',
-        'first-child',
-        'first-of-type',
-        'fullscreen',
-        'focus',
-        'focus-visible',
-        'focus-within',
-        'host',
-        'hover',
-        'indeterminate',
-        'in-range',
-        'invalid',
-        'is',
-        'lang',
-        'last-child',
-        'last-of-type',
-        'left',
-        'link',
-        'modal',
-        'not',
-        'nth-child',
-        'nth-col',
-        'nth-last-child',
-        'nth-last-of-type',
-        'nth-of-type',
-        'only-child',
-        'only-of-type',
-        'optional',
-        'out-of-range',
-        'picture-in-picture',
-        'placeholder-shown',
-        'paused',
-        'playing',
-        'read-only',
-        'read-write',
-        'required',
-        'right',
-        'root',
-        'scope',
-        'target',
-        'valid',
-        'visited',
-        'where'
-      ],
-      elements: [
-        'after',
-        'backdrop',
-        'before',
-        'cue',
-        'cue-region',
-        'first-letter',
-        'first-line',
-        'file-selector-button',
-        'marker',
-        'part',
-        'placeholder',
-        'selection',
-        'slotted'
-      ],
-      functions: [
-        'after',
-        'before',
-        'first-letter',
-        'first-line',
-        'host',
-        'host-context',
-        'part',
-        'slotted',
-        'lang',
-        'not',
-        'nth-child',
-        'nth-col',
-        'nth-last-child',
-        'nth-last-of-type',
-        'nth-of-type',
-        'where'
-      ]
-    }
-  };
-
-  public units = set(this.grammar.units);
-  public atRules = set(this.grammar.atrules);
-  public pseudoClasses = set(this.grammar.pseudo.classes);
-  public pseudoElements = set(this.grammar.pseudo.elements);
-  public pseudoFunctions = set(this.grammar.pseudo.functions);
-  public webkitElements = set(this.grammar.webkit.elements);
-  public webkitClasses = set(this.grammar.webkit.classes);
-
-  atrules (token: string) {
-
-    return this.atRules.has(token.slice(0, token.indexOf('(')).trim());
-
-  }
-
-  extend (rules: Grammars['css']) {
-
-    for (const rule in rules) {
-
-      if (isArray(rules[rule])) {
-        for (const tag of rules[rule]) {
-          if (rule === 'units' && !this.units.has(tag)) {
-            this.grammar[rule].push(tag);
-            this.units.add(tag);
-          } else if (rule === 'atrules' && !this.atRules.has(tag)) {
-            this.grammar[rule].push(tag);
-            this.atRules.add(tag);
-          }
-        }
-      }
-
-      if (typeof rules[rule] === 'object') {
-        for (const prop in rules[rule]) {
-          if (isArray(rules[rule][prop])) {
-            for (const tag of rules[rule][prop]) {
-              if (rule === 'webkit') {
-
-                if (prop === 'elements') {
-                  this.grammar[rule][prop].push(tag);
-                  this.webkitElements.add(tag);
-                } else if (prop === 'classes') {
-                  this.grammar[rule][prop].push(tag);
-                  this.webkitClasses.add(tag);
-                }
-
-              } else if (rule === 'pseudo') {
-
-                if (prop === 'elements') {
-                  this.grammar[rule][prop].push(tag);
-                  this.pseudoElements.add(tag);
-                } else if (prop === 'classes') {
-                  this.grammar[rule][prop].push(tag);
-                  this.pseudoClasses.add(tag);
-                } else if (prop === 'functions') {
-                  this.grammar[rule][prop].push(tag);
-                  this.pseudoFunctions.add(tag);
-                }
-
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-}
-
-/**
- * JavaScript Grammar
- *
- * Builds the grammar module for JavaScript (script) languages.
- */
-class JavaScript {
-
-  public grammar = {
-    keywords: [
-      'ActiveXObject',
-      'ArrayBuffer',
-      'AudioContext',
-      'Canvas',
-      'CustomAnimation',
-      'DOMParser',
-      'DataView',
-      'Date',
-      'Error',
-      'EvalError',
-      'FadeAnimation',
-      'FileReader',
-      'Flash',
-      'Float32Array',
-      'Float64Array',
-      'FormField',
-      'Frame',
-      'Generator',
-      'HotKey',
-      'Image',
-      'Iterator',
-      'Intl',
-      'Int16Array',
-      'Int32Array',
-      'Int8Array',
-      'InternalError',
-      'Loader',
-      'Map',
-      'MenuItem',
-      'MoveAnimation',
-      'Notification',
-      'ParallelArray',
-      'Point',
-      'Promise',
-      'Proxy',
-      'RangeError',
-      'Rectangle',
-      'ReferenceError',
-      'Reflect',
-      'RegExp',
-      'ResizeAnimation',
-      'RotateAnimation',
-      'Set',
-      'SQLite',
-      'ScrollBar',
-      'Set',
-      'Shadow',
-      'StopIteration',
-      'Symbol',
-      'SyntaxError',
-      'Text',
-      'TextArea',
-      'Timer',
-      'TypeError',
-      'URL',
-      'Uint16Array',
-      'Uint32Array',
-      'Uint8Array',
-      'Uint8ClampedArray',
-      'URIError',
-      'WeakMap',
-      'WeakSet',
-      'Web',
-      'Window',
-      'XMLHttpRequest'
-    ]
-  };
-
-  public keywords = set(this.grammar.keywords);
-
-  extend (rules: Grammars['js']) {
-
-    for (const rule in rules) {
-      if (isArray(rules[rule])) {
-        for (const tag of rules[rule]) {
-          if (rule === 'keywords' && !this.keywords.has(tag)) {
-            this.grammar[rule].push(tag);
-            this.keywords.add(tag);
-          }
-        }
-      }
-    }
-  }
-
-}
-
 /* -------------------------------------------- */
 /* CLASS EXPORT                                 */
 /* -------------------------------------------- */
@@ -998,19 +661,9 @@ class JavaScript {
 class Grammar {
 
   /**
-   * CSS Grammars
-   */
-  public css = new CSS();
-
-  /**
    * Liquid Grammars
    */
   public liquid = new Liquid();
-
-  /**
-   * JavaScript Grammars
-   */
-  public js = new JavaScript();
 
   /**
    * HTML Grammars
@@ -1027,47 +680,23 @@ class Grammar {
      */
   extend (options?: Grammars) {
 
-    const {
-      liquid,
-      html,
-      css,
-      js,
-      svg
-    } = this;
-
     if (isObject(options)) {
       for (const language in options) {
         if (language === 'liquid') {
-          liquid.extend(options.liquid);
+          this.liquid.extend(options.liquid);
         } else if (language === 'html') {
-          html.extend(options.html);
-        } else if (language === 'css') {
-          css.extend(options.css);
-        } else if (language === 'js') {
-          js.extend(options.js);
+          this.html.extend(options.html);
         } else if (language === 'svg') {
-          svg.extend(options.svg);
+          this.svg.extend(options.svg);
         }
       }
     }
 
-    return {
-      get html () {
-        return html.grammar;
-      },
-      get liquid () {
-        return liquid.grammar;
-      },
-      get js () {
-        return js.grammar;
-      },
-      get css () {
-        return css.grammar;
-      },
-      get svg () {
-        return svg.grammar;
-      }
-    };
+    return Object.defineProperties(object(null), {
+      html: { get: () => this.html.grammar },
+      liquid: { get: () => this.liquid.grammar },
+      svg: { get: () => this.svg.grammar }
+    });
 
   }
 
