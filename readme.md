@@ -10,9 +10,9 @@
 
 <br>
 
-### WIP ~ WORK IN PROGRESS
+### ÆSTHETIC
 
-A new generation code beautification tool for formatting HTML, Liquid, CSS/SCSS, JavaScript, TypeScript and more! Æsthetic leverages the [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm and its parse approach has been repurposed from the distributed source of the late and powerful [PrettyDiff](https://github.com/prettydiff/prettydiff/blob/master/options.md).
+New generation code beautification tool for formatting XML, HTML, Liquid and JSON! Æsthetic leverages the [Sparser](https://sparser.io/docs-html/tech-documentation.xhtml#universal-parse-model) lexing algorithm. Over 40+ formatting rules and 25+ possible code output styles.
 
 ### Documentation
 
@@ -20,10 +20,9 @@ Documentation lives on **[aesthetic.js.org](https://aesthetic.js.org)**
 
 ### Features
 
-- Fast, performant and lightweight (50kb gzip).
+- Fast, performant and lightweight (35kb gzip).
 - Format, parse and language detection capabilities.
 - Provides a granular set of beautification rules.
-- Supports 10+ different front~end facing languages.
 - Uniformed data structures with incremental traversal.
 - Simple and painless integration within existing projects.
 
@@ -103,7 +102,7 @@ The [src/parse/parser.ts](/src/parse/parser.ts) file is where you will find the 
 
 **Lexers**
 
-The [src/lexers](/src/lexers/) directory and containing files are responsible for parse operations, this where the parse table gets generated. Markup languages use the [markup.ts](/src/lexers/markup.ts) lexer, Script languages (i.e: JSON, JavaScript etc) use [script.ts](/src/lexers/script.ts) lexer and Style languages (i.e: CSS) use [style.ts](/src/lexers/style.ts) lexer
+The [src/lexers](/src/lexers/) directory and containing files are responsible for parse operations, this where the parse table gets generated. Markup languages use the [markup.ts](/src/lexers/markup.ts) lexer and the JSON language uses the [json.ts](/src/lexers/script.ts) lexer.
 
 **Format**
 
