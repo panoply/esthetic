@@ -1,4 +1,5 @@
-import { Modes, Languages, Lexers } from 'lexical/enum';
+import { Languages, Lexers, Modes } from 'lexical/enum';
+
 import { Data, Syntactic } from '.';
 import { LanguageName } from './shared';
 

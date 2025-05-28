@@ -1,29 +1,37 @@
-export interface JSONRules {
+import type { LiteralUnion } from 'type-fest';
 
+export interface JSONRules {
   /**
-   * **Default:** `default`
+   * Default: `default`
+   *
+   * **JSON**
+   *
+   * **[arrayFormat](https://aesthetic.js.org/rules/arrayFormat/)**
    *
    * Controls how arrays on objects are formatted. This rules will
    * determines if all array indexes should be indented, never indented,
    * or left to the default.
    *
-   * **Options**
    *
-   * - `default`
-   *  Default formatting (default)
+   * > `default`
+   * >
+   * > Default formatting (default)
    *
-   * - `indent`
-   *  "Always indent each index of an array
+   * > `indent`
+   * >
+   * > Always indent each index of an array
    *
-   * - `inline`
-   *  Ensure all array indexes appear on a single line
-   *
-   * @default 'default'
+   * > `inline`
+   * >
+   * > Ensure all array indexes appear on a single line
    */
   arrayFormat?: 'default' | 'indent' | 'inline';
-
   /**
-   * **Default:** `true`
+   * Default: `true`
+   *
+   * **JSON**
+   *
+   * **[braceAllman](https://aesthetic.js.org/rules/braceAllman/)**
    *
    * This option will determine how arrays cotained on objects will
    * be formatted. If opening curly braces should exist on the same
@@ -77,9 +85,12 @@ export interface JSONRules {
    * ```
    */
   braceAllman?: boolean;
-
   /**
-   * **Default:** `false`
+   * Default: `false`
+   *
+   * **JSON**
+   *
+   * **[bracePadding](https://aesthetic.js.org/rules/bracePadding/)**
    *
    * If true an empty line will be inserted after opening curly braces
    * and before closing curly braces.
@@ -119,11 +130,10 @@ export interface JSONRules {
    * ```
    */
   bracePadding?: boolean;
-
   /**
    * **Default:** `default`
    *
-   * Controls how arrays on objects are formatted. We will exclude
+   * Controls how arrays of objects are formatted. We will exclude
    * the `inline` option to prevent unreadable objects. If all object
    * keys should be indented, never indented, or left to the default.
    *
@@ -136,7 +146,6 @@ export interface JSONRules {
    *  "Always indent each index of an array
    */
   objectIndent?: 'default' | 'inline' | 'indent';
-
   /**
    * **Default:** `false`
    *
@@ -180,4 +189,27 @@ export interface JSONRules {
    * ```
    */
   objectSort?: boolean;
+  /**
+   * Default: `false`
+   *
+   * **JSON**
+   *
+   * **[endComma](https://aesthetic.js.org/rules/bracePadding/)**
+   *
+   * If there should be a trailing comma in arrays and objects.
+   *
+   * > `always`
+   * >
+   * > Always ensure there is a tailing comma
+   *
+   * > `never`
+   * >
+   * > Remove trailing commas
+   *
+   * > `preserve`
+   * >
+   * > Ignore this option
+   *
+   */
+  endComma?: 'preserve' | 'always' | 'never'
 }

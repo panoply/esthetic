@@ -1,23 +1,21 @@
-/* eslint-disable no-use-before-define */
-
 import { LiteralUnion } from 'type-fest';
+
+import { ExtraTypes, JsonTypes, LiquidTypes, MarkupTypes } from './parse/tokens';
 import { GlobalRules } from './rules/global';
+import { JSONRules } from './rules/json';
 import { LiquidRules } from './rules/liquid';
 import { MarkupRules } from './rules/markup';
-import { StyleRules } from './rules/style';
-import { ScriptRules } from './rules/script';
-import { MarkupTypes, StyleTypes, ScriptTypes, LiquidTypes, ExtraTypes } from './parse/tokens';
+
+export interface Rules extends GlobalRules, MarkupRules, LiquidRules, JSONRules {}
 
 /**
  * Option Rule Names Stirng Literal
  */
 export type RulePresetNames = LiteralUnion<(
-  | 'default'
-  | 'recommended'
+  | 'none'
+  | 'aesthetic'
   | 'warrington'
-  | 'strict'
   | 'prettier'
-  | 'blanklob'
 ), string>
 
 /**
@@ -27,21 +25,9 @@ export type RuleNames = (
   | keyof GlobalRules
   | keyof LiquidRules
   | keyof MarkupRules
-  | keyof StyleRules
-  | keyof ScriptRules
+  | keyof JSONRules
 )
 
-/**
- * Language Rules names
- */
-export type LanguageRuleNames = (
-  | 'global'
-  | 'liquid'
-  | 'markup'
-  | 'json'
-  | 'style'
-  | 'script'
-)
 /**
  * Lexer Names string literal
  */
@@ -50,8 +36,7 @@ export type LexerName = (
   | 'auto'
   | 'text'
   | 'markup'
-  | 'script'
-  | 'style'
+  | 'json'
 );
 
 /**
@@ -60,18 +45,10 @@ export type LexerName = (
 export type LanguageName = LiteralUnion<(
   | 'auto'
   | 'text'
+  | 'plaintext'
   | 'html'
   | 'liquid'
-  | 'javascript'
-  | 'markdown'
-  | 'jsx'
-  | 'typescript'
-  | 'tsx'
   | 'json'
-  | 'css'
-  | 'scss'
-  | 'sass'
-  | 'less'
   | 'xml'
   | 'unknown'
 ), string>
@@ -81,20 +58,11 @@ export type LanguageName = LiteralUnion<(
  */
 export interface LanguageOfficialNameMap {
   text: 'Plain Text';
+  plaintext: 'Plain Text';
   html: 'HTML';
   liquid: 'Liquid';
-  javascript: 'JavaScript'
-  jsx: 'JSX';
-  typescript: 'TypeScript';
-  tsx: 'TSX';
   json: 'JSON';
-  css: 'CSS';
-  scss: 'SCSS';
-  sass: 'SASS';
-  less: 'LESS';
   xml: 'XML';
-  yaml: 'YAML';
-  markdown: 'Markdown';
 }
 
 /**
@@ -153,9 +121,8 @@ export class StructureEntries extends Array<Structure> {
 export type Types = LiteralUnion<`${
   | MarkupTypes
   | ExtraTypes
-  | ScriptTypes
+  | JsonTypes
   | LiquidTypes
-  | StyleTypes
 }`, string>
 
 /**

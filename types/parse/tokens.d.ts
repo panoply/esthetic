@@ -1,123 +1,7 @@
 /**
- * Style lexer stack token types
- */
-export enum StyleTypes {
-
-  /**
-   * Describes a `:root`selector. This types value exists to uniquely set colon
-   * characters apart from other types values.
-   */
-  root = 'root',
-  /**
-   * Describes a : character. This types value exists to uniquely set colon
-   * characters apart from other types values.
-   */
-  colon = 'colon',
-  /**
-   * Describes standard CSS block comments as well as line comments that
-   * exist in languages like LESS and SCSS.
-   */
-  comment = 'comment',
-  /**
-   * Describes the characters `}` and `)` if the parenthesis closes a structure
-   * described as map.
-   */
-  end = 'end',
-  /**
-   * Describes a name followed by a single set of parenthesis which is
-   * followed by either a semicolon or closing curly brace.
-   */
-  function = 'function',
-  /**
-   * Describes a CSS @ rule selector function
-   */
-  at_rule = 'at_rule',
-  /**
-   * This is an internally used value that should not be exposed outside
-   * the lexer unless the lexer receives an incomplete code sample.
-   */
-  item = 'item',
-  /**
-   * Describes a CSS selector.
-   */
-  selector = 'selector',
-
-  /**
-   * Describes a pseudo selector of either class or element type.
-   */
-  pseudo = 'pseudo',
-  /**
-   * Describes a pseudo selector. This is a selector with a single colon prefix,
-   * eg: `:root {}` - see: https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes
-   *
-   * > When used with `correct` and 2 colons are expressed, it will be replaced with 1.
-   */
-  pseudo_class = 'pseudo_class',
-  /**
-   * Describes a pseudo element. This is a selector which uses 2 colon prefixes,
-   * eg: `::last-child` - see: https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements
-   *
-   * > When used with `correct` and a single colon is expressed, it will be replaced with 2.
-   */
-  pseudo_element = 'pseudo_element',
-  /**
-   * Describes a ; character. This types value exists to uniquely set semicolon
-   * characters apart from other types values.
-   */
-  semi = 'semi',
-  /**
-   * Describes `{` and `(` if the parenthesis is part of a map structure.
-   */
-  start = 'start',
-  /**
-   * Describes a token comprising an external template language that is not
-   * of start or end types.
-   *
-   * ---
-   *
-   * This infers Liquid code in Æsthetic
-   */
-  template = 'template',
-  /**
-   * Various template languages commonly offer conditions with else branches.
-   * Else tokens do not behave the same way as a templates start or end types.
-   *
-   * ---
-   *
-   * This infers Liquid code in Æsthetic
-   */
-  liquid_else = 'liquid_else',
-  /**
-   * Describes the closing sequence for a third party language template tag.
-   *
-   * ---
-   *
-   * This infers Liquid code in Æsthetic
-   */
-  liquid_end = 'liquid_end',
-  /**
-   * Describes the closing sequence for a third party language template tag.
-   *
-   * ---
-   *
-   * This infers Liquid code in Prettify
-   */
-  liquid_start = 'liquid_start',
-  /**
-   * Describes CSS property values, which is generally anything that follows a colon,
-   * even if not a known property, but does not immediately precede some sort of structure opening.
-   */
-  value = 'value',
-  /**
-   * Languages like LESS and SCSS allow defining and referencing from variables.
-   */
-  variable = 'variable',
-}
-
-/**
  * Script lexer stack token types
  */
-export enum ScriptTypes {
+export enum JsonTypes {
   /**
    * Describes both block comments (`/*`) and line comments (`//`)
    *
@@ -131,10 +15,6 @@ export enum ScriptTypes {
    */
   end = 'end',
   /**
-   * Java and C# styled type generics as used in TypeScript
-   */
-  generic = 'generic',
-  /**
    * JavaScript operators and other syntax characters not otherwise described here.
    */
   operator = 'operator',
@@ -146,15 +26,6 @@ export enum ScriptTypes {
    * A named reference of an object.
    */
   property = 'property',
-  /**
-   * A word token type that is declared in the code sample.
-   */
-  reference = 'reference',
-  /**
-   * Regular expressions. Described as delimited by / characters but not in
-   * such a way that the first character could suggestion a division operator.
-   */
-  regex = 'regex',
   /**
    * Describes `,`, `.`, and `;`.
    */
@@ -197,30 +68,6 @@ export enum ScriptTypes {
    */
   liquid_start = 'liquid_start',
   /**
-   * A template (literal) string that terminates with `${`.
-   */
-  template_string_end = 'liquid_string_end',
-  /**
-   * A template string that starts with `}` and terminates with `${`.
-   */
-  template_string_else = 'liquid_string_else',
-  /**
-   * A template string that starts with `}`
-   */
-  template_string_start = 'liquid_string_start',
-  /**
-   *  A TypeScript data type declaration.
-   */
-  type = 'type',
-  /**
-   * Closing out a TypeScript data type.
-   */
-  type_end = 'type_end',
-  /**
-   * A starting structure of TypeScript data types.
-   */
-  type_start = 'type_start',
-  /**
    * A markup type
    */
   markup = 'markup',
@@ -237,6 +84,17 @@ export enum ScriptTypes {
  * Markup lexer stack token types
  */
 export enum MarkupTypes {
+  /**
+   * Frontmatter start
+   *
+   * --
+   *
+   * @example
+   * ---
+   * foo: 'bar'
+   * ---
+   */
+  frontmatter = 'frontmatter',
   /**
    * The doctype tag
    *
@@ -304,27 +162,6 @@ export enum MarkupTypes {
    * the element as a singleton even if it is part of tag pair and contains descendant nodes.
    */
   ignore = 'ignore',
-  /**
-   * The start of an curly brace delimited escape, stated as a tag attribute, that
-   * allows JavaScript inside the markup tag of a JSX markup element.
-   *
-   *
-   * ---
-   * @example
-   *
-   * <img id={}>  // Before { character
-   */
-  jsx_attribute_start = 'jsx_attribute_start',
-  /**
-   * The end of an curly brace delimited escape, stated as a tag attribute, that
-   * allows JavaScript inside the markup tag of a JSX markup element.
-   *
-   * ---
-   * @example
-   *
-   * <img id={}>  // After } character
-   */
-  jsx_attribute_end = 'jsx_attribute_end',
   /**
    * A curly brace indicating the contents that need to be passed to the script
    * lexer for JSX language.
@@ -620,6 +457,15 @@ export enum LiquidTypes {
    */
   ignore_next = 'ignore_next',
   /**
+   * Liquid Line Comment
+   *
+   * ---
+   * @example
+   *
+  * {% # comment %}
+   */
+  liquid_comment_line = 'liquid_comment_line',
+  /**
    * Liquid block comment start tag
    *
    * ---
@@ -654,7 +500,16 @@ export enum LiquidTypes {
    *
    * {% liquid
    */
-  liquid_liquid_start = 'liquid_tag',
+  liquid_tag_start = 'liquid_tag_start',
+  /**
+   * Represent a Liquid (liquid) tag ending delimiter
+   *
+   * ---
+   * @example
+   *
+   * %}
+   */
+  liquid_tag_end= 'liquid_tag_end',
   /**
    * Liquid tag which is empty (no name)
    *
@@ -665,23 +520,12 @@ export enum LiquidTypes {
    * {%- -%}
    */
   liquid_empty = 'liquid_empty',
-  /**
-   * Represent a Liquid (liquid) tag ending delimiter
-   *
-   * ---
-   * @example
-   *
-   * %}
-   */
-  liquid_liquid_end= 'liquid_tag',
 }
 
 /**
  * Extra lexer stack token types
  */
 export enum ExtraTypes {
-  else = 'else',
-  mixin = 'mixin',
   comment = 'comment',
   ignore_start = 'ignore_start',
   ignore_end = 'ignore_end',

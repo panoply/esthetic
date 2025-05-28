@@ -1,4 +1,4 @@
-import { GlobalRules, JSONRules, LiquidRules, MarkupRules, ScriptRules, StyleRules } from '..';
+import type { Rules } from '..';
 
 /**
  * Option defintion type string Literal
@@ -8,7 +8,7 @@ export type DefinitionTypes = 'boolean' | 'array' | 'number' | 'string' | 'choic
 /**
  * Option defintion lexer types
  */
-export type DefinitionLexerTypes = 'auto' | 'markup' | 'script' | 'style'
+export type DefinitionLexerTypes = 'auto' | 'markup' | 'json'
 
 /**
  * Definition Reference
@@ -30,7 +30,7 @@ export interface Definition {
    * Preset default
    */
   preset?: {
-    [K in GlobalRules['preset']]: boolean | string[] | string | number
+    [K in Rules['preset']]: boolean | string[] | string | number
   }
   /**
    * Types
@@ -63,23 +63,6 @@ export interface Definition {
 /**
  * Option Definitions
  */
-export interface Definitions {
-  global: {
-    [K in keyof GlobalRules]: Definition
-  };
-  liquid: {
-    [K in keyof LiquidRules]: Definition
-  };
-  markup: {
-    [K in keyof MarkupRules]: Definition
-  };
-  style: {
-    [K in keyof StyleRules]: Definition
-  };
-  json: {
-    [K in keyof JSONRules]: Definition
-  };
-  script: {
-    [K in keyof ScriptRules]: Definition
-  };
+export type Definitions = {
+  [K in keyof Rules]: Definition
 }

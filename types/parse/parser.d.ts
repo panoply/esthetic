@@ -1,32 +1,14 @@
+import { CommentType, Languages } from 'lexical/enum';
 import { LiteralUnion } from 'type-fest';
-import { Languages } from 'lexical/enum';
-import { Types, LanguageOfficialName, LanguageName } from '../shared';
 import { StackItem } from 'types/next';
+
+import { LanguageName, LanguageOfficialName, Types } from '../shared';
 
 export interface Scope {
   get token (): string;
   set token (token: string)
   get index (): number;
   set index (index: number)
-}
-
-/* -------------------------------------------- */
-/* LEXING                                       */
-/* -------------------------------------------- */
-
-export interface VariableDeclarations {
-  /**
-   * Count reference
-   */
-  count: number[];
-  /**
-   * Index Reference
-   */
-  index: number[];
-  /**
-   * Word Stores
-   */
-  word: string[];
 }
 
 /* -------------------------------------------- */
@@ -370,7 +352,7 @@ export interface Comments {
   /**
    * The lexer mode
    */
-  lexer: LiteralUnion< 'markup' |'script' | 'style', string>;
+  lexer: LiteralUnion<'markup' | 'json', string>;
   /**
    * The opening delimiter token of the comment
    */
@@ -390,6 +372,10 @@ export type BlockComments = [
    * The advancement index
    */
   advance: number,
+  /**
+   * Comment enum type
+   */
+  type: CommentType,
   /**
    * An optional records reference used to update data~structure
    */

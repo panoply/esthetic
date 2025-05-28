@@ -1,15 +1,13 @@
-/* eslint-disable no-redeclare */
 /* eslint-disable no-use-before-define */
-/* eslint-disable object-curly-newline */
 
 import { Events } from './types/events';
 import { Hooks } from './types/hooks';
 import * as Æ from './types/index';
 import {
-  LiquidFormat,
-  HTMLFormat,
   CSSFormat,
+  HTMLFormat,
   JSONFormat,
+  LiquidFormat,
   XMLFormat
 } from './types/misc/specifics';
 
@@ -124,22 +122,6 @@ declare namespace Æsthetic {
      * Formatting for the JSON Language.
      */
     json: JSONFormat;
-    /**
-     * #### _Æsthetic JavaScript_
-     *
-     * **⚠️ EXPERIMENTAL ⚠️**
-     *
-     * Formatting for the JavaScript Language.
-     */
-    js: LiquidFormat;
-    /**
-     * #### _Æsthetic TypeScript_
-     *
-     * **⚠️ EXPERIMENTAL ⚠️**
-     *
-     * Formatting for the TypeScript Language.
-     */
-    ts: LiquidFormat;
     /**
      * #### _ÆSTHETIC_
      *
@@ -636,15 +618,6 @@ declare namespace Æsthetic {
 }
 
 declare global {
-
-  interface Window {
-    /**
-     * #### _ÆSTHETIC_
-     *
-     * Syntactical code beautification leveraging the Sparser algorithm.
-     */
-    get esthetic(): Æsthetic.Static
-  }
 
   /**
    * #### _ÆSTHETIC_

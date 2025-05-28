@@ -1,4 +1,4 @@
-import { Data, IParseError, Rules, RulesChanges } from '.';
+import { Data, IParseError, RuleChanges, Rules } from '.';
 import { Stats } from './shared';
 
 export type EventNames = (
@@ -82,7 +82,7 @@ export declare interface EventListeners {
    *
    * Invoked when formatting rules change.
    */
-  rules: ((changes: RulesChanges, rules: Rules) => void)[];
+  rules: ((changes: RuleChanges, rules: Rules) => void)[];
 
 }
 
@@ -119,7 +119,7 @@ export declare interface Events<T> {
     /**
      * Holds reference to rules which changed
      */
-    changes?: RulesChanges,
+    changes?: RuleChanges,
     /**
      * Holds reference to current rules
      */

@@ -1,21 +1,18 @@
-import { LiteralUnion } from 'type-fest';
-import { EmbeddedLiquid } from 'types/misc/grammar';
-
-import { JSONRules } from './json';
+import type { LiteralUnion } from 'type-fest';
 
 export interface LiquidRules {
   /**
-   * #### Default: `0`
+   * Default: `0`
    *
-   * >
+   * **Liquid**
    *
-   * #### [Argument Line Break](https://aesthetic.js.org/rules/liquid/argumentLineBreak/)
+   * **[Argument Line Break](https://aesthetic.js.org/rules/argumentLineBreak/)**
    *
-   * The number of tag arguments or parameters allowed before applying a line break.
+   * The number of tag arguments or parameters allowed before applying a newline break.
    * By default, this is set to `0`, which signals Æsthetic to apply line breaks when the
-   * tokens exceed the global word `wrap` limit. Providing a value of `1` or more will apply
-   * line breaks based on the count, meaning line breaks will be applied when the total
-   * number of arguments (or parameters) is **equal to** or **greater than** the specified value.
+   * tokens exceed the global word `wordWrap` limit. Providing a value of `1` or more will
+   * apply line breaks based on the count, meaning line breaks will be applied when the
+   * total number of arguments (or parameters) is **equal to** or **greater than** the specified value.
    *
    * > **NOTE**
    *
@@ -24,38 +21,6 @@ export interface LiquidRules {
    *
    */
   argumentLineBreak?: number;
-  /**
-   * #### Default: `true`
-   *
-   * >
-   *
-   * #### [Comment Indent](https://aesthetic.js.org/rules/liquid/commentIndent/)
-   *
-   * This will determine whether comments should always start at position
-   * `0` of each line or if comments should be indented according to the code.
-   * It is unlikely you will ever want to set this to `false` so generally, just
-   * leave it to `true`
-   *
-   */
-  commentIndent?: boolean;
-  /**
-   * #### Default: `false`
-   *
-   * >
-   *
-   * ### [Comment Preserve](https://aesthetic.js.org/rules/liquid/commentPreserve/)
-   *
-   * Prevent Æsthetic from carrying out formatting on comments. When enabled (i.e, `true`),
-   * comment formatting will be ignored.
-   *
-   * > **NOTE**
-   * >
-   * > **This rule will override and run precedence on the `commentIndent` rule.**
-   * > **When enabled (i.e, `true`) it will have no effect.**
-   *
-   */
-  commentPreserve?: boolean;
-
   /**
    * **Default** `true`
    *
@@ -84,11 +49,11 @@ export interface LiquidRules {
    */
   forceIndent?: boolean;
   /**
-   * #### Default: `preserve`
+   * Default: `preserve`
    *
-   * >
+   * **Liquid**
    *
-   * #### [Delimiter Trims](https://aesthetic.js.org/rules/liquid/delimiterTrims/)
+   * **[Delimiter Trims](https://aesthetic.js.org/rules/delimiterTrims/)**
    *
    * How delimiter whitespace trim dashes should handled on Liquid tokens. Delimiter trims
    * represent the `-` character either suffixed or prefixed to delimiters of tags and output
@@ -129,19 +94,13 @@ export interface LiquidRules {
    * > This option will perform analysis of the internal markup and work together with other rules.
    *
    */
-  delimiterTrims?:
-  | 'preserve'
-  | 'never'
-  | 'always'
-  | 'tags'
-  | 'outputs'
-  | 'multiline'
+  delimiterTrims?: 'preserve' | 'never' | 'always' | 'tags' | 'outputs' | 'multiline'
   /**
-   * #### Default: `preserve`
+   * Default: `preserve`
    *
-   * >
+   * **Liquid**
    *
-   * #### [Delimiter Placement](https://aesthetic.js.org/rules/liquid/delimiterPlacement/)
+   * [Delimiter Placement](https://aesthetic.js.org/rules/delimiterPlacement/)
    *
    * Controls the placement of opening (`{{`, `{%`) and closing (`}}`, `%}`) token delimiters.
    * By default, the rule will preserve the placement, however you may prefer that delimiters
@@ -167,30 +126,18 @@ export interface LiquidRules {
    * > token spans multiple lines.
    *
    */
-  delimiterPlacement?:
-  | 'preserve'
-  | 'consistent'
-  | 'inline'
-  | 'newline-multiline'
+  delimiterPlacement?: LiteralUnion<'preserve'| 'consistent'| 'inline'| 'newline-multiline', string>
   /**
-   * #### Default: `0` OR `true`
+   * Default: `true` OR `0`
    *
-   * >
+   * **Liquid**
    *
-   * #### [Filter Line Break](https://aesthetic.js.org/rules/liquid/filterLineBreak/)
+   * **[Filter Line Break](https://aesthetic.js.org/rules/filterLineBreak/)**
    *
-   * Accepts either a boolean value or number limit. Controls filter newline break formatting
-   * (i.e, pipe prefixed `|` expressions). By default, this is set to `0` which signals to Æsthetic
-   * to apply newline breaks based on the global word `wrap` limit. If you prefer to determine line
-   * breaks on a per-token occurance, provide a boolean `true` value. A value of `true` tells Æsthetic
-   * to use a preservational handling approach and format according to the input structure.
-   *
-   * >
-   *
-   * #### Options
-   *
-   * The rule defaults to `0` which results in `wrap` based line breaks. However, if `wrap` is set to `0`
-   * then the default value will be `true` and preservational handling applies.
+   * Accepts either a `boolean` value or `number` limit. Controls filter newline break formatting
+   * (i.e, pipe prefixed `|` expressions). If left undefined, when `wordWrap` is set to `0`, the
+   * rule will default itself to `true` and used preservational formatting. When `wordWrap` is defined
+   * then this rule defaults to `0` and applies wrap-based line breaks.
    *
    * > `false`
    *
@@ -219,122 +166,40 @@ export interface LiquidRules {
    */
   filterLineBreak?: boolean | number;
   /**
-   * #### Default: `true`
+   * Default: `true`
    *
-   * >
+   * **Liquid**
    *
-   * #### [Indent Attribute](https://aesthetic.js.org/rules/liquid/indentAttribute/)
+   * **[Indent Attribute](https://aesthetic.js.org/rules/indentAttribute/)**
    *
-   * Whether or not Liquid tag expression contained within attributes of markup tags should
+   * Whether or not Liquid tag expressions contained within attributes of markup tags should
    * apply indentation or be aligned at the starting point of each line.
-   *
-   * > **NOTE**
-   *
-   * > **This rule emulates the behaviour of the Liquid Prettier Plugin by Shopify**
    */
   indentAttribute?: boolean;
   /**
-   * #### Default: `true`
+   * Default: `before`
    *
-   * >
+   * **Liquid**
    *
-   * #### [Dedent Tag List](https://aesthetic.js.org/rules/liquid/dedentTagList/)
-   *
-   * Prevents indentation from being applied to the containing content of a specific tag.
-   *
-   * > **NOTE**
-   * >
-   * > **The rules accepts tags which require and ender. Singleton type tags will be ignored.**
-   */
-  dedentTagList?: Array<LiteralUnion<
-  | 'form'
-  | 'paginate'
-  | 'capture'
-  | 'case'
-  | 'for'
-  | 'if'
-  | 'raw'
-  | 'tablerow'
-  | 'liquid'
-  | 'unless'
-  | 'schema'
-  | 'style'
-  | 'script'
-  | 'stylesheet'
-  | 'javascript', string>>;
-  /**
-   * #### Default: `true`
-   *
-   * >
-   *
-   * #### [Equipoise Spacing](https://aesthetic.js.org/rules/liquid/equipoiseSpacing/)
-   *
-   * Whether or not spacing within Liquid tokens should apply correction. This rule
-   * will equally distribute whitespace characters contained within Liquid tags and output tokens.
-   *
-   * > **NOTE**
-   * >
-   * > **Equipoise does not apply to expressions contained in strings (i.e, quotation `" "` or `' '` characters).**
-   * > **As such, Liquid tokens contained within markup attributes do not respect equipoise.**
-   */
-  equipoiseSpacing?: boolean;
-  /**
-   * #### Default: `none`
-   *
-   * >
-   *
-   * #### [Quote Convert](https://aesthetic.js.org/rules/liquid/quoteConvert/)
-   *
-   * If the quotes in Liquid tokens should be converted to single quotes, double
-   * quotes or be left intact.
-   *
-   * > `double`
-   *
-   * > Converts single quotes to double quotes
-   *
-   * > `single`
-   *
-   * > Converts double quotes to single quotes
-   *
-   * > `none`
-   *
-   * > Quote conversion is not applied. Please note, that quotes within markup quotes will be
-   * > automatically handled depending on nesting order, for example:
-   *
-   * > ```liquid
-   * > "{{ "x" }}" → "{{ 'x' }}"
-   * > '{{ 'x' }}' → '{{ "x" }}'
-   * > ```
-   *
-   */
-  quoteConvert?: LiteralUnion<
-  | 'double'
-  | 'single'
-  | 'none', string>;
-  /**
-   * #### Default: `before`
-   *
-   * >
-   *
-   * #### [Line Break Separator](https://aesthetic.js.org/rules/liquid/lineBreakSeparator/)
+   * **[Line Break Separator](https://aesthetic.js.org/rules/lineBreakSeparator/)**
    *
    * Controls the placement of linebreak separator characters (typically comma `,` tokens).
-   * By default, Æsthetic places such characters **before** content.
+   * By default, Æsthetic uses `before` placements.
    */
   lineBreakSeparator?: LiteralUnion<
-  | 'preserve'
-  | 'after'
-  | 'before', string>;
+    | 'preserve'
+    | 'after'
+    | 'before', string>;
   /**
-   * #### Default: `before`
+   * Default: `before`
    *
-   * >
+   * **Liquid**
    *
-   * #### [Line Break Logical](https://aesthetic.js.org/rules/liquid/lineBreakLogical/)
+   * **[Line Break Logical](https://aesthetic.js.org/rules/liquid/lineBreakLogical/)**
    *
-   * Controls the placement of conditional keyword combinators (i.e, `and` or `or`)
-   * The rule will take effect when conditional expressions apply linebreaks, which occurs
-   * when global `wrap` limit has been exceeded.
+   * Controls the placement of conditional keyword combinators (i.e, `and` or `or`) in Liquid
+   * tokens. The rule will take effect when conditional expressions apply linebreaks, which occurs
+   * when global `wordWrap` limit has been exceeded.
    *
    * > `preserve`
    *
@@ -356,43 +221,7 @@ export interface LiquidRules {
   | 'after'
   | 'before', string>;
   /**
-   * **NOT YET AVAILABLE**
-   *
-   * _This rule is under consideration and is not yet available for usage_
-   *
-   * ---
-   *
-   * **Default** `[]`
-   *
-   * 💁🏽‍♀️ &nbsp;&nbsp; Recommended setting is subjective
-   *
-   * A list of Liquid tags that should have newlines forced above and
-   * below. Singleton type Liquid tags are not supported, the rule will
-   * only apply newlines on start and end types.
-   *
-   * > **Note**
-   * >
-   * > **This rule will respect the liquid `forceIndent` rule. Only when newline**
-   * > **occurances are detected will padding be applied.**
-   */
-  paddedTagList?: Array<LiteralUnion<
-  | 'form'
-  | 'paginate'
-  | 'when'
-  | 'elsif'
-  | 'else'
-  | 'for'
-  | 'if'
-  | 'raw'
-  | 'tablerow'
-  | 'unless'
-  | 'schema'
-  | 'style'
-  | 'script'
-  | 'stylesheet'
-  | 'javascript', string>>;
-  /**
-   * #### Default: `[]`
+   * default: `[]`
    *
    * >
    *
