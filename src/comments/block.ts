@@ -1,12 +1,11 @@
 import { BIG, MID, NIL, NWL, WSP } from 'chars';
-import { cc, cc as ch } from 'lexical/codes';
+import { cc as ch } from 'lexical/codes';
 import { CommentType } from 'lexical/enum';
-import { ParseError } from 'lexical/errors';
+import { delimiters } from 'lexical/liquid';
 import * as rx from 'lexical/regex';
-import { MarkupError } from 'parse/errors';
 import { parse } from 'parse/parser';
 import { BlockComments, Comments } from 'types';
-import { charEsc, countLines, is, isLast, last, liquidEsc, not, or, ws } from 'utils/helpers';
+import { charEsc, is, isLast, liquidEsc, not, ws } from 'utils/helpers';
 
 /**
  * Comment Block Parser
@@ -57,12 +56,12 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
   /**
    * Sanatized opening delimiter sequence
    */
-  const sanitize = config.begin.replace(rx.CharEscape, charEsc);
+  const sanitize = begin.replace(rx.CharEscape, charEsc);
 
   /**
    * Delimiter prefix for ignore comments
    */
-  const prefix = type !== CommentType.LiquidLine ? sanitize : `${config.begin}\\s*#`;
+  const prefix = type !== CommentType.LiquidLine ? sanitize : `${begin}\\s*#`;
 
   /**
    * Regular expression for ignore comment starters
@@ -88,8 +87,8 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    * Liquid ending expression
    */
   let regexEnder: RegExp = type > 2
-    ? new RegExp(config.ender.replace(rx.LiquidDelimiters, liquidEsc))
-    : new RegExp(config.ender.replace(rx.CharEscape, charEsc));
+    ? new RegExp(ender.replace(rx.LiquidDelimiters, liquidEsc))
+    : new RegExp(ender.replace(rx.CharEscape, charEsc));
 
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
@@ -136,19 +135,11 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    */
   function CommentTypeEnum () {
 
-    if (
-      is(config.begin[0], ch.LCB) &&
-      is(config.begin[1], ch.PER)) {
-
-      return rx.LiquidBlockComment.test(config.begin)
-        ? CommentType.LiquidBlock
-        : CommentType.LiquidLine;
-
+    if (is(config.begin[0], ch.LCB) && is(config.begin[1], ch.PER)) {
+      return rx.LiquidBlockComment.test(config.begin) ? CommentType.LiquidBlock : CommentType.LiquidLine;
     }
 
-    return config.begin === '/*'
-      ? CommentType.Block
-      : CommentType.Markup;
+    return config.begin === '/*' ? CommentType.Block : CommentType.Markup;
 
   }
 
@@ -168,23 +159,23 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
     if (type !== CommentType.Markup) return false;
 
-    if (rules.markup.commentDelimiter === 'consistent') {
+    if (rules.commentBracket === 'consistent') {
 
       return is(output.slice(4).replace(rx.WhitespaceLead, NIL), ch.NWL)
         ? [ Delimiters.Force, Delimiters.Force ]
         : [ Delimiters.Inline, Delimiters.Inline ];
 
-    } else if (rules.markup.commentDelimiter === 'newline') {
+    } else if (rules.commentBracket === 'newline') {
 
       return [ Delimiters.Force, Delimiters.Force ];
 
     } else if (
-      rules.markup.commentDelimiter === 'inline' ||
-      rules.markup.commentDelimiter === 'inline-align') {
+      rules.commentBracket === 'inline' ||
+      rules.commentBracket === 'inline-align') {
 
       return [ Delimiters.Inline, Delimiters.Inline ];
 
-    } else if (rules.markup.commentDelimiter === 'preserve') {
+    } else if (rules.commentBracket === 'preserve') {
 
       const delim: Delimiters[] = [];
 
@@ -216,16 +207,16 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    * This function is used exclusively for the `markup.commentDelimiters` rule and any
    * non markup identified comment types will pass through untouched.
    */
-  function HTMLDelimetersInline (): [string, number] {
+  function HTMLDelimetersInline (): BlockComments {
 
-    if (type === CommentType.Markup && rules.markup.commentPreserve === false) {
+    if (type === CommentType.Markup && rules.commentPreserve === false) {
 
-      if (rules.markup.commentDelimiter === 'consistent') {
+      if (rules.commentBracket === 'consistent') {
 
         const token = chars.slice(start + 4).join(NIL);
 
         if (token.slice(0, token.search(rx.NonSpace)).indexOf(NWL) > -1) {
-          if (rules.markup.commentIndent) {
+          if (rules.commentIndent) {
             output = output.replace(rx.HTMLCommDelimOpenWhitespace, `<!--${NWL}  `);
             output = output.replace(rx.HTMLCommDelimCloseWhitespace, `${NWL}-->`);
           } else {
@@ -237,9 +228,9 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
           output = output.replace(rx.HTMLCommDelimCloseWhitespace, ' -->');
         }
 
-      } else if (rules.markup.commentDelimiter === 'newline') {
+      } else if (rules.commentBracket === 'newline') {
 
-        if (rules.markup.commentIndent) {
+        if (rules.commentIndent) {
           output = output.replace(rx.HTMLCommDelimOpenWhitespace, `<!--${NWL}  `);
           output = output.replace(rx.HTMLCommDelimCloseWhitespace, `${NWL}-->`);
         } else {
@@ -248,8 +239,8 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
         }
 
       } else if (
-        rules.markup.commentDelimiter === 'inline' ||
-        rules.markup.commentDelimiter === 'inline-align') {
+        rules.commentBracket === 'inline' ||
+        rules.commentBracket === 'inline-align') {
 
         output = output.replace(rx.HTMLCommDelimOpenWhitespace, '<!-- ');
         output = output.replace(rx.HTMLCommDelimCloseWhitespace, ' -->');
@@ -260,7 +251,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
         const close = token.indexOf(ender);
 
         if (token.slice(0, token.search(rx.NonSpace)).indexOf(NWL) > -1) {
-          if (rules.markup.commentIndent) {
+          if (rules.commentIndent) {
             output = output.replace(rx.HTMLCommDelimOpenWhitespace, `<!--${NWL}  `);
           } else {
             output = output.replace(rx.HTMLCommDelimOpenWhitespace, `<!--${NWL}`);
@@ -270,7 +261,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
         }
 
         if (token.slice(token.lastIndexOf(NWL, close) + 1, close + 3).trimStart() === config.ender) {
-          if (rules.markup.commentIndent) {
+          if (rules.commentIndent) {
             output = output.replace(rx.HTMLCommDelimCloseWhitespace, `${NWL}-->`);
           } else {
             output = output.replace(rx.HTMLCommDelimCloseWhitespace, `${NWL}-->`);
@@ -283,7 +274,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
     }
 
-    return [ output, a ];
+    return [ output, a, type ];
 
   }
 
@@ -294,26 +285,49 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    * vary. The tokens respect additional rulesets such as `delimiterPlacement` and
    * `delimiterTrims`. It's here where we build out the final parse table entry.
    */
-  function LiquidLineComment (lexed: string[]): [string, number] {
+  function LiquidLineComment (lexed: string[]): [string, number, CommentType] {
 
     /* -------------------------------------------- */
     /* LEXICAL SCOPE                                */
     /* -------------------------------------------- */
 
     const lines: string[] = [];
+    const prefix = lexed[0] === NIL ? NWL : WSP;
+    const suffix = lexed[lexed.length - 1] === NIL ? NWL : WSP;
+
+    /** Preserve Newlines */
+    let preserve = 0;
 
     for (let i = 0, s = lexed.length; i < s; i++) {
       const line = lexed[i].trim();
       if (line !== NIL) {
-        lines.push(`${rules.indentChar.repeat(rules.indentSize)} ${lexed[i].trimStart() + parse.crlf}`);
+        lines.push(lexed[i].trimStart() + parse.crlf);
+        preserve = 0;
       } else {
-        lines.push(NWL);
+        if (preserve < rules.preserveLine) {
+          lines.push(NWL);
+          preserve++;
+        }
       }
     }
 
-    output = begin + lines.join(NIL) + ender;
+    // console.log(lines, JSON.stringify([ prefix, suffix, begin, ender ]));
 
-    return [ output, a ];
+    switch (rules.delimiterTrims) {
+      case 'always':
+      case 'tags':
+        output = '{%-' + prefix + lines.join(NIL).trim() + suffix + '-%}';
+        break;
+      case 'never':
+      case 'outputs':
+        output = '{%' + prefix + lines.join(NIL).trim() + suffix + '%}';
+        break;
+      default:
+        output = begin + prefix + lines.join(NIL).trim() + suffix + ender;
+        break;
+    }
+
+    return [ output, a, CommentType.LiquidLine ];
 
   }
 
@@ -404,14 +418,14 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
     // any starting or ending newlines as records[1] and records[3]
     // will take care of that logic.
     //
-    if (rules.liquid.commentPreserve) {
+    if (rules.commentPreserve) {
 
       content = output
         .slice(config.begin.length, output.length - config.ender.length)
         .replace(rx.SpaceLead, ws => ws.replace(rx.Newlines, NIL))
         .trimEnd();
 
-      return [ content, a, records ];
+      return [ content, a, CommentType.LiquidBlock, records ];
 
     }
 
@@ -432,7 +446,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
       .replace(rx.WhitespaceLeadGlob, NIL)
       .replace(/^\n+/gm, nl => nl.length > preserveLine ? parse.crlf.repeat(preserveLine) : nl);
 
-    return [ content, a, records ];
+    return [ content, a, CommentType.LiquidBlock, records ];
 
   }
 
@@ -447,7 +461,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    * Ensures the leading whitespace is included in the
    * token comment.
    */
-  function IgnoreNextComment (): [string, number] {
+  function IgnoreNextComment (): BlockComments {
 
     /* -------------------------------------------- */
     /* LEXICAL SCOPES                               */
@@ -490,7 +504,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
       }
     }
 
-    return [ output, a ];
+    return [ output, a, CommentType.IgnoreNext ];
 
   }
 
@@ -501,7 +515,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    * This function is handles `esthetic-ignore-start` and
    * `esthetic-ignore-end` comment blocks.
    */
-  function IgnoreCommentBlock (): [ comment: string, advance: number ] {
+  function IgnoreCommentBlock (): BlockComments {
 
     /* -------------------------------------------- */
     /* LEXICAL SCOPES                                */
@@ -597,7 +611,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
       if (last > -1) output = chars.slice(last + 1, parse.iterator).join(NIL) + output;
     }
 
-    return [ output, a ];
+    return [ output, a, CommentType.Ignore ];
 
   }
 
@@ -617,9 +631,9 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
     // Preserve comments based on rules
     //
     if (
-      (type === CommentType.LiquidBlock && rules.liquid.commentPreserve) ||
-      (type === CommentType.LiquidLine && rules.liquid.commentPreserve) ||
-      (type === CommentType.Markup && rules.markup.commentPreserve)) {
+      (type === CommentType.LiquidBlock && rules.commentPreserve) ||
+      (type === CommentType.LiquidLine && rules.commentPreserve) ||
+      (type === CommentType.Markup && rules.commentPreserve)) {
 
       b = chars.lastIndexOf(NWL, parse.iterator) + 1;
 
@@ -640,21 +654,19 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
     }
 
-    if (
-      (type === CommentType.Block && lexer === 'style' && rules.style.preserveComment) ||
-      (type === CommentType.Block && lexer === 'script' && rules.script.preserveComment)) return true;
+    if (rules.commentPreserve) return true;
 
     // Preserve when wrap is not exceeded and no newlines exist
     //
     if (
       type !== CommentType.LiquidBlock &&
       type !== CommentType.LiquidLine &&
-      output.length <= rules.wrap &&
+      output.length <= rules.wordWrap &&
       output.indexOf(NWL) < 0) return true;
 
     // Preserve Liquid block comments when inline
     if (
-      rules.wrap < 1 &&
+      rules.wordWrap < 1 &&
       type === CommentType.LiquidBlock &&
       rx.LiquidCommentNewline.test(output) === false) {
 
@@ -665,7 +677,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
     //
     if (type === CommentType.LiquidLine) {
 
-      if (rules.wrap > 0 && output.length >= rules.wrap) return false;
+      if (rules.wordWrap > 0 && output.length >= rules.wordWrap) return false;
 
       if (rx.Newline.test(output)) {
 
@@ -681,11 +693,11 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
         if (rx.LiquidEndDelimiterNewline.test(output)) {
           if (output.slice(output.indexOf('#') + 1, output.lastIndexOf(NWL)).indexOf(NWL) < 0) {
 
-            if (rules.wrap > 0) {
+            if (rules.wordWrap > 0) {
 
               output = output
                 .replace(rx.Newlines, NIL)
-                .replace(rx.LiquidLeftDelimiter, '$1 # ')
+                .replace(rx.LiquidLeftDelimiter, '$1 ')
                 .replace(rx.LiquidLineCommentHash, '# ')
                 .replace(rx.LiquidRightDelimiter, ' $2');
 
@@ -706,11 +718,10 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
       } else {
 
-        if (rules.wrap > 0) {
+        if (rules.wordWrap > 0) {
 
           output = output
-
-            .replace(rx.LiquidLeftDelimiter, '$1 # ')
+            .replace(rx.LiquidLeftDelimiter, '$1 ')
             .replace(rx.LiquidLineCommentHash, '# ')
             .replace(rx.LiquidRightDelimiter, ' $2');
 
@@ -733,8 +744,8 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
     // Preserve when wrap is not exceeded and no newlines exist
     if (
       type !== CommentType.LiquidBlock &&
-      rules.wrap > 0 &&
-      output.length <= rules.wrap &&
+      rules.wordWrap > 0 &&
+      output.length <= rules.wordWrap &&
       output.slice(5, -4).indexOf(NWL) < 0) {
 
       return true;
@@ -743,7 +754,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
     // Preserve when innner comment contents does not contain newlines
     if (
-      rules.wrap < 1 &&
+      rules.wordWrap < 1 &&
       type !== CommentType.LiquidBlock &&
       output.slice(5, -4).indexOf(NWL) < 0) return true;
 
@@ -767,7 +778,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    * Assigns various lexical scopes in the process. Next function
    * we will handle special character occurances.
    */
-  function ParseComment (): [string, number] {
+  function ParseComment (): BlockComments {
 
     /** Comment contents split on newlines */
     let lines: string[] = [];
@@ -814,7 +825,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
     // line and thus we need to determine handling based on
     // wrap length, so we will split on every whitespace
     //
-    // if (lsize < 2 && rules.wrap > 0) lines = lines[0].split(WSP);
+    // if (lsize < 2 && rules.wordWrap > 0) lines = lines[0].split(WSP);
 
     if (lines[0] === NIL) {
       lines[0] = config.begin;
@@ -830,7 +841,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
   }
 
-  function ParseMarkupComment (lines: string[], lsize: number): [string, number] {
+  function ParseMarkupComment (lines: string[], lsize: number): BlockComments {
 
     const lexed: string[] = [ lines.shift() ];
 
@@ -840,9 +851,9 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
     let lineCount: number = 0;
     let lineWrap: number = 0;
 
-    if (rules.markup.commentDelimiter === 'inline-align') {
+    if (rules.commentBracket === 'inline-align') {
       indent = '     ';
-    } else if (rules.markup.commentIndent) {
+    } else if (rules.commentIndent) {
       indent = '  ';
     }
 
@@ -895,7 +906,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
    * formats them accordingly. This includes numbers, dash lists
    * and empty lines. Next function concludes the parse operations.
    */
-  function ParseCommentContent (lines: string[], lsize: number): [string, number] {
+  function ParseCommentContent (lines: string[], lsize: number): BlockComments {
 
     /* -------------------------------------------- */
     /* CONSTANTS                                    */
@@ -974,9 +985,9 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
         strip = lines[b].replace(rx.WhitespaceLead, NIL);
 
         if (
-          rules.wrap > 0 &&
-          strip.length > rules.wrap &&
-          strip.indexOf(WSP) > rules.wrap) {
+          rules.wordWrap > 0 &&
+          strip.length > rules.wordWrap &&
+          strip.indexOf(WSP) > rules.wordWrap) {
 
           lines[b] = strip;
 
@@ -989,7 +1000,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
         } else {
 
-          if (type === CommentType.Block && lines[b].indexOf('/*') !== 0) {
+          if (type === CommentType.Block) {
 
             lines[b] = MID + lines[b]
               .replace(rx.WhitespaceLead, NIL)
@@ -1004,7 +1015,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
           }
 
-          twrap = b < 1 ? rules.wrap - (config.begin.length + 1) : rules.wrap;
+          twrap = b < 1 ? rules.wordWrap - (config.begin.length + 1) : rules.wordWrap;
 
           d = lines[b].replace(rx.SpaceLead, NIL).indexOf(WSP);
           c = lines[b].length;
@@ -1015,7 +1026,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
             do {
               c = c - 1;
-              if (ws(lines[b].charAt(c)) && c <= rules.wrap) break;
+              if (ws(lines[b].charAt(c)) && c <= rules.wordWrap) break;
             } while (c > 0);
 
             if (
@@ -1064,16 +1075,16 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
               bigLine = true;
               b = b - 1;
 
-            } else if ((c + before.length) > rules.wrap && before.indexOf(WSP) < 0) {
+            } else if ((c + before.length) > rules.wordWrap && before.indexOf(WSP) < 0) {
 
               lexed.push(lines[b].slice(0, c));
               lines[b] = lines[b].slice(c + 1);
               bigLine = true;
               b = b - 1;
 
-            } else if (lines[b].replace(rx.WhitespaceLead, NIL).indexOf(WSP) < rules.wrap) {
+            } else if (lines[b].replace(rx.WhitespaceLead, NIL).indexOf(WSP) < rules.wordWrap) {
 
-              if (lines[b].length > rules.wrap) {
+              if (lines[b].length > rules.wordWrap) {
                 lines[b + 1] = `${lines[b].slice(c + 1)}${parse.crlf}${lines[b + 1]}`;
               } else {
                 lines[b + 1] = `${lines[b].slice(c + 1)} ${lines[b + 1]}`;
@@ -1081,22 +1092,16 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
             }
 
-            if (
-              !emptyLine &&
-              !bulletLine &&
-              !numberLine &&
-              !bigLine) {
-
+            if (!emptyLine && !bulletLine && !numberLine && !bigLine) {
               lines[b] = lines[b].slice(0, c);
-
             }
 
           } else if (lines[b + 1] !== undefined && type < 3 && (
             (
-              lines[b].length + before.indexOf(WSP) > rules.wrap &&
+              lines[b].length + before.indexOf(WSP) > rules.wordWrap &&
               before.indexOf(WSP) > 0
             ) || (
-              lines[b].length + before.length > rules.wrap &&
+              lines[b].length + before.length > rules.wordWrap &&
               before.indexOf(WSP) < 0
             )
           )) {
@@ -1109,8 +1114,8 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
             // which essentially led comment indentation being ignored. This ensures
             // that even when wrap is 0 that the comment content will still be passed.
             //
-            if (rules.wrap > 0) b = b + 1;
-            if (rules.wrap < 1 && type === CommentType.LiquidBlock) b = b + 1;
+            if (rules.wordWrap > 0) b = b + 1;
+            if (rules.wordWrap < 1 && type === CommentType.LiquidBlock) b = b + 1;
 
             emptyLine = true;
 
@@ -1130,10 +1135,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
             emptyLine = true;
           }
 
-          if (
-            !bigLine &&
-            !bulletLine &&
-            !numberLine) {
+          if (!bigLine && !bulletLine && !numberLine) {
 
             if (emptyLine) {
 
@@ -1195,8 +1197,8 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
       if (delims) {
 
         if (delims[0] === Delimiters.Inline) {
-          if (rules.markup.commentIndent) {
-            if (rules.markup.commentDelimiter === 'inline-align') {
+          if (rules.commentIndent) {
+            if (rules.commentBracket === 'inline-align') {
               output = `${lexed[0]} ${lexed.slice(1).join(parse.crlf + '     ')}`;
             } else {
               output = `${lexed[0]} ${lexed.slice(1).join(parse.crlf + '  ')}`;
@@ -1206,7 +1208,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
           }
 
         } else {
-          if (rules.markup.commentIndent) {
+          if (rules.commentIndent) {
             output = `${lexed[0] + NWL}  ${lexed.slice(1).join(parse.crlf + '  ')}`;
           } else {
             output = `${lexed[0] + NWL}  ${lexed.slice(1).join(parse.crlf)}`;
@@ -1224,7 +1226,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
         if (
           type !== CommentType.LiquidLine &&
           type !== CommentType.LiquidBlock &&
-          lexed[lexed.length - 1].length > rules.wrap - (config.ender.length + 1)) {
+          lexed[lexed.length - 1].length > rules.wordWrap - (config.ender.length + 1)) {
 
           lexed.push(config.ender);
 
@@ -1251,8 +1253,8 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
         if (delims[0] === Delimiters.Inline) {
 
-          if (rules.markup.commentIndent) {
-            if (rules.markup.commentDelimiter === 'inline-align') {
+          if (rules.commentIndent) {
+            if (rules.commentBracket === 'inline-align') {
 
               output = `${lines[0]} ${lines.slice(1).join(parse.crlf + '     ')}`;
             } else {
@@ -1264,7 +1266,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
         } else {
 
-          if (rules.markup.commentIndent) {
+          if (rules.commentIndent) {
             output = `${lines[0] + NWL}  ${lines.slice(1).join(parse.crlf + '  ')}`;
           } else {
             output = lines.join(NWL);
@@ -1287,7 +1289,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
     }
 
-    return [ output, a ];
+    return [ output, a, type ];
 
   }
 
@@ -1297,11 +1299,13 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
 
   do {
 
-    if (is(chars[a], ch.NWL)) parse.lineOffset = parse.lines(a, parse.lineOffset);
+    if (is(chars[a], ch.NWL)) {
+      parse.lineOffset = parse.lines(a, parse.lineOffset);
+    }
 
     // Liquid Line
     //
-    if (type === CommentType.LiquidLine && or(chars[a], ch.NWL) && rules.liquid.commentPreserve === false) {
+    if (type === CommentType.LiquidLine && is(chars[a], ch.NWL) && rules.commentPreserve === false) {
 
       build.push(NWL);
 
@@ -1338,13 +1342,18 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
   /* PARSE PRESERVE                               */
   /* -------------------------------------------- */
 
-  if (type === CommentType.LiquidBlock) return LiquidBlockComment();
+  if (type === CommentType.LiquidBlock) {
+    output = delimiters(output);
+    return LiquidBlockComment();
+  }
 
   if (PreserveComment()) return HTMLDelimetersInline();
 
   /* -------------------------------------------- */
   /* PARSE COMMENT                                */
   /* -------------------------------------------- */
+
+  if (type === CommentType.LiquidLine) output = delimiters(output, '#');
 
   return ParseComment();
 
