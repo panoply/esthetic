@@ -353,9 +353,7 @@ class Parser {
    * The document source `input` reference
    */
   get source (): string {
-
     if (this.action === Action.Embed) return Parser.region as string;
-
     return config.env === 'node' && Buffer.isBuffer(Parser.input)
       ? Parser.input.toString()
       : Parser.input as string;
@@ -365,15 +363,12 @@ class Parser {
    * Set the source `input` reference
    */
   set source (source: string | Buffer) {
-
-    Parser.input = config.env !== 'node' ? source : Buffer.isBuffer(source)
+    Parser.input = config.env !== 'node'
       ? source
-      : Buffer.from(source);
-
+      : Buffer.isBuffer(source) ? source : Buffer.from(source);
   }
 
   get record () {
-
     return {
       index: this.count,
       begin: this.data.begin[this.count],
@@ -387,9 +382,7 @@ class Parser {
   }
 
   get parent () {
-
     return this.data.token[this.stack.index];
-
   }
 
   /**
@@ -531,17 +524,7 @@ class Parser {
     /** Cached reference of the begin index */
     const begin: number = data.begin[a];
 
-    if ((
-      data.lexer[a] === 'style' && (
-        this.rules.style.sortProperties ||
-        this.rules.style.sortSelectors
-      )
-    ) || (
-      data.lexer[a] === 'script' && (
-        this.rules.script.objectSort ||
-        this.rules.json.objectSort
-      )
-    )) {
+    if (data.lexer[a] === 'json' && this.rules.objectSort) {
 
       // Sorting can result in a token whose begin value is greater than either
       // its current index or the index of the end token, which results in
@@ -587,9 +570,7 @@ class Parser {
 
     if (record.lexer !== 'markup' || record.stack === 'liquid') return;
 
-    if (
-      record.types === 'liquid_start' ||
-      record.types === 'start') {
+    if (record.types === 'liquid_start' || record.types === 'start') {
 
       const pair: Syntactic = object(null);
 
@@ -644,9 +625,7 @@ class Parser {
             // TODO:
             // IMPROVE LIQUID TAG HANDLING
             //
-            if (record.stack === 'liquid' && (
-              record.token === '%}' ||
-              record.token === '-%}')) {
+            if (record.stack === 'liquid' && (record.token === '%}' || record.token === '-%}')) {
 
               this.pairs.delete(this.stack.index);
 
@@ -705,13 +684,8 @@ class Parser {
 
     this.count = this.count + 1;
 
-    if (
-      record.lexer !== 'style' &&
-      token.replace(/[{}<>%]/g, NIL) === NIL) {
-
-      token = record.types === 'else'
-        ? 'else'
-        : getTagName(record.token);
+    if (token.replace(/[{}<>%]/g, NIL) === NIL) {
+      token = record.types === 'else' ? 'else' : getTagName(record.token);
     }
 
     this.lineOffset = 0;
@@ -721,9 +695,7 @@ class Parser {
       this.stack.push([ token, this.count ]);
       this.lineDepth = this.lineDepth + this.rules.indentSize;
 
-      if (
-        record.lexer === 'markup' &&
-        record.stack !== 'liquid') {
+      if (record.lexer === 'markup' && record.stack !== 'liquid') {
 
         this.syntactic(record, token);
 
@@ -796,11 +768,11 @@ class Parser {
 
     if (this.hooks.parse !== null) {
 
-      this.hooks.parse[0].call({
-        line: this.lineNumber,
-        stack: this.stack.entry,
-        language: this.language
-      }, record, this.count);
+      this.hooks.parse[0].call(
+        { line: this.lineNumber, stack: this.stack.entry, language: this.language }
+        , record
+        , this.count
+      );
 
     }
 
