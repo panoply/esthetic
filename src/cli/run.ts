@@ -1,15 +1,17 @@
 // @ts-ignore
-import esthetic from './esthetic.cjs';
+import type { Rules } from 'types/index';
 
-import { writeFile, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join, basename, extname } from 'node:path';
-import glob from 'fast-glob';
-import { merge } from './utils';
+import { readFile, writeFile } from 'node:fs/promises';
+import { basename, extname, join } from 'node:path';
+
 import chokidar from 'chokidar';
+import glob from 'fast-glob';
+
 import * as log from './console/log';
 import * as tui from './console/tui';
-import type { Rules } from 'types/index';
+import esthetic from './esthetic.cjs';
+import { merge } from './utils';
 
 export interface CLI {
   _?: string[];
