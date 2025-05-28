@@ -1,11 +1,11 @@
-import * as rx from 'lexical/regex';
-import { cc } from 'lexical/codes';
 import { NIL } from 'chars';
+import { cc } from 'lexical/codes';
+import * as rx from 'lexical/regex';
+import { parse } from 'parse/parser';
+import { RULES } from 'rules/define';
+import { definitions } from 'rules/definitions';
 import { is, ws } from 'utils/helpers';
 import { keys } from 'utils/native';
-import { parse } from 'parse/parser';
-import { definitions } from 'rules/definitions';
-
 /**
  * Parses the inline comment settings. This has been adapted from
  * the Esthetic (formally PrettyDiff) comment parser and refactored
@@ -37,7 +37,7 @@ export function control (source: string) {
 
   const sindex = source.search(rx.CommControl);
   const signore = source.search(rx.CommIgnoreFile);
-  const k = keys(definitions);
+  const k = RULES;
   const len = k.length;
 
   let a = 0;
@@ -149,7 +149,7 @@ export function control (source: string) {
 
           // HANDLE CLOSING LIQUID COMMENT
           if (
-            comment.charCodeAt(1) === cc.PER &&
+            comment[1] === cc.PER &&
             source.slice(a - 1, a + 1) === '%' &&
             source.indexOf('endcomment', source.indexOf('{%', rcb)) > 0
           ) break;
