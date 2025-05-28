@@ -1,8 +1,9 @@
-import { parse } from 'parse/parser';
-import { is, not, isArray } from 'utils/helpers';
-import { cc as ch } from 'lexical/codes';
-import { NIL } from 'chars';
 import type { Data } from 'types';
+
+import { NIL } from 'chars';
+import { cc as ch } from 'lexical/codes';
+import { parse } from 'parse/parser';
+import { is, isArray, not } from 'utils/helpers';
 
 /* -------------------------------------------- */
 /* EXPORTS                                      */
@@ -137,24 +138,6 @@ export function sortObject (data: Data) {
       if (data.token[yy] === undefined) return 1;
     }
 
-    if (style === true) {
-
-      // JavaScript's standard array sort uses implementation specific algorithms.
-      // This simple numeric trick forces conformance.
-      if (data.token[xx].indexOf('@import') === 0 || data.token[yy].indexOf('@import') === 0) {
-        return xx < yy ? -1 : 1;
-      }
-
-      if (data.types[xx] !== data.types[yy]) {
-        if (data.types[xx] === 'function') return 1;
-        if (data.types[xx] === 'variable') return -1;
-        if (data.types[xx] === 'selector') return 1;
-        if (data.types[xx] === 'property' && data.types[yy] !== 'variable') return -1;
-        if (data.types[xx] === 'mixin' && data.types[yy] !== 'property' && data.types[yy] !== 'variable') return -1;
-      }
-
-    }
-
     if (data.token[xx].toLowerCase() > data.token[yy].toLowerCase()) return 1;
 
     return -1;
@@ -257,9 +240,7 @@ export function sortObject (data: Data) {
     if (
       style === true ||
       parse.language === 'json' ||
-      is(data.token[cc - 1], ch.EQS) ||
       is(data.token[cc - 1], ch.COL) ||
-      is(data.token[cc - 1], ch.LPR) ||
       is(data.token[cc - 1], ch.LSB) ||
       is(data.token[cc - 1], ch.COM) ||
       data.types[cc - 1] === 'word' ||
@@ -317,7 +298,7 @@ export function sortObject (data: Data) {
               dd === keylen - 1 &&
               ee === keyend - 2 &&
               is(data.token[ee], ch.COM) &&
-              data.lexer[ee] === 'script' &&
+              data.lexer[ee] === 'json' &&
               data.types[ee + 1] === 'comment'
             ) {
 
@@ -586,7 +567,7 @@ function safeSortAscend (
         //
         // If error occur, change it back
         //
-        // eslint-disable-next-line valid-typeof
+
         if (storeb[a] < key) {
           key = storeb[a];
           ind = [ a ];
