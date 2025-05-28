@@ -53,10 +53,22 @@ export const EmptyLine = /^\s+$/;
  *
  * ---
  *
- * @example '\s*'
+ * @example /\s* /
  *
  */
 export const Spaces = /\s*/;
+
+/**
+ * Last whitespace and newlines - `*` Zero or More
+ *
+ * Zero or more leading whitespace and newline characters at end of string
+ *
+ * ---
+ *
+ * @example /\s*$/
+ *
+ */
+export const SpacesLast = /\s*$/;
 
 /**
  * Whitespace and Newlines - `+` One or More
