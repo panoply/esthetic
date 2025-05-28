@@ -16,12 +16,10 @@ import { detection } from 'parse/detection';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
 import { setRules } from 'rules/define';
-import { definitions } from 'rules/definitions';
 import { getLexerName, getLexerType } from 'rules/language';
+import { aesthetic } from 'rules/presets/aesthetic';
 import { defaults } from 'rules/presets/default';
 import { prettier } from 'rules/presets/prettier';
-import { recommended } from 'rules/presets/recommended';
-import { strict } from 'rules/presets/strict';
 import { warrington } from 'rules/presets/warrington';
 import { isValidChoice } from 'rules/validate';
 import { isObject, isUndefined, merge, stats } from 'utils/helpers';
@@ -49,8 +47,7 @@ export const esthetic = new class Esthetic {
       default: { get () { return defaults; } },
       warrington: { get () { return warrington; } },
       prettier: { get () { return prettier; } },
-      strict: { get () { return strict; } },
-      recommended: { get () { return recommended; } }
+      aesthetic: { get () { return aesthetic; } }
     });
 
   }
@@ -61,7 +58,7 @@ export const esthetic = new class Esthetic {
 
     if (isObject(rules)) {
       if ('language' in rules && this.language !== rules.language) {
-        if (isValidChoice('global', 'language', rules.language)) {
+        if (isValidChoice('language', rules.language)) {
           this.language = parse.language = parse.rules.language = rules.language;
           this.lexer = parse.lexer = getLexerName(parse.language);
         }
@@ -99,7 +96,6 @@ export const esthetic = new class Esthetic {
 
   }
 
-  get definitions () { return definitions; }
   get detect () { return detection; }
   get table () { return parse.data; }
   get error () { return parse.error; }
@@ -264,33 +260,9 @@ export const esthetic = new class Esthetic {
     return this.format(source, rules);
   }
 
-  css (source: string | Buffer, rules?: Rules) {
-
-    this.language = parse.language = parse.rules.language = 'css';
-    this.lexer = parse.lexer = getLexerName(parse.language);
-
-    return this.format(source, rules);
-  }
-
   json (source: string | Buffer, rules?: Rules) {
 
     this.language = parse.language = parse.rules.language = 'json';
-    this.lexer = parse.lexer = getLexerName(parse.language);
-
-    return this.format(source, rules);
-  }
-
-  js (source: string | Buffer, rules?: Rules) {
-
-    this.language = parse.language = parse.rules.language = 'javascript';
-    this.lexer = parse.lexer = getLexerName(parse.language);
-
-    return this.format(source, rules);
-  }
-
-  ts (source: string | Buffer, rules?: Rules) {
-
-    this.language = parse.language = parse.rules.language = 'typescript';
     this.lexer = parse.lexer = getLexerName(parse.language);
 
     return this.format(source, rules);
