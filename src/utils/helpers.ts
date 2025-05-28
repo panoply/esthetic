@@ -439,9 +439,9 @@ export function nextNWL (index: number, input: readonly string[], length: number
  *       b
  * ```
  */
-export function isNext (string: string | string[], code: number) {
+export function isNext (string: string | string[], code: string) {
 
-  return (isArray(string) ? string.join(NIL) : string).trimStart().charCodeAt(0) === code;
+  return (isArray(string) ? string.join(NIL) : string).trimStart()[0] === code;
 
 }
 
@@ -450,9 +450,9 @@ export function isNext (string: string | string[], code: number) {
  *
  * If first character code of the string is equal to the provided code.
  */
-export function is (string: string, code: number) {
+export function is (string: string, code: string) {
 
-  return string ? string.charCodeAt(0) === code : false;
+  return string ? string[0] === code : false;
 
 }
 
@@ -461,9 +461,9 @@ export function is (string: string, code: number) {
  *
  * If first character code of the string is equal to any of the provided codes.
  */
-export function or (string: string, ...codes: number[]) {
+export function or (string: string, ...codes: string[]) {
 
-  return codes.indexOf(string.charCodeAt(0)) > -1;
+  return codes.indexOf(string[0]) > -1;
 
 }
 
@@ -472,9 +472,9 @@ export function or (string: string, ...codes: number[]) {
  *
  * If first character code of the string is not equal to any of the provided codes.
  */
-export function no (string: string, ...codes: number[]) {
+export function no (string: string, ...codes: string[]) {
 
-  return codes.indexOf(string.charCodeAt(0)) < 0;
+  return codes.indexOf(string[0]) < 0;
 
 }
 
@@ -506,11 +506,11 @@ export function last <T extends any> (input: T[], at = 1): T {
  *
  * If the character codes match the starting string sequence
  */
-export function isOf (string: string, ...codes: number[]) {
+export function isOf (string: string, ...codes: string[]) {
 
   for (
     let i = codes.length
-      , c = string.charCodeAt(0); i > 0; i--) if (c === codes[i]) return true;
+      , c = string[0]; i > 0; i--) if (c === codes[i]) return true;
 
   return false;
 
@@ -523,7 +523,7 @@ export function isOf (string: string, ...codes: number[]) {
  * Accepts a spread list of codes to match. When more than 1 code is passed
  * it will use `some` to determine match
  */
-export function isLast (string: string | string[], code: number) {
+export function isLast (string: string | string[], code: string) {
 
   return is(string[string.length - 1], code);
 
@@ -535,11 +535,11 @@ export function isLast (string: string | string[], code: number) {
  * If last character code of the `string` is equal to any of the provided `codes`.
  * in the spread parameter. Use this for multiple comparison.
  */
-export function isLastOf (string: string | string[], ...codes: number[]) {
+export function isLastOf (string: string | string[], ...codes: string[]) {
 
   for (
     let i = codes.length
-      , c = lastChar(string).charCodeAt(0); i > 0; i--) if (c === codes[i]) return true;
+      , c = lastChar(string)[0]; i > 0; i--) if (c === codes[i]) return true;
 
   return false;
 
@@ -550,7 +550,7 @@ export function isLastOf (string: string | string[], ...codes: number[]) {
  *
  * Checks the last sequence of character codes
  */
-export function isLastSeq (string: string | string[], ...codes: number[]) {
+export function isLastSeq (string: string | string[], ...codes: string[]) {
 
   let n: number = string.length - 1;
   let c: number = codes.length;
@@ -567,7 +567,7 @@ export function isLastSeq (string: string | string[], ...codes: number[]) {
  * If character code of the string is equal to the `at` index code character.
  * The `at` argument defaults to `2` resulting in `string.length - 2`
  */
-export function isLastAt (string: string | string[], code: number, at: number = 2) {
+export function isLastAt (string: string | string[], code: string, at: number = 2) {
 
   return is(string[string.length - at], code);
 
@@ -578,7 +578,7 @@ export function isLastAt (string: string | string[], code: number, at: number = 
  *
  * If first character code of the string is **NOT** equal to the provided code.
  */
-export function not (string: string, code: number) {
+export function not (string: string, code: string) {
 
   return is(string, code) === false;
 
@@ -589,7 +589,7 @@ export function not (string: string, code: number) {
  *
  * If last character code of the string is **NOT** equal to the provided code
  */
-export function notLast (string: string | string[], code: number) {
+export function notLast (string: string | string[], code: string) {
 
   return isLast(string, code) === false;
 
@@ -735,7 +735,7 @@ export function charEsc (input: string) {
  */
 export function liquidEsc (char: string) {
 
-  return is(char, cc.LCB) ? '{%-?\\s*' : '\\s*-?%}';
+  return is(char, cc.LCB) ? '{%-?' : '-?%}';
 
 }
 
