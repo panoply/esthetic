@@ -113,34 +113,25 @@ dev(function (source) {
 
   const output = esthetic.format(source, {
     language: 'liquid',
-    wrap: 0,
-    liquid: {
-      delimiterTrims: 'multiline',
-      delimiterPlacement: 'preserve',
-      argumentLineBreak: 1,
-      filterLineBreak: 0,
-      lineBreakSeparator: 'before'
-    },
-    markup: {
-      attributeLineBreak: 2,
-      delimiterTerminus: false
-    }
+    attributeLineBreak: 3,
+    preserveLine: 0,
+    terminusBracket: 2
   });
 
   return {
     source: output,
     wrap: esthetic.rules().wrap,
     repeat: 0,
-    inspect: true,
-    logger: false,
-    colors: true,
+    inspect: false,
+    logger: true,
+    colors: false,
     finish: () => {
 
       // console.log(output)
       // console.log(JSON.stringify(output.split(/(\n+)/), null, 2));
       // console.log(esthetic.stats);
       console.log(esthetic.table);
-      // console.log(esthetic.rules());
+      console.log(esthetic.rules());
 
     }
   };
