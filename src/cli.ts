@@ -20,13 +20,7 @@ import mm from 'minimist';
       liquid: false,
       html: false,
       xml: false,
-      css: false,
-      scss: false,
       json: false,
-      javascript: false,
-      jsx: false,
-      typescript: false,
-      tsx: false,
       test: false,
       'no-color': false
     },
@@ -41,13 +35,7 @@ import mm from 'minimist';
       'liquid',
       'html',
       'xml',
-      'css',
-      'scss',
-      'json',
-      'javascript',
-      'jsx',
-      'typescript',
-      'tsx'
+      'json'
 
     ],
     string: [
