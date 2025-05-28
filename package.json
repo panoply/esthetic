@@ -2,7 +2,7 @@
   "name": "esthetic",
   "version": "0.7.0-beta.1",
   "license": "MIT",
-  "homepage": "https://æsthetic.dev",
+  "homepage": "https://aesthetic.js.org",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ <n.savvidis@gmx.com>",
   "description": "Æsthetic ~ Language beautification support leveraging the Sparser lexing algorithm.",
   "keywords": [
@@ -54,11 +54,11 @@
   "exports": {
     "types": "./index.d.ts",
     "require": "./dist/esthetic.cjs",
-    "import": "./dist/esthetic.mjs",
-    "default": "./dist/esthetic.js"
+    "import": "./dist/esthetic.mjs"
   },
   "scripts": {
     "dev": "conc -n \"ÆSTHETIC,DOCS\" -c \"#81D4FA,#FF69B\" \"tsup --watch\" \"pnpm run docs\"",
+    "Æ": "tsup --watch",
     "docs": "pnpm -F esthetic-docs dev",
     "play": "ava tests/dev.test.mjs --watch",
     "build": "tsup --minify --env.NODE_ENV production && gzip-size dist/esthetic.js --include-original",
@@ -95,35 +95,6 @@
     "cache": false
   },
   "prettier": "@liquify/prettier-config",
-  "eslintConfig": {
-    "root": true,
-    "ignorePatterns": [
-      "**/dist/*",
-      "**/node_modules/*"
-    ],
-    "extends": [
-      "@liquify/eslint-config"
-    ],
-    "rules": {
-      "n/no-callback-literal": "off",
-      "no-lone-blocks": "off",
-      "no-unmodified-loop-condition": "off",
-      "no-unused-vars": "off",
-      "operator-linebreak": [
-        "error",
-        "after",
-        {
-          "overrides": {
-            "?": "before",
-            ":": "before",
-            "&&": "after",
-            "||": "after",
-            "+": "before"
-          }
-        }
-      ]
-    }
-  },
   "pnpm": {
     "peerDependencyRules": {
       "ignoreMissing": [
@@ -138,17 +109,17 @@
     "@liquify/schema": "workspace:^",
     "@liquify/tsconfig": "workspace:^",
     "@types/benchmark": "^2.1.5",
-    "ansis": "^3.2.0",
-    "ava": "^6.1.3",
+    "ansis": "^4.0.0",
+    "ava": "^6.3.0",
     "benchmark": "^2.1.4",
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.1.2",
     "minimist": "^1.2.8",
-    "terser": "^5.31.2",
-    "tsup": "^8.1.0",
-    "type-fest": "^4.21.0"
+    "terser": "^5.40.0",
+    "tsup": "^8.5.0",
+    "type-fest": "^4.41.0"
   },
   "dependencies": {
-    "chokidar": "^3.6.0",
-    "fast-glob": "^3.3.2"
+    "chokidar": "^4.0.3",
+    "fast-glob": "^3.3.3"
   }
 }
