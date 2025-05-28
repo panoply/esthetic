@@ -1,13 +1,13 @@
 /* eslint-disable prefer-const */
 
-import type { LiquidInternal, LiquidRules, Rules } from 'types';
+import type { Rules } from 'types';
 
-import { COM, NIL, NWL, WSP } from 'lexical/chars';
+import { NIL, NWL, WSP } from 'lexical/chars';
 import { cc } from 'lexical/codes';
-import { LqT, Modes } from 'lexical/enum';
+import { LqT } from 'lexical/enum';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
-import { glue, is, isLast, isLastAt, isWS, not, ns } from 'utils/helpers';
+import { is, isLast, isLastAt } from 'utils/helpers';
 
 /**
  * Opening Delimiters
@@ -15,7 +15,7 @@ import { glue, is, isLast, isLastAt, isWS, not, ns } from 'utils/helpers';
  * Applies `delimiterTrims` applied formatting to the opening
  * delimiter sequences of Liquid tokens.
  */
-export function openDelims (input: string, rules: LiquidRules, delimOnly = false) {
+export function openDelims (input: string, rules: Rules, delimOnly = false) {
 
   const o = is(input[2], cc.DSH) ? 3 : 2;
   const token = input.slice(o);
@@ -65,7 +65,7 @@ export function openDelims (input: string, rules: LiquidRules, delimOnly = false
  * Applies `delimiterTrims` applied formatting to the closing
  * delimiter sequences of Liquid tokens.
  */
-export function closeDelims (input: string, rules: LiquidRules, delimOnly = false) {
+export function closeDelims (input: string, rules: Rules, delimOnly = false) {
 
   const c = is(input[input.length - 3], cc.DSH) ? input.length - 3 : input.length - 2;
   const token = input.slice(0, c) || NIL;
@@ -121,7 +121,15 @@ export function closeDelims (input: string, rules: LiquidRules, delimOnly = fals
  * Liquid Delimiters
  *
  * Applies delimiter rules to Liquid tokens. The `input` parameter expects a
- * fully parsed token.
+ * fully parsed token. The operation is responsible for applying a subset of
+ * augmentations and fixes as Liquid delimiters are subject to different output
+ * structures depending on the inner contents of tags.
+ *
+ * The following fixes/beautification is handled during the format cycle, whereas
+ * this function is executed during the lexing cycle only.
+ *
+ * 1. When `delimiterPlacement` is set to `newline-multiline` the result is determined during format
+ * 2. When `delimiterTrims` is set to `multiline` the result will be determined during format
  *
  * - `{{` or `{{-`
  * - `{%` or`{%-`
@@ -137,7 +145,7 @@ export function delimiters (input: string, tname?: string, space = WSP) {
   /**
    * Destructed Liquid specific delimiter rules
    */
-  const { delimiterTrims, delimiterPlacement } = parse.rules.liquid;
+  const { rules } = parse;
 
   /**
    * Destructed open and close delimiters from input
@@ -147,7 +155,7 @@ export function delimiters (input: string, tname?: string, space = WSP) {
   /**
    * Opening Delimiter
    */
-  let open: string;
+  let open: string = input.slice(0, O);
 
   /**
    * The inner token content
@@ -157,31 +165,23 @@ export function delimiters (input: string, tname?: string, space = WSP) {
   /**
    * Closing Delimiter
    */
-  let close: string;
+  let close: string = input.slice(C);
 
-  if (delimiterTrims === 'never') {
+  if (tname !== '#') {
+    if (rules.delimiterTrims === 'never') {
 
-    open = `{${input[1]}`;
-    close = `${input[input.length - 2]}}`;
+      open = `{${input[1]}`;
+      close = `${input[input.length - 2]}}`;
 
-  } else if ((
-    delimiterTrims === 'always'
-  ) || (
-    delimiterTrims === 'outputs' &&
-    is(input[1], cc.LCB)
-  ) || (
-    delimiterTrims === 'tags' &&
-    is(input[1], cc.PER)
-  )) {
+    } else if (
+      (rules.delimiterTrims === 'always') ||
+      (rules.delimiterTrims === 'outputs' && is(input[1], cc.LCB)) ||
+      (rules.delimiterTrims === 'tags' && is(input[1], cc.PER))) {
 
-    open = `{${input[1]}-`;
-    close = `-${input[input.length - 2]}}`;
+      open = `{${input[1]}-`;
+      close = `-${input[input.length - 2]}}`;
 
-  } else {
-
-    open = input.slice(0, O);
-    close = input.slice(C);
-
+    }
   }
 
   if (!tname) tname = token.trimStart().split(/\s/)[0] || '';
@@ -198,33 +198,22 @@ export function delimiters (input: string, tname?: string, space = WSP) {
 
   } else {
 
-    if (delimiterPlacement === 'preserve') {
+    if (rules.delimiterPlacement === 'preserve') {
 
       open += /^\s*\n/.test(token) ? NWL : space;
       close = (/\s*\n\s*$/.test(token) ? NWL : space) + close;
 
-    } else if (
-      tname === '#' &&
-      delimiterPlacement === 'newline-multiline') {
+    } else if (rules.delimiterPlacement === 'inline' || rules.delimiterPlacement === 'newline-multiline') {
 
-      if (/\n{2,}/g.test(token.trim())) {
-
+      if (tname === '#' && /\n{2,}/g.test(token.trim())) {
         open += NWL;
         close = NWL + close;
-
       } else {
         open += space;
         close = space + close;
       }
 
-    } else if (
-      delimiterPlacement === 'inline' ||
-      delimiterPlacement === 'newline-multiline') {
-
-      open += space;
-      close = space + close;
-
-    } else if (delimiterPlacement === 'consistent') {
+    } else if (rules.delimiterPlacement === 'consistent') {
 
       if (/^\s*\n/.test(token)) {
         open += NWL;
@@ -265,97 +254,114 @@ export function delims (input: string | string[]): [ open: number, close: number
  * Determines the indexes of Liquid tag delimiters from provided input.
  * Returns an array where `[0]` is opening index and `[1]` is closing
  */
-export function DelimiterGlue (
-  input: string,
-  indent: string,
-  spaces: string,
-  placeMultiline: boolean,
-  trimsMultiline: boolean
-): [
-  [
-    open: string,
-    token: string[],
-    close: string
-  ],
-  [
-    open: string,
-    close: string
-  ]
-] {
+export function token (input: string, indent: string, spaces: string) {
 
   const length = input.length;
-  const token: [
-    open?: string,
-    token?: string[],
-    close?: string,
-  ] = [];
 
-  const multi: [
-    open?: string,
-    close?: string
-  ] = [];
+  const lexed: {
+    open: {
+      /**
+       * The delimiter character of token:
+       *
+       * `{%`, `{{`, `{%-`, `{{-`
+       */
+      delim?: string,
+     /**
+       * The delimiter with trims applied when `delimiterTrims` is `multiline`
+       * This will either match `delim` if `delim` alreadys contains `-` otherwise
+       * will be `delim` with `-` suffixed
+       *
+       * `{%-`, `{{-`
+       */
+     trims?: string,
+      /**
+       * The newline or whitespace following delimeter including indentation
+       *
+       * ` `, `\n `
+       */
+      space?: string,
+      /**
+       * Multiline indentation when `delimiterPlacement` is `newline-multiline`
+       * When `null` the rule is not set to `newline-multiline`
+       *
+       * `\n `, `\n   `
+       */
+      multi?: string,
+    },
+    lines?: string[]
+    close: {
+      /**
+       * The delimiter character of token:
+       *
+       * `%}`, `}}`, `-%}`, `-}}`
+       */
+      delim?: string;
+      /**
+       * The newline or whitespace following delimeter including indentation
+       *
+       * ` `, `\n `
+       */
+      space?: string;
+      /**
+       * The delimiter with trims applied when `delimiterTrims` is `multiline`
+       * This will either match `delim` if `delim` alreadys contains `-` otherwise
+       * will be `delim` with `-` prefixed
+       *
+       * `-%}`, `-}}`
+       */
+      trims?: string,
+      /**
+       * Multiline indentation when `delimiterPlacement` is `newline-multiline`
+       * When `null` the rule is not set to `newline-multiline`
+       *
+       * `\n `, `\n   `
+       */
+      multi?: string;
+    }
+  } = {
+    open: {
+      space: WSP,
+      multi: NWL + indent + spaces
+    },
+    lines: null,
+    close: {
+      space: WSP,
+      multi: NWL + indent
+    }
+  };
 
-  let O: number;
-  let C: number;
+  let from: number;
 
   if (is(input[2], cc.DSH)) {
-    if (is(input[3], cc.NWL)) {
-      O = 4;
-      token.push(input.slice(0, O) + indent + spaces);
-    } else {
-      O = 3;
-      token.push(input.slice(0, O) + WSP);
-    }
+    from = 3;
+    lexed.open.delim = lexed.open.trims = input.slice(0, 3);
+    if (is(input[3], cc.NWL)) lexed.open.space = NWL + indent + spaces;
   } else {
-    if (is(input[2], cc.NWL)) {
-      O = 3;
-      token.push(input.slice(0, O) + indent + spaces);
-    } else {
-      O = 2;
-      token.push(input.slice(0, O) + WSP);
-    }
+    from = 2;
+    lexed.open.delim = input.slice(0, 2);
+    lexed.open.trims = lexed.open.delim + '-';
+    if (is(input[2], cc.NWL)) lexed.open.space = NWL + indent + spaces;
   }
 
   if (is(input[length - 3], cc.DSH)) {
-
-    if (is(input[length - 4], cc.NWL)) {
-      C = -3;
-      token.push(input.slice(O, length - 4).trim().split(NWL), NWL + indent + input.slice(-3));
-    } else {
-      C = -3;
-      token.push(input.slice(O, length - 4).trim().split(NWL), WSP + input.slice(-3));
-    }
+    lexed.close.delim = lexed.close.trims = input.slice(length - 3);
+    lexed.lines = input.slice(from, length - 4).trim().split(NWL);
+    if (is(input[length - 4], cc.NWL)) lexed.close.space = NWL + indent;
   } else {
+
+    lexed.close.delim = input.slice(-2);
+    lexed.close.trims = '-' + lexed.close.delim;
+
     if (is(input[length - 3], cc.NWL)) {
-      C = -2;
-      token.push(input.slice(O, length - 3).trim().split(NWL), NWL + indent + input.slice(-2));
+      lexed.close.space = NWL + indent;
+      lexed.lines = input.slice(from, length - 3).trim().split(NWL);
     } else {
-      C = -2;
-      token.push(input.slice(O, length - 2).trim().split(NWL), WSP + input.slice(-2));
+      lexed.lines = input.slice(from, length - 2).trim().split(NWL);
     }
+
   }
 
-  if (placeMultiline) {
-
-    multi.push(
-      input.slice(0, O) + NWL + indent + spaces,
-      NWL + indent + input.slice(C)
-    );
-  } else {
-    multi.push(null, null);
-  }
-
-  return [
-    token as [
-      open: string,
-      token: string[],
-      close: string
-    ],
-    multi as [
-      open: string,
-      close: string
-    ]
-  ];
+  return lexed;
 
 }
 
