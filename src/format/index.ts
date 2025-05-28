@@ -1,15 +1,12 @@
 import { Lexers } from 'lexical/enum';
 
+import { json } from './json';
 import { markup } from './markup';
-import { script } from './script';
-import { style } from './style';
 
 export function format (lexer: Lexers) {
 
   if (lexer === Lexers.Markup) return markup();
 
-  if (lexer === Lexers.Style) return style();
-
-  if (lexer === Lexers.Script) return script();
+  if (lexer === Lexers.Json) return json();
 
 }
