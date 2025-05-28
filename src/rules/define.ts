@@ -1,35 +1,17 @@
-import type { EventListeners, LanguageRuleNames, Rules, RulesChanges } from 'types';
+import type { EventListeners, RuleChanges, Rules } from 'types';
 
 import { config } from 'config';
 import { CNL, NWL } from 'lexical/chars';
 import { parse } from 'parse/parser';
+import { aesthetic } from 'rules/presets/aesthetic';
 import { defaults } from 'rules/presets/default';
 import { prettier } from 'rules/presets/prettier';
-import { recommended } from 'rules/presets/recommended';
-import { strict } from 'rules/presets/strict';
 import { warrington } from 'rules/presets/warrington';
 import { isValid, isValidChoice } from 'rules/validate';
 import { hasProp, merge } from 'utils/helpers';
-import { object } from 'utils/native';
+import { keys, object } from 'utils/native';
 
-const GLOB = [
-  'correct',
-  'crlf',
-  'endNewline',
-  'indentChar',
-  'indentLevel',
-  'indentSize',
-  'preserveLine',
-  'wrap'
-];
-
-const LANG: LanguageRuleNames[] = [
-  'liquid',
-  'markup',
-  'style',
-  'json',
-  'script'
-];
+export const RULES = keys(defaults);
 
 /**
  * Set Preset
@@ -39,12 +21,10 @@ const LANG: LanguageRuleNames[] = [
  */
 export function setPreset (options: Rules) {
 
-  if (isValidChoice('global', 'preset', options.preset)) {
-
+  if (isValidChoice('preset', options.preset)) {
     switch (options.preset) {
-      case 'default': return merge(defaults, options);
-      case 'strict': return merge(strict, options);
-      case 'recommended': return merge(recommended, options);
+      case 'none': return merge(defaults, options);
+      case 'aesthetic': return merge(aesthetic, options);
       case 'warrington': return merge(warrington, options);
       case 'prettier': return merge(prettier, options);
     }
@@ -77,49 +57,37 @@ export function setRules (opts: Rules, events: EventListeners) {
   /**
    * Rule Changes
    */
-  let change: RulesChanges;
+  let change: RuleChanges;
 
   if (events.rules.length > 0) change = {};
 
-  if (
-    has('language') &&
-    isValid('global', 'language', options.language) &&
-    parse.language !== options.language) {
+  if (has('language') && isValid('language', options.language) && parse.language !== options.language) {
 
     parse.language = parse.rules.language = options.language;
 
   }
 
-  for (const rule of GLOB) {
+  for (const rule of RULES) {
 
     if (has(rule) === false) continue;
     if (parse.rules[rule] === options[rule]) continue;
-    if (isValid('global', rule, options[rule])) {
-      if (change) change[rule] = { from: parse.rules[rule], to: options[rule] };
-      if (rule === 'crlf') parse.crlf = options[rule] ? CNL : NWL;
-      parse.rules[rule] = options[rule];
-    }
-  }
+    if (change) change[rule] = object(null);
+    if (isValid(rule, options[rule])) {
 
-  for (const lang of LANG) {
-
-    if (has(lang) === false) continue;
-    if (parse.rules[lang] === options[lang]) continue;
-    if (change) change[lang] = object(null);
-
-    for (const rule in options[lang]) {
-      if (isValid(lang, rule, options[lang][rule])) {
-
-        if (change) {
-          change[lang][rule] = object(null);
-          change[lang][rule].old = parse.rules[lang][rule];
-          change[lang][rule].new = options[lang][rule];
-        }
-
-        parse.rules[lang][rule] = options[lang][rule];
-
+      if (change) {
+        change[rule] = object(null);
+        change[rule].from = parse.rules[rule];
+        change[rule].to = options[rule];
       }
+
+      if (rule === 'lineTermination') {
+        parse.crlf = options[rule] === 'CRLF' ? CNL : NWL;
+      }
+
+      parse.rules[rule] = options[rule];
+
     }
+
   }
 
   if (events.rules.length > 0) {

@@ -11,37 +11,19 @@ import { defaults } from './default';
  * These also reflect the prettier-liquid plugin.
  */
 export const prettier: Rules = merge(defaults, {
-  preset: 'prettier',
+  arrayFormat: 'indent',
+  attributeLineBreak: 2,
+  endNewline: true,
   language: 'auto',
+  lineBreakLogical: 'after',
+  lineBreakSeparator: 'after',
+  objectIndent: 'indent',
+  preset: 'prettier',
   preserveLine: 1,
-  wrap: 80,
-  liquid: {
-    ignoreTagList: [ 'javascript' ],
-    indentAttribute: true,
-    lineBreakSeparator: 'after',
-    dedentTagList: [ 'schema' ],
-    quoteConvert: 'double'
-  },
-  markup: {
-    attributeLineBreak: 2,
-    commentDelimiter: 'consistent',
-    commentIndent: true,
-    delimiterTerminus: 2,
-    forceIndent: true,
-    ignoreJS: true,
-    ignoreCSS: true,
-    ignoreJSON: false,
-    selfCloseSpace: true,
-    selfCloseSVG: true,
-    stripAttributeLines: true,
-    quoteConvert: 'double'
-  },
-  json: {
-    arrayFormat: 'indent',
-    objectIndent: 'indent'
-  },
-  style: {
-    commentIndent: false,
-    quoteConvert: 'double'
-  }
+  selfCloseSVG: true,
+  singleQuote: 'never',
+  stripAttributeLines: true,
+  terminusBracket: 2,
+  textBoundInline: false,
+  wordWrap: 80
 });

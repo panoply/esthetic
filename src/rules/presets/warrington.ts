@@ -9,34 +9,19 @@ import { defaults } from './default';
  * The `warrington` rule presets which are geared towards Shopify projects.
  */
 export const warrington: Rules = merge(defaults, {
-  preset: 'warrington',
+  arrayFormat: 'indent',
+  attributeLineBreak: 2,
+  endNewline: true,
   language: 'auto',
-  preserveLine: 2,
-  wrap: 0,
-  liquid: {
-    ignoreTagList: [ 'javascript' ],
-    indentAttribute: true,
-    lineBreakSeparator: 'after',
-    quoteConvert: 'double'
-  },
-  markup: {
-    attributeLineBreak: 2,
-    commentDelimiter: 'consistent',
-    delimiterTerminus: false,
-    forceIndent: true,
-    ignoreCSS: true,
-    ignoreJSON: false,
-    selfCloseSpace: true,
-    selfCloseSVG: true,
-    stripAttributeLines: true,
-    quoteConvert: 'double'
-  },
-  json: {
-    arrayFormat: 'indent',
-    objectIndent: 'indent'
-  },
-  style: {
-    commentIndent: false,
-    quoteConvert: 'double'
-  }
+  lineBreakLogical: 'after',
+  lineBreakSeparator: 'after',
+  objectIndent: 'indent',
+  preset: 'prettier',
+  preserveLine: 1,
+  selfCloseSVG: true,
+  singleQuote: 'never',
+  stripAttributeLines: true,
+  terminusBracket: 2,
+  textBoundInline: false,
+  wordWrap: 80
 });

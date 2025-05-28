@@ -1,4 +1,4 @@
-import type { GlobalRules, LanguageName, LanguageRuleNames, LiquidRules, MarkupRules } from 'types';
+import type { LanguageName, Rules } from 'types';
 
 import { RuleError } from 'parse/errors';
 import { isArray, isBoolean, isNumber, isString } from 'utils/helpers';
@@ -11,182 +11,99 @@ import { isArray, isBoolean, isNumber, isString } from 'utils/helpers';
  * converts types to their appropriate value, meaning is `0` or `1` is
  * passed to a `boolean` expected value it will return the `boolean` equivalent.
  */
-export function isValid (language: LanguageRuleNames, rule: string, value: any) {
+export function isValid (rule: string, value: any) {
 
-  if (language === 'global') {
+  switch (rule as keyof Rules) {
+    case 'indentChar':
 
-    switch (rule as keyof GlobalRules) {
-      case 'indentChar':
+      return isValidString(rule, value);
 
-        return isValidString(language, rule, value);
+    case 'preset':
+    case 'language':
+    case 'lineTermination':
+    case 'lineBreakSeparator':
+    case 'lineBreakLogical':
+    case 'objectIndent':
+    case 'delimiterPlacement':
+    case 'delimiterTrims':
+    case 'arrayFormat':
+    case 'commentBracket':
+    case 'singleQuote':
+    case 'valueSpacing':
+    case 'attributeCasing':
+    case 'endComma':
 
-      case 'preset':
-      case 'language':
+      return isValidChoice(rule, value);
 
-        return isValidChoice(language, rule, value);
+    case 'endNewline':
+    case 'commentPreserve':
+    case 'commentIndent':
+    case 'classListUnique':
+    case 'indentAttribute':
+    case 'forceIndent':
+    case 'attributePreserve':
+    case 'ignoreJSON':
+    case 'textBoundInline':
+    case 'textPreserve':
+    case 'selfCloseSpace':
+    case 'selfCloseSVG':
+    case 'stripAttributeLines':
+    case 'braceAllman':
+    case 'bracePadding':
+    case 'objectSort':
 
-      case 'crlf':
-      case 'correct':
-      case 'endNewline':
+      return isValidBoolean(rule, value);
 
-        return isValidBoolean(language, rule, value);
+    case 'argumentLineBreak':
+    case 'indentLevel':
+    case 'indentSize':
+    case 'preserveLine':
+    case 'wordWrap':
 
-      case 'indentLevel':
-      case 'indentSize':
-      case 'preserveLine':
-      case 'wrap':
+      return isValidNumber(rule, value);
 
-        return isValidNumber(language, rule, value);
+    case 'attributeLineBreak':
+    case 'filterLineBreak':
+    case 'terminusBracket':
 
-      default:
-        return false;
-    }
+      if (isNumber(value)) return isValidNumber(rule, value);
+      if (isBoolean(value)) return isValidBoolean(rule, value);
 
-  } else if (language === 'liquid') {
+      throw RuleError({
+        message: `Invalid rule (${rule}) type "${typeof value}" provided`,
+        option: rule,
+        provided: value,
+        reference: `/rules/${rule}/`,
+        expected: [
+          'number',
+          'boolean'
+        ]
+      });
 
-    switch (rule as keyof LiquidRules) {
+    case 'attributeSort':
 
-      case 'argumentLineBreak':
-      case 'filterLineBreak':
+      if (isBoolean(value)) return isValidBoolean(rule, value);
+      if (isArray(value)) return isValidArray(rule, value);
 
-        if (isNumber(value)) return isValidNumber(language, rule, value);
-        if (isBoolean(value)) return isValidBoolean(language, rule, value);
+      throw RuleError({
+        message: `Invalid rule (${rule}) type "${typeof value}" provided`,
+        option: rule,
+        provided: value,
+        reference: `/rules/${rule}/`,
+        expected: [
+          'boolean',
+          'string[]'
+        ]
+      });
 
-        throw RuleError({
-          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-          option: `${language} → ${rule}`,
-          provided: value,
-          reference: `/rules/liquid/${rule}/`,
-          expected: [
-            'boolean',
-            'number'
-          ]
-        });
+    case 'ignoreTagList':
 
-      case 'commentPreserve':
-      case 'commentIndent':
-      case 'indentAttribute':
-      case 'equipoiseSpacing':
-      case 'forceIndent':
+      return isValidArray(rule, value);
 
-        return isValidBoolean(language, rule, value);
-
-      case 'ignoreTagList':
-      case 'dedentTagList':
-      case 'paddedTagList':
-
-        return isValidArray(language, rule, value);
-
-      case 'lineBreakSeparator':
-      case 'lineBreakLogical':
-      case 'delimiterPlacement':
-      case 'delimiterTrims':
-      case 'quoteConvert':
-
-        return isValidChoice(language, rule, value);
-
-    }
-
-  } else if (language === 'markup') {
-
-    switch (rule as keyof MarkupRules) {
-
-      case 'delimiterTerminus':
-      case 'attributeLineBreak':
-
-        if (isNumber(value)) return isValidNumber(language, rule, value);
-        if (isBoolean(value)) return isValidBoolean(language, rule, value);
-
-        throw RuleError({
-          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-          option: `${language} → ${rule}`,
-          provided: value,
-          reference: `/rules/${language}/${rule}/`,
-          expected: [
-            'boolean',
-            'number'
-          ]
-        });
-
-      case 'attributeSort':
-      case 'classListSort':
-
-        if (isBoolean(value)) return isValidBoolean(language, rule, value);
-        if (isArray(value)) return isValidArray(language, rule, value);
-
-        throw RuleError({
-          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-          option: `${language} → ${rule}`,
-          provided: value,
-          reference: `/rules/${language}/${rule}/`,
-          expected: [
-            'boolean',
-            'string[]'
-          ]
-        });
-
-      case 'attributePreserve':
-      case 'commentIndent':
-      case 'commentPreserve':
-      case 'classListUnique':
-      case 'forceIndent':
-      case 'ignoreCSS':
-      case 'ignoreJS':
-      case 'ignoreJSON':
-      case 'textBoundInline':
-      case 'textPreserve':
-      case 'selfCloseSpace':
-      case 'selfCloseSVG':
-      case 'stripTextWrapLines':
-      case 'stripAttributeLines':
-
-        return isValidBoolean(language, rule, value);
-
-      case 'attributeCasing':
-      case 'valueSpacing':
-      case 'commentDelimiter':
-      case 'quoteConvert':
-
-        return isValidChoice(language, rule, value);
-
-    }
-
-  } else if (language === 'style') {
-
-    switch (rule) {
-
-      case 'correct':
-      case 'atRuleSpace':
-      case 'classPadding':
-      case 'noLeadZero':
-      case 'sortSelectors':
-      case 'sortProperties':
-
-        return isBoolean(value);
-
-      case 'quoteConvert':
-
-        return isValidChoice(language, rule, value);
-
-    }
-  } else if (language === 'json') {
-
-    switch (rule) {
-
-      case 'arrayFormat':
-      case 'objectIndent':
-
-        return isValidChoice(language, rule, value);
-
-      case 'allowComments':
-      case 'braceAllman':
-      case 'bracePadding':
-      case 'objectSort':
-
-        return isValidBoolean(language, rule, value);
-
-    }
+    default:
+      return false;
   }
+
 }
 
 /**
@@ -194,37 +111,34 @@ export function isValid (language: LanguageRuleNames, rule: string, value: any) 
  *
  * Validates an array type and checks each entry is of a `string` type.
  */
-export function isValidArray (language: LanguageRuleNames, rule: string, value: string[]) {
+export function isValidArray (rule: string, value: string[]) {
 
   if (isArray(value)) {
 
     if (value.length === 0) return true;
 
     for (let index: number = 0, size = value.length; index < size; index++) {
-
       if (isString(value[index]) === false) {
         throw RuleError({
-          message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-          option: `${language} → ${rule} (index: ${index})`,
+          message: `Invalid rule (${rule}) type "${typeof value}" provided`,
+          option: `${rule} (index: ${index})`,
           provided: value,
-          reference: `/rules/${language}/${rule}/`,
+          reference: `/rules/${rule}/`,
           expected: [
             'string'
           ]
         });
       }
-
     }
 
     return true;
-
   }
 
   throw RuleError({
-    message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-    option: language === 'global' ? rule : `${language} → ${rule}`,
+    message: `Invalid rule (${rule}) type "${typeof value}" provided`,
+    option: rule,
     provided: value,
-    reference: `/rules/${language}/${rule}/`,
+    reference: `/rules/${rule}/`,
     expected: [
       'string[]'
     ]
@@ -237,20 +151,19 @@ export function isValidArray (language: LanguageRuleNames, rule: string, value: 
  *
  * Validates a string type, this is different from a choice validation.
  */
-export function isValidString (language: LanguageRuleNames, rule: string, value: number) {
+export function isValidString (rule: string, value: number) {
 
   if (typeof value === 'string') return true;
 
   throw RuleError({
-    message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-    option: language === 'global' ? rule : `${language} → ${rule}`,
+    message: `Invalid rule (${rule}) type "${typeof value}" provided`,
+    option: rule,
     provided: value,
-    reference: `/rules/${language}/${rule}/`,
+    reference: `/rules/${rule}/`,
     expected: [
       'string'
     ]
   });
-
 }
 
 /**
@@ -258,15 +171,15 @@ export function isValidString (language: LanguageRuleNames, rule: string, value:
  *
  * Validates a number type
  */
-export function isValidNumber (language: LanguageRuleNames, rule: string, value: number) {
+export function isValidNumber (rule: string, value: number) {
 
   if (isNumber(value) && isNaN(value) === false) return true;
 
   throw RuleError({
-    message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-    option: language === 'global' ? rule : `${language} → ${rule}`,
+    message: `Invalid rule (${rule}) type "${typeof value}" provided`,
+    option: rule,
     provided: value,
-    reference: `/rules/${language}/${rule}/`,
+    reference: `/rules/${rule}/`,
     expected: [
       'number'
     ]
@@ -279,21 +192,20 @@ export function isValidNumber (language: LanguageRuleNames, rule: string, value:
  *
  * Validates a boolean type. Also accepts numbers and will return valid boolean if provided
  */
-export function isValidBoolean (language: LanguageRuleNames, rule: string, value: number | boolean) {
+export function isValidBoolean (rule: string, value: number | boolean) {
 
   if (isNumber(value)) return value !== 0;
   if (isBoolean(value)) return true;
 
   throw RuleError({
-    message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-    option: language === 'global' ? rule : `${language} → ${rule}`,
+    message: `Invalid rule (${rule}) type "${typeof value}" provided`,
+    option: rule,
     provided: value,
-    reference: `/rules/${language}/${rule}/`,
+    reference: `/rules/${rule}/`,
     expected: [
       'boolean'
     ]
   });
-
 }
 
 /**
@@ -302,15 +214,15 @@ export function isValidBoolean (language: LanguageRuleNames, rule: string, value
  * Validates a multi-option types, Ensures type passed is a string and checks
  * against all accepted choices, throwing if an invalid option is passed.
  */
-export function isValidChoice (language: LanguageRuleNames, rule: string, value: string) {
+export function isValidChoice (rule: string, value: string) {
 
   if (isString(value) === false) {
 
     throw RuleError({
-      message: `Invalid ${language} rule (${rule}) type "${typeof value}" provided`,
-      option: `${language} → ${rule}`,
+      message: `Invalid rule (${rule}) type "${typeof value}" provided`,
+      option: rule,
       provided: value,
-      reference: `/rules/${language}/${rule}/`,
+      reference: `/rules/${rule}/`,
       expected: [
         'string'
       ]
@@ -326,22 +238,14 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'html':
       case 'liquid':
       case 'xml':
-      case 'javascript':
-      case 'typescript':
-      case 'jsx':
-      case 'tsx':
-      case 'json':
-      case 'less':
-      case 'scss':
-      case 'sass':
-      case 'css': return true;
+      case 'json': return true;
     }
 
     throw RuleError({
-      message: `Unsupported "${rule}" identifier provided`,
-      option: language === `${rule} (global)` ? rule : `${language} → ${rule}`,
+      message: `Unsupported "${rule}" provided`,
+      option: rule,
       provided: value,
-      reference: `/rules/global/${rule}/`,
+      reference: `/rules/${rule}/`,
       expected: [
         'text',
         'auto',
@@ -349,37 +253,27 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
         'html',
         'liquid',
         'xml',
-        'javascript',
-        'typescript',
-        'jsx',
-        'tsx',
-        'json',
-        'less',
-        'scss',
-        'sass',
-        'css'
+        'json'
       ]
     });
 
   } else if (rule === 'preset') {
 
-    switch (value as GlobalRules['preset']) {
-      case 'default':
-      case 'strict':
-      case 'recommended':
+    switch (value as Rules['preset']) {
+      case 'aesthetic':
+      case 'none':
       case 'warrington':
       case 'prettier': return true;
     }
 
     throw RuleError({
       message: `Unsupported "${rule}" provided`,
-      option: language === `${rule} (global)` ? rule : `${language} → ${rule}`,
+      option: rule,
       provided: value,
-      reference: `/rules/global/${rule}/`,
+      reference: `/rules/${rule}/`,
       expected: [
-        'default',
-        'strict',
-        'recommended',
+        'aesthetic',
+        'none',
         'warrington',
         'prettier'
       ]
@@ -387,16 +281,16 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'attributeCasing') {
 
-    switch (value as MarkupRules['attributeCasing']) {
+    switch (value as Rules['attributeCasing']) {
       case 'preserve':
       case 'lowercase':
       case 'lowercase-name':
       case 'lowercase-value': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
           'preserve',
           'lowercase',
@@ -406,19 +300,19 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       });
     }
 
-  } else if (rule === 'commentDelimiter') {
+  } else if (rule === 'commentBracket') {
 
-    switch (value as MarkupRules['commentDelimiter']) {
+    switch (value as Rules['commentBracket']) {
       case 'preserve':
       case 'consistent':
       case 'inline':
       case 'inline-align':
       case 'newline': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
           'preserve',
           'consistent',
@@ -431,7 +325,7 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'delimiterTrims') {
 
-    switch (value as LiquidRules['delimiterTrims']) {
+    switch (value as Rules['delimiterTrims']) {
       case 'preserve':
       case 'never':
       case 'always':
@@ -439,10 +333,10 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       case 'outputs':
       case 'multiline': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
           'preserve',
           'never',
@@ -456,16 +350,16 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'delimiterPlacement') {
 
-    switch (value as LiquidRules['delimiterPlacement']) {
+    switch (value as Rules['delimiterPlacement']) {
       case 'inline':
       case 'preserve':
       case 'consistent':
       case 'newline-multiline': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
           'inline',
           'preserve',
@@ -477,15 +371,15 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'lineBreakSeparator') {
 
-    switch (value as LiquidRules['lineBreakSeparator']) {
+    switch (value as Rules['lineBreakSeparator']) {
       case 'preserve':
       case 'before':
       case 'after': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
           'preserve',
           'before',
@@ -496,15 +390,15 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'lineBreakLogical') {
 
-    switch (value as LiquidRules['lineBreakLogical']) {
+    switch (value as Rules['lineBreakLogical']) {
       case 'preserve':
       case 'before':
       case 'after': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
           'preserve',
           'before',
@@ -515,15 +409,15 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'valueSpacing') {
 
-    switch (value as MarkupRules['valueSpacing']) {
+    switch (value as Rules['valueSpacing']) {
       case 'preserve':
       case 'equipoise':
       case 'wrap': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
           'preserve',
           'equipoise',
@@ -533,37 +427,41 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
       });
     }
 
-  } else if (rule === 'quoteConvert') {
+  } else if (rule === 'singleQuote') {
 
-    switch (value) {
+    switch (value as Rules['singleQuote']) {
 
-      case 'none':
-      case 'double':
-      case 'single': return true;
+      case 'always':
+      case 'preserve':
+      case 'liquid':
+      case 'markup':
+      case 'never': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
-          'none',
-          'double',
-          'single'
+          'always',
+          'preserve',
+          'liquid',
+          'markup',
+          'never'
         ]
       });
     }
 
   } else if (rule === 'objectIndent' || rule === 'arrayFormat') {
 
-    switch (value) {
+    switch (value as Rules['objectIndent']) {
       case 'default':
       case 'indent':
       case 'inline': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
           'default',
           'indent',
@@ -574,38 +472,36 @@ export function isValidChoice (language: LanguageRuleNames, rule: string, value:
 
   } else if (rule === 'endComma') {
 
-    switch (value) {
-      case 'none':
+    switch (value as Rules['endComma']) {
+      case 'preserve':
       case 'always':
       case 'never': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
-          'none',
+          'preserve',
           'always',
           'never'
         ]
       });
     }
 
-  } else if (rule === 'variableList') {
+  } else if (rule === 'lineTermination') {
 
-    switch (value) {
-      case 'none':
-      case 'each':
-      case 'list': return true;
+    switch (value as Rules['lineTermination']) {
+      case 'LF':
+      case 'CRLF': return true;
       default: throw RuleError({
-        message: `Invalid ${language} "${rule}" option provided`,
-        option: `${language} → ${rule}`,
+        message: `Invalid "${rule}" option provided`,
+        option: rule,
         provided: value,
-        reference: `/rules/${language}/${rule}/`,
+        reference: `/rules/${rule}/`,
         expected: [
-          'none',
-          'each',
-          'list'
+          'LF',
+          'CRLF'
         ]
       });
     }
