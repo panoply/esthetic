@@ -1,9 +1,9 @@
-import { Record, WrapComment } from 'types/index';
-import { parse } from 'parse/parser';
-import * as rx from 'lexical/regex';
+import { NIL, NWL, WSP } from 'chars';
 import { cc as ch } from 'lexical/codes';
-import { NWL, NIL, WSP } from 'chars';
-import { ws, is, not } from 'utils/helpers';
+import * as rx from 'lexical/regex';
+import { parse } from 'parse/parser';
+import { Comments, Record } from 'types';
+import { is, not, ws } from 'utils/helpers';
 
 /**
  * Wrap Comment Lines
@@ -12,10 +12,9 @@ import { ws, is, not } from 'utils/helpers';
  * Beautification and handling for block style comments.
  * traverse lexing for all comment identified sequences.
  */
-export function commentLine (config: WrapComment): [string, number] {
+export function commentLine (chars: string[], config: Comments): any {
 
-  const { wrap } = parse.rules;
-  const { preserveComment } = parse.rules[parse.lexer];
+  const { wordWrap, commentPreserve } = parse.rules;
 
   /* -------------------------------------------- */
   /* LEXICAL SCOPES                               */
@@ -32,17 +31,17 @@ export function commentLine (config: WrapComment): [string, number] {
 
     do {
       b = b + 1;
-      if (is(config.chars[b + 1], ch.NWL)) return;
-    } while (b < config.end && ws(config.chars[b]));
+      if (is(chars[b + 1], ch.NWL)) return;
+    } while (b < config.end && ws(chars[b]));
 
-    if (config.chars[b] + config.chars[b + 1] === '//') {
+    if (chars[b] + chars[b + 1] === '//') {
 
       build = [];
 
       do {
-        build.push(config.chars[b]);
+        build.push(chars[b]);
         b = b + 1;
-      } while (b < config.end && not(config.chars[b], ch.NWL));
+      } while (b < config.end && not(chars[b], ch.NWL));
 
       line = build.join(NIL);
 
@@ -91,10 +90,10 @@ export function commentLine (config: WrapComment): [string, number] {
 
     d = output.length;
 
-    if (wrap > d) return;
+    if (wordWrap > d) return;
 
     do {
-      c = wrap;
+      c = wordWrap;
 
       if (not(output[c], ch.WSP)) {
 
@@ -102,7 +101,7 @@ export function commentLine (config: WrapComment): [string, number] {
         while (c > 0 && not(output[c], ch.WSP));
 
         if (c < 3) {
-          c = wrap;
+          c = wordWrap;
           do c = c + 1;
           while (c < d - 1 && not(output[c], ch.WSP));
         }
@@ -115,7 +114,7 @@ export function commentLine (config: WrapComment): [string, number] {
 
       d = output.length;
 
-    } while (wrap < d);
+    } while (wordWrap < d);
 
     c = 0;
     d = lines.length;
@@ -134,14 +133,14 @@ export function commentLine (config: WrapComment): [string, number] {
   };
 
   do {
-    build.push(config.chars[a]);
+    build.push(chars[a]);
     a = a + 1;
-  } while (a < config.end && not(config.chars[a], ch.NWL));
+  } while (a < config.end && not(chars[a], ch.NWL));
 
   if (a === config.end) {
 
-    // Necessary because the wrapping logic expects line termination
-    config.chars.push(NWL);
+    // Necessary because the wordWrap ping logic expects line termination
+    chars.push(NWL);
 
   } else {
     a = a - 1;
@@ -157,51 +156,51 @@ export function commentLine (config: WrapComment): [string, number] {
 
     do {
 
-      build.push(config.chars[a]);
+      build.push(chars[a]);
       a = a + 1;
 
     } while (a < config.end && (
-      not(config.chars[a - 1], 100) || (
-        is(config.chars[a - 1], 100) &&
+      not(chars[a - 1], 'd') || (
+        is(chars[a - 1], 'd') &&
         build.slice(build.length - 19).join(NIL) !== 'esthetic-ignore-end'
       ))
     );
 
     b = a;
 
-    do; while (b > config.start && is(config.chars[b - 1], ch.FWS) && (
-      is(config.chars[b], ch.ARS) ||
-      is(config.chars[b], ch.FWS)
+    do; while (b > config.start && is(chars[b - 1], ch.FWS) && (
+      is(chars[b], ch.ARS) ||
+      is(chars[b], ch.FWS)
     ));
 
-    if (is(config.chars[b], ch.ARS)) termination = '\u002a/';
-    if (termination !== NWL || not(config.chars[a], ch.NWL)) {
+    if (is(chars[b], ch.ARS)) termination = '\u002a/';
+    if (termination !== NWL || not(chars[a], ch.NWL)) {
 
       do {
-        build.push(config.chars[a]);
-        if (termination === NWL && is(config.chars[a + 1], ch.NWL)) break;
+        build.push(chars[a]);
+        if (termination === NWL && is(chars[a + 1], ch.NWL)) break;
         a = a + 1;
       } while (a < config.end && (termination === NWL || (
         termination === '\u002a/' && (
-          is(config.chars[a - 1], ch.ARS) ||
-          is(config.chars[a], ch.FWS)
+          is(chars[a - 1], ch.ARS) ||
+          is(chars[a], ch.FWS)
         ))
       ));
 
     }
 
-    if (config.chars[a] === NWL) a = a - 1;
+    if (chars[a] === NWL) a = a - 1;
 
     output = build.join(NIL).replace(rx.SpaceEnd, NIL);
 
     return [ output, a ];
   }
 
-  if (output === '//' || preserveComment === true) return [ output, a ];
+  if (output === '//' || commentPreserve === true) return [ output, a ];
 
   output = output.replace(/(\/\/\s*)/, '// ');
 
-  if (wrap < 1 || (a === config.end - 1 && parse.data.begin[parse.count] < 1)) return [ output, a ];
+  if (wordWrap < 1 || (a === config.end - 1 && parse.data.begin[parse.count] < 1)) return [ output, a ];
 
   b = a + 1;
 
