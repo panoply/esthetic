@@ -1,11 +1,11 @@
 import type { IParseError, Syntactic } from 'types';
 
 import { config } from 'config';
-import { NIL, NWL, WSP } from 'lexical/chars';
+import { NIL, NWL } from 'lexical/chars';
 import { ParseError } from 'lexical/errors';
 import { parse } from 'parse/parser';
 import { getLanguageName } from 'rules/language';
-import { getTagName, glue, isUndefined, join } from 'utils/helpers';
+import { getTagName, isUndefined, join } from 'utils/helpers';
 
 function ErrorLocation (error: IParseError) {
 
