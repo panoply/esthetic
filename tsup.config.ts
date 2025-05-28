@@ -21,6 +21,10 @@ export default defineConfig([
     treeshake: true,
     name: 'Æsthetic',
     minify: false,
+    watch: [
+      './src/**',
+      '!./src/cli/**'
+    ],
     noExternal: [],
     // terserOptions: {
     //   compress: {
@@ -63,6 +67,9 @@ export default defineConfig([
     format: [
       'cjs',
       'esm'
+    ],
+    watch: [
+      './src/cli/**'
     ],
     external: [
       'chokidar',
