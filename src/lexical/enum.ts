@@ -124,13 +124,9 @@ export const enum Lexers {
    */
   Markup = 1,
   /**
-   * Script Lexer ~ JSON, JavaScript, TypeScript (Sometimes JSX and TSX)
+   * Json Lexer ~ JSON
    */
-  Script,
-  /**
-   * Style Lexer ~ CSS, SCSS
-   */
-  Style,
+  Json,
   /**
    * Ignore Lexing
    */
@@ -174,6 +170,14 @@ export const enum CommentType {
    * ```
    */
   LiquidLine,
+  /**
+   * Ignore Next
+   */
+  IgnoreNext,
+  /**
+   * Ignore
+   */
+  Ignore
 }
 
 export enum LogLevel {
