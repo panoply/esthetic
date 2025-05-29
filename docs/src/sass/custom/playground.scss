@@ -27,94 +27,15 @@
 }
 
 .playground {
-  moloko-editor {
-    height: 100vh;
-  }
-  moloko-sidebar,
-  moloko-preview,
-  moloko-rules,
-  moloko-language,
-  moloko-parse-table,
-  moloko-input {
-    margin-top: 70px;
-  }
+  height: 100%;
+}
 
-  moloko-parse-table > table {
-    margin: 0;
-  }
-  .sidebar-options {
-    margin-top: 52px;
-    width: 70px;
-    min-width: 70px;
-    height: 100vh;
-    z-index: 250;
-    background-color: #14171b;
-    border-right: 0.01rem solid hwb(0 40% 60%);
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
-
-    .btn-sidebar {
-      padding-top: 15px;
-      margin: 15px auto;
-      text-align: center;
-
-      &:hover {
-        color: $pink;
-      }
-
-      &.active {
-        .icon {
-          color: $pink;
-        }
-      }
-
-      .icon {
-        width: 25px;
-        height: 25px;
-      }
-    }
-  }
-
-  &-rules {
-    //background-color: $body-bg;
-    //background-color: #14171b;
-    width: 50%;
-    height: 100%;
-    display: block;
-    position: absolute;
-    border-right: 0.01rem solid rgb(102, 102, 102);
-    z-index: 1;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(-50%);
-    transition: transform 0.2s linear;
-    overflow-y: scroll;
-
-    .list-lined > li {
-      &.active {
-        background-color: #14171b;
-      }
-    }
-
-    &.active {
-      z-index: 200;
-      opacity: 1;
-      visibility: visible;
-      transform: translateX(0);
-      transition: transform 0.2s linear;
-
-      &.close {
-        transform: translateX(-100%);
-        transition: transform 0.2s linear;
-      }
-    }
-  }
-
-  .code-editor {
-    position: relative;
-    height: 100%;
-  }
+moloko-preview::after {
+  font-family: $font-family-heading !important;
+  top: 70px !important;
+  right: 40px !important;
+  font-weight: 900;
+  font-style: normal !important;
 }
 
 .rule-options {
@@ -129,8 +50,8 @@
   .fs-name {
     font-size: 0.9rem;
     font-weight: 100;
-    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
-      monospace;
+    font-family:
+      Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     border-top: #14171b solid 1px;
     padding-top: 15px;
     //color: #6eb2d3;

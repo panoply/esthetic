@@ -10,6 +10,11 @@
   "urls": [
     {
       "group": "global",
+      "title": "language",
+      "url": "/rules/global/language/"
+    },
+    {
+      "group": "global",
       "title": "correct",
       "url": "/rules/global/correct/"
     },
@@ -22,11 +27,6 @@
       "group": "global",
       "title": "endNewline",
       "url": "/rules/global/endNewline/"
-    },
-    {
-      "group": "global",
-      "title": "language",
-      "url": "/rules/global/language/"
     },
     {
       "group": "global",
@@ -53,12 +53,6 @@
       "title": "wrap",
       "url": "/rules/global/wrap/"
     },
-    {
-      "group": "global",
-      "title": "wrapFraction",
-      "url": "/rules/global/wrapFraction/"
-    },
-
     {
       "group": "liquid",
       "title": "commentIndent",

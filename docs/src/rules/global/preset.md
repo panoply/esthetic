@@ -1,6 +1,6 @@
 ---
 title: 'Global Rules - Default'
-permalink: '/rules/global/preset/index.html'
+permalink: '/rules/preset/index.html'
 layout: base
 describe:
   - Preset
@@ -12,6 +12,9 @@ options:
   - warrington
   - prettier
 ---
+
+:: row pr-5
+:: col-8 p-100
 
 # Preset
 
@@ -37,11 +40,11 @@ Currently, there are **5** different presets available, each offering unique bea
 
 ---
 
-::: rule 👍
+:: rule 👍
 
 #### default
 
-:::
+::
 
 By default, Æsthetic will use the `default` preset, which features the least obtrusive ruleset. The formatting employs a preservation-based technique, ensuring a subtle and non-intrusive approach to enhancing the output.
 
@@ -56,30 +59,11 @@ By default, Æsthetic will use the `default` preset, which features the least ob
 
 ---
 
-::: rule 👍
-
-#### recommended
-
-:::
-
-The `recommended` style guide preset is well-suited for most projects. Formatting will adhere to common standards and generate exceptional-based output. It shares some similarities with Prettier but takes a less aggressive approach, providing a balanced and refined way to beautify the code.
-
-- [Example](#)
-- [Ruleset](#)
-
-```json
-{
-  "preset": "recommended"
-}
-```
-
----
-
-::: rule 🤌
+:: rule 🤌
 
 #### warrington
 
-:::
+::
 
 The `warrington` style guide preset is specifically tailored for developers, particularly teams working with Shopify themes and markup. This carefully curated preset was crafted by [David Warrington](https://ellodave.dev/), making it an excellent choice for those in the Shopify ecosystem.
 
@@ -94,30 +78,30 @@ The `warrington` style guide preset is specifically tailored for developers, par
 
 ---
 
-::: rule 🙌
+:: rule 🙌
 
-#### strict
+#### aesthetic
 
-:::
+::
 
-The `strict` style guide preset is curated by the author of Æsthetic, [Panoply](https://github.com/panoply). This choice embodies a refined and acquired taste. Based on existing feedback, the generated output is not for everybody as it has a focus on expressionism. However, for those who embrace it, the output when using `strict` perfectly exemplifies the very essence of why Æsthetic was created.
+The `aesthetic` style guide preset is curated by the author of Æsthetic, [Panoply](https://github.com/panoply). This choice embodies a refined and acquired taste. Based on existing feedback, the generated output is not for everybody as it has a focus on expressionism. However, for those who embrace it, the output when using `aesthetic` perfectly exemplifies the very essence of why Æsthetic was created.
 
 - [Example](#)
 - [Ruleset](#)
 
 ```json
 {
-  "preset": "strict"
+  "preset": "aesthetic"
 }
 ```
 
 ---
 
-::: rule 🤡
+:: rule 🤡
 
 #### prettier
 
-:::
+::
 
 The `prettier` style guide preset offers a replication of the Prettier style of formatting. For those working with Æsthetic in Liquid (Shopify) projects and who have grown accustomed to the Shopify Liquid Prettier Plugin, using this preset will result in a familiar output.
 
@@ -129,3 +113,6 @@ The `prettier` style guide preset offers a replication of the Prettier style of 
   "preset": "prettier"
 }
 ```
+
+::
+:::

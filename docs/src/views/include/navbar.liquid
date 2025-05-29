@@ -1,45 +1,53 @@
 <header class="container-fluid navbar pl-0 pb-1 mb-5">
-  <div class="row gx-0 jc-between jc-sm-start ai-center bg-white w-100 pl-5">
-
+  <div class="row gx-0  ai-center jc-between jc-sm-start ai-center bg-white w-100 pl-5">
 
     <input
       type="button"
       class="d-unset d-sm-none col-auto btn drawer-toggle ml-4"
       spx@click="drawer.toggle">
 
-    {% comment %}
-      <div class="d-none d-sm-flex col-auto pr-5">
-      <dropdown
-      class="dropdown bc-gray rd"
-      spx-component="dropdown">
-      <button
-      type="button"
-      class="btn fc-white"
-      spx-node="dropdown.button"
-      spx@click="dropdown.toggle">{% version %}</button>
-      <ul spx-node="dropdown.collapse">
-      {% versions %}
-      </ul>
-      </dropdown>
-      </div>
-    {% endcomment %}
-
-    <div
-      id="navbar"
-      class="col-auto">
+    <div id="navbar" class="col-auto">
       {% for link in navigation.navbar %}
         <a
           href="{{ link.url }}"
           title="{{ link.title }}"
-          {% if link.title == "Playground" or page.url == "/playground/" %}
-            spx-disable
-          {% endif %}
-          class="d-none d-sm-unset col-auto fw-bolder mr-4 nav-link {{ link.url | active: navigation }}">
+          class="d-none d-sm-unset col-auto fw-bolder mr-4 nav-link {{ link.url | active: navigation }}"
+            {% if link.title == "Playground" or page.url == "/playground/" %}
+            spx-disable="true"
+          {% endif %}>
           {{ link.title }}
         </a>
       {% endfor %}
     </div>
 
+    <div class="col-auto pl-sm-3 pr-4 ml-auto">
+      <div class="row gx-4">
+        <a
+          target="_blank"
+          href="{{ navigation.github.url }}"
+          title="{{ navigation.github.title }}"
+          class="col-auto">
+          {%- svg 'github', 'icon icon-github-text' -%}
+        </a>
+        <a
+          target="_blank"
+          href="{{ navigation.npm.url }}"
+          title="{{ navigation.npm.title }}"
+          class="col-auto">
+          {%- svg 'npm', 'icon icon-npm' -%}
+        </a>
+        <a
+          target="_blank"
+          href="{{ navigation.discord.url }}"
+          title="{{ navigation.discord.title }}"
+          class="col-auto">
+          {%- svg 'discord', 'icon icon-discord' -%}
+        </a>
+      </div>
+    </div>
+    <div class="col-auto d-none d-sm-unset">
+      {%- include 'search' -%}
+    </div>
 
   </div>
 </header>

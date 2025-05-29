@@ -19,9 +19,7 @@ The `{js} esthetic.format()` function is the core method for formatting code in 
 
 > Rules are applied using immutable merges, ensuring that the original ruleset remains unchanged. For scenarios where you're executing consecutive format operations with identical rule-sets, it's more efficient to use the [`{js} esthetic.rules()`](/api/esthetic.rules/) method to set the rules once before running multiple format operations.
 
----
-
-# Basic Usage
+### Basic Usage
 
 The `format` method is used to beautify code in Æsthetic. While error handling is optional, using a try/catch block is typically the best approach to manage potential parse errors (see [error handling](/parser/error-handling/)) during the beautification process. This method allows for better control and graceful handling of exceptions that may occur during formatting.
 
@@ -29,54 +27,35 @@ The `format` method is used to beautify code in Æsthetic. While error handling 
 ```js
 import esthetic from "esthetic";
 
-const input = `.class { font-size: 0.95rem; border-width: 0.01rem; }`
+const input = `<div id="foo" class="bar"> Hello World! </div>`
 
 try {
-
-  const output = esthetic.format(input, {
-    language: 'css',
-    style: {
-      noLeadZero: true
-    }
-  })
-
+  const output = esthetic.format(input, { language: 'html' })
   console.log(output)
-
 } catch (e) {
-
   console.error(e);
-
 }
 ```
 
-> This above approach ensures that any parsing or formatting errors are caught and can be handled appropriately, preventing unexpected crashes in your application. It's particularly useful when dealing with large code bases or potentially malformed input, providing a robust way to implement code beautification in your projects.
+> This above approach ensures that any parsing or formatting errors are caught and can be handled appropriately, preventing unexpected crashes in your application. You can use use `{js} esthetic.error` property to check for parse errors.
 
 ---
 
-# Using Language Specifics
+### Language Specifics
 
-Æsthetic provides language-specific formatting methods that function similarly to `{js} esthetic.format()` but are tailored for specific languages. Like the general format method, these methods accept the code to be formatted as the first parameter and also take an optional second parameter for rules, but these rules are relative to the specific language, as the `language` option is inferred from the method name.
-
-### Examples
+Æsthetic provides language-specific formatting methods that function similarly to `{js} esthetic.format()` but are tailored for specific languages, which prvents you having to apply `language` assignment. Like the general format method, these methods accept the code to be formatted as the first parameter and also take an optional second parameter for rules, with the difference being that these rules are relative to the specific language.
 
 ```js
-import esthetic from "esthetic";
+import esthetic from 'esthetic';
 
 // HTML Formatting
-esthetic.html('..'): string;
+esthetic.html('..'); // -> string;
 
 // Liquid Formatting
-esthetic.liquid('..'): string;
-
-// XML Formatting
-esthetic.xml('..'): string;
-
-// CSS Formatting
-esthetic.css('..'): string;
+esthetic.liquid('..'); // -> string;
 
 // JSON Formatting
-esthetic.json('..'): string;
-
+esthetic.json('..'); // -> string;
 ```
 
 > It's important to note that currently, only stable language-specific methods are made available. For unstable or less common languages, you should use the `{js} esthetic.format()` method and pass the appropriate `language` identifier within the `rules` parameter.

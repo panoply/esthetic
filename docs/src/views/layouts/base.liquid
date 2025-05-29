@@ -29,49 +29,46 @@
     <title>
       Æsthetic | {{ title }}
     </title>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta
       content="IE=edge"
-      http-equiv="X-UA-Compatible">
+      http-equiv="X-UA-Compatible" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0">
+      content="width=device-width, initial-scale=1.0" />
     <link
       type="image/png"
       href="{{'/assets/favicon-32x32.png' | url }}"
       rel="icon"
-      sizes="32x32">
+      sizes="32x32" />
     <link
       type="image/png"
       href="{{'/assets/favicon-16x16.png' | url }}"
       rel="icon"
-      sizes="16x16">
+      sizes="16x16" />
     <link
       href="https://fonts.googleapis.com"
-      rel="preconnect">
+      rel="preconnect" />
     <link
       href="https://fonts.gstatic.com"
       crossorigin
-      rel="preconnect">
+      rel="preconnect" />
     <link
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
       rel="stylesheet"
-      spx-eval="false">
-
+      spx-eval="false" />
     <link
       type="font/woff2"
       href="{{ '/assets/font/proxima-nova-regular.woff2' | url }}"
       as="font"
       crossorigin
       rel="stylesheet preload" />
-
     <link
       type="font/woff2"
       href="{{ '/assets/font/proxima-nova-bold.woff2' | url }}"
       as="font"
       crossorigin
       rel="stylesheet preload" />
-
     <link
       type="font/woff2"
       href="{{ '/assets/font/proxima-nova-light.woff2' | url }}"
@@ -107,10 +104,20 @@
     <link
       href="{{'/style.css' | url }}"
       rel="stylesheet"
-      spx-eval="false">
+      spx-eval="false" />
+    {% comment %} <link
+href="{{'/assets/moloko/moloko.css' | url }}"
+rel="stylesheet"
+spx-eval="false"> {% endcomment %}
     <script
       src="{{'/assets/esthetic.min.js' | url }}"
       spx-eval="false"></script>
+
+    {% comment %} <script
+src="{{'/assets/moloko/moloko.js' | url }}"
+type="module"
+spx-eval="false"></script> {% endcomment %}
+
     <script
       src="{{'/assets/bundle.min.js' | url }}"
       spx-eval="false"></script>
@@ -126,16 +133,13 @@
 
       {% if page.url contains '/playground/' %}
 
-        {% include 'navbar' %}
-        {% include 'search' %}
+        {% include 'navbar-playground' %}
         {% include 'playground' %}
 
       {% else %}
         <main
           id="main"
           class="container-fluid mb-5 pb-5">
-          {% include 'search' %}
-
           <div class="row gx-0 jc-center">
             <div class="col-auto w-320 h-100">
               <aside
@@ -143,41 +147,43 @@
                 spx-component="drawer"
                 spx-drawer:direction="left"
                 spx-drawer:width="280">
-                {% include 'sidebar-header' %}
+                {% include 'sidebar-header' , class: 'sidebar-header' %}
                 {% include 'sidebar-menu' %}
               </aside>
             </div>
-            <div class="col {% unless page.url contains '/rules/' %}mr-5 {% else %} mr-3{% endunless %}">
+            <div class="col">
               {% include 'navbar' %}
-              <div
+              <div class="row">
+                <div class="col rel {% unless page.url contains '/rules/' %}mr-5 {% else %} mr-3{% endunless %}">
+                  <div
+                    {% unless page.url contains '/rules/' %}
+                      class="px-5 mr-2"
+                    {% else %}
+                      class="px-5"
+                    {% endunless %}>
+                    {{ content }}
+                    {% include 'paginate' %}
+                  </div>
+                </div>
+
                 {% unless page.url contains '/rules/' %}
-                  class="px-5 mr-2"
-                {% else %}
-                  class="px-5"
-                {% endunless %}>
-                {{ content }}
-                {% include 'paginate' %}
+                  <div
+                    class="col-auto w-300"
+                    spx-component="scrollspy">
+                    <aside class="anchors mt-5">
+                      {% include 'anchors' , anchors: anchors %}
+                    </aside>
+                  </div>
+                {% endunless %}
               </div>
             </div>
-
-            {% unless page.url contains '/rules/' %}
-              <div
-                class="col-auto w-300"
-                spx-node="anchor.toggle">
-                <aside
-                  class="anchors mt-5"
-                  spx-component="anchor">
-                  {% include 'anchors', anchors: anchors %}
-                </aside>
-              </div>
-            {% endunless %}
           </div>
         </main>
       {% endif %}
     {% endif %}
 
     {% sprite %}
-    {% search %}
+    {%- search 'esthetic' -%}
 
   </body>
 </html>

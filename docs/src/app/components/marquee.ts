@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
-import spx from 'spx';
 import embla, { EmblaCarouselType, EmblaOptionsType } from 'embla-carousel';
 import autoscroll from 'embla-carousel-auto-scroll';
+import spx from 'spx';
 
 export class Marquee extends spx.Component<typeof Marquee.define> {
 

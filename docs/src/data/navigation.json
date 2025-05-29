@@ -1,12 +1,12 @@
 {
   "github": {
     "title": "Github",
-    "url": "https://github.com/panoply/spx",
+    "url": "https://github.com/panoply/esthetic",
     "target": "_blank"
   },
   "npm": {
     "title": "NPM",
-    "url": "https://www.npmjs.com/package/spx",
+    "url": "https://www.npmjs.com/package/esthetic",
     "target": "_blank"
   },
   "discord": {
@@ -21,7 +21,7 @@
     },
     {
       "title": "Rules",
-      "url": "/rules/"
+      "url": "/rules/language/"
     },
     {
       "title": "Playground",
@@ -30,29 +30,12 @@
   ],
   "docs": [
     {
-      "title": "Introduction",
-      "links": [
-        {
-          "title": "What is Æsthetic?",
-          "url": "/introduction/what-is-esthetic/"
-        },
-        {
-          "title": "Motivation",
-          "url": "/introduction/motivation/"
-        },
-        {
-          "title": "Supported Languages",
-          "url": "/introduction/language-support/"
-        },
-        {
-          "title": "Language Parser",
-          "url": "/introduction/language-support/"
-        }
-      ]
-    },
-    {
       "title": "Usage",
       "links": [
+        {
+          "title": "Introduction",
+          "url": "/introduction/what-is-esthetic/"
+        },
         {
           "title": "Installation",
           "url": "/introduction/installation/"
@@ -62,20 +45,16 @@
           "url": "/usage/config-files/"
         },
         {
+          "title": "Æsthetic CLI",
+          "url": "/usage/esthetic-cli/"
+        },
+        {
           "title": "Ignoring Code",
           "url": "/usage/ignoring-code/"
         },
         {
-          "title": "Inline Control",
-          "url": "/usage/inline-control/"
-        },
-        {
           "title": "Text Editors",
           "url": "/usage/text-editors/"
-        },
-        {
-          "title": "CLI",
-          "url": "/usage/cli/"
         }
       ]
     },
@@ -104,35 +83,23 @@
         },
         {
           "title": "esthetic.on",
-          "url": "/api/esthetic.events/"
+          "url": "/api/esthetic.on/"
         },
         {
           "title": "esthetic.hook",
-          "url": "/api/esthetic.events/"
+          "url": "/api/esthetic.hook/"
         },
         {
           "title": "esthetic.grammar",
-          "url": "/api/esthetic.rules/"
+          "url": "/api/esthetic.grammar/"
         },
         {
           "title": "esthetic.detect",
-          "url": "/api/esthetic.rules/"
-        },
-        {
-          "title": "esthetic.table",
-          "url": "/api/esthetic.rules/"
-        },
-        {
-          "title": "esthetic.stats",
-          "url": "/api/esthetic.rules/"
+          "url": "/api/esthetic.detect/"
         },
         {
           "title": "esthetic.error",
-          "url": "/api/esthetic.rules/"
-        },
-        {
-          "title": "esthetic.definitions",
-          "url": "/api/esthetic.rules/"
+          "url": "/api/esthetic.error/"
         }
       ]
     },
@@ -162,23 +129,6 @@
       ]
     },
     {
-      "title": "Integrate",
-      "links": [
-        {
-          "title": "Text Editor",
-          "url": "/integrate/text-editor/"
-        },
-        {
-          "title": "Linters",
-          "url": "/integrate/linters/"
-        },
-        {
-          "title": "Browser",
-          "url": "/integrate/browser/"
-        }
-      ]
-    },
-    {
       "title": "Misc",
       "links": [
         {
@@ -201,109 +151,69 @@
       "title": "Global",
       "links": [
         {
-          "title": "preset",
-          "url": "/rules/global/preset/"
-        },
-        {
-          "title": "crlf",
-          "url": "/rules/global/crlf/"
-        },
-        {
-          "title": "endNewline",
-          "url": "/rules/global/endNewline/"
-        },
-        {
           "title": "language",
-          "url": "/rules/global/language/"
+          "url": "/rules/language/"
+        },
+        {
+          "title": "wordWrap",
+          "url": "/rules/wordWrap/"
         },
         {
           "title": "indentChar",
-          "url": "/rules/global/indentChar/"
-        },
-        {
-          "title": "indentLevel",
-          "url": "/rules/global/indentLevel/"
+          "url": "/rules/indentChar/"
         },
         {
           "title": "indentSize",
-          "url": "/rules/global/indentSize/"
+          "url": "/rules/indentSize/"
+        },
+        {
+          "title": "preset",
+          "url": "/rules/preset/"
         },
         {
           "title": "preserveLine",
-          "url": "/rules/global/preserveLine/"
+          "url": "/rules/preserveLine/"
         },
         {
-          "title": "wrap",
-          "url": "/rules/global/wrap/"
+          "title": "lineTermination",
+          "url": "/rules/lineTermination/"
         },
         {
-          "title": "wrapFraction",
-          "url": "/rules/global/wrapFraction/"
+          "title": "indentLevel",
+          "url": "/rules/indentLevel/"
+        },
+        {
+          "title": "endNewline",
+          "url": "/rules/endNewline/"
+        },
+        {
+          "title": "commentIndent",
+          "url": "/rules/commentIndent/"
+        },
+        {
+          "title": "commentPreserve",
+          "url": "/rules/commentPreserve/"
         }
       ]
     },
     {
-      "title": "Liquid",
+      "title": "Shared",
       "links": [
         {
-          "title": "argumentFormat",
-          "url": "/rules/liquid/argumentFormat/"
+          "title": "forceIndent",
+          "url": "/rules/forceIndent/"
         },
         {
-          "title": "argumentLineBreak",
-          "url": "/rules/liquid/argumentLineBreak/"
+          "title": "ignoreJSON",
+          "url": "/rules/ignoreJSON/"
         },
         {
-          "title": "commentIndent",
-          "url": "/rules/liquid/commentIndent/"
-        },
-        {
-          "title": "commentPreserve",
-          "url": "/rules/liquid/commentPreserve/"
-        },
-        {
-          "title": "dedentTagList",
-          "url": "/rules/liquid/dedentTagList/"
-        },
-        {
-          "title": "delimiterTrims",
-          "url": "/rules/liquid/delimiterTrims/"
-        },
-        {
-          "title": "delimiterPlacement",
-          "url": "/rules/liquid/delimiterPlacement/"
-        },
-        {
-          "title": "equipoiseSpacing",
-          "url": "/rules/liquid/equipoiseSpacing/"
-        },
-        {
-          "title": "filterLineBreak",
-          "url": "/rules/liquid/filterLineBreak/"
-        },
-        {
-          "title": "indentAttribute",
-          "url": "/rules/liquid/indentAttribute/"
+          "title": "singleQuote",
+          "url": "/rules/singleQuote/"
         },
         {
           "title": "ignoreTagList",
-          "url": "/rules/liquid/ignoreTagList/"
-        },
-        {
-          "title": "lineBreakLogical",
-          "url": "/rules/liquid/lineBreakLogical/"
-        },
-        {
-          "title": "lineBreakSeparator",
-          "url": "/rules/liquid/lineBreakSeparator/"
-        },
-        {
-          "title": "paddedTagList",
-          "url": "/rules/liquid/paddedTagList/"
-        },
-        {
-          "title": "quoteConvert",
-          "url": "/rules/liquid/quoteConvert/"
+          "url": "/rules/ignoreTagList/"
         }
       ]
     },
@@ -312,132 +222,88 @@
       "links": [
         {
           "title": "attributeCasing",
-          "url": "/rules/markup/attributeCasing/"
+          "url": "/rules/attributeCasing/"
         },
         {
           "title": "attributeLineBreak",
-          "url": "/rules/markup/attributeLineBreak/"
+          "url": "/rules/attributeLineBreak/"
         },
         {
           "title": "attributePreserve",
-          "url": "/rules/markup/attributePreserve/"
+          "url": "/rules/attributePreserve/"
         },
         {
           "title": "attributeSort",
-          "url": "/rules/markup/attributeSort/"
-        },
-        {
-          "title": "classListSort",
-          "url": "/rules/markup/classListSort/"
+          "url": "/rules/attributeSort/"
         },
         {
           "title": "classListUnique",
-          "url": "/rules/markup/classListUnique/"
+          "url": "/rules/classListUnique/"
         },
         {
-          "title": "commentDelimiter",
-          "url": "/rules/markup/commentDelimiter/"
-        },
-        {
-          "title": "commentIndent",
-          "url": "/rules/markup/commentIndent/"
-        },
-        {
-          "title": "commentPreserve",
-          "url": "/rules/markup/commentPreserve/"
-        },
-        {
-          "title": "delimiterTerminus",
-          "url": "/rules/markup/delimiterTerminus/"
-        },
-        {
-          "title": "forceIndent",
-          "url": "/rules/markup/forceIndent/"
-        },
-        {
-          "title": "ignoreCSS",
-          "url": "/rules/markup/ignoreCSS/"
-        },
-        {
-          "title": "ignoreJS",
-          "url": "/rules/markup/ignoreJS/"
-        },
-        {
-          "title": "ignoreJSON",
-          "url": "/rules/markup/ignoreJSON/"
-        },
-        {
-          "title": "preserveText",
-          "url": "/rules/markup/preserveText/"
+          "title": "commentBracket",
+          "url": "/rules/commentBracket/"
         },
         {
           "title": "selfCloseSpace",
-          "url": "/rules/markup/selfCloseSpace/"
+          "url": "/rules/selfCloseSpace/"
         },
         {
           "title": "selfCloseSVG",
-          "url": "/rules/markup/selfCloseSVG/"
-        },
-        {
-          "title": "stripTextWrapLines",
-          "url": "/rules/markup/stripTextWrapLines/"
+          "url": "/rules/selfCloseSVG/"
         },
         {
           "title": "stripAttributeLines",
-          "url": "/rules/markup/stripAttributeLines/"
+          "url": "/rules/stripAttributeLines/"
         },
         {
-          "title": "quoteConvert",
-          "url": "/rules/markup/quoteConvert/"
+          "title": "terminusBracket",
+          "url": "/rules/terminusBracket/"
         },
         {
-          "title": "valueLineBreak",
-          "url": "/rules/markup/valueLineBreak/"
+          "title": "textBoundInline",
+          "url": "/rules/textBoundInline/"
+        },
+        {
+          "title": "textPreserve",
+          "url": "/rules/textPreserve/"
         },
         {
           "title": "valueSpacing",
-          "url": "/rules/markup/valueSpacing/"
+          "url": "/rules/valueSpacing/"
         }
       ]
     },
     {
-      "title": "Style",
+      "title": "Liquid",
       "links": [
         {
-          "title": "atRuleSpace",
-          "url": "/rules/style/atRuleSpace/"
+          "title": "argumentLineBreak",
+          "url": "/rules/argumentLineBreak/"
         },
         {
-          "title": "classPadding",
-          "url": "/rules/style/classPadding/"
+          "title": "delimiterPlacement",
+          "url": "/rules/delimiterPlacement/"
         },
         {
-          "title": "commentIndent",
-          "url": "/rules/style/commentIndent/"
+          "title": "delimiterTrims",
+          "url": "/rules/delimiterTrims/"
         },
         {
-          "title": "commentNewline",
-          "url": "/rules/style/commentNewline/"
+          "title": "filterLineBreak",
+          "url": "/rules/filterLineBreak/"
         },
         {
-          "title": "preserveComment",
-          "url": "/rules/style/preserveComment/"
+          "title": "indentAttribute",
+          "url": "/rules/indentAttribute/"
         },
         {
-          "title": "noLeadZero",
-          "url": "/rules/style/noLeadZero/"
+          "title": "lineBreakLogical",
+          "url": "/rules/lineBreakLogical/"
         },
         {
-          "title": "sortProperties",
-          "url": "/rules/style/sortProperties/"
-        },
-        {
-          "title": "sortSelectors",
-          "url": "/rules/style/sortSelectors/"
-        },
-        {
-          "title": "quoteConvert",
-          "url": "/rules/style/quoteConvert/"
+          "title": "lineBreakSeparator",
+          "url": "/rules/lineBreakSeparator/"
         }
       ]
     },
@@ -445,28 +311,28 @@
       "title": "JSON",
       "links": [
         {
-          "title": "allowComments",
-          "url": "/rules/json/allowComments/"
-        },
-        {
           "title": "arrayFormat",
-          "url": "/rules/json/arrayFormat/"
+          "url": "/rules/arrayFormat/"
         },
         {
           "title": "braceAllman",
-          "url": "/rules/json/braceAllman/"
+          "url": "/rules/braceAllman/"
         },
         {
           "title": "bracePadding",
-          "url": "/rules/json/bracePadding/"
+          "url": "/rules/bracePadding/"
+        },
+        {
+          "title": "endComma",
+          "url": "/rules/endComma/"
         },
         {
           "title": "objectIndent",
-          "url": "/rules/json/objectIndent/"
+          "url": "/rules/objectIndent/"
         },
         {
           "title": "objectSort",
-          "url": "/rules/json/objectSort/"
+          "url": "/rules/objectSort/"
         }
       ]
     }

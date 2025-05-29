@@ -1,37 +1,41 @@
 ---
 title: 'Global Rules - CRLF'
 layout: base
-permalink: '/rules/global/crlf/index.html'
+permalink: '/rules/lineTermination/index.html'
 anchors:
   - 'CRLF'
   - false
   - true
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row
+:: col-12 col-md-9
 
-# CRLF
+# Line Termination
 
 If line termination should be Windows **CRLF** (CR = Carriage Return and LF = Line Feed) format. By default, Unix **LF** format is used. Setting this value to `true` will use CRLF.
 
-:::
+::
+::
 
 ---
 
-::: rule 👍
+:: row
+:: col-12 col-md-9
 
-#### false
+## LF
 
-:::
+This rule is **disabled** by default and line feed termination is used.
+
+::
+::
 
 ```json:rules
 {
   "language": "html",
-  "crlf": false
+  "lineTermination": "LF"
 }
 ```
-
-This rule is **disabled** by default and line feed termination is used.
 
 ```html:before
 <ul>
@@ -51,18 +55,20 @@ This rule is **disabled** by default and line feed termination is used.
 
 ---
 
-::: rule 👎
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## CRLF
 
 When the rule is **enabled** carriage return and line feed termination is used.
+
+::
+::
 
 ```json:rules
 {
   "language": "html",
-  "crlf": true
+  "lineTermination": "CRLF"
 }
 ```
 

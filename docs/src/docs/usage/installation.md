@@ -22,29 +22,48 @@ anchors:
 
 # Installation
 
-Æsthetic is available for consumption via the NPM registry and supports both ESM (ECMAScript Modules) and CJS (CommonJS) environments. Best practice recommends installing Æsthetic on a per-project basis rather than globally. This approach ensures version consistency across different projects and avoids potential conflicts with global installations. While Æsthetic does not support tree-shaking due to its architecture, the module remains relatively compact. It's distributed as a single file with a gzipped size of approximately 57.5kb.
+Æsthetic is available for consumption via the NPM registry and supports both ESM (ECMAScript Modules) and CJS (CommonJS) environments. Best practice recommends installing Æsthetic on a per-project basis rather than globally. This approach ensures version consistency across different projects and avoids potential conflicts with global installations. While Æsthetic does not support tree-shaking due to its architecture.
 
 > Æsthetic recommends developers use [pnpm](https://pnpm.js.org/en/cli/install) as their package manager. pnpm offers several advantages over traditional package managers like npm or Yarn, including improved performance and stricter dependency resolution.
 
----
+:: row g-5
+:: col-6
 
 #### PNPM
 
 ```bash
-$ pnpm add esthetic --save-dev
+pnpm add esthetic --save-dev
 ```
+
+::
+:: col-6
 
 #### NPM
 
 ```bash
-$ npm install esthetic --save-dev
+npm install esthetic --save-dev
 ```
+
+::
+:: col-6
 
 #### Yarn
 
 ```bash
-$ yarn add esthetic
+yarn add esthetic --save-dev
 ```
+
+::
+:: col-6
+
+#### Bun
+
+```bash
+bun add esthetic --save-dev
+```
+
+::
+::
 
 ---
 

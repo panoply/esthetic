@@ -4,7 +4,8 @@
     "public"
   ],
   "include": [
-    "src/app/**/*.ts"
+    "src/app/**/*.ts",
+    "./.eleventy.d.ts"
   ],
   "compilerOptions": {
     "incremental": false,
@@ -19,7 +20,7 @@
       "dom.iterable"
     ],
     "typeRoots": [
-      "node_modules/@types"
+      "node_modules/@types",
     ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -27,9 +28,9 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "moloko": [
-        "."
-      ]
+      "monaco/*": [
+        "./src/app/monaco/*"
+      ],
     }
   }
 }

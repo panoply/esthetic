@@ -1,5 +1,5 @@
 $demo-border-color: #363d49;
-$demo-border-radius: 0.4em;
+$demo-border-radius: 0.4rem;
 $demo-bg-color: #111417;
 $demo-tab-font-color: #65696f;
 
@@ -8,14 +8,13 @@ $demo-output-title-bg-color: #25272c;
 $demo-output-font-color: #65696f;
 
 .showcase {
-  // Panels
   &-before,
   &-after {
     background-color: $demo-bg-color;
     border: 0.01em solid $demo-border-color;
     border-radius: $demo-border-radius;
-    overflow: hidden;
-    height: 100%;
+    position: relative;
+    width: 100%;
   }
 
   &-before {
@@ -23,10 +22,10 @@ $demo-output-font-color: #65696f;
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
     border-bottom-left-radius: $demo-border-radius;
-    background-color: $demo-bg-color;
+    background-color: #111417;
 
     > .prism-code-editor {
-      background-color: $demo-bg-color;
+      background-color: #111417;
     }
   }
 
@@ -34,15 +33,15 @@ $demo-output-font-color: #65696f;
     border-top-left-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
     border-left: none;
-    position: relative;
-    background-color: #16181c;
+    // position: relative;
+    background-color: $body-bg;
 
     @include media-breakpoint-down(sm) {
       margin-top: 20px;
     }
 
     > .prism-code-editor {
-      background-color: #16181c;
+      background-color: $body-bg;
 
       .pce-line.active-line::after {
         background-color: transparent;
@@ -158,6 +157,20 @@ $demo-output-font-color: #65696f;
     margin: 0;
     border: 0.01em solid transparent;
 
+    &.is-format {
+      height: 30px;
+      margin-left: 10px;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 15px;
+      padding: 0 0 0 20px;
+      background-image: url(icon-play($demo-output-font-color));
+
+      &:hover {
+        background-image: url(icon-play($white));
+      }
+    }
+
     &.is-undo {
       height: 30px;
       background-repeat: no-repeat;
@@ -182,38 +195,4 @@ $demo-output-font-color: #65696f;
       color: $white;
     }
   }
-}
-
-.wrap-offset {
-  padding-left: calc(var(--papyrus-line-number-width) + 0.1em);
-  padding-right: var(--papyrus-code-padding-x);
-
-  .fm-range {
-    margin-top: 10px;
-
-    &:hover {
-      &::-webkit-slider-thumb {
-        background-color: $pink;
-      }
-    }
-  }
-}
-
-.wrap-line {
-  position: absolute;
-  height: 100%;
-  margin-left: calc(
-    var(--papyrus-line-number-width) + var(--papyrus-code-padding-x)
-  );
-  border-right: 0.02rem solid $demo-border-color;
-  z-index: 2;
-  // padding-right: var(--papyrus-code-padding-x);
-  transition: border-right 200ms;
-}
-
-.wrap-number {
-  position: absolute;
-  background-color: $body-bg;
-  left: 0;
-  width: var(--papyrus-line-number-width);
 }

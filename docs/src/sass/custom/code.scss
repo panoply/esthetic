@@ -1,30 +1,45 @@
-.papyrus-editor {
-  &::-webkit-scrollbar-thumb:horizontal {
-    height: 0 !important;
-  }
-}
+// .papyrus-editor {
+//   &::-webkit-scrollbar-thumb:horizontal {
+//     height: 0 !important;
+//   }
+// }
 
 .prism-code-editor {
   border: none;
 }
 
+pre.papyrus > code.language-bash {
+  padding: 0.75em 1em;
+}
+
+pre.papyrus .error,
+.prism-code-editor .error {
+  backdrop-filter: blur(10px);
+  background-color: #291e1eb8 !important;
+  font-size: small;
+
+  .error-heading {
+    display: none !important;
+  }
+  .error-title {
+    color: $red;
+  }
+}
+
 :not(pre) > code {
   word-wrap: break-word;
-  padding: 0.12rem 0.45rem 0.21rem 0.45rem;
+  padding: 0.1rem 0.1rem 0.2rem 0.1rem;
   border-radius: 0.25rem;
-  letter-spacing: 0.0225rem;
-  font-weight: 500;
-  font-size: 0.72rem;
-  color: $white;
+  font-weight: 600 !important;
+  font-size: 0.8rem;
+  color: #ffffff;
   font-family: $font-family-code;
   text-shadow: 0px 0px 5px black;
-  border: 0.01rem solid #5d5d70;
-  -webkit-font-smoothing: subpixel-antialiased;
 }
 
 :not(pre) {
   > a > code {
-    color: $papyrus-js-object;
+    // color: $papyrus-js-object;
   }
 
   > a:hover > code {
@@ -33,7 +48,19 @@
 }
 
 :not(pre) > code[class*='language-js'] {
-  color: $papyrus-js-object;
+  // color: $papyrus-js-object;
+}
+
+:not(pre) > code[class*='language-liquid'] {
+  text-shadow: none;
+  border: none;
+  padding: 0;
+}
+
+:not(pre) > code[class*='language-json'] {
+  text-shadow: none;
+  border: none;
+  padding: 0;
 }
 
 table :not(pre) > code[class*='language-'] {
@@ -44,10 +71,14 @@ table :not(pre) > code[class*='language-'] {
 
 blockquote > p {
   > a > code {
-    color: $papyrus-js-object;
+    // color: $papyrus-js-object;
   }
 
   > code {
-    color: $body-color;
+    color: #e2e2e2;
   }
+}
+
+pre + h6 {
+  margin-top: 20px;
 }

@@ -1,32 +1,25 @@
 import type Moloko from 'moloko';
+
 import spx from 'spx';
 
-export class Playground extends spx.Component<typeof Playground.define>{
+export class Playground extends spx.Component({
+  nodes: [
+    'mount',
+    'splash'
+  ],
+  state: {
+    module: String,
+    loaded: Boolean
+  }
+}) {
 
   static loaded: boolean = false;
   static moloko: typeof Moloko;
 
-  /**
-   * Stimulus: Targets
-   */
-  static define = {
-    nodes: [
-      'mount',
-      'splash'
-    ],
-    state: {
-      module: String,
-      loaded: Boolean
-    }
-  }
-
-  get moloko () {
-    return Playground.moloko;
-  }
-
+  get moloko () { return Playground.moloko; }
 
   svg: Element;
-  timer: NodeJS.Timeout
+  timer: NodeJS.Timeout;
 
   async connect () {
 
@@ -34,8 +27,7 @@ export class Playground extends spx.Component<typeof Playground.define>{
 
   }
 
-
- async onmount() {
+  async onmount () {
 
     if (Playground.loaded) return this.mount();
 
@@ -44,40 +36,55 @@ export class Playground extends spx.Component<typeof Playground.define>{
     this.loading();
 
     await this.module();
+
     return this.mount();
+
   }
 
   unmount (): void {
-
-
 
   }
 
   async module () {
 
-    try {
-
     const moloko = await import(this.state.module);
 
     Playground.moloko = moloko.default;
 
-    } catch(e) {
-      throw e
-    }
   }
 
   mount () {
 
     Playground.moloko.mount(this.mountNode, {
-      offset: 0,
       samples: false,
       hash: false,
       splash: false,
+      monaco: {
+        stickyScroll: {
+          enabled: false,
+          scrollWithEditor: false
+        },
+        scrollbar: {
+          useShadows: false
+        }
+      },
+      sidebar: {
+        actions: {
+          ghissue: {
+            active: false
+          },
+          link: {
+            active: false
+          }
+        }
+      },
+      colors: {
+        background: '#1b1b1d'
+      },
       resolve: {
-        path: 'assets/moloko',
+        path: 'assets/moloko'
       }
     });
-
 
     if (!Playground.loaded) Playground.loaded = true;
 
@@ -91,7 +98,7 @@ export class Playground extends spx.Component<typeof Playground.define>{
 
         this.loading();
 
-      }, 500);
+      }, 250);
 
     } else {
 

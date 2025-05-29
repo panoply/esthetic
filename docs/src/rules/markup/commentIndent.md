@@ -2,15 +2,10 @@
 title: 'Markup - Comment Indent'
 layout: base
 permalink: '/rules/markup/commentIndent/index.html'
-describe:
-  - Comment Indent
-  - Rule Options
-options:
-  - false
-  - true
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row
+:: col-12 col-md-9
 
 # Comment Indent
 
@@ -18,19 +13,20 @@ Applies single indentation to containing content of HTML and XML comments which 
 
 > This rule only effects markup comments containing newlines. Inline markup comments which start and end on the same line will skipped.
 
-:::
+::
+::
 
 ---
 
-::: rule 👎
+:: row
+:: col-12 col-md-9
 
-#### false
+## false
 
-:::
+::
+::
 
 The `commentIndent` rule is **disabled** by default, so Liquid comments do not apply indentation. Liquid block comment contents will have indentation removed in the sample when formatting.
-
-<!-- RULES ARE REQUIRED -->
 
 ```json:rules
 {
@@ -41,8 +37,7 @@ The `commentIndent` rule is **disabled** by default, so Liquid comments do not a
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <!--
   Indentation will be stripped
   Indentation will be stripped
@@ -60,15 +55,35 @@ The `commentIndent` rule is **disabled** by default, so Liquid comments do not a
 </div>
 ```
 
+```html:after
+<!--
+Indentation will be stripped
+Indentation will be stripped
+-->
+<div>
+  <!--
+  Indentation will be stripped
+  Indentation will be stripped
+  -->
+  <nav>
+    <ul>
+      <li>Foo</li>
+    </ul>
+  </nav>
+</div>
+```
+
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 Below is an example of how this rule works if it's enabled (`true`). Notice how after formatting when this rule is enabled that the inner contents of the Liquid comment tag regions are indented.
+
+::
+::
 
 ```json:rules
 {
@@ -79,8 +94,7 @@ Below is an example of how this rule works if it's enabled (`true`). Notice how 
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <!--
 I am now indented
 I am now indented
@@ -89,6 +103,24 @@ I am now indented
   <!--
   I am now indented
   I am now indented
+  -->
+  <nav>
+    <ul>
+      <li>Foo</li>
+    </ul>
+  </nav>
+</div>
+```
+
+```html:after
+<!--
+  I am now indented
+  I am now indented
+-->
+<div>
+  <!--
+    I am now indented
+    I am now indented
   -->
   <nav>
     <ul>

@@ -1,7 +1,7 @@
 ---
 title: 'Grammar'
 layout: base
-permalink: '/usage/grammar/index.html'
+permalink: '/api/esthetic.grammar/index.html'
 ---
 
 # TODO

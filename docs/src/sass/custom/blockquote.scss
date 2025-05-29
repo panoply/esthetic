@@ -7,7 +7,7 @@ blockquote {
   background-repeat: no-repeat no-repeat;
   background-position: 25px center;
   background-size: 2.5%;
-  background-color: $code-bg;
+  background-color: transparent;
   border: 0.01rem #363d49 solid;
   border-radius: 0.5rem;
   position: relative;
@@ -17,7 +17,7 @@ blockquote {
     padding: 15px !important;
 
     > p {
-      font-size: $font-size-sm !important;
+      font-size: $font-size-md !important;
     }
   }
 
@@ -41,10 +41,9 @@ blockquote {
     padding-bottom: 5px;
     margin: 0;
     width: 100% !important;
-    color: #b8b5b5;
-    font-size: 0.925rem;
+    color: #fafafa;
+    font-size: 1rem;
     font-weight: 100;
     font-family: $font-family-base;
-    -webkit-font-smoothing: subpixel-antialiased;
   }
 }

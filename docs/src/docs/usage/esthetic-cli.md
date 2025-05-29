@@ -1,9 +1,9 @@
 ---
-title: 'CLI'
+title: 'Æsthetic CLI'
 layout: base
-permalink: '/usage/cli/index.html'
+permalink: '/usage/esthetic-cli/index.html'
 anchors:
-  - CLI
+  - Æsthetic CLI
   - Configuration Files
   - Commands
   - Example
@@ -11,19 +11,15 @@ anchors:
   - Watching Files
 ---
 
-# CLI
+# Æsthetic CLI
 
 Æsthetic provides basic CLI support via the `esthetic` command and assumes configuration is defined within a projects `package.json` file via an `esthetic` key property. CLI usage requires a path/pattern match be passed and will resolve files from the location provided. By default, Æsthetic will print formatted code to **stdout** and requires an `{bash} -f` or `{bash} --format` flag for file overwrites.
 
 > The `{bash} -f` (or `{bash} --format`) flag will overwrite files matching the path pattern passed from command line. If you'd like to have Æsthetic output files to a different location then use the `{bash} -o` (or `{bash} --output`) flag.
 
-# Configuration Files
-
-When using the CLI you can define configuration using an external file. By default, Æsthetic will assume rules/settings are defined in the projects `package.json` file via the `esthetic` property. Æsthetic also supports external config files for settings and defining beautification rules.
-
-Refer to [Config File](/usage/config-file/) for more information
-
 # Commands
+
+Below is the available list of commands for CLI usage of Æsthetic:
 
 ```bash
 
@@ -51,25 +47,21 @@ Refer to [Config File](/usage/config-file/) for more information
   --liquid                  # Liquid language formatting
   --html                    # HTML language formatting
   --xml                     # XML language formatting
-  --css                     # CSS language formatting
-  --scss                    # SCSS language formatting
   --json                    # JSON language formatting
-  --javascript              # JavaScript language formatting
-  --jsx                     # JSX language formatting
-  --typescript              # TypeScript language formatting
-  --tsx                     # TSX language formatting
 ```
+
+---
 
 # Example
 
-Æsthetic will format all files matched by the glob `*` path pattern passed. As aforementioned, Æsthetic will not overwrite files unless explicitly instructed to using the `-f` or `--format` flag. Let's assume we have a project using the following directory structure:
+Æsthetic will format all files matched by the glob `*` path pattern passed. As aforementioned, Æsthetic will not overwrite files unless the `-f` or `--format` flag is passed, this is intentional and required for write operations. Below we have an example project and a couple of commands:
+
+:: row
+:: col-7
 
 ```treeview
 src/
-├── stylesheets/
-│   ├── file-1.css
-│   ├── file-2.css
-│   └── file-3.css
+├── package.json   # Contains Æsthetic formatting rules
 ├── templates/
 │   ├── file-1.liquid
 │   ├── file-2.liquid
@@ -78,21 +70,48 @@ src/
 │   ├── file-1.html
 │   ├── file-2.html
 │   └── file-3.html
-├── data/
-│   ├── file-1.json
-│   └── file-2.json
-└── package.json
+└── data/
+    ├── file-1.json
+    ├── file-2.json
+    └── file-3.json
+
 ```
 
----
+::
+:: col-5
 
-The CLI uses the file extensions suffixes to determine formatting languages but also accepts language identifier flags. Using the example project above, let's leverage the language identifier flags to target certain files within a glob `*` pattern match:
+###### Format All
 
 ```bash
-$ esthetic src/** --liquid --css
+esthetic src/** --format
 ```
 
-Running the above command would result in Æsthetic formatting all files contained in the `src/templates` and `src/stylesheets` directories. Because we passed language identifier flags (`--liquid` and `--css`), formatting will not apply to files located in the `src/statics` and `src/data` directories. Running run the same command without any language identifiers would result in all files contained in the `src` directory to be formatted. Below is various command examples the CLI accepts:
+###### Format Liquid
+
+```bash
+esthetic src/** -f --liquid
+```
+
+###### Format HTML
+
+```bash
+esthetic src/** -f --html
+```
+
+###### Format JSON
+
+```bash
+esthetic src/** -f --json
+```
+
+::
+::
+
+<br>
+
+#### Breakdown
+
+The CLI uses the file extension suffixes to determine formatting languages supported. Running the above commands would result in Æsthetic looking for files matching the in the glob pattern, the language identifier flags instruct Æsthetic to apply beautifcation only on files matching the language flag. You can perform more advanced operations and even watch + overwrites files upon change using the CLI.
 
 ```bash
 # Format all files in the templates directory and print the output
@@ -105,7 +124,7 @@ $ esthetic src/statics/* --format
 $ esthetic src/data/* --output some-dir
 
 # Format and overwrite all .liquid and .css files
-$ esthetic src/**/** --format --liquid --css
+$ esthetic src/**/** --format --liquid --json
 
 # Watch files in the templates directory, format changed files and print output to the CLI
 $ esthetic src/liquid/* --watch

@@ -11,7 +11,7 @@ export class Dropdown extends spx.Component<typeof Dropdown.define> {
   static define = {
     nodes: [
       'button',
-      'collapse',
+      'collapse'
     ],
     state: {
       selected: String,
@@ -31,13 +31,12 @@ export class Dropdown extends spx.Component<typeof Dropdown.define> {
     }
   };
 
-
   /**
    * Toggle - Open/Close
    */
   toggle (event: Event) {
 
-    console.log(this)
+    console.log(this);
 
     event.stopPropagation();
 
@@ -171,7 +170,5 @@ export class Dropdown extends spx.Component<typeof Dropdown.define> {
   public collapseNode: HTMLElement;
   public buttonNode: HTMLElement;
   public placeholderNode: HTMLElement;
-
-
 
 }

@@ -12,7 +12,8 @@ anchors:
     - false
 ---
 
-::: grid col-12 col-md-9
+:: row
+:: col-12 col-md-9
 
 # Comment Indent
 
@@ -26,17 +27,20 @@ The `commentIndent` rule interacts with another Liquid-specific rule called `com
 
 - [Comment Preserve](/rules/liquid/commentPreserve/)
 
-:::
+::
+::
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 Below is an example of how this rule works if it's enabled (`true`). Notice how after formatting when this rule is enabled that the inner contents of the Liquid comment tag regions are indented.
+
+::
+::
 
 ```json:rules
 {
@@ -55,7 +59,6 @@ molestias, doloribus.
 {% endcomment %}
 ```
 
-<!-- prettier-ignore -->
 ```liquid:after
 {% comment %}
   Lorem ipsum dolor sit amet consectetur,
@@ -66,13 +69,15 @@ molestias, doloribus.
 
 ---
 
-::: rule 👎
+:: row
+:: col-12 col-md-9
 
-#### false
-
-:::
+## false
 
 The `commentIndent` rule is **disabled** by default, so Liquid comments do not apply indentation. Liquid block comment contents will have indentation removed in the sample when formatting.
+
+::
+::
 
 ```json:rules
 {

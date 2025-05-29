@@ -1,11 +1,10 @@
-<main id="main">
+<main id="main" class="h-100">
   <div
     class="playground"
     spx-component="playground"
     spx-playground:esthetic="{{'/assets/esthetic.min.js' | url }}"
     spx-playground:loaded="false"
     spx-playground:module="{{'/assets/moloko/moloko.js' | url }}">
-
     <div
       class="abs-flex ai-center jc-center flex-col d-none"
       spx-node="playground.splash">
@@ -16,7 +15,6 @@
         <span class="spinner"></span>
       </div>
     </div>
-
     <div spx-node="playground.mount"></div>
   </div>
 </main>

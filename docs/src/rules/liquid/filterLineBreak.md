@@ -15,7 +15,8 @@ anchors:
     - 3
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row
+:: col-12 col-md-9
 
 # Filter Line Break
 
@@ -23,113 +24,103 @@ Forces Liquid filter `|` expressions onto newlines when the number of filters co
 
 > See [fractional wrapping](/terminologies#fractional-wrapping) for more information regarding how fraction based thresholds are determined and calculated.
 
-# Related Rules
+#### Related Rules
 
-The `argumentLineBreak`
+- [wrap](/rules/liquid/wrap/)
+- [forceArgument](/rules/liquid/forceArgument/)
+- [lineBreakSeparator](/rules/liquid/lineBreakSeparator/)
+- [delimiterPlacement](/rules/liquid/lineBreakSeparator/)
 
-- [`wrap`](/rules/liquid/wrap/)
-- [`forceArgument`](/rules/liquid/forceArgument/)
-- [`lineBreakSeparator`](/rules/liquid/lineBreakSeparator/)
-- [`delimiterPlacement`](/rules/liquid/lineBreakSeparator/)
-
-<!--
-
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-🧐 - You gotta do, what you gotta do
-
--->
-
-:::
+::
+::
 
 ---
 
-::: rule 👍
+:: row
+:: col-12 col-md-9
 
-#### 0
-
-:::
+## 0
 
 By default, this rule uses a value of `0` which infers forcing to apply at a length ¾ (or 75%) of the defined global [`wrap`](/rules/global/wrap) limit. If your global wrap is set to `0` then no forcing is applied.
 
-<!-- RULES ARE REQUIRED -->
+::
+::
 
 ```json:rules
 {
   "language": "liquid",
-  "wrap": 50
+  "wrap": 70,
+  "liquid": {
+    "filterLineBreak": 0
+  }
 }
 ```
 
-<!-- prettier-ignore -->
 ```liquid:before
-
-{{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
-
 {{ object.prop
-| filter_1: 'value'
-| filter_2: 'xxx' | filter_3: 'foo' }}
+  | filter_1: 'value'
+  | filter_2: 'xxx' }}
+
+{{ object.prop | filter_1: 'value' | filter_2: 'xxx'
+  | filter_3: 'foo' }}
 
 {{ object.prop | filter_1: 'value' }}
-
 ```
 
 ```liquid:after
-
 {{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
 
 {{ object.prop
-| filter_1: 'value'
-| filter_2: 'xxx' | filter_3: 'foo' }}
+  | filter_1: 'value'
+  | filter_2: 'xxx'
+  | filter_3: 'foo' }}
 
 {{ object.prop | filter_1: 'value' }}
-
 ```
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### 3
+## 3
 
-:::
+::
+::
 
 This is an example of the `filterLineBreak` using a value of `3` which will result in forcing only if the tag contains `3` or more filters. A tag with less than this number of filters will not have forcing applied (unless `wrap` is exceeded).
 
 ```json:rules
 {
   "language": "liquid",
+  "wrap": 0,
   "liquid": {
-    "filterLineBreak": 3
+    "filterLineBreak": 4
   }
 }
 ```
 
-<!-- prettier-ignore -->
 ```liquid:before
 {{ object.prop
-| filter_1: 'value'
-| filter_2: 'xxx' }}
+  | filter_1: 'value'
+  | filter_2: 'xxx' }}
 
-{{ object.prop | filter_1: 'value' | filter_2: 'x' | filter_3: 'foo' }}
+{{ object.prop | filter_1: 'value' | filter_2: 'x'
+  | filter_3: 'foo' }}
 
 {{ object.prop
-| filter_1: 'value' }}
+  | filter_1: 'value' }}
 ```
 
 ```liquid:after
+{{ object.prop | filter_1: 'value' | filter_2: 'xxx' }}
 
 {{ object.prop
-| filter_1: 'value'
-| filter_2: 'xxx' }}
+  | filter_1: 'value'
+  | filter_2: 'x'
+  | filter_3: 'foo' }}
 
-{{ object.prop | filter_1: 'value' | filter_2: 'x' | filter_3: 'foo' }}
-
-{{ object.prop
-| filter_1: 'value' }}
+{{ object.prop | filter_1: 'value' }}
 ```
 
 ---

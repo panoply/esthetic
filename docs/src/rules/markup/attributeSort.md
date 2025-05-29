@@ -11,7 +11,8 @@ options:
   - 'string[]'
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row
+:: col-12 col-md-9
 
 # Attribute Sort
 
@@ -19,106 +20,131 @@ Provides sorting of HTML and XML Attributes. When **enabled** (`true`) it will s
 
 > Sorting is ignored on tags which contain Liquid output and tag type tokens as attributes.
 
-:::
-
-<!--
-
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-
--->
+::
+::
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### false
-
-:::
+## false
 
 Take the following tag with several attributes defined in no specific order. When the rule is enabled (ie: `true`) the sorting order of these attributes will change. Attributes will be alphabetically sorted (A-Z).
+
+::
+::
 
 ```json:rules
 {
   "language": "html",
   "markup": {
     "attributeSort": false,
-    "forceAttribute": true
+    "attributeLineBreak": true
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
+<div
+  id="x"
+data-c="true"
+data-b="100"
+  class="xxx"
+  data-a="foo">
+
+ Attributes will not be sorted!
+
+</div>
+```
+
+```html:after
 <div
   id="x"
   data-c="true"
   data-b="100"
   class="xxx"
-  data-a="foo"></div>
+  data-a="foo">
+
+  Attributes will not be sorted!
+
+</div>
 ```
 
 ---
 
-::: rule 👍
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 Take the following tag with several attributes defined in no specific order. When the rule is enabled (ie: `true`) the sorting order of these attributes will change. Attributes will be alphabetically sorted (A-Z).
+
+::
+::
 
 ```json:rules
 {
   "language": "html",
   "markup": {
     "attributeSort": true,
-    "forceAttribute": true
+    "attributeLineBreak": true
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```html
-<!-- After formatting -->
+```html:before
+<div
+  id="x"
+  data-x="last"
+  data-c="true"
+  data-b="100"
+  class="xxx"
+  data-a="foo">
+  Attributes will be sorted alphabetically!
+</div>
+```
+
+```html:after
 <div
   class="xxx"
   data-a="foo"
   data-b="100"
   data-c="true"
-  id="x"></div>
+  data-x="last"
+  id="x">
+  Attributes will be sorted alphabetically!
+</div>
 ```
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### string[]
-
-:::
+## string[]
 
 In addition to alphabetical sorting using boolean `true`, developers may prefer to control the sorting behavior of Æsthetic. The `attributeSort` rule accepts a string list of attribute names. When provided, markup attributes will be sorted according to the list entries and then alphabetically. Custom sorting will sort in the same order passed. Click the **rules** tab to inspect the sorting logic being used in the below sample.
+
+::
+::
 
 ```json:rules
 {
   "language": "html",
   "markup": {
+    "attributeLineBreak": true,
     "attributeSort": [
       "id",
       "class",
       "data-b",
       "data-z"
-    ],
-    "forceAttribute": true
+    ]
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <div
   data-z
   data-a
@@ -128,7 +154,6 @@ In addition to alphabetical sorting using boolean `true`, developers may prefer 
   data-b
   data-e
   class="xx">
-
   <div
     data-z
     data-a
@@ -137,7 +162,32 @@ In addition to alphabetical sorting using boolean `true`, developers may prefer 
     data-c
     data-b
     data-e
-    class="xx"></div>
+    class="xx">
+    Attributes will be custom sorted first!
+  </div>
+</div>
+```
 
+```html:after
+<div
+  id="x"
+  class="xx"
+  data-b
+  data-z
+  data-a
+  data-c
+  data-d
+  data-e>
+  <div
+    id="x"
+    class="xx"
+    data-b
+    data-z
+    data-a
+    data-c
+    data-d
+    data-e>
+    Attributes will be custom sorted first!
+  </div>
 </div>
 ```

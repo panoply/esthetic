@@ -2,15 +2,10 @@
 title: 'Markup - Ignore CSS'
 layout: base
 permalink: '/rules/markup/ignoreCSS/index.html'
-describe:
-  - Ignore CSS
-  - Rule Options
-examples:
-  - false
-  - true
 ---
 
-::: grid col-8 p-100
+:: row
+:: col-12 col-md-9
 
 # Ignore CSS
 
@@ -18,27 +13,20 @@ Whether or not to format regions of code that are identified to be CSS. The HTML
 
 > This rule only applied to HTML `<style>` tags. Use the Liquid [ignoreTagList](/rules/liquid/ignoreTagList/) rule to exclude beautification on Liquid tokens such as the `{% style %}` or `{% stylesheet %}` tags.
 
-:::
+::
+::
 
 ---
 
-<!--
+:: row
+:: col-12 col-md-9
 
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-
--->
-
-::: rule 🧐
-
-#### true
-
-:::
+## true
 
 The below example shows embedded CSS code region. When the rule is `false` the entire region is preserved and formatting is skipped.
+
+::
+::
 
 ```json:rules
 {
@@ -49,33 +37,43 @@ The below example shows embedded CSS code region. When the rule is `false` the e
 }
 ```
 
-<!-- prettier-ignore-->
-```html
+```html:before
 <section>
 <div>
-
-
 <style>
   .class {
 font-size: 12px;
 background-color   : #FFF;
     }
-
-        </style>
-
+</style>
 </div>
+</section>
+```
+
+```html:after
+<section>
+  <div>
+    <style>
+      .class {
+    font-size: 12px;
+    background-color   : #FFF;
+        }
+    </style>
+  </div>
 </section>
 ```
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### false
-
-:::
+## false
 
 Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist, so it is up to you to apply beautification in your preferred manner. Only the surrounding tokens have beautification applied, the `<style></style>` tag remains in the same position and state as it was **before** formatting.
+
+::
+::
 
 ```json:rules
 {
@@ -86,11 +84,9 @@ Ignored regions are excluded in a strict manner, so indentation levels are compl
 }
 ```
 
-<!-- prettier-ignore-->
-```html
+```html:before
 <section>
 <div>
-
 <style>
   .class {
 font-size: 12px;
@@ -98,7 +94,19 @@ background-color   : #FFF;
     }
 
         </style>
+</div>
+</section>
+```
 
+```html:after
+<section>
+<div>
+<style>
+  .class {
+font-size: 12px;
+background-color   : #FFF;
+    }
+        </style>
 </div>
 </section>
 ```

@@ -1,10 +1,11 @@
 ---
 title: 'Global Rules - Indent Character'
 layout: base
-permalink: '/rules/global/preserveLine/index.html'
+permalink: '/rules/preserveLine/index.html'
 ---
 
-::: grid col-8 p-100
+:: row
+:: col-12 col-md-9
 
 # Preserve Line
 
@@ -12,78 +13,52 @@ The maximum number of consecutive empty lines to retain (ie: preserve). By defau
 
 > This is a global option and it will be used for markup, json, styles and scripts languages.
 
-:::
+::
+::
 
 ---
 
-<!--
+:: row
+:: col-12 col-md-9
 
-# Rule Options
-
-This is a global rule definition and will be used for all languages.
-
-::: options
-
-### `false`
-
-> Strip additional newlines from the end of input.
-
-### `true`
-
-> Insert a newline at the end of input
-
-:::
-
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-🧐 - You gotta do, what you gotta do
-💡 - Showing an example of the rule
--->
-
-::: rule 💡
-
-#### `0`
-
-:::
+## `0`
 
 Below is we instructed to Æsthetic to preserve `0` empty lines. Notice how before formatting the code has several empty newlines but after formatting all lines are stripped.
 
+::
+::
+
 ```json:rules
 {
-  "esthetic": {
-    "language": "html",
-    "preserveLine": 0
-  },
-  "papyrus": {
-    "showLF": true
-  }
+  "language": "html",
+  "preserveLine": 0
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <ul>
 
-
-
   <li>Hello</li>
+
 
   <li>World</li>
 
 
-
 </ul>
-
-
 <div id="example">
 
   Lines
 
 
+</div>
+```
 
-
+```html:after
+<ul>
+  <li>Hello</li>
+  <li>World</li>
+</ul>
+<div id="example">
+  Lines
 </div>
 ```

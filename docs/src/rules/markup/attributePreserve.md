@@ -10,7 +10,8 @@ options:
   - true
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row
+:: col-12 col-md-9
 
 # Attribute Preserve
 
@@ -22,27 +23,20 @@ If you're working with a JavaScript framework that implements a data-attribute d
 
 This is **Markup** specific rule which will take effect on languages like HTML, XML, JSX/TSK and will also override Liquid beautification operations. The **recommended** option to use is `false`,
 
-<!--
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-🧐 - You gotta do, what you gotta do
-💡 - Showing an example of the rule
--->
-
-:::
+::
+::
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### false
-
-:::
+## false
 
 The `attributePreserve` is disabled (i.e: `false`) by default. The inner contents of markup tags are handled by Æsthetic and will apply beautification in accordance with the attribute related rules defined. In the below example, we have set the [forceAttribute](/rules/markup/forceAttribute) rule to `true` so all attributes are forced onto newlines. If `attributePreserve` was set to `true` then attributes would be preserved.
+
+::
+::
 
 ```json:rules
 {
@@ -53,8 +47,7 @@ The `attributePreserve` is disabled (i.e: `false`) by default. The inner content
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <div>
 <ul>
   <li>
@@ -65,26 +58,46 @@ The `attributePreserve` is disabled (i.e: `false`) by default. The inner content
               class="xxx"
 
    data-example="[{ prop: 'hello world!' }]">
-
 <p>
   The attributes above will be formatted
   </p>
-
 </section>
 </li>
 </ul>
 </div>
 ```
 
+```html:after
+<div>
+  <ul>
+    <li>
+      <section
+        id="x"
+        data-a="foo"
+        data-b="bar"
+        data-c="baz"
+        class="xxx"
+        data-example="[{ prop: 'hello world!' }]">
+        <p>
+          The attributes above will be formatted
+        </p>
+      </section>
+    </li>
+  </ul>
+</div>
+```
+
 ---
 
-::: rule 🤡
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 When `attributePreserve` is enabled (i.e: `true`) then the insides of markup tags will be preserved. In the below example, there is no difference between the **before** and **after** versions of the code.
+
+::
+::
 
 ```json:rules
 {
@@ -95,24 +108,44 @@ When `attributePreserve` is enabled (i.e: `true`) then the insides of markup tag
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <div>
 <ul>
-  <li>
-<section
-   id="x"     data-a="foo"
-   data-b="bar"     data-c="baz"
-
-              class="xxx"
-
-   data-example="[{ prop: 'hello world!' }]">
-
+<li>
+      <section
+        id   =    "x"
+          data-a=
+            "foo"       data-b="bar"
+          data-c="baz"
+        class="xxx"
+      >
 <p>
-  The attributes above will be formatted.
+The attributes above will be preserved.
+All tags however will be formatted!
 </p>
 </section>
 </li>
 </ul>
+</div>
+```
+
+```html:after
+<div>
+  <ul>
+    <li>
+      <section
+        id   =    "x"
+          data-a=
+            "foo"       data-b="bar"
+          data-c="baz"
+        class="xxx"
+      >
+        <p>
+          The attributes above will be preserved.
+          All tags however will be formatted!
+        </p>
+      </section>
+    </li>
+  </ul>
 </div>
 ```

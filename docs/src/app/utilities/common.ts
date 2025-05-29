@@ -1,6 +1,6 @@
-import qvp from 'qvp';
-import { LinesAndColumns } from 'lines-and-columns';
 import JSONFallback from 'json-parse-better-errors';
+import { LinesAndColumns } from 'lines-and-columns';
+import qvp from 'qvp';
 
 /**
  * Check if an element is out of the viewport
@@ -27,6 +27,8 @@ export function isScreen (screens: string) {
   return screens.split('|').some(qvp.active);
 
 }
+
+export const glue = (...string: string[]) => string.join('');
 
 export function parseJSON (input: string) {
 

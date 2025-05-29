@@ -133,8 +133,8 @@ $container-max-widths: (
 /* BODY                                         */
 /* -------------------------------------------- */
 
-$body-bg: #16181c; // $black; //#282a36; // $gray-100;
-$body-color: #ebeaea; //$gray-900;
+$body-bg: #1b1b1d; // $black; //#282a36; // $gray-100;
+$body-color: #a4a4a4; //$gray-900;
 $code-bg: #20242c;
 $code-inline-bg: $code-bg;
 $link-color: $gray-400;
@@ -142,7 +142,7 @@ $link-color: $gray-400;
 $letter-spacing-base: 1rem;
 $letter-spacing-heading: 0.04rem;
 
-$font-weight-normal: 300;
+$font-weight-normal: 200;
 $font-weight-lighter: 200;
 $font-weight-light: 100;
 $font-weight-bold: 500;
@@ -153,7 +153,7 @@ $font-weight-bolder: bolder;
 /* -------------------------------------------- */
 
 $border-width: 0.01rem;
-$border-color: #2d333a; // $gray-600; //$gray-400;
+$border-color: #2c323a; // $gray-600; //$gray-400;
 $accordion-border-color: $border-color; //$gray-400;
 $accordion-border-width: $border-width;
 /* -------------------------------------------- */
@@ -183,8 +183,8 @@ $font-family-base:
 
 $font-family-heading: 'JetBrains Mono', monospace;
 $font-family-other: 'JetBrains Mono', monospace;
-$font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
-  monospace;
+$font-family-code:
+  Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 
 // stylelint-enable
 
@@ -192,7 +192,7 @@ $font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
 /* FONT SIZES                                   */
 /* -------------------------------------------- */
 
-$font-size-base: 1rem;
+$font-size-base: 1.1rem;
 
 $font-size-xs: $font-size-base * 0.595;
 $font-size-sm: $font-size-base * 0.825;
@@ -223,7 +223,7 @@ $h2-font-size: $font-size-base * 1.3;
 $h3-font-size: $font-size-base * 1.1;
 $h4-font-size: $font-size-base * 1;
 $h5-font-size: $font-size-base * 1;
-$h6-font-size: $font-size-base;
+$h6-font-size: $font-size-base * 0.795;
 
 $hr-color: $border-color;
 $hr-margin-y: $spacer;
@@ -282,8 +282,8 @@ $form-range-thumb-disabled-bg: $gray-500;
 /* -------------------------------------------- */
 
 // FONT FAMILY
-$papyrus-font-family: consolas, monaco, 'Andale Mono', 'Ubuntu Mono',
-  monospace;
+$papyrus-font-family:
+  consolas, monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 $papyrus-font-size: 0.895rem;
 $papyrus-line-height: 1.7;
 $papyrus-scrollbar-width: 0;
@@ -295,3 +295,4 @@ $papyrus-scrollbar-width: 0;
 // SELECTION
 $papyrus-selection-bg: 255, 255, 255;
 $papyrus-selection-alpha: 0.3;
+$papyrus-code-bg: $body-bg;

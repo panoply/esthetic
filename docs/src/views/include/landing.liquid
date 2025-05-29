@@ -1,71 +1,55 @@
-<main
-  id="main"
-  class="container-fluid">
-  <div class="row vh-100 ai-center jc-center px-sm-5">
-    <div class="hero d-grid ai-center col-11 col-sm-6 m-auto">
+<main id="main" class="container-fluid">
+  <div class="row vh-100 d-flex ai-center jc-center px-sm-5 hidden">
+    <div class="hero d-grid ai-center col-11 col-xl-6 m-auto">
       <div class="hero-github">
-        <a
-          href="https://github.com/panoply/esthetic"
-          target="_blank">
-          {% svg 'github-2', 'icon icon-github' %}
+        <a href="https://github.com/panoply/esthetic">
+          {% svg 'github'  , 'icon icon-github' %}
         </a>
       </div>
 
-      <div class="d-flex flex-column as-center jc-center logo">
+      <div class="d-flex flex-col as-center jc-center">
+
         <a
           href="/introduction/what-is-esthetic/"
-          aria-label="Æsthetic Documentation"
-          data-tooltip="right"
+          class="hero-logo d-block m-auto mb-3"
           spx-target="body">
-          {% svg 'æsthetic', 'icon' %}
+          {% svg 'æsthetic'  , 'icon' %}
         </a>
+
       </div>
 
-      <div class="d-flex flex-column m-auto tc mb-2">
-        <h3
-          class="d-block caption ff-base light uncase tc px-sm-5"
-          style="font-weight: 200;">
-          {{ content | remove: '<p>' | remove: '</p>' }}
-        </h3>
+      <div class="d-flex flex-column m-auto tc fw-lighter pb-2">
+        <span class="ff-base d-block uncase mt-1 hero-caption d-none d-sm-block">
+          {{ content }}
+        </span>
       </div>
 
-      <div class="row my-3 mx-5 jc-center ai-center pb-5 bb mb-5">
+      <div class="row my-4 jc-center ai-center">
         <a
           href="/introduction/what-is-esthetic/"
-          class="col-5 col-md-auto goto-link tc"
-          aria-label="Documentation"
-          data-tooltip="left"
+          class="col-5 col-md-3 goto-link tc"
           spx-target="body">
           Usage
         </a>
-        <span class="col-12 col-md-auto fs-sm fc-gray ff-heading tc px-3 my-3 my-sm-0">OR</span>
+        <span class="col-12 col-md-auto fs-xs fc-gray ff-heading tc px-3 my-3 my-sm-0">OR</span>
         <a
           href="/rules/"
-          class="col-5 col-md-auto goto-link"
-          aria-label="Formatting Rules"
-          data-tooltip="right"
+          class="col-5 col-md-3 goto-link"
           spx-target="body">
           Rules
         </a>
       </div>
-
-      <div class="row ai-center jc-center m-auto tc mb-2">
-
-        <div class="col-12 fs-sm ff-code upper fc-gray">
-          {% version %}
-        </div>
-
+      <div class="row jc-center mt-2">
+        <a href="/playground/" class="col-auto col-md pleb fc-dark-gray tc">
+          Moloko Vellocet
+        </a>
       </div>
 
     </div>
-
-    <div class="version fs-xs d-none">
-      <a
-        href="https://www.npmjs.com/package/esthetic"
-        target="_blank">
-        {% svg 'npm', 'icon npm-icon' %}
-      </a>
+    <div class="version upper fc-dark-gray ff-head">
+      {{ pkg.version | prepend: 'version ' }}
     </div>
 
   </div>
+
 </main>

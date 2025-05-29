@@ -3,11 +3,26 @@ header {
   //background-color: $white;
   z-index: 999999;
   display: flex;
-  background: rgba(22, 24, 28, 0.75);
+  background: #1b1b1dac;
   backdrop-filter: blur(10px);
   right: 0;
-  height: 65px;
+  height: 64px;
   font-size: 1.075rem;
+
+  .header-sidebar {
+    .sidebar-header {
+      top: 0;
+    }
+
+    .ver {
+      font-size: 9px;
+    }
+
+    .icon-logo {
+      width: 140px;
+      height: 17px;
+    }
+  }
 
   // @include media-breakpoint-up(md) {
   //   padding-left: 320px !important;
@@ -22,11 +37,90 @@ header {
   // backdrop-filter: blur(15px);
 }
 
+.playground-navbar {
+  height: 50px;
+  background: #1b1b1dac;
+  backdrop-filter: blur(10px);
+  .icon-logo {
+    width: 110px;
+    height: 17px;
+  }
+
+  .back {
+    position: fixed;
+    top: 5px;
+    left: 15px;
+  }
+
+  .icon {
+    width: 25px;
+    height: 25px;
+    color: $body-color;
+
+    @include media-breakpoint-down(sm) {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .icon-back {
+    width: 30px;
+    height: 30px;
+  }
+
+  .icon-github-text {
+    width: 50px;
+    height: 17px;
+
+    @include media-breakpoint-down(sm) {
+      width: 40px;
+      height: 18px;
+    }
+  }
+
+  .icon-logo {
+    width: 110px;
+    height: 17px;
+  }
+
+  a {
+    font-weight: 400;
+    color: $gray-300;
+    // margin-left: 15px;
+    margin-bottom: 5px;
+
+    &:hover {
+      color: $pink;
+    }
+
+    &.active {
+      color: $pink;
+    }
+
+    &.nav-link {
+      font-family: $font-family-other;
+      text-transform: uppercase;
+      font-weight: 100;
+      font-size: 0.9rem;
+      letter-spacing: 0.03rem;
+    }
+
+    &.mr {
+      margin-right: 0;
+    }
+
+    .icon-logo {
+      width: 140px;
+      height: 17px;
+    }
+  }
+}
+
 .navbar {
   width: 100%;
   position: sticky;
   top: 0;
-  overflow: hidden;
+
   //background: rgba(22, 24, 28, 0.65);
   // backdrop-filter: blur(10px);
 
@@ -40,21 +134,36 @@ header {
     background-position: center;
   }
 
+  .icon {
+    width: 25px;
+    height: 25px;
+    color: $body-color;
+
+    @include media-breakpoint-down(sm) {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .icon-github-text {
+    width: 50px;
+    height: 17px;
+
+    @include media-breakpoint-down(sm) {
+      width: 40px;
+      height: 18px;
+    }
+  }
+
   .e {
     @include media-breakpoint-down(sm) {
       color: $pink !important;
     }
   }
   .icon-github {
-    width: 20px;
+    width: 30px;
     height: 20px;
     color: $white;
-  }
-
-  .icon-npm {
-    width: 44px;
-    height: 44px;
-    color: $gray-400;
   }
 
   .off {

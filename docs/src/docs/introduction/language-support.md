@@ -17,22 +17,15 @@ Below is the current list of supported languages, along with their completion st
 
 > Exercising caution and testing thoroughly is advisable to ensure a smooth beautification process for languages below **90%** completions and languages below **80%** should be avoided for now.
 
-| Language                | Status       | Information                                 |     |
-| :---------------------- | ------------ | ------------------------------------------- | --- |
-| **XML**                 | 92% Complete | _Safe enough to use in projects_            | ✓   |
-| **HTML**                | 94% Complete | _Safe enough to use in projects_            | ✓   |
-| **Liquid + HTML**       | 92% Complete | _Safe enough to use in projects_            | ✓   |
-| **Liquid + CSS**        | 87% Complete | _Safe enough to use in projects_            | ✓   |
-| **Liquid + JSON**       | 80% Complete | _Use with caution, some structural defects_ | ✓   |
-| **Liquid + JavaScript** | 79% Complete | _Use with caution, some structural defects_ | ✓   |
-| **JSON**                | 88% Complete | _Safe enough to use in projects_            | ✓   |
-| **CSS**                 | 92% Complete | _Safe enough to use in projects_            | ✓   |
-| **SCSS**                | 72% Complete | _Avoid using, unexpected results_           | ✓   |
-| **JavaScript**          | 78% Complete | _Use with caution, some structural defects_ | 𐄂   |
-| **TypeScript**          | 70% Complete | _Avoid using, too many defects_             | 𐄂   |
-| **JSX**                 | 70% Complete | _Avoid using, too many defects_             | 𐄂   |
-| **LESS**                | 60% Complete | _Avoid using, too many defects_             | 𐄂   |
-| **TSX**                 | 40% Complete | _Avoid using, too many defects_             | 𐄂   |
-| **YAML**                | 50% Complete | _Do not use, not yet supported_             | 𐄂   |
+| Language          | Status       | Information                                 |     |
+| :---------------- | ------------ | ------------------------------------------- | --- |
+| **XML**           | 92% Complete | _Safe enough to use in projects_            | ✓   |
+| **HTML**          | 94% Complete | _Safe enough to use in projects_            | ✓   |
+| **Liquid + HTML** | 92% Complete | _Safe enough to use in projects_            | ✓   |
+| **Liquid + CSS**  | 87% Complete | _Safe enough to use in projects_            | ✓   |
+| **Liquid + JSON** | 80% Complete | _Use with caution, some structural defects_ | ✓   |
+| **JSON**          | 88% Complete | _Safe enough to use in projects_            | ✓   |
+| **CSS**           | 92% Complete | _Safe enough to use in projects_            | ✓   |
+| **YAML**          | 50% Complete | _Do not use, not yet supported_             | 𐄂   |
 
 > Please keep in mind that Æsthetic is still in its infancy, updates are frequent, patches and fixes are incurred as the tool progresses.

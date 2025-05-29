@@ -1,0 +1,51 @@
+<header class="container-fluid playground-navbar pl-0 b-1 bb">
+  <div class="row gx-0 ai-center jc-between jc-sm-start ai-center w-100 pl-4">
+    <div id="navbar" class="col">
+      <a
+      href="#"
+      onclick="window.history.back()">
+      {% svg 'chevron-left', 'icon icon-back d-none d-sm-unset mr-5' %}
+    </a>
+      {% for link in navigation.navbar %}
+        <a
+          href="{{ link.url }}"
+          title="{{ link.title }}"
+          class="d-none d-sm-unset col-auto fw-bolder mr-4 nav-link {{ link.url | active: navigation }}"
+          {% if link.title == "Playground" or page.url == "/playground/" %}
+            spx-disable="true"
+          {% endif %}>
+          {{ link.title }}
+        </a>
+      {% endfor %}
+    </div>
+    <div class="col-auto pl-5">
+      {% svg 'æsthetic' , 'icon icon-logo' %}
+    </div>
+      <div class="col pl-sm-3 pr-4">
+        <div class="row jc-end gx-4 ml-auto">
+          <a
+            href="{{ navigation.github.url }}"
+            title="{{ navigation.github.title }}"
+            class="col-auto"
+            target="_blank">
+            {% svg 'github' , 'icon icon-github-text' %}
+          </a>
+          <a
+            href="{{ navigation.npm.url }}"
+            title="{{ navigation.npm.title }}"
+            class="col-auto"
+            target="_blank">
+            {% svg 'npm' , 'icon icon-npm' %}
+          </a>
+          <a
+            href="{{ navigation.discord.url }}"
+            title="{{ navigation.discord.title }}"
+            class="col-auto"
+            target="_blank">
+            {% svg 'discord' , 'icon icon-discord' %}
+          </a>
+        </div>
+      </div>
+  </div>
+
+</header>

@@ -1,22 +1,23 @@
-const { eleventy, markdown, sprite, terser, util } = require('e11ty');
-const markdownit = require('markdown-it');
-const mdcontainer = require('markdown-it-container')
-const anchor = require('markdown-it-anchor');
-const iterator = require('markdown-it-for-inline')
-const papyrus = require('papyrus');
-const merge = require('mergerino');
-const { marked } = require('marked');
-const matter = require('gray-matter');
-const esthetic = require('esthetic');
-const fs = require('node:fs')
+const fs = require('node:fs');
 const { readFile, writeFile } = require('node:fs/promises');
 const { join } = require('node:path');
 const { cwd } = require('node:process');
 
+const { defineConfig, markdown, search, sprite, terser, util } = require('e11ty');
+const esthetic = require('esthetic');
+const matter = require('gray-matter');
+const jsonParse = require('json-parse-better-errors');
+// const markdownit = require('markdown-it');
+const anchor = require('markdown-it-anchor');
+const mdcontainer = require('markdown-it-container');
+const iterator = require('markdown-it-for-inline');
+const { marked } = require('marked');
+const merge = require('mergerino');
+const papyrus = require('papyrus');
+
 esthetic.settings({
   persistRules: false
-})
-
+});
 
 /* -------------------------------------------- */
 /* CONSTANTS                                    */
@@ -29,13 +30,13 @@ const INPUT = 'Input';
 const RULES = 'Rules';
 
 /** The pixel width of papyrus font */
-const FONT_PIXEL = 8.1
+const FONT_PIXEL = 8.1;
 
 /** The default word wrap for papyrus showcase */
-const WRAP = 70
+const WRAP = 70;
 
 /** The pixel width for papyrus code block padding  */
-const PADDING = 22.95
+const PADDING = 22.95;
 
 /** Tooltips aria labels for tooltip blocks */
 const TOOLTIPS = {
@@ -66,24 +67,28 @@ const TOOLTIPS = {
  */
 function getEstheticRules (ruleOptions) {
 
-
-
-  return esthetic.preset('default', ruleOptions)
+  return esthetic.preset('default', ruleOptions);
 
 }
 
 /* -------------------------------------------- */
 /* STATES                                       */
-/* -------------------------------------------- */
-
-/**
+/* ---/**
  * Code Before and After Snippets
  *
  * Holds the raw input of before and after code blocks
  *
- * @type {{ rules: esthetic.Rules; before: string; after: string; }}
+ * @type {import('./.eleventy.d.ts').RulesTemplate}
  */
-const template = { rules: null, before: null, after: null }
+const template = {
+  block: null,
+  rules: null,
+  rulesEsc: null,
+  language: null,
+  raw: null,
+  before: null,
+  after: null
+};
 
 /**
  * Code Block Input
@@ -137,7 +142,6 @@ let height;
  */
 let isRule;
 
-
 /* -------------------------------------------- */
 /* UTILITIES                                    */
 /* -------------------------------------------- */
@@ -151,7 +155,7 @@ let isRule;
  */
 function string (lines) {
 
-  return lines.join('')
+  return lines.join('');
 
 }
 
@@ -163,10 +167,10 @@ function string (lines) {
  */
 function getCodeBlockInput (raw) {
 
-  const begin = raw.indexOf('>', raw.indexOf('<code') + 1) + 1
-  const ender = raw.indexOf('</code')
+  const begin = raw.indexOf('>', raw.indexOf('<code') + 1) + 1;
+  const ender = raw.indexOf('</code');
 
-  return raw.slice(begin, ender)
+  return raw.slice(begin, ender);
 
 }
 
@@ -182,13 +186,11 @@ function getCodeBlockInput (raw) {
  */
 function has (prop) {
 
-  if (typeof rules === 'object' && prop in rules) return true
+  if (typeof rules === 'object' && prop in rules) return true;
 
   return false;
 
-
 }
-
 
 /**
  * Return Papyrus height based on the before and after code snippets
@@ -199,14 +201,14 @@ function has (prop) {
  */
 function getPapyrusHeight (before, after, isNL = false) {
 
-  const b = 24 + PADDING * before.split('\n').length
-  const a = 24 + PADDING * after.trim().split('\n').length
+  const b = 24 + PADDING * before.split('\n').length;
+  const a = 24 + PADDING * after.trim().split('\n').length;
 
   return {
     longest: b >= a ? `${b}` : `${a}`,
     after: isNL ? a + PADDING : a,
     before: b
-  }
+  };
 
 }
 
@@ -215,13 +217,27 @@ function getPapyrusHeight (before, after, isNL = false) {
  *
  * @param {string} annotation
  */
-function getLanguage(annotation) {
+function getLanguage (annotation) {
 
   const index = annotation.indexOf(':');
 
-  return index > -1 ? annotation.slice(0, index) : annotation
+  return index > -1 ? annotation.slice(0, index) : annotation;
 
 }
+
+const getCodeblock = (language) => {
+
+  const index = language.indexOf(':');
+
+  return index > -1 ? {
+    language: language.slice(0, index),
+    action: language.slice(index + 1)
+  } : {
+    language,
+    action: null
+  };
+
+};
 
 /**
  * Prints an error to the console when an issue occurs during the
@@ -232,7 +248,7 @@ function getLanguage(annotation) {
  */
 function highlightError (language, error) {
 
-  const SEP = '\n\n------------------------------------------------------------\n\n'
+  const SEP = '\n\n------------------------------------------------------------\n\n';
 
   console.error(
     SEP,
@@ -244,11 +260,21 @@ function highlightError (language, error) {
 
 }
 
+function parseJSON (input) {
+
+  try {
+    return jsonParse(input);
+  } catch (error) {
+    throw new Error(error);
+  }
+
+}
 
 /* -------------------------------------------- */
 /* MARKDOWN-IT PLUGINS                          */
 /* -------------------------------------------- */
 
+let noLines = false;
 
 /**
  * Highlights code blocks contained within markdown files. Some contained
@@ -262,112 +288,55 @@ function highlightError (language, error) {
  * @param {string} str code input
  * @param {string} languageValue code language
  */
-function highlightCode(md, raw, languageValue) {
-
-  let code = '';
-
-  const language = getLanguage(languageValue)
+function rulesStructure (raw, language, escape) {
 
   if (language) {
 
+    if (language.endsWith(':rules')) {
 
-    if (languageValue === 'json:rules') {
+      template.rules = parseJSON(raw);
 
-      if(isRule) {
-        throw new Error('Repeated "```json:rules" block. Only 1 can exist above a code block');
-      } else {
-        isRule = true;
-      }
+      console.log(raw);
 
-      return raw;
+      if (template.rules && template.rules.esthetic) return '';
+
+      isRule = true;
+      template.rulesEsc = escape;
+      template.language = null;
+      template.before = null;
+      template.after = null;
+      return '';
+    } else if (language.endsWith(':no-lines')) {
+
+      noLines = true;
     }
 
-    try {
+    if (isRule && language.endsWith(':before')) {
 
-      if(isRule) {
+      template.raw = escape;
+      template.before = raw;
+      template.language = getLanguage(language);
 
-        if (
-          template.before === null &&
-          template.after === null &&
-          languageValue.endsWith(':before')) {
+      return '';
 
+    } else if (isRule && language.endsWith(':after')) {
 
-          code = raw.trim()
+      template.after = raw;
 
-          template.before = code
-          template.after = ''
+      isRule = false;
+      const markup = getRuleShowcase();
 
-        } else if (
-          template.before !== null &&
-          template.after === '' &&
-          languageValue.endsWith(':after')) {
+      return markup;
 
-          isRule = false;
-          code = raw.trim()
-
-          template.language = language
-          template.after = code
-
-
-
-        } else {
-
-          input = raw
-          isRule = false;
-          code = papyrus.static(raw, {
-            language,
-            addAttrs: {
-              pre: [
-                'spx-node="showcase.input"',
-              ]
-            }
-          });
-
-        }
-
-      } else if (
-        language === 'bash' ||
-        language === 'cli' ||
-        language === 'shell' ||
-        language === 'treeview') {
-
-
-        code = papyrus.highlight(raw, {
-          language,
-          lineNumbers: false
-        })
-
-      } else {
-
-        code = papyrus.highlight(raw, {
-          language,
-          trimEnd: true,
-          trimStart: true
-        });
-
-      }
-
-      input = md.utils.escapeHtml(raw);
-
-    } catch (error) {
-
-      highlightError(language, error)
-
-      code = md.utils.escapeHtml(raw);
     }
 
-  } else {
-
-    code = md.utils.escapeHtml(raw);
-    input = md.utils.escapeHtml(raw);
+    return '';
 
   }
 
-
-  return code;
+  return '';
 
 };
-
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -382,24 +351,13 @@ function highlightCode(md, raw, languageValue) {
  * @param {string} uuid
  * @returns {{ showcase: string; rules: string; mode: string; }}
  */
-function getRuleShowcase (md, language, uuid) {
-
-  /** @type {'example'|'editor'} */
-  const mode = has('example') ? 'example' : 'editor'
-
-  /** @type {esthetic.Rules} */
-  const rulesValue = has('esthetic') ? rules.esthetic : Object.assign({}, template.rules, { language });
-
-  if(!('wrap' in template.rules)) rulesValue.wrap = WRAP
+function getRuleShowcase () {
 
   /** Default wrap for line reference */
-  const wrap = FONT_PIXEL * (rulesValue.wrap || WRAP);
-
-  /** @type {string} */
-  const rawInput = md.utils.unescapeAll(input);
-
-   /** @type {{ [name: string]: {label: string; tooltip: string; }}} */
-  const tabs = has('tabs') ? rules.tabs : {
+  const wrap = FONT_PIXEL * WRAP;
+  const uuid = Math.random().toString(36).slice(2);
+  const rules = getEstheticRules(template.rules);
+  const tabs = {
     input: {
       label: 'Input',
       tooltip: 'Before Formatting'
@@ -408,206 +366,132 @@ function getRuleShowcase (md, language, uuid) {
       label: 'Rules',
       tooltip: 'Rule Definitions'
     }
-  }
+  };
 
-  /* SHOWCASE ----------------------------------- */
-
-  /** @type {string} */
-  let output = ''
-
-
-  if(has('example')) {
-    if(rules.example.rule === 'wrap') {
-      output = getWrapRuleExample(rulesValue, rawInput)
-    } else if(rules.example.rule === 'wrapFraction') {
-      output = getWrapFractionRuleExample(rulesValue, rawInput)
+  const unformatted = papyrus.static(template.before, {
+    language: template.language,
+    id: `input:${uuid}`,
+    useTabs: rules.indentChar !== '\t',
+    wordWrap: true,
+    bracketPairs: false,
+    searchWidget: false,
+    matchTags: false,
+    matchSelected: false,
+    copyButton: false,
+    indentGuides: false,
+    addAttrs: {
+      pre: [
+        'spx-node="showcase.input"'
+      ]
     }
-  } else {
+  });
 
-    if(template.before !== null && template.after !== null) {
-
-      const height = getPapyrusHeight(template.before, template.after, rulesValue.endNewline)
-
-      const unformatted = papyrus.static(template.before, {
-        language,
-        id: `input:${uuid}`,
-        useTabs: rulesValue.indentChar !== '\t',
-        copyButton: false,
-        addAttrs: {
-          pre: [
-            'spx-node="showcase.input"',
-          ]
-        }
-      });
-
-      const after = rulesValue.endNewline
-        ? template.after + '\n'
-        : rulesValue.indentChar === '\t'
-          ? esthetic.format(template.after, rulesValue)
-          : template.after
-
-      const formatted = papyrus.static(after, {
-        language,
-        id: `output:${uuid}`,
-        trimEnd: rulesValue.endNewline === false,
-        readOnly: true,
-        copyButton: true,
-        addAttrs: {
-          pre: [
-            'spx-node="showcase.output"',
-          ]
-        }
-      });
-
-      output = string([
-        /* html */`
-        <div class="row gx-0">
-          <div class="col-12 col-lg-6">
-            <div class="showcase-before">
-              ${unformatted}
-            </div>
-          </div>
-          <div class="col-12 col-lg-6 rel">
-            <div class="showcase-after">
-            <div
-              class="wrap-line"
-              spx-node="showcase.wrapLine"
-              style="width: ${wrap}px; display: none;"></div>
-              ${formatted}
-            </div>
-          </div>
-        </div>
-        `
-      ])
-
+  const formatted = papyrus.static(template.after, {
+    language: template.language,
+    id: `output:${uuid}`,
+    useTabs: template.rules.indentChar !== '\t',
+    readOnly: true,
+    copyButton: true,
+    bracketPairs: false,
+    searchWidget: false,
+    matchTags: false,
+    matchSelected: false,
+    indentGuides: true,
+    addAttrs: {
+      pre: [
+        'spx-node="showcase.output"'
+      ]
     }
-
-  }
+  });
 
   /**
    * The rule showcase template
    */
-  const showcase = string([
+  return string([
     /* html */`
-    <div class="row gx-0">
-      <div class="col-12 col-lg-6">
-        <div class="showcase-tabs">
-          <button
-            type="button"
-            class="tab is-active"
-            spx-node="showcase.inputTab"
-            spx@click="showcase.onClickInputTab"
-            aria-label="${tabs.input.tooltip}"
-            data-tooltip="top">
-            ${tabs.input.label}
-          </button>
-          <button
-            type="button"
-            class="tab pr-2"
-            spx-node="showcase.rulesTab"
-            spx@click="showcase.onClickRulesTab"
-            aria-label="${tabs.rules.tooltip}"
-            data-tooltip="top">
-            ${tabs.rules.label}
-          </button>
-          <div
-            spx-component="dropdown"
-            spx-dropdown:selected="default"
-            spx-dropdown:kind="preset"
-            class="dropdown">
+    <div
+      class="rule-showcase"
+      spx-component="showcase"
+      spx-showcase:uuid="${uuid}"
+      spx-showcase:mode="editor"
+      spx-showcase:rules="${template.rulesEsc}"
+      spx-showcase:language="${template.language}"
+      spx-showcase:input="${template.raw}">
+      <div class="row gx-0">
+        <div class="col-12 col-lg-6">
+          <div class="showcase-tabs">
             <button
               type="button"
-              class="tab"
-              aria-label="Select different preset"
-              spx@click="dropdown.toggle"
-              spx-node="dropdown.button"
+              class="tab is-active"
+              spx-node="showcase.inputTab"
+              spx@click="showcase.onClickInputTab"
+              aria-label="${tabs.input.tooltip}"
               data-tooltip="top">
-              <span spx-bind="showcase.preset"> Preset (default)</span>
-              <span class="icon"></span>
+              ${tabs.input.label}
             </button>
-
-            <ul spx-node="dropdown.collapse">
-              <li
-                id="default"
-                spx@click="dropdown.option showcase.onPresetChange"
-                class="selected">default</li>
-              <li
-                spx@click="dropdown.option showcase.onPresetChange"
-                id="recommended">recommended</li>
-              <li
-                spx@click="dropdown.option showcase.onPresetChange"
-                id="warrington">warrington</li>
-              <li
-                spx@click="dropdown.option showcase.onPresetChange"
-                id="strict">strict</li>
-              <li
-                spx@click="dropdown.option showcase.onPresetChange"
-                id="prettier">prettier</li>
-            </ul>
+            <button
+              type="button"
+              class="tab pr-2"
+              spx-node="showcase.rulesTab"
+              spx@click="showcase.onClickRulesTab"
+              aria-label="${tabs.rules.tooltip}"
+              data-tooltip="top">
+              ${tabs.rules.label}
+            </button>
+            <button
+              type="button"
+              class="tab is-undo ml-auto"
+              spx@click="showcase.onClickResetButton"
+              aria-label="Reset Input"
+              data-tooltip="top">
+            </button>
+            <button
+              type="button"
+              class="tab is-format"
+              spx@click="showcase.onClickFormat"
+              aria-label="Format Code"
+              data-tooltip="top">
+            </button>
           </div>
-          <button
-            type="button"
-            class="tab is-undo ml-auto"
-            spx@click="showcase.onClickResetButton"
-            aria-label="Reset Input"
-            data-tooltip="top">
-          </button>
         </div>
       </div>
-      <div class="col-12 col-lg-2 rel wrap-offset">
-        <div
-          class="wrap-number pl-3 py-2 fc-gray ff-code fs-sm"
-          spx-node="showcase.wrapCount">
-          ${rulesValue.wrap || WRAP}
+      <div class="row gx-0">
+        <div class="col-12 col-lg-6">
+          <div class="showcase-before">${unformatted}</div>
         </div>
-        <input
-          type="range"
-          class="fm-range"
-          min="0"
-          data-tooltip="right"
-          aria-label="Word Wrap"
-          step="1"
-          spx@input="showcase.onWrap">
+        <div class="col-12 col-lg-6">
+          <div class="showcase-after">${formatted}</div>
+        </div>
       </div>
     </div>
-    <!-- SHOWCASE -->
-    ${output}
     `
   ]);
 
-
-  return {
-    mode,
-    showcase,
-    rules: md.utils.escapeHtml(JSON.stringify(rulesValue))
-  }
-
 }
-
 
 /**
  * @param {markdownit} md
  */
-function codeblocks(md) {
+function codeblocks (md) {
 
-  const { fence } = md.renderer.rules
+  const { fence } = md.renderer.rules;
 
-  md.renderer.rules.fence = function(...args) {
+  md.renderer.rules.fence = function (...args) {
 
     const [ tokens, index ] = args;
-    const languageValue = tokens[index].info.trim()
+    const languageValue = tokens[index].info.trim();
     const language = getLanguage(languageValue);
     const inputValue = fence(...args);
 
     if (languageValue === 'json:rules') {
 
-      const json = getCodeBlockInput(inputValue)
+      const json = getCodeBlockInput(inputValue);
 
       try {
         template.rules = JSON.parse(json.trim());
-        return ''
+        return '';
       } catch (e) {
-        throw new Error('Invalid JSON in in the json:rules code block\n\n' + json)
+        throw new Error('Invalid JSON in in the json:rules code block\n\n' + json);
       }
 
     } else if (
@@ -616,26 +500,27 @@ function codeblocks(md) {
       language === 'shell' ||
       language === 'treeview') {
 
-      return inputValue
+      return inputValue;
 
     }
 
     if (template.rules === null) {
 
-      return inputValue
+      return inputValue;
 
     } else if (languageValue.endsWith(':before')) {
 
-      return ''
+      return '';
 
     }
 
-    const uuid = Math.random().toString(36).slice(2)
-    const { rules, mode, showcase } = getRuleShowcase(md, language, uuid)
+    const uuid = Math.random().toString(36).slice(2);
+    const { rules, mode, showcase } = getRuleShowcase(md, language, uuid);
+    const wrap = template.rules.wrap || WRAP;
 
-    template.rules = null
-    template.before = null
-    template.after = null
+    template.rules = null;
+    template.before = null;
+    template.after = null;
 
     return string([
       /* html */`
@@ -649,21 +534,20 @@ function codeblocks(md) {
         spx-showcase:uuid="${uuid}"
         spx-showcase:mode="${mode}"
         spx-showcase:preset="default"
+        spx-showcase:wrap="${wrap}"
         spx-showcase:rules="${rules}"
         spx-showcase:rules-original="${rules}"
         spx-showcase:language="${language}"
         spx-showcase:input="${input.trim()}"
-        spx-showcase:input-original="${input.trim()}"
-        spx@window:mousedown="showcase.onWrapMove">
+        spx-showcase:input-original="${input.trim()}">
         ${showcase}
       </div>`
 
-    ])
+    ]);
 
-  }
+  };
 
 }
-
 
 /**
  * Renders a `<blockquote>` semantic HTML tag
@@ -674,22 +558,21 @@ function codeblocks(md) {
  * @param {number} index
  * The index of the current token in the tokens array.
  */
-function notes(tokens, index) {
+function notes (tokens, index) {
 
-  return tokens[index].nesting === 1 ? `<blockquote class="note">` : '</blockquote>'
+  return tokens[index].nesting === 1 ? '<blockquote class="note">' : '</blockquote>';
 
 }
 
-function rule(md, tokens, idx) {
+function rule (md, tokens, idx) {
 
   if (tokens[idx].nesting === 1) {
 
-    var m = tokens[idx].info.trim().match(/^rule\s+(.*)$/);
+    const m = tokens[idx].info.trim().match(/^rule\s+(.*)$/);
 
     if (tokens[idx].nesting === 1) {
 
       if (m !== null && m[1] in TOOLTIPS) {
-
 
         // opening tag
         return [
@@ -703,7 +586,7 @@ function rule(md, tokens, idx) {
             ${md.utils.escapeHtml(m[1])}
           </div>
           `
-        ].join('')
+        ].join('');
 
       } else {
 
@@ -713,7 +596,7 @@ function rule(md, tokens, idx) {
           /* html */`
             <div class="rule-title d-flex ai-center">
           `
-        ].join('')
+        ].join('');
 
       }
     }
@@ -723,7 +606,8 @@ function rule(md, tokens, idx) {
     /* html */`
     </div>
     <section class="col-12 col-md-9">
-  `].join('')
+  `
+  ].join('');
 
 }
 
@@ -739,108 +623,28 @@ function rule(md, tokens, idx) {
  * @param {number} idx
  * An index number reference
  */
-function grid(md, tokens, idx) {
+function grid (md, tokens, idx) {
 
- if (tokens[idx].nesting === 1) {
+  if (tokens[idx].nesting === 1) {
 
-  const col = tokens[idx].info.trim().match(/^grid\s+(.*)$/);
+    const col = tokens[idx].info.trim().match(/^grid\s+(.*)$/);
 
-  if (col !== null) {
+    if (col !== null) {
 
-    // opening tag
-    return [
+      // opening tag
+      return [
 
-      /* html */`
+        /* html */`
       <div class="${col[1]}">
       `
-    ].join('')
+      ].join('');
+    }
+
   }
 
-
- }
-
-  return '</div>'
+  return '</div>';
 
 }
-
-
-
-/**
- * Generate JSON file to be used in search autocompletions
- *
- * @param {EleventyConfig}
- * The eleventy configuration instance
- */
-function search (config) {
-
-  const page = [];
-
-  config.on('eleventy.after', async () => {
-    if (page.length > 0) {
-      const content = JSON.stringify(page, null, 2);
-      await writeFile('./public/assets/esthetic.json', content);
-    }
-  });
-
-  return async function (content) {
-
-    let data;
-    let heading;
-    let anchor;
-
-    const records = new Map();
-    const read = await readFile(this.page.inputPath);
-    const parse = marked.lexer(read.toString());
-
-    const frontmatter = parse[0].type === 'hr'
-      ? parse.splice(0, 2).map(({ raw }) => raw).join('\n')
-      : null;
-
-    if (frontmatter !== null) {
-
-      data = matter(frontmatter).data;
-
-    }
-
-    parse.forEach(token => {
-
-      if (token.text && token.text.length > 0) {
-
-        if (token.type === 'heading') {
-
-          if (token.text.toLowerCase().includes('acknowledgements')) return;
-
-          heading = token.text.replace(/[`_*]/g, '');
-          anchor = util.slug(heading);
-
-          if (!records.has(heading)) records.set(heading, { anchor, content: '' });
-
-        } else if (token.type === 'paragraph') {
-
-          if (!/^({{|{%|<[a-z]|:::)/.test(token.text) && heading) {
-            records.get(heading).content = token.text
-              .replace(/[`_*]/g, '')
-              .replace(/\[([a-z].*?)\]\(.*?\)/g, '$1');
-          }
-
-        }
-      }
-
-    });
-
-    for (const [ heading, { anchor, content } ] of records) {
-      page.push({
-        title: data.title,
-        heading,
-        content,
-        url: heading ? `${this.page.url.slice(0, -1)}#${anchor}` : this.page.url
-      });
-    }
-
-  };
-
-}
-
 
 /**
  * Used for the navbar current url `active` class.
@@ -855,23 +659,23 @@ function active (value, navigation) {
 
   if (value.startsWith('/rules/') && this.page.url.startsWith(value)) {
 
-    return 'active'
+    return 'active';
 
   } else if (value.startsWith('/introduction/')) {
 
-    if (navigation.docs.some(({ links }) => links.some(({ url }) => url === this.page.url ))) {
+    if (navigation.docs.some(({ links }) => links.some(({ url }) => url === this.page.url))) {
 
-      return 'active'
+      return 'active';
 
     }
 
-  } else if(value.startsWith('/playground/') && this.page.url.startsWith(value)) {
+  } else if (value.startsWith('/playground/') && this.page.url.startsWith(value)) {
 
-    return 'active'
+    return 'active';
 
   }
 
-  return ''
+  return '';
 
 }
 
@@ -883,141 +687,62 @@ function active (value, navigation) {
  */
 function navigate (value) {
 
-
   if (this.page.url.startsWith('/rules/')) {
 
-    return value.rules
+    return value.rules;
 
-  } else if (value.docs.some(({ links }) => links.some(({ url }) => url === this.page.url ))) {
+  } else if (value.docs.some(({ links }) => links.some(({ url }) => url === this.page.url))) {
 
-    return value.docs
+    return value.docs;
 
   }
 
-  return value
+  return value;
 
 }
 
+module.exports = defineConfig(function (config) {
 
-/**
- * Renders inline code blocks
- *
- * @param {markdownit} md
- * Markdown Instance
- *
- * @param {markdownit.Token[]} tokens
- * Markdown tokens
- *
- * @param {number} idx
- * An index number reference
- */
-function codeinline (md) {
-
-  const regexp = /^{\w+} /
-
-  /**
-   * Renders inline code blocks
-   *
-   * @param {markdownit} md
-   * Markdown Instance
-   *
-   * @param {markdownit.Token[]} tokens
-   * Markdown tokens
-   *
-   * @param {number} idx
-   * An index number reference
-   */
-  function render (token) {
-
-
-      // console.log('=====================================================')
-      const pull = token.indexOf('} ')
-      const raw = token.slice(pull + 1).trimStart()
-      const language = token.slice(1, pull)
-
-      // console.log(raw)
-      // console.log('=====================================================')
-
-
-      return papyrus.inline(raw, { language  })
-
-  }
-
-  function scan (state) {
-
-    for (let x = state.tokens.length - 1; x >= 0; x--) {
-      if (state.tokens[x].type !== 'inline') continue
-      const token = state.tokens[x].children
-      for (let i = token.length - 1; i >= 0; i--) {
-        if (token[i].type !== 'code_inline') continue;
-        if(!/^{\w+} /.test(token[i].content)) continue
-        token[i].tag = ''
-        token[i].type = 'html_block',
-        token[i].markup = ''
-        token[i].block = true,
-        token[i].content = render(token[i].content);
-      }
+  const md = markdown(config, {
+    highlight: {
+      inline: ({ raw, language }) => papyrus.inline(raw, { language }),
+      fence: ({ language, raw, escape }) => language.endsWith('no-lines')
+        ? papyrus.highlight(raw, {
+          language: language.slice(0, language.indexOf(':')),
+          lineNumbers: false,
+          preClass: [ 'px-4' ]
+        }) : language.includes(':')
+          ? rulesStructure(raw, language, escape())
+          : papyrus.highlight(raw, {
+            language,
+            lineNumbers: language !== 'bash' && language !== 'treeview'
+          })
     }
-  }
+  });
 
+  config.addFilter('active', active);
+  config.addFilter('navigate', navigate);
+  config.addPlugin(search, { minify: true });
+  config.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
 
-  md.core.ruler.push('inline_papyrus', scan)
-
-}
-
-
-
-module.exports = eleventy(function (eleventyConfig) {
-
-
-  const md = markdownit({
-    highlight: (str, lang) => highlightCode(md, str, lang),
-    html: true,
-    linkify: true,
-    typographer: true,
-    breaks: false,
-  })
-  .use(anchor)
-  .use(codeblocks)
-  .use(codeinline)
-  .use(mdcontainer, 'grid', { render: (tokens, idx) => grid(md, tokens, idx) })
-  .use(mdcontainer, 'note', { render: (tokens, idx) => notes(tokens, idx) })
-  .use(mdcontainer, 'rule', { render: (tokens, idx) => rule(md, tokens, idx) })
-  .disable("code");
-
-
-  md.use(anchor, {
-    slugify: util.slug,
-    callback: ({ attrs }) => attrs.push([ 'spx-node', 'anchor.anchor' ])
-  })
-
-
-  eleventyConfig.addFilter('active', active);
-  eleventyConfig.addFilter('navigate', navigate);
-  eleventyConfig.addFilter('anchor', (value) => `#${encodeURI(util.slug(value))}`);
-  eleventyConfig.addLiquidShortcode('search', search(eleventyConfig));
-  eleventyConfig.addLiquidShortcode('version', () => require('../package.json').version);
-  eleventyConfig.addLiquidShortcode('versions', () => versions());
-  eleventyConfig.setLibrary('md', md);
-  eleventyConfig.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
-  eleventyConfig.addPlugin(terser);
-
-  eleventyConfig.addPassthroughCopy({
+  config.addPassthroughCopy({
     'src/assets/img/*': 'assets',
     'src/assets/font/*': 'assets/font',
     'node_modules/moloko/dist': 'assets/moloko',
     'node_modules/esthetic/dist/esthetic.js': 'assets/esthetic.min.js'
-  })
+  });
 
   return {
     htmlTemplateEngine: 'liquid',
     passthroughFileCopy: false,
     markdownTemplateEngine: false,
     pathPrefix: '',
+    incremental: false,
     templateFormats: [
       'liquid',
       'json',
-      'md'
+      'md',
+      'html'
     ],
     dir: {
       input: 'src',
@@ -1025,7 +750,7 @@ module.exports = eleventy(function (eleventyConfig) {
       includes: 'views/include',
       layouts: 'views/layouts',
       data: 'data'
-    },
+    }
   };
 
 });

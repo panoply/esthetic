@@ -10,7 +10,8 @@ options:
   - true
 ---
 
-::: grid col-12 col-md-9
+:: row
+:: col-12 col-md-9
 
 # Comment Preserve
 
@@ -18,17 +19,20 @@ The Comment Preserve rule is designed to maintain the original formatting within
 
 > There are scenarios where preserving comment formatting might be preferable. If your codebase contains comments with extensive context, complex formatting, or pre-formatted text that shouldn't be altered, you may want to consider enabling this rule.
 
-:::
+::
+::
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### false
-
-:::
+## false
 
 This `commentPreserve` rule is set to `false` by default. In the example below, the Liquid comment will be formatted.
+
+::
+::
 
 ```json:rules
 {
@@ -65,13 +69,15 @@ blanditiis provident!
 
 ---
 
-::: rule 🧐
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 When the `commentPreserve` rule is enabled (`true`) then the contents of block comments will be excluded from formatting. As aforementioned, when set to `true` the rule will override `commentNewline` and `commentIndent` settings.
+
+::
+::
 
 ```json:rules
 {

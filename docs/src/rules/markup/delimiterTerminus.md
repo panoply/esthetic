@@ -11,25 +11,35 @@ options:
   - 3
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row
+:: col-12 col-md-9
 
 # Delimiter Terminus
 
 Whether or not ending HTML tag delimiters should be forced onto a newline when tag attributes exist. This will emulate the style of Prettier's `bracketSameLine` formatting option, wherein the last `>` delimiter character breaks itself onto a newline.
 
-The rule accepts either a `boolean` or `number` type and defaults to `false`, which will prevent delimiters from newline breaks. When enabled, (i.e, `true`) forcing will be applied in accordance with the [attributeLineBreak](/rules/markup/attributeLineBreak/). The rule also accepts a `number` type, which will apply delimiter line breaks according to the number of attributes a tag contains.
+The rule accepts either a `boolean` or `number` type and defaults to `false`, which will prevent delimiters from newline breaks. When enabled, forcing will be applied in accordance with the [attributeLineBreak](/rules/markup/attributeLineBreak/). The rule also accepts a `number` type, which will apply delimiter line breaks according to the number of attributes a tag contains.
 
-:::
+#### Related Rules
+
+This rules interfaces with `attributeLineBreak` and will behave in accordance.
+
+- [attributeLineBreak](/rules/markup/attributeLineBreak/)
+
+::
+::
 
 ---
 
-::: rule 🤌
+:: row
+:: col-12 col-md-9
 
-#### false
+## false
 
-:::
+The `delimiterTerminus` rule is disabled (i.e, `false`) by default. The behavior of delimiter terminus using `false` results in the last `>` delimiter character occurrence being inlined.
 
-The `delimiterTerminus` rule is disabled (i.e, `false`) by default. The behavior of delimiter terminus using `false` results in the last `>` delimiter character occurrence being inlined
+::
+::
 
 ```json:rules
 {
@@ -41,8 +51,7 @@ The `delimiterTerminus` rule is disabled (i.e, `false`) by default. The behavior
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <div
   id="x"
   class="xx"
@@ -53,22 +62,33 @@ The `delimiterTerminus` rule is disabled (i.e, `false`) by default. The behavior
     class="xx"
     data-attr="foo"
   >
-    <!--
-      Terminus will be inlined
-    -->
   </div>
+</div>
+```
+
+```html:after
+<div
+  id="x"
+  class="xx"
+  data-attr="foo">
+  <div
+    id="x"
+    class="xx"
+    data-attr="foo"></div>
 </div>
 ```
 
 ---
 
-::: rule 🤡
+:: row
+:: col-12 col-md-9
 
-#### true
+## true
 
-:::
+When the `delimiterTerminus` rule is enabled, Æsthetic applies the terminus based on the [attributeLineBreak](/rules/markup/attributeLineBreak/) rule or the [wrap](/rules/markup/wrap/) limit, triggering newline breaks as needed. If `attributeLineBreak` is set to an integer, terminus adheres to this value. For example, setting attributeLineBreak to `3` as per the below example will format attributes on separate lines when an element has three or more attributes. If fewer than three attributes are present, they are formatted inline, and terminus follows this behavior.
 
-When the `delimiterTerminus` rule is set to `true`, Æsthetic will apply terminus in accordance with [`attributeLineBreak`](/rules/markup/attributeLineBreak/) or the [`wrap`](/rules/markup/wrap/) limit which triggers newline breaks. In te below code sample, we have set
+::
+::
 
 ```json:rules
 {
@@ -80,56 +100,68 @@ When the `delimiterTerminus` rule is set to `true`, Æsthetic will apply terminu
 }
 ```
 
-<!-- prettier-ignore -->
-```html
-<div
-  id="x"
-  class="xx"
->
+```html:before
+<div id="x">
+  <div
+    id="x"
+    class="xx"
+  >
+    Terminus will be inlined
+  </div>
+</div>
+<div id="bar">
   <div
     id="x"
     class="xx"
     data-attr="foo"
   >
-    <!--
-      Terminus will be inlined
-    -->
+    <main
+      id="x"
+      class="xx"
+      data-attr="foo"
+    >
+      Notice how all elements with 3 attributes
+      break onto newlines, but those with 1 are inline
+    </main>
   </div>
 </div>
+```
 
-<!-- Forced terminus will not be applied -->
-<div
-  id="bar"
-  class="bax">
-
-<!-- Forced terminus will apply -->
-<div
-id="x"class="xx"
-data-attr="foo">
-<!-- Forced terminus will apply -->
-  <main
-id="x"class="xx"
-data-attr="foo">
-    <!--
-      Notice how terminus forcing has been applied to tags
-      with more than 2 attributes only. This is because
-      we set attribute forcing to that limit.
-    -->
-  </main>
-
+```html:after
+<div id="x">
+  <div id="x" class="xx">
+    Terminus will be inlined
+  </div>
+</div>
+<div id="bar">
+  <div
+    id="x"
+    class="xx"
+    data-attr="foo"
+  >
+    <main
+      id="x"
+      class="xx"
+      data-attr="foo"
+    >
+      Notice how all elements with 3 attributes
+      break onto newlines, but those with 1 are inline
+    </main>
   </div>
 </div>
 ```
 
 ---
 
-::: rule 👍
+:: row
+:: col-12 col-md-9
 
-#### 3
+## 4
 
-:::
+When the `delimiterTerminus` rule is set to an integer value, it uses the number of attributes to determine terminus behavior. For example, if delimiterTerminus is set to `4` and attributeLineBreak to `3` as per the below demonstration, delimiters are line breaked, only when an element has four or more attributes.
 
-When the `delimiterTerminus` rule is set to use `adapt` delimiter terminus will be determined based on structures. Æsthetic will apply the terminus based on several factors and take into consideration markup rules such a [`lineBreakValue`](/rules/markup/lineBreakValue). Terminus is not guaranteed when set to `adapt` but is generally the preferred option to use.
+::
+::
 
 ```json:rules
 {
@@ -137,34 +169,46 @@ When the `delimiterTerminus` rule is set to use `adapt` delimiter terminus will 
   "preserveLine": 1,
   "markup": {
     "attributeLineBreak": 3,
-    "delimiterTerminus": 3
+    "delimiterTerminus": 4
   }
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
+<div id="bar" class="bax">
+  The below element will apply terminus
+  <div
+    id="1"
+    class="two"
+    data-x="3"
+    data-y="4"
+  >
+    <main
+      id="x"
+      class="xx"
+      data-attr="foo"
+    >
+      No terminus wil apply here
+    </main>
+  </div>
+</div>
+```
 
-<!-- Forced terminus will not be applied -->
-<div
-  id="bar"
-  class="bax">
-
-<!-- Forced terminus will apply -->
-<div
-id="x"class="xx"
-data-attr="foo">
-<!-- Forced terminus will apply -->
-  <main
-id="x"class="xx"
-data-attr="foo">
-    <!--
-      Notice how terminus forcing has been applied to tags
-      with more than 2 attributes only. This is because
-      we set attribute forcing to that limit.
-    -->
-  </main>
-
+```html:after
+<div id="bar" class="bax">
+  The below element will apply terminus
+  <div
+    id="1"
+    class="two"
+    data-x="3"
+    data-y="4"
+  >
+    <main
+      id="x"
+      class="xx"
+      data-attr="foo">
+        No terminus wil apply here
+    </main>
   </div>
 </div>
 ```

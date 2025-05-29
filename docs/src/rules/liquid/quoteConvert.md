@@ -12,23 +12,27 @@ anchors:
     - single
 ---
 
-::: grid col-12
+:: row
+:: col-12 col-md-9
 
 # Quote Convert
 
 How quotation characters of markup attributes and Liquid tokens should be handled. Allows for conversion to single quotes or double quotes. Markup tag attributes should always use double quotations, it's the standard in languages like HTML.
 
-:::
+::
+::
 
 ---
 
-::: rule 🤡
+:: row
+:: col-12 col-md-9
 
-#### none
-
-:::
+## none
 
 Below is an example of how this rule works if set to `none` which is the **default** setting. No conversion of quotations is applied when using `none` and one should consider setting a specific value.
+
+::
+::
 
 ```json:rules
 {
@@ -40,34 +44,28 @@ Below is an example of how this rule works if set to `none` which is the **defau
 ```
 
 ```liquid:before
-
-
 {{ "string" | filter: 'string' }}
 
 {% cycle 'one', 'two', "three", "four", 'five' %}
-
-
 ```
 
 ```liquid:after
-
-
 {{ "string" | filter: 'string' }}
 
 {% cycle 'one', 'two', "three", "four", 'five' %}
-
-
 ```
 
 ---
 
-::: rule 👎
+:: row
+:: col-12 col-md-9
 
-#### double
-
-:::
+## double
 
 Below is an example of how this rule works if set to `double` which will go about converting and ensuring all markup quotations are using doubles.
+
+::
+::
 
 ```json:rules
 {
@@ -79,34 +77,29 @@ Below is an example of how this rule works if set to `double` which will go abou
 ```
 
 ```liquid:before
-
-
 {{ 'string' | filter: 'string' }}
 
 {% cycle 'one', 'two', 'three', 'four', 'five' %}
-
-
 ```
 
 ```liquid:after
-
-
 {{ "string" | filter: "string" }}
 
 {% cycle "one", "two", "three", "four", "five" %}
-
 
 ```
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### single
-
-:::
+## single
 
 Below is an example of how this rule works if set to `single` which will go about converting and ensuring all markup quotations are using singles.
+
+::
+::
 
 ```json:rules
 {
@@ -118,20 +111,13 @@ Below is an example of how this rule works if set to `single` which will go abou
 ```
 
 ```liquid:before
-
 {{ "string" | filter: "string" }}
 
 {% cycle "one", "two", "three", "four", "five" %}
-
-
 ```
 
 ```liquid:after
-
-
 {{ 'string' | filter: 'string' }}
 
 {% cycle 'one', 'two', 'three', 'four', 'five' %}
-
-
 ```

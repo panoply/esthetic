@@ -2,15 +2,10 @@
 title: 'Markup - Ignore JS'
 layout: base
 permalink: '/rules/markup/ignoreJS/index.html'
-describe:
-  - Ignore JS
-  - Rule Options
-examples:
-  - false
-  - true
 ---
 
-::: grid col-8 p-100
+:: row
+:: col-12 col-md-9
 
 # Ignore JS
 
@@ -20,17 +15,20 @@ When enabled (ie: `true`) the entire `<script>` region is excluded including ind
 
 > This rule only applies to HTML `<script>` tags. Use the Liquid [ignoreTagList](/rules/liquid/ignoreTagList/) rule to exclude beautification on Liquid tokens such as the `{% javascript %}` tag.
 
-:::
+::
+::
 
 ---
 
-::: rule 🧐
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 Below is an example of how some input **might** look and the rule is enabled, ie: `true`. The only changes that will be applied in **after** formatting example will be applied to the `<title>` tags.
+
+::
+::
 
 ```json:rules
 {
@@ -41,30 +39,42 @@ Below is an example of how some input **might** look and the rule is enabled, ie
 }
 ```
 
-<!-- prettier-ignore-->
-```html
-<!-- Before formatting -->
-<head><title>Example</title>
-
+```html:before
+<head>
+<title>
+Example</title>
 <script>
-  // This entire region will remain the same between formatting
-  // the <script> tag will not move nor will this content.
-  const foo = 'bar';
+// This entire region will remain the same between formatting
+// the <script> tag will not move nor will this content.
+const foo
+="bar"+"xxx";
 </script>
+</head>
+```
 
-
+```html:after
+<head>
+  <title>
+    Example
+  </title>
+  <script>
+    const foo
+    ="bar"+"xxx"
+  </script>
 </head>
 ```
 
 ---
 
-::: rule 🧐
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 After formatting the above sample notice how the `<script></script>` region has been completely skipped from formatting. Ignored regions are excluded in a strict manner, so indentation levels are completely void of change and will persist. Only the surrounding tokens will have beautification applied.
+
+::
+::
 
 ```json:rules
 {
@@ -75,15 +85,22 @@ After formatting the above sample notice how the `<script></script>` region has 
 }
 ```
 
-<!-- prettier-ignore-->
-```html
-<!-- Before formatting -->
+```html:before
 <head><title>Example</title>
-
 <script>
-const foo = 'bar';
+  // This entire region will remain the same between formatting
+  // the <script> tag will not move nor will this content.
+  const foo = 'bar';
 </script>
+</head>
+```
 
-
+```html:after
+<head><title>Example</title>
+<script>
+  // This entire region will remain the same between formatting
+  // the <script> tag will not move nor will this content.
+  const foo = 'bar';
+</script>
 </head>
 ```

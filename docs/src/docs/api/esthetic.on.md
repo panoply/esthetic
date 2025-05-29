@@ -1,7 +1,7 @@
 ---
 title: 'Events'
 layout: base
-permalink: '/usage/events/index.html'
+permalink: '/api/esthetic.on/index.html'
 anchors:
   - Events
   - Format
@@ -10,9 +10,9 @@ anchors:
   - Error
 ---
 
-# Events
+# On
 
-Æsthetic provides a very modest event listening API.
+Æsthetic provides a very modest event listening API available via `{js} esthetic.on()`
 
 # Format
 

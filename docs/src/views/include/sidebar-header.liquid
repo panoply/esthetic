@@ -1,17 +1,14 @@
-<div class="sidebar-header">
+<div class="{{ class }}">
   <div class="row gx-0 jc-between ai-center w-100">
     <a
       href="/"
       class="col-auto tc-sm logo"
       spx-target="body">
-      {% svg 'esthetic', 'icon icon-logo d-none d-sm-unset' %}
-      {% svg 'æsthetic', 'icon icon-logo d-unset d-sm-none' %}
+      {% svg 'æsthetic' , 'icon icon-logo' %}
     </a>
-    <a
-      href="{{ navigation.github.url }}"
-      class="col-auto tr"
-      target="_blank">
-      {% svg 'github', 'icon icon-github' %}
-    </a>
+
+    <div class="col-auto tr ver upper fc-dark-gray ff-head pr-2">
+      {{ pkg.version | prepend: 'Version ' }}
+    </div>
   </div>
 </div>

@@ -11,7 +11,8 @@ anchors:
     - false
 ---
 
-::: grid col-12 col-md-9
+:: row
+:: col-12 col-md-9
 
 # Equipoise Spacing
 
@@ -19,17 +20,20 @@ Whether or not to normalize and correct the inner spacing of Liquid tokens. The 
 
 > Equipoise does not strip newline characters and does not process code encapsulated in quotation characters, such as "string" or 'string' expressions. Æsthetic considers these preservation sequences.
 
-:::
+::
+::
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 When the `equipoiseSpacing` rule is set to `true` which is the **default** applied option the internal structure of Liquid tags and output tokens and formatted to have a equal whitespace distribution. Notice how the output (`object.prop`) token contains extraneous whitespace and `args` filter is not correctly spaced. In the `assign` tag token, the assignment operator (`=`), object dot notation `.` and `foo|bar` filter pipe separators are not using equally distributing whitespace. Settings
+
+::
+::
 
 ```json:rules
 {
@@ -74,18 +78,19 @@ When the `equipoiseSpacing` rule is set to `true` which is the **default** appli
 
 ---
 
-::: rule 👎
+:: row
+:: col-12 col-md-9
 
-#### false
+## false
 
-:::
+::
+::
 
 ```json:rules
 {
   "language": "liquid",
   "liquid": {
-    "equipoiseSpacing": false,
-    "forceFilter": 2
+    "equipoiseSpacing": false
   }
 }
 ```

@@ -1,59 +1,62 @@
 ---
 title: 'Global Rules - Indent Character'
 layout: base
-permalink: '/rules/global/indentChar/index.html'
+permalink: '/rules/indentChar/index.html'
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row mb-5
+:: col-12 col-md-9
 
 # Indent Char
 
-The string characters to comprise a single indentation. Any string combination is accepted. Generally speaking, you should leave this alone unless you know what you are doing.
+The string characters to comprise a single indentation. Any string combination is accepted. The [`indentSize`](/rules/indentSize/) rule will use this character, so if (for example) you'd set `indentSize` to `4` then this character will be repeated 4 times.
 
-# Related Rule
+#### Default
 
-The `indentSize` rule will use this character. For example, if you were to set `indentSize` to `4` then this character will be repeated 4 times, ie: `    ` - by default the `indentSize` is set to `2`.
+The `indentChar` rules will default to a single whitespace character.
 
-- [indentSize](/rules/global/indentSize)
+:: row ai-center mb-4
+:: col-8
 
-:::
+```json:no-lines
+{
+  "indentChar": " "
+}
+```
 
----
+::
+::
 
-<!--
+#### Tabs
 
-# Rule Options
+Using tab indentation is acheived when setting the `indentChar` to tab.
 
-This is a global rule definition and will be used for all languages.
+:: row ai-center
+:: col-8
 
-::: options
+```json:no-lines
+{
+  "indentChar": "\t"
+}
+```
 
-### `false`
+::
+::
 
-> Strip additional newlines from the end of input.
+::
+::
 
-### `true`
+# Examples
 
-> Insert a newline at the end of input
+:: row
+:: col-12 col-md-9
 
-:::
-
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-🧐 - You gotta do, what you gotta do
-💡 - Showing an example of the rule
--->
-
-::: rule 💡
-
-#### ` `
-
-:::
+## `" "`
 
 The default `indentChar` is a single whitespace value.
+
+::
+::
 
 ```json:rules
 {
@@ -86,13 +89,15 @@ The default `indentChar` is a single whitespace value.
 
 ---
 
-::: rule 💡
+:: row
+:: col-12 col-md-9
 
-#### `\t`
-
-:::
+## `"\t"`
 
 Below we are using tab `\t` character for indentation.
+
+::
+::
 
 ```json:rules
 {

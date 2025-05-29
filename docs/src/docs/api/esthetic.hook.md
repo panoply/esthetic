@@ -1,7 +1,7 @@
 ---
 title: 'Hooks'
 layout: base
-permalink: '/usage/hooks/index.html'
+permalink: '/api/esthetic.hook/index.html'
 ---
 
 # TODO

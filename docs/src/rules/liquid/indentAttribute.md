@@ -2,17 +2,10 @@
 title: 'Liquid - Indent Attribute'
 layout: base
 permalink: '/rules/liquid/indentAttribute/index.html'
-anchors:
-  describe:
-    - Indent Attributes
-    - Mirrored Rule
-    - Rule Options
-  options:
-    - false
-    - true
 ---
 
-::: grid col-12 col-md-9
+:: row
+:: col-12 col-md-9
 
 # Indent Attribute
 
@@ -24,26 +17,26 @@ Whether indentation should be applied to HTML (markup) attributes that are encap
 
 The `indentAttributes` rule will mirror disablement of the [`forceAttribute`](/rules/markup/forceAttribute) (markup) rule. When `forceAttribute` is set to `false` then this rule will be disabled. The `forceAttribute` markup rule **must** be set to `true` or (alternatively) use a force limit value (e.g: `2`). If the attribute forcing is disabled (i.e: `false`) then indentation will not be applied to Liquid contained structures and this rule will have no effect.
 
-:::
+::
+::
 
 ---
 
-::: rule 👍
+:: row
+:: col-12 col-md-9
 
-#### false
-
-:::
+## false
 
 When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attributes which are encapsulated within Liquid tag block expressions will not have indentation applied.
+
+::
+::
 
 ```json:rules
 {
   "language": "liquid",
   "liquid": {
     "indentAttribute": false
-  },
-  "markup": {
-    "forceAttribute": true
   }
 }
 ```
@@ -65,8 +58,7 @@ When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attribu
     {% endif %}
   {% endif %}
   data-id="bar">
-
-
+  Attributes contained in Liquid not indent
 </div>
 ```
 
@@ -87,34 +79,31 @@ When the `indentAttributes` rule is **disabled** (i.e: `false`) all HTML attribu
   {% endif %}
   {% endif %}
   data-id="bar">
-
-
+  Attributes contained in Liquid not indent
 </div>
 ```
 
 ---
 
-::: rule 👎
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 When the `indentAttributes` rule is **enabled** (i.e: `true`) all HTML attributes which are encapsulated within Liquid tag block expressions will have indentation applied. Nested block types will also apply indentation.
+
+::
+::
 
 ```json:rules
 {
   "language": "liquid",
   "liquid": {
     "indentAttribute": true
-  },
-  "markup": {
-    "forceAttribute": true
   }
 }
 ```
 
-<!--prettier-ignore-->
 ```liquid:before
 <div
   class="foo"
@@ -131,8 +120,7 @@ When the `indentAttributes` rule is **enabled** (i.e: `true`) all HTML attribute
   {% endif %}
   {% endif %}
   data-id="bar">
-
-
+  Attributes contained in Liquid will indent
 </div>
 ```
 
@@ -152,7 +140,6 @@ When the `indentAttributes` rule is **enabled** (i.e: `true`) all HTML attribute
     {% endif %}
   {% endif %}
   data-id="bar">
-
-
+  Attributes contained in Liquid will indent
 </div>
 ```

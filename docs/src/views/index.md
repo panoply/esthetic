@@ -4,4 +4,5 @@ layout: base
 permalink: '/index.html'
 ---
 
-A new generation **code beautification** tool. Syntactical **formatting** leveraging the **Sparser** algorithm with support for **10** different **client side** languages.
+Æsthetic is a fast, fault-tolerant parser and **code formatter** designed on the **Sparser** algorithm.<br>
+Beautification support for XML, HTML, Liquid and JSON<br>

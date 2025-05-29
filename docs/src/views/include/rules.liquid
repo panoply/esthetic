@@ -19,9 +19,9 @@
 
       <form class="p-4 d-none">
         <input
-          type="search"
-          class="fm-input fm-sm rd-2"
-          placeholder="Search...">
+        type="search"
+        class="fm-input fm-sm rd-2"
+        placeholder="Search..." />
       </form>
 
       <nav
@@ -31,13 +31,7 @@
         {% for link in rules.data %}
 
           {% assign base = link.title | slugify | prepend: '/' %}
-
-          {% assign url = link.links
-            | first
-            | slugify
-            | prepend: '/'
-            | prepend: base
-            | append: '/' %}
+          {% assign url = link.links | first | slugify | prepend: '/' | prepend: base | append: '/' %}
 
           <button class="accordion-btn px-3 py-2 {% if page.url contains base %}initial{%- endif -%}">
             {{ link.title }}
@@ -51,7 +45,7 @@
               {% for item in link.links %}
                 <li class="pt-1 pl-2">
                   <a
-                    href="/rules/{{ base -}}/{{- item | slugify }}/"
+                    href="/rules/{{ base -}}/{{- item | slugify }}/"
                     {% if page.url == url %}
                       class="active"
                     {% endif %}>

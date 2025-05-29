@@ -1,6 +1,10 @@
 .sidebar {
-  background-color: $code-bg;
+  background-color: #1b1b1d;
   border-top-right-radius: 10px;
+
+  .ver {
+    font-size: 9px;
+  }
 
   &-header {
     position: absolute;

@@ -1,57 +1,39 @@
 ---
 title: 'Markup - Attribute Line Break'
 layout: base
-permalink: '/rules/markup/attributeLineBreak/index.html'
-anchors:
-  describe:
-    - Attribute Line Break
-    - Related Rules
-    - Mirrored Rule
-  options:
-    - false
-    - true
-    - limit
-    - wrap
+permalink: '/rules/attributeLineBreak/index.html'
 ---
 
-::: grid col-12 p-100
+:: row
+:: col-12 col-md-9
 
 # Attribute Line Break
 
-Controls newline behavior of tag attributes. This rule accepts a `boolean` or `number` type and will allow you to refine how attributes are to be formatted independent of the Æsthetic's default behavior which applies newline breaks in accordance with the global [`wrap`](/rules/global/wrap) limit or when a newline character exists before the first attribute sequence. When you provide `attributeLineBreak` an integer value of **1 or more** Æsthetic will apply newline breaks when the number of attributes contained within a tag exceeds the limit.
+Configures newline behavior for tag attributes. Accepts a `boolean` or `number`. Overrides Æsthetic's default, which applies newlines based on the global [`wordWrap`](/rules/wordWrap/) limit or existing newlines before the first attribute. Setting `attributeLineBreak` to an integer (e.g., `1`) triggers newlines when the number of attributes exceeds the specified limit.
 
-#### Related Rules
+When [`wordWrap`](/rules/wordWrap/) is enabled, Æsthetic inlines the first attribute to maintain readability within the specified character limit. The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule depends on `attributeLineBreak` to determine its formatting behavior. For `indentAttributes` to apply indentation correctly, you must either set an occurrence limit (e.g., a number like `1` to trigger newlines after a certain number of attributes) or explicitly enable the `attributeLineBreak` rule to activate this functionality.
 
-If you are using the global defined [`wrap`](/rules/global/wrap) then Æsthetic will inline the leading (first) attribute. For developers who have become accustomed to the Prettier formatting style which forces ending `>` markup tag delimiters onto newlines can replicate this output using the `delimiterTerminus` rule.
+To replicate the Prettier formatting style, which places ending `>` tag delimiters on newlines when attributes trigger line breaks, configure the `terminusBracket` rule to `2`. Alternatively, enable the `prettier` preset to automatically apply this behavior, ensuring consistent output that aligns with Prettier's attribute and tag delimiter formatting conventions.
 
-- [wrap](/rules/global/wrap/)
-- [delimiterTerminus](/rules/markup/delimiterTerminus/)
-- [valueLineBreak](/rules/markup/valueLineBreak/)
-
-#### Mirrored Rule
-
-The Liquid [`indentAttributes`](/rules/liquid/indentAttributes) rule uses `attributeLineBreak` as disablement mirror. When attribute forcing is disabled then the Liquid `indentAttributes` rule reflects the disablement. In order to leverage the Liquid `indentAttributes` rule you will need to define an occurrence limit or enable this rule.
-
-- [indentAttributes](/rules/liquid/indentAttributes)
-
-:::
+::
+::
 
 ---
 
-::: rule 🫡
+:: row mt-5
+:: col-12 col-md-7 col-lg-6
 
-#### false
+## false
 
-:::
+The default behavior for Æsthetic is to disable attribute newline breaks and only apply forcing when word wrap limit has been exceeded. Æsthetic in its default state sets `wordWrap` to `0` and this results in inline formatting behaviour of tag attributes, with any newline occurrence being stripped.
 
-The default behavior for Æsthetic is to disable attribute newline breaks and only apply forcing when word wrap limit has been exceeded (see [wrap](#wrap) example below). If you are formatting with wrap disabled (i.e, `wrap` is set to `0`) then attributes will be formatted inline and any newline occurrences will be stripped.
+::
+::
 
 ```json:rules
 {
   "language": "html",
-  "markup": {
-    "attributeLineBreak": false
-  }
+  "attributeLineBreak": false
 }
 ```
 
@@ -67,7 +49,7 @@ The default behavior for Æsthetic is to disable attribute newline breaks and on
   class="foo" id="bar"
   data-x="baz">
 
-  Attributes will be indented
+  Attributes will be inlined
 
 </div>
 ```
@@ -87,163 +69,149 @@ The default behavior for Æsthetic is to disable attribute newline breaks and on
 
 ---
 
-::: rule 👎
+:: row
+:: col-12 col-md-7 col-lg-6
 
-#### true
+## true
 
-:::
+Setting the rule to `true` will applied forced linebreak indentation. A single occurence of a tag attribute will result in newline breaks.
 
-Below is an example of how this rule works if it's enabled, ie: `true`. When working with html this is typically going to be the better option to use opposed when you desire a clear uniform across all your project.
+::
+::
 
 ```json:rules
 {
   "language": "html",
-  "markup": {
-    "attributeLineBreak": true
-  }
+  "attributeLineBreak": true
 }
 ```
 
-<!-- prettier-ignore -->
 ```html:before
 <div class="foo" id="bar" data-x="baz">
   <div class="foo" id="bar" data-x="baz">
-
     Attributes will be forced onto newlines
-
   </div>
 </div>
 ```
 
 ```html:after
 <div
- class="foo"
- id="bar"
- data-x="baz">
+  class="foo"
+  id="bar"
+  data-x="baz">
   <div
-   class="foo"
-   id="bar"
-   data-x="baz">
-
+    class="foo"
+    id="bar"
+    data-x="baz">
     Attributes will be forced onto newlines
-
   </div>
 </div>
 ```
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-7 col-lg-6
 
-#### limit
+## limit
 
-:::
+You can control attribute limits before line breaks apply by providing the rule an integer. Below, we've passed `attributeLineBreak` a value of `3` which results in newline breaks applied to tags with `3` (or more) attributes.
 
-Below is an example of forced attributes when an integer value of `3` was provided. This is typically the best option to control attribute beautification.
+::
+::
 
 ```json:rules
 {
   "language": "html",
-  "markup": {
-    "attributeLineBreak": 3
-  }
+  "attributeLineBreak": 3
 }
 ```
 
-<!-- prettier-ignore -->
 ```html:before
 <div
- class="foo"
- id="bar">
-
-Attributes will not be forced as only 2 exist on tag
-
+  class="foo"
+  id="bar">
+  Attributes will not be forced as only 2 exist on tag
 </div>
-
 <div
- class="foo"
- id="bar" data-x="baz">
-
-  Attributes will be forced as tag contains 3
-
-  <div class="foo">
+  class="foo"
+  id="bar" data-x="baz">
+  <div
+    class="foo">
     Tag contains 1 attribute, it will not be forced
   </div>
-
   <div
    class="foo" id="bar" data-x="baz" data-xx="xxx">
     Tag contains 4 attributes, they will be forced
   </div>
-
 </div>
 ```
 
 ```html:after
-<div
- class="foo"
- id="bar">
-
-Attributes will not be forced as only 2 exist on tag
-
+<div class="foo" id="bar">
+  Attributes will not be forced as only 2 exist on tag
 </div>
-
 <div
- class="foo"
- id="bar" data-x="baz">
-
-  Attributes will be forced as tag contains 3
-
+  class="foo"
+  id="bar"
+  data-x="baz">
   <div class="foo">
     Tag contains 1 attribute, it will not be forced
   </div>
-
   <div
-   class="foo" id="bar" data-x="baz" data-xx="xxx">
+    class="foo"
+    id="bar"
+    data-x="baz"
+    data-xx="xxx">
     Tag contains 4 attributes, they will be forced
   </div>
-
 </div>
 ```
 
 ---
 
-::: rule 🧐
+:: row
+:: col-12 col-md-7 col-lg-6
 
-#### wrap
+## wordWrap
 
-:::
+Attributes can apply newline breaks in accordance with [`wordWrap`](/rules/wordWrap/), which might be preferred for some developers. Æsthetic will respect wrap based forcing to attributes then the `attributeLineBreak` rule is set to `false` and `wordWrap` has a value greater than `0` defined.
 
-The below example is using [`wrap`](/rules/global/wrap) to apply attribute newline breaks. If you wish to apply wrap based forcing to attributes then the `attributeLineBreak` rule should be set to `false` and the global `wrap` rules must contain a value.
+::
+::
 
 ```json:rules
 {
   "language": "html",
-  "wrap": 50,
-  "markup": {
-    "attributeLineBreak": false
-  }
+  "wordWrap": 50,
+  "attributeLineBreak": false
 }
 ```
 
-<!-- prettier-ignore -->
-```html
-<div class="foo" id="bar">
-
- Attributes will not be forced as only 2 exist on tag
-
+```html:before
+<div
+  class="inline">
+  <div
+    class="foo"
+    id="bar"
+    data-x="baz">
+    <div class="foo" id="bar" data-x="baz" data-xx="xxx">
+      Tag attributes apply newlines
+    </div>
+  </div>
 </div>
+```
 
-<div class="foo" id="bar" data-x="baz">
-
-   Attributes will be forced as tag contains 3
-
-  <div class="foo">
-    Tag contains 1 attribute, it will not be forced
+```html:after
+<div class="inline">
+  <div class="foo" id="bar" data-x="baz">
+    <div
+      class="foo"
+      id="bar"
+      data-x="baz"
+      data-xx="xxx">
+      Tag attributes apply newlines
+    </div>
   </div>
-
-  <div class="foo" id="bar" data-x="baz" data-xx="xxx">
-    Tag contains 4 attributes, they will be forced
-  </div>
-
 </div>
 ```

@@ -1,55 +1,67 @@
-import { parseJSON } from '../utilities/common';
 import { Rules } from 'esthetic';
-import papyrus, { Papyrus } from 'papyrus';
 import merge from 'mergerino';
-import spx, { SPX } from 'spx'
+import papyrus, { Papyrus } from 'papyrus';
+import spx, { SPX } from 'spx';
 
-export class Showcase extends spx.Component<typeof Showcase.define> {
+import { parseJSON } from '../utilities/common';
 
-  static rules: Map<string, Rules> = new Map();
-  static source: Map<string, string> = new Map();
+esthetic.settings({
+  persistRules: false
+});
 
-  static define = {
-    nodes: [
+export class Showcase extends spx.Component({
+  nodes: <const>[
 
-      /* EDITOR RELATED ----------------------------- */
+    /* EDITOR RELATED ----------------------------- */
 
-      'range',
-      'rules',
-      'rulesTab',
-      'input',
-      'inputTab',
-      'presetTab',
-      'output',
+    'range',
+    'rules',
+    'rulesTab',
+    'input',
+    'inputTab',
+    'presetTab',
+    'output',
+    'moloko',
 
-      /* RULE REALTED ------------------------------- */
+    /* RULE REALTED ------------------------------- */
 
-      'wrapLine',
-      'wrapCount',
-      'wrapFractionRange',
-      'wrapFractionCount',
-      'wrapFractionLine',
-      'wrapRange'
+    'wrapCount',
+    'inputWrapFractionRange',
+    'wrapFractionCount',
+    'wrapFractionLine',
+    'wrapRange'
 
-    ],
-    state: {
-      mode: String,
-      uuid: String,
-      rules: Object,
-      height: Number,
-      step: Number,
-      rulesOriginal: Object,
-      input: String,
-      inputOriginal: String,
-      language: String,
-      tab: Number,
-      boundWrap: Number,
-      preset: {
-        typeof: String,
-        persist: true
-      }
+  ],
+  state: {
+    mode: String<'editor' | 'rules'>,
+    uuid: String,
+    rules: Object<Rules>,
+    height: Number,
+    wrap: Number,
+    rulesOriginal: Object<Rules>,
+    input: String,
+    language: String,
+    tab: Number,
+    boundWrap: Number,
+    preset: {
+      typeof: String,
+      persist: true
     }
   }
+}) {
+
+  static rules: Map<string, Rules> = new Map();
+  static stash: { rules: Rules; input: string } = { rules: {}, input: '' };
+
+  public edits: string;
+  public input: Papyrus.Model;
+  public output: Papyrus.Model;
+  public wrapLine = spx.dom`
+    <div
+      class="wrap-line"
+      style="display:none;margin-left:var(--padding-left)">
+    </div>
+  `;
 
   get rulesInput () {
 
@@ -57,139 +69,52 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
   }
 
+  get code () { return Showcase.stash.input; }
+  set code (code: string) { Showcase.stash.input = code; }
+  get rules () { return Showcase.stash.rules; }
+  set rules (rules: Rules) { Showcase.stash.rules = { ...rules }; }
+
   updateRules (value?: Rules) {
 
     this.state.rules = merge(this.state.rules, value);
 
   }
 
-  /**
-   * Set max-height and min-height based on output bounding height
-   */
-  // getEditorRect () {
+  connect () {
 
-  //   const ih = this.inputNode.getBoundingClientRect().height;
-
-  //   let height = ih;
-
-  //   if (this.outputNode) {
-
-  //     const oh = this.output.pre.getBoundingClientRect().height;
-  //     const sh = this.output.code.scrollHeight;
-
-  //     if (oh > ih) height = oh;
-  //     if (height < sh) height = sh + 12;
-
-  //     this.input.pre.style.minHeight = height + 'px';
-  //     this.input.pre.style.height = height + 'px';
-  //     this.input.pre.style.maxHeight = height + 'px';
-  //     this.output.pre.style.maxHeight = height + 'px';
-  //     this.output.pre.style.height = height + 'px';
-  //     this.output.pre.style.minHeight = height + 'px';
-
-  //   } else {
-
-  //     const sh = this.input.code.scrollHeight  ;
-
-  //     if (height < sh) height = sh + 5;
-
-  //     this.input.pre.style.minHeight = height + 'px';
-  //     this.input.pre.style.height = height + 'px';
-  //     this.input.pre.style.maxHeight = height + 'px';
-
-  //   }
-
-  // }
-
-  setPreset () {
-
-    const label = `Preset (${this.state.preset})<span class="icon"></span>`;
-
-    for (const target of document.querySelectorAll('[data-demo-target=presetTab]')) {
-
-      if (target.parentElement.getAttribute('data-dropdown-selected-value') !== this.state.preset) {
-        target.parentElement.setAttribute('data-dropdown-selected-value', this.state.preset);
-      }
-
-      if (target.innerHTML !== label) target.innerHTML = label;
-
-      for (const node of target.nextElementSibling.children) {
-        if (node.id !== this.state.preset) {
-          if (node.classList.contains('selected')) {
-            node.classList.remove('selected');
-          }
-        } else {
-          if (!node.classList.contains('selected')) {
-            node.classList.add('selected');
-          }
-        }
-      }
-    }
-
-    for (const [ uuid, rules ] of Showcase.rules) {
-
-      const input = papyrus.get(`input:${uuid}`);
-      const output = papyrus.get(`output:${uuid}`);
-      const string = Showcase.source.get(uuid);
-
-      const format = esthetic.format(string, rules);
-      output.update(format, output.language);
-
-    }
-  }
-
-  onPresetChange (event: { target: HTMLLIElement }) {
-
-    if (this.state.preset !== event.target.id) {
-      this.state.preset = event.target.id;
-      localStorage.setItem('preset', this.state.preset);
-      Showcase.rules.set(this.state.uuid, esthetic.preset(this.state.preset, this.state.rules));
-      this.setPreset();
-    }
-  }
-
-  connect() {
-
-    papyrus();
+    this.rules = this.state.rules;
+    this.code = this.state.input;
 
   }
 
   onmount () {
 
-   // this.state.preset = localStorage.getItem('preset') || 'default';
+    papyrus();
+
     this.input = papyrus.get(`input:${this.state.uuid}`);
     this.output = papyrus.get(`output:${this.state.uuid}`);
-
     this.input.onupdate(this.onInputEdit, this);
     this.input.onsave(this.onInputSave, this);
-
-    this.onHeight()
-
-   // this.setPreset();
+    this.onHeight();
 
   }
 
-  unmount (): void {
-
-
+  public unmount () {
 
   }
-
 
   onHeight () {
 
-    const i = this.input.height()
-    const o = this.output.height()
+    const i = this.input.height();
+    const o = this.output.height();
 
     if (i > o) {
-      this.output.height(i)
+      this.output.height(i);
     } else {
-      this.input.height(o)
+      this.input.height(o);
     }
 
-
   }
-
 
   formatCode (input: string = this.state.input) {
 
@@ -198,10 +123,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
       const output = esthetic.format(input, this.state.rules);
 
       this.output.update(output);
-      this.onHeight()
-
-     // this.getEditorRect();
-     // this.getOutputReact(this.input, this.output);
+      this.onHeight();
 
     } catch (e) {
 
@@ -209,16 +131,14 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
       const clean = /\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/mg;
 
       this.output.error.show(e.replace(clean, ''), {
-         heading: 'Error thrown by Æsthetic'
-       });
-
+        heading: 'Error thrown by Æsthetic'
+      });
 
     }
 
   }
 
   timer: number = NaN;
-
 
   onInputSave (value: string) {
 
@@ -233,19 +153,16 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
       const output = esthetic.format(value, this.state.mode === 'rules' ? {
         language: 'json',
-        json: {
-          arrayFormat: 'indent',
-          objectIndent: 'indent',
-          braceAllman: true,
-          bracePadding: false,
-          objectSort: false
-        }
+        arrayFormat: 'indent',
+        objectIndent: 'indent',
+        braceAllman: true,
+        bracePadding: false,
+        objectSort: false
       } : this.state.rules);
 
-      this.input.update(output);
       this.output.update(output);
 
-      this.onHeight()
+      this.onHeight();
 
     } catch (e) {
 
@@ -255,15 +172,13 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
   onInputEdit (value: string) {
 
-
     if (this.state.mode === 'rules') {
-
-      this.formatCode(this.state.input);
 
       try {
 
+        this.output.error.hide();
         this.state.rules = parseJSON(value);
-        this.formatCode(this.state.input);
+        this.formatCode(this.edits);
         this.timer = NaN;
 
         return value;
@@ -272,118 +187,69 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
         this.output.error.show(error, {
           title: 'JSON ERROR',
-          heading: 'Invalid JSON Syntax',
+          heading: 'Invalid JSON Syntax'
         });
-
       }
-
 
     } else {
 
-      this.state.input = value;
-      this.formatCode(this.state.input);
+      this.formatCode(this.input.input);
 
     }
 
-
-    this.onHeight()
+    this.onHeight();
 
   }
-
 
   onWrap ({ target }: SPX.InputEvent) {
 
-    // @ts-ignore
-    let wrap = Number(target.value)
+    let wordWrap = +target.value;
 
-    if(wrap < 1) {
-
-      target.ariaLabel = 'Wrap Disabled'
-      this.wrapLineNode.style.display = 'none'
-
+    if (wordWrap <= 20) {
+      wordWrap = 0;
+      target.ariaLabel = 'Wrap Disabled';
+      this.wrapLine.style.display = 'none';
     } else {
-
-      target.ariaLabel = 'Word Wrap'
-      this.wrapLineNode.style.display = ''
-
+      target.ariaLabel = 'Word Wrap';
+      this.wrapLine.style.display = '';
     }
 
-    this.updateRules({ wrap })
+    this.updateRules({ wordWrap });
 
+    this.wrapLine.style.borderColor = 'hotpink';
+    this.wrapLine.style.left = wordWrap > 80 ? `${wordWrap + 2}%` : `${wordWrap + 2}%`;
 
-
-    this.wrapCountNode.innerHTML = `${this.state.rules.wrap}`;
-    this.wrapLineNode.style.borderColor = 'hotpink'
-    this.wrapLineNode.style.transition = 'width linear';
-    this.wrapLineNode.style.willChange = 'auto';
-
-
-    this.wrapLineNode.style.width = `${this.state.step * wrap}px`;
-
+    this.state.wrap = this.state.rules.wordWrap;
     this.state.input = esthetic.format(this.state.input, this.state.rules);
 
     this.output.update(this.state.input);
-    this.output.height(this.input.height())
-    this.onHeight()
+    this.output.height(this.input.height());
 
-    target.onmouseup = () => this.wrapLineNode.style.removeProperty('borderColor')
+    this.onHeight();
 
-
-    //this.updateRules({ wrap: +target.value })
-
+    target.onpointerup = () => this.wrapLine.style.removeProperty('border-color');
 
   }
 
-  wrapFormat() {
+  wrapFormat () {
 
     const input = esthetic.format(this.state.input, this.state.rules);
 
-    this.formatCode(input)
-
-  }
-
-  onWrapFraction ({ target }: { target: HTMLInputElement }) {
-
-    const wrap = target.valueAsNumber + 15;
-
-    this.wrapCountNode.innerHTML = `${target.valueAsNumber}`;
-    this.wrapLineNode.style.width = `${target.valueAsNumber}%`;
-    this.wrapLineNode.style.transition = 'width 50ms ease-in-out';
-    this.wrapLineNode.style.willChange = 'auto';
-
-    this.wrapFractionCountNode.innerHTML = `${target.valueAsNumber - Math.round(wrap / 6)}`;
-    this.wrapFractionLineNode.style.width = `${target.valueAsNumber - Math.round(wrap / 6)}%`;
-    this.wrapFractionLineNode.style.transition = 'width 50ms ease-in-out';
-    this.wrapFractionLineNode.style.willChange = 'auto';
-    this.wrapFractionRangeNode.value = `${target.valueAsNumber - Math.round(wrap / 6)}`;
-
-    const rules = Showcase.rules.get(this.state.uuid);
-    rules.wrap = wrap;
-    rules.wrapFraction = wrap - Math.round((wrap / 6));
-
-    const input = esthetic.format(this.input.raw, rules);
-
-    this.input.update(input);
-
-  }
-
-  onForm ({ target, name }: { target: HTMLInputElement, type: string; name: string; value: number }) {
-
-    if (target.type === 'range') {
-
-      if (target.name === 'wrap') {
-
-        this.doWrap(target.valueAsNumber, target.name.split('.'));
-
-      }
-
-    }
+    this.formatCode(input);
 
   }
 
   /* -------------------------------------------- */
   /* TABS                                         */
   /* -------------------------------------------- */
+
+  onClickFormat () {
+
+    const input = esthetic.format(this.input.input, this.state.rules);
+
+    this.formatCode(input);
+
+  }
 
   /**
    * Clicked `reset` button in the example
@@ -392,17 +258,16 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
 
     if (this.state.mode === 'editor') {
 
-      this.state.input = this.state.inputOriginal;
-      this.input.update(this.state.input, this.state.language);
-
+      this.state.input = this.code;
+      this.input.update(this.state.input, this.state.language, true);
       this.formatCode();
 
     } else if (this.state.mode === 'rules') {
 
-      this.state.rules = this.state.rulesOriginal;
+      this.state.rules = this.rules;
       this.input.update(this.rulesInput, 'json', true);
-
       this.formatCode();
+
     }
 
   }
@@ -412,7 +277,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
    */
   onClickRulesTab () {
 
-    if(this.state.mode === 'rules') return;
+    if (this.state.mode === 'rules') return;
 
     if (this.inputTabNode.classList.contains('is-active')) {
       this.inputTabNode.classList.remove('is-active');
@@ -423,7 +288,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
     }
 
     this.state.mode = 'rules';
-    // this.input.editor.disable();
+    this.edits = this.input.input;
     this.input.update(this.rulesInput, 'json');
 
   }
@@ -433,7 +298,7 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
    */
   onClickInputTab () {
 
-    if(this.state.mode === 'editor') return;
+    if (this.state.mode === 'editor') return;
 
     this.output.error.hide();
 
@@ -446,38 +311,8 @@ export class Showcase extends spx.Component<typeof Showcase.define> {
     }
 
     this.state.mode = 'editor';
-    this.input.update(this.state.input, this.state.language, true)
-
+    this.input.update(this.state.input, this.state.language, true);
 
   }
-
-  /* -------------------------------------------- */
-  /* TYPES                                        */
-  /* -------------------------------------------- */
-
-  input: Papyrus.Model;
-  output: Papyrus.Model;
-
-  /* TABS --------------------------------------- */
-
-  inputTabNode: HTMLButtonElement;
-  rulesTabNode: HTMLButtonElement;
-  presetTabNode: HTMLButtonElement;
-  presetTabNodes: HTMLButtonElement[];
-  inputNode: HTMLPreElement;
-  outputNode: HTMLPreElement;
-  outputNodes: HTMLPreElement[];
-
-  /* WRAP RULE ---------------------------------- */
-
-  wrapCountNode: HTMLElement;
-  wrapLineNode: HTMLElement;
-  wrapRangeNode: HTMLInputElement;
-
-  /* WRAP FRACTION RULE --------------------------- */
-
-  wrapFractionCountNode: HTMLElement;
-  wrapFractionLineNode: HTMLElement;
-  wrapFractionRangeNode: HTMLInputElement;
 
 }

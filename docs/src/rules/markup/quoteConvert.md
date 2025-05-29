@@ -11,37 +11,29 @@ options:
   - single
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row
+:: col-12 col-md-9
+
+##
 
 # Quote Convert
 
 How quotation characters of markup attribute values should be handled. Allows for conversion to single quotes or double quotes. Markup tag attributes should always use double quotations, it's the standard in languages like HTML.
 
-:::
+::
+::
 
 ---
 
-<!--
+:: row
+:: col-12 col-md-9
 
-🤡 => The choice of a clown
-🙌 => Authors choice
-👍 => Good choice.
-🤌 => Delightful. Your mother is proud of you.
-👎 => Not recommended
-🫡 => Alright
-😳 => We live in a society, we\'re not animals
-💡 => Showing an example of the rule
-🧐 => You gotta do, what you gotta do
-
--->
-
-::: rule 🤡
-
-#### none
-
-:::
+## none
 
 Below is an example of how this rule works if set to `none` which is the **default** setting. No conversion of quotations is applied when using `none`. Notice how we have expressed a combination of both double and single quotes.
+
+::
+::
 
 ```json:rules
 {
@@ -66,13 +58,15 @@ Below is an example of how this rule works if set to `none` which is the **defau
 
 ---
 
-::: rule 🤌
+:: row
+:: col-12 col-md-9
 
-#### double
-
-:::
+## double
 
 Below is an example of how this rule works if set to `double` which will go about converting and ensuring all markup quotations are using double quotations.
+
+::
+::
 
 ```json:rules
 {
@@ -96,13 +90,15 @@ Below is an example of how this rule works if set to `double` which will go abou
 
 ---
 
-::: rule 😳
+:: row
+:: col-12 col-md-9
 
-#### single
-
-:::
+## single
 
 Below is an example of how this rule works if set to `single` which will go about converting and ensuring all markup quotations are using singles. This is typically discourage in HTML and other markup languages.
+
+::
+::
 
 ```json:rules
 {

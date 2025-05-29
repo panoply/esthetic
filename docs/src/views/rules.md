@@ -12,7 +12,7 @@ anchors:
   - Script
 ---
 
-::: grid col-12 p-100
+::: grid col-9 p-100
 
 # Rules
 

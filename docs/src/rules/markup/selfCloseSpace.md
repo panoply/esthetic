@@ -10,25 +10,27 @@ options:
   - false
 ---
 
-::: grid col-8 p-100
+:: row
+:: col-12 col-md-9
 
 # Self Close Space
 
 Whether markup self-closing (void) tags should apply a single space to ending portion of the delimiter which results in the tag output to produce `' />'` instead of `'/>'`.
 
-:::
+::
+::
 
 ---
 
----
+:: row
+:: col-12 col-md-9
 
-::: rule 🙌
-
-#### true
-
-:::
+## true
 
 When the markup `selfCloseSpace` rule is enabled (i.e: `true`) then forward slash closing delimiters will insert a single space character.
+
+::
+::
 
 ```json:rules
 {
@@ -39,30 +41,31 @@ When the markup `selfCloseSpace` rule is enabled (i.e: `true`) then forward slas
 }
 ```
 
-<!-- prettier-ignore -->
-```html
-<!-- Before formatting -->
-<picture>
-  <path srcset="."/>
-  <path srcset="."/>
-</picture>
-
-<!-- After Formatting - Notice the the space insertion applied -->
+```html:before
 <picture>
   <path srcset="."/>
   <path srcset="."/>
 </picture>
 ```
 
+```html:after
+<picture>
+  <path srcset="." />
+  <path srcset="." />
+</picture>
+```
+
 ---
 
-::: rule 👎
+:: row
+:: col-12 col-md-9
 
-#### false
-
-:::
+## false
 
 When the markup `selfCloseSpace` rule is disabled (i.e: `false`) then forward slash closing delimiters will strip leading spaces.
+
+::
+::
 
 ```json:rules
 {
@@ -73,17 +76,16 @@ When the markup `selfCloseSpace` rule is disabled (i.e: `false`) then forward sl
 }
 ```
 
-<!-- prettier-ignore -->
-```html
-<!-- Before formatting -->
+```html:before
 <picture>
   <path srcset="." />
   <path srcset="." />
 </picture>
+```
 
-<!-- After Formatting - Notice the the space insertion applied -->
+```html:after
 <picture>
-  <path srcset="." />
-  <path srcset="." />
+  <path srcset="."/>
+  <path srcset="."/>
 </picture>
 ```

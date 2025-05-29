@@ -12,30 +12,34 @@ anchors:
     - true
 ---
 
-::: grid col-12 p-100
+:: row
+:: col-12 col-md-9
 
 # Strip Attribute Lines
 
 Whether or not newlines contained within tag attributes should be preserved. This rule is used along side the `forceAttribute` rule. When enabled (`true`) then Æsthetic will strip _empty_ newline occurrences within HTML tags attributes. When disabled (`false`) then newlines occurrences will be preserved in accordance with the **global** `preserveLine` limit defined.
 
-### Related Rules
+#### Related Rules
 
 This rule wil only take effect when `forceAttribute` is enabled (ie: `true`) or a defined `forceAttribute` limit has been exceeded. The rule will also take effect if attribute forcing is being applied according to **global** `wrap` limits.
 
 - [forceAttribute](/rules/markup/forceAttribute/)
 - [preserveLine](/rules/global/preserveLine/)
 
-:::
+::
+::
 
 ---
 
-::: rule 👍
+:: row
+:: col-12 col-md-9
 
-#### false
-
-:::
+## false
 
 Below is the default, wherein the attributes preserve the newlines contained within, Notice how **before** formatting there is `4` lines present but **after** formatting only `2` are preserved as per the global `preserveLine` rule value.
+
+::
+::
 
 ```json:rules
 {
@@ -47,8 +51,7 @@ Below is the default, wherein the attributes preserve the newlines contained wit
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <div
   class="x"
   id="foo"
@@ -57,28 +60,44 @@ Below is the default, wherein the attributes preserve the newlines contained wit
     data-attr-1="one"
     data-attr-2="two"
 
+    data-attr-3="three"
+    data-attr-4="four"
 
+    data-attr-5="five">
+    All attribute newlines will be preserved!
+  </div>
+</div>
+```
+
+```html:after
+<div
+  class="x"
+  id="foo"
+  data-x="xx">
+  <div
+    data-attr-1="one"
+    data-attr-2="two"
 
     data-attr-3="three"
     data-attr-4="four"
 
     data-attr-5="five">
-
-    <!-- All attribute newlines will be preserved -->
-
+    All attribute newlines will be preserved!
   </div>
 </div>
 ```
 
 ---
 
-::: rule 🙌
+:: row
+:: col-12 col-md-9
 
-#### true
-
-:::
+## true
 
 Below is an example of how this rule works if it's enabled, ie: `true`. This will strip out empty new lines contained in markup tag attributes in accordance with `preserveLine` defined limit.
+
+::
+::
 
 ```json:rules
 {
@@ -90,28 +109,36 @@ Below is an example of how this rule works if it's enabled, ie: `true`. This wil
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <div
   class="x"
-
-
   id="foo"
   data-x="xx">
   <div
     data-attr-1="one"
-
     data-attr-2="two"
-
-
-
 
     data-attr-3="three"
     data-attr-4="four"
+
     data-attr-5="five">
+    All attribute newlines will be stripped
+  </div>
+</div>
+```
 
-    <!-- All attribute newlines will be stripped -->
-
+```html:after
+<div
+  class="x"
+  id="foo"
+  data-x="xx">
+  <div
+    data-attr-1="one"
+    data-attr-2="two"
+    data-attr-3="three"
+    data-attr-4="four"
+    data-attr-5="five">
+    All attribute newlines will be stripped
   </div>
 </div>
 ```

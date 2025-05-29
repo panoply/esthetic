@@ -1,13 +1,14 @@
 ---
 title: 'Global Rules - Indent Size'
 layout: base
-permalink: '/rules/global/indentSize/index.html'
+permalink: '/rules/indentSize/index.html'
 describe:
   - Indent Size
   - Rule Options
 ---
 
-::: grid col-8 p-100
+:: row
+:: col-12 col-md-9
 
 # Indent Size
 
@@ -17,44 +18,20 @@ The number of `indentChar` values to comprise a single indentation. By default t
 
 If you're heathen who prefers Tabs, then you will need to set the `indentChar` to `\t` and infer the size limit here.
 
-:::
+::
+::
 
 ---
 
-<!--
+:: row
+:: col-12 col-md-9
 
-# Rule Options
-
-This is a global rule definition and will be used for all languages.
-
-::: options
-
-### `false`
-
-> Strip additional newlines from the end of input.
-
-### `true`
-
-> Insert a newline at the end of input
-
-:::
-
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-🧐 - You gotta do, what you gotta do
-💡 - Showing an example of the rule
--->
-
-::: rule 💡
-
-#### `0`
-
-:::
+## 0
 
 Below is we have set the `indentSize` to `4` - Notice how the indentation increases by `2` after formatting.
+
+::
+::
 
 ```json:rules
 {
@@ -63,8 +40,7 @@ Below is we have set the `indentSize` to `4` - Notice how the indentation increa
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <header>
 <nav>
 <ul class="foo">
@@ -72,5 +48,16 @@ Below is we have set the `indentSize` to `4` - Notice how the indentation increa
 <li>baz</li>
 </ul>
 </nav>
+</header>
+```
+
+```html:after
+<header>
+    <nav>
+        <ul class="foo">
+            <li>bar</li>
+            <li>baz</li>
+        </ul>
+    </nav>
 </header>
 ```

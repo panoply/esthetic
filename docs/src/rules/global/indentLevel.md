@@ -1,55 +1,32 @@
 ---
 title: 'Global Rules - Indent Level'
 layout: base
-permalink: '/rules/global/indentLevel/index.html'
+permalink: '/rules/indentLevel/index.html'
 describe:
   - Indent Level
 ---
 
-::: grid col-12 col-sm-9 p-100
+:: row
+:: col-12 col-md-9
 
 # Indent Level
 
 The `indentLevel` rule is typically used internally and will control the padding indentation to be applied.
 
-:::
+::
+::
 
 ---
 
-<!--
+:: row
+:: col-12 col-md-9
 
-# Rule Options
-
-This is a global rule definition and will be used for all languages.
-
-::: options
-
-### `false`
-
-> Strip additional newlines from the end of input.
-
-### `true`
-
-> Insert a newline at the end of input
-
-:::
-
-🙌 - Recommended Choice
-👍 - Good Choice
-👎 - Not Recommended
-🤡 - Clown Choice
-😳 - Bad Choice
-🧐 - You gotta do, what you gotta do
-💡 - Showing an example of the rule
--->
-
-::: rule 💡
-
-#### `0`
-
-:::
+## `0`
 
 The default `indentLevel` is set to `0`
+
+::
+::
 
 ```json:rules
 {
@@ -82,13 +59,15 @@ The default `indentLevel` is set to `0`
 
 ---
 
-::: rule 💡
+:: row
+:: col-12 col-md-9
 
-#### `2`
-
-:::
+## `2`
 
 Below we are using an `indentLevel` value of `2`
+
+::
+::
 
 ```json:rules
 {
@@ -97,8 +76,7 @@ Below we are using an `indentLevel` value of `2`
 }
 ```
 
-<!-- prettier-ignore -->
-```html
+```html:before
 <!--  2x Left Increment -->
 <header>
   <nav>
@@ -124,13 +102,15 @@ Below we are using an `indentLevel` value of `2`
 
 ---
 
-::: rule 💡
+:: row
+:: col-12 col-md-9
 
-#### `5`
-
-:::
+## `5`
 
 Below we are using an `indentLevel` value of `5`
+
+::
+::
 
 ```json:rules
 {
@@ -140,7 +120,7 @@ Below we are using an `indentLevel` value of `5`
 ```
 
 <!-- prettier-ignore -->
-```html
+```html:before
 <!-- 4x Left Increment -->
 <header>
   <nav>

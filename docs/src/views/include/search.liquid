@@ -1,16 +1,22 @@
 <div
-  class="search d-none d-md-unset"
+  class="search d-none d-md-flex"
   spx-component="search"
-  spx-search:source="{{ '/assets/esthetic.json' | url }}">
-
+  spx-search:source="{{ '/esthetic.json' | url }}"
+  spx@keypress="search.onKeyboard">
   <input
     type="search"
+    name="search"
     class="fm-input"
     placeholder="Search"
-    spx-node="search.input"
+    spx@input="search.onInput"
     spx@click="search.onFocus"
-    spx@input="search.onInput">
-
+    spx-node="search.input" />
+  <div class="keys">
+    <div class="row jc-center ac-center">
+      <kbd class="col-auto">⌘</kbd>
+      <kbd class="col-auto letters">K</kbd>
+    </div>
+  </div>
   <ul
     class="search-list d-none"
     spx-node="search.list">

@@ -20,10 +20,3 @@ Dave is a senior software engineer working with Shopify. Dave is behind a lot of
 ### [Mansedan](#)
 
 Mansedan has been leveraging Æsthetic since its conception. His insights, suggestions and real-world usage has allowed for Æsthetic to reach stability. Mansedan runs a Discord server for Shopify Developers and acts on behalf of internationally recognized brands in the e-commerce nexus.
-
-### [PrettyDiff](https://github.com/prettydiff/prettydiff) and [Sparser](https://github.com/unibeautify/sparser)
-
-Æsthetic is made possible because of the [Austin Cheney](https://github.com/prettydiff) who is the original author of [Sparser](https://github.com/unibeautify/sparser) and [PrettyDiff](https://github.com/prettydiff/prettydiff). Austin is one of the great minds in JavaScript and I want to thank him for open sourcing these tools.
-
-Both PrettyDiff and Sparser were retired in 2019 after a nearly a decade of production. Austin has since created [Shared File Systems](https://github.com/prettydiff/share-file-systems) which is a privacy first point-to-point communication tool. Please check it out and also have a read of
-[wisdom](https://github.com/prettydiff/wisdom) which personally helped me become a better developer.

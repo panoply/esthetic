@@ -1,28 +1,33 @@
-import { Drawer } from './components/drawer';
-import { Showcase } from './components/showcase';
-import { Marquee } from './components/marquee';
-import { Dropdown } from './components/dropdown';
-import { Anchor } from './components/anchors';
-import { Playground } from './components/playground';
-import { Search } from './components/search';
-import spx from 'spx';
 import relapse from 'relapse';
+import spx from 'spx';
 
-spx.connect({
+import { Drawer } from './components/drawer';
+import { Dropdown } from './components/dropdown';
+import { Marquee } from './components/marquee';
+import { Playground } from './components/playground';
+import { ScrollSpy } from './components/scrollspy';
+import { Search } from './components/search';
+import { Showcase } from './components/showcase';
+
+spx({
   progress: false,
-  fragments: ['main', 'navbar', 'menu'],
+  fragments: [
+    'main',
+    'navbar',
+    'menu'
+  ],
   components: {
     Marquee,
     Showcase,
     Dropdown,
     Drawer,
     Search,
-    Anchor,
+    ScrollSpy,
     Playground
   }
-})(function() {
+})(function () {
 
-    relapse()
+  relapse();
 
 });
 
@@ -36,6 +41,4 @@ spx.on('load', (page) => {
     relapse.reinit();
   }
 
-
 });
-

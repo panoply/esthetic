@@ -11,7 +11,8 @@ anchors:
     - schema
 ---
 
-::: grid col-12 col-md-9
+:: row
+:: col-12 col-md-9
 
 # Dedent Tag List
 
@@ -21,17 +22,20 @@ It's generally advisable to avoid applying de-dentation to commonly used Liquid 
 
 > It's important to note that the rule's behavior varies depending on the tag structure. Singleton-type tag names, such as assign or render, will not be affected by this rule and will have no impact on the output.
 
-:::
+::
+::
 
 ---
 
-::: rule 💡
+:: row
+:: col-12 col-md-9
 
-#### case
-
-:::
+## case
 
 The below sample will result in the `{% when %}` tokens of the expression to dedent. The tokens will align themselves to starting levels of the `{% case %}` and its `{% endcase %}` tag placements.
+
+::
+::
 
 ```json:rules
 {
@@ -68,11 +72,13 @@ The below sample will result in the `{% when %}` tokens of the expression to ded
 
 ---
 
-::: rule 💡
+:: row
+:: col-12 col-md-9
 
-#### schema
+## schema
 
-:::
+::
+::
 
 ```json:rules
 {
