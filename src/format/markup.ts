@@ -522,8 +522,15 @@ export function markup () {
     /** Advancement Reference - Moves through records in data structure */
     let i: number = a + 1;
 
-    /** Self closing/void tag ending delimiter */
-    let space: string = rules.selfCloseSpace && closer[0] === '/>' ? WSP : NIL;
+    let space = NIL;
+
+    if (closer[0] === '/>') {
+      if (rules.selfCloseSlash) {
+        space = WSP;
+      } else {
+        closer[0] = '>';
+      }
+    }
 
     // First, we will remove the applied '>' or '/>' delimiter from the token
     // record contained within the data structure and reconnect it below.
@@ -805,15 +812,11 @@ export function markup () {
         if (rules.delimiterPlacement === 'newline-multiline') {
 
           if (isType(a, 'liquid_tag_start')) {
-
             const o = u.is(data.token[a][2], cc.DSH) ? 3 : 2;
             const open = data.token[a].slice(0, o) + nl(levels[a - 1], LF.WS, 1) + spaces;
             output.push(open + data.token[a].slice(o).trim());
-
           } else {
-
             output.push(data.token[a]);
-
           }
 
         } else {
@@ -878,7 +881,7 @@ export function markup () {
 
       function Singleline (lines: string[]) {
 
-        return token.open.delim + token.open.space + lines.join(WSP) + token.close.space + token.close.delim;
+        return token.open.delim + token.open.space + lines.join(NIL).trim() + token.close.space + token.close.delim;
 
       }
 
@@ -913,7 +916,7 @@ export function markup () {
             ? token.lines.length > 1
               ? Multiline(token.lines.map((x, i) => i > 0 && u.not(x, cc.PIP) ? spaces + x : x))
               : Singleline(token.lines)
-            : Singleline(token.lines);
+            : Singleline(token.lines.map((x, i) => i > 0 && u.not(x, cc.PIP) ? x : x + WSP));
 
         } else if (u.isNumber(lineBreak)) {
 
@@ -924,13 +927,15 @@ export function markup () {
             (lineBreak === 0 && limit > -1 && width > limit) ||
             (lineBreak > 0 && token.lines.length > lineBreak))
             ? Multiline(token.lines.map((x, i) => i > 0 && u.not(x, cc.PIP) ? spaces + x : x))
-            : Singleline(token.lines);
+            : Singleline(token.lines.map((x, i) => i > 0 && u.not(x, cc.PIP) ? x : x + WSP));
 
         }
 
         // Use wrap determination
 
-        return limit > -1 && width > limit ? Multiline(token.lines) : Singleline(token.lines);
+        return limit > -1 && width > limit
+          ? Multiline(token.lines)
+          : Singleline(token.lines);
 
       }
 
@@ -938,79 +943,90 @@ export function markup () {
 
         const lines: string[] = [];
 
-        /** Newlines plus indentation */
-        const offset = nl(levels[a - 1], LF.WS) + spaces + '#' + WSP;
+        if (rules.wordWrap > 0) {
 
-        /** Wrap limit */
-        const exceed = limit - nl(levels[a], LF.WS).length;
+          /** Newlines plus indentation */
+          const offset = nl(levels[a - 1], LF.WS) + spaces + '#' + WSP;
 
-        /** Group lines into paragraphs */
-        const paragraphs = [];
+          /** Wrap limit */
+          const exceed = limit - nl(levels[a], LF.WS).length;
 
-        /** Current paragraph */
-        let current: string[] = [];
+          /** Group lines into paragraphs */
+          const paragraphs = [];
 
-        for (let i = 0; i < token.lines.length; i++) {
-          if (token.lines[i] === NIL) {
-            if (current.length > 0) {
-              paragraphs.push(current);
-              current = [];
-            }
-            paragraphs.push([ NIL ]); // Preserve empty line
-          } else {
-            current.push(token.lines[i]);
-          }
-        }
+          /** Current paragraph */
+          let current: string[] = [];
 
-        if (current.length > 0) {
-          paragraphs.push(current);
-        }
-
-        for (let i = 0; i < paragraphs.length; i++) {
-
-          const paragraph = paragraphs[i];
-
-          // Handle empty line
-          if (paragraph.length === 1 && paragraph[0] === NIL) {
-            lines.push(NIL);
-            continue;
-          }
-
-          // Merge paragraph content
-          let merged = NIL;
-
-          for (const line of paragraph) {
-            const isComment = line.trim().startsWith('#');
-            const cleanLine = isComment ? line.slice(1).trimStart() : line;
-            merged += (merged ? WSP : NIL) + cleanLine;
-          }
-
-          // Split into words and wrap
-          const words = merged.split(WSP);
-
-          let ln = NIL;
-          const wrapped = [];
-
-          for (const word of words) {
-            if ((ln + word).length <= exceed) {
-              ln += (ln ? ' ' : '') + word;
+          for (let i = 0; i < token.lines.length; i++) {
+            if (token.lines[i] === NIL) {
+              if (current.length > 0) {
+                paragraphs.push(current);
+                current = [];
+              }
+              paragraphs.push([ NIL ]); // Preserve empty line
             } else {
-              if (ln) wrapped.push((wrapped.length === 0 ? '# ' : offset) + ln);
-              ln = word;
+              current.push(token.lines[i]);
             }
           }
 
-          if (ln) {
-            wrapped.push(offset + ln);
+          if (current.length > 0) {
+            paragraphs.push(current);
           }
 
-          lines.push(...wrapped);
+          for (let i = 0; i < paragraphs.length; i++) {
+
+            const paragraph = paragraphs[i];
+
+            // Handle empty line
+            if (paragraph.length === 1 && paragraph[0] === NIL) {
+              lines.push(NIL);
+              continue;
+            }
+
+            // Merge paragraph content
+            let merged = NIL;
+
+            for (const line of paragraph) {
+              const isComment = line.trim().startsWith('#');
+              const cleanLine = isComment ? line.slice(1).trimStart() : line;
+              merged += (merged ? WSP : NIL) + cleanLine;
+            }
+
+            // Split into words and wrap
+            const words = merged.split(WSP);
+
+            let ln = NIL;
+
+            const wrapped = [];
+
+            for (const word of words) {
+              if ((ln + word).length <= exceed) {
+                ln += (ln ? ' ' : '') + word;
+              } else {
+                if (ln) wrapped.push((wrapped.length === 0 ? '# ' : offset) + ln);
+                ln = word;
+              }
+            }
+
+            if (ln) {
+              wrapped.push(offset + ln);
+            }
+
+            lines.push(...wrapped);
+
+          }
+
+          return lines.length > 1
+            ? Multiline(lines, NWL)
+            : token.open.delim +
+              token.open.space +
+              lines.join(WSP).trim() +
+              token.close.space +
+              token.close.delim;
 
         }
 
-        return lines.length > 1
-          ? Multiline(lines, NWL)
-          : (token.open.delim + token.open.space + lines.join(WSP).trim() + token.close.space + token.close.delim);
+        return token.lines.length > 1 ? Multiline(token.lines) : Singleline(token.lines);
 
       }
 
@@ -1936,12 +1952,7 @@ export function markup () {
     // Second, ensure tag contains more than one attribute
     if (w > p + 1) {
 
-      // finally, indent attributes if tag length exceeds the wrap limit
-      if (rules.selfCloseSpace) {
-
-        length = length - 1;
-
-      }
+      length = length - 1;
 
       if (length > rules.wordWrap && rules.wordWrap > 0 && attrForce === false) {
 
@@ -2505,6 +2516,10 @@ export function markup () {
 
             }
           }
+
+        } else if (isType(a, 'comment_ignore')) {
+
+          output.push(data.token[a]);
 
         } else if (isType(a, 'liquid_comment_start')) {
 
