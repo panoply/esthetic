@@ -318,8 +318,7 @@ export const NonWordChar = /\W/;
 export const TabsGlob = /\t+/g;
 
 /**
- * Regex is used to inject whitespace and equally distributes spacing
- * within Liquid tokens. It directly relates to `normalizeSpacing` rules.
+ * Regex is used to inject whitespace and equally distributes spacing within Liquid tokens.
  *
  * [Regex101](https://regex101.com/r/jxLNhv/1)
  *
@@ -334,7 +333,7 @@ export const TabsGlob = /\t+/g;
  * AFTER:  '| filter: " foo " | append: 123'
  *
  */
-export const SpaceInjectBefore = /[|:,[\]](?=[0-9a-z-])/g;
+export const SpaceInjectBefore = /[|:,[\]](?=[0-9A-Za-z-_])/g;
 
 /**
  * Regex is used to inject whitespace and equally distributes spacing
@@ -696,6 +695,18 @@ export const LiquidTagName = /[a-zA-Z0-9_$#]+/;
 export const LiquidLeftDelimiter = /({%-?)(\s*)/;
 
 /**
+ * Liquid Left Newline Delimiter
+ *
+ * Captures newline separated Liquid delimiter
+ *
+ * ---
+ *
+ * @example /^{%-?\n/
+ *
+ */
+export const LiquidLeftDelimiterNL = /^{%-?\n/;
+
+/**
  * Liquid Right Delimiter with spaces
  *
  * Captures Liquid right side tag Delimiter with spaces. Groups the prefix whitespace
@@ -707,6 +718,18 @@ export const LiquidLeftDelimiter = /({%-?)(\s*)/;
  *
  */
 export const LiquidRightDelimiter = /(\s*)(-?%})/;
+
+/**
+ * Liquid Right Newline Delimiter
+ *
+ * Captures newline separated Liquid delimiter
+ *
+ * ---
+ *
+ * @example /\n-?%}$/
+ *
+ */
+export const LiquidRightDelimiterNL = /\n-?%}$/;
 
 /**
  * Liquid Tag Delimiters
@@ -882,7 +905,7 @@ export const LiquidAttr = /[%}]}=(?:["']|{[{%])/;
  * @example /\|\s*[a-z0-9_]+/
  *
  */
-export const LiquidFilter = /\|\s*[a-z0-9_]+/;
+export const LiquidFilter = /\|\s*[a-zA-Z0-9_]+/;
 
 /**
 * Character Escape

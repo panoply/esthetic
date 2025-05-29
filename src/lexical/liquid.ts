@@ -4,7 +4,7 @@ import type { Rules } from 'types';
 
 import { NIL, NWL, WSP } from 'lexical/chars';
 import { cc } from 'lexical/codes';
-import { LqT } from 'lexical/enum';
+import { LiquidTag } from 'lexical/enum';
 import { grammar } from 'parse/grammar';
 import { parse } from 'parse/parser';
 import { is, isLast, isLastAt } from 'utils/helpers';
@@ -74,7 +74,7 @@ export function closeDelims (input: string, rules: Rules, delimOnly = false) {
 
   if (rules.delimiterTrims === 'never') {
 
-    close = `${input[input.length - 2]}}`;
+    close = input[input.length - 2] + '}';
 
   } else if ((
     rules.delimiterTrims === 'always'
@@ -86,7 +86,7 @@ export function closeDelims (input: string, rules: Rules, delimOnly = false) {
     is(input[1], cc.PER)
   )) {
 
-    close = `-${input[input.length - 2]}}`;
+    close = '-' + input[input.length - 2] + '}';
 
   } else {
 
@@ -169,33 +169,24 @@ export function delimiters (input: string, tname?: string, space = WSP) {
 
   if (tname !== '#') {
     if (rules.delimiterTrims === 'never') {
-
-      open = `{${input[1]}`;
-      close = `${input[input.length - 2]}}`;
-
+      open = '{' + input[1];
+      close = input[input.length - 2] + '}';
     } else if (
       (rules.delimiterTrims === 'always') ||
       (rules.delimiterTrims === 'outputs' && is(input[1], cc.LCB)) ||
       (rules.delimiterTrims === 'tags' && is(input[1], cc.PER))) {
 
-      open = `{${input[1]}-`;
-      close = `-${input[input.length - 2]}}`;
+      open = '{' + input[1] + '-';
+      close = '-' + input[input.length - 2] + '}';
 
     }
   }
 
   if (!tname) tname = token.trimStart().split(/\s/)[0] || '';
 
-  if (
-    tname === 'else' ||
-    tname === 'break' ||
-    tname === 'continue' ||
-    tname === 'increment' ||
-    tname === 'decrement' || tname.startsWith('end')) {
-
+  if (/^(?:end[a-z_]+|break|continue|(?:inc|dec)rement)/.test(tname)) {
     open += space;
     close = space + close;
-
   } else {
 
     if (rules.delimiterPlacement === 'preserve') {
@@ -374,9 +365,7 @@ export function token (input: string, indent: string, spaces: string) {
  */
 export function exp (tagName: string, fuse = true) {
 
-  return fuse
-    ? new RegExp(`{%-?\\s*${tagName}\\s*-?%}`)
-    : new RegExp(`{%-?\\s*${tagName}`);
+  return fuse ? new RegExp(`{%-?\\s*${tagName}\\s*-?%}`) : new RegExp(`{%-?\\s*${tagName}`);
 }
 
 /**
@@ -513,11 +502,7 @@ export function isStart (input: string, strict = false) {
 
   if (strict) {
 
-    if (
-      is(input[0], cc.LCB) &&
-      is(input[1], cc.PER) &&
-      isLastAt(input, cc.PER) &&
-      isLast(input, cc.RCB)) {
+    if (is(input[0], cc.LCB) && is(input[1], cc.PER) && isLastAt(input, cc.PER) && isLast(input, cc.RCB)) {
 
       token = input.slice(is(input[2], cc.DSH) ? 3 : 2).trimStart();
 
@@ -525,7 +510,10 @@ export function isStart (input: string, strict = false) {
 
       token = token.slice(0, token.search(/[\s=|!<"'>,.[]|-?[%}]}/));
 
-      return token.startsWith('end') ? false : grammar.liquid.tags.has(token);
+      return token.startsWith('end')
+        ? false
+        : grammar.liquid.tags.has(token);
+
     }
 
     return false;
@@ -591,29 +579,38 @@ export function isEnd (input: string | string[]) {
  * - `8` Check close tag delimiter from end, eg: `%}`
  * - `9` Check close output delimiter from end, eg: `}}`
  */
-export function getTokenType (input: string, type: LqT): boolean {
+export function getTokenType (input: string, type: LiquidTag): boolean {
 
   switch (type) {
-    case LqT.Open:
+    case LiquidTag.Open:
       return is(input[0], cc.LCB) && (is(input[1], cc.PER) || is(input[1], cc.LCB));
-    case LqT.OpenTag:
+    case LiquidTag.OpenTag:
       return is(input[0], cc.LCB) && is(input[1], cc.PER);
-    case LqT.OpenOutput:
+    case LiquidTag.OpenOutput:
       return is(input[0], cc.LCB) && is(input[1], cc.LCB);
-    case LqT.CloseTag:
+    case LiquidTag.CloseTag:
       return isLastAt(input, cc.PER) && is(input[input.length - 1], cc.RCB);
-    case LqT.CloseOutput:
+    case LiquidTag.CloseOutput:
       return isLastAt(input, cc.RCB) && is(input[input.length - 1], cc.RCB);
-    case LqT.HasOpen:
+    case LiquidTag.HasOpen:
       return /{[{%]/.test(input);
-    case LqT.HasOpenAndClose:
+    case LiquidTag.HasOpenAndClose:
       return /{[{%]/.test(input) && /[%}]}/.test(input);
-    case LqT.Close:
-      return isLast(input, cc.RCB) && (isLastAt(input, cc.PER) || isLastAt(input, cc.RCB));
-    case LqT.OpenAndClose:
+    case LiquidTag.Close:
+      return isLast(input, cc.RCB) && (
+        isLastAt(input, cc.PER) ||
+        isLastAt(input, cc.RCB)
+      );
+    case LiquidTag.OpenAndClose:
       return (
-        is(input[0], cc.LCB) && (is(input[1], cc.PER) || is(input[1], cc.LCB)) &&
-        isLast(input, cc.RCB) && (isLastAt(input, cc.PER) || isLastAt(input, cc.RCB))
+        is(input[0], cc.LCB) && (
+          is(input[1], cc.PER) ||
+          is(input[1], cc.LCB)
+        ) &&
+        isLast(input, cc.RCB) && (
+          isLastAt(input, cc.PER) ||
+          isLastAt(input, cc.RCB)
+        )
       );
 
   }

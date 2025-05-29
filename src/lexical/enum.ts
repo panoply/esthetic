@@ -269,45 +269,9 @@ export const enum Languages {
    */
   JSONC,
   /**
-   * YAML
-   */
-  YAML,
-  /**
-   * CSS
-   */
-  CSS,
-  /**
-   * SCSS
-   */
-  SCSS,
-  /**
-   * SASS
-   */
-  SASS,
-  /**
-   * LESS
-   */
-  LESS,
-  /**
    * XML
    */
-  XML,
-  /**
-   * JSX
-   */
-  JSX,
-  /**
-   * TSX
-   */
-  TSX,
-  /**
-   * JavaScript
-   */
-  JavaScript,
-  /**
-   * TypeScript
-   */
-  TypeScript
+  XML
 }
 
 export const enum Chars {
@@ -376,7 +340,7 @@ export const enum TagBlocks {
 /**
  * Liquid Tag enum reference which is use by the `isLiquid` utility.
  */
-export const enum LqT {
+export const enum LiquidTag {
   /**
    * Check from index `0` opening delimiters,
    *
