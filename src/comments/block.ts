@@ -36,7 +36,7 @@ export function CommentBlock (chars: readonly string[], config: Comments): Block
   /**
    * Deconstructed Config
    */
-  const { start, lexer, end, ender, begin } = config;
+  const { start, end, ender, begin } = config;
 
   /**
    * Deconstructed  Parse
