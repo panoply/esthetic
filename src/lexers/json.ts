@@ -6,8 +6,9 @@ import { cc } from 'lexical/codes';
 import * as rx from 'lexical/regex';
 import { parse } from 'parse/parser';
 import { sortCorrect, sortObject } from 'parse/sorting';
-import { BlockComments, Record, Structure, Types } from 'types';
+import { BlockComments, Structure, Types } from 'types';
 import * as u from 'utils/helpers';
+import { object } from 'utils/native';
 
 export function json () {
 
@@ -54,11 +55,6 @@ export function json () {
   let ltype: Types = NIL;
 
   /**
-   * Parse Word, ie: `for`, `if` `while` etc etc
-   */
-  const pword: Partial<Structure> = [];
-
-  /**
    * Parse count or similar
    */
   let lengthb = 0;
@@ -67,11 +63,6 @@ export function json () {
    * Hold reference of word test
    */
   let wtest = -1;
-
-  /**
-   * Function name reference store
-   */
-  let fnrefs: string[] = [];
 
   /**
    * Comment stack
@@ -85,76 +76,17 @@ export function json () {
    */
   function push (structure: string = NIL) {
 
-    const record: Record = {
-      begin: parse.stack.index,
-      ender: -1,
-      lexer: 'json',
-      lines: parse.lineOffset,
-      stack: parse.stack.token,
-      token: ltoke,
-      types: ltype
-    };
+    const record = object(null);
+
+    record.lexer = 'json';
+    record.lines = parse.lineOffset;
+    record.stack = parse.stack.token;
+    record.begin = parse.stack.index;
+    record.token = ltoke;
+    record.types = ltype;
+    record.ender = -1;
 
     parse.push(data, record, structure);
-
-  };
-
-  /**
-   * Get Next Character
-   *
-   * Peek at whats up next in the traversal
-   */
-  function peek (len: number, current: boolean) {
-
-    /**
-       * Current Index + 1
-       */
-    let n: number = current === true ? a : a + 1;
-
-    /**
-     * Next Character
-     */
-    let s: string = NIL;
-
-    if (typeof len !== 'number' || len < 1) len = 1;
-
-    if (u.is(c[a], cc.FWS)) {
-      if (u.is(c[a + 1], cc.FWS)) {
-        s = NWL;
-      } else if (u.is(c[a + 1], cc.ARS)) {
-        s = '/';
-      }
-    }
-
-    if (n < b) {
-      do {
-        if (u.ws(c[n]) === false) {
-
-          if (u.is(c[n], cc.FWS)) {
-            if (s === NIL) {
-              if (u.is(c[n + 1], cc.FWS)) {
-                s = NWL;
-              } else if (u.is(c[n + 1], cc.ARS)) {
-                s = '/';
-              }
-            } else if (u.is(s, cc.FWS) && u.is(c[n - 1], cc.ARS)) {
-              s = NIL;
-            }
-          }
-
-          if (s === NIL && c[n - 1] + c[n] !== '\u002a/') return c.slice(n, n + len).join(NIL);
-
-        } else if (u.is(s, cc.NWL) && u.is(c[n], cc.NWL)) {
-
-          s = NIL;
-
-        }
-
-        n = n + 1;
-      } while (n < b);
-    }
-
-    return NIL;
 
   };
 
@@ -177,28 +109,6 @@ export function json () {
   /* ASI - AUTOMATIC SEMICOLON INSERTION          */
   /* -------------------------------------------- */
 
-  /**
-   * Clean Semicolon
-   *
-   * Removes improperly applied automatic semicolon insertions.
-   */
-  function cleanSemicolon () {
-
-    let i = parse.count;
-
-    if (data.types[i] === 'comment') {
-      do i = i - 1;
-      while (i > 0 && data.types[i] === 'comment');
-    }
-
-    data.token[i] === 'x;' && parse.splice({
-      data,
-      remove: 1,
-      index: i
-    });
-
-  };
-
   /* -------------------------------------------- */
   /* PARSE TOKENIZERS                             */
   /* -------------------------------------------- */
@@ -210,7 +120,7 @@ export function json () {
    */
   function parseBlockComment () {
 
-    if (wtest > -1) word();
+    if (wtest > -1) ParseWord();
 
     comment = CommentBlock(c, {
       end: b,
@@ -247,7 +157,7 @@ export function json () {
    */
   function parseLineComment () {
 
-    if (wtest > -1) word();
+    if (wtest > -1) ParseWord();
 
     comment = commentLine(c, {
       end: b,
@@ -280,7 +190,7 @@ export function json () {
    *
    * Tokenizer for numbers
    */
-  function parseNumbers () {
+  function ParseNumbers () {
 
     /**
      * The tokenized results
@@ -396,13 +306,13 @@ export function json () {
    * the token's starting syntax offset argument is length of start minus
    * control chars end is how is to identify where the token ends
    */
-  function parseTokens (starting: string, ending: string, type: Types) {
+  function ParseToken (starting: string, ending: string, type: Types) {
 
     let ee = 0;
     let escape = false;
-    let ext = false;
     let build = [ starting ];
     let temp: string[];
+    let property = false;
 
     const ender = ending.split(NIL);
     const endlen = ender.length;
@@ -476,115 +386,9 @@ export function json () {
 
       if (type === 'string') {
 
-        ltype = 'string';
+        ltype = property ? 'property' : 'string';
 
-        if (parse.language === 'json') {
-
-          ltoke = ltoke.replace(/\\u[\dA-F]{4}/gi, m => String.fromCharCode(parseInt(m.replace(/\\u/g, ''), 16)));
-
-        } else if (starting.indexOf('#!') === 0) {
-
-          ltoke = ltoke.slice(0, ltoke.length - 1);
-          parse.lineOffset = 2;
-
-        } else if (
-          parse.stack.token !== 'object' || (
-            parse.stack.token === 'object' &&
-            u.not(peek(1, false), cc.COL) &&
-            u.not(data.token[parse.count], cc.COM) &&
-            u.not(data.token[parse.count], cc.LCB)
-          )
-        ) {
-
-          if ((ltoke.length > rules.wordWrap && rules.wordWrap > 0) || (
-            rules.wordWrap !== 0 &&
-            u.is(data.token[parse.count], cc.PLS) && (
-              u.is(data.token[parse.count - 1], cc.DOT) ||
-              u.is(data.token[parse.count - 1], cc.SQO)
-            )
-          )) {
-
-            let item = ltoke;
-            let segment = NIL;
-            let q = DQO;
-
-            const limit = rules.wordWrap;
-
-            const uchar = /u[0-9a-fA-F]{4}/;
-            const xchar = /x[0-9a-fA-F]{2}/;
-
-            item = item.slice(1, item.length - 1);
-
-            if (
-              u.is(data.token[parse.count], cc.PLS) && (
-                u.is(data.token[parse.count - 1], cc.DOT) ||
-                u.is(data.token[parse.count - 1], cc.SQO)
-              )
-            ) {
-
-              parse.pop(data);
-
-              q = data.token[parse.count].charAt(0);
-              item = data.token[parse.count].slice(1, data.token[parse.count].length - 1) + item;
-
-              parse.pop(data);
-            }
-
-            if (item.length > limit && limit > 0) {
-
-              do {
-
-                segment = item.slice(0, limit);
-
-                if (u.is(segment[limit - 5], cc.BWS) && uchar.test(item.slice(limit - 4, limit + 1))) {
-
-                  segment = segment.slice(0, limit - 5);
-
-                } else if (u.is(segment[limit - 4], cc.BWS) && uchar.test(item.slice(limit - 3, limit + 2))) {
-
-                  segment = segment.slice(0, limit - 4);
-
-                } else if (u.is(segment[limit - 3], cc.BWS) && (
-                  uchar.test(item.slice(limit - 2, limit + 3)) ||
-                  xchar.test(item.slice(limit - 2, limit + 1))
-                )) {
-
-                  segment = segment.slice(0, limit - 3);
-
-                } else if (u.is(segment[limit - 2], cc.BWS) && (
-                  uchar.test(item.slice(limit - 1, limit + 4)) ||
-                  xchar.test(item.slice(limit - 1, limit + 2))
-                )) {
-
-                  segment = segment.slice(0, limit - 2);
-
-                } else if (u.is(segment[limit - 1], cc.BWS)) {
-
-                  segment = segment.slice(0, limit - 1);
-                }
-
-                segment = q + segment + q;
-                item = item.slice(segment.length - 2);
-                ltoke = segment;
-                ltype = 'string';
-
-                push(NIL);
-
-                parse.lineOffset = 0;
-                ltoke = '+';
-                ltype = 'operator';
-
-                push(NIL);
-
-              } while (item.length > limit);
-            }
-
-            ltoke = item === NIL ? q + q : q + item + q;
-            ltype = 'string';
-          }
-        }
-
-      } else if ((/\{\s*\?>$/).test(ltoke)) {
+      } else if (/^(?:{%-?|{{-?)/.test(ltoke)) {
 
         ltype = 'liquid_start';
 
@@ -597,13 +401,11 @@ export function json () {
 
     };
 
-    if (wtest > -1) word();
+    if (wtest > -1) ParseWord();
 
     // This insanity is for JSON where all the
     // required quote characters are escaped.
-    if (u.is(c[a - 1], cc.BWS) && esc(a - 1) === true && (
-      u.is(c[a], cc.DQO) ||
-      u.is(c[a], cc.SQO))) {
+    if (u.is(c[a - 1], cc.BWS) && esc(a - 1) && (u.is(c[a], cc.DQO) || u.is(c[a], cc.SQO))) {
 
       parse.pop(data);
 
@@ -621,14 +423,7 @@ export function json () {
         escape = true;
 
       } else {
-
-        if (u.is(c[a], cc.DQO)) {
-          build = [ '\\"' ];
-          finish();
-          return;
-        }
-
-        build = [ "\\'" ];
+        build = u.is(c[a], cc.DQO) ? [ '\\"' ] : [ "\\'" ];
         finish();
         return;
       }
@@ -642,19 +437,10 @@ export function json () {
 
         if (
           u.not(data.token[0], cc.LCB) &&
-          u.not(data.token[0], cc.LSB) && (
-            u.is(c[ee], cc.DQO) ||
-            u.is(c[ee], cc.SQO)
-          )
-        ) {
+          u.not(data.token[0], cc.LSB) && (u.is(c[ee], cc.DQO) || u.is(c[ee], cc.SQO))) {
 
           if (u.is(c[ee - 1], cc.BWS)) {
-            if (esc(ee - 1) === true) {
-              if (u.is(c[ee], cc.SQO)) {
-                build.pop();
-              }
-            }
-
+            if (esc(ee - 1) && u.is(c[ee], cc.SQO)) build.pop();
           } else if (u.is(c[ee], cc.DQO) && u.is(c[a], cc.SQO)) {
             c[ee] = DQO;
           } else if (u.is(c[ee], cc.SQO) && u.is(c[a], cc.DQO)) {
@@ -665,32 +451,29 @@ export function json () {
 
         } else if (ee > start) {
 
-          ext = false;
           build.push(c[ee]);
 
         } else {
 
           build.push(c[ee]);
-        }
-
-        if (
-          parse.language !== 'json' &&
-          parse.language !== 'javascript' &&
-          (u.is(starting, cc.DQO) || u.is(starting, cc.SQO)) &&
-          (ext || ee > start) &&
-          u.not(c[ee - 1], cc.BWS) &&
-          u.not(c[ee], cc.DQO) &&
-          u.not(c[ee], cc.SQO) &&
-          (u.is(c[ee], cc.NWL) || (ee === b - 1) === true)
-        ) {
-
-          parse.error = 'Unterminated string in script on line number ' + parse.lineNumber;
-
-          break;
 
         }
 
-        if (c[ee] === ender[endlen - 1] && (u.not(c[ee - 1], cc.BWS) || esc(ee - 1) === false)) {
+        if (c[ee] === ender[endlen - 1] && (u.not(c[ee - 1], cc.BWS) || !esc(ee - 1))) {
+
+          if (u.is(c[a], cc.DQO) && u.is(c[ee], cc.DQO)) {
+            let x = ee + 1;
+            do {
+
+              if (u.is(c[x], cc.COL)) {
+                property = true;
+                break;
+              }
+
+              x = x + 1;
+            } while (x < b && u.ws(c[x]));
+
+          }
 
           if (endlen === 1) break;
 
@@ -721,25 +504,25 @@ export function json () {
 
       ltoke = ',';
       ltype = 'separator';
-      cleanSemicolon();
       push();
 
     } else {
 
-      do { x = x - 1; } while (x > 0 && data.types[x - 1] === 'comment');
+      do x = x - 1;
+      while (x > 0 && data.types[x - 1] === 'comment');
 
       parse.splice({
-        data
-        , remove: 0
-        , index: x
-        , record: {
-          begin: data.begin[x]
-          , ender: -1
-          , lexer: 'json'
-          , lines: parse.lineOffset
-          , stack: data.stack[x]
-          , token: ','
-          , types: 'separator'
+        data,
+        remove: 0,
+        index: x,
+        record: {
+          begin: data.begin[x],
+          ender: -1,
+          lexer: 'json',
+          lines: parse.lineOffset,
+          stack: data.stack[x],
+          token: ',',
+          types: 'separator'
         }
       });
 
@@ -751,12 +534,11 @@ export function json () {
    * Operations for end types:
    *
    * - `)`
-   * - `]`
    * - `}`
    */
-  function end (x: string) {
+  function EnderToken (x: string) {
 
-    if (wtest > -1) word();
+    if (wtest > -1) ParseWord();
 
     if (u.is(x, cc.RSB)) {
 
@@ -764,8 +546,11 @@ export function json () {
 
     } else if (u.is(x, cc.RCB)) {
 
-      if (rules.objectSort === true && parse.stack.token === 'object') sortObject(data);
+      if (rules.objectSort === true && parse.stack.token === 'object') {
 
+        sortObject(data);
+
+      }
       if (ltype === 'comment') {
         ltoke = data.token[parse.count];
         ltype = data.types[parse.count];
@@ -831,20 +616,18 @@ export function json () {
   /**
    * Operations for start types:
    *
-   * - `(`
    * - `[`
    * - `{`
    */
-  function start (x: string) {
+  function StartToken (x: string) {
 
     let aa = parse.count;
-    let wordx = NIL;
     let stack = NIL;
 
     brace.push(x);
 
     if (wtest > -1) {
-      word();
+      ParseWord();
       aa = parse.count;
     }
 
@@ -861,31 +644,6 @@ export function json () {
         data.types[aa] = 'start';
       }
     }
-
-    wordx = (() => {
-
-      let bb = parse.count;
-
-      if (data.types[bb] === 'comment') {
-        do { bb = bb - 1; } while (bb > 0 && data.types[bb] === 'comment');
-      }
-
-      return data.token[bb];
-
-    })();
-
-    const wordy = (data.stack[aa] === undefined) ? NIL : (() => {
-
-      let bb = parse.count;
-
-      if (data.types[bb] === 'comment') {
-        do bb = bb - 1;
-        while (bb > 0 && data.types[bb] === 'comment');
-      }
-
-      return data.token[data.begin[bb] - 1];
-
-    })();
 
     if (u.is(ltoke, cc.LCB) && (data.types[aa] === 'word' || u.is(data.token[aa], cc.RSB))) {
 
@@ -905,46 +663,8 @@ export function json () {
 
     if (stack === NIL && (u.is(ltoke, cc.LCB) || ltoke === 'x{')) {
 
-      if (u.is(data.token[aa], cc.RSB) && u.is(data.token[aa - 1], cc.LSB)) {
-
-        stack = 'array';
-
-      } else if (
-        parse.stack.length > 0 &&
-        u.not(data.token[aa], cc.COL) &&
-        parse.stack.token === 'object' && (
-          u.is(data.token[data.begin[aa] - 2], cc.LCB) ||
-          u.is(data.token[data.begin[aa] - 2], cc.COM)
-        )
-      ) {
-
-        // if an object wrapped in some containment which is itself preceeded by a curly
-        // brace or comma var a={({b:{cat:"meow"}})};
-        stack = 'function';
-
-      } else if (data.types[pword[1] - 1] === 'markup' && data.token[pword[1] - 3] === 'function') {
-
-        // checking for TSX function using an angle brace name
-        stack = 'function';
-
-      } else if (wordx === '=>') {
-
-        // checking for fat arrow assignment
-        stack = 'function';
-
-      } else {
-
-        stack = 'object';
-      }
-
-      if (stack !== 'object' && stack !== 'class') {
-        if (stack === 'function') {
-          references.push(fnrefs);
-          fnrefs = [];
-        } else {
-          references.push([]);
-        }
-      }
+      stack = u.is(data.token[aa], cc.RSB) && u.is(data.token[aa - 1], cc.LSB) ? 'array' : 'object';
+      stack !== 'object' && references.push([]);
 
     } else if (u.is(ltoke, cc.LSB)) {
 
@@ -1050,25 +770,25 @@ export function json () {
   /**
    * A lexer for keywords, reserved words, and variables
    */
-  function word () {
+  function ParseWord () {
 
-    let f = wtest;
-    let g = 1;
+    let i = wtest;
     let output = NIL;
     let typel = ltype;
 
-    const lex = [];
+    const lexed: string[] = [];
 
     do {
 
-      lex.push(c[f]);
+      lexed.push(c[i]);
 
-      if (u.is(c[f], cc.BWS)) {
-        // parse.error = `Illegal escape in JavaScript on line number ${parse.lineNumber}`;
+      if (u.is(c[i], cc.BWS)) {
+
+        parse.error = `Illegal escape in JSON on line number ${parse.lineNumber}`;
+
       }
 
-      f = f + 1;
-    } while (f < a);
+    } while (++i < a);
 
     if (ltoke.charAt(0) === '\u201c') {
       parse.error = `Quote looking character (\u201c, \\u201c) used instead of actual quotes on line number ${parse.lineNumber}`;
@@ -1076,73 +796,24 @@ export function json () {
       parse.error = `Quote looking character (\u201d, \\u201d) used instead of actual quotes on line number ${parse.lineNumber}`;
     }
 
-    output = lex.join(NIL);
     wtest = -1;
-
-    g = parse.count;
-    f = g;
+    output = lexed.join(NIL);
 
     if (typel === 'comment') {
-
       let d = parse.count;
-
       do d = d - 1;
       while (d > 0 && data.types[d] === 'comment');
-
       typel = data.types[d];
-
     }
 
-    if (parse.stack.token === 'object' && (
-      u.is(data.token[parse.count], cc.LCB) || (
-        u.is(data.token[data.begin[parse.count]], cc.LCB) &&
-          u.is(data.token[parse.count], cc.COM) || (
-          data.types[parse.count] === 'liquid_end' && (
-            u.is(data.token[data.begin[parse.count] - 1], cc.LCB) ||
-              u.is(data.token[data.begin[parse.count] - 1], cc.COM)
-          )
-        )
-      )
-    )) {
+    if (u.is(c[a], cc.COL)) {
+      output = '"' + output + '"';
+      ltype = parse.stack.token === 'object' ? 'property' : 'word';
+    }
 
-      ltype = 'property';
-
-    } else if (
-      parse.stack.token !== 'object' || (
-        parse.stack.token === 'object' &&
-          ltoke !== ',' &&
-          ltoke !== '{'
-      )
-    ) {
-
-      let d = references.length;
-      let e = 0;
-
-      if (d > 0) {
-        do {
-
-          d = d - 1;
-          e = references[d].length;
-
-          if (e > 0) {
-            do {
-
-              e = e - 1;
-              if (output === references[d][e]) break;
-
-            } while (e > 0);
-
-            if (output === references[d][e]) break;
-
-          }
-        } while (d > 0);
-
-        ltype = 'word';
-
-      } else {
-        ltype = 'word';
-      }
-
+    if (ltype !== 'property' && u.or(c[a], cc.COM, cc.RSB, cc.RCB) && !/false|true|null/.test(output)) {
+      output = '"' + output + '"';
+      ltype = 'string';
     } else {
       ltype = 'word';
     }
@@ -1161,7 +832,7 @@ export function json () {
    * and both `parse.lineNumber` and `parse.lineOffset` are
    * updated accordinly.
    */
-  function parseSpace (): void {
+  function ParseSpace (): void {
 
     parse.lineOffset = 1;
 
@@ -1189,49 +860,26 @@ export function json () {
 
     if (u.ws(c[a])) {
 
-      if (wtest > -1) word();
+      if (wtest > -1) ParseWord();
 
-      parseSpace();
+      ParseSpace();
 
-      if (
-        parse.lineOffset > 1 &&
-        lengthb < parse.count &&
-        u.not(c[a + 1], cc.SEM) &&
-        u.not(c[a + 1], cc.RCB)
-      ) {
-
-        lengthb = parse.count;
-      }
+      if (parse.lineOffset > 1 && lengthb < parse.count && u.not(c[a + 1], cc.RCB)) lengthb = parse.count;
 
     } else if (u.is(c[a], cc.LCB) && u.is(c[a + 1], cc.PER)) {
 
       // TODO: HANDLE LIQUID COMMENTS
 
-      parseTokens('{%', '%}', 'liquid');
+      ParseToken('{%', '%}', 'liquid');
 
     } else if (u.is(c[a], cc.LCB) && u.is(c[a + 1], cc.LCB)) {
 
-      parseTokens('{{', '}}', 'liquid');
-
-    } else if (u.is(c[a], cc.LAN) && u.is(c[a + 1], cc.BNG) && u.is(c[a + 2], cc.DSH) && u.is(c[a + 3], cc.DSH)) {
-
-      // markup comment
-      parseTokens('<!--', '-->', 'comment');
+      ParseToken('{{', '}}', 'liquid');
 
     } else if (u.is(c[a], cc.FWS) && (a === b - 1 || u.is(c[a + 1], cc.ARS))) {
 
       // comment block
       parseBlockComment();
-
-    } else if ((parse.count < 0 || data.lines[parse.count] > 0) &&
-      u.is(c[a], cc.HSH) &&
-      u.is(c[a + 1], cc.BNG) && (
-      u.is(c[a + 2], cc.FWS) ||
-      u.is(c[a + 3], cc.LSB)
-    )) {
-
-      // shebang
-      parseTokens('#!' + c[a + 2], NWL, 'string');
 
     } else if (u.is(c[a], cc.FWS) && (a === b - 1 || u.is(c[a + 1], cc.FWS))) {
 
@@ -1241,7 +889,7 @@ export function json () {
     } else if (u.is(c[a], cc.DQO) || u.is(c[a], cc.SQO)) {
 
       // string
-      parseTokens(c[a], c[a], 'string');
+      ParseToken(c[a], c[a], 'string');
 
     } else if (wtest === -1 && (c[a] !== '0' || (
       c[a] === '0' &&
@@ -1261,13 +909,13 @@ export function json () {
     )) {
 
       // number
-      if (wtest > -1) word();
+      if (wtest > -1) ParseWord();
 
       if (ltype === 'end' && u.is(c[a], cc.DSH)) {
         ltoke = '-';
         ltype = 'operator';
       } else {
-        ltoke = parseNumbers();
+        ltoke = ParseNumbers();
         ltype = 'number';
       }
 
@@ -1275,8 +923,7 @@ export function json () {
 
     } else if (u.is(c[a], cc.COM)) {
 
-      // comma
-      if (wtest > -1) word();
+      if (wtest > -1) ParseWord();
 
       if (ltype === 'comment') {
 
@@ -1287,33 +934,25 @@ export function json () {
         ltoke = ',';
         ltype = 'separator';
 
-        cleanSemicolon();
-
         push();
 
       }
 
-    } else if (u.is(c[a], cc.LPR) || u.is(c[a], cc.LSB) || u.is(c[a], cc.LCB)) {
+    } else if (u.is(c[a], cc.LSB) || u.is(c[a], cc.LCB)) {
 
-      start(c[a]);
+      StartToken(c[a]);
 
-    } else if (u.is(c[a], cc.RPR) || u.is(c[a], cc.RSB) || u.is(c[a], cc.RCB)) {
+    } else if (u.is(c[a], cc.RSB) || u.is(c[a], cc.RCB)) {
 
-      end(c[a]);
+      EnderToken(c[a]);
 
-    } else if (
-      wtest < 0 &&
-      data.stack[parse.count] === 'object' &&
-      u.is(c[a], cc.ARS) &&
-      u.not(c[a + 1], cc.EQS) &&
-      u.digit(c[a + 1]) === false &&
-      u.ws(c[a + 1]) === false
-    ) {
+    } else if (wtest < 0 && data.stack[parse.count] === 'object' && u.is(c[a], cc.ARS) && !u.ws(c[a + 1])) {
 
       wtest = a;
 
     } else if (u.is(c[a], cc.COL)) {
 
+      wtest > -1 && ParseWord();
       ltoke = ':';
       ltype = 'operator';
 
@@ -1322,15 +961,13 @@ export function json () {
     } else if (wtest < 0 && c[a] !== NIL) {
 
       wtest = a;
+
     }
 
   } while (++a < b);
 
-  if (wtest > -1) word();
-
-  if (rules.objectSort && data.begin.length > 0) {
-    sortCorrect(0, parse.count + 1);
-  }
+  if (wtest > -1) ParseWord();
+  if (rules.objectSort && data.begin.length > 0) sortCorrect(0, parse.count + 1);
 
   // console.log(data);
   return data;

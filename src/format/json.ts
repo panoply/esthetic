@@ -341,10 +341,7 @@ export function json () {
 
         levels[a - 1] = -20;
 
-      } else if (
-        is(ltoke, ch.LSB) ||
-        is(ltoke, ch.LCB) ||
-        ltoke === 'x{') {
+      } else if (is(ltoke, ch.LSB) || is(ltoke, ch.LCB)) {
 
         levels[a - 1] = indent - 1;
 
@@ -483,15 +480,10 @@ export function json () {
 
     }
 
-    if (
-      rules.bracePadding === true &&
-      ltype !== 'start' &&
-      ltoke !== ';' &&
-      (
-        levels[data.begin[a]] < -9 ||
-        destruct[destruct.length - 1] === true
-      )
-    ) {
+    if (rules.bracePadding === true && ltype !== 'start' && (
+      levels[data.begin[a]] < -9 ||
+      destruct[destruct.length - 1] === true
+    )) {
 
       levels[data.begin[a]] = -10;
       levels[a - 1] = -10;
@@ -537,9 +529,7 @@ export function json () {
 
       if (data.begin[a] < levels.length) levels[data.begin[a]] = -20;
 
-      if (parse.language === 'jsx' || parse.language === 'tsx') {
-        markuplist();
-      } else if (is(ctoke, ch.RSB) && levels[data.begin[a]] > -1) {
+      if (is(ctoke, ch.RSB) && levels[data.begin[a]] > -1) {
         levels[a - 1] = levels[data.begin[a]] - 1;
       } else {
         levels[a - 1] = -20;
@@ -596,7 +586,7 @@ export function json () {
 
       if (commaWithin[commaWithin.length - 1] === false) {
 
-        if (is(ltoke, ch.RCB) || ltoke === 'x}') levels[a - 1] = indent;
+        if (is(ltoke, ch.RCB)) levels[a - 1] = indent;
 
         let c = a - 1;
         let d = 1;
@@ -613,8 +603,7 @@ export function json () {
               if (
                 c > 0 && (
                   is(data.token[c + 1], ch.LCB) ||
-                  is(data.token[c + 1], ch.LSB) ||
-                  data.token[c + 1] === 'x{'
+                  is(data.token[c + 1], ch.LSB)
                 )
               ) {
 
@@ -712,13 +701,12 @@ export function json () {
     if (c < 0 || ei[c] < 0) return;
 
     if (is(ctoke, ch.COL)) {
-      if (not(data.token[ei[c]], ch.QWS)) {
-        do {
-          ei.pop();
-          c = c - 1;
-          indent = indent - 1;
-        } while (c > -1 && ei[c] > -1 && not(data.token[ei[c]], ch.QWS));
-      }
+
+      do {
+        ei.pop();
+        c = c - 1;
+        indent = indent - 1;
+      } while (c > -1 && ei[c] > -1 && not(data.token[ei[c]], ch.QWS));
 
       ei[c] = a;
       levels[a - 1] = indent;
@@ -936,7 +924,9 @@ export function json () {
 
   function Strings () {
 
-    if (instr === 0 && ltype === 'liquid_start' && (data.stack[a - 1] === 'object' || data.stack[a - 1] === 'array')) {
+    if (instr === 0 && ltype === 'liquid_start' && (
+      data.stack[a - 1] === 'object' ||
+      data.stack[a - 1] === 'array')) {
       levels[a - 1] = indent + 1;
     }
 
