@@ -1,50 +1,5 @@
 {
-  "cSpell.words": [
-    "Æsthetic",
-    "aestheticignore",
-    "aliqua",
-    "aliquip",
-    "Amato",
-    "ANTLR",
-    "aute",
-    "cillum",
-    "commodo",
-    "consequat",
-    "cupidatat",
-    "deserunt",
-    "Duis",
-    "endcase",
-    "endcustom",
-    "endfor",
-    "endrandom",
-    "enim",
-    "estheticignore",
-    "estheticrc",
-    "Excepteur",
-    "fugiat",
-    "irure",
-    "laboris",
-    "laborum",
-    "linebreak",
-    "mollit",
-    "nostrud",
-    "nulla",
-    "occaecat",
-    "officia",
-    "pariatur",
-    "POSIX",
-    "proident",
-    "quis",
-    "reprehenderit",
-    "sint",
-    "stylelint",
-    "sunt",
-    "toets",
-    "ullamco",
-    "velit",
-    "veniam",
-    "voluptate"
-  ],
+  "editor.renderWhitespace": "none",
   "json.schemas": [
     {
       "fileMatch": [
@@ -73,127 +28,18 @@
     "**/.git": true,
     "**/.svn": true,
     "**/.hg": true,
-    "**/CVS": true,
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
-    "**/LICENSE": true,
-    "**/node_modules": true
+    "**/CVS": true,
+    "**/.ruby-lsp": true,
+    "**/.vscode": false,
+    "**/coverage": true,
+    "**/.idea": true,
+    "**/.bundle": true,
+    "**/LICENSE": true
   },
   "workbench.colorCustomizations": {
     "window.inactiveBorder": "#00aeff",
-  },
-  "highlight.regexes": {
-    "(\\L\\T|\\L\\F|\\L\\N\\B\\R)(?=\\.)": {
-      "regexFlags": "g",
-      "decorations": [
-        {
-          "color": "#81D4FA",
-        }
-      ]
-    },
-    "(:{3,5})": {
-      "regexFlags": "g",
-      "decorations": [
-        {
-          "color": "#E91E63"
-        }
-      ]
-    },
-    "(?<=:{3,4}\\s)(grid|rule|note)": {
-      "decorations": [
-        {
-          "color": "#81D4FA",
-          "fontWeight": "900"
-        }
-      ]
-    },
-    "(?<=:{3,4}[a-z ]+)([colsxmd0-9-]+)": {
-      "regexFlags": "g",
-      "decorations": [
-        {
-          "color": "#91EBC2",
-          "isWholeLine": true
-        },
-      ]
-    },
-    "(```)(json)(\\:)(rules)(\\@)?(range|\\d+[a-z]{2})?(\\:)?(\\w+)?": {
-      "regexFlags": "g",
-      "decorations": [
-        {
-          "color": "#FAFAFA",
-        },
-        {
-          "color": "#FAFAFA",
-        },
-        {
-          "color": "#9EE34F",
-        },
-        {
-          "color": "#F48FB1",
-        },
-        {
-          "color": "#9EE34F",
-        },
-        {
-          "color": "#F48FB1",
-        },
-        {
-          "color": "#9EE34F",
-        },
-        {
-          "color": "#F48FB1",
-        }
-      ]
-    },
-    "(?<=`)(\\{)(\\w*)(\\}) ": {
-      "regexFlags": "g",
-      "decorations": [
-        {
-          "color": "#F48FB1",
-          "fontWeight": "900"
-        },
-        {
-          "color": "#81D4FA",
-        },
-        {
-          "color": "#F48FB1",
-          "fontWeight": "900"
-        },
-      ]
-    },
-    "(```)(\\w+)(\\:)(before|after)": {
-      "regexFlags": "g",
-      "decorations": [
-        {
-          "color": "#FAFAFA",
-        },
-        {
-          "color": "#9EE34F",
-        },
-        {
-          "color": "#FAFAFA",
-        },
-        {
-          "color": "#E91E63",
-        },
-      ]
-    },
-    "^(-{3})([\\s\\S]*)(-{3})": {
-      "regexFlags": "g",
-      "filterFileRegex": "tests/.*\\.(html|liquid|css|scss|js|ts|xml)",
-      "decorations": [
-        {
-          "color": "#888888"
-        },
-        {
-          "color": "#81D4FA",
-          "fontStyle": "italic"
-        },
-        {
-          "color": "#888888",
-        }
-      ]
-    }
   },
   "liquid.engine": "11ty",
   "liquid.config.method": "liquidrc",
