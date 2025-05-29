@@ -67,7 +67,7 @@ export const esthetic = new class Esthetic {
 
     this.rules(rules);
 
-    if (this.lexer === 'auto') {
+    if (this.language === 'auto') {
 
       parse.action = Action.Detect;
       const detect = detection(parse.source);
@@ -224,47 +224,35 @@ export const esthetic = new class Esthetic {
   };
 
   rules (rules?: Rules) {
-
     if (isUndefined(rules)) return parse.rules;
-
     setRules(rules, this.events);
-
     this.language = parse.language;
     this.lexer = parse.lexer = getLexerName(parse.language);
-
     return parse.rules;
 
   }
 
   liquid (source: string | Buffer, rules?: Rules) {
-
     this.language = parse.language = parse.rules.language = 'liquid';
     this.lexer = parse.lexer = getLexerName(parse.language);
-
     return this.format(source, rules);
   }
 
   html (source: string | Buffer, rules?: Rules) {
-
     this.language = parse.language = parse.rules.language = 'html';
     this.lexer = parse.lexer = getLexerName(parse.language);
-
     return this.format(source, rules);
   }
 
   xml (source: string | Buffer, rules?: Rules) {
-
     this.language = parse.language = parse.rules.language = 'xml';
     this.lexer = parse.lexer = getLexerName(parse.language);
-
     return this.format(source, rules);
   }
 
   json (source: string | Buffer, rules?: Rules) {
-
     this.language = parse.language = parse.rules.language = 'json';
     this.lexer = parse.lexer = getLexerName(parse.language);
-
     return this.format(source, rules);
   }
 
