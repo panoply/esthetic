@@ -145,13 +145,11 @@ test.skip('Structure Tests - Liquid as values', t => {
 
     const actual = esthetic.json(source, {
       preserveLine: 0,
-      json: {
-        objectSort: true,
-        arrayFormat: 'indent',
-        bracePadding: false,
-        objectIndent: 'indent',
-        braceAllman: true
-      }
+      objectSort: true,
+      arrayFormat: 'indent',
+      bracePadding: false,
+      objectIndent: 'indent',
+      braceAllman: true
     });
 
     t.log(actual);

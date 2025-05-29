@@ -74,9 +74,7 @@ test('Liquid delimiter handling', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      markup: {
-        attributeLineBreak: true
-      }
+      attributeLineBreak: true
     });
 
     t.deepEqual(actual, expect);

@@ -51,9 +51,7 @@ test('Liquid Delimiter Trims: Output token insertion', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        delimiterTrims: 'outputs'
-      }
+      delimiterTrims: 'outputs'
     });
 
     t.is(actual, expect);
@@ -110,9 +108,8 @@ test('Liquid Delimiter Trims: Tag token insertion', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        delimiterTrims: 'tags'
-      }
+      delimiterTrims: 'tags'
+
     });
 
     t.is(actual, expect);
@@ -201,9 +198,8 @@ test('Liquid Delimiter Trims (never): Stripping from tokens', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        delimiterTrims: 'never'
-      }
+      delimiterTrims: 'never'
+
     });
 
     t.is(actual, expect);
@@ -304,9 +300,8 @@ test('Liquid Delimiter Trims (always): Forcing trims on all tokens', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        delimiterTrims: 'always'
-      }
+      delimiterTrims: 'always'
+
     });
 
     t.is(actual, expect);

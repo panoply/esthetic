@@ -103,10 +103,9 @@ test('Line Break Logical (after): ', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 40,
-      liquid: {
-        lineBreakLogical: 'after'
-      }
+      wordWrap: 40,
+      lineBreakLogical: 'after'
+
     });
 
     t.is(actual, expect);
@@ -199,10 +198,8 @@ test('Line Break Logical (before):', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 40,
-      liquid: {
-        lineBreakLogical: 'before'
-      }
+      wordWrap: 40,
+      lineBreakLogical: 'before'
     });
 
     t.is(actual, expect);
@@ -296,10 +293,8 @@ test('Line Break Logical (preserve):', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 40,
-      liquid: {
-        lineBreakLogical: 'preserve'
-      }
+      wordWrap: 40,
+      lineBreakLogical: 'preserve'
     });
 
     t.is(actual, expect);

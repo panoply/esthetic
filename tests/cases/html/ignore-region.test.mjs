@@ -116,10 +116,7 @@ test('HTML Ignore Comment Region - Various structure tests', t => {
   )(function (input, expect) {
 
     const actual = esthetic.format(input, {
-      language: 'html',
-      markup: {
-        forceIndent: true
-      }
+      forceIndent: true
     });
 
     t.deepEqual(actual, expect);
@@ -297,10 +294,7 @@ test('HTML Ignore Comment Region - Newlines and indentation', t => {
     ]
   )(
     {
-      language: 'html',
-      markup: {
-        forceIndent: true
-      }
+      forceIndent: true
     }
   )(function (source, rules, label) {
 
@@ -528,7 +522,7 @@ test('HTML Ignore Comment Region - Followed by markup', t => {
     ]
   )(
     {
-      language: 'html'
+      attributeLineBreak: true
     }
   )(function (source, rules, label) {
 

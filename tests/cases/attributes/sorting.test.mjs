@@ -64,10 +64,8 @@ test('Sorting alphabetically', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      markup: {
-        attributeLineBreak: true,
-        attributeSort: true
-      }
+      attributeLineBreak: true,
+      attributeSort: true
     });
 
     t.deepEqual(actual, expect);
@@ -137,8 +135,8 @@ test('Sorting with newline preservation', t => {
 
 
               data-b="2"
-
               data-c="3"
+
               data-d="0"
               data-e="1"
               data-f="0"
@@ -154,12 +152,9 @@ test('Sorting with newline preservation', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       preserveLine: 3,
-      markup: {
-        attributeLineBreak: true,
-        attributeSort: true,
-        stripAttributeLines: false
-
-      }
+      attributeLineBreak: true,
+      attributeSort: true,
+      stripAttributeLines: false
     });
 
     t.deepEqual(actual, expect);
@@ -211,10 +206,10 @@ test('Sorting using sort list', t => {
 
             <li
               data-b="first"
+              data-b="fifth"
               data-e="second"
               class="third"
               data-a="fourth"
-              data-b="fifth"
               data-c="sixth"
               data-d="seventh"></li>
 
@@ -233,16 +228,14 @@ test('Sorting using sort list', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      markup: {
-        attributeLineBreak: true,
-        attributeSort: [
-          'data-b',
-          'id',
-          'data-e',
-          'class',
-          'data-a'
-        ]
-      }
+      attributeLineBreak: true,
+      attributeSort: [
+        'data-b',
+        'id',
+        'data-e',
+        'class',
+        'data-a'
+      ]
     });
 
     t.deepEqual(actual, expect);
@@ -250,32 +243,31 @@ test('Sorting using sort list', t => {
   });
 });
 
-test.skip('Sorting excluded when Liquid attributes', t => {
+test('Sorting excluded when Liquid attributes', t => {
 
   forAssert(
     [
       [
         liquid`<div data-a="1" data-b="2" class="3" id="4" {{ will.sort }}></div>`,
-        liquid`<div class="3" data-a="1" data-b="2" id="4" {{ will.sort }}></div>`
+        liquid`<div data-a="1" data-b="2" class="3" id="4" {{ will.sort }}></div>`
       ],
       [
         liquid`<div data-z="1" {% if x %} {{ will.sort }} {% endif %} class="3" id="4"></div>`,
-        liquid`<div class="3" data-z="1" id="4" {% if x %} {{ will.sort }} {% endif %}></div>`
+        liquid`<div data-z="1" {% if x %} {{ will.sort }} {% endif %} class="3" id="4"></div>`
       ],
       [
         liquid`<div data-z="1" data-b="2" class="3" id={{ will.sort }}></div>`,
-        liquid`<div class="3" data-b="2" data-z="1" id={{ will.sort }}></div>`
+        liquid`<div data-z="1" data-b="2" class="3" id={{ will.sort }}></div>`
       ]
     ]
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 0,
-      markup: {
-        attributeLineBreak: false,
-        attributeSort: true
-      }
+      wordWrap: 0,
+      indentAttribute: false,
+      attributeLineBreak: false,
+      attributeSort: true
     });
 
     t.deepEqual(actual, expect);

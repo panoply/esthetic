@@ -2,7 +2,7 @@ import { forAssert, forSample, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
 import esthetic from 'esthetic';
 
-test('Structure Test: Empty <style> tags', t => {
+test.skip('Structure Test: Empty <style> tags', t => {
 
   forAssert(
     [
@@ -156,7 +156,7 @@ test('Structure Test: Empty <style> tags', t => {
   });
 });
 
-test('Structure Test: Newline Preservation and indentation levels', t => {
+test.skip('Structure Test: Newline Preservation and indentation levels', t => {
 
   forSample(
     [

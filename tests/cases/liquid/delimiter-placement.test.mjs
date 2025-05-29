@@ -93,11 +93,9 @@ test('Preserve: Delimiters are preserved according to input', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 0,
-      liquid: {
-        delimiterTrims: 'preserve',
-        delimiterPlacement: 'preserve'
-      }
+      wordWrap: 0,
+      delimiterTrims: 'preserve',
+      delimiterPlacement: 'preserve'
     });
 
     t.is(actual, expect);
@@ -207,9 +205,7 @@ test('Preserve Structure Cases: Various samples with normalize spacing enabled',
 
     const output = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        delimiterPlacement: 'preserve'
-      }
+      delimiterPlacement: 'preserve'
     });
 
     t.deepEqual(output, expect);
@@ -320,9 +316,7 @@ test('Inline: Delimiters are inlined', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        delimiterPlacement: 'inline'
-      }
+      delimiterPlacement: 'inline'
     });
 
     t.is(actual, expect);
@@ -415,9 +409,7 @@ test('Consistent: Consistent placement based on opening delimiter', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        delimiterPlacement: 'consistent'
-      }
+      delimiterPlacement: 'consistent'
     });
 
     t.is(actual, expect);
@@ -488,13 +480,11 @@ test('Force Multiline: Force delimiters when token spans newlines', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 30,
-      liquid: {
-        forceFilter: 0,
-        forceArgument: 0,
-        lineBreakSeparator: 'after',
-        delimiterPlacement: 'newline-multiline'
-      }
+      wordWrap: 50,
+      filterLineBreak: 0,
+      argumentLineBreak: 0,
+      lineBreakSeparator: 'after',
+      delimiterPlacement: 'newline-multiline'
     });
 
     t.is(actual, expect);

@@ -158,12 +158,8 @@ test('Indenting attributes contained in Liquid block tags', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        indentAttribute: true
-      },
-      markup: {
-        attributeLineBreak: true
-      }
+      indentAttribute: true,
+      attributeLineBreak: true
     });
 
     t.deepEqual(actual, expect);

@@ -2,7 +2,7 @@ import { forAssert, liquid } from '@liquify/ava/esthetic';
 import test from 'ava';
 import esthetic from 'esthetic';
 
-test.skip('Filter Argument Preserve with linebreak after', t => {
+test('Filter Argument Preserve with linebreak after', t => {
 
   forAssert(
     [
@@ -76,9 +76,7 @@ test.skip('Filter Argument Preserve with linebreak after', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        argumentLineBreak: 2
-      }
+      argumentLineBreak: 2
     });
 
     t.is(actual, expect);

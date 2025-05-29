@@ -385,7 +385,7 @@ test('Nested Structures with sibling children Indentation', t => {
                     {% for x in array %}
                       {% case 'xxx' %}
                         {% when void %}
-                          <meta id="example" content="foo and bar">
+                          <meta id="example" content="foo and bar" />
                         {% when liquid_condition %}
                           <section id="foo" class="bar">
                             {%- if condition -%}
@@ -553,9 +553,7 @@ test('Nested Structures with attributes', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        attributeLineBreak: true
-      }
+      attributeLineBreak: true
     });
 
     t.deepEqual(actual, expect);
@@ -563,8 +561,6 @@ test('Nested Structures with attributes', t => {
   });
 
   esthetic.rules({
-    markup: {
-      attributeLineBreak: false
-    }
+    attributeLineBreak: false
   });
 });

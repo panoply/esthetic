@@ -92,13 +92,11 @@ test('Sorting object properties alphabetically', t => {
     const actual = esthetic.format(source, {
       preserveLine: 0,
       language: 'json',
-      json: {
-        objectSort: true,
-        arrayFormat: 'indent',
-        bracePadding: false,
-        objectIndent: 'indent',
-        braceAllman: true
-      }
+      objectSort: true,
+      arrayFormat: 'indent',
+      bracePadding: false,
+      objectIndent: 'indent',
+      braceAllman: true
     });
 
     t.deepEqual(actual, expect);

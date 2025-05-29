@@ -61,10 +61,8 @@ test('Text content force structure rulesets', t => {
 
     const actual = esthetic.format(source, {
       language: 'html',
-      markup: {
-        textBoundInline: false,
-        forceIndent: true
-      }
+      textBoundInline: false,
+      forceIndent: true
     });
 
     t.deepEqual(actual, expect);

@@ -194,9 +194,7 @@ test('HTML Preserve Text - Nested within tags', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       preserveLine: 3,
-      markup: {
-        textPreserve: true
-      }
+      textPreserve: true
     });
 
     t.deepEqual(actual, expect);

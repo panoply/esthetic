@@ -31,10 +31,7 @@ test('Capture nested within capature occurances', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.deepEqual(actual, expect);
@@ -100,10 +97,7 @@ test('Capture start tag indentation and preservation', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.deepEqual(actual, expect);

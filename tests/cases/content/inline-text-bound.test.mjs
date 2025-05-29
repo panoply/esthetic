@@ -73,9 +73,7 @@ test('Ending text content following tag structure', t => {
 
     const actual = esthetic.format(source, {
       language: 'html',
-      markup: {
-        forceIndent: false
-      }
+      forceIndent: false
     });
 
     t.deepEqual(actual, expect);
@@ -178,10 +176,8 @@ test('Tag surrounded with text content', t => {
 
     const actual = esthetic.format(source, {
       language: 'html',
-      markup: {
-        forceIndent: false,
-        textBoundInline: true
-      }
+      forceIndent: false,
+      textBoundInline: true
     });
 
     t.deepEqual(actual, expect);

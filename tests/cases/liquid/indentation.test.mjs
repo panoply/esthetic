@@ -189,10 +189,7 @@ test('Nested block tag indentations', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 0,
-      liquid: {
-        equipoiseSpacing: true
-      }
+      wordWrap: 0
     });
 
     t.deepEqual(actual, expect);
@@ -239,10 +236,7 @@ test('Unknown tag block indentation and dedentation', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.deepEqual(actual, expect);
@@ -376,10 +370,7 @@ test('Empty conditional chaining indentation', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 0,
-      liquid: {
-        equipoiseSpacing: true
-      }
+      wordWrap: 0
     });
 
     t.deepEqual(actual, expect);
@@ -610,10 +601,7 @@ test('Complex indentation structure', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.deepEqual(actual, expect);

@@ -70,9 +70,7 @@ test('Structure Test: Force Tag Arguments (Line Break - After)', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        argumentLineBreak: 2
-      }
+      argumentLineBreak: 2
     });
 
     t.is(actual, expect);

@@ -33,17 +33,11 @@ test('Spacing in object expressions', t => {
   )(function (source, expect) {
 
     const first = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     const actual = esthetic.format(first, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.deepEqual(actual, expect);
@@ -97,10 +91,7 @@ test.skip('Spacing in control operators', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.is(actual, expect);
@@ -137,17 +128,11 @@ test.skip('Spacing in filter expressions', t => {
   )(function (source, expect) {
 
     const first = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     const actual = esthetic.format(first, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.deepEqual(actual, expect);
@@ -183,10 +168,7 @@ test('Spacing in assignment', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.is(actual, expect);
@@ -247,10 +229,7 @@ test.skip('Spacing in parameters', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.is(actual, expect);
@@ -296,10 +275,7 @@ test.skip('Spacing skipping strings', t => {
   )(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      liquid: {
-        equipoiseSpacing: true
-      }
+      language: 'liquid'
     });
 
     t.is(actual, expect);

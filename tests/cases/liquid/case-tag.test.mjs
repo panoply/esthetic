@@ -490,16 +490,10 @@ test('Case tag indentation (default) - Structure and nesting expressions', t => 
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 0,
+      wordWrap: 0,
       indentSize: 2,
-      liquid: {
-        equipoiseSpacing: true,
-        dedentTagList: []
-      },
-      markup: {
-        forceIndent: false,
-        attributeLineBreak: false
-      }
+      forceIndent: false,
+      attributeLineBreak: false
     });
 
     t.deepEqual(actual, expect);
@@ -570,19 +564,10 @@ test('Case tag with rules (dedentTagList) - forceIndent: false, attributeLineBre
     const actual = esthetic.format(source, {
 
       language: 'liquid',
-      wrap: 0,
+      wordWrap: 0,
       indentSize: 2,
-      liquid: {
-        equipoiseSpacing: true,
-        dedentTagList: [
-          'case'
-        ]
-      },
-      markup: {
-        attributeLineBreak: true,
-        forceIndent: false
-      }
-
+      attributeLineBreak: true,
+      forceIndent: false
     });
 
     t.deepEqual(actual, expect);
@@ -649,18 +634,9 @@ test('Case tag with rules (dedentTagList) - forceIndent: true, attributeLineBrea
     const actual = esthetic.format(source, {
 
       language: 'liquid',
-      wrap: 0,
-      indentSize: 2,
-      liquid: {
-        equipoiseSpacing: true,
-        dedentTagList: [
-          'case'
-        ]
-      },
-      markup: {
-        attributeLineBreak: false,
-        forceIndent: true
-      }
+      wordWrap: 0,
+      attributeLineBreak: false,
+      forceIndent: true
 
     });
 
@@ -732,16 +708,10 @@ test('Case tag with rules (default) - forceIndent: false, attributeLineBreak: tr
     const actual = esthetic.format(source, {
 
       language: 'liquid',
-      wrap: 0,
+      wordWrap: 0,
       indentSize: 2,
-      liquid: {
-        equipoiseSpacing: true,
-        dedentTagList: []
-      },
-      markup: {
-        attributeLineBreak: true,
-        forceIndent: false
-      }
+      attributeLineBreak: true,
+      forceIndent: false
 
     });
 
@@ -809,17 +779,10 @@ test('Case tag with rules (default) - forceIndent: true, attributeLineBreak: fal
     const actual = esthetic.format(source, {
 
       language: 'liquid',
-      wrap: 0,
+      wordWrap: 0,
       indentSize: 2,
-      liquid: {
-        equipoiseSpacing: true,
-        dedentTagList: []
-      },
-      markup: {
-        attributeLineBreak: false,
-        forceIndent: true
-      }
-
+      attributeLineBreak: true,
+      forceIndent: false
     });
 
     t.deepEqual(actual, expect);
@@ -906,18 +869,10 @@ test('Case tag with rules (dedentTagList) - forceIndent: true, attributeLineBrea
     const actual = esthetic.format(source, {
 
       language: 'liquid',
-      wrap: 0,
+      wordWrap: 0,
       indentSize: 2,
-      liquid: {
-        equipoiseSpacing: true,
-        dedentTagList: [
-          'case'
-        ]
-      },
-      markup: {
-        attributeLineBreak: true,
-        forceIndent: true
-      }
+      attributeLineBreak: true,
+      forceIndent: false
 
     });
 
@@ -1021,16 +976,10 @@ test('Case tag with rules (default) - forceIndent: true, attributeLineBreak: tru
     const actual = esthetic.format(source, {
 
       language: 'liquid',
-      wrap: 0,
+      wordWrap: 0,
       indentSize: 2,
-      liquid: {
-        equipoiseSpacing: true,
-        dedentTagList: []
-      },
-      markup: {
-        attributeLineBreak: true,
-        forceIndent: true
-      }
+      attributeLineBreak: true,
+      forceIndent: false
 
     });
 

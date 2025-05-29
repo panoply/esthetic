@@ -14,9 +14,7 @@ test.skip('Line Break Separator (after): ', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        delimiterTrims: 'outputs'
-      }
+      delimiterTrims: 'outputs'
     });
 
     t.is(actual, expect);

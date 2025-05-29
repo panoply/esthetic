@@ -2,7 +2,7 @@ import { forAssert, html } from '@liquify/ava/esthetic';
 import test from 'ava';
 import esthetic from 'esthetic';
 
-test('HTML Comment Delimiters (no newlines) - Preserve option', t => {
+test('HTML Comment Bracket Delimiters  (no newlines) - Preserve option', t => {
 
   forAssert(
     [
@@ -55,9 +55,7 @@ test('HTML Comment Delimiters (no newlines) - Preserve option', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        commentDelimiter: 'preserve'
-      }
+      commentBracket: 'preserve'
     });
 
     t.deepEqual(actual, expect);
@@ -66,7 +64,7 @@ test('HTML Comment Delimiters (no newlines) - Preserve option', t => {
 
 });
 
-test('HTML Comment Delimiters (no newlines) - Force option', t => {
+test('HTML Comment Bracket Delimiters (no newlines) - Force option', t => {
 
   forAssert(
     [
@@ -123,9 +121,7 @@ test('HTML Comment Delimiters (no newlines) - Force option', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        commentDelimiter: 'newline'
-      }
+      commentBracket: 'newline'
     });
 
     t.deepEqual(actual, expect);
@@ -134,7 +130,7 @@ test('HTML Comment Delimiters (no newlines) - Force option', t => {
 
 });
 
-test('HTML Comment Delimiters (no newlines) - Inline option', t => {
+test('HTML Comment Bracket Delimiters (no newlines) - Inline option', t => {
 
   forAssert(
     [
@@ -179,9 +175,7 @@ test('HTML Comment Delimiters (no newlines) - Inline option', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        commentDelimiter: 'inline'
-      }
+      commentBracket: 'inline'
     });
 
     t.deepEqual(actual, expect);
@@ -190,7 +184,7 @@ test('HTML Comment Delimiters (no newlines) - Inline option', t => {
 
 });
 
-test('HTML Comment Delimiters (no newlines) - Consistent option', t => {
+test('HTML Comment Bracket Delimiters (no newlines) - Consistent option', t => {
 
   forAssert(
     [
@@ -239,9 +233,7 @@ test('HTML Comment Delimiters (no newlines) - Consistent option', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        commentDelimiter: 'consistent'
-      }
+      commentBracket: 'consistent'
     });
 
     t.deepEqual(actual, expect);
@@ -250,7 +242,7 @@ test('HTML Comment Delimiters (no newlines) - Consistent option', t => {
 
 });
 
-test('HTML Comment Delimiters (multiline) - Consistent option', t => {
+test('HTML Comment Bracket Delimiters (multiline) - Consistent option', t => {
 
   forAssert(
     [
@@ -323,9 +315,8 @@ test('HTML Comment Delimiters (multiline) - Consistent option', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        commentDelimiter: 'consistent'
-      }
+      commentBracket: 'consistent'
+
     });
 
     t.deepEqual(actual, expect);
@@ -334,7 +325,7 @@ test('HTML Comment Delimiters (multiline) - Consistent option', t => {
 
 });
 
-test('HTML Comment Delimiters (multiline) - Newline option', t => {
+test('HTML Comment Bracket Delimiters (multiline) - Newline option', t => {
 
   forAssert(
     [
@@ -411,10 +402,7 @@ test('HTML Comment Delimiters (multiline) - Newline option', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        commentDelimiter: 'newline'
-
-      }
+      commentBracket: 'newline'
     });
 
     t.deepEqual(actual, expect);
@@ -423,7 +411,7 @@ test('HTML Comment Delimiters (multiline) - Newline option', t => {
 
 });
 
-test('HTML Comment Delimiters (multiline) - Inline Align option', t => {
+test('HTML Comment Bracket Delimiters (multiline) - Inline Align option', t => {
 
   forAssert(
     [
@@ -466,9 +454,7 @@ test('HTML Comment Delimiters (multiline) - Inline Align option', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        commentDelimiter: 'inline-align'
-      }
+      commentBracket: 'inline-align'
     });
 
     t.deepEqual(actual, expect);

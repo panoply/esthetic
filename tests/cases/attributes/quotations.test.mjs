@@ -50,20 +50,19 @@ test('Quote conversion within values', t => {
   )(
     [
       {
-        language: 'liquid',
-        markup: { quoteConvert: 'none' }
+        singleQuote: 'preserve'
       },
       {
-        language: 'liquid',
-        markup: { quoteConvert: 'double' }
+        singleQuote: 'never'
       },
       {
-        language: 'liquid',
-        markup: { quoteConvert: 'single' }
+        singleQuote: 'always'
       },
       {
-        language: 'liquid',
-        markup: { quoteConvert: 'none' }
+        singleQuote: 'liquid'
+      },
+      {
+        singleQuote: 'markup'
       }
     ]
   )(function (source, rules, label) {

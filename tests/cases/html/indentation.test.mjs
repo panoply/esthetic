@@ -226,7 +226,7 @@ test('HTML Indentation: Nested list structures', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format(source, { language: 'html' });
+    const actual = esthetic.format(source);
 
     t.deepEqual(actual, expect);
 

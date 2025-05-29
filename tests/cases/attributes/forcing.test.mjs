@@ -77,9 +77,7 @@ test('Hard Attribute Force: Forcing all attributes onto newlines', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      markup: {
-        attributeLineBreak: true
-      }
+      attributeLineBreak: true
     });
 
     t.deepEqual(actual, expect);
@@ -146,12 +144,8 @@ test('Limit Attribute Force: Forcing attributes onto newlines when limit is exce
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        indentAttribute: true
-      },
-      markup: {
-        attributeLineBreak: 4
-      }
+      indentAttribute: true,
+      attributeLineBreak: 4
     });
 
     t.deepEqual(actual, expect);
@@ -210,9 +204,7 @@ test('Wrap Attribute Force: Forcing attributes in accordance with wrap limit', t
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      markup: {
-        attributeLineBreak: false
-      }
+      attributeLineBreak: false
     });
 
     t.deepEqual(actual, expect);

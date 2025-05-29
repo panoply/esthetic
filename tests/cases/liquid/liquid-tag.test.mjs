@@ -353,12 +353,8 @@ test.skip('Liquid Tag: Indentation depth levels encapsulated by markup', t => {
   )(
     {
       language: 'liquid',
-      liquid: {
-        delimiterPlacement: 'preserve'
-      },
-      markup: {
-        atttibuteLineBreak: 2
-      }
+      delimiterPlacement: 'preserve',
+      atttibuteLineBreak: 2
     }
   )(function (source, rules) {
 

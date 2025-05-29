@@ -101,9 +101,7 @@ test.skip('Attribute Values: Preserving value contents', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      markup: {
-        attributeLineBreak: true
-      }
+      attributeLineBreak: true
     });
 
     t.deepEqual(actual, expect);
@@ -232,9 +230,7 @@ test('Wrap Attribute Force: Forcing attributes in accordance with wrap limit', t
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      markup: {
-        attributeLineBreak: false
-      }
+      attributeLineBreak: false
     });
 
     t.deepEqual(actual, expect);

@@ -70,9 +70,7 @@ test.skip('Structure Test: Forcing tag arguments', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        argumentLineBreak: 2
-      }
+      argumentLineBreak: 2
     });
 
     t.is(actual, expect);
@@ -101,9 +99,7 @@ test.skip('Structure Test: Force filter tag arguments', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        argumentLineBreak: 2
-      }
+      argumentLineBreak: 2
     });
 
     t.is(actual, expect);

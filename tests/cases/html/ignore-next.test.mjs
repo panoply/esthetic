@@ -114,9 +114,7 @@ test('HTML Ignore Comment Next - Various structure tests', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      markup: {
-        forceIndent: true
-      }
+      forceIndent: true
     });
 
     t.deepEqual(actual, expect);
@@ -546,7 +544,8 @@ test('HTML Ignore Comment Next - Followed by Markup', t => {
     ]
   )(
     {
-      language: 'html'
+      language: 'html',
+      attributeLineBreak: true
     }
   )(function (source, rules, label) {
 

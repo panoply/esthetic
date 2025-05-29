@@ -1,6 +1,7 @@
-import test from 'ava';
 import { execSync } from 'node:child_process';
+
 import { samples } from '@liquify/ava/esthetic';
+import test from 'ava';
 
 const commands = [
   'cd tests/e2e/cjs; pnpm esthetic ./samples/*.liquid -f;',

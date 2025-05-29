@@ -91,11 +91,8 @@ test('HTML <script> ignoreJS Rule - Forced Structures', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       indentSize: 2,
-      markup: {
-        attributeLineBreak: true,
-        forceIndent: true,
-        ignoreJS: true
-      }
+      attributeLineBreak: true,
+      forceIndent: true
     });
 
     t.deepEqual(actual, expect);
@@ -218,10 +215,7 @@ test('HTML <script> ignoreJS Rule - Forced when inline', t => {
     const actual = esthetic.format(input, {
       language: 'html',
       indentSize: 2,
-      markup: {
-        attributeLineBreak: true,
-        ignoreJS: true
-      }
+      attributeLineBreak: true
     });
 
     t.deepEqual(actual, expect);
@@ -269,10 +263,7 @@ test('HTML <script> ignoreJS Rule - Handle attributes, forcing when inline', t =
     const actual = esthetic.format(input, {
       language: 'html',
       indentSize: 2,
-      markup: {
-        attributeLineBreak: true,
-        ignoreJS: true
-      }
+      attributeLineBreak: true
     });
 
     t.deepEqual(actual, expect);
@@ -408,10 +399,7 @@ test('HTML <script> ignoreJS Rule - Different structures, newlines and nesting',
     const actual = esthetic.format(input, {
       language: 'html',
       indentSize: 2,
-      markup: {
-        attributeLineBreak: true,
-        ignoreJS: true
-      }
+      attributeLineBreak: true
     });
 
     t.deepEqual(actual, expect);

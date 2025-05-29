@@ -164,10 +164,7 @@ test('Structure Test: Empty style tags', t => {
     ]
   )(function (source, expect) {
 
-    const actual = esthetic.format(source, {
-      language: 'liquid'
-
-    });
+    const actual = esthetic.format(source);
 
     t.deepEqual(actual, expect);
 
@@ -293,11 +290,9 @@ test('Structure Test: Newline Preservation and indentation levels', t => {
     ]
   )({
     language: 'liquid',
-    markup: {
-      forceAttribute: 2,
-      ignoreJS: false,
-      ignoreJSON: false
-    }
+    forceAttribute: 2,
+    ignoreJS: false,
+    ignoreJSON: false
   })(function (source, rules) {
 
     const actual = esthetic.format(source, rules);

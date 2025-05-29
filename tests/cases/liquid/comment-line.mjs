@@ -59,11 +59,8 @@ test.skip('Liquid inline line Comments - commentIndent: true', t => {
       language: 'liquid',
       crlf: false,
       indentSize: 2,
-      liquid: {
-        commentIndent: true,
-        commentNewline: false,
-        commentPreserve: false
-      },
+      commentIndent: true,
+      commentPreserve: false,
       markup: {
 
       }
@@ -285,17 +282,10 @@ test.skip('Liquid Multiline Line Comments - commentIndent: false', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      crlf: false,
       indentSize: 2,
-      liquid: {
-        commentIndent: false,
-        commentNewline: false,
-        commentPreserve: false,
-        delimiterPlacement: 'preserve'
-      },
-      markup: {
-
-      }
+      commentIndent: false,
+      commentPreserve: false,
+      delimiterPlacement: 'preserve'
     });
 
     t.deepEqual(actual, expect);
@@ -349,51 +339,33 @@ test.skip('Liquid Multiline Line Comments - Wrap newlines and hash prefix', t =>
     [
       {
         language: 'liquid',
-        wrap: 0,
-        liquid: {
-          commentIndent: true,
-          commentNewline: false
-        }
+        wordWrap: 0,
+        commentIndent: true
       },
       {
         language: 'liquid',
-        wrap: 50,
-        liquid: {
-          commentIndent: true,
-          commentNewline: false
-        }
+        wordWrap: 50,
+        commentIndent: true
       },
       {
         language: 'liquid',
-        wrap: 30,
-        liquid: {
-          commentIndent: true,
-          commentNewline: false
-        }
+        wordWrap: 30,
+        commentIndent: true
       },
       {
         language: 'liquid',
-        wrap: 80,
-        liquid: {
-          commentIndent: true,
-          commentNewline: false
-        }
+        wordWrap: 80,
+        commentIndent: true
       },
       {
         language: 'liquid',
-        wrap: 80,
-        liquid: {
-          commentIndent: false,
-          commentNewline: false
-        }
+        wordWrap: 80,
+        commentIndent: false
       },
       {
         language: 'liquid',
-        wrap: 100,
-        liquid: {
-          commentIndent: true,
-          commentNewline: false
-        }
+        wordWrap: 100,
+        commentIndent: true
       }
 
     ]

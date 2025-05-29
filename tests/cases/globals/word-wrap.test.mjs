@@ -50,11 +50,8 @@ test('Wrap Test - Plain text structure ', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      wrap: 50,
-      preserveLine: 2,
-      markup: {
-        stripTextWrapLines: false
-      }
+      wordWrap: 50,
+      preserveLine: 2
     });
 
     // The beautified result must match index[1] in the
@@ -92,11 +89,8 @@ test('Wrap Test - Plain text structure respect newlines', t => {
 
     const actual = esthetic.format(input, {
       language: 'html',
-      wrap: 50,
-      preserveLine: 2,
-      markup: {
-        stripTextWrapLines: false
-      }
+      wordWrap: 50,
+      preserveLine: 2
     });
 
     // The beautified result must match index[1] in the

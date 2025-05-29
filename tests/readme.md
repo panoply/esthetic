@@ -35,7 +35,6 @@ pnpm test:e2e
 
 pnpm test:liquid      # Run liquid tests
 pnpm test:html        # Run HTML tests
-pnpm test:css         # Run CSS tests
 pnpm test:json        # Run JSON tests
 pnpm test:xml         # Run XML tests
 

@@ -149,9 +149,7 @@ test('Ignore Next (Block Comment) - Newlines and indentation', t => {
   )(
     {
       language: 'liquid',
-      markup: {
-        forceIndent: true
-      }
+      forceIndent: true
     }
   )(function (source, rules, label) {
 

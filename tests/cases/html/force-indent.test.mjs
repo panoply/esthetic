@@ -130,9 +130,8 @@ test('HTML Force Indent: Nested ul > li structures', t => {
 
     const actual = esthetic.format(source, {
       language: 'html',
-      markup: {
-        forceIndent: true
-      }
+      forceIndent: true
+
     });
 
     t.deepEqual(actual, expect);

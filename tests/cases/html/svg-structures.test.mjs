@@ -135,10 +135,8 @@ test('Structure Test: singleton <circle>', t => {
   )(
     {
       language: 'liquid',
-      markup: {
-        attributeLineBreak: false,
-        selfCloseSVG: false
-      }
+      attributeLineBreak: false,
+      selfCloseSVG: false
     }
   )(function (source, rules) {
 
@@ -172,11 +170,8 @@ test('Structure Test: singleton <use>', t => {
     ]
   )(
     {
-      language: 'liquid',
-      markup: {
-        attributeLineBreak: false,
-        selfCloseSVG: false
-      }
+      attributeLineBreak: false,
+      selfCloseSVG: false
     }
   )(function (source, rules) {
 
@@ -218,11 +213,8 @@ test('Structure Test: singleton <polygon>', t => {
     ]
   )(
     {
-      language: 'liquid',
-      markup: {
-        attributeLineBreak: false,
-        selfCloseSVG: false
-      }
+      attributeLineBreak: false,
+      selfCloseSVG: false
     }
   )(function (source, rules) {
 
@@ -278,11 +270,8 @@ test('Structure Test: singleton <polyline>', t => {
     ]
   )(
     {
-      language: 'liquid',
-      markup: {
-        attributeLineBreak: false,
-        selfCloseSVG: false
-      }
+      attributeLineBreak: false,
+      selfCloseSVG: false
     }
   )(function (source, rules) {
 
@@ -334,11 +323,8 @@ test('Structure Test: singleton <rect>', t => {
     ]
   )(
     {
-      language: 'liquid',
-      markup: {
-        attributeLineBreak: false,
-        selfCloseSVG: false
-      }
+      attributeLineBreak: false,
+      selfCloseSVG: false
     }
   )(function (source, rules) {
 
@@ -390,11 +376,8 @@ test('Structure Test: singleton <ellipse>', t => {
     ]
   )(
     {
-      language: 'liquid',
-      markup: {
-        attributeLineBreak: false,
-        selfCloseSVG: false
-      }
+      attributeLineBreak: false,
+      selfCloseSVG: false
     }
   )(function (source, rules) {
 
@@ -436,11 +419,8 @@ test('Structure Test: singleton <stop>', t => {
     ]
   )(
     {
-      language: 'liquid',
-      markup: {
-        attributeLineBreak: false,
-        selfCloseSVG: false
-      }
+      attributeLineBreak: false,
+      selfCloseSVG: false
     }
   )(function (source, rules) {
 
@@ -483,12 +463,9 @@ test('Convert and correct singletons to self closing tokens', t => {
   ])(function (source, expect) {
 
     const actual = esthetic.format(source, {
-      language: 'liquid',
-      correct: true,
-      markup: {
-        attributeLineBreak: false,
-        selfCloseSVG: true
-      }
+      attributeLineBreak: false,
+      selfCloseSVG: true
+
     });
 
     t.deepEqual(actual, expect);

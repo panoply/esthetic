@@ -112,10 +112,7 @@ dev(function (source) {
   // });
 
   const output = esthetic.format(source, {
-    language: 'liquid',
-    attributeLineBreak: 3,
-    preserveLine: 0,
-    terminusBracket: 2
+    attributeLineBreak: true
   });
 
   return {
@@ -131,7 +128,7 @@ dev(function (source) {
       // console.log(JSON.stringify(output.split(/(\n+)/), null, 2));
       // console.log(esthetic.stats);
       console.log(esthetic.table);
-      console.log(esthetic.rules());
+      // console.log(esthetic.rules());
 
     }
   };

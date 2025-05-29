@@ -131,10 +131,8 @@ test('Liquid Block Comment: Tag structures (using defaults)', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      liquid: {
-        commentIndent: false,
-        commentPreserve: false
-      }
+      commentIndent: false,
+      commentPreserve: false
     });
 
     t.deepEqual(actual, expect);
@@ -275,9 +273,7 @@ test('Liquid Block Comment: Content preservation { commentPreserve: true }', t =
     const actual = esthetic.format(source, {
       language: 'liquid',
       preserveLine: 2,
-      liquid: {
-        commentPreserve: true
-      }
+      commentPreserve: true
     });
 
     t.deepEqual(actual, expect);
@@ -349,11 +345,9 @@ test('Liquid Block Comment: Content indentation { commentIndent: true }', t => {
 
     const actual = esthetic.format(source, {
       language: 'liquid',
-      wrap: 0,
-      liquid: {
-        commentIndent: true,
-        commentPreserve: false
-      }
+      wordWrap: 0,
+      commentIndent: true,
+      commentPreserve: false
     });
 
     t.deepEqual(actual, expect);
@@ -442,7 +436,7 @@ test('Liquid Block Comment: Alignment with logical tag token {% else %}', t => {
             <h1>COMMENT WILL INDENT</h1>
           </div>
 
-        {% # comment will align the else opening delimiter %}
+          {% # comment will align the else opening delimiter %}
         {% elsif condition == bar %}
 
           <ul>
@@ -450,7 +444,7 @@ test('Liquid Block Comment: Alignment with logical tag token {% else %}', t => {
             <li>Foo Bar</li>
           </ul>
 
-        {% # comment will align the else opening delimiter %}
+          {% # comment will align the else opening delimiter %}
         {% else %}
           <span>
             <!-- comment -->
@@ -473,7 +467,7 @@ test('Liquid Block Comment: Alignment with logical tag token {% else %}', t => {
             </ul>
             </div>
 
-          {% # comment will align the else opening delimiter %}
+            {% # comment will align the else opening delimiter %}
           {% else %}
             <span>
             <!-- comment -->
@@ -496,7 +490,7 @@ test('Liquid Block Comment: Alignment with logical tag token {% else %}', t => {
                 </ul>
               </div>
 
-            {% # comment will align the else opening delimiter %}
+              {% # comment will align the else opening delimiter %}
             {% else %}
               <span>
                 <!-- comment -->
@@ -513,13 +507,8 @@ test('Liquid Block Comment: Alignment with logical tag token {% else %}', t => {
     const actual = esthetic.format(source, {
       language: 'liquid',
       indentSize: 2,
-      liquid: {
-        commentIndent: true,
-        commentNewline: false
-      },
-      markup: {
-
-      }
+      commentIndent: true,
+      commentNewline: false
     });
 
     t.deepEqual(actual, expect);
@@ -548,38 +537,28 @@ test('Liquid Block Comment: Word wrap rule on inner contents { wrap }', t => {
     [
       {
         language: 'liquid',
-        wrap: 50,
-        liquid: {
-          commentIndent: true
-        }
+        wordWrap: 50,
+        commentIndent: true
       },
       {
         language: 'liquid',
-        wrap: 80,
-        liquid: {
-          commentIndent: true
-        }
+        wordWrap: 80,
+        commentIndent: true
       },
       {
         language: 'liquid',
-        wrap: 25,
-        liquid: {
-          commentIndent: true
-        }
+        wordWrap: 25,
+        commentIndent: true
       },
       {
         language: 'liquid',
-        wrap: 100,
-        liquid: {
-          commentIndent: true
-        }
+        wordWrap: 100,
+        commentIndent: true
       },
       {
         language: 'liquid',
-        wrap: 0,
-        liquid: {
-          commentIndent: true
-        }
+        wordWrap: 0,
+        commentIndent: true
       }
     ]
   )(function (sample, rules, label) {

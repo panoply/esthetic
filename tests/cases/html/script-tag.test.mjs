@@ -295,7 +295,6 @@ test('Structure Test: Newline Preservation and indentation levels', t => {
     language: 'liquid',
     markup: {
       attributeLineBreak: 2,
-      ignoreJS: false,
       ignoreJSON: false
     }
   })(function (source, rules) {

@@ -532,14 +532,10 @@ test('Structure Test: Newline Preservation and indentation levels', t => {
     ]
   )({
     language: 'liquid',
-    json: {
-      braceAllman: true,
-      arrayFormat: 'indent'
-    },
-    markup: {
-      attributeLineBreak: 2,
-      ignoreJSON: false
-    }
+    braceAllman: true,
+    arrayFormat: 'indent',
+    attributeLineBreak: 2,
+    ignoreJSON: false
   })(function (source, rules) {
 
     const actual = esthetic.format(source, rules);
