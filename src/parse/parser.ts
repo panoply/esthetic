@@ -344,9 +344,7 @@ class Parser {
    * parse errors and keeps track of paired sequences for syntactic reporting.
    */
   get pairs () {
-
     return this.stack.pairs;
-
   }
 
   /**

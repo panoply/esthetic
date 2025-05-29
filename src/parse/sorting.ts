@@ -1,9 +1,9 @@
-import type { Data } from 'types';
+import type { Attrs, Data } from 'types';
 
 import { NIL } from 'chars';
 import { cc as ch } from 'lexical/codes';
 import { parse } from 'parse/parser';
-import { is, isArray, not } from 'utils/helpers';
+import { is, not } from 'utils/helpers';
 
 /* -------------------------------------------- */
 /* EXPORTS                                      */
@@ -85,8 +85,8 @@ export function sortObject (data: Data) {
   const style = data.lexer[count] === 'style';
 
   /**
-     * Whether or not lexer is `style` and we are in `global` stack.
-     */
+   * Whether or not lexer is `style` and we are in `global` stack.
+   */
   const global = style && token === 'global';
 
   /**
@@ -95,13 +95,13 @@ export function sortObject (data: Data) {
   const delim = style ? [ ';', 'separator' ] : [ ',', 'separator' ];
 
   /**
-     *
-     */
+   *
+   */
   const keys: [number, number][] = [];
 
   /**
-     * Data store reference, equivelent of `parse.data`
-     */
+   * Data store reference, equivelent of `parse.data`
+   */
   const store: Data = {
     begin: [],
     ender: [],
@@ -159,22 +159,14 @@ export function sortObject (data: Data) {
       data.begin[data.begin[cc]] === -1
     )) {
 
-      if (data.types[cc].indexOf('liquid') > -1) return;
+      if (data.types[cc].includes('liquid')) return;
 
-      if (data.token[cc] === delim[0] || (
-        style === true &&
-        is(data.token[cc], ch.RCB) &&
-        not(data.token[cc + 1], ch.SEM)
-      )) {
-
+      if (data.token[cc] === delim[0]) {
         comma = true;
         front = cc + 1;
-
       } else if (style === true && is(data.token[cc - 1], ch.RCB)) {
-
         comma = true;
         front = cc;
-
       }
 
       if (front === 0 && data.types[0] === 'comment') {
@@ -190,24 +182,10 @@ export function sortObject (data: Data) {
         front = front + 1;
       }
 
-      if (comma === true && (data.token[cc] === delim[0] || (
-        style === true &&
-        is(data.token[cc - 1], ch.RCB)
-      )) && front <= behind) {
-
-        if (style === true && '};'.indexOf(data.token[behind]) < 0) {
-          behind = behind + 1;
-        } else if (style === false && not(data.token[behind], ch.COM)) {
-          behind = behind + 1;
-        }
-
+      if (comma === true && data.token[cc] === delim[0] && front <= behind) {
+        if (not(data.token[behind], ch.COM)) behind = behind + 1;
         keys.push([ front, behind ]);
-
-        if (style === true && is(data.token[front], ch.RCB)) {
-          behind = front;
-        } else {
-          behind = front - 1;
-        }
+        behind = front - 1;
       }
     }
 
@@ -238,8 +216,6 @@ export function sortObject (data: Data) {
     // HOT PATCH
     // Fixes JSON embedded region and language object sorting
     if (
-      style === true ||
-      parse.language === 'json' ||
       is(data.token[cc - 1], ch.COL) ||
       is(data.token[cc - 1], ch.LSB) ||
       is(data.token[cc - 1], ch.COM) ||
@@ -385,31 +361,6 @@ export function sortObject (data: Data) {
 }
 
 /**
- * A custom sort tool that is a bit more intelligent and
- * multidimensional than `Array.prototype.sort`
- */
-export function sortSafe (
-  array: [ token: string, lines: number, chain?: boolean][],
-  operation: string,
-  recursive: boolean
-): [
-  token: string,
-  lines: number,
-  chain?: boolean][] {
-
-  if (isArray(array) === false) return array;
-
-  if (operation === 'normal') {
-    return safeSortNormal.call({ array, recursive }, array);
-  }
-
-  if (operation === 'descend') return safeSortDescend.call({ recursive }, array);
-
-  return safeSortAscend.call({ recursive }, array);
-
-}
-
-/**
  * Sort Correction
  *
  * This functionality provides corrections to the `begin` and `ender` values
@@ -497,296 +448,50 @@ export function sortCorrect (start: number, end: number) {
 /* UTILITY FUNCTIONS                            */
 /* -------------------------------------------- */
 
-/**
- * Safe Sort Ascension
- *
- * Used to sort objects, properties and selectors
- */
-function safeSortAscend (
-  this: { recursive: boolean; },
-  item: [string, number][]
-) {
+export function sortAttrs (entries: Attrs, list: string[] = []): Attrs {
 
-  let c: number = 0;
+  if (entries.length === 0) return entries;
 
-  const len = item.length;
-  const storeb = item;
+  // Pre-compute attribute names once
+  const attrNames = entries.map(([ key ]) => key.split('=')[0].trim());
 
-  /**
-   * Added for line preservation of attributes
-   *
-   * > This might cause issues in the style/script lexer, will need to investigate
-   */
-  const lines = storeb.map((x) => x[1]);
+  // Create priority lookup map for O(1) access
+  const priorityMap = new Map<string, number>();
+  const prefixRules: Array<{ prefix: string; priority: number }> = [];
 
-  /**
-   * Safe Sort (Ascend Child)
-   *
-   * ---
-   *
-   * original: parse_safeSort_ascend_child
-   */
-  const ascendChild = () => {
+  list.forEach((item, index) => item.endsWith('*')
+    ? prefixRules.push({ prefix: item.slice(0, -1), priority: index })
+    : priorityMap.set(item, index));
 
-    let a = 0;
-    const lenc = storeb.length;
+  // Helper function to get priority for an attribute name
+  function getPriority (attrName: string): number {
 
-    if (a < lenc) {
-      do {
-        if (isArray(storeb[a]) === true) storeb[a] = safeSortAscend.apply(this, storeb[a]);
-        a = a + 1;
-      } while (a < lenc);
-    }
-  };
+    // Check exact match first
 
-  /**
-   * Safe Sort (Ascend Rescurse)
-   *
-   * ---
-   *
-   * original: parse_safeSort_ascend_recurse
-   */
-  const ascendRecurse = (value: any = NIL) => {
-
-    let a = c;
-    let b = 0;
-    let d = 0;
-    let e = 0;
-    let ind = [];
-    let key = storeb[c];
-
-    // const tkey = typeof key;
-
-    if (a < len) {
-
-      do {
-
-        // The comparison was originally:
-        //
-        // if (storeb[a] < key || typeof storeb[a] < tkey)
-        //
-        // If error occur, change it back
-        //
-
-        if (storeb[a] < key) {
-          key = storeb[a];
-          ind = [ a ];
-        } else if (storeb[a] === key) {
-          ind.push(a);
-        }
-
-        a = a + 1;
-
-      } while (a < len);
+    if (priorityMap.has(attrName)) return priorityMap.get(attrName)!;
+    // Check prefix matches
+    for (const { prefix, priority } of prefixRules) {
+      if (attrName.startsWith(prefix)) return priority;
     }
 
-    d = ind.length;
-    a = c;
-    b = d + c;
-
-    if (a < b) {
-      do {
-
-        // Changes the line value
-        // Remove this line if errors occur in style/script lexer
-        key[1] = lines[a];
-
-        storeb[ind[e]] = storeb[a];
-        storeb[a] = key;
-
-        e = e + 1;
-        a = a + 1;
-
-      } while (a < b);
-    }
-
-    c = c + d;
-
-    if (c < len) {
-      ascendRecurse();
-    } else {
-      if (this.recursive === true) ascendChild();
-      item = storeb;
-    }
-
-    return value;
-  };
-
-  ascendRecurse();
-
-  return item;
-
-};
-
-/**
- * Safe Sort Descension
- *
- * Used to sort objects, properties and selectors
- */
-function safeSortDescend (
-  this: { recursive: boolean;},
-  item: [string, number][]
-) {
-
-  let c = 0;
-  const len = item.length;
-  const storeb = item;
-
-  /**
-   * Safe Sort (Descend Child)
-   *
-   * ---
-   *
-   * original: parse_safeSort_descend_child
-   */
-  const descendChild = () => {
-
-    const lenc = storeb.length;
-
-    /**
-     * Iterator value
-     */
-    let a: number = 0;
-
-    if (a < lenc) {
-      do {
-        if (isArray(storeb[a])) storeb[a] = safeSortDescend.apply(this, storeb[a]);
-        a = a + 1;
-      } while (a < lenc);
-    }
-  };
-
-  /**
-   * Safe Sort (Descend Recurse)
-   *
-   * ---
-   *
-   * original: parse_safeSort_descend_recurse
-   */
-  const descendRecurse = (value: string = '') => {
-
-    let a = c;
-    let b = 0;
-    let d = 0;
-    let e = 0;
-    let key = storeb[c];
-    let ind = [];
-    let tstore = NIL;
-
-    const tkey = typeof key;
-
-    if (a < len) {
-
-      do {
-        tstore = typeof storeb[a];
-
-        if (storeb[a] > key || (tstore > tkey)) {
-          key = storeb[a];
-          ind = [ a ];
-        } else if (storeb[a] === key) {
-          ind.push(a);
-        }
-
-        a = a + 1;
-
-      } while (a < len);
-    }
-
-    d = ind.length;
-    a = c;
-    b = d + c;
-
-    if (a < b) {
-
-      do {
-        storeb[ind[e]] = storeb[a];
-        storeb[a] = key;
-        e = e + 1;
-        a = a + 1;
-      } while (a < b);
-    }
-
-    c = c + d;
-
-    if (c < len) {
-      descendRecurse();
-    } else {
-      if (this.recursive === true) descendChild();
-      item = storeb;
-    }
-
-    return value;
+    // Default priority (items not in list go last)
+    return list.length;
 
   };
 
-  descendRecurse();
+  // Sort entries directly without creating intermediate arrays
+  return entries
+    .map((entry, index) => ({ entry, attrName: attrNames[index] }))
+    .sort((a, b) => {
 
-  return item as [string, number][];
+      const priA = getPriority(a.attrName);
+      const priB = getPriority(b.attrName);
 
-};
+      // Secondary sort: alphabetically by attribute name
+      return priA !== priB
+        ? priA - priB
+        : a.attrName.localeCompare(b.attrName);
 
-function safeSortNormal (
-  this: { array: [string, number][], recursive: boolean; },
-  item: [string, number][]
-) {
-
-  let storeb = item;
-  const done = [ item[0] ];
-
-  /**
-   * Safe Sort (Normal Child)
-   *
-   * ---
-   *
-   * original: safeSort_normal_child
-   */
-  const safeSortNormalChild = () => {
-
-    let a = 0;
-    const len = storeb.length;
-
-    if (a < len) {
-      do {
-        if (isArray(storeb[a])) storeb[a] = safeSortNormal.apply(this, storeb[a]);
-        a = a + 1;
-      } while (a < len);
-    }
-
-  };
-
-  /**
-   * Safe Sort (Normal Recurse)
-   *
-   * ---
-   *
-   * original: parse_safeSort_normal_recurse
-   */
-  const safeSortNormalRecurse = (x: [string, number]) => {
-
-    let a = 0;
-
-    const storea = [];
-    const len = storeb.length;
-
-    if (a < len) {
-      do {
-        if (storeb[a] !== x) storea.push(storeb[a]);
-        a = a + 1;
-      } while (a < len);
-    }
-
-    storeb = storea;
-
-    if (storea.length > 0) {
-      done.push(storea[0]);
-      safeSortNormalRecurse(storea[0]);
-    } else {
-      if (this.recursive === true) safeSortNormalChild();
-      item = storeb;
-    }
-  };
-
-  safeSortNormalRecurse(this.array[0]);
-
-  return item;
+    })
+    .map(({ entry }) => entry);
 }

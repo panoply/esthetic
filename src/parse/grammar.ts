@@ -333,15 +333,6 @@ class HTML {
               'application/ld+json'
             ]
           }
-        },
-        {
-          language: 'jsx',
-          attribute: {
-            type: [
-              'text/jsx',
-              'application/jsx'
-            ]
-          }
         }
       ],
       style: [
@@ -569,16 +560,14 @@ class HTML {
   constructor () { this.queries(this.grammar.embedded); }
 
   extend (rules: Grammars['html']) {
-
     for (const rule in rules) {
-
       if (isArray(rules[rule])) {
         for (const tag of rules[rule]) {
 
-          if (rule === 'tags' && this.tags.has(tag) === false) {
+          if (rule === 'tags' && !this.tags.has(tag)) {
             this.grammar.tags.push(tag);
             this.tags.add(tag);
-          } else if (rule === 'voids' && this.voids.has(tag) === false) {
+          } else if (rule === 'voids' && !this.voids.has(tag)) {
             this.grammar.voids.push(tag);
             this.voids.add(tag);
           }
@@ -693,9 +682,15 @@ class Grammar {
     }
 
     return Object.defineProperties(object(null), {
-      html: { get: () => this.html.grammar },
-      liquid: { get: () => this.liquid.grammar },
-      svg: { get: () => this.svg.grammar }
+      html: {
+        get: () => this.html.grammar
+      },
+      liquid: {
+        get: () => this.liquid.grammar
+      },
+      svg: {
+        get: () => this.svg.grammar
+      }
     });
 
   }

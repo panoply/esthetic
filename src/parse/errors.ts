@@ -1,23 +1,21 @@
 import type { IParseError, Syntactic } from 'types';
 
 import { config } from 'config';
-import { NIL, NWL } from 'lexical/chars';
+import { NWL } from 'lexical/chars';
 import { ParseError } from 'lexical/errors';
 import { parse } from 'parse/parser';
 import { getLanguageName } from 'rules/language';
-import { getTagName, isUndefined, join } from 'utils/helpers';
+import { getTagName, glue, isUndefined, join } from 'utils/helpers';
 
 function ErrorLocation (error: IParseError) {
 
-  if (parse.lexer === 'markup') {
-    if (error.code === ParseError.UnterminatedJSONString) {
-      return join(
-        'Language: JSON',
+  if (error.code === ParseError.UnterminatedJSONString) {
+    return join(
+      'Language: JSON',
         `Embedded: ${getLanguageName(parse.language)}`,
         `Location: ${parse.lineNumber}:${parse.lineColumn}`,
         `Æsthetic: Parse Failed (Code: ${error.code})`
-      );
-    }
+    );
   }
 
   return join(
@@ -38,8 +36,7 @@ export function MarkupError (errorCode: ParseError, token: string, tname?: strin
 
   const error: IParseError = message(errorCode, tname, parse.lineNumber);
   error.language = getLanguageName(parse.language);
-
-  parse.error = [
+  parse.error = glue([
     error.message
     , NWL
     , NWL
@@ -50,7 +47,7 @@ export function MarkupError (errorCode: ParseError, token: string, tname?: strin
     , NWL
     , NWL
     , ErrorLocation(error)
-  ].join(NIL);
+  ]);
 
 }
 
@@ -137,7 +134,9 @@ export function RuleError (error: {
 /* PRIVATES                                     */
 /* -------------------------------------------- */
 
-const point = (size: number) => config.logColors ? `\x1b[93m${'^'.repeat(size)}\x1b[39m` : `${'^'.repeat(size)}`;
+const point = (size: number) => config.logColors
+  ? `\x1b[93m${'^'.repeat(size)}\x1b[39m`
+  : `${'^'.repeat(size)}`;
 
 /**
  * Get Sample Token
