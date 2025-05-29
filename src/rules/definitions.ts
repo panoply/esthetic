@@ -1,13 +1,13 @@
 import type { Definitions } from 'types';
-export const definitions = {
+
+export const definitions: Definitions = {
   preset: {
     description: 'A preset ruleset style guide to use. This will assign rules according to a set of defaults to produce a certain beautification result.',
     default: 'none',
     type: 'choice',
     values: [
       { rule: 'none', description: 'Default, least obtrusive formatting.' },
-      { rule: 'recommended', description: 'Suited for most cases, Æsthetic approach.' },
-      { rule: 'aesthetic', description: 'Strict ruleset by author Panoply.' },
+      { rule: 'aesthetic', description: 'Specialist and refined styling.' },
       { rule: 'warrington', description: 'Best for Shopify theme developers.' },
       { rule: 'prettier', description: 'Replicates Prettier style formatting.' }
     ]
@@ -24,7 +24,7 @@ export const definitions = {
       { rule: 'json', description: 'JSON' }
     ],
     preset: {
-      default: 'auto',
+      none: 'auto',
       aesthetic: 'auto',
       warrington: 'auto',
       prettier: 'auto'
@@ -35,7 +35,7 @@ export const definitions = {
     default: 2,
     type: 'number',
     preset: {
-      default: 2,
+      none: 2,
       aesthetic: 2,
       warrington: 2,
       prettier: 2
@@ -46,7 +46,7 @@ export const definitions = {
     default: ' ',
     type: 'string',
     preset: {
-      default: ' ',
+      none: ' ',
       aesthetic: ' ',
       warrington: ' ',
       prettier: ' '
@@ -57,7 +57,7 @@ export const definitions = {
     default: 0,
     type: 'number',
     preset: {
-      default: 0,
+      none: 0,
       aesthetic: 0,
       warrington: 0,
       prettier: 0
@@ -68,7 +68,7 @@ export const definitions = {
     default: 0,
     type: 'number',
     preset: {
-      default: 0,
+      none: 0,
       aesthetic: 120,
       warrington: 80,
       prettier: 80
@@ -79,7 +79,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: true,
       warrington: true,
       prettier: true
@@ -94,7 +94,7 @@ export const definitions = {
       { rule: 'LF', description: 'Unix format' }
     ],
     preset: {
-      default: 'LF',
+      none: 'LF',
       aesthetic: 'LF',
       warrington: 'LF',
       prettier: 'LF'
@@ -105,7 +105,7 @@ export const definitions = {
     default: 2,
     type: 'number',
     preset: {
-      default: 2,
+      none: 2,
       aesthetic: 2,
       warrington: 1,
       prettier: 1
@@ -116,7 +116,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: false,
       warrington: false,
       prettier: false
@@ -127,7 +127,7 @@ export const definitions = {
     default: true,
     type: 'boolean',
     preset: {
-      default: true,
+      none: true,
       aesthetic: true,
       warrington: true,
       prettier: true
@@ -138,7 +138,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: false,
       warrington: false,
       prettier: false
@@ -156,7 +156,7 @@ export const definitions = {
       { rule: 'markup', description: 'Use single quotation characters on markup tokens and double on Liquid tokens.' }
     ],
     preset: {
-      default: 'preserve',
+      none: 'preserve',
       aesthetic: 'liquid',
       warrington: 'never',
       prettier: 'never'
@@ -172,7 +172,7 @@ export const definitions = {
       { rule: 'inline', description: 'Ensure all array indexes appear on a single line' }
     ],
     preset: {
-      default: 'default',
+      none: 'default',
       aesthetic: 'indent',
       warrington: 'indent',
       prettier: 'indent'
@@ -183,7 +183,7 @@ export const definitions = {
     default: true,
     type: 'boolean',
     preset: {
-      default: true,
+      none: true,
       aesthetic: true,
       warrington: true,
       prettier: true
@@ -194,7 +194,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: false,
       warrington: false,
       prettier: false
@@ -210,7 +210,7 @@ export const definitions = {
       { rule: 'inline', description: 'Ensure all array indexes appear on a single line' }
     ],
     preset: {
-      default: 'default',
+      none: 'default',
       aesthetic: 'indent',
       warrington: 'indent',
       prettier: 'indent'
@@ -221,7 +221,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: false,
       warrington: false,
       prettier: false
@@ -237,7 +237,7 @@ export const definitions = {
       { rule: 'never', description: 'Remove trailing commas' }
     ],
     preset: {
-      default: 'never',
+      none: 'never',
       aesthetic: 'never',
       warrington: 'never',
       prettier: 'never'
@@ -248,7 +248,7 @@ export const definitions = {
     default: 0,
     type: 'number',
     preset: {
-      default: 0,
+      none: 0,
       aesthetic: 3,
       warrington: 0,
       prettier: 0
@@ -259,7 +259,7 @@ export const definitions = {
     default: true,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: false,
       warrington: false,
       prettier: false
@@ -278,7 +278,7 @@ export const definitions = {
       { rule: 'multiline', description: 'Trims applied to tags and output tokens spanning multiple lines.' }
     ],
     preset: {
-      default: 'preserve',
+      none: 'preserve',
       aesthetic: 'preserve',
       warrington: 'preserve',
       prettier: 'preserve'
@@ -295,7 +295,7 @@ export const definitions = {
       { rule: 'newline-multiline', description: 'Forces delimiters onto newlines for multiline tokens.' }
     ],
     preset: {
-      default: 'preserve',
+      none: 'preserve',
       aesthetic: 'consistent',
       warrington: 'preserve',
       prettier: 'preserve'
@@ -304,9 +304,9 @@ export const definitions = {
   filterLineBreak: {
     description: 'Controls filter newline break formatting.',
     default: true,
-    type: 'boolean | number',
+    type: [ 'boolean', 'number' ],
     preset: {
-      default: 0,
+      none: 0,
       aesthetic: 3,
       warrington: 0,
       prettier: 0
@@ -317,7 +317,7 @@ export const definitions = {
     default: true,
     type: 'boolean',
     preset: {
-      default: true,
+      none: true,
       aesthetic: true,
       warrington: true,
       prettier: true
@@ -333,7 +333,7 @@ export const definitions = {
       { rule: 'before', description: 'Places separators before expressions.' }
     ],
     preset: {
-      default: 'before',
+      none: 'before',
       aesthetic: 'before',
       warrington: 'after',
       prettier: 'after'
@@ -349,7 +349,7 @@ export const definitions = {
       { rule: 'before', description: 'Places combinators before the condition expression.' }
     ],
     preset: {
-      default: 'before',
+      none: 'before',
       aesthetic: 'before',
       warrington: 'after',
       prettier: 'after'
@@ -360,7 +360,7 @@ export const definitions = {
     default: [],
     type: 'array',
     preset: {
-      default: [],
+      none: [],
       aesthetic: [],
       warrington: [],
       prettier: []
@@ -378,7 +378,7 @@ export const definitions = {
       { rule: 'inline-align', description: 'Applies aligned inline formatting with additional indentation' }
     ],
     preset: {
-      default: 'preserve',
+      none: 'preserve',
       aesthetic: 'inline-align',
       warrington: 'preserve',
       prettier: 'preserve'
@@ -395,7 +395,7 @@ export const definitions = {
       { rule: 'lowercase-value', description: 'Convert attribute values to lowercase' }
     ],
     preset: {
-      default: 'preserve',
+      none: 'preserve',
       aesthetic: 'lowercase-name',
       warrington: 'preserve',
       prettier: 'preserve'
@@ -404,9 +404,9 @@ export const definitions = {
   attributeLineBreak: {
     description: 'Controls the formatting tactic to apply on tag attributes.',
     default: false,
-    type: 'boolean | number',
+    type: [ 'boolean', 'number' ],
     preset: {
-      default: false,
+      none: false,
       aesthetic: 3,
       warrington: 2,
       prettier: 2
@@ -417,7 +417,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: false,
       warrington: false,
       prettier: false
@@ -426,9 +426,9 @@ export const definitions = {
   attributeSort: {
     description: 'This rule will alphanumerically sort attributes annotated on markup tags.',
     default: false,
-    type: 'boolean | array',
+    type: [ 'boolean', 'array' ],
     preset: {
-      default: false,
+      none: false,
       aesthetic: false,
       warrington: false,
       prettier: false
@@ -439,21 +439,21 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: true,
       warrington: false,
       prettier: false
     }
   },
-  selfCloseSpace: {
-    description: "Markup self-closing tags will end with ' />' instead of '/>'.",
-    default: true,
+  selfCloseSlash: {
+    description: 'Renders a forward slash on self-closing markup tags identified to be void.',
+    default: false,
     type: 'boolean',
     preset: {
-      default: true,
-      aesthetic: true,
-      warrington: true,
-      prettier: true
+      none: false,
+      aesthetic: false,
+      warrington: false,
+      prettier: false
     }
   },
   selfCloseSVG: {
@@ -461,7 +461,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: true,
       warrington: true,
       prettier: true
@@ -470,9 +470,9 @@ export const definitions = {
   terminusBracket: {
     description: 'Whether or not ending HTML tag delimiters should be forced onto a newline.',
     default: false,
-    type: 'boolean | number',
+    type: [ 'boolean', 'number' ],
     preset: {
-      default: false,
+      none: false,
       aesthetic: 5,
       warrington: 2,
       prettier: 2
@@ -483,7 +483,7 @@ export const definitions = {
     default: true,
     type: 'boolean',
     preset: {
-      default: true,
+      none: true,
       aesthetic: true,
       warrington: false,
       prettier: false
@@ -494,7 +494,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: false,
       warrington: false,
       prettier: false
@@ -505,7 +505,7 @@ export const definitions = {
     default: false,
     type: 'boolean',
     preset: {
-      default: false,
+      none: false,
       aesthetic: true,
       warrington: true,
       prettier: true
@@ -521,7 +521,7 @@ export const definitions = {
       { rule: 'wrap', description: 'Linebreak values when wrap limit is exceeded.' }
     ],
     preset: {
-      default: 'preserve',
+      none: 'preserve',
       aesthetic: 'preserve',
       warrington: 'preserve',
       prettier: 'preserve'

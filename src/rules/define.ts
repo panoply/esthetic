@@ -62,10 +62,11 @@ export function setRules (opts: Rules, events: EventListeners) {
   if (events.rules.length > 0) change = {};
 
   if (has('language') && isValid('language', options.language) && parse.language !== options.language) {
-
     parse.language = parse.rules.language = options.language;
-
   }
+
+  if (!parse.language) parse.language = 'auto';
+  if (!parse.lexer) parse.lexer = 'auto';
 
   for (const rule of RULES) {
 

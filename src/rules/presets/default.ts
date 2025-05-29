@@ -1,123 +1,5 @@
 import { Rules } from 'types';
 
-const r = {
-  crlf: false,
-  preset: 'default',
-  language: 'auto',
-  endNewline: false,
-  indentChar: ' ',
-  indentLevel: 0,
-  indentSize: 2,
-  preserveLine: 2,
-  wordWrap: 0,
-  commentIndent: true,
-  commentPreserve: false,
-  forceIndent: false,
-  quoteConvert: 'none',
-  attributeCasing: 'preserve',
-  attributeSort: false,
-  attributeLineBreak: 3,
-  attributePreserve: false,
-  argumentLineBreak: 0,
-  classListSort: false,
-  classListUnique: false,
-  commentDelimiter: 'preserve',
-  delimiterTrims: 'preserve',
-  delimiterPlacement: 'preserve',
-  bracketTerminus: false,
-  filterLineBreak: 0,
-  indentAttribute: true,
-  lineBreakSeparator: 'before',
-  lineBreakLogical: 'before',
-  paddedTagList: [],
-  dedentTagList: [],
-  ignoreTagList: [],
-  ignoreJSON: false,
-  selfCloseSpace: true,
-  selfCloseSVG: true,
-  stripTextWrapLines: false,
-  stripAttributeLines: false,
-  textNodeList: [],
-  textBoundInline: true,
-  textPreserve: false,
-  valueSpacing: 'preserve',
-  arrayFormat: 'default',
-  braceAllman: false,
-  bracePadding: false,
-  endComma: 'never',
-  objectIndent: 'default',
-  objectSort: false
-};
-
-const newDefaults = {
-  crlf: false,
-  preset: 'default',
-  language: 'auto',
-  endNewline: false,
-  indentChar: ' ',
-  indentLevel: 0,
-  indentSize: 2,
-  preserveLine: 2,
-  wordWrap: 0,
-
-  // HTML + LIQUID + JSON
-  commentIndent: true,
-  commentPreserve: false,
-  forceIndent: false,
-
-  quoteConvert: 'none',
-
-  // HTML
-  attributeCasing: 'preserve',
-  attributeSort: false,
-  attributeLineBreak: 3,
-  attributePreserve: false,
-
-  // LIQUID
-  argumentLineBreak: 0,
-
-  // HTML
-  classListSort: false,
-  classListUnique: false,
-
-  // HTML
-  commentDelimiter: 'preserve',
-
-  delimiterTrims: 'preserve',
-  delimiterPlacement: 'preserve',
-
-  // HTML
-  bracketTerminus: false,
-
-  // LIQUID
-  filterLineBreak: 0,
-  indentAttribute: true,
-  lineBreakSeparator: 'before',
-  lineBreakLogical: 'before',
-  paddedTagList: [],
-  dedentTagList: [],
-  ignoreTagList: [],
-
-  // HTML + LIQUID
-  ignoreJSON: false,
-  selfCloseSpace: true,
-  selfCloseSVG: true,
-  stripTextWrapLines: false,
-  stripAttributeLines: false,
-  textNodeList: [],
-  textBoundInline: true,
-  textPreserve: false,
-  valueSpacing: 'preserve',
-
-  // JSON
-  arrayFormat: 'default',
-  braceAllman: false,
-  bracePadding: false,
-  endComma: 'never',
-  objectIndent: 'default',
-  objectSort: false
-};
-
 /**
  * Default Presets
  *
@@ -157,7 +39,7 @@ export const defaults: Rules = {
   objectSort: false,
   preset: 'default',
   preserveLine: 2,
-  selfCloseSpace: true,
+  selfCloseSlash: false,
   selfCloseSVG: false,
   singleQuote: 'preserve',
   stripAttributeLines: false,

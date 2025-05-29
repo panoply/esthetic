@@ -45,7 +45,7 @@ export function isValid (rule: string, value: any) {
     case 'ignoreJSON':
     case 'textBoundInline':
     case 'textPreserve':
-    case 'selfCloseSpace':
+    case 'selfCloseSlash':
     case 'selfCloseSVG':
     case 'stripAttributeLines':
     case 'braceAllman':
@@ -233,12 +233,14 @@ export function isValidChoice (rule: string, value: string) {
   if (rule === 'language') {
 
     switch (value as LanguageName) {
-      case 'text':
       case 'markup':
       case 'html':
       case 'liquid':
       case 'xml':
-      case 'json': return true;
+      case 'json':
+      case 'auto':
+      case 'plaintext':
+      case 'text': return true;
     }
 
     throw RuleError({
@@ -247,7 +249,7 @@ export function isValidChoice (rule: string, value: string) {
       provided: value,
       reference: `/rules/${rule}/`,
       expected: [
-        'text',
+        'plaintext',
         'auto',
         'markup',
         'html',
