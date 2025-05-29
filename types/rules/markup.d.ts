@@ -161,16 +161,16 @@ export interface MarkupRules {
    */
   classListUnique?: boolean;
   /**
-   * Default: `true`
+   * Default: `false`
    *
    * **Markup**
    *
-   * **[Self Close Space](https://aesthetic.js.org/selfCloseSpace/)**
+   * **[Self Close Slash](https://aesthetic.js.org/selfCloseSlash/)**
    *
-   * Markup self-closing tags will end with `' />'` instead of `'/>'`
+   * Applies old-school self-closing slash to singleton identifiable tags.
    *
    */
-  selfCloseSpace?: boolean;
+  selfCloseSlash?: boolean;
   /**
    * Default: `false`
    *

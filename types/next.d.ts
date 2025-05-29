@@ -3,6 +3,8 @@ import { Languages, Lexers, Modes } from 'lexical/enum';
 import { Data, Syntactic } from '.';
 import { LanguageName } from './shared';
 
+export type Attrs = [ token: string, lines: number, chain?: boolean ][]
+
 /**
  * Stack item entry references populated in the `parse.stack[]` store.
  */

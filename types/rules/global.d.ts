@@ -16,11 +16,6 @@ export interface GlobalRules {
    * > This is the default preset, it assumes custom rules to be provided and applies the least
    * > obtrusive formatting rules.
    *
-   * > `recommended`
-   *
-   * > This style guide is typically suited for most cases, it will apply a base set of
-   * > rules aligned with the Æsthetic approach.
-   *
    * > `aesthetic`
    *
    * > This is a strict ruleset curated by the projects author [Panoply](https://github.com/panoply).
@@ -36,7 +31,7 @@ export interface GlobalRules {
    * > enjoy that beautification style using this preset will produce the same results.
    *
    */
-  preset?: LiteralUnion<'none'| 'recommended'| 'aesthetic'| 'warrington'| 'prettier', string> ;
+  preset?: LiteralUnion<'none' | 'aesthetic'| 'warrington'| 'prettier', string> ;
   /**
    * Default: `auto`
    *
