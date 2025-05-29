@@ -24,7 +24,7 @@ export default [
             ':': 'before',
             '&&': 'after',
             '||': 'after',
-            '+': 'before'
+            '+': 'after'
           }
         }
       ]
